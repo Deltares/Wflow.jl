@@ -324,6 +324,7 @@ window.Quarto = {
 <li>Replaced the variables that can exchange through <code>BMI</code> (list of model components) by a list of standard names below the <code>[API]</code> TOML section.</li>
 <li>Use the instantaneous routing water depth <code>h</code> at the previous model time step to limit open water evaporation and to set the river <code>stage</code> of the <code>GroundwaterFlow</code> model for the current model time step, as it is more accurate then using the average water depth <code>h_av</code> at the previous model time step.</li>
 <li>Removed <code>LoopVectorization</code> dependency because of compilation issues and the risk of deprecation for newer Julia versions. The <code>tturbo</code> macro has been replaced by the <code>batch</code> macro of <code>Polyester</code>, performance loss is acceptable.</li>
+<li>Use for the infiltration capacity of soil, represented by parameter <code>infiltcapsoil</code>, the actual saturated hydraulic conductivity at the soil surface based on parameters <code>kv_0</code> and <code>kvfrac</code>. This parameter is now better linked to soil properties and setting this parameter directly by an external netCDF variable is not supported anymore.</li>
 </ul>
 </section>
 <section id="added" class="level3">

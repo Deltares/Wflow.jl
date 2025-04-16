@@ -415,63 +415,62 @@ Click to show example .toml file
 <span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="dt">snowpack__melting_temperature_threshold</span> <span class="op">=</span> <span class="st">"TTM"</span></span>
 <span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="dt">snowpack__degree-day_coefficient</span> <span class="op">=</span> <span class="st">"Cfmax"</span></span>
 <span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_layer_water__brooks-corey_epsilon_parameter</span> <span class="op">=</span> <span class="st">"c"</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_layer_water__brooks-corey_exponent</span> <span class="op">=</span> <span class="st">"c"</span></span>
 <span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_surface_water__infiltration_reduction_parameter</span> <span class="op">=</span> <span class="st">"cf_soil"</span></span>
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_surface_water__vertical_saturated_hydraulic_conductivity</span> <span class="op">=</span> <span class="st">"KsatVer"</span></span>
 <span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter</span> <span class="op">=</span> <span class="st">"f"</span></span>
 <span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil~compacted_surface_water__infiltration_capacity"</span> <span class="op">=</span> <span class="st">"InfiltCapPath"</span></span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil~non-compacted_surface_water__infiltration_capacity"</span> <span class="op">=</span> <span class="st">"InfiltCapSoil"</span></span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water__residual_volume_fraction</span> <span class="op">=</span> <span class="st">"thetaR"</span></span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water__saturated_volume_fraction</span> <span class="op">=</span> <span class="st">"thetaS"</span></span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_sat-zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"MaxLeakage"</span></span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil~compacted__area_fraction"</span> <span class="op">=</span> <span class="st">"PathFrac"</span></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_root~wet__sigmoid_function_shape_parameter"</span> <span class="op">=</span> <span class="st">"rootdistpar"</span></span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="dt">soil__thickness</span> <span class="op">=</span> <span class="st">"SoilThickness"</span></span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio</span> <span class="op">=</span> <span class="st">"EoverR"</span></span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_canopy__light-extinction_coefficient</span> <span class="op">=</span> <span class="st">"Kext"</span></span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation__specific-leaf_storage</span> <span class="op">=</span> <span class="st">"Sl"</span></span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_wood_water__storage_capacity</span> <span class="op">=</span> <span class="st">"Swood"</span></span>
-<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_root__depth</span> <span class="op">=</span> <span class="st">"RootingDepth"</span></span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="dt">river__length</span> <span class="op">=</span> <span class="st">"wflow_riverlength"</span></span>
-<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_flow__manning_n_parameter</span> <span class="op">=</span> <span class="st">"N_River"</span></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="dt">river__slope</span> <span class="op">=</span> <span class="st">"RiverSlope"</span></span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="dt">river__width</span> <span class="op">=</span> <span class="st">"wflow_riverwidth"</span></span>
-<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__manning_n_parameter</span> <span class="op">=</span> <span class="st">"N"</span></span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface__slope</span> <span class="op">=</span> <span class="st">"Slope"</span></span>
-<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
-<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
-<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
-<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
-<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span>
-<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span>
-<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
-<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation__leaf-area_index</span> <span class="op">=</span> <span class="st">"LAI"</span></span>
-<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="dt">thicknesslayers</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span></span>
-<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm"</span></span>
-<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.csv]</span></span>
-<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_moselle_simple.csv"</span></span>
-<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="kw">[[output.csv.column]]</span></span>
-<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.x</span> <span class="op">=</span> <span class="fl">7.378</span></span>
-<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.y</span> <span class="op">=</span> <span class="fl">50.204</span></span>
-<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"Q"</span></span>
-<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"river_water__volume_flow_rate"</span></span>
-<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a><span class="kw">[[output.csv.column]]</span></span>
-<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"recharge"</span></span>
-<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"soil_water_sat-zone_top__recharge_volume_flux"</span></span>
-<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a><span class="dt">reducer</span> <span class="op">=</span> <span class="st">"mean"</span></span>
-<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water__residual_volume_fraction</span> <span class="op">=</span> <span class="st">"thetaR"</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water__saturated_volume_fraction</span> <span class="op">=</span> <span class="st">"thetaS"</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_sat-zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"MaxLeakage"</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil~compacted__area_fraction"</span> <span class="op">=</span> <span class="st">"PathFrac"</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_root~wet__sigmoid_function_shape_parameter"</span> <span class="op">=</span> <span class="st">"rootdistpar"</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="dt">soil__thickness</span> <span class="op">=</span> <span class="st">"SoilThickness"</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio</span> <span class="op">=</span> <span class="st">"EoverR"</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_canopy__light-extinction_coefficient</span> <span class="op">=</span> <span class="st">"Kext"</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation__specific-leaf_storage</span> <span class="op">=</span> <span class="st">"Sl"</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_wood_water__storage_capacity</span> <span class="op">=</span> <span class="st">"Swood"</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_root__depth</span> <span class="op">=</span> <span class="st">"RootingDepth"</span></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="dt">river__length</span> <span class="op">=</span> <span class="st">"wflow_riverlength"</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_flow__manning_n_parameter</span> <span class="op">=</span> <span class="st">"N_River"</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a><span class="dt">river__slope</span> <span class="op">=</span> <span class="st">"RiverSlope"</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="dt">river__width</span> <span class="op">=</span> <span class="st">"wflow_riverwidth"</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__manning_n_parameter</span> <span class="op">=</span> <span class="st">"N"</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface__slope</span> <span class="op">=</span> <span class="st">"Slope"</span></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation__leaf-area_index</span> <span class="op">=</span> <span class="st">"LAI"</span></span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a><span class="dt">thicknesslayers</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span></span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm"</span></span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.csv]</span></span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_moselle_simple.csv"</span></span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a><span class="kw">[[output.csv.column]]</span></span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.x</span> <span class="op">=</span> <span class="fl">7.378</span></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="dt">coordinate.y</span> <span class="op">=</span> <span class="fl">50.204</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"Q"</span></span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"river_water__volume_flow_rate"</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a><span class="kw">[[output.csv.column]]</span></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"recharge"</span></span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"soil_water_sat-zone_top__recharge_volume_flux"</span></span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a><span class="dt">reducer</span> <span class="op">=</span> <span class="st">"mean"</span></span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </section>
 <section id="the-static-input-data-staticmaps.nc" class="level2">
