@@ -23,7 +23,7 @@ the required states (standard name).
 """
 function get_glacier_states(model_type::AbstractString)
     if model_type == "sbm" || model_type == "sbm_gwf"
-        states = ("glacier_ice__leq-volume",)
+        states = ("glacier_ice__leq-depth",)
     elseif model_type == "sediment"
         states = ()
     else

@@ -34,7 +34,7 @@ land_surface_water__instantaneous_depth = "h_land"
 
 subsurface_water__hydraulic_head = "head"
 
-glacier_ice__leq-volume = "glacierstore"
+glacier_ice__leq-depth = "glacierstore"
 
 [input]
 path_forcing = "forcing-piave.nc"
@@ -65,14 +65,13 @@ glacier_surface__area_fraction = "wflow_glacierfrac"
 glacier_ice__degree-day_coefficient = "G_Cfmax"
 glacier_ice__melting_temperature_threshold = "G_TT"
 "glacier_firn_accumulation__snowpack~dry_leq-depth_fraction"  = "G_SIfrac"
-glacier_ice__leq-volume = "wflow_glacierstore"
+glacier_ice__initial_leq-depth = "wflow_glacierstore"
 
-soil_layer_water__brooks-corey_epsilon_parameter = "c"
+soil_layer_water__brooks-corey_exponent = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
 "soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
-"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
 soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
 soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"

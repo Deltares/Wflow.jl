@@ -268,14 +268,15 @@ function ncread(
     var, mod = ncvar_name_modifier(var; config = config)
 
     if !isnothing(mod.value)
-        @info "Set `$(parameter.name)` using default value `$(mod.value)`."
+        @info "Set `$(parameter.name)` using uniform value `$(mod.value)` from TOML file."
         if isnothing(dimname)
-            return Base.fill(mod.value, length(sel))
             # set to one uniform value
+            return Base.fill(mod.value, length(sel))
         elseif length(mod.value) == 1
+            # set to one uniform value (parameter with third dimension of size 1)
             return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
-            # set to vector of values (should be equal to size dimname)
         elseif length(mod.value) > 1
+            # set to multiple uniform values (parameter with third dimension of size > 1)
             @assert length(mod.value) == nc.dim[String(dimname)]
             return repeat(mod.value, 1, length(sel))
         end

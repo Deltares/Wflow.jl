@@ -75,6 +75,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Removed `LoopVectorization` dependency because of compilation issues and the risk of
   deprecation for newer Julia versions. The `tturbo` macro has been replaced by the `batch`
   macro of `Polyester`, performance loss is acceptable.
+- Use for the infiltration capacity of soil, represented by parameter `infiltcapsoil`, 
+  the actual saturated hydraulic conductivity at the soil surface based on parameters 
+  `kv_0` and `kvfrac`. This parameter is now better linked to soil properties and setting
+  this parameter directly by an external netCDF variable is not supported anymore.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
