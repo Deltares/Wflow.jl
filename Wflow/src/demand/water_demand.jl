@@ -584,10 +584,12 @@ function surface_water_allocation_local!(
         if indices_river[i] > 0.0
             # the available volume is limited by a fixed scaling factor of 0.8 to prevent
             # rivers completely drying out. check for abstraction through inflow (external
-            # negative inflow) and adjust available volume.
+            # negative inflow) first and adjust available volume.
             if inflow[indices_river[i]] < 0.0
-                river_inflow = inflow[indices_river[i]] * dt
-                available_volume = max(storage[indices_river[i]] * 0.80 + river_inflow, 0.0)
+                available_volume = storage[indices_river[i]] * 0.80
+                max_river_abstraction =
+                    min(-inflow[indices_river[i]] * dt, available_volume)
+                available_volume = max(available_volume - max_river_abstraction, 0.0)
             else
                 available_volume = storage[indices_river[i]] * 0.80
             end
