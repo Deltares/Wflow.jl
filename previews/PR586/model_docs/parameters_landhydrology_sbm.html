@@ -483,7 +483,7 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>snowpack~dry__leq-depth</code></td>
-<td>Snow storage</td>
+<td>Liquid-water equivalent of dry snow</td>
 <td>mm</td>
 </tr>
 <tr class="even">
@@ -511,8 +511,8 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>snowpack__liquid-equivalent_depth</code></td>
-<td>Total amount of water stored in snow pack (SWE)</td>
+<td><code>snowpack__leq_depth</code></td>
+<td>Liquid-water equivalent of snow pack (SWE)</td>
 <td>mm</td>
 </tr>
 <tr class="even">
@@ -550,8 +550,8 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>glacier_ice__leq-volume</code></td>
-<td>Water stored within the glacier (used for initial glacier volume)</td>
+<td><code>glacier_ice__initial_leq-depth</code></td>
+<td>Initial glacier liquid-water equivalent (cold state)</td>
 <td>mm</td>
 <td>5500.0</td>
 </tr>
@@ -594,8 +594,8 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>glacier_ice__leq-volume</code></td>
-<td>Water stored within the glacier</td>
+<td><code>glacier_ice__leq-depth</code></td>
+<td>Glacier liquid-water equivalent</td>
 <td>mm</td>
 </tr>
 </tbody>
@@ -613,11 +613,6 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>glacier_ice__leq-volume</code></td>
-<td>Water stored within the glacier</td>
-<td>mm</td>
-</tr>
-<tr class="even">
 <td><code>glacier_ice__melt_volume_flux</code></td>
 <td>Melt from the glacier</td>
 <td>mm Δt⁻¹</td>
@@ -759,16 +754,11 @@ td, th {
 <td>m² m⁻²</td>
 </tr>
 <tr class="even">
-<td><code>vegetation_canopy_water__depth</code></td>
-<td>Canopy storage</td>
-<td>mm</td>
-</tr>
-<tr class="odd">
 <td><code>vegetation_canopy_water__stemflow_volume_flux</code></td>
 <td>Stemflow</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>vegetation_canopy_water__throughfall_volume_flux</code></td>
 <td>Throughfall</td>
 <td>mm Δt⁻¹</td>
@@ -918,7 +908,7 @@ td, th {
 <td>0.0 mm day⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil_layer_water__brooks-corey_epsilon_parameter</code></td>
+<td><code>soil_layer_water__brooks-corey_exponent</code></td>
 <td>Brooks-Corey power coefficient per soil layer</td>
 <td>-</td>
 <td>10.0</td>
@@ -1080,49 +1070,34 @@ td, th {
 <td>mm</td>
 </tr>
 <tr class="even">
-<td><code>soil_layer_water_unsat-zone__depth</code></td>
-<td>Amount of water in the unsaturated store, per soil layer</td>
-<td>mm</td>
-</tr>
-<tr class="odd">
 <td><code>soil_water_unsat-zone__depth</code></td>
 <td>Amount of water in the unsaturated store</td>
 <td>mm</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_water_sat-zone_top__capillary_volume_flux</code></td>
 <td>Actual capillary rise</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water_sat-zone_top__recharge_volume_flux</code></td>
 <td>Downward flux from unsaturated to saturated zone</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_water_sat-zone_top__net_recharge_volume_flux</code></td>
 <td>Net recharge to saturated zone</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water_sat-zone_bottom__leakage_volume_flux</code></td>
 <td>Actual leakage from saturated store</td>
 <td>mm Δt⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>soil_water_sat-zone__depth</code></td>
-<td>Amount of water in the saturated store</td>
-<td>mm</td>
 </tr>
 <tr class="odd">
 <td><code>soil_water_sat-zone_top__depth</code></td>
 <td>Pseudo-water table depth (top of the saturated zone)</td>
 <td>mm</td>
-</tr>
-<tr class="even">
-<td><code>soil_surface__temperature</code></td>
-<td>Soil surface temperature, only when snow is modelled</td>
-<td>ᵒC</td>
 </tr>
 </tbody>
 </table>
@@ -1405,11 +1380,6 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land_surface_water~paddy__depth</code></td>
-<td>Water depth in paddy field</td>
-<td>mm</td>
-</tr>
-<tr class="even">
 <td><code>land~irrigated-paddy__gross_water_demand_volume_flux</code></td>
 <td>Irrigation (paddy) gross demand</td>
 <td>mm Δt⁻¹</td>
