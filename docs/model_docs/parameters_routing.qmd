@@ -31,7 +31,7 @@ td, th {
 | `lake~lower_location__count` | Index of lower lake (linked lakes) | - | 0 |
 | `lake_water__storage_curve_type_count` | Type of lake storage curve | - | - |
 | `lake_water__rating_curve_type_count` | Type of lake rating curve | - | - |
-| `lake_water_level__initial_elevation` | Water level of lake (used for initialization) | m | - |
+| `lake_water_surface__initial_elevation` | Water level of lake (used for initialization) | m | - |
 : {.striped .hover}
 
 #### States
@@ -146,12 +146,6 @@ td, th {
 : {.striped .hover}
 
 #### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
-: {.striped .hover}
-
-#### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |

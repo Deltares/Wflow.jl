@@ -34,14 +34,14 @@ td, th {
 ### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `snowpack~dry__leq-depth` | Snow storage | mm |
+| `snowpack~dry__leq-depth` | Liquid-water equivalent of dry snow | mm |
 | `snowpack~liquid__depth` | Liquid water content in the snow pack | mm |
 : {.striped .hover}
 
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `snowpack__liquid-equivalent_depth` | Total amount of water stored in snow pack (SWE) | mm |
+| `snowpack__leq_depth` | Liquid-water equivalent of snow pack (SWE) | mm |
 | `snowpack_meltwater__volume_flux` | Amount of snow melt |  mm Δt⁻¹ |
 | `snowpack_water__runoff_volume_flux` | Runoff from snowpack | mm Δt⁻¹ |
 : {.striped .hover}
@@ -50,7 +50,7 @@ td, th {
 ### Input
 | Standard Name | Description | Unit | Default |
 | ----- | ---- | -- | -- |
-| `glacier_ice__leq-volume` | Water stored within the glacier (used for initial glacier volume) | mm | 5500.0 |
+| `glacier_ice__initial_leq-depth` | Initial glacier liquid-water equivalent (cold state) | mm | 5500.0 |
 | `glacier_ice__melting_temperature_threshold` | Threshold temperature for glacier melt | ᵒC | 0.0 |
 | `glacier_ice__degree-day_coefficient` | Degree-day factor for melt from glacier | mm ᵒC⁻¹ Δt⁻¹ | 3.0 mm ᵒC⁻¹ day⁻¹  |
 | `glacier_firn_accumulation__snowpack~dry_leq-depth_fraction` | Fraction of the snowpack on top of the glacier converted into ice | Δt⁻¹ | 0.001  day⁻¹ |
@@ -59,13 +59,12 @@ td, th {
 ### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `glacier_ice__leq-volume` | Water stored within the glacier | mm |
+| `glacier_ice__leq-depth` | Glacier liquid-water equivalent | mm |
 : {.striped .hover}
 
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `glacier_ice__leq-volume` | Water stored within the glacier | mm |
 | `glacier_ice__melt_volume_flux` | Melt from the glacier | mm Δt⁻¹ |
 : {.striped .hover}
 
@@ -99,7 +98,6 @@ td, th {
 | Standard Name | Description | Unit |
 | ---- | --- | - |
 | `vegetation__leaf-area_index` | Leaf area index | m² m⁻² |
-| `vegetation_canopy_water__depth` | Canopy storage | mm |
 | `vegetation_canopy_water__stemflow_volume_flux` | Stemflow | mm Δt⁻¹ |
 | `vegetation_canopy_water__throughfall_volume_flux` | Throughfall | mm Δt⁻¹ |
 : {.striped .hover}
@@ -128,7 +126,7 @@ td, th {
 | `soil~compacted_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
 | `soil~non-compacted_surface_water__infiltration_capacity` | Soil infiltration capacity | mm Δt⁻¹ | 100.0 mm day⁻¹ |
 | `soil_water_sat-zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
-| `soil_layer_water__brooks-corey_epsilon_parameter` | Brooks-Corey power coefficient per soil layer | - | 10.0 |
+| `soil_layer_water__brooks-corey_exponent` | Brooks-Corey power coefficient per soil layer | - | 10.0 |
 | `land~water-covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
 | `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer | - | 1.0 |
 | `soil~compacted__area_fraction` | Fraction of compacted soil area | - | 0.01 |
@@ -161,15 +159,12 @@ td, th {
 | `soil_water_root-zone__volume_fraction` | Volumetric water content in root zone (including residual water content and saturated zone) | - |
 | `soil_water_root-zone__volume_percentage` | Volumetric water content in root zone (including residual water content and saturated zone) | % |
 | `soil_water_root-zone__depth` | Root water storage in unsaturated and saturated zone (excluding residual water content) | mm |
-| `soil_layer_water_unsat-zone__depth` |  Amount of water in the unsaturated store, per soil layer | mm |
 | `soil_water_unsat-zone__depth` | Amount of water in the unsaturated store | mm |
 | `soil_water_sat-zone_top__capillary_volume_flux` | Actual capillary rise | mm Δt⁻¹ |
 | `soil_water_sat-zone_top__recharge_volume_flux` | Downward flux from unsaturated to saturated zone | mm Δt⁻¹ |
 | `soil_water_sat-zone_top__net_recharge_volume_flux` | Net recharge to saturated zone | mm Δt⁻¹ |
 | `soil_water_sat-zone_bottom__leakage_volume_flux` | Actual leakage from saturated store | mm Δt⁻¹ |
-| `soil_water_sat-zone__depth` | Amount of water in the saturated store | mm |
 | `soil_water_sat-zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | mm |
-| `soil_surface__temperature` |  Soil surface temperature, only when snow is modelled | ᵒC |
 : {.striped .hover}
 
 ## Water demand
@@ -232,7 +227,6 @@ td, th {
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `land_surface_water~paddy__depth` | Water depth in paddy field | mm |
 | `land~irrigated-paddy__gross_water_demand_volume_flux` | Irrigation (paddy) gross demand | mm Δt⁻¹ |
 : {.striped .hover}
 

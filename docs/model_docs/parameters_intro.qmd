@@ -10,7 +10,9 @@ that can be exchanged (input and output) with standard names (subsection below) 
 + [Routing concepts](./parameters_routing.qmd)
 
 These tables include standard names, descriptions, units and default values (input
-parameters) for model parameters, states and variables.
+parameters) for model parameters, states and variables. Note that a state variable can also
+be specified as a model output variable but is listed only in the states table and not in in
+the output table.
 
 ## Standard names
 The standard names of model parameters, states and variables are based on [CSDMS Standard
@@ -29,11 +31,13 @@ TOML configuration file, but this is not considered as part of the public API, e
 land.interception.variables.canopy_storage = "canopystorage"
 ```
 
-Standard names that contain `instantaneous` in the `quantity` part of the standard name are
-valid for an internal time step and thus considered instantaneous compared to the model
-simulation time step. Standard names can contain a tilde that are used to distinguish nouns
-and adjectives in the `object` part of the standard name. These standard names should be
-quoted in the TOML configuration file, e.g.:
+Standard names that contain `instantaneous` in the `quantity` part of the standard name can
+be valid for an internal time step (for example for kinematic wave routing an internal time
+step is optional, with a time step equal to the model simulation time step the standard name
+nonetheless contains `instantaneous`) and thus considered instantaneous compared to the
+model simulation time step. Standard names can contain a tilde that are used to distinguish
+nouns and adjectives in the `object` part of the standard name. These standard names should
+be quoted in the TOML configuration file, e.g.:
 
 ```toml
 [input.static]
