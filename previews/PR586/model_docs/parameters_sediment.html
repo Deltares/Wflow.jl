@@ -313,10 +313,15 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#input" id="toc-input" class="nav-link" data-scroll-target="#input">Input</a></li>
   <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output">Output</a></li>
   </ul></li>
-  <li><a href="#soil-erosion" id="toc-soil-erosion" class="nav-link" data-scroll-target="#soil-erosion">Soil erosion</a>
+  <li><a href="#overland-flow-erosion" id="toc-overland-flow-erosion" class="nav-link" data-scroll-target="#overland-flow-erosion">Overland flow erosion</a>
   <ul class="collapse">
   <li><a href="#input-1" id="toc-input-1" class="nav-link" data-scroll-target="#input-1">Input</a></li>
   <li><a href="#output-1" id="toc-output-1" class="nav-link" data-scroll-target="#output-1">Output</a></li>
+  </ul></li>
+  <li><a href="#soil-erosion" id="toc-soil-erosion" class="nav-link" data-scroll-target="#soil-erosion">Soil erosion</a>
+  <ul class="collapse">
+  <li><a href="#input-2" id="toc-input-2" class="nav-link" data-scroll-target="#input-2">Input</a></li>
+  <li><a href="#output-2" id="toc-output-2" class="nav-link" data-scroll-target="#output-2">Output</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -520,10 +525,76 @@ td, th {
 </table>
 </section>
 </section>
-<section id="soil-erosion" class="level2">
-<h2 class="anchored" data-anchor-id="soil-erosion">Soil erosion</h2>
+<section id="overland-flow-erosion" class="level2">
+<h2 class="anchored" data-anchor-id="overland-flow-erosion">Overland flow erosion</h2>
 <section id="input-1" class="level3">
 <h3 class="anchored" data-anchor-id="input-1">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_erosion__answers_overland_flow_factor</code></td>
+<td>Answers overland flow factor</td>
+<td>-</td>
+<td>0.9</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion__usle_k_factor</code></td>
+<td>USLE soil erodibility factor</td>
+<td>-</td>
+<td>0.1</td>
+</tr>
+<tr class="odd">
+<td><code>soil_erosion__usle_c_factor</code></td>
+<td>USLE crop management factor</td>
+<td>-</td>
+<td>0.01</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-1" class="level3">
+<h3 class="anchored" data-anchor-id="output-1">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_erosion~overland_flow__mass_flow_rate</code></td>
+<td>Total soil erosion from overland flow</td>
+<td>ton Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="soil-erosion" class="level2">
+<h2 class="anchored" data-anchor-id="soil-erosion">Soil erosion</h2>
+<section id="input-2" class="level3">
+<h3 class="anchored" data-anchor-id="input-2">Input</h3>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -573,8 +644,8 @@ td, th {
 </tbody>
 </table>
 </section>
-<section id="output-1" class="level3">
-<h3 class="anchored" data-anchor-id="output-1">Output</h3>
+<section id="output-2" class="level3">
+<h3 class="anchored" data-anchor-id="output-2">Output</h3>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">

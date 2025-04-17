@@ -362,7 +362,8 @@ window.Quarto = {
   </ul></li>
   <li><a href="#sediment" id="toc-sediment" class="nav-link" data-scroll-target="#sediment">Sediment</a>
   <ul class="collapse">
-  <li><a href="#transport-capacity" id="toc-transport-capacity" class="nav-link" data-scroll-target="#transport-capacity">Transport capacity</a></li>
+  <li><a href="#transport-capacity-overland-flow" id="toc-transport-capacity-overland-flow" class="nav-link" data-scroll-target="#transport-capacity-overland-flow">Transport capacity Overland flow</a></li>
+  <li><a href="#transport-capacity-river" id="toc-transport-capacity-river" class="nav-link" data-scroll-target="#transport-capacity-river">Transport capacity River</a></li>
   <li><a href="#overland-flow-transport" id="toc-overland-flow-transport" class="nav-link" data-scroll-target="#overland-flow-transport">Overland flow transport</a></li>
   <li><a href="#river-erosion" id="toc-river-erosion" class="nav-link" data-scroll-target="#river-erosion">River erosion</a></li>
   <li><a href="#river-transport" id="toc-river-transport" class="nav-link" data-scroll-target="#river-transport">River transport</a></li>
@@ -1580,8 +1581,8 @@ td, th {
 </section>
 <section id="sediment" class="level2">
 <h2 class="anchored" data-anchor-id="sediment">Sediment</h2>
-<section id="transport-capacity" class="level3">
-<h3 class="anchored" data-anchor-id="transport-capacity">Transport capacity</h3>
+<section id="transport-capacity-overland-flow" class="level3">
+<h3 class="anchored" data-anchor-id="transport-capacity-overland-flow">Transport capacity Overland flow</h3>
 <section id="input-9" class="level4">
 <h4 class="anchored" data-anchor-id="input-9">Input</h4>
 <table class="table-striped table-hover caption-top table">
@@ -1613,17 +1614,71 @@ td, th {
 <td>0.1</td>
 </tr>
 <tr class="odd">
+<td><code>clay__d50_diameter</code></td>
+<td>Clay mean diameter</td>
+<td>μm</td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td><code>silt__d50_diameter</code></td>
+<td>Silt mean diameter</td>
+<td>μm</td>
+<td>10.0</td>
+</tr>
+<tr class="odd">
+<td><code>sand__d50_diameter</code></td>
+<td>Sand mean diameter</td>
+<td>μm</td>
+<td>200.0</td>
+</tr>
+<tr class="even">
+<td><code>sediment_aggregates~small__d50_diameter</code></td>
+<td>Small aggregates mean diameter</td>
+<td>μm</td>
+<td>30.0</td>
+</tr>
+<tr class="odd">
+<td><code>sediment_aggregates~large__d50_diameter</code></td>
+<td>Large aggregates mean diameter</td>
+<td>μm</td>
+<td>500.0</td>
+</tr>
+<tr class="even">
 <td><code>land_surface_water_sediment__govers_transport_capacity_coefficient</code></td>
 <td>Govers transport capacity coefficient</td>
 <td>-</td>
 <td>0.000505</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>land_surface_water_sediment__govers_transport_capacity_exponent</code></td>
 <td>Govers transport capacity exponent</td>
 <td>-</td>
 <td>4.27</td>
 </tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport-capacity-river" class="level3">
+<h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity River</h3>
+<section id="input-10" class="level4">
+<h4 class="anchored" data-anchor-id="input-10">Input</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
 <tr class="odd">
 <td><code>river_sediment__particle_density</code></td>
 <td>Particle density</td>
@@ -1648,63 +1703,17 @@ td, th {
 <td>-</td>
 <td>-</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code></td>
-<td>Kodatie transport capacity coefficient a</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code></td>
-<td>Kodatie transport capacity coefficient b</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td><code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code></td>
-<td>Kodatie transport capacity coefficient c</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code></td>
-<td>Kodatie transport capacity coefficient d</td>
-<td>-</td>
-<td>-</td>
-</tr>
 </tbody>
 </table>
+<div class="line-block"><code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code> | Kodatie transport capacity coefficient a | - | - |<br>
+<code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code> | Kodatie transport capacity coefficient b | - | - |<br>
+<code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code> | Kodatie transport capacity coefficient c | - | - |<br>
+<code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code> | Kodatie transport capacity coefficient d | - | - |</div>
+<p>: {.striped .hover}</p>
 </section>
 </section>
 <section id="overland-flow-transport" class="level3">
 <h3 class="anchored" data-anchor-id="overland-flow-transport">Overland flow transport</h3>
-<section id="input-10" class="level4">
-<h4 class="anchored" data-anchor-id="input-10">Input</h4>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>soil_erosion__answers_overland_flow_factor</code></td>
-<td>Answers overland flow factor</td>
-<td>-</td>
-<td>0.9</td>
-</tr>
-</tbody>
-</table>
-</section>
 <section id="output-7" class="level4">
 <h4 class="anchored" data-anchor-id="output-7">Output</h4>
 <table class="table-striped table-hover caption-top table">
@@ -1722,51 +1731,46 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>soil_erosion~overland_flow__mass_flow_rate</code></td>
-<td>Total soil erosion from overland flow</td>
-<td>ton Δt⁻¹</td>
-</tr>
-<tr class="even">
 <td><code>land_surface_water_sediment_transport_capacity__mass_flow_rate</code></td>
 <td>Total sediment transport capacity</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>land_surface_water_clay_transport_capacity__mass_flow_rate</code></td>
 <td>Clay transport capacity</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>land_surface_water_sediment~to-river__mass_flow_rate</code></td>
 <td>Total sediment flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>land_surface_water_clay~to-river__mass_flow_rate</code></td>
 <td>Clay flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>land_surface_water_silt~to-river__mass_flow_rate</code></td>
 <td>Silt flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>land_surface_water_sand~to-river__mass_flow_rate</code></td>
 <td>Sand flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>land_surface_water_aggregates~small~to-river__mass_flow_rate</code></td>
 <td>Small aggregates flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>land_surface_water_aggregates~large~to-river__mass_flow_rate</code></td>
 <td>Large aggregates flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>land_surface_water_sediment__mass_flow_rate</code></td>
 <td>Total sediment flux</td>
 <td>ton Δt⁻¹</td>
@@ -1800,6 +1804,108 @@ td, th {
 <td>Mean diameter in the river bed/bank</td>
 <td>mm</td>
 <td>0.1</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="river-transport" class="level3">
+<h3 class="anchored" data-anchor-id="river-transport">River transport</h3>
+<section id="input-12" class="level4">
+<h4 class="anchored" data-anchor-id="input-12">Input</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>reservoir_surface__area</code></td>
+<td>Reservoir surface area</td>
+<td>m²</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>lake_surface__area</code></td>
+<td>Lake surface area</td>
+<td>m²</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>reservoir_sediment~bedload__trapping_efficiency_coefficient</code></td>
+<td>Reservoir sediment trapping efficiency</td>
+<td>-</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td><code>river_bottom-and-bank_clay__mass_fraction</code></td>
+<td>River bed/bank content clay</td>
+<td>-</td>
+<td>0.15</td>
+</tr>
+<tr class="odd">
+<td><code>river_bottom-and-bank_silt__mass_fraction</code></td>
+<td>River bed/bank content silt</td>
+<td>-</td>
+<td>0.65</td>
+</tr>
+<tr class="even">
+<td><code>river_bottom-and-bank_sand__mass_fraction</code></td>
+<td>River bed/bank content sand</td>
+<td>-</td>
+<td>0.15</td>
+</tr>
+<tr class="odd">
+<td><code>river_bottom-and-bank_gravel__mass_fraction</code></td>
+<td>River bed/bank content gravel</td>
+<td>-</td>
+<td>0.05</td>
+</tr>
+<tr class="even">
+<td><code>clay__d50_diameter</code></td>
+<td>Clay mean diameter</td>
+<td>µm</td>
+<td>2.0</td>
+</tr>
+<tr class="odd">
+<td><code>silt__d50_diameter</code></td>
+<td>Silt mean diameter</td>
+<td>µm</td>
+<td>10.0</td>
+</tr>
+<tr class="even">
+<td><code>sand__d50_diameter</code></td>
+<td>Sand mean diameter</td>
+<td>µm</td>
+<td>200.0</td>
+</tr>
+<tr class="odd">
+<td><code>sediment_aggregates~small__d50_diameter</code></td>
+<td>Small aggregates mean diameter</td>
+<td>µm</td>
+<td>30.0</td>
+</tr>
+<tr class="even">
+<td><code>sediment_aggregates~large__d50_diameter</code></td>
+<td>Large aggregates mean diameter</td>
+<td>µm</td>
+<td>500.0</td>
+</tr>
+<tr class="odd">
+<td><code>gravel__d50_diameter</code></td>
+<td>Gravel mean diameter</td>
+<td>µm</td>
+<td>2000.0</td>
 </tr>
 </tbody>
 </table>
@@ -1953,108 +2059,6 @@ td, th {
 <td><code>river_water_sediment_deposition__mass</code></td>
 <td>Total sediment deposition</td>
 <td>ton Δt⁻¹</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="river-transport" class="level3">
-<h3 class="anchored" data-anchor-id="river-transport">River transport</h3>
-<section id="input-12" class="level4">
-<h4 class="anchored" data-anchor-id="input-12">Input</h4>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>reservoir_surface__area</code></td>
-<td>Reservoir surface area</td>
-<td>m²</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>lake_surface__area</code></td>
-<td>Lake surface area</td>
-<td>m²</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td><code>reservoir_sediment~bedload__trapping_efficiency_coefficient</code></td>
-<td>Reservoir sediment trapping efficiency</td>
-<td>-</td>
-<td>1.0</td>
-</tr>
-<tr class="even">
-<td><code>river_bottom-and-bank_clay__mass_fraction</code></td>
-<td>River bed/bank content clay</td>
-<td>-</td>
-<td>0.15</td>
-</tr>
-<tr class="odd">
-<td><code>river_bottom-and-bank_silt__mass_fraction</code></td>
-<td>River bed/bank content silt</td>
-<td>-</td>
-<td>0.65</td>
-</tr>
-<tr class="even">
-<td><code>river_bottom-and-bank_sand__mass_fraction</code></td>
-<td>River bed/bank content sand</td>
-<td>-</td>
-<td>0.15</td>
-</tr>
-<tr class="odd">
-<td><code>river_bottom-and-bank_gravel__mass_fraction</code></td>
-<td>River bed/bank content gravel</td>
-<td>-</td>
-<td>0.05</td>
-</tr>
-<tr class="even">
-<td><code>clay__d50_diameter</code></td>
-<td>Clay mean diameter</td>
-<td>µm</td>
-<td>2.0</td>
-</tr>
-<tr class="odd">
-<td><code>silt__d50_diameter</code></td>
-<td>Silt mean diameter</td>
-<td>µm</td>
-<td>10.0</td>
-</tr>
-<tr class="even">
-<td><code>sand__d50_diameter</code></td>
-<td>Sand mean diameter</td>
-<td>µm</td>
-<td>200.0</td>
-</tr>
-<tr class="odd">
-<td><code>sediment_aggregates~small__d50_diameter</code></td>
-<td>Small aggregates mean diameter</td>
-<td>µm</td>
-<td>30.0</td>
-</tr>
-<tr class="even">
-<td><code>sediment_aggregates~large__d50_diameter</code></td>
-<td>Large aggregates mean diameter</td>
-<td>µm</td>
-<td>500.0</td>
-</tr>
-<tr class="odd">
-<td><code>gravel__d50_diameter</code></td>
-<td>Gravel mean diameter</td>
-<td>µm</td>
-<td>2000.0</td>
 </tr>
 </tbody>
 </table>
