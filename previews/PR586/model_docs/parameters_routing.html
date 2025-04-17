@@ -146,10 +146,6 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
@@ -784,6 +780,12 @@ td, th {
 <td>m m⁻¹</td>
 <td>-</td>
 </tr>
+<tr class="even">
+<td><code>river_water_inflow~external__volume_flow_rate</code></td>
+<td>External inflow into the river (negative for abstractions)</td>
+<td>m³ s⁻¹</td>
+<td>-</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -846,6 +848,11 @@ td, th {
 <td><code>river_water__volume</code></td>
 <td>River water volume (average over timestep)</td>
 <td>m³</td>
+</tr>
+<tr class="even">
+<td><code>river_water_inflow~lateral__volume_flow_rate</code></td>
+<td>Lateral inflow into the river</td>
+<td>m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -1004,6 +1011,40 @@ td, th {
 </tbody>
 </table>
 </section>
+<section id="output-4" class="level4">
+<h4 class="anchored" data-anchor-id="output-4">Output</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>subsurface_water_sat-zone_top__depth</code></td>
+<td>Pseudo-water table depth (top of the saturated zone)</td>
+<td>m</td>
+</tr>
+<tr class="even">
+<td><code>subsurface_water__exfiltration_volume_flux</code></td>
+<td>Exfiltration (groundwater above surface level, saturated excess conditions)</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>subsurface_water~to-river__volume_flow_rate</code></td>
+<td>Part of subsurface flow that flows to the river</td>
+<td>m³ day⁻¹</td>
+</tr>
+</tbody>
+</table>
+</section>
 </section>
 </section>
 <section id="local-inertial" class="level2">
@@ -1070,6 +1111,12 @@ td, th {
 <td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
 <td>0.0036</td>
 </tr>
+<tr class="even">
+<td><code>river_water_inflow~external__volume_flow_rate</code></td>
+<td>External inflow into the river (negative for abstractions)</td>
+<td>m³ s⁻¹</td>
+<td>-</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -1102,8 +1149,8 @@ td, th {
 </tbody>
 </table>
 </section>
-<section id="output-4" class="level4">
-<h4 class="anchored" data-anchor-id="output-4">Output</h4>
+<section id="output-5" class="level4">
+<h4 class="anchored" data-anchor-id="output-5">Output</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -1201,8 +1248,8 @@ td, th {
 </tbody>
 </table>
 </section>
-<section id="output-5" class="level4">
-<h4 class="anchored" data-anchor-id="output-5">Output</h4>
+<section id="output-6" class="level4">
+<h4 class="anchored" data-anchor-id="output-6">Output</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -1300,8 +1347,8 @@ td, th {
 </tbody>
 </table>
 </section>
-<section id="output-6" class="level4">
-<h4 class="anchored" data-anchor-id="output-6">Output</h4>
+<section id="output-7" class="level4">
+<h4 class="anchored" data-anchor-id="output-7">Output</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -1431,6 +1478,12 @@ td, th {
 <td><code>river_bottom__elevation</code></td>
 <td>River bottom elevation</td>
 <td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water_inflow~external__volume_flow_rate</code></td>
+<td>External inflow into the river (negative for abstractions)</td>
+<td>m³ s⁻¹</td>
 <td>-</td>
 </tr>
 </tbody>
@@ -1714,8 +1767,8 @@ td, th {
 </section>
 <section id="overland-flow-transport" class="level3">
 <h3 class="anchored" data-anchor-id="overland-flow-transport">Overland flow transport</h3>
-<section id="output-7" class="level4">
-<h4 class="anchored" data-anchor-id="output-7">Output</h4>
+<section id="output-8" class="level4">
+<h4 class="anchored" data-anchor-id="output-8">Output</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -2019,8 +2072,8 @@ td, th {
 </tbody>
 </table>
 </section>
-<section id="output-8" class="level4">
-<h4 class="anchored" data-anchor-id="output-8">Output</h4>
+<section id="output-9" class="level4">
+<h4 class="anchored" data-anchor-id="output-9">Output</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">

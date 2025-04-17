@@ -146,10 +146,6 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="./model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
@@ -308,6 +304,7 @@ window.Quarto = {
 <li>Wflow ZMQ server: allow JSON reading and writing of <code>NaN</code> and <code>Inf</code> values to avoid a JSON spec error. For example, during initialization of a wflow model, some (diagnostic) model variables are initialized with <code>NaN</code> values.</li>
 <li>Limit flux from <code>River</code> boundary of <code>GroundwaterFlow</code> to unconfined aquifer based on available river storage (from river flow routing).</li>
 <li>Fixed computation of flow width in diagonal flow direction for model type <code>sediment</code> and fixed the computation of the remaining surface flow width (kinematic wave overland flow) for river cells in the diagonal flow direction. For both cases the width should be based on land area and flow length (area conservative).</li>
+<li>Limit external negative inflow for local inertial routing (maximum of 80% of river volume).</li>
 </ul>
 </section>
 <section id="changed" class="level3">

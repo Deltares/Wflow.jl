@@ -180,10 +180,6 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
@@ -547,7 +543,12 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When using cyclic data, three different options are supported: - 12 (monthly) - 365 (daily, where Feb.&nbsp;29 is not present, so the value for Feb.&nbsp;28 is taken. Dec.&nbsp;31 is represented by DOY 365) - 366 (where Feb.&nbsp;29 represents DOY 60, and Dec.&nbsp;31 DOY 366)</p>
+<p>When using cyclic data, three different options are supported:</p>
+<ul>
+<li>12 (monthly)</li>
+<li>365 (daily, where Feb.&nbsp;29 is not present, so the value for Feb.&nbsp;28 is taken. Dec.&nbsp;31 is represented by DOY 365)</li>
+<li>366 (where Feb.&nbsp;29 represents DOY 60, and Dec.&nbsp;31 DOY 366)</li>
+</ul>
 <p>In contrast to the right-labelling of the forcing data (see below), the DOY/month of the current time step is used. For example: to simulate 2023-06-14 00:00:00 (with a daily time step), the DOY value at position 6 (when 12 values are provided), 165 (when 365 values are provided) or 166 (when 366 values are provided).</p>
 </div>
 </div>
