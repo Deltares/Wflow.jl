@@ -47,8 +47,6 @@ website:
         file: getting_started/index.qmd
       - text: "User guide"
         file: user_guide/index.qmd
-      - text: "Examples"
-        file: examples/index.qmd
       - text: "Model documentation"
         file: model_docs/index.qmd
       - text: "Developments"
