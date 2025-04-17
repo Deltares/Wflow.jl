@@ -114,13 +114,19 @@ land_surface_water__instantaneous_depth = "h_land"
 The `input` section of the TOML file contains information about the input forcing and model
 parameters files (in netCDF format). `input.forcing` lists the mapping of forcing parameter
 standard names to the external netCDF variable names. `input.static` lists the mapping of
-static parameter standard names to the external netCDF variable names. It is possible to
-provide cyclic parameters to the model (minimum time step of 1 day). In the example below,
-the model parameter standard name `vegetation__leaf-area_index` is mapped to the external
-netCDF variable "LAI". Cyclic time inputs of parameters can be different (e.g., daily or
-monthly). The `time` dimension name of these cylic input parameters in the model parameter
-netCDF file should start with "time". If a model parameter is not mapped, a default value
-will be used, if available.
+static parameter standard names to the external netCDF variable names. In `input.cyclic`, 
+it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In 
+the example below, the model parameter standard name `vegetation__leaf-area_index` is mapped 
+to the external netCDF variable "LAI". Cyclic time inputs of parameters can be different 
+(e.g., daily or monthly). The `time` dimension name of these cylic input parameters in the 
+model parameter netCDF file should start with "time". If a model parameter is not mapped, 
+a default value will be used, if available.
+
+Forcing parameters should be available in `input.path_forcing` file and both static and
+cyclic parameters in `input.path_static` netcdf file. The main `input` section also lists
+variables describing the different modelling domains or masks (for example subcatchment,
+river, reservoir or lake) as well as the flow directions. Additional locations to save outputs
+for should also be listed here (eg gauges).
 
 ```toml
 [input]
@@ -128,12 +134,14 @@ will be used, if available.
 path_forcing = "forcing-moselle.nc"
 path_static = "staticmaps-moselle.nc"
 
-# these are not directly part of the model
+# Flow direction and modelling domains
 local_drain_direction = "wflow_ldd"
 river_location__mask = "wflow_river"
 reservoir_area__count = "wflow_reservoirareas"
 reservoir_location__count = "wflow_reservoirlocs"
 subcatchment_location__count = "wflow_subcatch"
+
+# Ouput locations: these are not directly part of the model
 river_gauge = "wflow_gauges_grdc"
 
 # Map forcing parameter standard names that vary over time to variable names in the forcing netCDF file
@@ -236,7 +244,7 @@ In addition to gridded data, scalar data can also be written to a netCDF file. B
 example that shows how to write scalar data to the file "output\_scalar\_moselle.nc". For
 each netCDF variable, a `name` (external variable name) and a `parameter` (model parameter
 standard name) are required. A `reducer` can be specified to apply to the model output. See
-more details in the [Output CSV section](#output-csv-section) section. If a `map` is
+more details in the [Output CSV section](#output-csv-section) section. If a `map` (from the `input` section) is
 provided to extract data for specific locations (e.g. `river_gauge`) or areas (e.g.
 `subcatchment_location__count`), the netCDF location names are extracted from these maps.
 For a specific location (grid cell) a `location` is required. For layered model parameters
@@ -252,6 +260,9 @@ Adapter of Delft-FEWS can directly ingest data from netCDF files. For more infor
 [Run from Delft-FEWS](./fews.qmd).
 
 ```toml
+[input]
+river_gauge = "wflow_gauges_grdc"
+
 [output.netcdf_scalar]
 path = "output_scalar_moselle.nc"    # Location of the results
 
@@ -305,7 +316,7 @@ output, with the following available reducers:
 
 with `only` as the default. To extract data for a specific location (grid cell), the `index`
 of the vector, the coordinates `coordinate.x` and `coordinate.y`, or the x and y indices of
-the 2D array (`index.x` and `index.y`) can be provided. Additionally, a `map` can be
+the 2D array (`index.x` and `index.y`) can be provided. Additionally, a `map` (from the `input` section) can be
 provided to extract data for certain locations (e.g. `river_gauge`) or areas (e.g.
 `subcatchment_location__count`). In this case, a single entry can lead to multiple columns
 in the CSV file, which will be of the form `header_id`, e.g. `Q_20`, for a gauge with
@@ -317,6 +328,12 @@ The double brackets in `[[output.csv.column]]` follow TOML syntax, indicating th
 part of a list. You can specify as many entries as you want.
 
 ```toml
+[input]
+# Modelling domains
+subcatchment_location__count = "wflow_subcatch"
+# Ouput locations: these are not directly part of the model
+river_gauge = "wflow_gauges_grdc"
+
 [output.csv]
 path = "output_moselle.csv"
 

@@ -286,18 +286,30 @@ td, th {
 : {.striped .hover}
 
 ## Sediment
-### Transport capacity
+### Transport capacity Overland flow
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land_surface_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
 | `land_surface_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
+| `clay__d50_diameter` | Clay mean diameter | μm | 2.0 |
+| `silt__d50_diameter` | Silt mean diameter | μm | 10.0 |
+| `sand__d50_diameter` | Sand mean diameter | μm | 200.0 |
+| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | μm | 30.0 |
+| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | μm | 500.0 |
 | `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
 | `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
+: {.striped .hover}
+
+### Transport capacity River
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
 | `river_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
 | `river_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
 | `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
 | `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
+
 | `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
 | `river_water_sediment__kodatie_transport_capacity_b-coefficient` | Kodatie transport capacity coefficient b | - | - |
 | `river_water_sediment__kodatie_transport_capacity_c-coefficient` | Kodatie transport capacity coefficient c | - | - |
@@ -305,16 +317,9 @@ td, th {
 : {.striped .hover}
 
 ### Overland flow transport
-#### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `soil_erosion__answers_overland_flow_factor` | Answers overland flow factor | - | 0.9
-: {.striped .hover}
-
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `soil_erosion~overland_flow__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
 | `land_surface_water_sediment_transport_capacity__mass_flow_rate` | Total sediment transport capacity | ton Δt⁻¹ |
 | `land_surface_water_clay_transport_capacity__mass_flow_rate` | Clay transport capacity | ton Δt⁻¹ |
 | `land_surface_water_sediment~to-river__mass_flow_rate` | Total sediment flux flowing into the river | ton Δt⁻¹ |
@@ -331,6 +336,25 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `river_bottom-and-bank_sediment__d50_diameter` | Mean diameter in the river bed/bank | mm | 0.1
+: {.striped .hover}
+
+### River transport
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `reservoir_surface__area` | Reservoir surface area | m² | - |
+| `lake_surface__area` | Lake surface area | m² | - |
+| `reservoir_sediment~bedload__trapping_efficiency_coefficient` | Reservoir sediment trapping efficiency | - | 1.0 |
+| `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
+| `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
+| `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
+| `river_bottom-and-bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
+| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
+| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
+| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
+| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
+| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
+| `gravel__d50_diameter` | Gravel mean diameter | µm | 2000.0 |
 : {.striped .hover}
 
 #### States
@@ -364,23 +388,4 @@ td, th {
 | `river_water_sediment__mass_concentration` | Total sediment concentration in the river | g m⁻³ |
 | `river_water_sediment_erosion__mass` | Total sediment erosion (from store + direct river bed/bank) | ton Δt⁻¹ |
 | `river_water_sediment_deposition__mass` | Total sediment deposition | ton Δt⁻¹ |
-: {.striped .hover}
-
-### River transport
-#### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `reservoir_surface__area` | Reservoir surface area | m² | - |
-| `lake_surface__area` | Lake surface area | m² | - |
-| `reservoir_sediment~bedload__trapping_efficiency_coefficient` | Reservoir sediment trapping efficiency | - | 1.0 |
-| `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
-| `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
-| `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
-| `river_bottom-and-bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
-| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
-| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
-| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
-| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
-| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
-| `gravel__d50_diameter` | Gravel mean diameter | µm | 2000.0 |
 : {.striped .hover}

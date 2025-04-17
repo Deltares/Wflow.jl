@@ -47,6 +47,21 @@ td, th {
 | `soil_erosion~rainfall__mass_flow_rate` | Total soil erosion from rainfall (splash) | ton Δt⁻¹ |
 : {.striped .hover}
 
+## Overland flow erosion
+### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `soil_erosion__answers_overland_flow_factor` | Answers overland flow factor | - | 0.9
+| `soil_erosion__usle_k_factor` | USLE soil erodibility factor | - | 0.1 |
+| `soil_erosion__usle_c_factor` | USLE crop management factor | - | 0.01 |
+: {.striped .hover}
+
+### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `soil_erosion~overland_flow__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
+: {.striped .hover}
+
 ## Soil erosion
 ### Input
 | Standard Name | Description | Unit | Default |
