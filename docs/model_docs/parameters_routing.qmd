@@ -96,6 +96,7 @@ td, th {
 | `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.036 |
 | `river_bank_water__depth` | Bankfull river depth | m | 1.0 |
 | `river__slope` | River slope | m m⁻¹ | - |
+| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### States
@@ -111,6 +112,7 @@ td, th {
 | `river_water__volume_flow_rate` | River discharge (average over timestep) | m³ s⁻¹ |
 | `river_water__depth` | River water depth (average over timestep) | m |
 | `river_water__volume` | River water volume (average over timestep) | m³ |
+| `river_water_inflow~lateral__volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
 : {.striped .hover}
 
 ### Overland flow
@@ -151,6 +153,14 @@ td, th {
 | `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
 : {.striped .hover}
 
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `subsurface_water_sat-zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | m |
+| `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | mm Δt⁻¹ |
+| `subsurface_water~to-river__volume_flow_rate` | Part of subsurface flow that flows to the river | m³ day⁻¹ |
+: {.striped .hover}
+
 ## Local inertial
 ### River flow
 #### Input
@@ -163,6 +173,7 @@ td, th {
 | `river_bank_water__elevation` | Bankfull elevation of the river | m | - |
 | `river_bank_water__depth` | Bankfull depth of the river | m | - |
 | `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.0036 |
+| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### States
@@ -242,12 +253,13 @@ td, th {
 : {.striped .hover}
 
 ### River boundary
-#### Input {#input-gwf-river} 
+#### Input {#input-gwf-river}
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `river_water__infiltration_conductance` | River bed infiltration conductance | m² day⁻¹ | - |
 | `river_water__exfiltration_conductance` | River bed exfiltration conductance | m² day⁻¹ | - |
 | `river_bottom__elevation` | River bottom elevation | m | - |
+| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### Output {#output-gwf-river}
@@ -257,7 +269,7 @@ td, th {
 : {.striped .hover}
 
 ### Drainage boundary
-#### Input {#input-gwf-drainage} 
+#### Input {#input-gwf-drainage}
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land_drain__elevation` | Drain elevation | m | - |
