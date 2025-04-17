@@ -81,6 +81,9 @@ min_streamorder_river = 5             # minimum stream order to delineate subbas
 min_streamorder_land = 4              # minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
 ```
 
+A complete overview of the model settings for the different model types is available
+[here](/model_docs/model_settings.qmd).
+
 ## State options
 The `state` section in the TOML file provides information about the location of input and
 output states of the model. This section is mostly relevant if the model needs to start with
