@@ -57,6 +57,7 @@ models](../getting_started/download_example_models.qmd) on how to use this funct
 
 ::: callout-important
 When using cyclic data, three different options are supported:
+
 - 12 (monthly)
 - 365 (daily, where Feb. 29 is not present, so the value for Feb. 28 is taken. Dec. 31 is represented by DOY 365)
 - 366 (where Feb. 29 represents DOY 60, and Dec. 31 DOY 366)
