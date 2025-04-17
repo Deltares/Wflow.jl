@@ -16,18 +16,29 @@
     "href": "user_guide/toml_file.html",
     "title": "Simulation settings",
     "section": "",
-    "text": "All model configuration and settings are passed through the .toml file, which contains all relevant settings, information about the model configuration, simulation period, input files, and parameters. The settings are provided in a TOML file. The settings file is structured in several sections, which are explained below. The file paths provided in this file are relative to the location of the TOML file, or to dir_input and dir_output if they are specified.",
+    "text": "All model configuration and settings are passed through the .toml file, which contains all relevant settings, information about the model configuration, simulation period, input files, and parameters. The settings are provided in a TOML file. The settings file is structured in several sections, which are explained below.",
     "crumbs": [
       "User guide",
       "Simulation settings"
     ]
   },
   {
-    "objectID": "user_guide/toml_file.html#general-time-info",
-    "href": "user_guide/toml_file.html#general-time-info",
+    "objectID": "user_guide/toml_file.html#general",
+    "href": "user_guide/toml_file.html#general",
     "title": "Simulation settings",
-    "section": "General time info",
-    "text": "General time info\nTime information is optional. When omitted, wflow will perform computations for each timestamp in the forcing netCDF file, except for the first forcing timestamp, which is considered equal to the initial conditions of the wflow model (state time). If you wish to calculate a subset of this time range, or a different timestep, you can specify a starttime, endtime and timestepsecs. The starttime is defined as the model state time. In the TOML file settings below, the starttime is 2000-01-01T00:00:00 (state time) and the first update (and output) of the wflow model is at 2000-01-02T00:00:00. The time_units optional information is used by the writer of the model, for model output in netCDF format. The calendar option allows you to calculate in one of the different CF conventions calendars provided by the CFTime.jl package, such as \"360_day\". This is useful if you want to calculate climate scenarios which are sometimes provided in these alternative calendars.\n[time]                                          # optional entry\ncalendar = \"standard\"                           # optional, this is the default value\nstarttime = 2000-01-01T00:00:00                 # optional, default from forcing netCDF\nendtime = 2000-02-01T00:00:00                   # optional, default from forcing netCDF\ntime_units = \"days since 1900-01-01 00:00:00\"   # optional, this is the default value\ntimestepsecs = 86400                            # optional, default from forcing netCDF\ndir_input = \"data/input\"                        # optional, default is the path of the TOML\ndir_output = \"data/output\"                      # optional, default is the path of the TOML",
+    "section": "General",
+    "text": "General\nThe file paths provided in this file are relative to the location of the TOML file, or to dir_input and dir_output if they are specified. To indicate that a wflow model runs from Delft-FEWS, the fews_run setting needs to be set at true.\ndir_input = \"data/input\"      # optional, default is the path of the TOML\ndir_output = \"data/output\"    # optional, default is the path of the TOML\nfews_run = false              # optional, default value is false",
+    "crumbs": [
+      "User guide",
+      "Simulation settings"
+    ]
+  },
+  {
+    "objectID": "user_guide/toml_file.html#time-info",
+    "href": "user_guide/toml_file.html#time-info",
+    "title": "Simulation settings",
+    "section": "Time info",
+    "text": "Time info\nTime information is optional. When omitted, wflow will perform computations for each timestamp in the forcing netCDF file, except for the first forcing timestamp, which is considered equal to the initial conditions of the wflow model (state time). If you wish to calculate a subset of this time range, or a different timestep, you can specify a starttime, endtime and timestepsecs. The starttime is defined as the model state time. In the TOML file settings below, the starttime is 2000-01-01T00:00:00 (state time) and the first update (and output) of the wflow model is at 2000-01-02T00:00:00. The time_units optional information is used by the writer of the model, for model output in netCDF format. The calendar option allows you to calculate in one of the different CF conventions calendars provided by the CFTime.jl package, such as \"360_day\". This is useful if you want to calculate climate scenarios which are sometimes provided in these alternative calendars.\n[time]                                          # optional entry\ncalendar = \"standard\"                           # optional, this is the default value\nstarttime = 2000-01-01T00:00:00                 # optional, default from forcing netCDF\nendtime = 2000-02-01T00:00:00                   # optional, default from forcing netCDF\ntime_units = \"days since 1900-01-01 00:00:00\"   # optional, this is the default value\ntimestepsecs = 86400                            # optional, default from forcing netCDF",
     "crumbs": [
       "User guide",
       "Simulation settings"
@@ -38,7 +49,7 @@
     "href": "user_guide/toml_file.html#logging",
     "title": "Simulation settings",
     "section": "Logging",
-    "text": "Logging\nWflow prints logging messages at various levels such as debug, info, and error. These messages are sent to both the terminal and a log file. Note that logging to a file is only part of the Wflow.run(tomlpath::AbstractString) method. If you want to debug an issue, it can be helpful to set loglevel = \"debug\" in the TOML. To avoid flooding the screen, debug messages are only sent to the log file. The following settings will affect the logging:\n[logging]               # optional entry\nsilent = false          # optional, default is \"false\"\nloglevel = \"debug\"      # optional, default is \"info\"\npath_log = \"log.txt\"    # optional, default is \"log.txt\"\nfews_run = false        # optional, default value is false\nsilent avoids logging to the terminal, and only writes to the log file. loglevel controls which levels are filtered out; for instance, the default setting \"info\" does not print any debug-level messages. Note that for finer control, you can also pass an integer log level. For details, see Julia’s Logging documentation. path_log sets the desired output path for the log file. For information on fews_run, see Run from Delft-FEWS.",
+    "text": "Logging\nWflow prints logging messages at various levels such as debug, info, and error. These messages are sent to both the terminal and a log file. Note that logging to a file is only part of the Wflow.run(tomlpath::AbstractString) method. If you want to debug an issue, it can be helpful to set loglevel = \"debug\" in the TOML. To avoid flooding the screen, debug messages are only sent to the log file. The following settings will affect the logging:\n[logging]               # optional entry\nsilent = false          # optional, default is \"false\"\nloglevel = \"debug\"      # optional, default is \"info\"\npath_log = \"log.txt\"    # optional, default is \"log.txt\"\nsilent avoids logging to the terminal, and only writes to the log file. loglevel controls which levels are filtered out; for instance, the default setting \"info\" does not print any debug-level messages. Note that for finer control, you can also pass an integer log level. For details, see Julia’s Logging documentation. path_log sets the desired output path for the log file. For information on fews_run, see Run from Delft-FEWS.",
     "crumbs": [
       "User guide",
       "Simulation settings"
