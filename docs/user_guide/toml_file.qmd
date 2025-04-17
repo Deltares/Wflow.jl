@@ -5,11 +5,21 @@ title: Simulation settings
 All model configuration and settings are passed through the .toml file, which contains all
 relevant settings, information about the model configuration, simulation period, input
 files, and parameters. The settings are provided in a TOML file. The settings file is
-structured in several sections, which are explained below. The file paths provided in this
-file are relative to the location of the TOML file, or to `dir_input` and `dir_output` if
-they are specified.
+structured in several sections, which are explained below.
 
-## General time info
+## General
+The file paths provided in this file are relative to the location of the TOML file, or to
+`dir_input` and `dir_output` if they are specified. To indicate that a wflow model [runs
+from Delft-FEWS](fews.qmd), the `fews_run` setting needs to be set at `true`.
+
+```toml
+dir_input = "data/input"      # optional, default is the path of the TOML
+dir_output = "data/output"    # optional, default is the path of the TOML
+fews_run = false              # optional, default value is false
+```
+
+
+## Time info
 Time information is optional. When omitted, wflow will perform computations for each
 timestamp in the forcing netCDF file, except for the first forcing timestamp, which is
 considered equal to the initial conditions of the wflow model (state time). If you wish to
@@ -31,8 +41,6 @@ starttime = 2000-01-01T00:00:00                 # optional, default from forcing
 endtime = 2000-02-01T00:00:00                   # optional, default from forcing netCDF
 time_units = "days since 1900-01-01 00:00:00"   # optional, this is the default value
 timestepsecs = 86400                            # optional, default from forcing netCDF
-dir_input = "data/input"                        # optional, default is the path of the TOML
-dir_output = "data/output"                      # optional, default is the path of the TOML
 ```
 
 ## Logging
@@ -47,7 +55,6 @@ messages are only sent to the log file. The following settings will affect the l
 silent = false          # optional, default is "false"
 loglevel = "debug"      # optional, default is "info"
 path_log = "log.txt"    # optional, default is "log.txt"
-fews_run = false        # optional, default value is false
 ```
 
 `silent` avoids logging to the terminal, and only writes to the log file. `loglevel`
