@@ -2,6 +2,7 @@
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+MakieExtra = "54e234d5-9986-40d8-815f-a5e42de435f6"
 MarkdownTables = "1862ce21-31c7-451e-824c-f20fa3f90fa2"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 

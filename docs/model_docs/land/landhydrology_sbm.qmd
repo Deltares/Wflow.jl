@@ -6,7 +6,7 @@ engine: julia
 ## Introduction
 The Land Hydrology `SBM` model is largely based on Topog_SBM (Vertessy and Elsenbeer, 1999),
 which considers the soil to be a “bucket” with a saturated and unsaturated store. The main
-differences between the Land Hydrology `SBM` model and Topog_SBM are as follows: 
+differences between the Land Hydrology `SBM` model and Topog_SBM are as follows:
 
 - the addition of evapotranspiration and interception losses;
 - the addition of a root water uptake reduction function (Feddes et al., 1978);
@@ -101,7 +101,7 @@ Furthermore, these additional parameters are required:
 + Storage woody part of vegetation ($\SIb{S_\mathrm{wood, max}}{mm}$)
 + Extinction coefficient ($\SIb{k}{-}$)
 
-Here it is assumed that the canopy storage capacity for the leaves 
+Here it is assumed that the canopy storage capacity for the leaves
 $\SIb{S_\mathrm{leaf, max}}{mm}$ relates linearly with $\mathrm{LAI}$ (c.f. Van Dijk and
 Bruijnzeel 2001). This is done via the specific leaf storage $S_\mathrm{leaf}$, a parameter
 that can be determined through a lookup table with land cover based on literature (Pitman
@@ -136,23 +136,79 @@ glacier = true
 
 ### Snow modelling
 Snow processes are adopted from the HBV-96 hydrological model concept (Bergström, 1992). If
-the air temperature, $T_\mathrm{air}$, is below a user-defined threshold 
+the air temperature, $T_\mathrm{air}$, is below a user-defined threshold
 $s_\mathrm{fall, T threshold}$ $\SIb{}{\degree C}$ effective precipitation (throughfall and
-stemflow) occurs as snowfall, whereas it occurs as rainfall if 
+stemflow) occurs as snowfall, whereas it occurs as rainfall if
 $T_\mathrm{air} ≥ s_\mathrm{fall, T threshold}$. Another parameter $s_\mathrm{fall, T interval}$
 $\SIb{}{\degree C}$ defines how precipitation can occur partly as rain or snowfall.
 
-![Division between snow and precipitation based on the threshold temperature](../../images/snowfall.png)
+```{julia}
+# | code-fold: true
+# | fig-cap: "Division between snow and precipitation based on the threshold temperature"
+using CairoMakie
+using MakieExtra
 
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
--->
+let
+  # Define colors
+  crain = "#1f78b4"
+  csnow = "#a6cee3"
+  cttint = "#b3b3b3"
+  cread = "#e31a1c"
+
+  # Create figure
+  set_theme!()
+  fig = Figure(size=(500,400))
+  ax = Axis(
+      fig[1, 1];
+      xgridvisible = false,
+      ygridvisible = false,
+      xlabel = "Temperature [°C]",
+      ylabel = "Precipitation division [%]",
+  )
+
+  # Plot lines
+  lines!(ax, [-0.25, 0, 1, 1.25], [0, 0, 100, 100]; color = crain)
+  lines!(ax, [-0.25, 0, 1, 1.25], [100, 100, 0, 0]; color = csnow)
+
+  # Add legend text
+  text!(ax, "Rain"; position = (-0.125, 1), color = crain, align = (:center, :bottom))
+  text!(ax, "Snow"; position = (1.125, 1), color = csnow, align = (:center, :bottom))
+
+  # Format axes
+  ax.xticks = ([0, 0.5, 1], ["", "tt", ""])
+  xlims!(ax, -0.25, 1.25)
+  ylims!(ax, -3, 103)
+
+  # Add arrow and text indicating ttint
+  vlines!(ax, [0, 1]; color = cttint, linestyle = :dash)
+  text!(ax, "tti"; position = (0.5, 99), color = cttint, align = (:center, :top))
+  arrowlines!(ax, Point2f(0.05, 0.95), Point2f(100, 100); color = cttint, arrowstyle = "<|-|>")
+
+  # Add lines showing how to read graph
+  lines!(ax, [0.2, 0.2, -0.25], [-3, 20, 20]; color = cread, linestyle = :dash)
+  lines!(ax, [0.2, 0.2, -0.25], [20, 80, 80]; color = cread, linestyle = :dash)
+
+  text!(ax, "20% rain"; position = (-0.05, 20), color = cread, align = (:center, :bottom))
+  text!(ax, "80% snow"; position = (-0.05, 80), color = cread, align = (:center, :bottom))
+
+  text!(
+      fig.scene,
+      Point2f(0.385, 0.09);
+      text = "T",
+      space = :relative,
+      color = cread,
+      align = (:center, :bottom),
+  )
+
+  # Display figure
+  fig
+end
+```
 
 If precipitation occurs as snowfall, it is added to the dry snow component within the snow
 pack. Otherwise it ends up in the free water reservoir, which represents the liquid water
 content of the snow pack. Between the two components of the snow pack, interactions take
-place, either through snow melt (if temperatures are above a threshold 
+place, either through snow melt (if temperatures are above a threshold
 $\SIb{s_\mathrm{melt, T threshold}}{\degree C}$) or through snow refreezing (if temperatures
 are below threshold $s_\mathrm{melt, T threshold}$).
 
@@ -169,7 +225,7 @@ $$
 The actual snowmelt rate is limited by the snow storage.
 
 The snowpack retains water that can refreeze if $T^{t}_\mathrm{air}$ is below
-$s_\mathrm{melt, T threshold}$. The potential refreezing rate 
+$s_\mathrm{melt, T threshold}$. The potential refreezing rate
 $\SIb{M_\mathrm{refreeze, pot}}{mm\ t^{-1}}$, is controlled by $s_\mathrm{ddf}$, a
 coefficient of refreezing $\SIb{s_\mathrm{refreeze}}{-}$ (fixed: 0.05), $T^{t}_\mathrm{air}$
 and $s_\mathrm{melt, T threshold}$ as follows:
@@ -193,10 +249,76 @@ $$
 \subtext{R}{snow} = \mathrm{max}(S_\mathrm{snow, liquid} - S_\mathrm{snow} s_\mathrm{whc}, 0).
 $$
 
-![Snowmelt and refreezing rates as a function of temperature (for set melting and refreezing factors)](../../images/snowmelt.png)
+```{julia}
+# | code-fold: true
+# | fig-cap: "Snowmelt and refreezing rates as a function of temperature (for set melting and refreezing factors)"
 
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowmelt_fig-py # hide -->
+using CairoMakie
+
+let
+  # Define colors
+  crain = "#1f78b4"
+  csnow = "#a6cee3"
+  cttint = "#b3b3b3"
+  cread = "#e31a1c"
+
+  cfmax = 3.0
+  ttm = 0
+  cfr = 0.1
+
+  # Create figure
+  set_theme!()
+  fig = Figure(size=(500, 400))
+  ax = Axis(
+      fig[1, 1];
+      xlabel = "Temperature",
+      ylabel = "Potential melt/refreezing [mm Δt⁻¹]",
+      xticks = ([-2, -1, 0, 1, 2], ["ttm−2°C", "ttm−1°C", "ttm", "ttm+1°C", "ttm+2°C"]),
+      xgridvisible = false,
+      ygridvisible = false,
+  )
+
+  # Convert temperature to an array for element-wise operations
+  temperature = collect(-2:0.5:2)
+
+  # Calculate melt and refreezing rates
+  melt = cfmax .* (temperature .- ttm)
+  refr = cfmax .* cfr .* (ttm .- temperature)
+  melt[temperature .< ttm] .= 0
+  refr[temperature .> ttm] .= 0
+
+  # Plot lines
+  lines!(ax, temperature, melt; color = crain)
+  lines!(ax, temperature, refr; color = csnow)
+
+  # Add legend text
+  text!(
+      ax,
+      "Snowmelt rate";
+      position = (1, melt[findfirst(x -> x == 1, temperature)] + 0.3),
+      color = crain,
+      align = (:center, :center),
+      rotation = 1.0,
+  )
+  text!(
+      ax,
+      "Refreezing rate";
+      position = (1, refr[findfirst(x -> x == 1, temperature)]),
+      color = csnow,
+      align = (:center, :bottom),
+  )
+
+  # Add vertical line for ttm
+  vlines!(ax, [ttm]; color = cttint, linestyle = :dash)
+
+  # Set axis limits
+  xlims!(ax, -2, 1.75)
+  ylims!(ax, -0.2, 5)
+
+  # Display figure
+  fig
+end
+```
 
 ### Glacier modelling
 
@@ -233,9 +355,9 @@ $$
 S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}.
 $$
 
-When the snowpack on top of the glacier is almost all melted ($S_\mathrm{snow} < \SI{10}{mm}$), 
+When the snowpack on top of the glacier is almost all melted ($S_\mathrm{snow} < \SI{10}{mm}$),
 glacier melt is enabled and estimated with a degree-day model. If the air temperature
-$T_\mathrm{air}$ is above a melting temperature threshold 
+$T_\mathrm{air}$ is above a melting temperature threshold
 $\SIb{g_\mathrm{melt,T threshold}}{\degree C}$, glacier melt occurs. The potential glacier
 melt $\SIb{M_\mathrm{glacier, pot}}{mm\ t^{-1}}$, using the degree-day factor
 $\SIb{g_\mathrm{ddf}}{mm\ t^{-1}\ \degree C^{-1}}$, is calculated as:
@@ -246,7 +368,7 @@ $$
   \end{cases}
 $$
 
-The actual glacier melt is limited by the glacier storage. Parameter $g_\mathrm{melt, T threshold}$ 
+The actual glacier melt is limited by the glacier storage. Parameter $g_\mathrm{melt, T threshold}$
 can be taken as equal to the snow $s_\mathrm{melt, T threshold}$ parameter. Values of the
 melting factor $g_\mathrm{ddf}$ normally varies from one glacier to another and some values
 are reported in the literature. $g_\mathrm{ddf}$ can also be estimated by multiplying snow
@@ -283,12 +405,56 @@ equal the potential reference evaporation. When the soil is not fully saturated,
 evaporation decreases linearly with decreasing soil moisture values, as indicated by the
 figure below.
 
-![Evaporation reduction as function of available soil moisture](../../images/soil_evap.png)
+```{julia}
+# | code-fold: true
+# | fig-cap: "Evaporation reduction as function of available soil moisture"
+using CairoMakie
 
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
-``` -->
+let
+  # Define colors
+  cevap = "#ff7f00"
+
+  # Create figure
+  fig = Figure(size=(500,300))
+  ax = Axis(
+      fig[1, 1];
+      xlabel = "Soil moisture (θ) [-]",
+      ylabel = "Ratio AET/PET [-]",
+      xticks = ([0, 1], ["θ_empty", "θ_sat   "]),
+      yticks = [0, 1],
+      xgridvisible = false,
+      ygridvisible = false,
+  )
+
+  # Plot lines
+  lines!(ax, [0, 1], [0, 1]; color = cevap)
+  lines!(ax, [0, 1], [1, 1]; color = cevap, linestyle = :dash)
+
+  # Add labels
+  text!(
+      ax,
+      "Potential evaporation";
+      position = (0.01, 0.99),
+      color = cevap,
+      align = (:left, :top),
+  )
+  text!(
+      ax,
+      "Actual evaporation";
+      position = (0.02, 0.05),
+      color = cevap,
+      align = (:left, :bottom),
+      rotation = 0.4,
+  )
+
+  # Set axis limits
+  xlims!(ax, 0, 1)
+  ylims!(ax, -0.1, 1.1)
+
+  # Display the figure
+  fig
+end
+```
 
 When more soil layers are present, soil evaporation is only provided from the upper soil layer,
 and soil evaporation is split in evaporation from the unsaturated store and evaporation from
@@ -306,10 +472,112 @@ The maximum possible root water extraction rate for each soil layer is determine
 partitioning the potential transpiration rate $T_p$ based on the fraction of the total root
 length density fraction in each soil layer. See also the conceptual figure below.
 
-![Conceptual overview of how maxextr depends on rooting depth and water table depth](../../images/soil_unsatevap.png)
+```{julia}
+# | code-fold: true
+# | fig-cap: "Conceptual overview of how maxextr depends on rooting depth and water table depth"
 
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide -->
+using CairoMakie
+using Statistics
+
+let
+  # Define colors and styles
+  csep = "#999999"
+  croot = "#993404"
+  cwater = "#1f78b4"
+  lssep = :dash
+
+  layers = [0, 150, 250, 325]
+  all_layers = copy(layers)
+
+  rootdepth = 230
+  waterdepth = 300
+
+  availcap = Float64[]
+  usl = Float64[]
+
+  # Calculate available capacity and unsaturated layer
+  for i in 1:(length(layers) - 1)
+      usl_i = min(layers[i + 1], waterdepth) - layers[i]
+      push!(usl, usl_i)
+      if usl_i > 0
+          cap = min(1.0, max(0.0, (rootdepth - layers[i]) / usl_i))
+          push!(availcap, cap)
+      else
+          push!(availcap, 0.0)
+      end
+  end
+
+  # Create figure
+  padding = 10
+  w, h = (400, 400)
+
+  fig = Figure(; size = (w, h))
+  ax = Axis(
+      fig;
+      bbox = BBox(50, 100, padding, h - padding),
+      xgridvisible = false,
+      ygridvisible = false,
+      xticksvisible = false,
+      xticklabelsvisible = false,
+      yticks = all_layers,
+      yreversed = true,
+      xlabel = "",
+      ylabel = "",
+  )
+
+  # Show lines for different layers and depth values
+  for i in 1:(length(all_layers) - 1)
+      layer = all_layers[i]
+      y_mean = mean([all_layers[i + 1], all_layers[i]])
+      hlines!(ax, [layer]; color = csep, linestyle = lssep)
+      text!(
+          fig.scene,
+          Point2f(0.09, 1 - (y_mean / maximum(layers)));
+          text = string(all_layers[i + 1] - all_layers[i]),
+          space = :relative,
+          align = (:center, :center),
+          rotation = pi / 2,
+          color = "#b3b3b3",
+      )
+
+      text!(
+          fig.scene,
+          Point2f(0.8, 1 - (y_mean / maximum(layers)));
+          text = "maxextr = \n $(round(availcap[i], digits = 2)) ⋅ soilwater",
+          space = :relative,
+          align = (:center, :center),
+      )
+  end
+
+  # Add lines indicating water level and rootzone depth
+  hlines!(ax, [rootdepth]; color = croot, linewidth = 2)
+  poly!(ax, [0, 0, 1, 1], [waterdepth, 375, 375, waterdepth]; color = cwater, alpha = 0.5)
+  text!(
+      fig.scene,
+      "Rooting depth";
+      position = (0.27, 1.01 - (rootdepth / maximum(layers))),
+      color = croot,
+      space = :relative,
+      align = (:left, :center),
+  )
+
+  text!(
+      fig.scene,
+      "Water table depth";
+      position = (0.27, 1.01 - (waterdepth / maximum(layers))),
+      color = cwater,
+      space = :relative,
+      align = (:left, :center),
+  )
+
+  # Format axes
+  xlims!(ax, 0, 1)
+  ylims!(ax, layers[end], 0)
+
+  # Display the figure
+  fig
+end
+```
 
 A root water uptake reduction model is used to calculate a reduction coefficient as a
 function of soil water pressure, that may reduce the maximum possible root water extraction
@@ -319,10 +587,10 @@ soil water pressure $\SIb{h}{cm}$. Four different levels of $h$ are defined: $h_
 $h_3$ and $h_4$. $h_1$ represents anoxic moisture conditions, $h_2$ represents field
 capacity, $h_3$ represents the point of critical soil moisture content (onset of drought
 stress), and $h_4$ represents the wilting point. The value of $h_3$ is a function of the
-potential transpiration rate, between $\SI{1}{mm\ d^{-1}}$ and $\SI{5}{mm\ d^{-1}}$. If 
+potential transpiration rate, between $\SI{1}{mm\ d^{-1}}$ and $\SI{5}{mm\ d^{-1}}$. If
 $T_p \le \SI{1}{mm\ d^{-1}}$, $h_3$ is set equal to $h_{3\mathrm{low}}$ (input model
 parameter). If $T_p \ge \SI{5}{mm d^{-1}}$, $h_3$ is set equal to $h_{3\mathrm{high}}$
-(input model parameter). For $T_p$ values between $\SI{1}{mm\ d^{-1}}$ and 
+(input model parameter). For $T_p$ values between $\SI{1}{mm\ d^{-1}}$ and
 $\SI{5}{mm\ d^{-1}}$, the value of $h_3$ is linearly related to $T_p$ (between
 $h_{3\mathrm{low}}$ and $h_{3\mathrm{high}}$). Besides model parameters $h_{3\mathrm{high}}$
 and $h_{3\mathrm{low}}$, the critical pressure heads $h_1$, $h_2$ and $h_4$ can be defined
@@ -347,12 +615,31 @@ uptake above $h_1$ should be set to zero (oxygen deficit) and between $h_1$ and 
 water uptake is limited. This is possible by setting $\alpha$ for $h_1$ at $0$ (default is
 $1$) through model input.
 
-![Root water uptake reduction coefficient as a function of soil water pressure](../../images/soil_rootwateruptake.png)
+```{julia}
+# | code-fold: true
+# | fig-cap: "Root water uptake reduction coefficient as a function of soil water pressure"
+using CairoMakie
 
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
--->
+let
+  # Create figure
+  fig = Figure(; size = (500, 400))
+  ax = Axis(
+      fig[1, 1];
+      xlabel = "Soil water pressure head",
+      ylabel = "α [-]",
+      xticks = ([0, 2, 3, 4], ["h₄\n-15849 cm", "h₃\n-400 cm", "h₂\n-100 cm", "h₁\n-10 cm"]),
+      xgridvisible = false,
+      ygridvisible = false,
+  )
+
+  # Plot line
+  lines!(ax, [0, 2, 3, 4], [0, 1, 1, 1])
+
+  # Display the figure
+  fig
+
+end
+```
 
 The computation of transpiration from the saturated store depends on the water table depth,
 rooting depth, the reduction coefficient $\alpha$, the fraction of wet roots and the root
@@ -368,11 +655,59 @@ is multiplied by the remaining root fraction (below the water table), wet roots 
 the reduction coefficient (and limited by the available water in saturated zone) to get the
 transpiration from the saturated part of the soil.
 
-![Amount of wet roots and the effect of the `rootdistpar` parameter](../../images/soil_wetroots.png)
+```{julia}
+# | code-fold: true
+# | fig-cap: "Amount of wet roots and the effect of the `rootdistpar` parameter"
+using CairoMakie
+using Wflow: scurve
 
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide -->
+let
+  # Settings
+  watertable = collect(250:0.5:300)
+  rootingdepth = 275.0
+  rootdistpars = [-500.0, -1.0, -0.5, -0.3]
 
+  # Plot options
+  colors = ["#fed98e", "#fe9929", "#d95f0e", "#993404"]
+
+  # Create figure
+  fig = Figure(; size = (500, 400))
+  ax = Axis(
+      fig[1, 1];
+      xlabel = "Fraction of wet roots [-]",
+      ylabel = "Water table depth [mm]",
+      yreversed = true,  # Reverse y-axis to match water table depth orientation
+      xgridvisible = false,
+      ygridvisible = false,
+  )
+
+  # Plot lines for each rootdistpar
+  for (rootdistpar, color) in zip(rootdistpars, colors)
+      wetrootfrac = @. scurve(watertable, rootingdepth, Float64(1.0), rootdistpar)
+      lines!(ax, wetrootfrac, watertable; color = color, label = "$rootdistpar")
+  end
+
+  # Add rooting depth annotation
+  hlines!(ax, [rootingdepth]; linestyle = :dash, color = "#999999")
+  text!(
+      ax,
+      "rootingdepth = $rootingdepth mm";
+      position = (1.0, rootingdepth + 0.5),
+      color = "#999999",
+      align = (:right, :top),
+  )
+
+  # Add legend
+  axislegend("rootdistpar"; position = :lt, framevisible = false)
+
+  # Set axis limits
+  ylims!(ax, maximum(watertable), minimum(watertable))  # Reverse y-axis
+  xlims!(ax, -0.05, 1.05)
+
+  # Display the figure
+  fig
+end
+```
 
 ## Soil processes
 
@@ -418,9 +753,9 @@ thicknesslayers = [100, 300, 800]
 The code checks for each grid cell the specified layers against the soil thickness
 $\SIb{}{mm}$, and adds or removes (partly) layer(s) based on the soil thickness.
 
-Assuming a unit head gradient, the potential transfer of water $\SIb{Q_\mathrm{transfer, pot}}{mm\ t^{-1}}$ 
+Assuming a unit head gradient, the potential transfer of water $\SIb{Q_\mathrm{transfer, pot}}{mm\ t^{-1}}$
 from the unsaturated storage in a layer $\SIb{S_\mathrm{unsat}}{mm}$ is controlled by the
-vertical saturated hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$ 
+vertical saturated hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$
 at depth $\SIb{z_\mathrm{bottom}}{mm}$ (bottom layer) or $\SIb{z_\mathrm{watertable}}{mm}$,
 the effective saturation degree of the layer, and a Brooks-Corey power coefficient $c$ based
 on the pore size distribution index $\lambda$ (Brooks and Corey, 1964):
@@ -441,7 +776,7 @@ transfermethod = true
 ```
 
 The potential transfer of water from the unsaturated store to the saturated store is in that
-case controlled by the vertical saturated hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$ 
+case controlled by the vertical saturated hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$
 at depth $\SIb{z_\mathrm{watertable}}{mm}$ and the ratio between
 $\SIb{S_\mathrm{unsat}}{mm}$ and $\SIb{S_\mathrm{deficit}}{mm}$:
 
@@ -479,6 +814,7 @@ conductivity $K_\mathrm{vz}$ for different values of $\subtext{f}{Kv}$.
 
 ```{julia}
 # | code-fold: true
+# | fig-cap: "Effect of different values of `f_Kv` on the vertical saturated hydraulic conductivity profile"
 using Printf
 using CairoMakie
 
@@ -580,10 +916,50 @@ $$
 A S-curve (see plot below) is used to make a smooth transition (a c-factor ($c$) of 8.0 is
 used):
 
-![Infiltration correction factor as a function of soil temperature](../../images/soil_frozeninfilt.png)
+```{julia}
+# | code-fold: true
+# | fig-cap: "Infiltration correction factor as a function of soil temperature"
+using CairoMakie
+using Wflow: infiltration_reduction_factor
 
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide -->
+let
+  # Define data
+  temps = collect(-3:0.1:3)
+  cf_soils = [0.038, 0.1, 0.2]  # Example values for cf_soil
+  colors = ["#bae4bc", "#7bccc4", "#2b8cbe"]  # Colors for each cf_soil
+
+  # Create figure
+  fig = Figure(; size = (500, 400))
+  ax = Axis(
+      fig[1, 1];
+      xlabel = "Soil temperature [°C]",
+      ylabel = "Infiltration correction factor [-]",
+      xgridvisible = false,
+      ygridvisible = false,
+  )
+
+  # Plot lines for each cf_soil
+  for (cf_soil, color) in zip(cf_soils, colors)
+      y_vals = @. infiltration_reduction_factor(
+          temps,
+          cf_soil;
+          modelsnow = true,
+          soilinfreduction = true,
+      )
+      lines!(ax, temps, y_vals; label = "$cf_soil", color = color)
+  end
+
+  # Add legend
+  axislegend("cf_soil"; framevisible = false, position = :lt)
+
+  # Set axis limits
+  xlims!(ax, minimum(temps), maximum(temps))
+  ylims!(ax, -0.03, 1.03)
+
+  # Display the figure
+  fig
+end
+```
 
 ### Capillary rise
 
@@ -651,7 +1027,7 @@ $$
 and used to calculate the return flow rate (water abstracted from surface water or
 groundwater but not consumed). For grid cells containing a river the return flow is directly
 returned to the river routing component, otherwise the return flow is returned to the
-overland flow routing component. 
+overland flow routing component.
 
 The list of input parameters for non-irrigation that can be provided through the TOML file
 can be found [here](../parameters_landhydrology_sbm.qmd#non-irrigation).
@@ -681,8 +1057,8 @@ irrigation rate that brings the root zone back to field capacity, limited by the
 infiltration capacity $\SIb{}{mm\ t^{-1}}$, assuming that farmers do not apply an irrigation
 rate higher than the soil infiltration capacity. To account for limited irrigation
 efficiency the net irrigation demand is divided by the irrigation efficiency for non-paddy
-crops ($\SIb{}{-}$, default is $1.0$), resulting in gross irrigation demand $\SIb{}{mm\ t^{-1}}$. 
-Finally, the gross irrigation demand is limited by the maximum irrigation rate 
+crops ($\SIb{}{-}$, default is $1.0$), resulting in gross irrigation demand $\SIb{}{mm\ t^{-1}}$.
+Finally, the gross irrigation demand is limited by the maximum irrigation rate
 ($\SIb{}{mm\ t^{-1}}$, default is $\SI{25}{mm\ d^{-1}}$). If the maximum irrigation rate is
 applied, irrigation continues at subsequent time steps until field capacity is reached.
 Irrigation is added to the amount of water available for infiltration.
@@ -751,7 +1127,7 @@ satisfy local (same grid cell) water demand. The available surface water volume 
 by a fixed scaling factor of $0.8$ to prevent rivers from completely drying out. It is
 assumed that the water demand cannot be satisfied completely from local surface water and
 groundwater. The next step is to satisfy the remaining water demand for allocation areas
-$\SIb{}{-}$, described in the next sub-section. 
+$\SIb{}{-}$, described in the next sub-section.
 
 ### Allocation areas
 Allocation areas can be specified as follows in the TOML file:
