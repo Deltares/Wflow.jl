@@ -116,6 +116,13 @@ overland flow.
 
 ```toml
 # example of water demand and allocation input parameters as cyclic data
+[model.water_demand]
+domestic = true     # optional, default is "false"
+industry = true     # optional, default is "false"
+livestock = true    # optional, default is "false"
+paddy = true        # optional, default is "false"
+nonpaddy = true     # optional, default is "false"
+
 [input.cyclic]
 "land~domestic__gross_water_demand_volume_flux" = "dom_gross"
 "land~domestic__net_water_demand_volume_flux" = "dom_net"
@@ -125,13 +132,6 @@ overland flow.
 "land~livestock__net_water_demand_volume_flux" = "lsk_net"
 "land~irrigated-paddy__irrigation_trigger_flag" = "irrigation_trigger"
 "land~irrigated-non-paddy__irrigation_trigger_flag" = "irrigation_trigger"
-
-[model.water_demand]
-domestic = true     # optional, default is "false"
-industry = true     # optional, default is "false"
-livestock = true    # optional, default is "false"
-paddy = true        # optional, default is "false"
-nonpaddy = true     # optional, default is "false"
 
 [input.static]
 land_water_allocation_area__number = "allocation_areas"
