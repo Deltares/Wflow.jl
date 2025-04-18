@@ -471,7 +471,7 @@ Click to show example .toml file
 </section>
 <section id="the-static-input-data-staticmaps.nc" class="level2">
 <h2 class="anchored" data-anchor-id="the-static-input-data-staticmaps.nc">The static input data (<code>staticmaps.nc</code>)</h2>
-<p>The list below contains a brief overview of several essential static maps required to run wflow. These NC variables names refer to the example data of the wflow_sbm + kinematic wave model (see <a href="../getting_started/download_example_models.html#wflow_sbm--kinematic-wave">here</a>). Example data for the other model configurations can be found <a href="../getting_started/download_example_models.html">here</a>.</p>
+<p>The list below contains a brief overview of several essential static maps required to run wflow. These NC variables names refer to the example data of the wflow_sbm + kinematic wave model (see <a href="../getting_started/download_example_models.html#wflow_sbm-kinematic-wave">here</a>). Example data for the other model configurations can be found <a href="../getting_started/download_example_models.html">here</a>.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 40%">
@@ -555,7 +555,7 @@ Important
 </section>
 <section id="the-forcing-data-forcing.nc" class="level2">
 <h2 class="anchored" data-anchor-id="the-forcing-data-forcing.nc">The forcing data (<code>forcing.nc</code>)</h2>
-<p>The forcing data typically contains the meteorological boundary conditions. This data is provided as a single netCDF file, with several variables containing the forcing data for precipitation, temperature and potential evaporation. The code snippet below shows the contents of the example file (downloaded <a href="../getting_started/download_example_models.html#wflow_sbm--kinematic-wave">here</a>), and displaying the content with <code>NCDatasets</code> in Julia. As can be seen, each forcing variable (<code>precip</code>, <code>pet</code> and <code>temp</code>) consists of a three-dimensional dataset (<code>x</code>, <code>y</code>, and <code>time</code>), and each timestep consists of a two-dimensional map with values at each grid cell. Only values within the basin are required.</p>
+<p>The forcing data typically contains the meteorological boundary conditions. This data is provided as a single netCDF file, with several variables containing the forcing data for precipitation, temperature and potential evaporation. The code snippet below shows the contents of the example file (downloaded <a href="../getting_started/download_example_models.html#wflow_sbm-kinematic-wave">here</a>), and displaying the content with <code>NCDatasets</code> in Julia. As can be seen, each forcing variable (<code>precip</code>, <code>pet</code> and <code>temp</code>) consists of a three-dimensional dataset (<code>x</code>, <code>y</code>, and <code>time</code>), and each timestep consists of a two-dimensional map with values at each grid cell. Only values within the basin are required.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">

@@ -523,7 +523,7 @@ window.Quarto = {
 <p>This optional section of the TOML file specifies the output netCDF file for writing gridded model output. It includes a mapping between model variable standard names and external netCDF variables.</p>
 <p>To limit the size of the resulting netCDF file, file compression can be enabled. Compression increases computational time but can significantly reduce the size of the netCDF file. Set the <code>compressionlevel</code> variable to a value between <code>0</code> and <code>9</code>. A setting of <code>0</code> means no compression, while values between 1 and 9 indicate increasing levels of compression (1: least compression, minimal run-time impact, 9: highest compression, maximum run-time impact). If file size is a concern, we recommend using a value of <code>1</code>, as higher compression levels generally have a limited effect on file size.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid]</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_moselle.nc"</span>            <span class="co"># Location of the output file</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_moselle.nc"</span>          <span class="co"># Location of the output file</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">compressionlevel</span> <span class="op">=</span> <span class="dv">1</span>                <span class="co"># Compression level (default 0)</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Mapping of standard model variable names to external netCDF variables</span></span>
@@ -549,7 +549,7 @@ window.Quarto = {
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_scalar]</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_scalar_moselle.nc"</span>    <span class="co"># Location of the results</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the values of "river_water__volume_flow_rate" using the gauges map, </span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the values of "river_water__volume_flow_rate" using the gauges map,</span></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># and assign it with the name 'Q' as a variable in the netCDF file</span></span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[[output.netcdf_scalar.variable]]</span></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"Q"</span></span>
