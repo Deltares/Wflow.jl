@@ -65,10 +65,10 @@ lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")
 forcing_calendar_noleap_path =
     testdata(v"0.2.8", "forcing-calendar-noleap.nc", "forcing-calendar-noleap.nc")
 forcing_piave_path = testdata(v"0.2.9", "inmaps-era5-2010-piave.nc", "forcing-piave.nc")
-staticmaps_piave_path = testdata(v"0.2.9", "staticmaps-piave.nc", "staticmaps-piave.nc")
-instates_piave_path = testdata(v"0.2.9", "instates-piave.nc", "instates-piave.nc")
+staticmaps_piave_path = testdata(v"0.3.0", "staticmaps-piave.nc", "staticmaps-piave.nc")
+instates_piave_path = testdata(v"0.3.0", "instates-piave.nc", "instates-piave.nc")
 instates_piave_gwf_path =
-    testdata(v"0.2.9", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
+    testdata(v"0.3.0", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
 
 include("testing_utils.jl")
 

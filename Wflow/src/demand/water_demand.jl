@@ -643,12 +643,12 @@ function surface_water_allocation_area!(
             if inds_reservoir[j] > 0
                 # for reservoir locations use reservoir storage
                 k = inds_reservoir[j]
-                available_surfacewater[j] = reservoir.storage[k] * 0.98 # limit available reservoir storage
+                available_surfacewater[j] = reservoir.variables.storage[k] * 0.98 # limit available reservoir storage
                 sw_available += available_surfacewater[j]
             elseif inds_lake[j] > 0
                 # for lake locations use lake storage
                 k = inds_lake[j]
-                available_surfacewater[j] = lake.storage[k] * 0.98 # limit available lake storage
+                available_surfacewater[j] = lake.variables.storage[k] * 0.98 # limit available lake storage
                 sw_available += available_surfacewater[j]
 
             else
@@ -859,11 +859,16 @@ function update_water_allocation!(
     # from reservoir and lake, including an update of lake waterlevel
     if !isnothing(reservoir)
         @. abstraction[inds_reservoir] = 0.0
-        @. reservoir.storage -= act_surfacewater_abst_vol[inds_reservoir]
+        @. reservoir.variables.storage -= act_surfacewater_abst_vol[inds_reservoir]
     elseif !isnothing(lake)
         @. abstraction[inds_lake] = 0.0
-        @. lake.storage -= act_surfacewater_abst_vol[inds_lake]
-        @. lake.waterlevel = waterlevel(lake.storfunc, lake.area, lake.storage, lake.sh)
+        @. lake.variables.storage -= act_surfacewater_abst_vol[inds_lake]
+        @. lake.variables.waterlevel = waterlevel(
+            lake.parameters.storfunc,
+            lake.parameters.area,
+            lake.parameters.storage,
+            lake.parameters.sh,
+        )
     end
 
     groundwater_alloc .= 0.0
