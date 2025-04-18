@@ -104,10 +104,11 @@ tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
-sbm = model.land
+
 (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-    sbm.allocation.variables
+    model.land.allocation.variables
+(; lake, reservoir) = model.routing.river_flow.boundary_conditions
 
 @testset "piave water demand and allocation first timestep" begin
     sum_total_alloc = sum(total_alloc)
@@ -133,13 +134,16 @@ sbm = model.land
     @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
     @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
+    @test lake.variables.waterlevel_av ≈ [29.326888221575366]
+    @test lake.variables.storage_av ≈ [1.9003823567580816e8]
+    @test lake.variables.outflow_av ≈ [4.8673812914007595]
+    @test reservoir.variables.storage_av ≈ [4.2799587053806245e7, 7.159979491592452e7]
+    @test reservoir.variables.outflow_av ≈ [9.755581296859788, 58.07604107317849]
+    @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.902500152587074]
 end
 
 Wflow.run_timestep!(model)
-sbm = model.land
-(; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
-(; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-    sbm.allocation.variables
+
 @testset "piave water demand and allocation second timestep" begin
     sum_total_alloc = sum(total_alloc)
     @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
@@ -151,6 +155,12 @@ sbm = model.land
     @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 0.0, 0.0]
     @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
     @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈ [0.0, 0.0, 4.566942543149944]
+    @test lake.variables.waterlevel_av ≈ [29.333877012146463]
+    @test lake.variables.storage_av ≈ [1.9008352303870913e8]
+    @test lake.variables.outflow_av ≈ [4.8697013328350875]
+    @test reservoir.variables.storage_av ≈ [4.2799524452778526e7, 7.159979430441156e7]
+    @test reservoir.variables.outflow_av ≈ [9.353788587285894, 54.83939914795245]
+    @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.9025001525870735]
 end
 
 Wflow.close_files(model; delete_output = false)
