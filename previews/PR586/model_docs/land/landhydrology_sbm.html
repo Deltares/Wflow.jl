@@ -530,16 +530,77 @@ window.Quarto = {
 <section id="snow-modelling" class="level3">
 <h3 class="anchored" data-anchor-id="snow-modelling">Snow modelling</h3>
 <p>Snow processes are adopted from the HBV-96 hydrological model concept (Bergström, 1992). If the air temperature, <span class="math inline">\(T_\mathrm{air}\)</span>, is below a user-defined threshold <span class="math inline">\(s_\mathrm{fall, T threshold}\)</span> <span class="math inline">\(\SIb{}{\degree C}\)</span> effective precipitation (throughfall and stemflow) occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_\mathrm{air} ≥ s_\mathrm{fall, T threshold}\)</span>. Another parameter <span class="math inline">\(s_\mathrm{fall, T interval}\)</span> <span class="math inline">\(\SIb{}{\degree C}\)</span> defines how precipitation can occur partly as rain or snowfall.</p>
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MakieExtra</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  crain <span class="op">=</span> <span class="st">"#1f78b4"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  csnow <span class="op">=</span> <span class="st">"#a6cee3"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  cttint <span class="op">=</span> <span class="st">"#b3b3b3"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  cread <span class="op">=</span> <span class="st">"#e31a1c"</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme!</span>()</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">500</span>,<span class="fl">400</span>))</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Temperature [°C]"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Precipitation division [%]"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1.25</span>], [<span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">100</span>, <span class="fl">100</span>]; color <span class="op">=</span> crain)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1.25</span>], [<span class="fl">100</span>, <span class="fl">100</span>, <span class="fl">0</span>, <span class="fl">0</span>]; color <span class="op">=</span> csnow)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend text</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"Rain"</span>; position <span class="op">=</span> (<span class="op">-</span><span class="fl">0.125</span>, <span class="fl">1</span>), color <span class="op">=</span> crain, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"Snow"</span>; position <span class="op">=</span> (<span class="fl">1.125</span>, <span class="fl">1</span>), color <span class="op">=</span> csnow, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Format axes</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  ax.xticks <span class="op">=</span> ([<span class="fl">0</span>, <span class="fl">0.5</span>, <span class="fl">1</span>], [<span class="st">""</span>, <span class="st">"tt"</span>, <span class="st">""</span>])</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">1.25</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">3</span>, <span class="fl">103</span>)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add arrow and text indicating ttint</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">vlines!</span>(ax, [<span class="fl">0</span>, <span class="fl">1</span>]; color <span class="op">=</span> cttint, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"tti"</span>; position <span class="op">=</span> (<span class="fl">0.5</span>, <span class="fl">99</span>), color <span class="op">=</span> cttint, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>top))</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrowlines!</span>(ax, <span class="fu">Point2f</span>(<span class="fl">0.05</span>, <span class="fl">0.95</span>), <span class="fu">Point2f</span>(<span class="fl">100</span>, <span class="fl">100</span>); color <span class="op">=</span> cttint, arrowstyle <span class="op">=</span> <span class="st">"&lt;|-|&gt;"</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add lines showing how to read graph</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="op">-</span><span class="fl">0.25</span>], [<span class="op">-</span><span class="fl">3</span>, <span class="fl">20</span>, <span class="fl">20</span>]; color <span class="op">=</span> cread, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="op">-</span><span class="fl">0.25</span>], [<span class="fl">20</span>, <span class="fl">80</span>, <span class="fl">80</span>]; color <span class="op">=</span> cread, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"20% rain"</span>; position <span class="op">=</span> (<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">20</span>), color <span class="op">=</span> cread, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"80% snow"</span>; position <span class="op">=</span> (<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">80</span>), color <span class="op">=</span> cread, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>      fig.scene,</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>      <span class="fu">Point2f</span>(<span class="fl">0.385</span>, <span class="fl">0.09</span>);</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>      text <span class="op">=</span> <span class="st">"T"</span>,</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>      space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cread,</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom),</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display figure</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../../images/snowfall.png" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-2-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Division between snow and precipitation based on the threshold temperature</figcaption>
 </figure>
 </div>
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowfall_fig-py # hide
--->
+</div>
+</div>
 <p>If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <span class="math inline">\(\SIb{s_\mathrm{melt, T threshold}}{\degree C}\)</span>) or through snow refreezing (if temperatures are below threshold <span class="math inline">\(s_\mathrm{melt, T threshold}\)</span>).</p>
 <p>The potential snowmelt rate <span class="math inline">\(\SIb{M_\mathrm{snow, pot}}{mm\ t^{-1}}\)</span>, using the degree-day factor <span class="math inline">\(\SIb{s_\mathrm{ddf}}{mm\ \degree C^{-1}\ t^{-1}}\)</span>, is calculated as follows:</p>
 <p><span class="math display">\[
@@ -561,14 +622,84 @@ M_\mathrm{refreeze, pot}=\begin{cases}
 <p><span class="math display">\[
 \subtext{R}{snow} = \mathrm{max}(S_\mathrm{snow, liquid} - S_\mathrm{snow} s_\mathrm{whc}, 0).
 \]</span></p>
+<div id="4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  crain <span class="op">=</span> <span class="st">"#1f78b4"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  csnow <span class="op">=</span> <span class="st">"#a6cee3"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  cttint <span class="op">=</span> <span class="st">"#b3b3b3"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  cread <span class="op">=</span> <span class="st">"#e31a1c"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  cfmax <span class="op">=</span> <span class="fl">3.0</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  ttm <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  cfr <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme!</span>()</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Temperature"</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Potential melt/refreezing [mm Δt⁻¹]"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>      xticks <span class="op">=</span> ([<span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>], [<span class="st">"ttm−2°C"</span>, <span class="st">"ttm−1°C"</span>, <span class="st">"ttm"</span>, <span class="st">"ttm+1°C"</span>, <span class="st">"ttm+2°C"</span>]),</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert temperature to an array for element-wise operations</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  temperature <span class="op">=</span> <span class="fu">collect</span>(<span class="op">-</span><span class="fl">2</span><span class="op">:</span><span class="fl">0.5</span><span class="op">:</span><span class="fl">2</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate melt and refreezing rates</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  melt <span class="op">=</span> cfmax <span class="op">.*</span> (temperature <span class="op">.-</span> ttm)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  refr <span class="op">=</span> cfmax <span class="op">.*</span> cfr <span class="op">.*</span> (ttm <span class="op">.-</span> temperature)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  melt[temperature <span class="op">.&lt;</span> ttm] <span class="op">.=</span> <span class="fl">0</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  refr[temperature <span class="op">.&gt;</span> ttm] <span class="op">.=</span> <span class="fl">0</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, temperature, melt; color <span class="op">=</span> crain)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, temperature, refr; color <span class="op">=</span> csnow)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend text</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Snowmelt rate"</span>;</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">1</span>, melt[<span class="fu">findfirst</span>(x <span class="op">-&gt;</span> x <span class="op">==</span> <span class="fl">1</span>, temperature)] <span class="op">+</span> <span class="fl">0.3</span>),</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> crain,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>center),</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>      rotation <span class="op">=</span> <span class="fl">1.0</span>,</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Refreezing rate"</span>;</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">1</span>, refr[<span class="fu">findfirst</span>(x <span class="op">-&gt;</span> x <span class="op">==</span> <span class="fl">1</span>, temperature)]),</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> csnow,</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom),</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add vertical line for ttm</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">vlines!</span>(ax, [ttm]; color <span class="op">=</span> cttint, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="op">-</span><span class="fl">2</span>, <span class="fl">1.75</span>)</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">0.2</span>, <span class="fl">5</span>)</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display figure</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../../images/snowmelt.png" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-3-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Snowmelt and refreezing rates as a function of temperature (for set melting and refreezing factors)</figcaption>
 </figure>
 </div>
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-snowmelt_fig-py # hide -->
+</div>
+</div>
 </section>
 <section id="glacier-modelling" class="level3">
 <h3 class="anchored" data-anchor-id="glacier-modelling">Glacier modelling</h3>
@@ -599,29 +730,184 @@ S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}
 <section id="bare-soil-evaporation" class="level3">
 <h3 class="anchored" data-anchor-id="bare-soil-evaporation">Bare soil evaporation</h3>
 <p>If there is only one soil layer present in the <code>SBM</code> <code>soil</code> model, the bare soil evaporation is scaled according to the wetness of the soil layer. The fraction of bare soil is assumed to be equal to the fraction not covered by the canopy gap fraction corrected by the total water fraction and glacier fraction. When the soil is fully saturated, evaporation is set to equal the potential reference evaporation. When the soil is not fully saturated, actual evaporation decreases linearly with decreasing soil moisture values, as indicated by the figure below.</p>
+<div id="6" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  cevap <span class="op">=</span> <span class="st">"#ff7f00"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">500</span>,<span class="fl">300</span>))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Soil moisture (θ) [-]"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Ratio AET/PET [-]"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>      xticks <span class="op">=</span> ([<span class="fl">0</span>, <span class="fl">1</span>], [<span class="st">"θ_empty"</span>, <span class="st">"θ_sat   "</span>]),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>      yticks <span class="op">=</span> [<span class="fl">0</span>, <span class="fl">1</span>],</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0</span>, <span class="fl">1</span>], [<span class="fl">0</span>, <span class="fl">1</span>]; color <span class="op">=</span> cevap)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0</span>, <span class="fl">1</span>], [<span class="fl">1</span>, <span class="fl">1</span>]; color <span class="op">=</span> cevap, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add labels</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Potential evaporation"</span>;</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.01</span>, <span class="fl">0.99</span>),</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cevap,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>top),</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Actual evaporation"</span>;</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.02</span>, <span class="fl">0.05</span>),</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cevap,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>bottom),</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>      rotation <span class="op">=</span> <span class="fl">0.4</span>,</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">0.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../../images/soil_evap.png" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-4-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Evaporation reduction as function of available soil moisture</figcaption>
 </figure>
 </div>
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
-``` -->
+</div>
+</div>
 <p>When more soil layers are present, soil evaporation is only provided from the upper soil layer, and soil evaporation is split in evaporation from the unsaturated store and evaporation from the saturated store. Water is first evaporated from the unsaturated store. The remaining potential soil evaporation can be used for evaporation from the saturated store, but only when the water table is present in the upper soil layer. Both the evaporation from the unsaturated store and the evaporation from the saturated store are limited by the minimum of the remaining potential soil evaporation and the available water in the unsaturated/saturated zone of the upper soil layer. Also for multiple soil layers, the evaporation (both unsaturated and saturated) decreases linearly with decreasing water availability.</p>
 </section>
 <section id="transpiration" class="level3">
 <h3 class="anchored" data-anchor-id="transpiration">Transpiration</h3>
 <p>The maximum possible root water extraction rate for each soil layer is determined by partitioning the potential transpiration rate <span class="math inline">\(T_p\)</span> based on the fraction of the total root length density fraction in each soil layer. See also the conceptual figure below.</p>
+<div id="8" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors and styles</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  csep <span class="op">=</span> <span class="st">"#999999"</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  croot <span class="op">=</span> <span class="st">"#993404"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  cwater <span class="op">=</span> <span class="st">"#1f78b4"</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  lssep <span class="op">=</span> <span class="op">:</span>dash</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  layers <span class="op">=</span> [<span class="fl">0</span>, <span class="fl">150</span>, <span class="fl">250</span>, <span class="fl">325</span>]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  all_layers <span class="op">=</span> <span class="fu">copy</span>(layers)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  rootdepth <span class="op">=</span> <span class="fl">230</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  waterdepth <span class="op">=</span> <span class="fl">300</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  availcap <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  usl <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate available capacity and unsaturated layer</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>(<span class="fu">length</span>(layers) <span class="op">-</span> <span class="fl">1</span>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>      usl_i <span class="op">=</span> <span class="fu">min</span>(layers[i <span class="op">+</span> <span class="fl">1</span>], waterdepth) <span class="op">-</span> layers[i]</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">push!</span>(usl, usl_i)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> usl_i <span class="op">&gt;</span> <span class="fl">0</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>          cap <span class="op">=</span> <span class="fu">min</span>(<span class="fl">1.0</span>, <span class="fu">max</span>(<span class="fl">0.0</span>, (rootdepth <span class="op">-</span> layers[i]) <span class="op">/</span> usl_i))</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>          <span class="fu">push!</span>(availcap, cap)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>          <span class="fu">push!</span>(availcap, <span class="fl">0.0</span>)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>      <span class="cf">end</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  padding <span class="op">=</span> <span class="fl">10</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  w, h <span class="op">=</span> (<span class="fl">400</span>, <span class="fl">400</span>)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (w, h))</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      fig;</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>      bbox <span class="op">=</span> <span class="fu">BBox</span>(<span class="fl">50</span>, <span class="fl">100</span>, padding, h <span class="op">-</span> padding),</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>      xticksvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>      xticklabelsvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>      yticks <span class="op">=</span> all_layers,</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>      yreversed <span class="op">=</span> <span class="cn">true</span>,</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">""</span>,</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">""</span>,</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Show lines for different layers and depth values</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>(<span class="fu">length</span>(all_layers) <span class="op">-</span> <span class="fl">1</span>)</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>      layer <span class="op">=</span> all_layers[i]</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>      y_mean <span class="op">=</span> <span class="fu">mean</span>([all_layers[i <span class="op">+</span> <span class="fl">1</span>], all_layers[i]])</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>      <span class="fu">hlines!</span>(ax, [layer]; color <span class="op">=</span> csep, linestyle <span class="op">=</span> lssep)</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>      <span class="fu">text!</span>(</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>          fig.scene,</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>          <span class="fu">Point2f</span>(<span class="fl">0.09</span>, <span class="fl">1</span> <span class="op">-</span> (y_mean <span class="op">/</span> <span class="fu">maximum</span>(layers)));</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> <span class="fu">string</span>(all_layers[i <span class="op">+</span> <span class="fl">1</span>] <span class="op">-</span> all_layers[i]),</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>          space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>          align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>center),</span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>          rotation <span class="op">=</span> <span class="cn">pi</span> <span class="op">/</span> <span class="fl">2</span>,</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>          color <span class="op">=</span> <span class="st">"#b3b3b3"</span>,</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>      <span class="fu">text!</span>(</span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>          fig.scene,</span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>          <span class="fu">Point2f</span>(<span class="fl">0.8</span>, <span class="fl">1</span> <span class="op">-</span> (y_mean <span class="op">/</span> <span class="fu">maximum</span>(layers)));</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> <span class="st">"maxextr = </span><span class="sc">\n</span><span class="st"> </span><span class="sc">$</span>(<span class="fu">round</span>(availcap[i], digits <span class="op">=</span> <span class="fl">2</span>))<span class="st"> ⋅ soilwater"</span>,</span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>          space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>          align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>center),</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add lines indicating water level and rootzone depth</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hlines!</span>(ax, [rootdepth]; color <span class="op">=</span> croot, linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">poly!</span>(ax, [<span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span>], [waterdepth, <span class="fl">375</span>, <span class="fl">375</span>, waterdepth]; color <span class="op">=</span> cwater, alpha <span class="op">=</span> <span class="fl">0.5</span>)</span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>      fig.scene,</span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Rooting depth"</span>;</span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.27</span>, <span class="fl">1.01</span> <span class="op">-</span> (rootdepth <span class="op">/</span> <span class="fu">maximum</span>(layers))),</span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> croot,</span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>      space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>center),</span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>      fig.scene,</span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Water table depth"</span>;</span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.27</span>, <span class="fl">1.01</span> <span class="op">-</span> (waterdepth <span class="op">/</span> <span class="fu">maximum</span>(layers))),</span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cwater,</span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>      space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>center),</span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Format axes</span></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, layers[<span class="kw">end</span>], <span class="fl">0</span>)</span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../../images/soil_unsatevap.png" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-5-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Conceptual overview of how maxextr depends on rooting depth and water table depth</figcaption>
 </figure>
 </div>
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide -->
+</div>
+</div>
 <p>A root water uptake reduction model is used to calculate a reduction coefficient as a function of soil water pressure, that may reduce the maximum possible root water extraction rate. The root water uptake reduction model is based on the concept proposed by Feddes et al.&nbsp;(1978). This concept defines a reduction coefficient <span class="math inline">\(\SIb{\alpha}{-}\)</span> as a function of soil water pressure <span class="math inline">\(\SIb{h}{cm}\)</span>. Four different levels of <span class="math inline">\(h\)</span> are defined: <span class="math inline">\(h_1\)</span>, <span class="math inline">\(h_2\)</span>, <span class="math inline">\(h_3\)</span> and <span class="math inline">\(h_4\)</span>. <span class="math inline">\(h_1\)</span> represents anoxic moisture conditions, <span class="math inline">\(h_2\)</span> represents field capacity, <span class="math inline">\(h_3\)</span> represents the point of critical soil moisture content (onset of drought stress), and <span class="math inline">\(h_4\)</span> represents the wilting point. The value of <span class="math inline">\(h_3\)</span> is a function of the potential transpiration rate, between <span class="math inline">\(\SI{1}{mm\ d^{-1}}\)</span> and <span class="math inline">\(\SI{5}{mm\ d^{-1}}\)</span>. If <span class="math inline">\(T_p \le \SI{1}{mm\ d^{-1}}\)</span>, <span class="math inline">\(h_3\)</span> is set equal to <span class="math inline">\(h_{3\mathrm{low}}\)</span> (input model parameter). If <span class="math inline">\(T_p \ge \SI{5}{mm d^{-1}}\)</span>, <span class="math inline">\(h_3\)</span> is set equal to <span class="math inline">\(h_{3\mathrm{high}}\)</span> (input model parameter). For <span class="math inline">\(T_p\)</span> values between <span class="math inline">\(\SI{1}{mm\ d^{-1}}\)</span> and <span class="math inline">\(\SI{5}{mm\ d^{-1}}\)</span>, the value of <span class="math inline">\(h_3\)</span> is linearly related to <span class="math inline">\(T_p\)</span> (between <span class="math inline">\(h_{3\mathrm{low}}\)</span> and <span class="math inline">\(h_{3\mathrm{high}}\)</span>). Besides model parameters <span class="math inline">\(h_{3\mathrm{high}}\)</span> and <span class="math inline">\(h_{3\mathrm{low}}\)</span>, the critical pressure heads <span class="math inline">\(h_1\)</span>, <span class="math inline">\(h_2\)</span> and <span class="math inline">\(h_4\)</span> can be defined as input to the model.</p>
 <p>The current soil water pressure is determined following the concept defined by Brooks and Corey (1964):</p>
 <p><span class="math display">\[
@@ -629,25 +915,103 @@ S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{h}{cm}\)</span> is the pressure head, <span class="math inline">\(\SIb{h_b}{cm}\)</span> is the air entry pressure head, and <span class="math inline">\(\theta\)</span>, <span class="math inline">\(\theta_s\)</span>, <span class="math inline">\(\theta_r\)</span> and <span class="math inline">\(\lambda\)</span> as previously defined.</p>
 <p>Whenever the current soil water pressure drops below <span class="math inline">\(h_4\)</span>, the root water uptake is set to zero. The root water uptake is at ideal conditions whenever the soil water pressure is above <span class="math inline">\(h_3\)</span>, with a linear transition between <span class="math inline">\(h_3\)</span> and <span class="math inline">\(h_4\)</span>. The assumption that very wet conditions do not affect root water uptake too much is probably generally applicable to natural vegetation. For crops this assumption is not valid and in this case root water uptake above <span class="math inline">\(h_1\)</span> should be set to zero (oxygen deficit) and between <span class="math inline">\(h_1\)</span> and <span class="math inline">\(h_2\)</span> root water uptake is limited. This is possible by setting <span class="math inline">\(\alpha\)</span> for <span class="math inline">\(h_1\)</span> at <span class="math inline">\(0\)</span> (default is <span class="math inline">\(1\)</span>) through model input.</p>
+<div id="10" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Soil water pressure head"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"α [-]"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>      xticks <span class="op">=</span> ([<span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>], [<span class="st">"h₄</span><span class="sc">\n</span><span class="st">-15849 cm"</span>, <span class="st">"h₃</span><span class="sc">\n</span><span class="st">-400 cm"</span>, <span class="st">"h₂</span><span class="sc">\n</span><span class="st">-100 cm"</span>, <span class="st">"h₁</span><span class="sc">\n</span><span class="st">-10 cm"</span>]),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot line</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>], [<span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../../images/soil_rootwateruptake.png" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-6-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Root water uptake reduction coefficient as a function of soil water pressure</figcaption>
 </figure>
 </div>
-<!--
-# Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide
--->
+</div>
+</div>
 <p>The computation of transpiration from the saturated store depends on the water table depth, rooting depth, the reduction coefficient <span class="math inline">\(\alpha\)</span>, the fraction of wet roots and the root fraction below the water table. The fraction of wet roots is determined using a sigmoid function (see figure below). The parameter <code>rootdistpar</code> defines the sharpness of the transition between fully wet and fully dry roots. If the water table depth is equal to or lower than the rooting depth, the remaining potential transpiration is used based on the potential transpiration and actual transpiration in the unsaturated zone. The remaining potential transpiration is multiplied by the wet roots fraction and <span class="math inline">\(\alpha\)</span> (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil. If the water table depth intersects the rooting depth, the potential transpiration is multiplied by the remaining root fraction (below the water table), wet roots fraction and the reduction coefficient (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil.</p>
+<div id="12" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Wflow</span>: scurve</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Settings</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  watertable <span class="op">=</span> <span class="fu">collect</span>(<span class="fl">250</span><span class="op">:</span><span class="fl">0.5</span><span class="op">:</span><span class="fl">300</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  rootingdepth <span class="op">=</span> <span class="fl">275.0</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  rootdistpars <span class="op">=</span> [<span class="op">-</span><span class="fl">500.0</span>, <span class="op">-</span><span class="fl">1.0</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.3</span>]</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot options</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  colors <span class="op">=</span> [<span class="st">"#fed98e"</span>, <span class="st">"#fe9929"</span>, <span class="st">"#d95f0e"</span>, <span class="st">"#993404"</span>]</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Fraction of wet roots [-]"</span>,</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Water table depth [mm]"</span>,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      yreversed <span class="op">=</span> <span class="cn">true</span>,  <span class="co"># Reverse y-axis to match water table depth orientation</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines for each rootdistpar</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (rootdistpar, color) <span class="kw">in</span> <span class="fu">zip</span>(rootdistpars, colors)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      wetrootfrac <span class="op">=</span> @. <span class="fu">scurve</span>(watertable, rootingdepth, <span class="fu">Float64</span>(<span class="fl">1.0</span>), rootdistpar)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">lines!</span>(ax, wetrootfrac, watertable; color <span class="op">=</span> color, label <span class="op">=</span> <span class="st">"</span><span class="sc">$</span>rootdistpar<span class="st">"</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add rooting depth annotation</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hlines!</span>(ax, [rootingdepth]; linestyle <span class="op">=</span> <span class="op">:</span>dash, color <span class="op">=</span> <span class="st">"#999999"</span>)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>      <span class="st">"rootingdepth = </span><span class="sc">$</span>rootingdepth<span class="st"> mm"</span>;</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">1.0</span>, rootingdepth <span class="op">+</span> <span class="fl">0.5</span>),</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> <span class="st">"#999999"</span>,</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>right, <span class="op">:</span>top),</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axislegend</span>(<span class="st">"rootdistpar"</span>; position <span class="op">=</span> <span class="op">:</span>lt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="fu">maximum</span>(watertable), <span class="fu">minimum</span>(watertable))  <span class="co"># Reverse y-axis</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>)</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../../images/soil_wetroots.png" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-7-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Amount of wet roots and the effect of the <code>rootdistpar</code> parameter</figcaption>
 </figure>
 </div>
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide -->
+</div>
+</div>
 </section>
 </section>
 <section id="soil-processes" class="level2">
@@ -668,8 +1032,8 @@ S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}
     S_\mathrm{deficit} = (\theta_s-\theta_r) z_\mathrm{soil} - S_\mathrm{sat}.
 \]</span></p>
 <p>All infiltrating water enters the unsaturated store first. The soil bucket can be split-up in different layers, by providing the thickness <span class="math inline">\(\SIb{}{mm}\)</span> of the layers in the TOML file. The following example specifies three layers (from top to bottom) of <span class="math inline">\(100\)</span>, <span class="math inline">\(300\)</span> and <span class="math inline">\(800\)</span> <span class="math inline">\(\SI{}{mm}\)</span>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">thicknesslayers</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">thicknesslayers</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The code checks for each grid cell the specified layers against the soil thickness <span class="math inline">\(\SIb{}{mm}\)</span>, and adds or removes (partly) layer(s) based on the soil thickness.</p>
 <p>Assuming a unit head gradient, the potential transfer of water <span class="math inline">\(\SIb{Q_\mathrm{transfer, pot}}{mm\ t^{-1}}\)</span> from the unsaturated storage in a layer <span class="math inline">\(\SIb{S_\mathrm{unsat}}{mm}\)</span> is controlled by the vertical saturated hydraulic conductivity <span class="math inline">\(\SIb{K_\mathrm{vz}}{mm\ t^{-1}}\)</span> at depth <span class="math inline">\(\SIb{z_\mathrm{bottom}}{mm}\)</span> (bottom layer) or <span class="math inline">\(\SIb{z_\mathrm{watertable}}{mm}\)</span>, the effective saturation degree of the layer, and a Brooks-Corey power coefficient <span class="math inline">\(c\)</span> based on the pore size distribution index <span class="math inline">\(\lambda\)</span> (Brooks and Corey, 1964):</p>
 <p><span class="math display">\[
@@ -679,48 +1043,49 @@ S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}
 \end{gathered}
 \]</span></p>
 <p>When the soil bucket is not split-up into different layers, it is possible to use the original Topog_SBM vertical transfer formulation, by specifying in the TOML file:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">transfermethod</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">transfermethod</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The potential transfer of water from the unsaturated store to the saturated store is in that case controlled by the vertical saturated hydraulic conductivity <span class="math inline">\(\SIb{K_\mathrm{vz}}{mm\ t^{-1}}\)</span> at depth <span class="math inline">\(\SIb{z_\mathrm{watertable}}{mm}\)</span> and the ratio between <span class="math inline">\(\SIb{S_\mathrm{unsat}}{mm}\)</span> and <span class="math inline">\(\SIb{S_\mathrm{deficit}}{mm}\)</span>:</p>
 <p><span class="math display">\[
     Q_\mathrm{transfer, pot} = K_\mathrm{vz}\frac{S_\mathrm{unsat}}{S_\mathrm{deficit}}.
 \]</span></p>
 <p>Four different saturated hydraulic conductivity depth profiles (<code>saturated_hydraulic_conductivity_profile</code>) are available and a <code>saturated_hydraulic_conductivity_profile</code> can be specified in the TOML file as follows:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical]</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">saturated_hydraulic_conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential_constant"</span> <span class="co"># optional, one of ("exponential", "exponential_constant", "layered", "layered_exponential"), default is "exponential"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical]</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">saturated_hydraulic_conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential_constant"</span> <span class="co"># optional, one of ("exponential", "exponential_constant", "layered", "layered_exponential"), default is "exponential"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Soil measurements are often available for about the upper <span class="math inline">\(\SI{1.5-2}{m}\)</span> of the soil column to estimate the saturated hydraulic conductivity, while these measurements are often lacking for soil depths beyond <span class="math inline">\(\SI{1.5-2}{m}\)</span>. These different profiles allow to extent the saturated hydraulic conductivity profile based on measurements (either an exponential fit or hydraulic conductivity value per soil layer) with an exponential or constant profile. By default, with <code>saturated_hydraulic_conductivity_profile</code> “exponential”, the saturated hydraulic conductivity <span class="math inline">\(\SIb{K_\mathrm{vz}}{mm\ t^{-1}}\)</span> declines with soil depth <span class="math inline">\(\SIb{z}{mm}\)</span> in the model according to:</p>
 <p><span class="math display">\[
     K_\mathrm{vz} = K_0 e^{-\subtext{f}{Kv} z},
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{K_0}{mm\ t^{-1}}\)</span> is the vertical saturated hydraulic conductivity at the soil surface and <span class="math inline">\(\SIb{\subtext{f}{Kv}}{mm^{-1}}\)</span> is a scaling parameter.</p>
 <p>The plot below shows the relation between soil depth <span class="math inline">\(z\)</span> and vertical saturated hydraulic conductivity <span class="math inline">\(K_\mathrm{vz}\)</span> for different values of <span class="math inline">\(\subtext{f}{Kv}\)</span>.</p>
-<div id="2" class="cell" data-execution_count="1">
+<div id="14" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_theme!</span>()</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel<span class="op">=</span>L<span class="st">"K_\mathrm{vz}\;[\mathrm{mm/day}]"</span>, ylabel<span class="op">=</span>L<span class="st">"-z\;[\mathrm{mm}]"</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5.0</span><span class="op">:</span><span class="fl">1000</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    kv <span class="op">=</span> <span class="fl">100.0</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> <span class="fl">0.6</span> <span class="op">./</span> <span class="fu">collect</span>(<span class="fl">50</span><span class="op">:</span><span class="fl">150.0</span><span class="op">:</span><span class="fl">800</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> fi <span class="kw">in</span> f</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lines!</span>(ax, kv <span class="op">.*</span> <span class="fu">exp</span>.(<span class="op">-</span>fi <span class="op">.*</span> z), <span class="op">-</span>z, label<span class="op">=</span><span class="pp">@sprintf</span>(<span class="st">"%.2e"</span>, fi))</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Legend</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], ax, L<span class="st">"f_\mathrm{Kv}"</span>)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    fig</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_theme!</span>()</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel<span class="op">=</span>L<span class="st">"K_\mathrm{vz}\;[\mathrm{mm/day}]"</span>, ylabel<span class="op">=</span>L<span class="st">"-z\;[\mathrm{mm}]"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5.0</span><span class="op">:</span><span class="fl">1000</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    kv <span class="op">=</span> <span class="fl">100.0</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> <span class="fl">0.6</span> <span class="op">./</span> <span class="fu">collect</span>(<span class="fl">50</span><span class="op">:</span><span class="fl">150.0</span><span class="op">:</span><span class="fl">800</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> fi <span class="kw">in</span> f</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lines!</span>(ax, kv <span class="op">.*</span> <span class="fu">exp</span>.(<span class="op">-</span>fi <span class="op">.*</span> z), <span class="op">-</span>z, label<span class="op">=</span><span class="pp">@sprintf</span>(<span class="st">"%.2e"</span>, fi))</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Legend</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], ax, L<span class="st">"f_\mathrm{Kv}"</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    fig</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display" data-execution_count="1">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="landhydrology_sbm_files/figure-html/cell-2-output-1.svg" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-8-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Effect of different values of <code>f_Kv</code> on the vertical saturated hydraulic conductivity profile</figcaption>
 </figure>
 </div>
 </div>
@@ -748,9 +1113,9 @@ S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}
 <section id="infiltration-in-frozen-soils" class="level4">
 <h4 class="anchored" data-anchor-id="infiltration-in-frozen-soils">Infiltration in frozen soils</h4>
 <p>An optional reduction factor is applied to the infiltration capacity when snow is modelled, and the model setting <code>soilinfreduction</code> is set to true:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soilinfreduction</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soilinfreduction</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This reduction factor depends on the near-surface soil temperature, which is modelled based on the approach of Wigmosta et al., 2009:</p>
 <p><span class="math display">\[
 T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T_\mathrm{soil}^{t-1}),
@@ -764,14 +1129,59 @@ T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T
 \end{gathered}
 \]</span></p>
 <p>A S-curve (see plot below) is used to make a smooth transition (a c-factor (<span class="math inline">\(c\)</span>) of 8.0 is used):</p>
+<div id="16" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Wflow</span>: infiltration_reduction_factor</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define data</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  temps <span class="op">=</span> <span class="fu">collect</span>(<span class="op">-</span><span class="fl">3</span><span class="op">:</span><span class="fl">0.1</span><span class="op">:</span><span class="fl">3</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  cf_soils <span class="op">=</span> [<span class="fl">0.038</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>]  <span class="co"># Example values for cf_soil</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  colors <span class="op">=</span> [<span class="st">"#bae4bc"</span>, <span class="st">"#7bccc4"</span>, <span class="st">"#2b8cbe"</span>]  <span class="co"># Colors for each cf_soil</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Soil temperature [°C]"</span>,</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Infiltration correction factor [-]"</span>,</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines for each cf_soil</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (cf_soil, color) <span class="kw">in</span> <span class="fu">zip</span>(cf_soils, colors)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>      y_vals <span class="op">=</span> @. <span class="fu">infiltration_reduction_factor</span>(</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>          temps,</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>          cf_soil;</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>          modelsnow <span class="op">=</span> <span class="cn">true</span>,</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>          soilinfreduction <span class="op">=</span> <span class="cn">true</span>,</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">lines!</span>(ax, temps, y_vals; label <span class="op">=</span> <span class="st">"</span><span class="sc">$</span>cf_soil<span class="st">"</span>, color <span class="op">=</span> color)</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axislegend</span>(<span class="st">"cf_soil"</span>; framevisible <span class="op">=</span> <span class="cn">false</span>, position <span class="op">=</span> <span class="op">:</span>lt)</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="fu">minimum</span>(temps), <span class="fu">maximum</span>(temps))</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">0.03</span>, <span class="fl">1.03</span>)</span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="../../images/soil_frozeninfilt.png" class="img-fluid figure-img"></p>
+<p><img src="landhydrology_sbm_files/figure-html/cell-9-output-1.svg" class="img-fluid figure-img"></p>
 <figcaption>Infiltration correction factor as a function of soil temperature</figcaption>
 </figure>
 </div>
-<!-- # Figure created using python: # hide
-# https://gist.github.com/JoostBuitink/21dd32e71fd1360117fcd1c532c4fd9d#file-sbm_soil_figs-py # hide -->
+</div>
+</div>
 </section>
 </section>
 <section id="capillary-rise" class="level3">
@@ -787,8 +1197,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="leakage" class="level3">
 <h3 class="anchored" data-anchor-id="leakage">Leakage</h3>
 <p>If the maximum leakage <span class="math inline">\(\SIb{}{mm\ d^{-1}}\)</span> input model parameter is set &gt; 0, water is lost from the saturated zone and runs out of the model. Leakage can be enabled by specifying the following in the TOML file:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_sat-zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"maxleakage"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_sat-zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"maxleakage"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="open-water" class="level2">
@@ -798,10 +1208,10 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="non-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="non-irrigation">Non-irrigation</h2>
 <p>Non-irrigation water demand and allocation computations are supported for the sectors domestic, industry and livestock. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>For these non-irrigation sectors the gross demand (<span class="math inline">\(d_\mathrm{gross}\)</span> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>) and net demand (<span class="math inline">\(d_\mathrm{net}\)</span> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>) are provided to the model (input through cyclic <span class="math inline">\(\SIb{}{mm\ d^{-1}}\)</span> or forcing data <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>). Gross demand represents the total demand and hence the total abstraction from surface water or groundwater when sufficient water is available. Net demand represents water consumption. The portion of total abstracted water that is not consumed is returned as surface water. The return flow fraction (<span class="math inline">\(\SIb{f_\mathrm{return}}{-}\)</span>) is calculated as follows:</p>
 <p><span class="math display">\[
     \subtext{f}{return} = 1.0 - \frac{\subtext{d}{net}}{\subtext{d}{gross}},
@@ -811,8 +1221,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="non-paddy-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="non-paddy-irrigation">Non-paddy irrigation</h2>
 <p>Non-paddy (other crops than flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Irrigation is applied during the growing season when input parameter irrigation trigger <span class="math inline">\(\SIb{}{-}\)</span> for non-paddy irrigation is <code>true</code> (or <code>on</code>) and when water depletion exceeds the readily available water:</p>
 <p><span class="math display">\[
     (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat}) \ge (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat, h3}),
@@ -822,8 +1232,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="paddy-irrigation" class="level2">
 <h2 class="anchored" data-anchor-id="paddy-irrigation">Paddy irrigation</h2>
 <p>Paddy (flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Irrigation is applied during the growing season when input parameter irrigation trigger <span class="math inline">\(\SIb{}{-}\)</span> is <code>true</code> (or <code>on</code>) and when the paddy water depth <code>h</code> <span class="math inline">\(\SIb{}{mm}\)</span> reaches below the minimum water depth <code>h_min</code> <span class="math inline">\(\SIb{}{mm}\)</span> (see also the figure below). The net irrigation demand <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> is the irrigation rate required to reach the optimal paddy water depth <code>h_opt</code> <span class="math inline">\(\SIb{}{mm}\)</span>, an approach similar to Xie and Cui (2011). To account for limited irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for paddy fields (<span class="math inline">\(\SIb{}{-}\)</span>, default is 1.0), resulting in gross irrigation demand <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>. Finally, the gross irrigation demand is limited by the maximum irrigation rate (<span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, default is <span class="math inline">\(\SIb{25}{mm\ d^{-1}}\)</span>). If the maximum irrigation rate is applied, irrigation continues at subsequent time steps until the optimal paddy water depth <code>h_opt</code> is reached. Irrigation is added to the amount of water available for infiltration. When the paddy water depth <code>h</code> exceeds <code>h_max</code> <span class="math inline">\(\SIb{}{mm}\)</span> runoff occurs, and this amount is added to the runoff routing scheme for overland flow. The figure below shows a typical vertical soil profile of a puddled rice soil with a muddy layer of about 15 cm (in this case represented by two soil layers of <span class="math inline">\(\SI{5}{cm}\)</span> and <span class="math inline">\(\SI{10}{cm}\)</span> thickness), a plow soil layer of 5 cm with relative low permeability (vertical hydraulic conductivity <span class="math inline">\(\subtext{K}{vz}\)</span> of about <span class="math inline">\(\SI{5}{mm\ d^{-1}}\)</span>), and a non-puddled soil below the plow soil layer. The low vertical hydraulic conductivity of the plow soil layer can be realized by making use of a multiplication factor <span class="math inline">\(\SIb{}{-}\)</span> applied to the vertical saturated hydraulic conductivity at soil depth <span class="math inline">\(\SIb{z}{mm}\)</span>.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -842,8 +1252,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <li>groundwater (max <span class="math inline">\(\SI{75}{\%}\)</span> of total available water)</li>
 </ul>
 <p>The model parameter fraction surface water used (default is <span class="math inline">\(1.0\)</span>) determines how much water is supplied by available surface water and groundwater, and can be specified in the TOML file as follows:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="local" class="level3">
 <h3 class="anchored" data-anchor-id="local">Local</h3>
 <p>First, surface water abstraction (excluding reservoir and lake locations) is computed to satisfy local (same grid cell) water demand. The available surface water volume is limited by a fixed scaling factor of <span class="math inline">\(0.8\)</span> to prevent rivers from completely drying out. It is assumed that the water demand cannot be satisfied completely from local surface water and groundwater. The next step is to satisfy the remaining water demand for allocation areas <span class="math inline">\(\SIb{}{-}\)</span>, described in the next sub-section.</p>
@@ -851,8 +1261,8 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <section id="allocation-areas" class="level3">
 <h3 class="anchored" data-anchor-id="allocation-areas">Allocation areas</h3>
 <p>Allocation areas can be specified as follows in the TOML file:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__number</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__number</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>For allocation areas the water demand <span class="math inline">\(\SIb{\subtext{V}{sw, demand}}{m^3}\)</span> and availability <span class="math inline">\(\SIb{\subtext{V}{sw, availabilty}}{m^3}\)</span> are summed (including reservoir and lake locations limited by a fixed scaling factor of <span class="math inline">\(0.98\)</span>), and the total surface water abstraction is then:</p>
 <p><span class="math display">\[
     \subtext{V}{sw, abstraction} = \min (\subtext{V}{sw, demand}, \subtext{V}{sw, availabilty}).

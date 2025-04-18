@@ -436,22 +436,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="enabling-water-demand-and-allocation">Enabling water demand and allocation</h2>
 <p>The model types <code>sbm</code> and <code>sbm_gwf</code> support water demand and allocation computations, in combination with the kinematic wave and local inertial runoff routing scheme for river and overland flow.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># example of water demand and allocation input parameters as cyclic data</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_gross"</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_net"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_gross"</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_net"</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_gross"</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_net"</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span>        <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span>        <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_gross"</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_net"</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_gross"</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_net"</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_gross"</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_net"</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__number</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span>
