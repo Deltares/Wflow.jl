@@ -20,13 +20,11 @@ Below, we show how to install wflow from Julia's package repository and how to i
 latest version from GitHub.
 
 First, download and install the [current stable release of
-Julia](https://julialang.org/downloads/#current_stable_release).  If you have any issues
-installing Julia, please see [platform specific
-instructions](https://julialang.org/downloads/platform/) for further instructions.
+Julia](https://modernjuliaworkflows.org/writing/#installation).
 
-If you are new to Julia, it might be a good idea to check out the [Getting Started section of
-the Julia Manual](https://docs.julialang.org/en/v1/manual/getting-started/). You can also find
-additional learning resources at [julialang.org/learning](https://julialang.org/learning/).
+If you are new to Julia, it might be a good idea to check out the
+[REPL](https://modernjuliaworkflows.org/writing/#repl). You can also find additional
+learning resources at [julialang.org/learning](https://julialang.org/learning/).
 
 ### Install from Julia's package repository
 
