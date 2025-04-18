@@ -11,9 +11,9 @@ model schematization, (dynamic) forcing data, results and states.
 The wflow plugin [hydroMT-wflow](https://github.com/Deltares/hydromt_wflow) of hydroMT can be
 used to build and analyze the following model configurations:
 
-- [wflow\_sbm + kinematic wave routing](../model_docs/model_configurations.qmd#sbm-kinematic-wave)
-- [wflow\_sbm + local inertial river and floodplain](../model_docs/model_configurations.qmd#sbm-local-inertial-river)
-- [wflow\_sbm + local inertial river (1D) and land (2D)](../model_docs/model_configurations.qmd#sbm-local-inertial-river-1d-and-land-2d)
+- [wflow\_sbm + kinematic wave routing](../model_docs/model_configurations.qmd#kinematic-wave)
+- [wflow\_sbm + local inertial river and floodplain](../model_docs/model_configurations.qmd#local-inertial-river)
+- [wflow\_sbm + local inertial river (1D) and land (2D)](../model_docs/model_configurations.qmd#local-inertial-river-1d-and-land-2d)
 - [wflow\_sediment](../model_docs/model_configurations.html#wflow_sediment)
 
 To learn more about the wflow plugin of this Python package, we refer to the [hydroMT-wflow
@@ -65,7 +65,7 @@ example
 
 Optionally, but also not directly part of a model component are `gauge` locations, that are
 used to extract gridded data from certain locations, and `lake` and `reservoir` locations
-and areas (coverage). 
+and areas (coverage).
 
 The different supported model configurations are described in the section [Model
 configurations](../model_docs/model_configurations.qmd). Wflow\_sbm models have the [Land
@@ -93,7 +93,7 @@ models there are two ways to include subsurface flow:
    `area` parameter is derived from the model grid. Parameters that are part of the boundary
    conditions of the unconfined aquifer are listed under [Constant
    Head](../model_docs/routing/gwf.qmd#head-boundary) and [Boundary
-   conditions](../model_docs/parameters_routing.qmd#boundary-conditions) sections.
+   conditions](../model_docs/parameters_routing.qmd#river-boundary) sections.
 
 The default wflow\_sbm model routing configuration makes use of the kinematic wave surface
 routing (river flow, overland flow or both) and input data required for the river and
@@ -109,7 +109,7 @@ the local inertial model as part of the wflow\_sbm models (model types `sbm` and
 
 Input parameters for this approach are listed under [River flow (local
 inertial)](../model_docs/parameters_routing.qmd#local-inertial), including the optional 1D
-[floodplain schematization](../model_docs/parameters_routing.qmd#d-floodplain), and
+[floodplain schematization](../model_docs/parameters_routing.qmd#d-floodplain-flow), and
 [Overland flow (local inertial)](../model_docs/parameters_routing.qmd#overland-flow)
 sections.
 
@@ -121,7 +121,7 @@ and input parameters are listed under the
 The [wflow\_sediment](../model_docs/model_configurations.qmd#wflow_sediment) model
 configuration consists of the [Soil Erosion](../model_docs/land/sediment.qmd) concept and
 the input parameters for this concept are listed under the
-[Sediment](../model_docs/parameters_sediment.qmd#sediment) section. The parameters of the
+[Sediment](../model_docs/parameters_sediment.qmd) section. The parameters of the
 routing [Sediment Flux in overland
 flow](../model_docs/routing/sediment_flux.qmd#sediment-flux-in-overland-flow) concept are
 listed under the [Overland flow](../model_docs/parameters_routing.qmd#overland-flow-1)

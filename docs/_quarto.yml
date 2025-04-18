@@ -101,6 +101,7 @@ website:
       contents:
         - file: model_docs/index.qmd
         - file: model_docs/model_configurations.qmd
+        - file : model_docs/model_settings.qmd
         - text: Land models
           contents:
           - file: model_docs/land/landhydrology_sbm.qmd
@@ -112,7 +113,6 @@ website:
           - file: model_docs/routing/waterbodies.qmd
           - file: model_docs/routing/gwf.qmd
           - file: model_docs/routing/sediment_flux.qmd
-        - file : model_docs/model_settings.qmd
         - text: Model parameters and variables
           contents:
           - file: model_docs/parameters_intro.qmd

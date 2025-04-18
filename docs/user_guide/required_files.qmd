@@ -36,7 +36,7 @@ file is presented below.
 
 The list below contains a brief overview of several essential static maps required to run
 wflow. These NC variables names refer to the example data of the wflow\_sbm + kinematic wave
-model (see [here](../getting_started/download_example_models.qmd#wflow_sbm--kinematic-wave)).
+model (see [here](../getting_started/download_example_models.qmd#wflow_sbm-kinematic-wave)).
 Example data for the other model configurations can be found
 [here](../getting_started/download_example_models.qmd).
 
@@ -74,7 +74,7 @@ The forcing data typically contains the meteorological boundary conditions. This
 provided as a single netCDF file, with several variables containing the forcing data for
 precipitation, temperature and potential evaporation. The code snippet below shows the contents
 of the example file (downloaded
-[here](../getting_started/download_example_models.qmd#wflow_sbm--kinematic-wave)), and
+[here](../getting_started/download_example_models.qmd#wflow_sbm-kinematic-wave)), and
 displaying the content with `NCDatasets` in Julia. As can be seen, each forcing variable
 (`precip`, `pet` and `temp`) consists of a three-dimensional dataset (`x`, `y`, and `time`),
 and each timestep consists of a two-dimensional map with values at each grid cell. Only values

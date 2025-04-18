@@ -48,7 +48,7 @@ example, the variable `soil_layer~1_water_unsat-zone__depth` refers to the amoun
 in the unsaturated store of the first soil layer of the `SBM` `soil` model.
 
 The model state and output variable standard names are provided in the "Model parameters and
-variables" section of the [Model documentation](../model_docs/index.qmd).
+variables" section of the [Model documentation](../model_docs/parameters_intro.qmd).
 
 ## Couple to a groundwater model
 For the coupling of wflow\_sbm with kinematic wave routing for subsurface flow with a

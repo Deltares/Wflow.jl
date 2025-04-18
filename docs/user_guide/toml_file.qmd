@@ -124,12 +124,12 @@ land_surface_water__instantaneous_depth = "h_land"
 The `input` section of the TOML file contains information about the input forcing and model
 parameters files (in netCDF format). `input.forcing` lists the mapping of forcing parameter
 standard names to the external netCDF variable names. `input.static` lists the mapping of
-static parameter standard names to the external netCDF variable names. In `input.cyclic`, 
-it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In 
-the example below, the model parameter standard name `vegetation__leaf-area_index` is mapped 
-to the external netCDF variable "LAI". Cyclic time inputs of parameters can be different 
-(e.g., daily or monthly). The `time` dimension name of these cylic input parameters in the 
-model parameter netCDF file should start with "time". If a model parameter is not mapped, 
+static parameter standard names to the external netCDF variable names. In `input.cyclic`,
+it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In
+the example below, the model parameter standard name `vegetation__leaf-area_index` is mapped
+to the external netCDF variable "LAI". Cyclic time inputs of parameters can be different
+(e.g., daily or monthly). The `time` dimension name of these cylic input parameters in the
+model parameter netCDF file should start with "time". If a model parameter is not mapped,
 a default value will be used, if available.
 
 Forcing parameters should be available in `input.path_forcing` file and both static and
@@ -231,7 +231,7 @@ levels generally have a limited effect on file size.
 
 ```toml
 [output.netcdf_grid]
-path = "output_moselle.nc"  	      # Location of the output file
+path = "output_moselle.nc"          # Location of the output file
 compressionlevel = 1                # Compression level (default 0)
 
 # Mapping of standard model variable names to external netCDF variables
@@ -276,7 +276,7 @@ river_gauge = "wflow_gauges_grdc"
 [output.netcdf_scalar]
 path = "output_scalar_moselle.nc"    # Location of the results
 
-# Extract the values of "river_water__volume_flow_rate" using the gauges map, 
+# Extract the values of "river_water__volume_flow_rate" using the gauges map,
 # and assign it with the name 'Q' as a variable in the netCDF file
 [[output.netcdf_scalar.variable]]
 name = "Q"
