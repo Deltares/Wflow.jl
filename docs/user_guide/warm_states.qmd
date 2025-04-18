@@ -3,17 +3,15 @@ title: Starting with "warm" states
 ---
 
 The `state` section in the TOML file provides information on the input file if the model is
-initialized with a warm state (`path_input`) and to what file the states are written at the end
-of the model run (`path_output`). Please note that the model setting `reinit` needs to be set
-to `false` in order to initialize the model with states from the file located at `path_input`.
-A mapping between external state names and internal model states is required. This information
-is specified for each model component, the `vertical` model and `lateral` model components. In
-the example below the `vertical` component represents the SBM concept, and for the `lateral`
-components there is a `river` (including optional `reservoir`, `lake` and `floodplain`
-components), `land` and `subsurface` domain. The internal model states are listed on the left
-side, and the external state names are listed on the right side. Note that `path_input` is only
-required when `reinit` is set to false. `path_output` is optional, an output state file is only
-written when it is defined. If neither is set, the entire `state` section can be left out.
+initialized with a warm state (`path_input`) and to what file the states are written at the
+end of the model run (`path_output`). Please note that the model setting `reinit` needs to
+be set to `false` in order to initialize the model with states from the file located at
+`path_input`. A mapping between external netCDF variable state names and model state
+variable standard names is required below the `[state.variables]` section. The model state
+variable standard names are listed on the left side, and the external netCDF variable state
+names are listed on the right side. Note that `path_input` is only required when `reinit` is
+set to false. `path_output` is optional, an output state file is only written when it is
+defined. If neither is set, the entire `state` section can be left out.
 
 ```toml
 [model]
@@ -23,35 +21,26 @@ reinit = false # cold (reinit = true) or warm state (reinit = false), default is
 path_input = "data/instates-moselle.nc"     # Location of the file with the input states
 path_output = "data/outstates-moselle.nc"   # Output location of the states after the model run
 
-[state.vertical]
-satwaterdepth = "satwaterdepth"
-snow = "snow"
-tsoil = "tsoil"
-ustorelayerdepth = "ustorelayerdepth"
-canopystorage = "canopystorage"
-snowwater = "snowwater"
-glacierstore ="glacierstore"
+[state.variables]
+vegetation_canopy_water__depth = "canopystorage"
 
-[state.lateral.river]
-q = "q_river"
-h = "h_river"
-h_av = "h_av_river"
+soil_water_sat-zone__depth = "satwaterdepth"
+soil_surface__temperature = "tsoil"
+soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 
-[state.lateral.river.floodplain]
-q = "q_floodplain"
-h = "h_floodplain"
+"snowpack~dry__leq-depth" = "snow"
+"snowpack~liquid__depth" = "snowwater"
 
-[state.lateral.river.reservoir]
-volume = "volume_reservoir"
+river_water__instantaneous_depth = "h_river"
+river_water__instantaneous_volume_flow_rate = "q_river"
 
-[state.lateral.river.lake]
-waterlevel = "waterlevel_lake"
+floodplain_water__instantaneous_volume_flow_rate = "q_floodplain"
+floodplain_water__instantaneous_depth = "h_floodplain"
 
-[state.lateral.subsurface]
-ssf = "ssf"
+reservoir_water__instantaneous_volume = "volume_reservoir"
 
-[state.lateral.land]
-q = "q_land"
-h = "h_land"
-h_av = "h_av_land"
+subsurface_water__volume_flow_rate  = "ssf"
+
+land_surface_water__instantaneous_volume_flow_rate = "q_land"
+land_surface_water__instantaneous_depth = "h_land"
 ```

@@ -10,19 +10,19 @@ that both options work for any parameter.
 
 ### How do I start wflow with initial conditions from a previous run?{#sec-modify-pars}
 
-See [here](./toml_file.qmd#state-options)
+See [here](./warm_states.qmd)
 
 ### How do I add external inflows and/or abstractions?
 
-`lateral.river.inflow`: positive for inflows, negative for abstraction. If parameter is time
+`river_water_inflow~external__volume_flow_rate`: positive for inflows, negative for abstraction. If parameter is time
 varying, add it to the correct section, see [below](#how-do-i-add-time-varying-parameters).
 
 ### How do I add time-varying parameters?
 
-Either through cyclic (add parameter to `cyclic` list in the toml), or to the forcing section.
+Either through cyclic (add parameter to `cyclic` list in the toml), or to the `forcing` section.
 
 ### How do I add different output?
 
 See [here for csv output](./toml_file.qmd#output-csv-section), [here for scalar netcdf
-data](./toml_file.qmd#scalar-data), and [here for gridded
+data](./toml_file.qmd#scalar-data), and [here for gridded netcdf
 output](./toml_file.qmd#output-netcdf-section).

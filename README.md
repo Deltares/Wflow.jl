@@ -22,7 +22,7 @@ For the installation enter the Pkg REPL by pressing `]` from the Julia REPL, and
 pkg> add Wflow
 ```
 A more detailed description, including a development install, is available
-[here](https://deltares.github.io/Wflow.jl/dev/user_guide/install/).
+[here](https://deltares.github.io/Wflow.jl/dev/getting_started/install).
 
 ## Contributions and reporting issues
 We welcome reporting of issues [here](https://github.com/Deltares/Wflow.jl/issues). Please

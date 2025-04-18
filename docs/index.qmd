@@ -64,11 +64,6 @@ wflow was developed in Python on top of the PCRaster Python extension. The Pytho
     </a>
   </li>
   <li class="nav-item" role="presentation">
-    <a class="nav-link" href="examples/index.html">
-      <i class="bi bi-graph-up"></i>Examples
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
     <a class="nav-link" href="user_guide/faq.html">
       <i class="bi bi-question-octagon"></i>Frequently asked questions
     </a>

@@ -36,19 +36,19 @@ file is presented below.
 
 The list below contains a brief overview of several essential static maps required to run
 wflow. These NC variables names refer to the example data of the wflow\_sbm + kinematic wave
-model (see [here](../getting_started/download_example_models.qmd#wflow_sbm--kinematic-wave)).
+model (see [here](../getting_started/download_example_models.qmd#wflow_sbm-kinematic-wave)).
 Example data for the other model configurations can be found
 [here](../getting_started/download_example_models.qmd).
 
-Description | NC variable name | unit
---- | --- | ---
-Flow direction (1-9) | `wflow_ldd` | -
-Map indicating the river cells (0-1) | `wflow_river` | -
-The length of the river | `wflow_riverlength` | m
-The width of the river | `wflow_riverwidth` | m
-Mask of the basin | `wflow_subcatch` | -
-Land slope | `Slope` | m m$^{-1}$
-River slope | `RiverSlope` | m m$^{-1}$
+Standard Name | Description | NC variable name | unit
+---- | --- | -- | -
+`local_drain_direction` | Local drain direction (1-9) | `wflow_ldd` | -
+`river_location__mask` | River mask (0-1) | `wflow_river` | -
+`river__length` | River length | `wflow_riverlength` | m
+`river__width ` | River width | `wflow_riverwidth` | m
+`subcatchment_location__count` | Subcatchment ids | `wflow_subcatch` | -
+`land_surface__slope ` | Land slope | `Slope` | m m$^{-1}$
+`river__slope` | River slope | `RiverSlope` | m m$^{-1}$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
 included in the same netCDF file, as long as their variable names are correctly mapped in the
@@ -57,6 +57,7 @@ models](../getting_started/download_example_models.qmd) on how to use this funct
 
 ::: callout-important
 When using cyclic data, three different options are supported:
+
 - 12 (monthly)
 - 365 (daily, where Feb. 29 is not present, so the value for Feb. 28 is taken. Dec. 31 is represented by DOY 365)
 - 366 (where Feb. 29 represents DOY 60, and Dec. 31 DOY 366)
@@ -73,7 +74,7 @@ The forcing data typically contains the meteorological boundary conditions. This
 provided as a single netCDF file, with several variables containing the forcing data for
 precipitation, temperature and potential evaporation. The code snippet below shows the contents
 of the example file (downloaded
-[here](../getting_started/download_example_models.qmd#wflow_sbm--kinematic-wave)), and
+[here](../getting_started/download_example_models.qmd#wflow_sbm-kinematic-wave)), and
 displaying the content with `NCDatasets` in Julia. As can be seen, each forcing variable
 (`precip`, `pet` and `temp`) consists of a three-dimensional dataset (`x`, `y`, and `time`),
 and each timestep consists of a two-dimensional map with values at each grid cell. Only values
