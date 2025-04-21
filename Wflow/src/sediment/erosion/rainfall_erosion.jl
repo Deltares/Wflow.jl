@@ -192,7 +192,7 @@ function RainfallErosionAnswersParameters(
     answers_overland_flow_factor = ncread(dataset, config, lens; sel = indices, defaults = 0.108, type = Float64)
     
     answers_parameters =
-        RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c)
+        RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c, answers_rainfall_factor = answers_overland_flow_factor)
     return answers_parameters
 end
 
