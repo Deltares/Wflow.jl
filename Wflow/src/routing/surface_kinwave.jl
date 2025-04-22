@@ -652,4 +652,3 @@ get_inflow_waterbody(::KinWaveRiverFlow, model::LateralSSF) =
 # Exclude subsurface flow for other groundwater components than `LateralSSF`.
 get_inflow_waterbody(::AbstractRiverFlowModel, model::GroundwaterFlow) =
     model.flow.connectivity.ncell .* 0.0
-get_inflow_waterbody(::KinWaveRiverFlow, model) = model.variables.to_river .* 0.0

@@ -23,7 +23,6 @@ function Model(config::Config, type::SbmModel)
         lakes = get(config.model, "lakes", false)::Bool,
         reservoirs = get(config.model, "reservoirs", false)::Bool,
         pits = get(config.model, "pits", false)::Bool,
-        subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool,
         water_demand = haskey(config.model, "water_demand"),
         drains = get(config.model, "drains", false)::Bool,
         kh_profile_type = get(

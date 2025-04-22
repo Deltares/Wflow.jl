@@ -181,43 +181,8 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
     return nothing
 end
 
-"""
-Struct for storing groundwater exchange variables for coupling with an external groundwater
-model.
-"""
-@with_kw struct GroundwaterExchangeVariables
-    exfiltwater::Vector{Float64}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    zi::Vector{Float64}           # Pseudo-water table depth [m] (top of the saturated zone)
-    to_river::Vector{Float64}     # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    ssf::Vector{Float64}          # Subsurface flow [m³ d⁻¹]
-end
-
-"Initialize groundwater exchange variables"
-function GroundwaterExchangeVariables(n::Int)
-    variables = GroundwaterExchangeVariables(;
-        exfiltwater = fill(MISSING_VALUE, n),
-        zi = fill(MISSING_VALUE, n),
-        to_river = fill(MISSING_VALUE, n),
-        ssf = zeros(n),
-    )
-    return variables
-end
-
-"Groundwater exchange"
-@with_kw struct GroundwaterExchange <: AbstractSubsurfaceFlowModel
-    variables::GroundwaterExchangeVariables
-end
-
-"Initialize groundwater exchange"
-function GroundwaterExchange(n::Int)
-    variables = GroundwaterExchangeVariables(n)
-    ssf = GroundwaterExchange(; variables)
-    return ssf
-end
-
 # wrapper methods
-get_water_depth(model::Union{LateralSSF, GroundwaterExchange}) = model.variables.zi
-get_exfiltwater(model::Union{LateralSSF, GroundwaterExchange}) = model.variables.exfiltwater
+get_water_depth(model::LateralSSF) = model.variables.zi
+get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
-get_flux_to_river(model::Union{LateralSSF, GroundwaterExchange}) =
-    model.variables.to_river ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+get_flux_to_river(model::LateralSSF) = model.variables.to_river ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]

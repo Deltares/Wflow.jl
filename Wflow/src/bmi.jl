@@ -44,24 +44,12 @@ function BMI.initialize(::Type{<:Model}, config_file)
 end
 
 """
-    BMI.update(model::Model; run = nothing)
+    BMI.update(model::Model)
 
 Update the model for a single timestep.
-# Arguments
-- `run = nothing`: to update a model partially.
 """
-function BMI.update(model::Model; run::Union{Nothing, String} = nothing)
-    if isnothing(run)
-        run_timestep!(model)
-    elseif run == "sbm_until_recharge"
-        run_timestep!(
-            model;
-            update_func = update_until_recharge!,
-            write_model_output = false,
-        )
-    elseif run == "sbm_after_subsurfaceflow"
-        run_timestep!(model; update_func = update_after_subsurfaceflow!)
-    end
+function BMI.update(model::Model)
+    run_timestep!(model)
     return nothing
 end
 
