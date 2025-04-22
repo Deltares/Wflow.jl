@@ -42,7 +42,6 @@ The Tables in this subsection show the available models settings for the model t
 ### Kinematic wave routing
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
-| `kinematic-wave_subsurface` | Use lateral subsurface flow component (`sbm` specific setting), if set to `false` coupling to an external groundwater model is possible | - | `true` |
 | `pits` | Include pits for kinematic wave flow continuous at subcatchment only (upstream of provided pit locations)  | - | `false` |
 | `min_streamorder_river` | Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)  | - | 6 |
 | `min_streamorder_land` | Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)  | - | 5 |
