@@ -47,8 +47,6 @@ website:
         file: getting_started/index.qmd
       - text: "User guide"
         file: user_guide/index.qmd
-      - text: "Examples"
-        file: examples/index.qmd
       - text: "Model documentation"
         file: model_docs/index.qmd
       - text: "Developments"
@@ -91,7 +89,6 @@ website:
           - file: user_guide/warm_states.qmd
           - file: user_guide/model_config.qmd
           - file: user_guide/multi_threading.qmd
-        - file: user_guide/output.qmd
         - text: Integrations
           contents:
           - file: user_guide/bmi.qmd
@@ -104,28 +101,30 @@ website:
       contents:
         - file: model_docs/index.qmd
         - file: model_docs/model_configurations.qmd
-        - text: Vertical processes
+        - file : model_docs/model_settings.qmd
+        - text: Land models
           contents:
-          - file: model_docs/vertical/sbm.qmd
-          - file: model_docs/vertical/sediment.qmd
-          - file: model_docs/vertical/shared_processes.qmd
-        - text: Lateral processes
+          - file: model_docs/land/landhydrology_sbm.qmd
+          - file: model_docs/land/sediment.qmd
+        - text: Routing concepts
           contents:
-          - file: model_docs/lateral/kinwave.qmd
-          - file: model_docs/lateral/local-inertial.qmd
-          - file: model_docs/lateral/waterbodies.qmd
-          - file: model_docs/lateral/gwf.qmd
-          - file: model_docs/lateral/sediment_flux.qmd
-        - text: Parameters
+          - file: model_docs/routing/kinwave.qmd
+          - file: model_docs/routing/local-inertial.qmd
+          - file: model_docs/routing/waterbodies.qmd
+          - file: model_docs/routing/gwf.qmd
+          - file: model_docs/routing/sediment_flux.qmd
+        - text: Model parameters and variables
           contents:
-          - file: model_docs/parameters_vertical.qmd
-          - file: model_docs/parameters_lateral.qmd
+          - file: model_docs/parameters_intro.qmd
+          - file: model_docs/parameters_landhydrology_sbm.qmd
+          - file: model_docs/parameters_sediment.qmd
+          - file: model_docs/parameters_routing.qmd
     - title: Developments
       contents:
         - developments/index.qmd
         - changelog.qmd
         - developments/guide.qmd
-        - developments/julia_structs.qmd
+        - developments/model_struct.qmd
 
 format:
   html:
@@ -138,6 +137,8 @@ format:
     page-layout: article
     grid:
       content-mode: standard
+      sidebar-width: 300px
+      body-width: 1000px
     html-math-method:
       method: mathjax  # or katex
       # MathJax specific options

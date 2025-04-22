@@ -2,22 +2,9 @@
 title: Reservoirs and Lakes
 ---
 
-Simplified reservoirs and lakes models can be included as part of the river network.
+ Reservoirs and lakes models can be included as part of the river network.
 
 ## Reservoirs
-Simple reservoirs can be included within the river routing by supplying the following reservoir
-parameters:
-
-+ `locs` - Outlet of the reservoirs in which each reservoir has a unique id
-+ `area` - Surface area of the reservoirs $\SIb{}{m^2}$
-+ `areas` - Reservoir coverage
-+ `targetfullfrac` - Target fraction full (of max storage) for the reservoir: number between
-  0 and 1
-+ `targetminfrac` - Target minimum full fraction (of max storage). Number between 0 and 1
-+ `maxvolume` - Maximum reservoir storage (above which water is spilled) $\SIb{}{m^3}$
-+ `demand` - Minimum (environmental) flow requirement downstream of the reservoir  $\SIb{}{m^3 s^{-1}}$
-+ `maxrelease` - Maximum $Q$ that can be released if below spillway $\SIb{}{m^3 s^{-1}}$
-
 By default the reservoirs are not included in the model. To include them put the following
 lines in the TOML file of the model:
 
@@ -30,17 +17,20 @@ file, with below an example:
 
 ```toml
 [input]
+reservoir_area__count = "wflow_reservoirareas"
+reservoir_location__count = "wflow_reservoirlocs"
 
-[input.lateral.river.reservoir]
-area = "ResSimpleArea"
-areas = "wflow_reservoirareas"
-demand = "ResDemand"
-locs = "wflow_reservoirlocs"
-maxrelease = "ResMaxRelease"
-maxvolume = "ResMaxVolume"
-targetfullfrac = "ResTargetFullFrac"
-targetminfrac = "ResTargetMinFrac"
+[input.static]
+reservoir_surface__area = "ResSimpleArea"
+"reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
+reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
+reservoir_water__max_volume = "ResMaxVolume"
+"reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
+"reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
 ```
+The list of reservoir input parameters that can be provided through the TOML file can be
+found [here](../parameters_routing.qmd#reservoirs).
+
 ### Lakes (unregulated and regulated)
 Lakes are modelled using a mass balance approach:
 
@@ -49,19 +39,19 @@ $$
 $$
 
 where $\SIb{S}{m^3}$ is lake storage, $\SIb{\Delta t}{s}$ is the model timestep,
-$\SIb{\subtext{Q}{in}}{m^3 s^{-1}}$ is the sum of inflows (river, overland and lateral
-subsurface flow), $\SIb{\subtext{Q}{out}}{m^3 s^{-1}}$ is the lake outflow at the outlet,
-$\SIb{P}{m}$ is precipitation, $\SIb{E}{m}$ is lake evaporation and $\SIb{A}{m^2}$ is the lake
-surface area.
+$\SIb{\subtext{Q}{in}}{m^3\ s^{-1}}$ is the sum of inflows (river, overland and lateral
+subsurface flow), $\SIb{\subtext{Q}{out}}{m^3\ s^{-1}}$ is the lake outflow at the outlet,
+$\SIb{P}{m}$ is precipitation, $\SIb{E}{m}$ is lake evaporation and $\SIb{A}{m^2}$ is the
+lake surface area.
 
 ![Lake schematization.](../../images/lake.png)
 
-Most of the variables in this equation are already known or coming from previous timestep,
-apart from $S(t+ \Delta t)$ and $\subtext{Q}{out}$ which can both be linked to the water level
-$H$ in the lake using a storage curve $S = f(H)$ and a rating curve $Q = f(H)$. In wflow,
-several options are available to select storage and rating curves, and in most cases, the mass
-balance is then solved by linearization and iteration or using the Modified Puls Approach from
-Maniak (Burek et al., 2013). Storage curves in wflow can either:
+Most of the variables in this equation are known at the current or previous timestep, apart
+from $S(t+ \Delta t)$ and $\subtext{Q}{out}$ which can both be linked to the water level $H$
+in the lake using a storage curve $S = f(H)$ and a rating curve $Q = f(H)$. In wflow,
+several options are available to select storage and rating curves, and in most cases, the
+mass balance is then solved by linearization and iteration or using the Modified Puls
+Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:
 
 + Come from the interpolation of field data linking volume and lake height,
 + Be computed from the simple relationship $S = A H$.
@@ -110,23 +100,6 @@ $$
 $$
 
 ### Lake parameters
-Lakes can be included within the kinematic wave river routing in wflow, by supplying the
-following parameters:
-
-+ `area` - Surface area of the lakes [m$^2$]
-+ `areas` - Coverage of the lakes
-+ `locs` - Outlet of the lakes in which each lake has a unique id
-+ `linkedlakelocs` - Outlet of linked (downstream) lakes (unique id)
-+ `waterlevel` - Lake water level [m], used to reinitiate lake model
-+ `threshold` - Water level threshold $H_{0}$ under which outflow is zero [m]
-+ `storfunc` - Type of lake storage curve ; 1 for $S = AH$ (default) and 2 for $S = f(H)$ from
-  lake data and interpolation
-+ `outflowfunc` - Type of lake rating curve ; 1 for $Q = f(H)$ from lake data and
-  interpolation, 2 for general $Q = b(H - H_{0})^{e}$ and 3 in the case of Puls Approach
-  $Q = b(H - H_{0})^{2}$ (default)
-+ `b` -  Rating curve coefficient
-+ `e` - Rating curve exponent
-
 By default, the lakes are not included in the model. To include them, put the following line in
 the TOML file of the model:
 
@@ -139,18 +112,32 @@ file, with below an example:
 
 ```toml
 [input]
+lake_location__count = "wflow_lakelocs"
+lake_area__count = "wflow_lakeareas"
 
-[input.lateral.river.lake]
-area = "lake_area"
-areas = "wflow_lakeareas"
-b = "lake_b"
-e = "lake_e"
-locs = "wflow_lakelocs"
-outflowfunc = "lake_outflowfunc"
-storfunc  = "lake_storfunc"
-threshold  = "lake_threshold"
-waterlevel = "lake_waterlevel"
+[input.static]
+lake_surface__area = "lake_area"
+lake_water__rating_curve_coefficient = "lake_b"
+lake_water__rating_curve_exponent = "lake_e"
+lake_water__rating_curve_type_count = "lake_outflowfunc"
+lake_water__storage_curve_type_count  = "lake_storfunc"
+lake_water_flow_threshold-level__elevation  = "lake_threshold"
+lake_water_level__initial_elevation = "lake_waterlevel"
 ```
+
+The list of lake input parameters that can be provided through the TOML file can be found
+[here](../parameters_routing.qmd#lakes). The following lake storage curve types
+`lake_water__storage_curve_type_count` are available:
+
++ 1 for  $S = AH$
++ 2 for  $S = f(H)$ from lake data and interpolation
+
+And the following lake rating curve types `lake_water__rating_curve_type_count` are
+available:
+
++ 1 for $Q = f(H)$ from lake data and interpolation
++ 2 for general $Q = b(H - H_{0})^{e}$
++ 3 in the case of Puls Approach $Q = b(H - H_{0})^{2}$
 
 ### Additional settings
 Storage and rating curves from field measurement can be supplied to wflow via CSV files
@@ -187,8 +174,9 @@ H
 ```
 
 Linked lakes: In some cases, lakes can be linked and return flow can be allowed from the
-downstream to the upstream lake. The linked lakes are defined in the `linkedlakelocs` parameter
-that represent the downstream lake location ID, at the grid cell of the upstream lake location.
+downstream to the upstream lake. The linked lakes are defined in the
+`lake~lower_location__count` (standard name) input parameter that represent the downstream
+lake location ID, at the grid cell of the upstream lake location.
 
 ::: {.callout-note}
 In every file, level units are meters [m] above lake bottom and not meters above sea level [m

@@ -2,117 +2,72 @@
 title: Model configurations
 ---
 
-There are several model configurations supported by wflow. These model configurations require
-slightly different input requirements, yet the general structure is similar for each model. A
-wflow model configuration consists of a `vertical` [SBM](./vertical/sbm.qmd) concept in combination
-with `lateral` concepts that control how water is routed for example over the land or river
-domain. For the wflow\_sbm model different model configurations are possible. The following
-model configurations are supported in wflow:
+There are several model configurations supported by wflow. These model configurations
+require slightly different input requirements, yet the general structure is similar for each
+model. A wflow model configuration consists of a [Land hydrology
+SBM](./land/landhydrology_sbm.qmd) model in combination with `routing` concepts that control
+how water is routed for example over the land or river domain. For the wflow\_sbm model
+different model configurations are possible. The following model configurations are
+supported in wflow:
 
  - wflow\_sbm:
-    - SBM + kinematic wave for subsurface and surface flow
-    - SBM + kinematic wave for subsurface and overland flow + local inertial river (+
+    - Land Hydrology `SBM` + kinematic wave for subsurface and surface flow
+    - Land Hydrology `SBM` + kinematic wave for subsurface and overland flow + local inertial river (+
       optional floodplain)
-    - SBM + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)
-    - SBM + groundwater flow + kinematic wave for surface flow
+    - Land Hydrology `SBM` + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)
+    - Land Hydrology `SBM` + groundwater flow + kinematic wave for surface flow
  - wflow\_sediment as post processing of wflow\_sbm output
 
-Below, some explanation will be given on how to prepare a basic wflow\_sbm model. Example data
-for other model configurations is provided in the section with [sample
+Below, some explanation will be given on how to prepare a basic wflow\_sbm model. Example
+data for other model configurations is provided in the section with [sample
 data](../getting_started/download_example_models.qmd).
 
 ## wflow\_sbm
 
-Wflow\_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006)
-that have the [SBM](./vertical/sbm.qmd) vertical concept in common, but can have different
-lateral concepts that control how water is routed for example over the land or river domain.
-The soil part of SBM is largely based on the Topog\_SBM model but has had considerable changes
-over time. Topog\_SBM is specifically designed to simulate fast runoff processes in small
-catchments while the wflow\_sbm model can be applied more widely. The main differences are for
-the vertical concept SBM of wflow\_sbm:
+Wflow\_sbm represents hydrological models derived from the CQflow model (Köhler et al.,
+2006) that have the [Land Hydrology SBM](./land/landhydrology_sbm.qmd) model concept in
+common, but can have different routing concepts that control how water is routed for example
+over the land or river domain. The `soil` model of the Land Hydrology `SBM` model is largely
+based on the Topog\_SBM model but has had considerable changes over time. Topog\_SBM is
+specifically designed to simulate fast runoff processes in small catchments while the
+wflow\_sbm model can be applied more widely. The main differences between the Land Hydrology
+`SBM` model and Topog_SBM are as follows: 
 
-- The unsaturated zone can be split-up in different layers
-- The addition of evapotranspiration losses
-- The addition of a capillary rise
-- The addition of water demand and allocation
+- the addition of evapotranspiration and interception losses;
+- the addition of a root water uptake reduction function (Feddes et al., 1978);
+- the addition of a capillary rise;
+- the addition of glacier, snow build-up and melting processes;
+- the introduction of an option to divide the soil column into different layers to allow for
+  transfer of water within the unsaturated zone;
+- the addition of water demand and allocation computations.
 
-The water demand and allocation computations are supported by the wflow\_sbm model
-configurations:
+Topog\_SBM uses an element network based on contour lines and trajectories for water
+routing. Wflow\_sbm models differ in how the routing components river, land, and subsurface
+are solved. Below the different wflow\_sbm model configurations are described, according to
+the used routing approach.
 
-- SBM + Kinematic wave
-- SBM + Groundwater flow
-- SBM + Local inertial river
-- SBM + Local inertial river (1D) and land (2D)
-
-The vertical SBM concept is explained in more detail in the following section [SBM vertical
-concept](./vertical/sbm.qmd).
-
-Topog\_SBM uses an element network based on contour lines and trajectories for water routing.
-Wflow\_sbm models differ in how the lateral components river, land, and subsurface are solved.
-Below the different wflow\_sbm model configurations are described.
-
-### SBM + Kinematic wave
-For the lateral components of this wflow\_sbm model water is routed over a D8 network, and the
-kinematic wave approach is used for river, overland and lateral subsurface flow. This is
-described in more detail in the section [Kinematic wave](./lateral/kinwave.qmd).
+### Kinematic wave
+Water is routed over a D8 network, and the kinematic wave approach is used for river,
+overland and lateral subsurface flow. This is described in more detail in the section
+[Kinematic wave](./routing/kinwave.qmd).
 
 An overview of the different processes and fluxes in the wflow_sbm model with the kinematic
 wave approach for river, overland and lateral subsurface flow:
 
 ![Conceptual overview of the wflow_sbm model](../images/wflow_sbm_soil.png)
 
-Below the mapping for this wflow\_sbm model (type `sbm`) to the vertical SBM concept (instance
-of `struct SBM`) and the different lateral concepts is presented. For an explanation about the
-type parameters between curly braces after the `struct` name see the section on the model
-parameters.
-
-```julia
-vertical => struct SBM{T,N,M}
-lateral.subsurface => struct LateralSSF{T}
-lateral.land => struct SurfaceFlow{T,R,L}
-lateral.river => struct SurfaceFlow{T,R,L}
-lateral.river.lake => struct NaturalLake{T} # optional
-lateral.river.reservoir => struct SimpleReservoir{T} # optional
-```
-
-### SBM + Groundwater flow
+### Groundwater flow
 For river and overland flow the kinematic wave approach over a D8 network is used for this
 wflow\_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in
 four directions (adjacent cells) is used. This is described in more detail in the section
-[Groundwater flow](./lateral/gwf.qmd).
+[Groundwater flow](./routing/gwf.qmd).
 
 ```toml
 [model]
 type = "sbm_gwf"
-
-[input.lateral.subsurface]
-ksathorfrac = "KsatHorFrac"
-conductivity = "conductivity"
-specific_yield = "specific_yield"
-exfiltration_conductance = "exfilt_cond"
-infiltration_conductance = "infilt_cond"
-river_bottom = "river_bottom"
-conductivity_profile = "exponential"
-gwf_f.value = 3.0
-```
-Below the mapping for this wflow\_sbm model (type `sbm_gwf`) to the vertical SBM concept
-(instance of `struct SBM`) and the different lateral concepts. For an explanation about the
-type parameters between curly braces after the `struct` name see the section on model
-parameters.
-
-```julia
-vertical => struct SBM{T,N,M}
-lateral.subsurface.flow => struct GroundwaterFlow{A, B}
-lateral.subsurface.recharge => struct Recharge{T} <: AquiferBoundaryCondition
-lateral.subsurface.river => struct River{T} <: AquiferBoundaryCondition
-lateral.subsurface.drain => struct Drainage{T} <: AquiferBoundaryCondition # optional
-lateral.land => struct SurfaceFlow{T,R,L}
-lateral.river => struct SurfaceFlow{T,R,L}
-lateral.river.lake => struct NaturalLake{T} # optional
-lateral.river.reservoir => struct SimpleReservoir{T} # optional
 ```
 
-### SBM + Local inertial river
+### Local inertial river
 By default the model types `sbm` and `sbm_gwf` use the kinematic wave approach for river flow.
 There is also the option to use the local inertial model for river flow with an optional 1D
 floodplain schematization (routing is done separately for the river channel and floodplain), by
@@ -124,15 +79,7 @@ river_routing = "local-inertial"    # optional, default is "kinematic-wave"
 floodplain_1d = true                # optional, default is false
 ```
 
-Only the mapping for the river component changes, as shown below. For an explanation about the
-type parameters between curly braces after the `struct` name see the section on the model
-parameters.
-
-```julia
-lateral.river => struct ShallowWaterRiver{T,R,L}
-```
-
-### SBM + Local inertial river (1D) and land (2D)
+### Local inertial river (1D) and land (2D)
 By default the model types `sbm` and `sbm_gwf` use the kinematic wave approach for river and
 overland flow. There is also the option to use the local inertial model for 1D river and 2D
 overland flow, by providing the following in the TOML file:
@@ -142,17 +89,9 @@ overland flow, by providing the following in the TOML file:
 river_routing = "local-inertial"
 land_routing = "local-inertial"
 ```
-The mapping for the river and land component changes, as shown below. For an explanation about
-the type parameters between curly braces after the `struct` name see the section on the model
-parameters.
-
-```julia
-lateral.river => struct ShallowWaterRiver{T,R,L}
-lateral.land => struct ShallowWaterLand{T}
-```
 
 The local inertial approach is described in more detail in the section [Local inertial
-model](./lateral/local-inertial.qmd).
+model](./routing/local-inertial.qmd).
 
 ## wflow\_sediment
 The processes and fate of many particles and pollutants impacting water quality at the
@@ -160,24 +99,24 @@ catchment level are intricately linked to the processes governing sediment dynam
 nutrients such as phosphorus, carbon or other pollutants such as metals are influenced by
 sediment properties in processes such as mobilization, flocculation or deposition. To better
 assert and model water quality in inland systems, a better comprehension and modelling of
-sediment sources and fate in the river is needed at a spatial and time scale relevant to such
-issues.
+sediment sources and fate in the river is needed at a spatial and time scale relevant to
+such issues.
 
 The wflow\_sediment model was developed to answer such issues. It is a distributed
 physics-based model, based on the distributed hydrologic wflow\_sbm model. It is able to
-simulate both land and in-stream processes, and relies on available global datasets, parameter
-estimation and small calibration effort.
+simulate both land and in-stream processes, and relies on available global datasets,
+parameter estimation and small calibration effort.
 
 In order to model the exports of terrestrial sediment to the coast through the Land Ocean
 Aquatic Continuum or LOAC (inland waters network such as streams, lakes...), two different
 modelling parts were considered. The first part, called the inland sediment model, is the
-modelling and estimation of soil loss and sediment yield to the river system by land erosion,
-separated into vertical [Soil Erosion](./vertical/sediment.qmd#soil-erosion) processes and
-lateral [Sediment Flux in overland
-flow](./lateral/sediment_flux.qmd#sediment-flux-in-overland-flow). The second part, called the
-[River Sediment Model](./lateral/sediment_flux.qmd#river-sediment-model) is the transport and
-processes of the sediment in the river system. The two parts together constitute the
-wflow\_sediment model.
+modelling and estimation of soil loss and sediment yield to the river system by land
+erosion, separated into vertical [Soil Erosion](./land/sediment.qmd#soil-erosion)
+processes and lateral [Sediment Flux in overland
+flow](./routing/sediment_flux.qmd#sediment-flux-in-overland-flow). The second part, called
+the [River Sediment Model](./routing/sediment_flux.qmd#river-sediment-model) is the
+transport and processes of the sediment in the river system. The two parts together
+constitute the wflow\_sediment model.
 
 Overview of the concepts of the wflow\_sediment model:
 ![wflow_sediment](../images/wflow_sediment.png)
@@ -201,33 +140,28 @@ Model outputs can be saved for both the inland and the instream part of the mode
 examples are listed below.
 
 ```toml
-[output.vertical]
-# Soil splash erosion [ton]
-sedspl = "sedspl"
-# Soil erosion by overland flow [ton]
-sedov = "sedov"
-# Total soil loss [ton]
-soilloss = "soilloss"
-# Total transport capacity of overland flow [ton]
-TCsed = "TCsed"
-# Transport capacity per particle class (clay) [ton]
-TCclay = "TCclay"
+[output.netcdf_grid.variables]
+# # Total soil erosion rate [ton/t] from rainfall (splash)
+"soil_erosion~rainfall__mass_flow_rate" = "rainfall_erosion"
+# Soil erosion rate by overland flow [ton/t]
+"soil_erosion~overland_flow__mass_flow_rate" = "overland_flow_erosion"
+# Total soil loss rate [ton/t]
+soil_erosion__mass_flow_rate = "soilloss"
+# Total transport capacity of overland flow [ton/t]
+land_surface_water_sediment_transport_capacity__mass_flow_rate = "TCsed"
 
-[output.lateral.land]
-# Total (or per particle class) sediment flux in overland flow [ton]
-olsed = "olsed"
-olclay = "olclay"
-# Total (or per particle class) sediment yield to the river [ton]
-inlandsed = "inlandsed"
-inlandclay = "inlandclay"
+# Total sediment flux in overland flow [ton/t]
+land_surface_water_sediment__mass_flow_rate = "olsed"
+# Total (or per particle class) sediment yield to the river [ton/t]
+"land_surface_water_sediment~to-river__mass_flow_rate" = "inlandsed"
+"land_surface_water_clay~to-river__mass_flow_rate" = "inlandclay"
 
-[output.lateral.river]
 # Total sediment concentration in the river (suspended + bed load) [kg/m3]
-Sedconc = "Sedconc"
+river_water_sediment__mass_concentration = "Sedconc"
 # Suspended load [kg/m3]
-SSconc = "SSconc"
+"river_water_sediment~suspended__mass_concentration" = "SSconc"
 # Bed load [kg/m3]
-Bedconc = "Bedconc"
+"river_water_sediment~bedload__mass_concentration" = "Bedconc"
 ```
 
 ## References

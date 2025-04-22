@@ -1,0 +1,81 @@
+---
+title: Model settings
+---
+
+This section provides an overview of model settings in the configuration TOML file, below
+the `[model]` entry, including descriptions, units and default values.
+
+## General
+The Table below shows the general model settings applicable for all model types.
+
+| Setting | Description | Unit | Default |
+| --- | ----- | - | - |
+| `type` | Model type: [`sbm`, `sbm_gwf`, `sediment`] | - | - |
+| `reinit` | Initialize model with cold (`reinit` = `true`) or warm state | - | `true` |
+| `sizeinmetres` | Input grid coordinates in lat/lon (`sizeinmetres` = `false`) or in meters | - | `false` |
+| `reservoirs` | Include reservoir modelling | - | `false` |
+| `lakes` | Include lake modelling | - | `false` |
+: {.striped .hover}
+
+## Model types `sbm` and `sbm_gwf`
+The Tables in this subsection show the available models settings for the model types `sbm` and `sbm_gwf`.
+
+### Land Hydrology `SBM`
+| Setting | Description | Unit | Default |
+| ----- | ----- | -- | -- |
+| `snow` | Include snow modelling | - | `false` |
+| `gravitational_snow_transport` | Include gravitional lateral snow transport | - | `false` |
+| `glacier` | Include glacier modelling | - | false |
+| `soilinfreduction` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
+| `thicknesslayers` | Thickness of soil layers | mm | - |
+| `transfermethod` | Enable original Topog_SBM vertical transfer formulation  | - | `false` |
+| `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
+: {.striped .hover}
+
+### Routing method
+| Setting | Description | Unit | Default |
+| --- | ----- | - | - |
+| `land_routing` | Routing approach for overland flow: ["kinematic-wave", "local-inertial"] | - | "kinematic-wave" |
+| `river_routing` | Routing approach for river flow: ["kinematic-wave", "local-inertial"] | - | "kinematic-wave" |
+: {.striped .hover}
+
+### Kinematic wave routing
+| Setting | Description | Unit | Default |
+| --- | ----- | - | - |
+| `kinematic-wave_subsurface` | Use lateral subsurface flow component (`sbm` specific setting), if set to `false` coupling to an external groundwater model is possible | - | `true` |
+| `pits` | Include pits for kinematic wave flow continuous at subcatchment only (upstream of provided pit locations)  | - | `false` |
+| `min_streamorder_river` | Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)  | - | 6 |
+| `min_streamorder_land` | Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)  | - | 5 |
+| `kin_wave_iteration` | Enable kinematic wave internal time stepping  | - | `false` |
+: {.striped .hover}
+
+### Local inertial routing
+| Setting | Description | Unit | Default |
+| --- | ----- | - | - |
+| `inertial_flow_alpha` | Stability coefficient for internal model time step (CFL condition) | - | 0.7 |
+| `inertial_flow_theta` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 0.8 |
+| `h_thresh` | Water depth threshold for calculating flow between cells | m | 0.001 |
+| `froude_limit` | Limit flow to subcritical-critical according to Froude number | - | `true` |
+| `floodplain_1d` | Include 1D floodplain schematization for local inertial river routing | - | `false` |
+: {.striped .hover}
+
+### Groundwater flow
+| Setting | Description | Unit | Default |
+| --- | ----- | - | - |
+| `conductivity_profile` | Hydraulic conductivity depth profile: ["uniform", "exponential"] | - | "uniform" |
+| `drains` | Include drainage boundary condition  | - | `false` |
+| `constanthead` | Include constant head boundary condition  | - | `false` |
+: {.striped .hover}
+
+## Model type `sediment`
+The Table below shows the model settings for the model type `sediment`.
+
+| Setting | Description | Unit | Default |
+| --- | ----- | - | - |
+| `rainfall_erosion` | Rainfall erosion model: ["answers", "eurosem"]  | - | "answers" |
+| `overland_flow_erosion` | Overland flow erosion model: ["answers"]  | - | "answers" |
+| `run_river_model` |  Include river sediment model | - | `false` |
+| `land_transport` | Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]  | - | "yalin" |
+| `river_transport` | River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]  | - | "bagnold"  |
+: {.striped .hover}
+
