@@ -404,8 +404,8 @@ function mask_waterbody_coverage!(
     domain::Domain;
     mask_value = 0,
 )
-    do_reservoirs = get(config.model, "reservoir", false)::Bool
-    do_lakes = get(config.model, "lake", false)::Bool
+    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_lakes = get(config.model, "lakes", false)::Bool
     if do_reservoirs
         inds_cov = collect(Iterators.flatten(domain.reservoir.network.indices_coverage))
         mask[inds_cov] .= mask_value
