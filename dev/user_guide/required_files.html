@@ -73,8 +73,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1061f5c66ef3e2d6db0e78bfe52187f4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-75ffd96e093d6bb1c2d9c7ca99f6ccb5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -178,10 +178,6 @@ window.Quarto = {
   <li class="nav-item">
     <a class="nav-link active" href="../user_guide/index.html" aria-current="page"> 
 <span class="menu-text">User guide</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../model_docs/index.html"> 
@@ -289,12 +285,6 @@ window.Quarto = {
 </li>
       </ul>
   </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/output.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Handling model output</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -481,10 +471,17 @@ Click to show example .toml file
 </section>
 <section id="the-static-input-data-staticmaps.nc" class="level2">
 <h2 class="anchored" data-anchor-id="the-static-input-data-staticmaps.nc">The static input data (<code>staticmaps.nc</code>)</h2>
-<p>The list below contains a brief overview of several essential static maps required to run wflow. These NC variables names refer to the example data of the wflow_sbm + kinematic wave model (see <a href="../getting_started/download_example_models.html#wflow_sbm--kinematic-wave">here</a>). Example data for the other model configurations can be found <a href="../getting_started/download_example_models.html">here</a>.</p>
+<p>The list below contains a brief overview of several essential static maps required to run wflow. These NC variables names refer to the example data of the wflow_sbm + kinematic wave model (see <a href="../getting_started/download_example_models.html#wflow_sbm-kinematic-wave">here</a>). Example data for the other model configurations can be found <a href="../getting_started/download_example_models.html">here</a>.</p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 30%">
+<col style="width: 20%">
+<col style="width: 10%">
+</colgroup>
 <thead>
 <tr class="header">
+<th>Standard Name</th>
 <th>Description</th>
 <th>NC variable name</th>
 <th>unit</th>
@@ -492,36 +489,43 @@ Click to show example .toml file
 </thead>
 <tbody>
 <tr class="odd">
-<td>Flow direction (1-9)</td>
+<td><code>local_drain_direction</code></td>
+<td>Local drain direction (1-9)</td>
 <td><code>wflow_ldd</code></td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td>Map indicating the river cells (0-1)</td>
+<td><code>river_location__mask</code></td>
+<td>River mask (0-1)</td>
 <td><code>wflow_river</code></td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td>The length of the river</td>
+<td><code>river__length</code></td>
+<td>River length</td>
 <td><code>wflow_riverlength</code></td>
 <td>m</td>
 </tr>
 <tr class="even">
-<td>The width of the river</td>
+<td><code>river__width</code></td>
+<td>River width</td>
 <td><code>wflow_riverwidth</code></td>
 <td>m</td>
 </tr>
 <tr class="odd">
-<td>Mask of the basin</td>
+<td><code>subcatchment_location__count</code></td>
+<td>Subcatchment ids</td>
 <td><code>wflow_subcatch</code></td>
 <td>-</td>
 </tr>
 <tr class="even">
+<td><code>land_surface__slope</code></td>
 <td>Land slope</td>
 <td><code>Slope</code></td>
 <td>m m<span class="math inline">\(^{-1}\)</span></td>
 </tr>
 <tr class="odd">
+<td><code>river__slope</code></td>
 <td>River slope</td>
 <td><code>RiverSlope</code></td>
 <td>m m<span class="math inline">\(^{-1}\)</span></td>
@@ -539,14 +543,19 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When using cyclic data, three different options are supported: - 12 (monthly) - 365 (daily, where Feb.&nbsp;29 is not present, so the value for Feb.&nbsp;28 is taken. Dec.&nbsp;31 is represented by DOY 365) - 366 (where Feb.&nbsp;29 represents DOY 60, and Dec.&nbsp;31 DOY 366)</p>
+<p>When using cyclic data, three different options are supported:</p>
+<ul>
+<li>12 (monthly)</li>
+<li>365 (daily, where Feb.&nbsp;29 is not present, so the value for Feb.&nbsp;28 is taken. Dec.&nbsp;31 is represented by DOY 365)</li>
+<li>366 (where Feb.&nbsp;29 represents DOY 60, and Dec.&nbsp;31 DOY 366)</li>
+</ul>
 <p>In contrast to the right-labelling of the forcing data (see below), the DOY/month of the current time step is used. For example: to simulate 2023-06-14 00:00:00 (with a daily time step), the DOY value at position 6 (when 12 values are provided), 165 (when 365 values are provided) or 166 (when 366 values are provided).</p>
 </div>
 </div>
 </section>
 <section id="the-forcing-data-forcing.nc" class="level2">
 <h2 class="anchored" data-anchor-id="the-forcing-data-forcing.nc">The forcing data (<code>forcing.nc</code>)</h2>
-<p>The forcing data typically contains the meteorological boundary conditions. This data is provided as a single netCDF file, with several variables containing the forcing data for precipitation, temperature and potential evaporation. The code snippet below shows the contents of the example file (downloaded <a href="../getting_started/download_example_models.html#wflow_sbm--kinematic-wave">here</a>), and displaying the content with <code>NCDatasets</code> in Julia. As can be seen, each forcing variable (<code>precip</code>, <code>pet</code> and <code>temp</code>) consists of a three-dimensional dataset (<code>x</code>, <code>y</code>, and <code>time</code>), and each timestep consists of a two-dimensional map with values at each grid cell. Only values within the basin are required.</p>
+<p>The forcing data typically contains the meteorological boundary conditions. This data is provided as a single netCDF file, with several variables containing the forcing data for precipitation, temperature and potential evaporation. The code snippet below shows the contents of the example file (downloaded <a href="../getting_started/download_example_models.html#wflow_sbm-kinematic-wave">here</a>), and displaying the content with <code>NCDatasets</code> in Julia. As can be seen, each forcing variable (<code>precip</code>, <code>pet</code> and <code>temp</code>) consists of a three-dimensional dataset (<code>x</code>, <code>y</code>, and <code>time</code>), and each timestep consists of a two-dimensional map with values at each grid cell. Only values within the basin are required.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">

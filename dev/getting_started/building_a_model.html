@@ -39,8 +39,8 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1061f5c66ef3e2d6db0e78bfe52187f4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-75ffd96e093d6bb1c2d9c7ca99f6ccb5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -115,10 +115,6 @@ ul.task-list li input[type="checkbox"] {
   <li class="nav-item">
     <a class="nav-link" href="../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../model_docs/index.html"> 
@@ -252,9 +248,9 @@ ul.task-list li input[type="checkbox"] {
 <p><a href="https://github.com/Deltares/hydromt">hydroMT</a> is a Python package, developed by Deltares, to build and analyze hydro models. It provides a generic model api with attributes to access the model schematization, (dynamic) forcing data, results and states.</p>
 <p>The wflow plugin <a href="https://github.com/Deltares/hydromt_wflow">hydroMT-wflow</a> of hydroMT can be used to build and analyze the following model configurations:</p>
 <ul>
-<li><a href="../model_docs/model_configurations.html#sbm-kinematic-wave">wflow_sbm + kinematic wave routing</a></li>
-<li><a href="../model_docs/model_configurations.html#sbm-local-inertial-river">wflow_sbm + local inertial river and floodplain</a></li>
-<li><a href="../model_docs/model_configurations.html#sbm-local-inertial-river-1d-and-land-2d">wflow_sbm + local inertial river (1D) and land (2D)</a></li>
+<li><a href="../model_docs/model_configurations.html#kinematic-wave">wflow_sbm + kinematic wave routing</a></li>
+<li><a href="../model_docs/model_configurations.html#local-inertial-river">wflow_sbm + local inertial river and floodplain</a></li>
+<li><a href="../model_docs/model_configurations.html#local-inertial-river-1d-and-land-2d">wflow_sbm + local inertial river (1D) and land (2D)</a></li>
 <li><a href="../model_docs/model_configurations.html#wflow_sediment">wflow_sediment</a></li>
 </ul>
 <p>To learn more about the wflow plugin of this Python package, we refer to the <a href="https://deltares.github.io/hydromt_wflow/latest/index.html">hydroMT-wflow documentation</a>.</p>
@@ -262,7 +258,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="data-requirements" class="level2">
 <h2 class="anchored" data-anchor-id="data-requirements">Data requirements</h2>
-<p>The actual data requirements depend on the application of the Model and the Model type. Both forcing and static data should be provided in netCDF format, with the same grid definition for forcing and static data. The only exception is storage and rating curves for lakes, that should be provided in CSV format, see also <a href="../model_docs/lateral/waterbodies.html#additional-settings">Additional settings for waterbodies</a>.</p>
+<p>The actual data requirements depend on the application of the Model and the Model type. Both forcing and static data should be provided in netCDF format, with the same grid definition for forcing and static data. The only exception is storage and rating curves for lakes, that should be provided in CSV format, see also <a href="../model_docs/routing/waterbodies.html#additional-settings">Additional settings for waterbodies</a>.</p>
 <ul>
 <li>Forcing data:
 <ul>
@@ -271,7 +267,7 @@ ul.task-list li input[type="checkbox"] {
 <li>Temperature (optional, only needed for snow and glacier modelling)</li>
 </ul></li>
 </ul>
-<p>The requirements for static data (including model parameters) depend on the Model type. The following data is required for all Model types, but not directly part of a Model component:</p>
+<p>The requirements for static data (including model parameters) depend on the model type. The following data is required for all model types, but not directly part of a model component:</p>
 <ul>
 <li>flow direction data (D8)</li>
 <li>river map (location of the river)</li>
@@ -283,21 +279,20 @@ ul.task-list li input[type="checkbox"] {
 <li>or to <a href="https://deltares.github.io/pyflwdir/latest/_examples/from_dem.html">derive flow directions from elevation data</a>,</li>
 </ul>
 <p>see also Eilander et al.&nbsp;(2021) for more information. Pyflwdir is also used by the <a href="https://github.com/Deltares/hydromt">hydroMT</a> Python package described in the next paragraph. Another approach to generate <code>ldd</code> data is to make use of PCRaster functionality, see for example <a href="https://pcraster.geo.uu.nl/pcraster/4.3.1/documentation/pcraster_manual/sphinx/op_lddcreate.html">lddcreate</a>.</p>
-<p>Optionally, but also not directly part of a model component are <code>gauge</code> locations, that are used to extract gridded data from certain locations.</p>
-<p>The different supported model configurations are described in the section <a href="../model_docs/model_configurations.html">Model configurations</a>. Wflow_sbm models have the vertical concept <a href="../model_docs/vertical/sbm.html">SBM</a> in common and input parameters for this component are described in the <a href="../model_docs/parameters_vertical.html#sbm">SBM model parameters table</a>. For wflow_sbm models there are two ways to include subsurface flow:</p>
+<p>Optionally, but also not directly part of a model component are <code>gauge</code> locations, that are used to extract gridded data from certain locations, and <code>lake</code> and <code>reservoir</code> locations and areas (coverage).</p>
+<p>The different supported model configurations are described in the section <a href="../model_docs/model_configurations.html">Model configurations</a>. Wflow_sbm models have the <a href="../model_docs/land/landhydrology_sbm.html">Land Hydrology SBM</a> model in common and input parameters for this model are described in the list of <a href="../model_docs/parameters_landhydrology_sbm.html">parameters and variables</a> of this model. For wflow_sbm models there are two ways to include subsurface flow:</p>
 <ol type="1">
-<li>The kinematic wave approach (see section <a href="../model_docs/lateral/kinwave.html#subsurface-flow-routing">Subsurface flow routing</a>) as part of the <code>sbm</code> model type. Parameters that are part of this component are described in the <a href="../model_docs/parameters_lateral.html#lateral-subsurface-flow">Lateral subsurface flow</a> section of Model parameters. Input parameters for this component are derived from the SBM vertical concept and the land slope. One external parameter (<code>ksathorfrac</code>) is used to calculate the horizontal hydraulic conductivity at the soil surface <code>kh_0</code>.</li>
-<li>Groundwater flow (see section <a href="../model_docs/lateral/gwf.html">Groundwater flow component</a>) as part of the <code>sbm_gwf</code> model type. For the unconfined aquifer the input parameters are described in the section <a href="../model_docs/parameters_lateral.html#unconfined-aquifer">Unconfined aquifer</a> of Model parameters. The bottom (<code>bottom</code>) of the groundwater layer is derived from from the <code>soilthickness</code> [mm] parameter of <code>SBM</code> and the provided surface elevation <code>altitude</code> [m] as part of the static input. The <code>area</code> parameter is derived from the model grid. Parameters that are part of the boundary conditions of the unconfined aquifer are listed under <a href="../model_docs/lateral/gwf.html#head-boundary">Constant Head</a> and <a href="../model_docs/parameters_lateral.html#boundary-conditions">Boundary conditions</a> of the Model parameters section.</li>
+<li>The kinematic wave approach (see section <a href="../model_docs/routing/kinwave.html#subsurface-flow-routing">Subsurface flow routing</a>) as part of the <code>sbm</code> model type. Parameters that are part of this component are described in the <a href="../model_docs/parameters_routing.html#lateral-subsurface-flow">Lateral subsurface flow</a> section. Input parameters for this component are derived from the soil model of the Land Hydrology SBM model (<code>soil__thickness</code> [mm], <code>soil_water__saturated_volume_fraction</code> [-] and <code>soil_water__residual_volume_fraction</code> [-]) and the land slope <code>land_surface__slope</code> input parameter. The parameter <code>subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio</code> [-] is used to calculate the horizontal hydraulic conductivity at the soil surface <code>kh_0</code>.</li>
+<li>Groundwater flow (see section <a href="../model_docs/routing/gwf.html">Groundwater flow component</a>) as part of the <code>sbm_gwf</code> model type. For the unconfined aquifer the input parameters are described in the section <a href="../model_docs/parameters_routing.html#unconfined-aquifer">Unconfined aquifer</a>. The bottom (<code>bottom</code>) of the groundwater layer is derived from the provided <code>soil__thickness</code> [mm] and surface elevation <code>land_surface__elevation</code> [m] parameters as part of the static input. The <code>area</code> parameter is derived from the model grid. Parameters that are part of the boundary conditions of the unconfined aquifer are listed under <a href="../model_docs/routing/gwf.html#head-boundary">Constant Head</a> and <a href="../model_docs/parameters_routing.html#river-boundary">Boundary conditions</a> sections.</li>
 </ol>
-<p>Most hydrological model configurations make use of the kinematic wave surface routing (river flow, overland flow or both) and input data required for the river and overland flow components is described in <a href="../model_docs/parameters_lateral.html#surface-flow">Surface flow</a>. There is also the option to use the local inertial model as part of the wflow_sbm models (model types <code>sbm</code> and <code>sbm_gwf</code>):</p>
+<p>The default wflow_sbm model routing configuration makes use of the kinematic wave surface routing (river flow, overland flow or both) and input data required for the river and overland flow components is described in <a href="../model_docs/parameters_routing.html#surface-flow">Surface flow</a>. There is also the option to use the local inertial model as part of the wflow_sbm models (model types <code>sbm</code> and <code>sbm_gwf</code>):</p>
 <ul>
 <li>for river flow, see also the <a href="../model_docs/model_configurations.html#sbm-local-inertial-river">Local inertial river and floodplain</a> model.</li>
 <li>for 1D river flow and 2D overland flow combined, see also the <a href="../model_docs/model_configurations.html#sbm-local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</a> model.</li>
 </ul>
-<p>Input parameters for this approach are described in <a href="../model_docs/parameters_lateral.html#local-inertial">River flow (local inertial)</a>, including the optional 1D <a href="../model_docs/parameters_lateral.html#d-floodplain">floodplain schematization</a>, and <a href="../model_docs/parameters_lateral.html#overland-flow">Overland flow (local inertial)</a> of the Model parameters section.</p>
-<p>Reservoirs or lakes can be part of the kinematic wave or local inertial model for river flow and input parameters are described in <a href="../model_docs/parameters_lateral.html#reservoirs">Reservoirs</a> and <a href="../model_docs/parameters_lateral.html#lakes">Lakes</a>.</p>
-<p>The <a href="../model_docs/model_configurations.html#wflow_sediment">wflow_sediment</a> model configuration consists of the vertical <a href="../model_docs/vertical/sediment.html">Soil Erosion</a> concept and the input parameters for this concept are described in the <a href="../model_docs/parameters_vertical.html#sediment">Sediment</a> section of the Model parameters. The parameters of the lateral <a href="../model_docs/lateral/sediment_flux.html#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a> concept are described in the <a href="../model_docs/parameters_lateral.html#overland-flow-1">Overland flow</a> section of the Model parameters. Parameters of this component are not directly set by data from static input. The input parameters of the lateral concept <a href="../model_docs/lateral/sediment_flux.html#river-sediment-model">River Sediment Model</a> are listed in <a href="../model_docs/parameters_lateral.html#river-flow-1">River flow</a> of the Model parameters section.</p>
-<p>The Model parameters section lists all the parameters per Model component and these Tables can also be used to check which parameters can be part of the output, see also <a href="../user_guide/toml_file.html#output-netcdf-section">Output netCDF section</a> and <a href="../user_guide/toml_file.html#output-csv-section">Output CSV section</a>.</p>
+<p>Input parameters for this approach are listed under <a href="../model_docs/parameters_routing.html#local-inertial">River flow (local inertial)</a>, including the optional 1D <a href="../model_docs/parameters_routing.html#d-floodplain-flow">floodplain schematization</a>, and <a href="../model_docs/parameters_routing.html#overland-flow">Overland flow (local inertial)</a> sections.</p>
+<p>Reservoirs or lakes can be part of the kinematic wave or local inertial model for river flow and input parameters are listed under the <a href="../model_docs/parameters_routing.html#reservoirs">Reservoirs</a> and <a href="../model_docs/parameters_routing.html#lakes">Lakes</a> sections.</p>
+<p>The <a href="../model_docs/model_configurations.html#wflow_sediment">wflow_sediment</a> model configuration consists of the <a href="../model_docs/land/sediment.html">Soil Erosion</a> concept and the input parameters for this concept are listed under the <a href="../model_docs/parameters_sediment.html">Sediment</a> section. The parameters of the routing <a href="../model_docs/routing/sediment_flux.html#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a> concept are listed under the <a href="../model_docs/parameters_routing.html#overland-flow-1">Overland flow</a> section. The input parameters of the routing concept <a href="../model_docs/routing/sediment_flux.html#river-sediment-model">River Sediment Model</a> are listed under the <a href="../model_docs/parameters_routing.html#river-flow-1">River flow</a> section.</p>
 <p>Example models can be found in the <a href="../getting_started/download_example_models.html">Example models section</a>.</p>
 </section>
 <section id="references" class="level2">

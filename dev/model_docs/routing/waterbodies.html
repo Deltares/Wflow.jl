@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Kinematic wave – Wflow.jl</title>
+<title>Reservoirs and Lakes – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -73,8 +73,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-1061f5c66ef3e2d6db0e78bfe52187f4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-75ffd96e093d6bb1c2d9c7ca99f6ccb5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -180,10 +180,6 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
@@ -230,7 +226,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Kinematic wave</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -254,10 +250,16 @@ window.Quarto = {
  <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Vertical processes</span></a>
+ <span class="menu-text">Land models</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -265,20 +267,14 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sbm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SBM</span></a>
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sediment.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/shared_processes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Shared processes</span></a>
   </div>
 </li>
       </ul>
@@ -286,7 +282,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Lateral processes</span></a>
+ <span class="menu-text">Routing concepts</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -294,31 +290,31 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/kinwave.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Kinematic wave</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/local-inertial.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Local inertial</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/waterbodies.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Reservoirs and Lakes</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/gwf.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Groundwater flow</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/sediment_flux.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment flux</span></a>
   </div>
 </li>
@@ -327,7 +323,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Parameters</span></a>
+ <span class="menu-text">Model parameters and variables</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -335,14 +331,26 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_vertical.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Vertical concepts</span></a>
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_lateral.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Lateral concepts</span></a>
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
       </ul>
@@ -357,14 +365,13 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#surface-routing" id="toc-surface-routing" class="nav-link active" data-scroll-target="#surface-routing">Surface routing</a></li>
-  <li><a href="#inflow" id="toc-inflow" class="nav-link" data-scroll-target="#inflow">Inflow</a></li>
-  <li><a href="#abstractions" id="toc-abstractions" class="nav-link" data-scroll-target="#abstractions">Abstractions</a></li>
-  <li><a href="#subsurface-flow-routing" id="toc-subsurface-flow-routing" class="nav-link" data-scroll-target="#subsurface-flow-routing">Subsurface flow routing</a></li>
-  <li><a href="#multi-threading" id="toc-multi-threading" class="nav-link" data-scroll-target="#multi-threading">Multi-Threading</a></li>
-  <li><a href="#subcatchment-flow" id="toc-subcatchment-flow" class="nav-link" data-scroll-target="#subcatchment-flow">Subcatchment flow</a></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
-  <li><a href="#external-inflows" id="toc-external-inflows" class="nav-link" data-scroll-target="#external-inflows">External inflows</a></li>
+  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link active" data-scroll-target="#reservoirs">Reservoirs</a>
+  <ul class="collapse">
+  <li><a href="#lakes-unregulated-and-regulated" id="toc-lakes-unregulated-and-regulated" class="nav-link" data-scroll-target="#lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</a></li>
+  <li><a href="#modified-puls-approach" id="toc-modified-puls-approach" class="nav-link" data-scroll-target="#modified-puls-approach">Modified Puls Approach</a></li>
+  <li><a href="#lake-parameters" id="toc-lake-parameters" class="nav-link" data-scroll-target="#lake-parameters">Lake parameters</a></li>
+  <li><a href="#additional-settings" id="toc-additional-settings" class="nav-link" data-scroll-target="#additional-settings">Additional settings</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -372,9 +379,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Kinematic wave</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Kinematic wave</h1>
+<h1 class="title">Reservoirs and Lakes</h1>
 </div>
 
 
@@ -391,81 +398,124 @@ window.Quarto = {
 </header>
 
 
-<section id="surface-routing" class="level2">
-<h2 class="anchored" data-anchor-id="surface-routing">Surface routing</h2>
-<p>The main flow routing scheme available in <code>Wflow.jl</code> is the kinematic wave approach for channel and overland flow, assuming that water flow is mostly controlled by topography. The kinematic wave equations are (Chow, 1988):</p>
-<p><span class="math display">\[
-\begin{gathered}
-  \dfrac{\partial Q}{\partial x} + \dfrac{\partial A}{\partial t} = q,\\
-   A = \alpha Q^{\beta}.
-\end{gathered}
-\]</span></p>
-<p>These equations can then be combined as a function of streamflow only:</p>
-<p><span class="math display">\[
-    \dfrac{\partial Q}{\partial x} + \alpha \beta Q^{\beta - 1} \dfrac{\partial Q}{\partial t} = q.
-\]</span></p>
-<p>Here <span class="math inline">\(\SIb{Q}{m^3 s^{-1}}\)</span> is the surface runoff in the kinematic wave, <span class="math inline">\(\SIb{x}{m}\)</span> is the length of the runoff pathway, <span class="math inline">\(\SIb{A}{m}\)</span> is the cross-section area of the runoff pathway, <span class="math inline">\(\SIb{t}{s}\)</span> is the integration timestep and <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are unitless coefficients.</p>
-<p>These equations are solved with a nonlinear scheme using Newton’s method and can also be iterated depending on the model space and time resolution. By default, the iterations are performed until a stable solution is reached (<span class="math inline">\(\epsilon &lt; 10^{-12}\)</span>). For larger models, the number of iterations can also be fixed for to a specific sub-timestep (in seconds) for both overland and channel flows to improve simulation time. To enable (fixed or not) iterations of the kinematic wave the following lines can be inserted in the TOML file of the model:</p>
+<p>Reservoirs and lakes models can be included as part of the river network.</p>
+<section id="reservoirs" class="level2">
+<h2 class="anchored" data-anchor-id="reservoirs">Reservoirs</h2>
+<p>By default the reservoirs are not included in the model. To include them put the following lines in the TOML file of the model:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable iterations of the kinematic wave</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kin_wave_iteration</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed sub-timestep for iterations of channel flow (river cells)</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">kw_river_tstep</span> <span class="op">=</span> <span class="dv">900</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed sub-timestep for iterations of overland flow (land cells)</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">kw_land_tstep</span> <span class="op">=</span> <span class="dv">3600</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The <span class="math inline">\(\alpha\)</span> parameter of the kinematic wave is fixed. To estimate the wetted perimeter for the calculation of the <span class="math inline">\(\alpha\)</span> parameter a bankfull river depth map (default value is <span class="math inline">\(\SI{1.0}{m}\)</span>) for the river can be provided as follows:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bankfull_depth</span> <span class="op">=</span> <span class="st">"wflow_riverdepth"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The wetted perimeter of the river is based on half bankfull river depth. For the land part the wetted perimeter is based on the flow width.</p>
-<p>Simplified <a href="../../model_docs/lateral/waterbodies.html">reservoir and lake</a> models can be included as part of the river kinematic wave network.</p>
-</section>
-<section id="inflow" class="level2">
-<h2 class="anchored" data-anchor-id="inflow">Inflow</h2>
-<p>External water (supply/abstraction) <code>inflow</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> can be added to the kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see also <a href="../../user_guide/required_files.html">Input section</a>).</p>
-</section>
-<section id="abstractions" class="level2">
-<h2 class="anchored" data-anchor-id="abstractions">Abstractions</h2>
-<p>Abstractions from the river through the variable <code>abstraction</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> are possible when water demand and allocation is computed. The variable <code>abstraction</code> is set from the water demand and allocation module each time step. The <code>abstraction</code> is divided by the length of the runoff pathway and subtracted from the lateral inflow of the kinematic wave routing scheme for river flow.</p>
-</section>
-<section id="subsurface-flow-routing" class="level2">
-<h2 class="anchored" data-anchor-id="subsurface-flow-routing">Subsurface flow routing</h2>
-<p>In the SBM model the kinematic wave approach is used to route subsurface flow laterally. Different vertical hydraulic conductivity depth profiles are possible as part of the vertical <a href="../../model_docs/vertical/sbm.html#soil-processes">SBM</a> concept, and these profiles (after unit conversion) are also used to compute lateral subsurface flow. The following profiles (see <a href="../../model_docs/vertical/sbm.html#soil-processes">SBM</a> for a detailed description) are available: - <code>exponential</code> (default) - <code>exponential_constant</code> - <code>layered</code> - <code>layered_exponential</code></p>
-<p>For the profiles <code>exponential</code> and <code>exponential_constant</code>, the saturated store <code>S</code> is drained laterally by saturated downslope subsurface flow for a slope with width <code>\SIb{w}{m}</code> according to:</p>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoirs</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally there is a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The list of reservoir input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#reservoirs">here</a>.</p>
+<section id="lakes-unregulated-and-regulated" class="level3">
+<h3 class="anchored" data-anchor-id="lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</h3>
+<p>Lakes are modelled using a mass balance approach:</p>
 <p><span class="math display">\[
-    Q = K_0\tan(\beta)w\begin{cases}
-    \frac{1}{f}\left(e^{-fz_i}-e^{-f\subtext{z}{exp}}\right) +
-    e^{-f\subtext{z}{exp}}(z_t-\subtext{z}{exp}) &amp; \text{if $z_i &lt; \subtext{z}{exp}$}\\
-    \\
-    e^{-f\subtext{z}{exp}}(z_t - z_i) &amp; \text{if $z_i \ge \subtext{z}{exp}$},
+    \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} + \dfrac{(P-E) A}{\Delta t} - \subtext{Q}{out}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{S}{m^3}\)</span> is lake storage, <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep, <span class="math inline">\(\SIb{\subtext{Q}{in}}{m^3\ s^{-1}}\)</span> is the sum of inflows (river, overland and lateral subsurface flow), <span class="math inline">\(\SIb{\subtext{Q}{out}}{m^3\ s^{-1}}\)</span> is the lake outflow at the outlet, <span class="math inline">\(\SIb{P}{m}\)</span> is precipitation, <span class="math inline">\(\SIb{E}{m}\)</span> is lake evaporation and <span class="math inline">\(\SIb{A}{m^2}\)</span> is the lake surface area.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/lake.png" class="img-fluid figure-img"></p>
+<figcaption>Lake schematization.</figcaption>
+</figure>
+</div>
+<p>Most of the variables in this equation are known at the current or previous timestep, apart from <span class="math inline">\(S(t+ \Delta t)\)</span> and <span class="math inline">\(\subtext{Q}{out}\)</span> which can both be linked to the water level <span class="math inline">\(H\)</span> in the lake using a storage curve <span class="math inline">\(S = f(H)\)</span> and a rating curve <span class="math inline">\(Q = f(H)\)</span>. In wflow, several options are available to select storage and rating curves, and in most cases, the mass balance is then solved by linearization and iteration or using the Modified Puls Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:</p>
+<ul>
+<li>Come from the interpolation of field data linking volume and lake height,</li>
+<li>Be computed from the simple relationship <span class="math inline">\(S = A H\)</span>.</li>
+</ul>
+<p>Rating curves in wflow can either:</p>
+<ul>
+<li>Come from the interpolation of field data linking lake outflow and water height, also appropriate for regulated lakes/ dams,</li>
+<li>Be computed from a rating curve of the form <span class="math inline">\(\subtext{Q}{out} = \alpha (H-H_0)^\beta\)</span>, where <span class="math inline">\(H_{0}\)</span> is the minimum water level under which the outflow is zero. Usual values for <span class="math inline">\(\beta\)</span> are <span class="math inline">\(\frac{3}{2}\)</span> for a rectangular weir or <span class="math inline">\(2\)</span> for a parabolic weir (Bos, 1989).</li>
+</ul>
+</section>
+<section id="modified-puls-approach" class="level3">
+<h3 class="anchored" data-anchor-id="modified-puls-approach">Modified Puls Approach</h3>
+<p>The Modified Puls Approach is a resolution method of the lake balance that uses an explicit relationship between storage and outflow. Storage is assumed to be equal to <span class="math inline">\(A H\)</span> and the rating curve for a parabolic weir (<span class="math inline">\(\beta = 2\)</span>):</p>
+<p><span class="math display">\[
+    S = A H = A  (h + H_{0}) = A \sqrt{\frac{Q}{\alpha}} + A H_0
+\]</span></p>
+<p>Inserting this equation in the mass balance gives:</p>
+<p><span class="math display">\[
+    \dfrac{A}{\Delta t} \sqrt{\frac{Q}{\alpha}} + Q = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} +
+    A\dfrac{P-E}{\Delta t} - \dfrac{A H_0}{\Delta t} = \mathrm{SI} - \dfrac{A H_0}{\Delta t}
+\]</span></p>
+<p>The solution for <span class="math inline">\(Q\)</span> is then:</p>
+<p><span class="math display">\[
+  Q =
+    \begin{cases}
+      \begin{align*}
+        \frac{1}{4}\left(-\mathrm{LF} + \sqrt{\mathrm{LF}^{2} + 4  \left(\mathrm{SI} - \dfrac{A H_0}{\Delta t} \right)}
+        \right)^2 &amp;\text{ if }\quad \mathrm{SI} &gt; \dfrac{A H_0}{\Delta t} \\
+        0 &amp;\text{ if }\quad \mathrm{SI} \leq \dfrac{A H_0}{\Delta t}
+      \end{align*}
     \end{cases}
 \]</span></p>
-<p>where <span class="math inline">\(\beta\)</span> is element slope angle, <span class="math inline">\(\SIb{Q}{m^3 d^{-1}}\)</span> is subsurface flow, <span class="math inline">\(\SIb{K_0}{m
-d^{-1}}\)</span> is the saturated hydraulic conductivity at the soil surface, <span class="math inline">\(\SIb{z_i}{m}\)</span> is the water table depth, <span class="math inline">\(\SIb{z_{t}}{m}\)</span> is the total soil depth, <span class="math inline">\(\SIb{f}{m^{-1}}\)</span> is a scaling parameter that controls the decrease of <span class="math inline">\(K_0\)</span> with depth and <span class="math inline">\(\SIb{\subtext{z}{exp}}{m}\)</span> is the depth from soil surface for which the exponential decline of <span class="math inline">\(K_0\)</span> is valid. For the <code>exponential</code> profile, <span class="math inline">\(\subtext{z}{exp}\)</span> is equal to <span class="math inline">\(z_t\)</span>.</p>
-<p>Combining with the following continuity equation: <span class="math display">\[
-    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial Q}{\partial x} + wr
-\]</span></p>
-<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, and <span class="math inline">\(\SIb{r}{m d^{-1}}\)</span> is the net input rate to the saturated store. Substituting for <span class="math inline">\(h
-(\frac{\partial Q}{\partial h})\)</span>, gives:</p>
+<p>where</p>
 <p><span class="math display">\[
-  \frac{\partial Q}{\partial t} = -c\frac{\partial Q}{\partial x} + cwr
+\mathrm{LF} = \dfrac{A}{\Delta t \sqrt{\alpha}}.
 \]</span></p>
-<p>where celerity <span class="math inline">\(c\)</span> is calculated as follows: <span class="math display">\[
-    c = \frac{K_0 \tan(\beta)}{\theta_s-\theta_r}\begin{cases}
-    e^{-fz_i}
-    + e^{-f\subtext{z}{exp}} &amp; \text{if $z_i &lt; \subtext{z}{exp}$}\\
-    \\
-    e^{-f\subtext{z}{exp}} &amp; \text{if $z_i \ge \subtext{z}{exp}$}.
-    \end{cases}
-\]</span></p>
-<p>For the <code>layered</code> and <code>layered_exponential</code> profiles the equivalent horizontal hydraulic conductivity <span class="math inline">\(\SIb{K_h}{m d^{-1}}\)</span> is calculated for water table height <span class="math inline">\(\SIb{h = z_t-z_i}{m}\)</span> and lateral subsurface flow is calculated as follows:</p>
-<p><span class="math display">\[
-  Q = K_h h \tan(\beta) w,
-\]</span></p>
-<p>and celerity <span class="math inline">\(c\)</span> is given by:</p>
-<p><span class="math display">\[
-    c = \frac{K_h \tan(\beta)}{\theta_s-\theta_r}.
-\]</span></p>
-<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
+</section>
+<section id="lake-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="lake-parameters">Lake parameters</h3>
+<p>By default, the lakes are not included in the model. To include them, put the following line in the TOML file of the model:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lakes</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>There is also a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_location__count</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_surface__area</span> <span class="op">=</span> <span class="st">"lake_area"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_coefficient</span> <span class="op">=</span> <span class="st">"lake_b"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_exponent</span> <span class="op">=</span> <span class="st">"lake_e"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_type_count</span> <span class="op">=</span> <span class="st">"lake_outflowfunc"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__storage_curve_type_count</span>  <span class="op">=</span> <span class="st">"lake_storfunc"</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_flow_threshold-level__elevation</span>  <span class="op">=</span> <span class="st">"lake_threshold"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_level__initial_elevation</span> <span class="op">=</span> <span class="st">"lake_waterlevel"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The list of lake input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#lakes">here</a>. The following lake storage curve types <code>lake_water__storage_curve_type_count</code> are available:</p>
+<ul>
+<li>1 for <span class="math inline">\(S = AH\)</span></li>
+<li>2 for <span class="math inline">\(S = f(H)\)</span> from lake data and interpolation</li>
+</ul>
+<p>And the following lake rating curve types <code>lake_water__rating_curve_type_count</code> are available:</p>
+<ul>
+<li>1 for <span class="math inline">\(Q = f(H)\)</span> from lake data and interpolation</li>
+<li>2 for general <span class="math inline">\(Q = b(H - H_{0})^{e}\)</span></li>
+<li>3 in the case of Puls Approach <span class="math inline">\(Q = b(H - H_{0})^{2}\)</span></li>
+</ul>
+</section>
+<section id="additional-settings" class="level3">
+<h3 class="anchored" data-anchor-id="additional-settings">Additional settings</h3>
+<p>Storage and rating curves from field measurement can be supplied to wflow via CSV files supplied in the same folder of the TOML file. Naming of the files uses the ID of the lakes where data are available and is of the form <code>lake_sh_1.csv</code> and <code>lake_hq_1.csv</code> for respectively the storage and rating curves of lake with ID 1.</p>
+<p>The storage curve is stored in a CSV file with lake level <span class="math inline">\(\SIb{}{m}\)</span> in the first column <code>H</code> and corresponding lake storage <span class="math inline">\(\SIb{}{m^3}\)</span> in the second column <code>S</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H,</span>  S</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">392.21,</span> 0</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">393.21,</span> 430202000</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">393.71,</span> 649959000</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.21,</span> 869719000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The rating curve uses level and discharge data depending on the Julian day of the year (JDOY), and can be also used for regulated lakes/ dams. The first line contains <code>H</code> for the first column. The other lines contain the water level and the corresponding discharges for the different JDOY (1-365), see also the example below, that shows part of a CSV file (first 4 Julian days). The volume above the maximum water level of the rating curve is assumed to flow instantaneously out of the lake (overflow).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">394,</span>    43,     43,     43,     43</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">394.01,</span> 44.838, 44.838, 44.838, 44.838</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">394.02,</span> 46.671, 46.671, 46.671, 46.671</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.03,</span> 48.509, 48.509, 48.509, 48.509</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">394.04,</span> 50.347, 50.347, 50.347, 50.347</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">394.05,</span> 52.179, 52.179, 52.179, 52.179</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Linked lakes: In some cases, lakes can be linked and return flow can be allowed from the downstream to the upstream lake. The linked lakes are defined in the <code>lake~lower_location__count</code> (standard name) input parameter that represent the downstream lake location ID, at the grid cell of the upstream lake location.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -476,43 +526,16 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain model timestep and model grid size combinations this may result in loss of accuracy.</p>
+<p>In every file, level units are meters [m] above lake bottom and not meters above sea level [m asl]. Especially with storage/rating curves coming from data, please be careful and convert units if needed.</p>
 </div>
 </div>
 </section>
-<section id="multi-threading" class="level2">
-<h2 class="anchored" data-anchor-id="multi-threading">Multi-Threading</h2>
-<p>The kinematic wave calculations for surface - and subsurface flow routing can be executed in parallel using multiple threads. In the model section of the TOML file, a minimum stream order can be provided to define subbasins for the river (default is 6) and land domain (default is 5). Subbasins are created at all confluences where each branch has a minimal stream order. Based on the subbasins a directed acyclic graph is created that controls the order of execution and which subbasins can run in parallel.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">min_streamorder_river</span> <span class="op">=</span> <span class="dv">5</span> <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">min_streamorder_land</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="subcatchment-flow" class="level2">
-<h2 class="anchored" data-anchor-id="subcatchment-flow">Subcatchment flow</h2>
-<p>Normally the the kinematic wave is continuous throughout the model. By using the <code>pits</code> entry in the model and input sections of the TOML file all flow is at the subcatchment only (upstream of the pit locations, defined by the netCDF variable <code>wflow_pits</code> in the example below) and no flow is transferred from one subcatchment to another. This can be convenient when connecting the result of the model to a water allocation model such as Ribasim.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">pits</span> <span class="op">=</span> <span class="st">"wflow_pits"</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pits</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="limitations" class="level2">
-<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<p>The kinematic wave approach for channel, overland and lateral subsurface flow, assumes that the topography controls water flow mostly. This assumption holds for steep terrain, but in less steep terrain the hydraulic gradient is likely not equal to the surface slope (subsurface flow), or pressure differences and inertial momentum cannot be neglected (channel and overland flow). In addition, while the kinematic wave equations are solved with a nonlinear scheme using Newton’s method (Chow, 1988), other model equations are solved through a simple explicit scheme. In summary the following limitations apply:</p>
-<ul>
-<li>Channel flow, and to a lesser degree overland flow, may be unrealistic in terrain that is not steep, and where pressure forces and inertial momentum are important.</li>
-<li>The lateral movement of subsurface flow may be very wrong in terrain that is not steep.</li>
-</ul>
-</section>
-<section id="external-inflows" class="level2">
-<h2 class="anchored" data-anchor-id="external-inflows">External inflows</h2>
-<p>External inflows, for example water supply or abstractions, can be added to the kinematic wave via the <code>inflow</code> variable. For this, the user can supply a 2D map of the inflow, as a cyclic parameter or as part of forcing (see also <a href="../../user_guide/required_files.html">Input section</a>). These inflows are added or abstracted from the upstream inflow <code>qin</code> before running the kinematic wave to solve the impact on resulting <code>q</code>. In case of a negative inflow (abstractions), a minimum of zero is applied to the upstream flow <code>qin</code>.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <ul>
-<li>Chow, V., Maidment, D. and Mays, L., 1988, Applied Hydrology. McGraw-Hill Book Company, New York.</li>
+<li>Bos M.G., 1989. Discharge measurement structures. Third revised edition, International Institute for Land Reclamation and Improvement ILRI, Wageningen, The Netherlands.</li>
+<li>Burek P., Van der Knijf J.M., Ad de Roo, 2013. LISFLOOD – Distributed Water Balance and flood Simulation Model – Revised User Manual. DOI: http://dx.doi.org/10.2788/24719.</li>
 </ul>
 
 

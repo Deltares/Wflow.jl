@@ -39,8 +39,8 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1061f5c66ef3e2d6db0e78bfe52187f4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-75ffd96e093d6bb1c2d9c7ca99f6ccb5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -115,10 +115,6 @@ ul.task-list li input[type="checkbox"] {
   <li class="nav-item">
     <a class="nav-link active" href="../user_guide/index.html" aria-current="page"> 
 <span class="menu-text">User guide</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../model_docs/index.html"> 
@@ -226,12 +222,6 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/output.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Handling model output</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -313,19 +303,19 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="sec-modify-pars" class="level3">
 <h3 class="anchored" data-anchor-id="sec-modify-pars">How do I start wflow with initial conditions from a previous run?</h3>
-<p>See <a href="../user_guide/toml_file.html#state-options">here</a></p>
+<p>See <a href="../user_guide/warm_states.html">here</a></p>
 </section>
 <section id="how-do-i-add-external-inflows-andor-abstractions" class="level3">
 <h3 class="anchored" data-anchor-id="how-do-i-add-external-inflows-andor-abstractions">How do I add external inflows and/or abstractions?</h3>
-<p><code>lateral.river.inflow</code>: positive for inflows, negative for abstraction. If parameter is time varying, add it to the correct section, see <a href="#how-do-i-add-time-varying-parameters">below</a>.</p>
+<p><code>river_water_inflow~external__volume_flow_rate</code>: positive for inflows, negative for abstraction. If parameter is time varying, add it to the correct section, see <a href="#how-do-i-add-time-varying-parameters">below</a>.</p>
 </section>
 <section id="how-do-i-add-time-varying-parameters" class="level3">
 <h3 class="anchored" data-anchor-id="how-do-i-add-time-varying-parameters">How do I add time-varying parameters?</h3>
-<p>Either through cyclic (add parameter to <code>cyclic</code> list in the toml), or to the forcing section.</p>
+<p>Either through cyclic (add parameter to <code>cyclic</code> list in the toml), or to the <code>forcing</code> section.</p>
 </section>
 <section id="how-do-i-add-different-output" class="level3">
 <h3 class="anchored" data-anchor-id="how-do-i-add-different-output">How do I add different output?</h3>
-<p>See <a href="../user_guide/toml_file.html#output-csv-section">here for csv output</a>, <a href="../user_guide/toml_file.html#scalar-data">here for scalar netcdf data</a>, and <a href="../user_guide/toml_file.html#output-netcdf-section">here for gridded output</a>.</p>
+<p>See <a href="../user_guide/toml_file.html#output-csv-section">here for csv output</a>, <a href="../user_guide/toml_file.html#scalar-data">here for scalar netcdf data</a>, and <a href="../user_guide/toml_file.html#output-netcdf-section">here for gridded netcdf output</a>.</p>
 
 
 </section>

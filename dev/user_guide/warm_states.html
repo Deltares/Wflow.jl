@@ -73,8 +73,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1061f5c66ef3e2d6db0e78bfe52187f4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-75ffd96e093d6bb1c2d9c7ca99f6ccb5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -149,10 +149,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li class="nav-item">
     <a class="nav-link active" href="../user_guide/index.html" aria-current="page"> 
 <span class="menu-text">User guide</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../model_docs/index.html"> 
@@ -260,12 +256,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
       </ul>
   </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/output.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Handling model output</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -331,7 +321,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>The <code>state</code> section in the TOML file provides information on the input file if the model is initialized with a warm state (<code>path_input</code>) and to what file the states are written at the end of the model run (<code>path_output</code>). Please note that the model setting <code>reinit</code> needs to be set to <code>false</code> in order to initialize the model with states from the file located at <code>path_input</code>. A mapping between external state names and internal model states is required. This information is specified for each model component, the <code>vertical</code> model and <code>lateral</code> model components. In the example below the <code>vertical</code> component represents the SBM concept, and for the <code>lateral</code> components there is a <code>river</code> (including optional <code>reservoir</code>, <code>lake</code> and <code>floodplain</code> components), <code>land</code> and <code>subsurface</code> domain. The internal model states are listed on the left side, and the external state names are listed on the right side. Note that <code>path_input</code> is only required when <code>reinit</code> is set to false. <code>path_output</code> is optional, an output state file is only written when it is defined. If neither is set, the entire <code>state</code> section can be left out.</p>
+<p>The <code>state</code> section in the TOML file provides information on the input file if the model is initialized with a warm state (<code>path_input</code>) and to what file the states are written at the end of the model run (<code>path_output</code>). Please note that the model setting <code>reinit</code> needs to be set to <code>false</code> in order to initialize the model with states from the file located at <code>path_input</code>. A mapping between external netCDF variable state names and model state variable standard names is required below the <code>[state.variables]</code> section. The model state variable standard names are listed on the left side, and the external netCDF variable state names are listed on the right side. Note that <code>path_input</code> is only required when <code>reinit</code> is set to false. <code>path_output</code> is optional, an output state file is only written when it is defined. If neither is set, the entire <code>state</code> section can be left out.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reinit</span> <span class="op">=</span> <span class="cn">false</span> <span class="co"># cold (reinit = true) or warm state (reinit = false), default is true</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -339,37 +329,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path_input</span> <span class="op">=</span> <span class="st">"data/instates-moselle.nc"</span>     <span class="co"># Location of the file with the input states</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">path_output</span> <span class="op">=</span> <span class="st">"data/outstates-moselle.nc"</span>   <span class="co"># Output location of the states after the model run</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.vertical]</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dt">satwaterdepth</span> <span class="op">=</span> <span class="st">"satwaterdepth"</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="st">"snow"</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">tsoil</span> <span class="op">=</span> <span class="st">"tsoil"</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">ustorelayerdepth</span> <span class="op">=</span> <span class="st">"ustorelayerdepth"</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="dt">canopystorage</span> <span class="op">=</span> <span class="st">"canopystorage"</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="dt">snowwater</span> <span class="op">=</span> <span class="st">"snowwater"</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">glacierstore</span> <span class="op">=</span><span class="st">"glacierstore"</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.lateral.river]</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="dt">q</span> <span class="op">=</span> <span class="st">"q_river"</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">h</span> <span class="op">=</span> <span class="st">"h_river"</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">h_av</span> <span class="op">=</span> <span class="st">"h_av_river"</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.lateral.river.floodplain]</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">q</span> <span class="op">=</span> <span class="st">"q_floodplain"</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">h</span> <span class="op">=</span> <span class="st">"h_floodplain"</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation_canopy_water__depth</span> <span class="op">=</span> <span class="st">"canopystorage"</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_sat-zone__depth</span> <span class="op">=</span> <span class="st">"satwaterdepth"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_surface__temperature</span> <span class="op">=</span> <span class="st">"tsoil"</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_layer_water_unsat-zone__depth</span> <span class="op">=</span> <span class="st">"ustorelayerdepth"</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"snowpack~dry__leq-depth"</span> <span class="op">=</span> <span class="st">"snow"</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dt">"snowpack~liquid__depth"</span> <span class="op">=</span> <span class="st">"snowwater"</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_river"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"q_river"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"q_floodplain"</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_floodplain"</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__instantaneous_volume</span> <span class="op">=</span> <span class="st">"volume_reservoir"</span></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.lateral.river.reservoir]</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="dt">volume</span> <span class="op">=</span> <span class="st">"volume_reservoir"</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.lateral.river.lake]</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="dt">waterlevel</span> <span class="op">=</span> <span class="st">"waterlevel_lake"</span></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.lateral.subsurface]</span></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="dt">ssf</span> <span class="op">=</span> <span class="st">"ssf"</span></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.lateral.land]</span></span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="dt">q</span> <span class="op">=</span> <span class="st">"q_land"</span></span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="dt">h</span> <span class="op">=</span> <span class="st">"h_land"</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="dt">h_av</span> <span class="op">=</span> <span class="st">"h_av_land"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__volume_flow_rate</span>  <span class="op">=</span> <span class="st">"ssf"</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"q_land"</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_land"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 

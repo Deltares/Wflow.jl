@@ -73,8 +73,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1061f5c66ef3e2d6db0e78bfe52187f4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-75ffd96e093d6bb1c2d9c7ca99f6ccb5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -151,10 +151,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
@@ -225,10 +221,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Vertical processes</span></a>
+ <span class="menu-text">Land models</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -236,20 +238,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/vertical/sbm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SBM</span></a>
+  <a href="../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/vertical/sediment.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../model_docs/vertical/shared_processes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Shared processes</span></a>
   </div>
 </li>
       </ul>
@@ -257,7 +253,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Lateral processes</span></a>
+ <span class="menu-text">Routing concepts</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -265,31 +261,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/lateral/kinwave.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Kinematic wave</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/lateral/local-inertial.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Local inertial</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/lateral/waterbodies.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reservoirs and Lakes</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/lateral/gwf.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Groundwater flow</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/lateral/sediment_flux.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment flux</span></a>
   </div>
 </li>
@@ -298,7 +294,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Parameters</span></a>
+ <span class="menu-text">Model parameters and variables</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -306,14 +302,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/parameters_vertical.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Vertical concepts</span></a>
+  <a href="../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/parameters_lateral.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Lateral concepts</span></a>
+  <a href="../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
       </ul>
@@ -330,10 +338,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#wflow_sbm" id="toc-wflow_sbm" class="nav-link active" data-scroll-target="#wflow_sbm">wflow_sbm</a>
   <ul class="collapse">
-  <li><a href="#sbm-kinematic-wave" id="toc-sbm-kinematic-wave" class="nav-link" data-scroll-target="#sbm-kinematic-wave">SBM + Kinematic wave</a></li>
-  <li><a href="#sbm-groundwater-flow" id="toc-sbm-groundwater-flow" class="nav-link" data-scroll-target="#sbm-groundwater-flow">SBM + Groundwater flow</a></li>
-  <li><a href="#sbm-local-inertial-river" id="toc-sbm-local-inertial-river" class="nav-link" data-scroll-target="#sbm-local-inertial-river">SBM + Local inertial river</a></li>
-  <li><a href="#sbm-local-inertial-river-1d-and-land-2d" id="toc-sbm-local-inertial-river-1d-and-land-2d" class="nav-link" data-scroll-target="#sbm-local-inertial-river-1d-and-land-2d">SBM + Local inertial river (1D) and land (2D)</a></li>
+  <li><a href="#kinematic-wave" id="toc-kinematic-wave" class="nav-link" data-scroll-target="#kinematic-wave">Kinematic wave</a></li>
+  <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a></li>
+  <li><a href="#local-inertial-river" id="toc-local-inertial-river" class="nav-link" data-scroll-target="#local-inertial-river">Local inertial river</a></li>
+  <li><a href="#local-inertial-river-1d-and-land-2d" id="toc-local-inertial-river-1d-and-land-2d" class="nav-link" data-scroll-target="#local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</a></li>
   </ul></li>
   <li><a href="#wflow_sediment" id="toc-wflow_sediment" class="nav-link" data-scroll-target="#wflow_sediment">wflow_sediment</a>
   <ul class="collapse">
@@ -365,39 +373,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>There are several model configurations supported by wflow. These model configurations require slightly different input requirements, yet the general structure is similar for each model. A wflow model configuration consists of a <code>vertical</code> <a href="../model_docs/vertical/sbm.html">SBM</a> concept in combination with <code>lateral</code> concepts that control how water is routed for example over the land or river domain. For the wflow_sbm model different model configurations are possible. The following model configurations are supported in wflow:</p>
+<p>There are several model configurations supported by wflow. These model configurations require slightly different input requirements, yet the general structure is similar for each model. A wflow model configuration consists of a <a href="../model_docs/land/landhydrology_sbm.html">Land hydrology SBM</a> model in combination with <code>routing</code> concepts that control how water is routed for example over the land or river domain. For the wflow_sbm model different model configurations are possible. The following model configurations are supported in wflow:</p>
 <ul>
 <li>wflow_sbm:
 <ul>
-<li>SBM + kinematic wave for subsurface and surface flow</li>
-<li>SBM + kinematic wave for subsurface and overland flow + local inertial river (+ optional floodplain)</li>
-<li>SBM + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)</li>
-<li>SBM + groundwater flow + kinematic wave for surface flow</li>
+<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and surface flow</li>
+<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and overland flow + local inertial river (+ optional floodplain)</li>
+<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)</li>
+<li>Land Hydrology <code>SBM</code> + groundwater flow + kinematic wave for surface flow</li>
 </ul></li>
 <li>wflow_sediment as post processing of wflow_sbm output</li>
 </ul>
 <p>Below, some explanation will be given on how to prepare a basic wflow_sbm model. Example data for other model configurations is provided in the section with <a href="../getting_started/download_example_models.html">sample data</a>.</p>
 <section id="wflow_sbm" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sbm">wflow_sbm</h2>
-<p>Wflow_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006) that have the <a href="../model_docs/vertical/sbm.html">SBM</a> vertical concept in common, but can have different lateral concepts that control how water is routed for example over the land or river domain. The soil part of SBM is largely based on the Topog_SBM model but has had considerable changes over time. Topog_SBM is specifically designed to simulate fast runoff processes in small catchments while the wflow_sbm model can be applied more widely. The main differences are for the vertical concept SBM of wflow_sbm:</p>
+<p>Wflow_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006) that have the <a href="../model_docs/land/landhydrology_sbm.html">Land Hydrology SBM</a> model concept in common, but can have different routing concepts that control how water is routed for example over the land or river domain. The <code>soil</code> model of the Land Hydrology <code>SBM</code> model is largely based on the Topog_SBM model but has had considerable changes over time. Topog_SBM is specifically designed to simulate fast runoff processes in small catchments while the wflow_sbm model can be applied more widely. The main differences between the Land Hydrology <code>SBM</code> model and Topog_SBM are as follows:</p>
 <ul>
-<li>The unsaturated zone can be split-up in different layers</li>
-<li>The addition of evapotranspiration losses</li>
-<li>The addition of a capillary rise</li>
-<li>The addition of water demand and allocation</li>
+<li>the addition of evapotranspiration and interception losses;</li>
+<li>the addition of a root water uptake reduction function (Feddes et al., 1978);</li>
+<li>the addition of a capillary rise;</li>
+<li>the addition of glacier, snow build-up and melting processes;</li>
+<li>the introduction of an option to divide the soil column into different layers to allow for transfer of water within the unsaturated zone;</li>
+<li>the addition of water demand and allocation computations.</li>
 </ul>
-<p>The water demand and allocation computations are supported by the wflow_sbm model configurations:</p>
-<ul>
-<li>SBM + Kinematic wave</li>
-<li>SBM + Groundwater flow</li>
-<li>SBM + Local inertial river</li>
-<li>SBM + Local inertial river (1D) and land (2D)</li>
-</ul>
-<p>The vertical SBM concept is explained in more detail in the following section <a href="../model_docs/vertical/sbm.html">SBM vertical concept</a>.</p>
-<p>Topog_SBM uses an element network based on contour lines and trajectories for water routing. Wflow_sbm models differ in how the lateral components river, land, and subsurface are solved. Below the different wflow_sbm model configurations are described.</p>
-<section id="sbm-kinematic-wave" class="level3">
-<h3 class="anchored" data-anchor-id="sbm-kinematic-wave">SBM + Kinematic wave</h3>
-<p>For the lateral components of this wflow_sbm model water is routed over a D8 network, and the kinematic wave approach is used for river, overland and lateral subsurface flow. This is described in more detail in the section <a href="../model_docs/lateral/kinwave.html">Kinematic wave</a>.</p>
+<p>Topog_SBM uses an element network based on contour lines and trajectories for water routing. Wflow_sbm models differ in how the routing components river, land, and subsurface are solved. Below the different wflow_sbm model configurations are described, according to the used routing approach.</p>
+<section id="kinematic-wave" class="level3">
+<h3 class="anchored" data-anchor-id="kinematic-wave">Kinematic wave</h3>
+<p>Water is routed over a D8 network, and the kinematic wave approach is used for river, overland and lateral subsurface flow. This is described in more detail in the section <a href="../model_docs/routing/kinwave.html">Kinematic wave</a>.</p>
 <p>An overview of the different processes and fluxes in the wflow_sbm model with the kinematic wave approach for river, overland and lateral subsurface flow:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -405,66 +407,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <figcaption>Conceptual overview of the wflow_sbm model</figcaption>
 </figure>
 </div>
-<p>Below the mapping for this wflow_sbm model (type <code>sbm</code>) to the vertical SBM concept (instance of <code>struct SBM</code>) and the different lateral concepts is presented. For an explanation about the type parameters between curly braces after the <code>struct</code> name see the section on the model parameters.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>vertical <span class="op">=&gt;</span> <span class="kw">struct</span> SBM{T,N,M}</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>lateral.subsurface <span class="op">=&gt;</span> <span class="kw">struct</span> LateralSSF{T}</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>lateral.land <span class="op">=&gt;</span> <span class="kw">struct</span> SurfaceFlow{T,R,L}</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>lateral.river <span class="op">=&gt;</span> <span class="kw">struct</span> SurfaceFlow{T,R,L}</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>lateral.river.lake <span class="op">=&gt;</span> <span class="kw">struct</span> NaturalLake{T} <span class="co"># optional</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>lateral.river.reservoir <span class="op">=&gt;</span> <span class="kw">struct</span> SimpleReservoir{T} <span class="co"># optional</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="sbm-groundwater-flow" class="level3">
-<h3 class="anchored" data-anchor-id="sbm-groundwater-flow">SBM + Groundwater flow</h3>
-<p>For river and overland flow the kinematic wave approach over a D8 network is used for this wflow_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in four directions (adjacent cells) is used. This is described in more detail in the section <a href="../model_docs/lateral/gwf.html">Groundwater flow</a>.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm_gwf"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.subsurface]</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">ksathorfrac</span> <span class="op">=</span> <span class="st">"KsatHorFrac"</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">conductivity</span> <span class="op">=</span> <span class="st">"conductivity"</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">specific_yield</span> <span class="op">=</span> <span class="st">"specific_yield"</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">exfiltration_conductance</span> <span class="op">=</span> <span class="st">"exfilt_cond"</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">infiltration_conductance</span> <span class="op">=</span> <span class="st">"infilt_cond"</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">river_bottom</span> <span class="op">=</span> <span class="st">"river_bottom"</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential"</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">gwf_f.value</span> <span class="op">=</span> <span class="fl">3.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Below the mapping for this wflow_sbm model (type <code>sbm_gwf</code>) to the vertical SBM concept (instance of <code>struct SBM</code>) and the different lateral concepts. For an explanation about the type parameters between curly braces after the <code>struct</code> name see the section on model parameters.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>vertical <span class="op">=&gt;</span> <span class="kw">struct</span> SBM{T,N,M}</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>lateral.subsurface.flow <span class="op">=&gt;</span> <span class="kw">struct</span> GroundwaterFlow{A, B}</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>lateral.subsurface.recharge <span class="op">=&gt;</span> <span class="kw">struct</span> Recharge{T} <span class="op">&lt;:</span><span class="dt"> AquiferBoundaryCondition</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>lateral.subsurface.river <span class="op">=&gt;</span> <span class="kw">struct</span> River{T} <span class="op">&lt;:</span><span class="dt"> AquiferBoundaryCondition</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>lateral.subsurface.drain <span class="op">=&gt;</span> <span class="kw">struct</span> Drainage{T} <span class="op">&lt;:</span><span class="dt"> AquiferBoundaryCondition </span><span class="co"># optional</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>lateral.land <span class="op">=&gt;</span> <span class="kw">struct</span> SurfaceFlow{T,R,L}</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>lateral.river <span class="op">=&gt;</span> <span class="kw">struct</span> SurfaceFlow{T,R,L}</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>lateral.river.lake <span class="op">=&gt;</span> <span class="kw">struct</span> NaturalLake{T} <span class="co"># optional</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>lateral.river.reservoir <span class="op">=&gt;</span> <span class="kw">struct</span> SimpleReservoir{T} <span class="co"># optional</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="groundwater-flow" class="level3">
+<h3 class="anchored" data-anchor-id="groundwater-flow">Groundwater flow</h3>
+<p>For river and overland flow the kinematic wave approach over a D8 network is used for this wflow_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in four directions (adjacent cells) is used. This is described in more detail in the section <a href="../model_docs/routing/gwf.html">Groundwater flow</a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm_gwf"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="sbm-local-inertial-river" class="level3">
-<h3 class="anchored" data-anchor-id="sbm-local-inertial-river">SBM + Local inertial river</h3>
+<section id="local-inertial-river" class="level3">
+<h3 class="anchored" data-anchor-id="local-inertial-river">Local inertial river</h3>
 <p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river flow. There is also the option to use the local inertial model for river flow with an optional 1D floodplain schematization (routing is done separately for the river channel and floodplain), by providing the following in the TOML file:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span>    <span class="co"># optional, default is "kinematic-wave"</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d</span> <span class="op">=</span> <span class="cn">true</span>                <span class="co"># optional, default is false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Only the mapping for the river component changes, as shown below. For an explanation about the type parameters between curly braces after the <code>struct</code> name see the section on the model parameters.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lateral.river <span class="op">=&gt;</span> <span class="kw">struct</span> ShallowWaterRiver{T,R,L}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span>    <span class="co"># optional, default is "kinematic-wave"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d</span> <span class="op">=</span> <span class="cn">true</span>                <span class="co"># optional, default is false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="sbm-local-inertial-river-1d-and-land-2d" class="level3">
-<h3 class="anchored" data-anchor-id="sbm-local-inertial-river-1d-and-land-2d">SBM + Local inertial river (1D) and land (2D)</h3>
+<section id="local-inertial-river-1d-and-land-2d" class="level3">
+<h3 class="anchored" data-anchor-id="local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</h3>
 <p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river and overland flow. There is also the option to use the local inertial model for 1D river and 2D overland flow, by providing the following in the TOML file:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The mapping for the river and land component changes, as shown below. For an explanation about the type parameters between curly braces after the <code>struct</code> name see the section on the model parameters.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>lateral.river <span class="op">=&gt;</span> <span class="kw">struct</span> ShallowWaterRiver{T,R,L}</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>lateral.land <span class="op">=&gt;</span> <span class="kw">struct</span> ShallowWaterLand{T}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The local inertial approach is described in more detail in the section <a href="../model_docs/lateral/local-inertial.html">Local inertial model</a>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The local inertial approach is described in more detail in the section <a href="../model_docs/routing/local-inertial.html">Local inertial model</a>.</p>
 </section>
 </section>
 <section id="wflow_sediment" class="level2">
 <h2 class="anchored" data-anchor-id="wflow_sediment">wflow_sediment</h2>
 <p>The processes and fate of many particles and pollutants impacting water quality at the catchment level are intricately linked to the processes governing sediment dynamics. Both nutrients such as phosphorus, carbon or other pollutants such as metals are influenced by sediment properties in processes such as mobilization, flocculation or deposition. To better assert and model water quality in inland systems, a better comprehension and modelling of sediment sources and fate in the river is needed at a spatial and time scale relevant to such issues.</p>
 <p>The wflow_sediment model was developed to answer such issues. It is a distributed physics-based model, based on the distributed hydrologic wflow_sbm model. It is able to simulate both land and in-stream processes, and relies on available global datasets, parameter estimation and small calibration effort.</p>
-<p>In order to model the exports of terrestrial sediment to the coast through the Land Ocean Aquatic Continuum or LOAC (inland waters network such as streams, lakes…), two different modelling parts were considered. The first part, called the inland sediment model, is the modelling and estimation of soil loss and sediment yield to the river system by land erosion, separated into vertical <a href="../model_docs/vertical/sediment.html#soil-erosion">Soil Erosion</a> processes and lateral <a href="../model_docs/lateral/sediment_flux.html#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a>. The second part, called the <a href="../model_docs/lateral/sediment_flux.html#river-sediment-model">River Sediment Model</a> is the transport and processes of the sediment in the river system. The two parts together constitute the wflow_sediment model.</p>
+<p>In order to model the exports of terrestrial sediment to the coast through the Land Ocean Aquatic Continuum or LOAC (inland waters network such as streams, lakes…), two different modelling parts were considered. The first part, called the inland sediment model, is the modelling and estimation of soil loss and sediment yield to the river system by land erosion, separated into vertical <a href="../model_docs/land/sediment.html#soil-erosion">Soil Erosion</a> processes and lateral <a href="../model_docs/routing/sediment_flux.html#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a>. The second part, called the <a href="../model_docs/routing/sediment_flux.html#river-sediment-model">River Sediment Model</a> is the transport and processes of the sediment in the river system. The two parts together constitute the wflow_sediment model.</p>
 <p>Overview of the concepts of the wflow_sediment model: <img src="../images/wflow_sediment.png" class="img-fluid" alt="wflow_sediment"></p>
 <section id="configuration" class="level3">
 <h3 class="anchored" data-anchor-id="configuration">Configuration</h3>
@@ -479,33 +449,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>These inputs can be obtained from wflow_sbm or from other sources.</p>
 <p>Model outputs can be saved for both the inland and the instream part of the model. Some examples are listed below.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.vertical]</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Soil splash erosion [ton]</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">sedspl</span> <span class="op">=</span> <span class="st">"sedspl"</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Soil erosion by overland flow [ton]</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="dt">sedov</span> <span class="op">=</span> <span class="st">"sedov"</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Total soil loss [ton]</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="dt">soilloss</span> <span class="op">=</span> <span class="st">"soilloss"</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Total transport capacity of overland flow [ton]</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="dt">TCsed</span> <span class="op">=</span> <span class="st">"TCsed"</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Transport capacity per particle class (clay) [ton]</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="dt">TCclay</span> <span class="op">=</span> <span class="st">"TCclay"</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.lateral.land]</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Total (or per particle class) sediment flux in overland flow [ton]</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="dt">olsed</span> <span class="op">=</span> <span class="st">"olsed"</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="dt">olclay</span> <span class="op">=</span> <span class="st">"olclay"</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Total (or per particle class) sediment yield to the river [ton]</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="dt">inlandsed</span> <span class="op">=</span> <span class="st">"inlandsed"</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="dt">inlandclay</span> <span class="op">=</span> <span class="st">"inlandclay"</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.lateral.river]</span></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment concentration in the river (suspended + bed load) [kg/m3]</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="dt">Sedconc</span> <span class="op">=</span> <span class="st">"Sedconc"</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Suspended load [kg/m3]</span></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="dt">SSconc</span> <span class="op">=</span> <span class="st">"SSconc"</span></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Bed load [kg/m3]</span></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="dt">Bedconc</span> <span class="op">=</span> <span class="st">"Bedconc"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # Total soil erosion rate [ton/t] from rainfall (splash)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion~rainfall__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"rainfall_erosion"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Soil erosion rate by overland flow [ton/t]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion~overland_flow__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"overland_flow_erosion"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Total soil loss rate [ton/t]</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_erosion__mass_flow_rate</span> <span class="op">=</span> <span class="st">"soilloss"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Total transport capacity of overland flow [ton/t]</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment_transport_capacity__mass_flow_rate</span> <span class="op">=</span> <span class="st">"TCsed"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment flux in overland flow [ton/t]</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment__mass_flow_rate</span> <span class="op">=</span> <span class="st">"olsed"</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Total (or per particle class) sediment yield to the river [ton/t]</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_sediment~to-river__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandsed"</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_clay~to-river__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandclay"</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment concentration in the river (suspended + bed load) [kg/m3]</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__mass_concentration</span> <span class="op">=</span> <span class="st">"Sedconc"</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Suspended load [kg/m3]</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment~suspended__mass_concentration"</span> <span class="op">=</span> <span class="st">"SSconc"</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Bed load [kg/m3]</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment~bedload__mass_concentration"</span> <span class="op">=</span> <span class="st">"Bedconc"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="references" class="level2">

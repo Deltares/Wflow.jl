@@ -73,8 +73,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1061f5c66ef3e2d6db0e78bfe52187f4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-75ffd96e093d6bb1c2d9c7ca99f6ccb5.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -149,10 +149,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li class="nav-item">
     <a class="nav-link active" href="../user_guide/index.html" aria-current="page"> 
 <span class="menu-text">User guide</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../model_docs/index.html"> 
@@ -260,12 +256,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
       </ul>
   </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/output.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Handling model output</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -340,7 +330,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="using-wflow-in-julia" class="level2">
 <h2 class="anchored" data-anchor-id="using-wflow-in-julia">Using wflow in Julia</h2>
-<p>Wflow supports multi-threading execution of the wflow_sbm model that uses the kinematic wave approach for river, overland and lateral subsurface flow. Both the vertical SBM concept and the kinematic wave components of this model can run on multiple threads. The optional <a href="../model_docs/model_configurations.html#sbm--local-inertial-river-1d-and-land-2d">local inertial model for river flow</a> and the optional <a href="../model_docs/model_configurations.html#sbm--local-inertial-river-1d-and-land-2d">local inertial model for river (1D) and land (2D)</a>, both part of wflow_sbm, can also run on multiple threads. The threading functionality for the kinematic wave may also be useful for the wflow_sbm model <a href="../model_docs/model_configurations.html#sbm--groundwater-flow">SBM + Groundwater flow</a>. The multi-threading functionality in wflow is considered experimental, see also the following <a href="https://github.com/Deltares/Wflow.jl/issues/139">issue</a>, where an error was not thrown running code multi-threaded. Because of this we advise to start with running a wflow model single-threaded (for example during the testing phase of setting up an new wflow model).</p>
+<p>Wflow supports multi-threading execution of the wflow_sbm model that uses the kinematic wave approach for river, overland and lateral subsurface flow. Both the vertical SBM concept and the kinematic wave components of this model can run on multiple threads. The optional <a href="../model_docs/model_configurations.html#local-inertial-river">local inertial model for river flow</a> and the optional <a href="../model_docs/model_configurations.html#local-inertial-river-1d-and-land-2d">local inertial model for river (1D) and land (2D)</a>, both part of wflow_sbm, can also run on multiple threads. The threading functionality for the kinematic wave may also be useful for the wflow_sbm model with <a href="../model_docs/model_configurations.html#groundwater-flow">groundwater flow</a>. The multi-threading functionality in wflow is considered experimental, see also the following <a href="https://github.com/Deltares/Wflow.jl/issues/139">issue</a>, where an error was not thrown running code multi-threaded. Because of this we advise to start with running a wflow model single-threaded (for example during the testing phase of setting up an new wflow model).</p>
 <p>For information on how to start Julia with multiple threads we refer to <a href="https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads">How to start Julia with multiple threads</a>.</p>
 <p>Additionally, when running Julia + wflow via the command line (note that this is different from the <code>wflow_cli</code>), it is possible to define the number of threads via the <code>-t</code> flag. An example where we start Julia with three threads:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">-t</span> 3 <span class="at">-e</span> <span class="st">'using Wflow; Wflow.run()'</span> path/to/config.toml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
