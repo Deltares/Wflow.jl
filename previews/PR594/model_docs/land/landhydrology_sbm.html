@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.43">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Land Hydrology SBM – Wflow.jl</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-74890307de1913927b0f16a015c31dfd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-6ef0d5eb5bdd435e91d4299c73095ba4.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      macros: {
+        SI: ["#1\\;\\mathrm\{#2\}", 2],
+        SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+        subtext: ["#1_\\text\{#2\}", 2]
+      }
+    }
+  };
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../_static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Wflow.jl</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../getting_started/index.html"> 
+<span class="menu-text">Getting started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../user_guide/index.html"> 
+<span class="menu-text">User guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
+<span class="menu-text">Model documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../developments/index.html"> 
+<span class="menu-text">Developments</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-bi-github" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-bi-github">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl">
+ <span class="dropdown-text">Source Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl/issues/new/choose">
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/land/landhydrology_sbm.html">Land models</a></li><li class="breadcrumb-item"><a href="../../model_docs/land/landhydrology_sbm.html">Land Hydrology SBM</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model configurations</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Land models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Routing concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematic wave</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local inertial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs and Lakes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Groundwater flow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment flux</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Model parameters and variables</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#rainfall-interception" id="toc-rainfall-interception" class="nav-link" data-scroll-target="#rainfall-interception">Rainfall interception</a>
+  <ul class="collapse">
+  <li><a href="#the-gash-model" id="toc-the-gash-model" class="nav-link" data-scroll-target="#the-gash-model">The Gash model</a></li>
+  <li><a href="#the-modified-rutter-model" id="toc-the-modified-rutter-model" class="nav-link" data-scroll-target="#the-modified-rutter-model">The modified rutter model</a></li>
+  <li><a href="#interception-parameters-from-lai" id="toc-interception-parameters-from-lai" class="nav-link" data-scroll-target="#interception-parameters-from-lai">Interception parameters from LAI</a></li>
+  </ul></li>
+  <li><a href="#snow-and-glaciers" id="toc-snow-and-glaciers" class="nav-link" data-scroll-target="#snow-and-glaciers">Snow and glaciers</a>
+  <ul class="collapse">
+  <li><a href="#snow-modelling" id="toc-snow-modelling" class="nav-link" data-scroll-target="#snow-modelling">Snow modelling</a></li>
+  <li><a href="#glacier-modelling" id="toc-glacier-modelling" class="nav-link" data-scroll-target="#glacier-modelling">Glacier modelling</a></li>
+  </ul></li>
+  <li><a href="#evaporation" id="toc-evaporation" class="nav-link" data-scroll-target="#evaporation">Evaporation</a>
+  <ul class="collapse">
+  <li><a href="#bare-soil-evaporation" id="toc-bare-soil-evaporation" class="nav-link" data-scroll-target="#bare-soil-evaporation">Bare soil evaporation</a></li>
+  <li><a href="#transpiration" id="toc-transpiration" class="nav-link" data-scroll-target="#transpiration">Transpiration</a></li>
+  </ul></li>
+  <li><a href="#soil-processes" id="toc-soil-processes" class="nav-link" data-scroll-target="#soil-processes">Soil processes</a>
+  <ul class="collapse">
+  <li><a href="#the-sbm-soil-water-accounting-scheme" id="toc-the-sbm-soil-water-accounting-scheme" class="nav-link" data-scroll-target="#the-sbm-soil-water-accounting-scheme">The SBM soil water accounting scheme</a></li>
+  <li><a href="#infiltration" id="toc-infiltration" class="nav-link" data-scroll-target="#infiltration">Infiltration</a></li>
+  <li><a href="#capillary-rise" id="toc-capillary-rise" class="nav-link" data-scroll-target="#capillary-rise">Capillary rise</a></li>
+  <li><a href="#leakage" id="toc-leakage" class="nav-link" data-scroll-target="#leakage">Leakage</a></li>
+  </ul></li>
+  <li><a href="#open-water" id="toc-open-water" class="nav-link" data-scroll-target="#open-water">Open water</a></li>
+  <li><a href="#non-irrigation" id="toc-non-irrigation" class="nav-link" data-scroll-target="#non-irrigation">Non-irrigation</a></li>
+  <li><a href="#non-paddy-irrigation" id="toc-non-paddy-irrigation" class="nav-link" data-scroll-target="#non-paddy-irrigation">Non-paddy irrigation</a></li>
+  <li><a href="#paddy-irrigation" id="toc-paddy-irrigation" class="nav-link" data-scroll-target="#paddy-irrigation">Paddy irrigation</a></li>
+  <li><a href="#water-withdrawal-and-allocation" id="toc-water-withdrawal-and-allocation" class="nav-link" data-scroll-target="#water-withdrawal-and-allocation">Water withdrawal and allocation</a>
+  <ul class="collapse">
+  <li><a href="#local" id="toc-local" class="nav-link" data-scroll-target="#local">Local</a></li>
+  <li><a href="#allocation-areas" id="toc-allocation-areas" class="nav-link" data-scroll-target="#allocation-areas">Allocation areas</a></li>
+  <li><a href="#abstractions" id="toc-abstractions" class="nav-link" data-scroll-target="#abstractions">Abstractions</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/land/landhydrology_sbm.html">Land models</a></li><li class="breadcrumb-item"><a href="../../model_docs/land/landhydrology_sbm.html">Land Hydrology SBM</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Land Hydrology SBM</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The Land Hydrology <code>SBM</code> model is largely based on Topog_SBM (Vertessy and Elsenbeer, 1999), which considers the soil to be a “bucket” with a saturated and unsaturated store. The main differences between the Land Hydrology <code>SBM</code> model and Topog_SBM are as follows:</p>
+<ul>
+<li>the addition of evapotranspiration and interception losses;</li>
+<li>the addition of a root water uptake reduction function (Feddes et al., 1978);</li>
+<li>the addition of a capillary rise;</li>
+<li>the addition of glacier, snow build-up and melting processes;</li>
+<li>the introduction of an option to divide the soil column into different layers to allow for transfer of water within the unsaturated zone;</li>
+<li>the addition of water demand and allocation computations.</li>
+</ul>
+<p>The Land Hydrology <code>SBM</code> model contains besides a <code>SBM</code> <code>soil</code> model (including evapotranspiration), models for <code>interception</code>, <code>snow</code>, <code>glacier</code> , water <code>demand</code> and <code>allocation</code>. The sections below describe the working of the Land Hydrology <code>SBM</code> model in more detail.</p>
+</section>
+<section id="rainfall-interception" class="level2">
+<h2 class="anchored" data-anchor-id="rainfall-interception">Rainfall interception</h2>
+<p>Two different interception models are available: the Gash model, and the modified Rutter model. The simulation timestep defines which interception model is used, where daily (or larger) timesteps use the Gash model, and timesteps smaller than daily use the modified Rutter model.</p>
+<section id="the-gash-model" class="level3">
+<h3 class="anchored" data-anchor-id="the-gash-model">The Gash model</h3>
+<p>The Gash interception model (Gash, 1979) can to be applied on a daily basis, although a storm-based approach will yield better results in situations with more than one storm per day. The amount of water needed to completely saturate the canopy is defined as:</p>
+<p><span class="math display">\[
+    P'=\frac{-\overline{R}S}{\overline{E}_{w}}\log\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right],
+\]</span></p>
+<p>where <span class="math inline">\(\overline{R}\)</span> is the average precipitation intensity on a saturated canopy and <span class="math inline">\(\overline{E}_{w}\)</span> the average evaporation from the wet canopy and with the vegetation parameters <span class="math inline">\(S\)</span>, <span class="math inline">\(p\)</span> and <span class="math inline">\(p_t\)</span> as defined previously. The model uses a series of expressions to calculate the interception loss during different phases of a storm. An analytical integration of the total evaporation and rainfall under saturated canopy conditions is performed for each storm to determine average values of <span class="math inline">\(\overline{E}_{w}\)</span> and <span class="math inline">\(\overline{R}\)</span>. The total evaporation from the canopy (the total interception loss) is calculated as the sum of the components listed in the table below. Interception losses from the stems are calculated for days with <span class="math inline">\(P\geq S_{t}/p_{t}\)</span>. <span class="math inline">\(p_t\)</span> and <span class="math inline">\(S_t\)</span> are small and neglected.</p>
+<table class="caption-top table">
+<caption>Formulation of the components of interception loss according to Gash:</caption>
+<colgroup>
+<col style="width: 66%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Components</th>
+<th>Interception loss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>For <span class="math inline">\(m\)</span> small storms (<span class="math inline">\(P_{g}&lt;{P'}_{g}\)</span>)</td>
+<td><span class="math inline">\((1-p-p_{t})\sum_{j=1}^{m}P_{g,j}\)</span></td>
+</tr>
+<tr class="even">
+<td>Wetting up the canopy in <span class="math inline">\(n\)</span> large storms (<span class="math inline">\(P_{g}\geq{P'}_{g}\)</span>)</td>
+<td><span class="math inline">\(n(1-p-p_{t}){P'}_{g}-nS\)</span></td>
+</tr>
+<tr class="odd">
+<td>Evaporation from saturated canopy during rainfall</td>
+<td><span class="math inline">\(\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})\)</span></td>
+</tr>
+<tr class="even">
+<td>Evaporation after rainfall ceases for <span class="math inline">\(n\)</span> large storms</td>
+<td><span class="math inline">\(nS\)</span></td>
+</tr>
+<tr class="odd">
+<td>Evaporation from trunks in <span class="math inline">\(q\)</span> storms that fill the trunk storage</td>
+<td><span class="math inline">\(qS_{t}\)</span></td>
+</tr>
+<tr class="even">
+<td>Evaporation from trunks in <span class="math inline">\(m+n-q\)</span> storms that do not fill the trunk storage</td>
+<td><span class="math inline">\(p_{t}\sum_{j=1}^{m+n-q}P_{g,j}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Saturated conditions are assumed to occur when the hourly rainfall exceeds a certain threshold. Often a threshold of <span class="math inline">\(\SI{0.5}{mm\ h^{-1}}\)</span> is used. <span class="math inline">\(\overline{R}\)</span> is calculated for all hours when the rainfall exceeds the threshold to give an estimate of the mean rainfall rate onto a saturated canopy.</p>
+<p>Gash (1979) has shown that in a regression of interception loss on rainfall (on a storm basis) the regression coefficient should equal to <span class="math inline">\(\overline{E}_w/\overline{R}\)</span>. Assuming that neither <span class="math inline">\(\overline{E}_w\)</span> nor <span class="math inline">\(\overline{R}\)</span> vary considerably in time, <span class="math inline">\(\overline{E}_w\)</span> can be estimated in this way from <span class="math inline">\(\overline{R}\)</span> in the absence of above-canopy climatic observations. Values derived in this way generally tend to be (much) higher than those calculated with the penman-monteith equation.</p>
+</section>
+<section id="the-modified-rutter-model" class="level3">
+<h3 class="anchored" data-anchor-id="the-modified-rutter-model">The modified rutter model</h3>
+<p>For sub daily timesteps the interception is calculated using a simplification of the Rutter model. The simplified model is solved explicitly and does not take drainage from the canopy into account. The stemflow fraction is defined as a fixed fraction (0.1) of canopy gap fraction <span class="math inline">\(\SIb{f_\mathrm{canopygap}}{-}\)</span> limited by the canopy fraction <span class="math inline">\((1-f_\mathrm{canopygap})\)</span> and the amount of stemflow is taken as the stemflow fraction of precipitation. Throughfall equals to the amount of water that cannot be stored by the canopy, plus the rainfall that is not captured by the canopy. Water can evaporate from the canopy storage, taken as the minimum between potential evaporation and the current storage. The “left-over” potential evaporation (if any) is returned as output.</p>
+</section>
+<section id="interception-parameters-from-lai" class="level3">
+<h3 class="anchored" data-anchor-id="interception-parameters-from-lai">Interception parameters from LAI</h3>
+<p>The SBM concept can determine the interception parameters from leaf area index (<span class="math inline">\(\SIb{\mathrm{LAI}}{m^2 m^{-2}}\)</span>) climatology. In order to switch this on you must define this cyclic parameter in the TOML file, the parameter is read from <code>path_static</code>, as follows:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">path_forcing</span> <span class="op">=</span> <span class="st">"forcing-moselle.nc"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">path_static</span> <span class="op">=</span> <span class="st">"staticmaps-moselle.nc"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation__leaf-area_index</span> <span class="op">=</span> <span class="st">"LAI"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Furthermore, these additional parameters are required:</p>
+<ul>
+<li>Specific leaf storage (<span class="math inline">\(\SIb{S_\mathrm{leaf}}{mm}\)</span>)</li>
+<li>Storage woody part of vegetation (<span class="math inline">\(\SIb{S_\mathrm{wood, max}}{mm}\)</span>)</li>
+<li>Extinction coefficient (<span class="math inline">\(\SIb{k}{-}\)</span>)</li>
+</ul>
+<p>Here it is assumed that the canopy storage capacity for the leaves <span class="math inline">\(\SIb{S_\mathrm{leaf, max}}{mm}\)</span> relates linearly with <span class="math inline">\(\mathrm{LAI}\)</span> (c.f. Van Dijk and Bruijnzeel 2001). This is done via the specific leaf storage <span class="math inline">\(S_\mathrm{leaf}\)</span>, a parameter that can be determined through a lookup table with land cover based on literature (Pitman 1989, Lui 1998). Next <span class="math inline">\(S_\mathrm{leaf, max}\)</span> is determined using:</p>
+<p><span class="math display">\[
+    S_\mathrm{leaf, max}  = S_\mathrm{leaf}\ \mathrm{LAI}.
+\]</span></p>
+<p>To get to total storage <span class="math inline">\(\SIb{S_\mathrm{canopy, max}}{mm}\)</span> the woody part of the vegetation also needs to be added. As for <span class="math inline">\(S_\mathrm{leaf}\)</span>, the storage of the woody part <span class="math inline">\(S_\mathrm{wood, max}\)</span> can also be related to land cover (lookup table).</p>
+<p>The canopy gap fraction <span class="math inline">\(\SIb{f_\mathrm{canopygap}}{-}\)</span> is determined using the extinction coefficient <span class="math inline">\(k\)</span> (van Dijk and Bruijnzeel 2001):</p>
+<p><span class="math display">\[
+    f_\mathrm{canopygap} = \exp(-k\ \mathrm{LAI}).
+\]</span></p>
+<p>The extinction coefficient <span class="math inline">\(k\)</span> can be related to land cover.</p>
+</section>
+</section>
+<section id="snow-and-glaciers" class="level2">
+<h2 class="anchored" data-anchor-id="snow-and-glaciers">Snow and glaciers</h2>
+<p>Both options can be enabled by specifying the following in the TOML file:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">glacier</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="snow-modelling" class="level3">
+<h3 class="anchored" data-anchor-id="snow-modelling">Snow modelling</h3>
+<p>Snow processes are adopted from the HBV-96 hydrological model concept (Bergström, 1992). If the air temperature, <span class="math inline">\(T_\mathrm{air}\)</span>, is below a user-defined threshold <span class="math inline">\(s_\mathrm{fall, T threshold}\)</span> <span class="math inline">\(\SIb{}{\degree C}\)</span> effective precipitation (throughfall and stemflow) occurs as snowfall, whereas it occurs as rainfall if <span class="math inline">\(T_\mathrm{air} ≥ s_\mathrm{fall, T threshold}\)</span>. Another parameter <span class="math inline">\(s_\mathrm{fall, T interval}\)</span> <span class="math inline">\(\SIb{}{\degree C}\)</span> defines how precipitation can occur partly as rain or snowfall.</p>
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">MakieExtra</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  crain <span class="op">=</span> <span class="st">"#1f78b4"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  csnow <span class="op">=</span> <span class="st">"#a6cee3"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  cttint <span class="op">=</span> <span class="st">"#b3b3b3"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  cread <span class="op">=</span> <span class="st">"#e31a1c"</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme!</span>()</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">500</span>,<span class="fl">400</span>))</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Temperature [°C]"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Precipitation division [%]"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1.25</span>], [<span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">100</span>, <span class="fl">100</span>]; color <span class="op">=</span> crain)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1.25</span>], [<span class="fl">100</span>, <span class="fl">100</span>, <span class="fl">0</span>, <span class="fl">0</span>]; color <span class="op">=</span> csnow)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend text</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"Rain"</span>; position <span class="op">=</span> (<span class="op">-</span><span class="fl">0.125</span>, <span class="fl">1</span>), color <span class="op">=</span> crain, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"Snow"</span>; position <span class="op">=</span> (<span class="fl">1.125</span>, <span class="fl">1</span>), color <span class="op">=</span> csnow, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Format axes</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  ax.xticks <span class="op">=</span> ([<span class="fl">0</span>, <span class="fl">0.5</span>, <span class="fl">1</span>], [<span class="st">""</span>, <span class="st">"tt"</span>, <span class="st">""</span>])</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">1.25</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">3</span>, <span class="fl">103</span>)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add arrow and text indicating ttint</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">vlines!</span>(ax, [<span class="fl">0</span>, <span class="fl">1</span>]; color <span class="op">=</span> cttint, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"tti"</span>; position <span class="op">=</span> (<span class="fl">0.5</span>, <span class="fl">99</span>), color <span class="op">=</span> cttint, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>top))</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrowlines!</span>(ax, <span class="fu">Point2f</span>(<span class="fl">0.05</span>, <span class="fl">0.95</span>), <span class="fu">Point2f</span>(<span class="fl">100</span>, <span class="fl">100</span>); color <span class="op">=</span> cttint, arrowstyle <span class="op">=</span> <span class="st">"&lt;|-|&gt;"</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add lines showing how to read graph</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="op">-</span><span class="fl">0.25</span>], [<span class="op">-</span><span class="fl">3</span>, <span class="fl">20</span>, <span class="fl">20</span>]; color <span class="op">=</span> cread, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="op">-</span><span class="fl">0.25</span>], [<span class="fl">20</span>, <span class="fl">80</span>, <span class="fl">80</span>]; color <span class="op">=</span> cread, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"20% rain"</span>; position <span class="op">=</span> (<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">20</span>), color <span class="op">=</span> cread, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(ax, <span class="st">"80% snow"</span>; position <span class="op">=</span> (<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">80</span>), color <span class="op">=</span> cread, align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom))</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>      fig.scene,</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>      <span class="fu">Point2f</span>(<span class="fl">0.385</span>, <span class="fl">0.09</span>);</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>      text <span class="op">=</span> <span class="st">"T"</span>,</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>      space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cread,</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom),</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display figure</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-2-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Division between snow and precipitation based on the threshold temperature</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>If precipitation occurs as snowfall, it is added to the dry snow component within the snow pack. Otherwise it ends up in the free water reservoir, which represents the liquid water content of the snow pack. Between the two components of the snow pack, interactions take place, either through snow melt (if temperatures are above a threshold <span class="math inline">\(\SIb{s_\mathrm{melt, T threshold}}{\degree C}\)</span>) or through snow refreezing (if temperatures are below threshold <span class="math inline">\(s_\mathrm{melt, T threshold}\)</span>).</p>
+<p>The potential snowmelt rate <span class="math inline">\(\SIb{M_\mathrm{snow, pot}}{mm\ t^{-1}}\)</span>, using the degree-day factor <span class="math inline">\(\SIb{s_\mathrm{ddf}}{mm\ \degree C^{-1}\ t^{-1}}\)</span>, is calculated as follows:</p>
+<p><span class="math display">\[
+  M_\mathrm{snow, pot}=\begin{cases}
+    s_\mathrm{ddf} (T_\mathrm{air}-s_\mathrm{melt, T threshold}) &amp; \text{if $T_\mathrm{air}&gt;s_\mathrm{melt, T threshold}$}\\
+    0 &amp; \text{otherwise}.
+  \end{cases}
+\]</span></p>
+<p>The actual snowmelt rate is limited by the snow storage.</p>
+<p>The snowpack retains water that can refreeze if <span class="math inline">\(T^{t}_\mathrm{air}\)</span> is below <span class="math inline">\(s_\mathrm{melt, T threshold}\)</span>. The potential refreezing rate <span class="math inline">\(\SIb{M_\mathrm{refreeze, pot}}{mm\ t^{-1}}\)</span>, is controlled by <span class="math inline">\(s_\mathrm{ddf}\)</span>, a coefficient of refreezing <span class="math inline">\(\SIb{s_\mathrm{refreeze}}{-}\)</span> (fixed: 0.05), <span class="math inline">\(T^{t}_\mathrm{air}\)</span> and <span class="math inline">\(s_\mathrm{melt, T threshold}\)</span> as follows:</p>
+<p><span class="math display">\[
+M_\mathrm{refreeze, pot}=\begin{cases}
+    s_\mathrm{ddf} s_\mathrm{refreeze} (s_\mathrm{melt, T threshold}-T^{t}_\mathrm{air}) &amp; \text{if $T^{t}_\mathrm{air}&lt;s_\mathrm{melt, T threshold}$}\\
+    0 &amp; \text{otherwise}.
+  \end{cases}
+\]</span></p>
+<p>The actual refreezing rate is limited by the liquid water content of snow.</p>
+<p>The fraction of liquid water in the snow pack is at most equal to a user defined fraction, <span class="math inline">\(\SIb{s_\mathrm{whc}}{-}\)</span>, of the water equivalent of the dry snow content <span class="math inline">\(\SIb{\subtext{S}{snow}}{mm}\)</span>. If the liquid water content exceeds <span class="math inline">\(s_\mathrm{whc}\)</span>, either through snow melt or incoming effective precipitation, snow runoff <span class="math inline">\(\SIb{\subtext{R}{snow}}{mm\ t^{-1}}\)</span> becomes available for infiltration into the soil:</p>
+<p><span class="math display">\[
+\subtext{R}{snow} = \mathrm{max}(S_\mathrm{snow, liquid} - S_\mathrm{snow} s_\mathrm{whc}, 0).
+\]</span></p>
+<div id="4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  crain <span class="op">=</span> <span class="st">"#1f78b4"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  csnow <span class="op">=</span> <span class="st">"#a6cee3"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  cttint <span class="op">=</span> <span class="st">"#b3b3b3"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  cread <span class="op">=</span> <span class="st">"#e31a1c"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  cfmax <span class="op">=</span> <span class="fl">3.0</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  ttm <span class="op">=</span> <span class="fl">0</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  cfr <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme!</span>()</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Temperature"</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Potential melt/refreezing [mm Δt⁻¹]"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>      xticks <span class="op">=</span> ([<span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>], [<span class="st">"ttm−2°C"</span>, <span class="st">"ttm−1°C"</span>, <span class="st">"ttm"</span>, <span class="st">"ttm+1°C"</span>, <span class="st">"ttm+2°C"</span>]),</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert temperature to an array for element-wise operations</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  temperature <span class="op">=</span> <span class="fu">collect</span>(<span class="op">-</span><span class="fl">2</span><span class="op">:</span><span class="fl">0.5</span><span class="op">:</span><span class="fl">2</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate melt and refreezing rates</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  melt <span class="op">=</span> cfmax <span class="op">.*</span> (temperature <span class="op">.-</span> ttm)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  refr <span class="op">=</span> cfmax <span class="op">.*</span> cfr <span class="op">.*</span> (ttm <span class="op">.-</span> temperature)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  melt[temperature <span class="op">.&lt;</span> ttm] <span class="op">.=</span> <span class="fl">0</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  refr[temperature <span class="op">.&gt;</span> ttm] <span class="op">.=</span> <span class="fl">0</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, temperature, melt; color <span class="op">=</span> crain)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, temperature, refr; color <span class="op">=</span> csnow)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend text</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Snowmelt rate"</span>;</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">1</span>, melt[<span class="fu">findfirst</span>(x <span class="op">-&gt;</span> x <span class="op">==</span> <span class="fl">1</span>, temperature)] <span class="op">+</span> <span class="fl">0.3</span>),</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> crain,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>center),</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>      rotation <span class="op">=</span> <span class="fl">1.0</span>,</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Refreezing rate"</span>;</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">1</span>, refr[<span class="fu">findfirst</span>(x <span class="op">-&gt;</span> x <span class="op">==</span> <span class="fl">1</span>, temperature)]),</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> csnow,</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>bottom),</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add vertical line for ttm</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">vlines!</span>(ax, [ttm]; color <span class="op">=</span> cttint, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="op">-</span><span class="fl">2</span>, <span class="fl">1.75</span>)</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">0.2</span>, <span class="fl">5</span>)</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display figure</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-3-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Snowmelt and refreezing rates as a function of temperature (for set melting and refreezing factors)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="glacier-modelling" class="level3">
+<h3 class="anchored" data-anchor-id="glacier-modelling">Glacier modelling</h3>
+<p>Glacier processes can be modelled if the snow model is enabled. Glacier modelling is very similar to snow modelling and considers two main processes: glacier build-up from snow turning into firn/ice (using the HBV-light model) and glacier melt (using a temperature degree-day model).</p>
+<p>The definition of glacier boundaries and initial volume is defined by two parameters. The parameter <span class="math inline">\(\SIb{\subtext{f}{glacier}}{-}\)</span> gives the fraction of each grid cell covered by a glacier as a number between zero and one. The state parameter glacier store <span class="math inline">\(\SIb{\subtext{S}{glacier}}{mm}\)</span> gives the amount of water (water equivalent) within the glaciers at each grid cell. A map with <span class="math inline">\(\subtext{S}{glacier}\)</span> values can be provided as an initial state (default: <span class="math inline">\(\SI{5500}{mm}\)</span>) when the model is initialized with default values in the code (“cold” start). The required glacier data can be prepared from available glacier datasets.</p>
+<p>First, a fixed fraction <span class="math inline">\(\SIb{\subtext{g}{snow\ to\ ice}}{t^{-1}}\)</span>, that typically ranges between <span class="math inline">\(0.001\)</span> and <span class="math inline">\(0.006\)</span> for a daily time step, of snow storage <span class="math inline">\(\SIb{S_\mathrm{snow}}{mm}\)</span> on top of the glacier is converted into ice for each time step <span class="math inline">\(t\)</span> of length <span class="math inline">\(\Delta{t}\)</span> [s]:</p>
+<p><span class="math display">\[
+S_\mathrm{snow\ to\ ice} = \mathrm{min}(g_\mathrm{snow\ to\ ice} S_\mathrm{snow}, 8 \frac{\Delta{t}}{\Delta{t_b}}),
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{S_\mathrm{snow\ to\ ice}}{mm\ t^{-1}}\)</span> is the snow into ice conversion rate, with a maximum conversion rate of <span class="math inline">\(\SI{8}{mm\ d^{-1}}\)</span>. This maximum conversion rate is scaled by <span class="math inline">\(\Delta{t}\)</span>, and the model base time step size <span class="math inline">\(\Delta{t_b}\)</span> of <span class="math inline">\(\SIb{86,400}{s}\)</span>.</p>
+<p>The snow storage from the snow module <span class="math inline">\(\SIb{\subtext{S}{snow}}{mm}\)</span> is then updated as follows:</p>
+<p><span class="math display">\[
+S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}.
+\]</span></p>
+<p>When the snowpack on top of the glacier is almost all melted (<span class="math inline">\(S_\mathrm{snow} &lt; \SI{10}{mm}\)</span>), glacier melt is enabled and estimated with a degree-day model. If the air temperature <span class="math inline">\(T_\mathrm{air}\)</span> is above a melting temperature threshold <span class="math inline">\(\SIb{g_\mathrm{melt,T threshold}}{\degree C}\)</span>, glacier melt occurs. The potential glacier melt <span class="math inline">\(\SIb{M_\mathrm{glacier, pot}}{mm\ t^{-1}}\)</span>, using the degree-day factor <span class="math inline">\(\SIb{g_\mathrm{ddf}}{mm\ t^{-1}\ \degree C^{-1}}\)</span>, is calculated as: <span class="math display">\[
+  M_\mathrm{glacier, pot}=\begin{cases}
+    g_\mathrm{ddf} (T_\mathrm{air}-g_\mathrm{melt, T threshold}) &amp; \text{if $T_\mathrm{air} &gt; g_\mathrm{melt, T threshold}$}\\
+    0 &amp; \text{otherwise} .\\
+  \end{cases}
+\]</span></p>
+<p>The actual glacier melt is limited by the glacier storage. Parameter <span class="math inline">\(g_\mathrm{melt, T threshold}\)</span> can be taken as equal to the snow <span class="math inline">\(s_\mathrm{melt, T threshold}\)</span> parameter. Values of the melting factor <span class="math inline">\(g_\mathrm{ddf}\)</span> normally varies from one glacier to another and some values are reported in the literature. <span class="math inline">\(g_\mathrm{ddf}\)</span> can also be estimated by multiplying snow <span class="math inline">\(s_\mathrm{ddf}\)</span> by a factor between <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span>, to take into account the higher albedo of ice compared to snow.</p>
+</section>
+</section>
+<section id="evaporation" class="level2">
+<h2 class="anchored" data-anchor-id="evaporation">Evaporation</h2>
+<p>The Land Hydrology <code>SBM</code> model assumes the input to be potential reference evapotranspiration. A crop coefficient (set to <span class="math inline">\(1\)</span> by default) is used to convert the potential evapotranspiration rate of a reference crop fully covering the soil to the potential evapotranspiration rate of vegetation (natural and agricultural) fully covering the soil. The crop coefficient is used for a surface completely covered by vegetation, and does not include the effect of growing stages of vegetation and soil cover. These effects are handled separately through the use of the canopy gap fraction.</p>
+<p>It is assumed that the potential evaporation rate of intercepted water by vegetation is equal to the potential evapotranspiration rate of vegetation (fully covering the soil) multiplied by the canopy fraction. The potential evapotranspiration rate left over after interception is available for transpiration. For potential open water evaporation (river and water bodies) the potential reference evapotranspiration rate is used (multipled by the river fraction, and open water fraction). Also for potential soil evaporation the potential reference evapotranspiration rate is used, multiplied by the canopy gap fraction corrected by the sum of total water fraction (river fraction and open water fraction) and the fraction covered by a glacier.</p>
+<section id="bare-soil-evaporation" class="level3">
+<h3 class="anchored" data-anchor-id="bare-soil-evaporation">Bare soil evaporation</h3>
+<p>If there is only one soil layer present in the <code>SBM</code> <code>soil</code> model, the bare soil evaporation is scaled according to the wetness of the soil layer. The fraction of bare soil is assumed to be equal to the fraction not covered by the canopy gap fraction corrected by the total water fraction and glacier fraction. When the soil is fully saturated, evaporation is set to equal the potential reference evaporation. When the soil is not fully saturated, actual evaporation decreases linearly with decreasing soil moisture values, as indicated by the figure below.</p>
+<div id="6" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  cevap <span class="op">=</span> <span class="st">"#ff7f00"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(size<span class="op">=</span>(<span class="fl">500</span>,<span class="fl">300</span>))</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Soil moisture (θ) [-]"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Ratio AET/PET [-]"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>      xticks <span class="op">=</span> ([<span class="fl">0</span>, <span class="fl">1</span>], [<span class="st">"θ_empty"</span>, <span class="st">"θ_sat   "</span>]),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>      yticks <span class="op">=</span> [<span class="fl">0</span>, <span class="fl">1</span>],</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0</span>, <span class="fl">1</span>], [<span class="fl">0</span>, <span class="fl">1</span>]; color <span class="op">=</span> cevap)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0</span>, <span class="fl">1</span>], [<span class="fl">1</span>, <span class="fl">1</span>]; color <span class="op">=</span> cevap, linestyle <span class="op">=</span> <span class="op">:</span>dash)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add labels</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Potential evaporation"</span>;</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.01</span>, <span class="fl">0.99</span>),</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cevap,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>top),</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Actual evaporation"</span>;</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.02</span>, <span class="fl">0.05</span>),</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cevap,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>bottom),</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>      rotation <span class="op">=</span> <span class="fl">0.4</span>,</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">0.1</span>, <span class="fl">1.1</span>)</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-4-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Evaporation reduction as function of available soil moisture</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>When more soil layers are present, soil evaporation is only provided from the upper soil layer, and soil evaporation is split in evaporation from the unsaturated store and evaporation from the saturated store. Water is first evaporated from the unsaturated store. The remaining potential soil evaporation can be used for evaporation from the saturated store, but only when the water table is present in the upper soil layer. Both the evaporation from the unsaturated store and the evaporation from the saturated store are limited by the minimum of the remaining potential soil evaporation and the available water in the unsaturated/saturated zone of the upper soil layer. Also for multiple soil layers, the evaporation (both unsaturated and saturated) decreases linearly with decreasing water availability.</p>
+</section>
+<section id="transpiration" class="level3">
+<h3 class="anchored" data-anchor-id="transpiration">Transpiration</h3>
+<p>The maximum possible root water extraction rate for each soil layer is determined by partitioning the potential transpiration rate <span class="math inline">\(T_p\)</span> based on the fraction of the total root length density fraction in each soil layer. See also the conceptual figure below.</p>
+<div id="8" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Statistics</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define colors and styles</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  csep <span class="op">=</span> <span class="st">"#999999"</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  croot <span class="op">=</span> <span class="st">"#993404"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  cwater <span class="op">=</span> <span class="st">"#1f78b4"</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  lssep <span class="op">=</span> <span class="op">:</span>dash</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  layers <span class="op">=</span> [<span class="fl">0</span>, <span class="fl">150</span>, <span class="fl">250</span>, <span class="fl">325</span>]</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  all_layers <span class="op">=</span> <span class="fu">copy</span>(layers)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  rootdepth <span class="op">=</span> <span class="fl">230</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  waterdepth <span class="op">=</span> <span class="fl">300</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  availcap <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  usl <span class="op">=</span> <span class="dt">Float64</span>[]</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate available capacity and unsaturated layer</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>(<span class="fu">length</span>(layers) <span class="op">-</span> <span class="fl">1</span>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>      usl_i <span class="op">=</span> <span class="fu">min</span>(layers[i <span class="op">+</span> <span class="fl">1</span>], waterdepth) <span class="op">-</span> layers[i]</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">push!</span>(usl, usl_i)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> usl_i <span class="op">&gt;</span> <span class="fl">0</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>          cap <span class="op">=</span> <span class="fu">min</span>(<span class="fl">1.0</span>, <span class="fu">max</span>(<span class="fl">0.0</span>, (rootdepth <span class="op">-</span> layers[i]) <span class="op">/</span> usl_i))</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>          <span class="fu">push!</span>(availcap, cap)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>          <span class="fu">push!</span>(availcap, <span class="fl">0.0</span>)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>      <span class="cf">end</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  padding <span class="op">=</span> <span class="fl">10</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  w, h <span class="op">=</span> (<span class="fl">400</span>, <span class="fl">400</span>)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (w, h))</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>      fig;</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>      bbox <span class="op">=</span> <span class="fu">BBox</span>(<span class="fl">50</span>, <span class="fl">100</span>, padding, h <span class="op">-</span> padding),</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>      xticksvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>      xticklabelsvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>      yticks <span class="op">=</span> all_layers,</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>      yreversed <span class="op">=</span> <span class="cn">true</span>,</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">""</span>,</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">""</span>,</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Show lines for different layers and depth values</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span>(<span class="fu">length</span>(all_layers) <span class="op">-</span> <span class="fl">1</span>)</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>      layer <span class="op">=</span> all_layers[i]</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>      y_mean <span class="op">=</span> <span class="fu">mean</span>([all_layers[i <span class="op">+</span> <span class="fl">1</span>], all_layers[i]])</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>      <span class="fu">hlines!</span>(ax, [layer]; color <span class="op">=</span> csep, linestyle <span class="op">=</span> lssep)</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>      <span class="fu">text!</span>(</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>          fig.scene,</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>          <span class="fu">Point2f</span>(<span class="fl">0.09</span>, <span class="fl">1</span> <span class="op">-</span> (y_mean <span class="op">/</span> <span class="fu">maximum</span>(layers)));</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> <span class="fu">string</span>(all_layers[i <span class="op">+</span> <span class="fl">1</span>] <span class="op">-</span> all_layers[i]),</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>          space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>          align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>center),</span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>          rotation <span class="op">=</span> <span class="cn">pi</span> <span class="op">/</span> <span class="fl">2</span>,</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>          color <span class="op">=</span> <span class="st">"#b3b3b3"</span>,</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>      <span class="fu">text!</span>(</span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>          fig.scene,</span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>          <span class="fu">Point2f</span>(<span class="fl">0.8</span>, <span class="fl">1</span> <span class="op">-</span> (y_mean <span class="op">/</span> <span class="fu">maximum</span>(layers)));</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>          text <span class="op">=</span> <span class="st">"maxextr = </span><span class="sc">\n</span><span class="st"> </span><span class="sc">$</span>(<span class="fu">round</span>(availcap[i], digits <span class="op">=</span> <span class="fl">2</span>))<span class="st"> ⋅ soilwater"</span>,</span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>          space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>          align <span class="op">=</span> (<span class="op">:</span>center, <span class="op">:</span>center),</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add lines indicating water level and rootzone depth</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hlines!</span>(ax, [rootdepth]; color <span class="op">=</span> croot, linewidth <span class="op">=</span> <span class="fl">2</span>)</span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">poly!</span>(ax, [<span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span>], [waterdepth, <span class="fl">375</span>, <span class="fl">375</span>, waterdepth]; color <span class="op">=</span> cwater, alpha <span class="op">=</span> <span class="fl">0.5</span>)</span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>      fig.scene,</span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Rooting depth"</span>;</span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.27</span>, <span class="fl">1.01</span> <span class="op">-</span> (rootdepth <span class="op">/</span> <span class="fu">maximum</span>(layers))),</span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> croot,</span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>      space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>center),</span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>      fig.scene,</span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Water table depth"</span>;</span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">0.27</span>, <span class="fl">1.01</span> <span class="op">-</span> (waterdepth <span class="op">/</span> <span class="fu">maximum</span>(layers))),</span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> cwater,</span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>      space <span class="op">=</span> <span class="op">:</span>relative,</span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>left, <span class="op">:</span>center),</span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Format axes</span></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="fl">0</span>, <span class="fl">1</span>)</span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, layers[<span class="kw">end</span>], <span class="fl">0</span>)</span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-5-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Conceptual overview of how maxextr depends on rooting depth and water table depth</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>A root water uptake reduction model is used to calculate a reduction coefficient as a function of soil water pressure, that may reduce the maximum possible root water extraction rate. The root water uptake reduction model is based on the concept proposed by Feddes et al.&nbsp;(1978). This concept defines a reduction coefficient <span class="math inline">\(\SIb{\alpha}{-}\)</span> as a function of soil water pressure <span class="math inline">\(\SIb{h}{cm}\)</span>. Four different levels of <span class="math inline">\(h\)</span> are defined: <span class="math inline">\(h_1\)</span>, <span class="math inline">\(h_2\)</span>, <span class="math inline">\(h_3\)</span> and <span class="math inline">\(h_4\)</span>. <span class="math inline">\(h_1\)</span> represents anoxic moisture conditions, <span class="math inline">\(h_2\)</span> represents field capacity, <span class="math inline">\(h_3\)</span> represents the point of critical soil moisture content (onset of drought stress), and <span class="math inline">\(h_4\)</span> represents the wilting point. The value of <span class="math inline">\(h_3\)</span> is a function of the potential transpiration rate, between <span class="math inline">\(\SI{1}{mm\ d^{-1}}\)</span> and <span class="math inline">\(\SI{5}{mm\ d^{-1}}\)</span>. If <span class="math inline">\(T_p \le \SI{1}{mm\ d^{-1}}\)</span>, <span class="math inline">\(h_3\)</span> is set equal to <span class="math inline">\(h_{3\mathrm{low}}\)</span> (input model parameter). If <span class="math inline">\(T_p \ge \SI{5}{mm d^{-1}}\)</span>, <span class="math inline">\(h_3\)</span> is set equal to <span class="math inline">\(h_{3\mathrm{high}}\)</span> (input model parameter). For <span class="math inline">\(T_p\)</span> values between <span class="math inline">\(\SI{1}{mm\ d^{-1}}\)</span> and <span class="math inline">\(\SI{5}{mm\ d^{-1}}\)</span>, the value of <span class="math inline">\(h_3\)</span> is linearly related to <span class="math inline">\(T_p\)</span> (between <span class="math inline">\(h_{3\mathrm{low}}\)</span> and <span class="math inline">\(h_{3\mathrm{high}}\)</span>). Besides model parameters <span class="math inline">\(h_{3\mathrm{high}}\)</span> and <span class="math inline">\(h_{3\mathrm{low}}\)</span>, the critical pressure heads <span class="math inline">\(h_1\)</span>, <span class="math inline">\(h_2\)</span> and <span class="math inline">\(h_4\)</span> can be defined as input to the model.</p>
+<p>The current soil water pressure is determined following the concept defined by Brooks and Corey (1964):</p>
+<p><span class="math display">\[
+    \frac{\theta-\theta_r}{\theta_s-\theta_r} =  \min\left\{1, \left(\frac{h_b}{h}\right)^\lambda\right\},
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{h}{cm}\)</span> is the pressure head, <span class="math inline">\(\SIb{h_b}{cm}\)</span> is the air entry pressure head, and <span class="math inline">\(\theta\)</span>, <span class="math inline">\(\theta_s\)</span>, <span class="math inline">\(\theta_r\)</span> and <span class="math inline">\(\lambda\)</span> as previously defined.</p>
+<p>Whenever the current soil water pressure drops below <span class="math inline">\(h_4\)</span>, the root water uptake is set to zero. The root water uptake is at ideal conditions whenever the soil water pressure is above <span class="math inline">\(h_3\)</span>, with a linear transition between <span class="math inline">\(h_3\)</span> and <span class="math inline">\(h_4\)</span>. The assumption that very wet conditions do not affect root water uptake too much is probably generally applicable to natural vegetation. For crops this assumption is not valid and in this case root water uptake above <span class="math inline">\(h_1\)</span> should be set to zero (oxygen deficit) and between <span class="math inline">\(h_1\)</span> and <span class="math inline">\(h_2\)</span> root water uptake is limited. This is possible by setting <span class="math inline">\(\alpha\)</span> for <span class="math inline">\(h_1\)</span> at <span class="math inline">\(0\)</span> (default is <span class="math inline">\(1\)</span>) through model input.</p>
+<div id="10" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Soil water pressure head"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"α [-]"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>      xticks <span class="op">=</span> ([<span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>], [<span class="st">"h₄</span><span class="sc">\n</span><span class="st">-15849 cm"</span>, <span class="st">"h₃</span><span class="sc">\n</span><span class="st">-400 cm"</span>, <span class="st">"h₂</span><span class="sc">\n</span><span class="st">-100 cm"</span>, <span class="st">"h₁</span><span class="sc">\n</span><span class="st">-10 cm"</span>]),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot line</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines!</span>(ax, [<span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>], [<span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-6-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Root water uptake reduction coefficient as a function of soil water pressure</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The computation of transpiration from the saturated store depends on the water table depth, rooting depth, the reduction coefficient <span class="math inline">\(\alpha\)</span>, the fraction of wet roots and the root fraction below the water table. The fraction of wet roots is determined using a sigmoid function (see figure below). The parameter <code>rootdistpar</code> defines the sharpness of the transition between fully wet and fully dry roots. If the water table depth is equal to or lower than the rooting depth, the remaining potential transpiration is used based on the potential transpiration and actual transpiration in the unsaturated zone. The remaining potential transpiration is multiplied by the wet roots fraction and <span class="math inline">\(\alpha\)</span> (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil. If the water table depth intersects the rooting depth, the potential transpiration is multiplied by the remaining root fraction (below the water table), wet roots fraction and the reduction coefficient (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil.</p>
+<div id="12" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Wflow</span>: scurve</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Settings</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  watertable <span class="op">=</span> <span class="fu">collect</span>(<span class="fl">250</span><span class="op">:</span><span class="fl">0.5</span><span class="op">:</span><span class="fl">300</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  rootingdepth <span class="op">=</span> <span class="fl">275.0</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  rootdistpars <span class="op">=</span> [<span class="op">-</span><span class="fl">500.0</span>, <span class="op">-</span><span class="fl">1.0</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.3</span>]</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot options</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  colors <span class="op">=</span> [<span class="st">"#fed98e"</span>, <span class="st">"#fe9929"</span>, <span class="st">"#d95f0e"</span>, <span class="st">"#993404"</span>]</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Fraction of wet roots [-]"</span>,</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Water table depth [mm]"</span>,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      yreversed <span class="op">=</span> <span class="cn">true</span>,  <span class="co"># Reverse y-axis to match water table depth orientation</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines for each rootdistpar</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (rootdistpar, color) <span class="kw">in</span> <span class="fu">zip</span>(rootdistpars, colors)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      wetrootfrac <span class="op">=</span> @. <span class="fu">scurve</span>(watertable, rootingdepth, <span class="fu">Float64</span>(<span class="fl">1.0</span>), rootdistpar)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">lines!</span>(ax, wetrootfrac, watertable; color <span class="op">=</span> color, label <span class="op">=</span> <span class="st">"</span><span class="sc">$</span>rootdistpar<span class="st">"</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add rooting depth annotation</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hlines!</span>(ax, [rootingdepth]; linestyle <span class="op">=</span> <span class="op">:</span>dash, color <span class="op">=</span> <span class="st">"#999999"</span>)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text!</span>(</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>      ax,</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>      <span class="st">"rootingdepth = </span><span class="sc">$</span>rootingdepth<span class="st"> mm"</span>;</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>      position <span class="op">=</span> (<span class="fl">1.0</span>, rootingdepth <span class="op">+</span> <span class="fl">0.5</span>),</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>      color <span class="op">=</span> <span class="st">"#999999"</span>,</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>      align <span class="op">=</span> (<span class="op">:</span>right, <span class="op">:</span>top),</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axislegend</span>(<span class="st">"rootdistpar"</span>; position <span class="op">=</span> <span class="op">:</span>lt, framevisible <span class="op">=</span> <span class="cn">false</span>)</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="fu">maximum</span>(watertable), <span class="fu">minimum</span>(watertable))  <span class="co"># Reverse y-axis</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>)</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-7-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Amount of wet roots and the effect of the <code>rootdistpar</code> parameter</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="soil-processes" class="level2">
+<h2 class="anchored" data-anchor-id="soil-processes">Soil processes</h2>
+<section id="the-sbm-soil-water-accounting-scheme" class="level3">
+<h3 class="anchored" data-anchor-id="the-sbm-soil-water-accounting-scheme">The SBM soil water accounting scheme</h3>
+<p>A detailed description of the Topog_SBM model has been given by Vertessy and Elsenbeer (1999). Briefly: the soil is considered as a bucket with a certain depth <span class="math inline">\(\SIb{z_\mathrm{soil}}{mm}\)</span>, divided into a saturated store <span class="math inline">\(\SIb{S_\mathrm{sat}}{mm}\)</span> and an unsaturated store <span class="math inline">\(\SIb{S_\mathrm{unsat}}{mm}\)</span>. The top of the <span class="math inline">\(S_\mathrm{sat}\)</span> store forms a pseudo-water table at depth <span class="math inline">\(\SIb{z_\mathrm{watertable}}{mm}\)</span> such that the value of <span class="math inline">\(S_\mathrm{sat}\)</span> at any time is given by:</p>
+<p><span class="math display">\[
+    S_\mathrm{sat} = (z_\mathrm{soil}-z_\mathrm{watertable}) (\theta_s-\theta_r),
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{r}}{-}\)</span> are the saturated and residual soil water contents, respectively.</p>
+<p>The unsaturated storage capacity <span class="math inline">\(\SIb{S_\mathrm{unsat, max}}{mm}\)</span> is defined as follows:</p>
+<p><span class="math display">\[
+    S_\mathrm{unsat, max} = z_\mathrm{soil} (\theta_s-\theta_r) - S_\mathrm{sat} - S_\mathrm{unsat}.
+\]</span></p>
+<p>The saturation deficit <span class="math inline">\(\SIb{S_\mathrm{deficit}}{mm}\)</span> for the soil profile as a whole is defined as:</p>
+<p><span class="math display">\[
+    S_\mathrm{deficit} = (\theta_s-\theta_r) z_\mathrm{soil} - S_\mathrm{sat}.
+\]</span></p>
+<p>All infiltrating water enters the unsaturated store first. The soil bucket can be split-up in different layers, by providing the thickness <span class="math inline">\(\SIb{}{mm}\)</span> of the layers in the TOML file. The following example specifies three layers (from top to bottom) of <span class="math inline">\(100\)</span>, <span class="math inline">\(300\)</span> and <span class="math inline">\(800\)</span> <span class="math inline">\(\SI{}{mm}\)</span>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">thicknesslayers</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The code checks for each grid cell the specified layers against the soil thickness <span class="math inline">\(\SIb{}{mm}\)</span>, and adds or removes (partly) layer(s) based on the soil thickness.</p>
+<p>Assuming a unit head gradient, the potential transfer of water <span class="math inline">\(\SIb{Q_\mathrm{transfer, pot}}{mm\ t^{-1}}\)</span> from the unsaturated storage in a layer <span class="math inline">\(\SIb{S_\mathrm{unsat}}{mm}\)</span> is controlled by the vertical saturated hydraulic conductivity <span class="math inline">\(\SIb{K_\mathrm{vz}}{mm\ t^{-1}}\)</span> at depth <span class="math inline">\(\SIb{z_\mathrm{bottom}}{mm}\)</span> (bottom layer) or <span class="math inline">\(\SIb{z_\mathrm{watertable}}{mm}\)</span>, the effective saturation degree of the layer, and a Brooks-Corey power coefficient <span class="math inline">\(c\)</span> based on the pore size distribution index <span class="math inline">\(\lambda\)</span> (Brooks and Corey, 1964):</p>
+<p><span class="math display">\[
+\begin{gathered}
+    Q_\mathrm{transfer, pot} = K_\mathrm{vz}\left(\frac{\theta-\theta_r}{\theta_s-\theta_r}\right)^c\\
+    c=\frac{2+3\lambda}{\lambda}.
+\end{gathered}
+\]</span></p>
+<p>When the soil bucket is not split-up into different layers, it is possible to use the original Topog_SBM vertical transfer formulation, by specifying in the TOML file:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">transfermethod</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The potential transfer of water from the unsaturated store to the saturated store is in that case controlled by the vertical saturated hydraulic conductivity <span class="math inline">\(\SIb{K_\mathrm{vz}}{mm\ t^{-1}}\)</span> at depth <span class="math inline">\(\SIb{z_\mathrm{watertable}}{mm}\)</span> and the ratio between <span class="math inline">\(\SIb{S_\mathrm{unsat}}{mm}\)</span> and <span class="math inline">\(\SIb{S_\mathrm{deficit}}{mm}\)</span>:</p>
+<p><span class="math display">\[
+    Q_\mathrm{transfer, pot} = K_\mathrm{vz}\frac{S_\mathrm{unsat}}{S_\mathrm{deficit}}.
+\]</span></p>
+<p>Four different saturated hydraulic conductivity depth profiles (<code>saturated_hydraulic_conductivity_profile</code>) are available and a <code>saturated_hydraulic_conductivity_profile</code> can be specified in the TOML file as follows:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical]</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">saturated_hydraulic_conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential_constant"</span> <span class="co"># optional, one of ("exponential", "exponential_constant", "layered", "layered_exponential"), default is "exponential"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Soil measurements are often available for about the upper <span class="math inline">\(\SI{1.5-2}{m}\)</span> of the soil column to estimate the saturated hydraulic conductivity, while these measurements are often lacking for soil depths beyond <span class="math inline">\(\SI{1.5-2}{m}\)</span>. These different profiles allow to extent the saturated hydraulic conductivity profile based on measurements (either an exponential fit or hydraulic conductivity value per soil layer) with an exponential or constant profile. By default, with <code>saturated_hydraulic_conductivity_profile</code> “exponential”, the saturated hydraulic conductivity <span class="math inline">\(\SIb{K_\mathrm{vz}}{mm\ t^{-1}}\)</span> declines with soil depth <span class="math inline">\(\SIb{z}{mm}\)</span> in the model according to:</p>
+<p><span class="math display">\[
+    K_\mathrm{vz} = K_0 e^{-\subtext{f}{Kv} z},
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{K_0}{mm\ t^{-1}}\)</span> is the vertical saturated hydraulic conductivity at the soil surface and <span class="math inline">\(\SIb{\subtext{f}{Kv}}{mm^{-1}}\)</span> is a scaling parameter.</p>
+<p>The plot below shows the relation between soil depth <span class="math inline">\(z\)</span> and vertical saturated hydraulic conductivity <span class="math inline">\(K_\mathrm{vz}\)</span> for different values of <span class="math inline">\(\subtext{f}{Kv}\)</span>.</p>
+<div id="14" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Printf</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_theme!</span>()</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> <span class="fu">Figure</span>()</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    ax <span class="op">=</span> <span class="fu">Axis</span>(fig[<span class="fl">1</span>, <span class="fl">1</span>], xlabel<span class="op">=</span>L<span class="st">"K_\mathrm{vz}\;[\mathrm{mm/day}]"</span>, ylabel<span class="op">=</span>L<span class="st">"-z\;[\mathrm{mm}]"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5.0</span><span class="op">:</span><span class="fl">1000</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    kv <span class="op">=</span> <span class="fl">100.0</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> <span class="fl">0.6</span> <span class="op">./</span> <span class="fu">collect</span>(<span class="fl">50</span><span class="op">:</span><span class="fl">150.0</span><span class="op">:</span><span class="fl">800</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> fi <span class="kw">in</span> f</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lines!</span>(ax, kv <span class="op">.*</span> <span class="fu">exp</span>.(<span class="op">-</span>fi <span class="op">.*</span> z), <span class="op">-</span>z, label<span class="op">=</span><span class="pp">@sprintf</span>(<span class="st">"%.2e"</span>, fi))</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Legend</span>(fig[<span class="fl">1</span>, <span class="fl">2</span>], ax, L<span class="st">"f_\mathrm{Kv}"</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    fig</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-8-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Effect of different values of <code>f_Kv</code> on the vertical saturated hydraulic conductivity profile</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>With <code>saturated_hydraulic_conductivity_profile</code> “exponential_constant”, <span class="math inline">\(K_\mathrm{vz}\)</span> declines exponentially with soil depth <span class="math inline">\(\SIb{z}{mm}\)</span> until <span class="math inline">\(\SIb{z_\mathrm{exp}}{mm}\)</span> below the soil surface, and stays constant at and beyond soil depth <span class="math inline">\(z_\mathrm{exp}\)</span>:</p>
+<p><span class="math display">\[
+    K_\mathrm{vz} = \begin{cases}
+    K_0e^{-\subtext{f}{Kv} z} &amp; \text{if $z &lt; \subtext{z}{exp}$}\\
+    K_0e^{-\subtext{f}{Kv}\subtext{z}{exp}} &amp; \text{if $z \ge \subtext{z}{exp}$}.
+    \end{cases}
+\]</span></p>
+<p>It is also possible to provide a <span class="math inline">\(K_\mathrm{vz}\)</span> value per soil layer by specifying <code>saturated_hydraulic_conductivity_profile</code> “layered”, these <span class="math inline">\(K_\mathrm{vz}\)</span> values are used directly to compute the vertical transfer of water between soil layers and to the saturated store <span class="math inline">\(S_\mathrm{sat}\)</span>. Finally, with the <code>saturated_hydraulic_conductivity_profile</code> “layered_exponential” a <span class="math inline">\(K_\mathrm{vz}\)</span> value per soil layer is used until depth <span class="math inline">\(z_\mathrm{layered}\)</span> below the soil surface, and beyond <span class="math inline">\(z_\mathrm{layered}\)</span> an exponential decline of <span class="math inline">\(K_\mathrm{vz}\)</span> (of the soil layer with bottom <span class="math inline">\(z_\mathrm{layered}\)</span>) controlled by <span class="math inline">\(f\)</span> occurs. The different available <code>saturated_hydraulic_conductivity_profile</code> options are schematized in the figure below where the blue line represents the <span class="math inline">\(K_\mathrm{vz}\)</span> value.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/sbm_ksat_profiles.png" class="img-fluid figure-img"></p>
+<figcaption>Overview of available <code>saturated_hydraulic_conductivity_profile</code> options, for a soil column with five layers</figcaption>
+</figure>
+</div>
+</section>
+<section id="infiltration" class="level3">
+<h3 class="anchored" data-anchor-id="infiltration">Infiltration</h3>
+<p>The water available for infiltration is taken as throughfall, stemflow, snow runoff and glaciermelt. Infiltration is determined separately for the compacted and non-compacted areas, as these have different infiltration capacities. Naturally, only the water that can be stored in the soil can infiltrate. If not all water can infiltrate, this is added as excess water to the runoff routing scheme.</p>
+<p>The infiltrating water is split in two parts, the part that falls on compacted areas and the part that falls on non-compacted areas. The maximum infiltration rate in these areas is calculated by taking the minimum of the infiltration capacity and the infiltration rate for these areas. The actual total infiltration rate is a function of the total infiltration rate (compacted and non-compacted areas) and the initial unsaturated storage capacity.</p>
+<p>Infiltration excess occurs when the infiltration capacity is smaller then the water available for infiltration. This amount of water becomes overland flow (infiltration excess overland flow). Saturation excess occurs when the (upper) soil becomes saturated and water cannot infiltrate anymore. This amount of water becomes overland flow (saturation excess overland flow).</p>
+<section id="infiltration-in-frozen-soils" class="level4">
+<h4 class="anchored" data-anchor-id="infiltration-in-frozen-soils">Infiltration in frozen soils</h4>
+<p>An optional reduction factor is applied to the infiltration capacity when snow is modelled, and the model setting <code>soilinfreduction</code> is set to true:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soilinfreduction</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This reduction factor depends on the near-surface soil temperature, which is modelled based on the approach of Wigmosta et al., 2009:</p>
+<p><span class="math display">\[
+T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T_\mathrm{soil}^{t-1}),
+\]</span> where <span class="math inline">\(\SIb{T_\mathrm{soil}^{t}}{\degree C}\)</span> is the near-surface soil temperature at time step <span class="math inline">\(t\)</span>, <span class="math inline">\(\SIb{T_a}{\degree C}\)</span> is air temperature at time step <span class="math inline">\(t\)</span>, <span class="math inline">\(\SIb{T_\mathrm{soil}^{t-1}}{\degree C}\)</span> is the near-surface soil temperature at the previous time step and <span class="math inline">\(\SIb{w_\mathrm{soil}}{t^{-1}}\)</span> is a weighting coefficient determined through calibration (default is 0.1125 for daily timesteps). The optional infiltration capacity reduction factor is based on the model parameter <span class="math inline">\(\SIb{f_\mathrm{red, frozen}}{-}\)</span> (default is 0.038) and the near-surface soil temperature as follows:</p>
+<p><span class="math display">\[
+\begin{gathered}
+    b = \frac{1.0}{1.0 - f_\mathrm{red, frozen}}\\
+    f_\mathrm{frozen} = \frac{1.0}{b + \exp(-c (T_\mathrm{soil} - a))} + f_\mathrm{red, frozen}\\
+    a = 0.0\\
+    c = 8.0.
+\end{gathered}
+\]</span></p>
+<p>A S-curve (see plot below) is used to make a smooth transition (a c-factor (<span class="math inline">\(c\)</span>) of 8.0 is used):</p>
+<div id="16" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Wflow</span>: infiltration_reduction_factor</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Define data</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  temps <span class="op">=</span> <span class="fu">collect</span>(<span class="op">-</span><span class="fl">3</span><span class="op">:</span><span class="fl">0.1</span><span class="op">:</span><span class="fl">3</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  cf_soils <span class="op">=</span> [<span class="fl">0.038</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>]  <span class="co"># Example values for cf_soil</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  colors <span class="op">=</span> [<span class="st">"#bae4bc"</span>, <span class="st">"#7bccc4"</span>, <span class="st">"#2b8cbe"</span>]  <span class="co"># Colors for each cf_soil</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create figure</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  fig <span class="op">=</span> <span class="fu">Figure</span>(; size <span class="op">=</span> (<span class="fl">500</span>, <span class="fl">400</span>))</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  ax <span class="op">=</span> <span class="fu">Axis</span>(</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>      fig[<span class="fl">1</span>, <span class="fl">1</span>];</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>      xlabel <span class="op">=</span> <span class="st">"Soil temperature [°C]"</span>,</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>      ylabel <span class="op">=</span> <span class="st">"Infiltration correction factor [-]"</span>,</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>      xgridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>      ygridvisible <span class="op">=</span> <span class="cn">false</span>,</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot lines for each cf_soil</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (cf_soil, color) <span class="kw">in</span> <span class="fu">zip</span>(cf_soils, colors)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>      y_vals <span class="op">=</span> @. <span class="fu">infiltration_reduction_factor</span>(</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>          temps,</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>          cf_soil;</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>          modelsnow <span class="op">=</span> <span class="cn">true</span>,</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>          soilinfreduction <span class="op">=</span> <span class="cn">true</span>,</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">lines!</span>(ax, temps, y_vals; label <span class="op">=</span> <span class="st">"</span><span class="sc">$</span>cf_soil<span class="st">"</span>, color <span class="op">=</span> color)</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add legend</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">axislegend</span>(<span class="st">"cf_soil"</span>; framevisible <span class="op">=</span> <span class="cn">false</span>, position <span class="op">=</span> <span class="op">:</span>lt)</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set axis limits</span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlims!</span>(ax, <span class="fu">minimum</span>(temps), <span class="fu">maximum</span>(temps))</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylims!</span>(ax, <span class="op">-</span><span class="fl">0.03</span>, <span class="fl">1.03</span>)</span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Display the figure</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>  fig</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="landhydrology_sbm_files/figure-html/cell-9-output-1.svg" class="img-fluid figure-img"></p>
+<figcaption>Infiltration correction factor as a function of soil temperature</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="capillary-rise" class="level3">
+<h3 class="anchored" data-anchor-id="capillary-rise">Capillary rise</h3>
+<p>Capillary rise is determined when an unsaturated zone occurs in the soil column, using the following approach. First a maximum capillary rise is determined from the minimum of vertical saturated hydraulic conductivity at the water table, the actual transpiration rate from the unsaturated store and the unsaturated storage capacity. Then, the maximum capillary rate is scaled using the following empirical equation (e.g.&nbsp;Zammouri, 2011; Yang et al., 2011; Wang et al., 2016): <span class="math display">\[
+  C_\mathrm{act}=\begin{cases}
+    C_\mathrm{max}\left(1-\frac{z_\mathrm{watertable}}{z_\mathrm{cap, maxdepth}}\right)^{n_\mathrm{cap}} &amp; \text{if $(z_\mathrm{watertable}&gt;z_\mathrm{rooting})$ \&amp; $(z_\mathrm{watertable}&lt;z_\mathrm{cap, maxdepth})$}\\
+    0 &amp; \text{otherwise},
+  \end{cases}
+\]</span> where <span class="math inline">\(\SIb{C_\mathrm{act}}{mm\ t^{-1}}\)</span> is the capillary rate, <span class="math inline">\(\SIb{z_\mathrm{cap,
+maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise ceases, <span class="math inline">\(\SIb{n_\mathrm{cap}}{-}\)</span> is an empirical coefficient related to soil properties and climate, generally set between <span class="math inline">\(1\)</span> and <span class="math inline">\(3\)</span>, <span class="math inline">\(\SIb{z_\mathrm{watertable}}{mm}\)</span> is the water table depth and <span class="math inline">\(\SIb{z_\mathrm{rooting}}{mm}\)</span> is the rooting depth. When the soil bucket in the <code>SBM</code> soil model is split-up into different layers, <span class="math inline">\(C_\mathrm{act}\)</span> is divided over the different unsaturated soil layers, from the bottom to the top unsaturated soil layer, without exceeding the saturated water content.</p>
+</section>
+<section id="leakage" class="level3">
+<h3 class="anchored" data-anchor-id="leakage">Leakage</h3>
+<p>If the maximum leakage <span class="math inline">\(\SIb{}{mm\ d^{-1}}\)</span> input model parameter is set &gt; 0, water is lost from the saturated zone and runs out of the model. Leakage can be enabled by specifying the following in the TOML file:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_sat-zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"maxleakage"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="open-water" class="level2">
+<h2 class="anchored" data-anchor-id="open-water">Open water</h2>
+<p>Part of the water available for infiltration is diverted to the open water, based on the fractions of river and lakes of each grid cell. The amount of evaporation from open water is assumed to be equal to potential evaporation (if sufficient water is available).</p>
+</section>
+<section id="non-irrigation" class="level2">
+<h2 class="anchored" data-anchor-id="non-irrigation">Non-irrigation</h2>
+<p>Non-irrigation water demand and allocation computations are supported for the sectors domestic, industry and livestock. These computations can be enabled by specifying the following in the TOML file:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For these non-irrigation sectors the gross demand (<span class="math inline">\(d_\mathrm{gross}\)</span> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>) and net demand (<span class="math inline">\(d_\mathrm{net}\)</span> <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>) are provided to the model (input through cyclic <span class="math inline">\(\SIb{}{mm\ d^{-1}}\)</span> or forcing data <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>). Gross demand represents the total demand and hence the total abstraction from surface water or groundwater when sufficient water is available. Net demand represents water consumption. The portion of total abstracted water that is not consumed is returned as surface water. The return flow fraction (<span class="math inline">\(\SIb{f_\mathrm{return}}{-}\)</span>) is calculated as follows:</p>
+<p><span class="math display">\[
+    \subtext{f}{return} = 1.0 - \frac{\subtext{d}{net}}{\subtext{d}{gross}},
+\]</span> and used to calculate the return flow rate (water abstracted from surface water or groundwater but not consumed). For grid cells containing a river the return flow is directly returned to the river routing component, otherwise the return flow is returned to the overland flow routing component.</p>
+<p>The list of input parameters for non-irrigation that can be provided through the TOML file can be found <a href="../../model_docs/parameters_landhydrology_sbm.html#non-irrigation">here</a>.</p>
+</section>
+<section id="non-paddy-irrigation" class="level2">
+<h2 class="anchored" data-anchor-id="non-paddy-irrigation">Non-paddy irrigation</h2>
+<p>Non-paddy (other crops than flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Irrigation is applied during the growing season when input parameter irrigation trigger <span class="math inline">\(\SIb{}{-}\)</span> for non-paddy irrigation is <code>true</code> (or <code>on</code>) and when water depletion exceeds the readily available water:</p>
+<p><span class="math display">\[
+    (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat}) \ge (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat, h3}),
+\]</span> where <span class="math inline">\(\SIb{\subtext{S}{root-unsat, fc}}{mm}\)</span> is the unsaturated store in the root zone at field capacity (defined at a soil water pressure head of <span class="math inline">\(\SI{-100}{cm}\)</span>), <span class="math inline">\(\SIb{\subtext{S}{root-unsat}}{mm}\)</span> is the unsaturated store in the root zone and <span class="math inline">\(\SIb{\subtext{S}{root-unsat, h3}}{mm}\)</span> is the unsaturated store in the root zone at the critical soil water pressure head <span class="math inline">\(h_3\)</span>, below this pressure head reduction of root water uptake starts due to drought stress. The net irrigation demand <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> is the irrigation rate that brings the root zone back to field capacity, limited by the soil infiltration capacity <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, assuming that farmers do not apply an irrigation rate higher than the soil infiltration capacity. To account for limited irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for non-paddy crops (<span class="math inline">\(\SIb{}{-}\)</span>, default is <span class="math inline">\(1.0\)</span>), resulting in gross irrigation demand <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>. Finally, the gross irrigation demand is limited by the maximum irrigation rate (<span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, default is <span class="math inline">\(\SI{25}{mm\ d^{-1}}\)</span>). If the maximum irrigation rate is applied, irrigation continues at subsequent time steps until field capacity is reached. Irrigation is added to the amount of water available for infiltration.</p>
+<p>The list of input parameters for non-paddy irrigation that can be provided through the TOML file can be found <a href="../../model_docs/parameters_landhydrology_sbm.html#non-paddy-irrigation">here</a>.</p>
+</section>
+<section id="paddy-irrigation" class="level2">
+<h2 class="anchored" data-anchor-id="paddy-irrigation">Paddy irrigation</h2>
+<p>Paddy (flooded rice) water demand and allocation computations are supported. These computations can be enabled by specifying the following in the TOML file:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Irrigation is applied during the growing season when input parameter irrigation trigger <span class="math inline">\(\SIb{}{-}\)</span> is <code>true</code> (or <code>on</code>) and when the paddy water depth <code>h</code> <span class="math inline">\(\SIb{}{mm}\)</span> reaches below the minimum water depth <code>h_min</code> <span class="math inline">\(\SIb{}{mm}\)</span> (see also the figure below). The net irrigation demand <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> is the irrigation rate required to reach the optimal paddy water depth <code>h_opt</code> <span class="math inline">\(\SIb{}{mm}\)</span>, an approach similar to Xie and Cui (2011). To account for limited irrigation efficiency the net irrigation demand is divided by the irrigation efficiency for paddy fields (<span class="math inline">\(\SIb{}{-}\)</span>, default is 1.0), resulting in gross irrigation demand <span class="math inline">\(\SIb{}{mm t^{-1}}\)</span>. Finally, the gross irrigation demand is limited by the maximum irrigation rate (<span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span>, default is <span class="math inline">\(\SIb{25}{mm\ d^{-1}}\)</span>). If the maximum irrigation rate is applied, irrigation continues at subsequent time steps until the optimal paddy water depth <code>h_opt</code> is reached. Irrigation is added to the amount of water available for infiltration. When the paddy water depth <code>h</code> exceeds <code>h_max</code> <span class="math inline">\(\SIb{}{mm}\)</span> runoff occurs, and this amount is added to the runoff routing scheme for overland flow. The figure below shows a typical vertical soil profile of a puddled rice soil with a muddy layer of about 15 cm (in this case represented by two soil layers of <span class="math inline">\(\SI{5}{cm}\)</span> and <span class="math inline">\(\SI{10}{cm}\)</span> thickness), a plow soil layer of 5 cm with relative low permeability (vertical hydraulic conductivity <span class="math inline">\(\subtext{K}{vz}\)</span> of about <span class="math inline">\(\SI{5}{mm\ d^{-1}}\)</span>), and a non-puddled soil below the plow soil layer. The low vertical hydraulic conductivity of the plow soil layer can be realized by making use of a multiplication factor <span class="math inline">\(\SIb{}{-}\)</span> applied to the vertical saturated hydraulic conductivity at soil depth <span class="math inline">\(\SIb{z}{mm}\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/paddy_profile.png" class="img-fluid figure-img"></p>
+<figcaption>Schematic diagram of a paddy field with water balance components and soil profile</figcaption>
+</figure>
+</div>
+<p>The list of input parameters for paddy irrigation that can be provided through the TOML file can be found <a href="../../model_docs/parameters_landhydrology_sbm.html#paddy-irrigation">here</a>.</p>
+</section>
+<section id="water-withdrawal-and-allocation" class="level2">
+<h2 class="anchored" data-anchor-id="water-withdrawal-and-allocation">Water withdrawal and allocation</h2>
+<p>For the water withdrawal the total gross demand is computed (sum over the irrigation and non-irrigation water demand sectors), in case sufficient water is available the water withdrawal is equal to the total gross demand. In case of insufficient water availability, the water withdrawal is scaled down to the available water, and allocation is then proportional to the gross demand per sector (industry, domestic, livestock and irrigation). Water can be abstracted from the following sources:</p>
+<ul>
+<li>surface water from rivers (max <span class="math inline">\(\SI{80}{\%}\)</span> of total available water)</li>
+<li>reservoirs and lakes (max <span class="math inline">\(\SI{98}{\%}\)</span> of total available water)</li>
+<li>groundwater (max <span class="math inline">\(\SI{75}{\%}\)</span> of total available water)</li>
+</ul>
+<p>The model parameter fraction surface water used (default is <span class="math inline">\(1.0\)</span>) determines how much water is supplied by available surface water and groundwater, and can be specified in the TOML file as follows:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="local" class="level3">
+<h3 class="anchored" data-anchor-id="local">Local</h3>
+<p>First, surface water abstraction (excluding reservoir and lake locations) is computed to satisfy local (same grid cell) water demand. The available surface water volume is limited by a fixed scaling factor of <span class="math inline">\(0.8\)</span> to prevent rivers from completely drying out. It is assumed that the water demand cannot be satisfied completely from local surface water and groundwater. The next step is to satisfy the remaining water demand for allocation areas <span class="math inline">\(\SIb{}{-}\)</span>, described in the next sub-section.</p>
+</section>
+<section id="allocation-areas" class="level3">
+<h3 class="anchored" data-anchor-id="allocation-areas">Allocation areas</h3>
+<p>Allocation areas can be specified as follows in the TOML file:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__number</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For allocation areas the water demand <span class="math inline">\(\SIb{\subtext{V}{sw, demand}}{m^3}\)</span> and availability <span class="math inline">\(\SIb{\subtext{V}{sw, availabilty}}{m^3}\)</span> are summed (including reservoir and lake locations limited by a fixed scaling factor of <span class="math inline">\(0.98\)</span>), and the total surface water abstraction is then:</p>
+<p><span class="math display">\[
+    \subtext{V}{sw, abstraction} = \min (\subtext{V}{sw, demand}, \subtext{V}{sw, availabilty}).
+\]</span> The fraction of available surface water that can be abstracted <span class="math inline">\(\SIb{\subtext{f}{sw,abstraction}}{-}\)</span> at the allocation area level is then:</p>
+<p><span class="math display">\[
+    \subtext{f}{sw, abstraction} = \frac{\subtext{V}{sw, abstraction}}{\subtext{V}{sw, available}}.
+\]</span> This fraction is applied to the remaining available surface water of each river cell (including lake and reservoir locations) to compute surface water abstraction at each river cell and to update the local surface water abstraction.</p>
+<p>The fraction of water demand that can be satisfied by available surface water <span class="math inline">\(\SIb{\subtext{f}{sw, allocation}}{-}\)</span> at the allocation area level is then:</p>
+<p><span class="math display">\[
+    \subtext{f}{sw, allocation} = \frac{\subtext{V}{sw, abstraction}}{\subtext{V}{sw, demand}}.
+\]</span> This fraction is applied to the remaining surface water demand of each land cell to compute the allocated surface water to each land cell.</p>
+<p>Then groundwater abstraction is computed to satisfy the remaining local water demand, where groundwater abstraction is limited by a fixed scaling factor of <span class="math inline">\(0.75\)</span> applied to the groundwater volume. Finally, for allocation areas the water demand <span class="math inline">\(\SIb{\subtext{V}{gw,demand}}{m^3}\)</span> and availability <span class="math inline">\(\SIb{\subtext{V}{gw, availabilty}}{m^3}\)</span> are summed, and the total groundwater abstraction is then:</p>
+<p><span class="math display">\[
+    \subtext{V}{gw, abstraction} = \min(\subtext{V}{gw, demand}, \subtext{V}{gw, availabilty}).
+\]</span> The fraction of available groundwater that can be abstracted at allocation area level <span class="math inline">\(\SIb{\subtext{f}{gw, abstraction}}{-}\)</span> at the allocation area level is then:</p>
+<p><span class="math display">\[
+    \subtext{f}{gw, abstraction} = \frac{\subtext{V}{gw, abstraction}}{\subtext{V}{gw, available}}.
+\]</span> This fraction is applied to the remaining available groundwater of each land cell to compute groundwater abstraction and to update the local groundwater abstraction.</p>
+<p>The fraction of water demand that can be satisfied by available groundwater <span class="math inline">\(\SIb{\subtext{f}{gw,allocation}}{-}\)</span> at the allocation area level is then:</p>
+<p><span class="math display">\[
+    \subtext{f}{gw, allocation} = \frac{\subtext{V}{gw, abstraction}}{\subtext{V}{gw, demand}}.
+\]</span> This fraction is applied to the remaining groundwater demand of each land cell to compute the allocated groundwater to each land cell.</p>
+</section>
+<section id="abstractions" class="level3">
+<h3 class="anchored" data-anchor-id="abstractions">Abstractions</h3>
+<p>Groundwater abstraction is implemented by subtracting this amount from the recharge variable of the lateral subsurface flow component (kinematic wave) or the recharge rate variable of the groundwater flow module. Surface water abstraction <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> is divided by the flow length <span class="math inline">\(\SIb{}{m}\)</span> and subtracted from the lateral inflow of kinematic wave routing scheme for river flow. For the local inertial routing scheme (river and optional floodplain routing), the surface water abstraction <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> is subtracted as part of the continuity equation of the local inertial model. For reservoir and lake locations surface water is abstracted <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> from the reservoir storage <span class="math inline">\(\SIb{}{m^3}\)</span> and lake storage <span class="math inline">\(\SIb{}{m^3}\)</span> respectively, with a subsequent update of the lake water level <span class="math inline">\(\SIb{}{m}\)</span>.</p>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Bergström, S., 1992, The HBV model – its structure and applications, SMHI Reports Hydrology, Norrköping, Sweden, RH 4.</li>
+<li>Brooks, R. H., and Corey, A. T., 1964, Hydraulic properties of porous media, Hydrology Papers 3, Colorado State University, Fort Collins, 27 p.</li>
+<li>Feddes, R.A., Kowalik, P.J. and Zaradny, H., 1978, Simulation of field water use and crop yield, Pudoc, Wageningen, Simulation Monographs.</li>
+<li>Gash, J. H. C., 1979, An analytical model of rainfall interception by forests, Q. J. Roy. Meteor. Soc., 105, 43–55, doi:1026 10.1002/qj.497105443041027.</li>
+<li>Liu, S., 1998, Estimation of rainfall storage capacity in the canopies of cypress wetlands and slash pine uplands in North-Central Florida, J. Hydr., 207, 32–41, doi: 10.1016/S0022-1694(98)00115-2.</li>
+<li>Pitman, J., 1989, Rainfall interception by bracken in open habitats—relations between leaf area, canopy storage and drainage rate, J. Hydr. 105, 317–334, doi: 10.1016/0022-1694(89)90111-X.</li>
+<li>Seibert, J., Vis, M. J. P., Kohn, I., Weiler, M., and Stahl, K., 2018, Technical note: Representing glacier geometry changes in a semi-distributed hydrological model, Hydrol. Earth Syst. Sci., 22, 2211–2224, https://doi.org/10.5194/hess-22-2211-2018.</li>
+<li>Van Dijk, A. I. J. M., and Bruijnzeel, L. A., 2001, Modelling rainfall interception by vegetation of variable density using an adapted analytical model, Part 2, Model validation for a tropical upland mixed cropping system, J. Hydr., 247, 239–262.</li>
+<li>Vertessy, R., and Elsenbeer, H., 1999, Distributed modeling of storm ﬂow generation in an amazonian rain forest catchment: effects of model parameterization, Water Resour. Res., 35, 2173–2187. doi: 10.1029/1999WR9000511257.</li>
+<li>Wang, X., Huo, Z., Feng, S., Guo, P., and Guan, H. 2016, Estimating groundwater evapotranspiration from irrigated cropland incorporating root zone soil texture and moisture dynamics, J. Hydrol., 543, 501–509, https://doi.org/10.1016/j.jhydrol.2016.10.027.</li>
+<li>Wigmosta, M. S., Lane, L. J., Tagestad, J. D., and Coleman A. M., 2009, Hydrologic and erosion models to assess land use and management practices affecting soil erosion, J. Hydrol. Eng., 14, 27-41.</li>
+<li>Xie, X. and Cui, Y., 2011, Development and test of SWAT for modeling hydrological processes in irrigation districts with paddy rice, J. Hydrol., 396, pp.&nbsp;61-71.</li>
+<li>Yang, F., Zhang, G., Yin, X., Liu, Z., and Huang, Z., 2011, Study on capillary rise from shallow groundwater and critical water table depth of a saline-sodic soil in western Songnen plain of China, Environ. Earth Sci. 64, 2119–2126, https://doi.org/10.1007/s12665-011-1038-4.</li>
+<li>Zammouri, M., 2001: Case study of water table evaporation at Ichkeul Marshes (Tunisia), J. Irrig. Drain. Eng. 127, 265–271.</li>
+</ul>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

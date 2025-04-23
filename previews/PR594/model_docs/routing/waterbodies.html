@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Julia structures – Wflow.jl</title>
+<title>Reservoirs and Lakes – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -57,24 +57,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<link href="../_static/logo.png" rel="icon" type="image/png">
-<script src="../site_libs/quarto-html/quarto.js"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-74890307de1913927b0f16a015c31dfd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-6ef0d5eb5bdd435e91d4299c73095ba4.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -101,7 +101,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="../_static/version.js"></script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -114,8 +114,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   };
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="../_static/styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -125,10 +154,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -139,27 +168,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../getting_started/index.html"> 
+    <a class="nav-link" href="../../getting_started/index.html"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../user_guide/index.html"> 
+    <a class="nav-link" href="../../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../model_docs/index.html"> 
+    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../developments/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../developments/index.html"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -201,7 +226,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../developments/julia_structs.html">Julia structures</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -215,28 +240,121 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../developments/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Developments</span></a>
+  <a href="../../model_docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../changelog.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Changelog</span></a>
+  <a href="../../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../developments/guide.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Developers guide</span></a>
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Land models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../developments/julia_structs.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Julia structures</span></a>
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Routing concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematic wave</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local inertial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Reservoirs and Lakes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Groundwater flow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment flux</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Model parameters and variables</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -247,17 +365,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#model" id="toc-model" class="nav-link active" data-scroll-target="#model">Model</a></li>
-  <li><a href="#vertical-and-lateral-models" id="toc-vertical-and-lateral-models" class="nav-link" data-scroll-target="#vertical-and-lateral-models">Vertical and lateral models</a></li>
+  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link active" data-scroll-target="#reservoirs">Reservoirs</a>
+  <ul class="collapse">
+  <li><a href="#lakes-unregulated-and-regulated" id="toc-lakes-unregulated-and-regulated" class="nav-link" data-scroll-target="#lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</a></li>
+  <li><a href="#modified-puls-approach" id="toc-modified-puls-approach" class="nav-link" data-scroll-target="#modified-puls-approach">Modified Puls Approach</a></li>
+  <li><a href="#lake-parameters" id="toc-lake-parameters" class="nav-link" data-scroll-target="#lake-parameters">Lake parameters</a></li>
+  <li><a href="#additional-settings" id="toc-additional-settings" class="nav-link" data-scroll-target="#additional-settings">Additional settings</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Julia structures</h1>
+<h1 class="title">Reservoirs and Lakes</h1>
 </div>
 
 
@@ -274,55 +398,145 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="model" class="level2">
-<h2 class="anchored" data-anchor-id="model">Model</h2>
-<p>Below the composite type that represents all different aspects of a <code>Wflow.Model</code>, such as the network, parameters, clock, model type, configuration and input and output.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Model{R <span class="op">&lt;:</span><span class="dt"> Routing</span>, L <span class="op">&lt;:</span><span class="dt"> AbstractLandModel</span>, T <span class="op">&lt;:</span><span class="dt"> AbstractModelType</span>} <span class="op">&lt;:</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>       AbstractModel{T}</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    config<span class="op">::</span><span class="dt">Config      </span><span class="co"># all configuration options</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    network<span class="op">::</span><span class="dt">Network    </span><span class="co"># connectivity information, directed graph</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    routing<span class="op">::</span><span class="dt">R          </span><span class="co"># routing model (horizontal fluxes), moves along network</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    land<span class="op">::</span><span class="dt">L             </span><span class="co"># land model simulating vertical fluxes, independent of each other</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    clock<span class="op">::</span><span class="dt">Clock        </span><span class="co"># to keep track of simulation time</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    reader<span class="op">::</span><span class="dt">NCReader    </span><span class="co"># provides the model with dynamic input</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    writer<span class="op">::</span><span class="dt">Writer      </span><span class="co"># writes model output</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">type</span><span class="op">::</span><span class="dt">T             </span><span class="co"># model type</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The <code>lateral</code> field of the <code>struct Model</code> can contain different lateral concepts. For each wflow model these different lateral concepts are mapped through the use of a <code>NamedTuple</code>. The <code>vertical</code> field of the <code>struct Model</code> always contains one vertical concept, for example the SBM vertical concept.</p>
-<p>Below an example how lateral concepts are mapped for the SBM model through a <code>NamedTuple</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(subsurface <span class="op">=</span> ssf, land <span class="op">=</span> olf, river <span class="op">=</span> rf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The <code>subsurface</code> part is mapped to the lateral subsurface flow kinematic wave concept, the <code>land</code> part is mapped the overland flow kinematic wave concept and the <code>river</code> part is mapped to the river flow kinematic wave concept. Knowledge of this specific mapping is required to understand and correctly set input, output and state variables in the TOML configuration file, see also <a href="../user_guide/toml_file.html">Config and TOML</a>. This mapping is described in more detail for each model in the section Models. Also the <code>struct</code> of each mapped concept is provided, so one can check the internal variables in the code. These structs are defined as a parametric composite type, with type parameters between curly braces after the <code>struct</code> name. See also the next paragraph <a href="#vertical-and-lateral-models">Vertical and lateral models</a> for a more detailed description.</p>
+<p>Reservoirs and lakes models can be included as part of the river network.</p>
+<section id="reservoirs" class="level2">
+<h2 class="anchored" data-anchor-id="reservoirs">Reservoirs</h2>
+<p>By default the reservoirs are not included in the model. To include them put the following lines in the TOML file of the model:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoirs</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally there is a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The list of reservoir input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#reservoirs">here</a>.</p>
+<section id="lakes-unregulated-and-regulated" class="level3">
+<h3 class="anchored" data-anchor-id="lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</h3>
+<p>Lakes are modelled using a mass balance approach:</p>
+<p><span class="math display">\[
+    \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} + \dfrac{(P-E) A}{\Delta t} - \subtext{Q}{out}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{S}{m^3}\)</span> is lake storage, <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep, <span class="math inline">\(\SIb{\subtext{Q}{in}}{m^3\ s^{-1}}\)</span> is the sum of inflows (river, overland and lateral subsurface flow), <span class="math inline">\(\SIb{\subtext{Q}{out}}{m^3\ s^{-1}}\)</span> is the lake outflow at the outlet, <span class="math inline">\(\SIb{P}{m}\)</span> is precipitation, <span class="math inline">\(\SIb{E}{m}\)</span> is lake evaporation and <span class="math inline">\(\SIb{A}{m^2}\)</span> is the lake surface area.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/lake.png" class="img-fluid figure-img"></p>
+<figcaption>Lake schematization.</figcaption>
+</figure>
+</div>
+<p>Most of the variables in this equation are known at the current or previous timestep, apart from <span class="math inline">\(S(t+ \Delta t)\)</span> and <span class="math inline">\(\subtext{Q}{out}\)</span> which can both be linked to the water level <span class="math inline">\(H\)</span> in the lake using a storage curve <span class="math inline">\(S = f(H)\)</span> and a rating curve <span class="math inline">\(Q = f(H)\)</span>. In wflow, several options are available to select storage and rating curves, and in most cases, the mass balance is then solved by linearization and iteration or using the Modified Puls Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:</p>
+<ul>
+<li>Come from the interpolation of field data linking volume and lake height,</li>
+<li>Be computed from the simple relationship <span class="math inline">\(S = A H\)</span>.</li>
+</ul>
+<p>Rating curves in wflow can either:</p>
+<ul>
+<li>Come from the interpolation of field data linking lake outflow and water height, also appropriate for regulated lakes/ dams,</li>
+<li>Be computed from a rating curve of the form <span class="math inline">\(\subtext{Q}{out} = \alpha (H-H_0)^\beta\)</span>, where <span class="math inline">\(H_{0}\)</span> is the minimum water level under which the outflow is zero. Usual values for <span class="math inline">\(\beta\)</span> are <span class="math inline">\(\frac{3}{2}\)</span> for a rectangular weir or <span class="math inline">\(2\)</span> for a parabolic weir (Bos, 1989).</li>
+</ul>
 </section>
-<section id="vertical-and-lateral-models" class="level2">
-<h2 class="anchored" data-anchor-id="vertical-and-lateral-models">Vertical and lateral models</h2>
-<p>The different model concepts used in wflow are defined as parametric <a href="https://docs.julialang.org/en/v1/manual/types/#Composite-Types">composite types</a>. For example the vertical <code>SBM</code> concept is defined as follows: <code>struct SBM{T,N,M}</code>. <code>T</code>, <code>N</code> and <code>M</code> between curly braces after the <code>struct</code> name refer to type parameters, for more information about type parameters you can check out <a href="https://docs.julialang.org/en/v1/manual/types/#man-parametric-composite-types">Type parameters</a>. Since these parameters can be of any type, it is possible to declare an unlimited number of composite types. The type parameters are used to set the type of <code>struct</code> fields, below an example with a part of the <code>SBM</code> struct:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">@get_units</span> <span class="pp">@with_kw</span> <span class="kw">struct</span> SBM{T,N,M}</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Model time step [s]</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    dt<span class="op">::</span><span class="dt">T </span><span class="op">|</span> <span class="st">"s"</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Maximum number of soil layers</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    maxlayers<span class="op">::</span><span class="dt">Int </span><span class="op">|</span> <span class="st">"-"</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># number of cells</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    n<span class="op">::</span><span class="dt">Int </span><span class="op">|</span> <span class="st">"-"</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Number of soil layers</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    nlayers<span class="op">::</span><span class="dt">Vector{Int} </span><span class="op">|</span> <span class="st">"-"</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Number of unsaturated soil layers</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    n_unsatlayers<span class="op">::</span><span class="dt">Vector{Int} </span><span class="op">|</span> <span class="st">"-"</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fraction of river [-]</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    riverfrac<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"-"</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Saturated water content (porosity) [mm mm⁻¹]</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    theta_s<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"mm mm-1"</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Residual water content [mm mm⁻¹]</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    theta_r<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"mm mm-1"</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    kv_0<span class="op">::</span><span class="dt">Vector{T} </span><span class="op">|</span> <span class="st">"mm dt-1"</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Muliplication factor [-] applied to kv_z (vertical flow)</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    kvfrac<span class="op">::</span><span class="dt">Vector{SVector{N,T}} </span><span class="op">|</span> <span class="st">"-"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The type parameter <code>T</code> is used in wflow as a subtype of <code>AbstractFloat</code>, allowing to store fields with a certain floating point precision (e.g.&nbsp;<code>Float64</code> or <code>Float32</code>) in a flexible way. <code>N</code> refers to the maximum number of soil layers of the <code>SBM</code> soil column, and <code>M</code> refers to the maximum number of soil layers + 1. See also part of the following instance of <code>SBM</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sbm <span class="op">=</span> <span class="fu">SBM</span><span class="dt">{Float,maxlayers,maxlayers + 1}</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    dt <span class="op">=</span> <span class="fu">tosecond</span>(dt),</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    maxlayers <span class="op">=</span> maxlayers,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> n,</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>For the other model concepts, we refer to the code to check these type parameters.</p>
+<section id="modified-puls-approach" class="level3">
+<h3 class="anchored" data-anchor-id="modified-puls-approach">Modified Puls Approach</h3>
+<p>The Modified Puls Approach is a resolution method of the lake balance that uses an explicit relationship between storage and outflow. Storage is assumed to be equal to <span class="math inline">\(A H\)</span> and the rating curve for a parabolic weir (<span class="math inline">\(\beta = 2\)</span>):</p>
+<p><span class="math display">\[
+    S = A H = A  (h + H_{0}) = A \sqrt{\frac{Q}{\alpha}} + A H_0
+\]</span></p>
+<p>Inserting this equation in the mass balance gives:</p>
+<p><span class="math display">\[
+    \dfrac{A}{\Delta t} \sqrt{\frac{Q}{\alpha}} + Q = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} +
+    A\dfrac{P-E}{\Delta t} - \dfrac{A H_0}{\Delta t} = \mathrm{SI} - \dfrac{A H_0}{\Delta t}
+\]</span></p>
+<p>The solution for <span class="math inline">\(Q\)</span> is then:</p>
+<p><span class="math display">\[
+  Q =
+    \begin{cases}
+      \begin{align*}
+        \frac{1}{4}\left(-\mathrm{LF} + \sqrt{\mathrm{LF}^{2} + 4  \left(\mathrm{SI} - \dfrac{A H_0}{\Delta t} \right)}
+        \right)^2 &amp;\text{ if }\quad \mathrm{SI} &gt; \dfrac{A H_0}{\Delta t} \\
+        0 &amp;\text{ if }\quad \mathrm{SI} \leq \dfrac{A H_0}{\Delta t}
+      \end{align*}
+    \end{cases}
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[
+\mathrm{LF} = \dfrac{A}{\Delta t \sqrt{\alpha}}.
+\]</span></p>
+</section>
+<section id="lake-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="lake-parameters">Lake parameters</h3>
+<p>By default, the lakes are not included in the model. To include them, put the following line in the TOML file of the model:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lakes</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>There is also a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_location__count</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_surface__area</span> <span class="op">=</span> <span class="st">"lake_area"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_coefficient</span> <span class="op">=</span> <span class="st">"lake_b"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_exponent</span> <span class="op">=</span> <span class="st">"lake_e"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_type_count</span> <span class="op">=</span> <span class="st">"lake_outflowfunc"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__storage_curve_type_count</span>  <span class="op">=</span> <span class="st">"lake_storfunc"</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_flow_threshold-level__elevation</span>  <span class="op">=</span> <span class="st">"lake_threshold"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_level__initial_elevation</span> <span class="op">=</span> <span class="st">"lake_waterlevel"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The list of lake input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#lakes">here</a>. The following lake storage curve types <code>lake_water__storage_curve_type_count</code> are available:</p>
+<ul>
+<li>1 for <span class="math inline">\(S = AH\)</span></li>
+<li>2 for <span class="math inline">\(S = f(H)\)</span> from lake data and interpolation</li>
+</ul>
+<p>And the following lake rating curve types <code>lake_water__rating_curve_type_count</code> are available:</p>
+<ul>
+<li>1 for <span class="math inline">\(Q = f(H)\)</span> from lake data and interpolation</li>
+<li>2 for general <span class="math inline">\(Q = b(H - H_{0})^{e}\)</span></li>
+<li>3 in the case of Puls Approach <span class="math inline">\(Q = b(H - H_{0})^{2}\)</span></li>
+</ul>
+</section>
+<section id="additional-settings" class="level3">
+<h3 class="anchored" data-anchor-id="additional-settings">Additional settings</h3>
+<p>Storage and rating curves from field measurement can be supplied to wflow via CSV files supplied in the same folder of the TOML file. Naming of the files uses the ID of the lakes where data are available and is of the form <code>lake_sh_1.csv</code> and <code>lake_hq_1.csv</code> for respectively the storage and rating curves of lake with ID 1.</p>
+<p>The storage curve is stored in a CSV file with lake level <span class="math inline">\(\SIb{}{m}\)</span> in the first column <code>H</code> and corresponding lake storage <span class="math inline">\(\SIb{}{m^3}\)</span> in the second column <code>S</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H,</span>  S</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">392.21,</span> 0</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">393.21,</span> 430202000</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">393.71,</span> 649959000</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.21,</span> 869719000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The rating curve uses level and discharge data depending on the Julian day of the year (JDOY), and can be also used for regulated lakes/ dams. The first line contains <code>H</code> for the first column. The other lines contain the water level and the corresponding discharges for the different JDOY (1-365), see also the example below, that shows part of a CSV file (first 4 Julian days). The volume above the maximum water level of the rating curve is assumed to flow instantaneously out of the lake (overflow).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">394,</span>    43,     43,     43,     43</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">394.01,</span> 44.838, 44.838, 44.838, 44.838</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">394.02,</span> 46.671, 46.671, 46.671, 46.671</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.03,</span> 48.509, 48.509, 48.509, 48.509</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">394.04,</span> 50.347, 50.347, 50.347, 50.347</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">394.05,</span> 52.179, 52.179, 52.179, 52.179</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Linked lakes: In some cases, lakes can be linked and return flow can be allowed from the downstream to the upstream lake. The linked lakes are defined in the <code>lake~lower_location__count</code> (standard name) input parameter that represent the downstream lake location ID, at the grid cell of the upstream lake location.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In every file, level units are meters [m] above lake bottom and not meters above sea level [m asl]. Especially with storage/rating curves coming from data, please be careful and convert units if needed.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Bos M.G., 1989. Discharge measurement structures. Third revised edition, International Institute for Land Reclamation and Improvement ILRI, Wageningen, The Netherlands.</li>
+<li>Burek P., Van der Knijf J.M., Ad de Roo, 2013. LISFLOOD – Distributed Water Balance and flood Simulation Model – Revised User Manual. DOI: http://dx.doi.org/10.2788/24719.</li>
+</ul>
 
 
 </section>
@@ -893,7 +1107,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

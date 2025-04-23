@@ -73,8 +73,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-74890307de1913927b0f16a015c31dfd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-6ef0d5eb5bdd435e91d4299c73095ba4.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -180,10 +180,6 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
@@ -230,7 +226,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/sediment_flux.html">Sediment flux</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/sediment_flux.html">Sediment flux</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -254,10 +250,16 @@ window.Quarto = {
  <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Vertical processes</span></a>
+ <span class="menu-text">Land models</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -265,20 +267,14 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sbm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SBM</span></a>
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sediment.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/shared_processes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Shared processes</span></a>
   </div>
 </li>
       </ul>
@@ -286,7 +282,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Lateral processes</span></a>
+ <span class="menu-text">Routing concepts</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -294,31 +290,31 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/kinwave.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Kinematic wave</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/local-inertial.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Local inertial</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/waterbodies.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reservoirs and Lakes</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/gwf.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Groundwater flow</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/sediment_flux.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Sediment flux</span></a>
   </div>
 </li>
@@ -327,7 +323,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Parameters</span></a>
+ <span class="menu-text">Model parameters and variables</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -335,14 +331,26 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_vertical.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Vertical concepts</span></a>
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_lateral.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Lateral concepts</span></a>
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
       </ul>
@@ -376,7 +384,7 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/sediment_flux.html">Sediment flux</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/sediment_flux.html">Sediment flux</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Sediment flux</h1>
 </div>
@@ -408,7 +416,6 @@ window.Quarto = {
 <li>Small aggregates (mean diameter of <span class="math inline">\(\SI{30}{\mu m}\)</span>)</li>
 <li>Large aggregates (mean diameter of <span class="math inline">\(\SI{50}{\mu m}\)</span>).</li>
 </ul>
-$$
 <span class="math display">\[\begin{gathered}
    \mathrm{PSA} = \mathrm{SAN} (1-\mathrm{CLA})^{2.4} \\
    \mathrm{PSI} = 0.13\mathrm{SIL}\\
@@ -425,13 +432,15 @@ $$
 
    \mathrm{LAG} = 1 - \mathrm{PSA} - \mathrm{PSI} - \mathrm{PCL} - \mathrm{SAG}
 \end{gathered}\]</span>
-<p>$$</p>
-<p>where <span class="math inline">\(\mathrm{CLA}\)</span>, <span class="math inline">\(\mathrm{SIL}\)</span> and <span class="math inline">\(\mathrm{SAN}\)</span> are the primary clay, silt, sand fractions of the topsoil and <span class="math inline">\(\mathrm{PCL}\)</span>, <span class="math inline">\(\mathrm{PSI}\)</span>, <span class="math inline">\(\mathrm{PSA}\)</span>, <span class="math inline">\(\mathrm{SAG}\)</span> and <span class="math inline">\(\mathrm{LAG}\)</span> are the clay, silt, sand, small and large aggregates fractions of the detached sediment respectively. The transport capacity of the flow using Yalin’s equation with particle differentiation, developed by Foster (1982), is: <span class="math display">\[
+<p>where <span class="math inline">\(\mathrm{CLA}\)</span>, <span class="math inline">\(\mathrm{SIL}\)</span> and <span class="math inline">\(\mathrm{SAN}\)</span> are the primary clay, silt, sand fractions of the topsoil and <span class="math inline">\(\mathrm{PCL}\)</span>, <span class="math inline">\(\mathrm{PSI}\)</span>, <span class="math inline">\(\mathrm{PSA}\)</span>, <span class="math inline">\(\mathrm{SAG}\)</span> and <span class="math inline">\(\mathrm{LAG}\)</span> are the clay, silt, sand, small and large aggregates fractions of the detached sediment respectively. The transport capacity of the flow using Yalin’s equation with particle differentiation, developed by Foster (1982), is:</p>
+<p><span class="math display">\[
    \mathrm{TC}_i = (P_e)_i  (S_g)_i \, \rho_w \,  g \, d_i  V_*
-\]</span> where <span class="math inline">\(\mathrm{TC}_i\)</span> is the transport capacity of the flow for the particle class <span class="math inline">\(i\)</span>, <span class="math inline">\((P_e)_i\)</span> is the effective number of particles of class <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{(S_g)_i}{kg m^{-3}}\)</span> is the specific gravity for the particle class <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{\rho_w}{kg m^{-3}}\)</span> is the mass density of the fluid, <span class="math inline">\(\SIb{g}{m s^{-2}}\)</span> is the acceleration due to gravity, <span class="math inline">\(\SIb{d_i}{m}\)</span> is the diameter of the particle of class <span class="math inline">\(i\)</span> and <span class="math inline">\(V_* = \SIb{(g R S)^{0.5}}{m s^{-1}}\)</span> is the shear velocity of the flow with <span class="math inline">\(S\)</span> the slope gradient and <span class="math inline">\(\SIb{R}{m}\)</span> the hydraulic radius of the flow. The detached sediment are then routed down slope until the river network using the <code>accucapacityflux</code>, <code>accupacitystate</code> functions depending on the transport capacity from Yalin.</p>
+\]</span></p>
+<p>where <span class="math inline">\(\mathrm{TC}_i\)</span> is the transport capacity of the flow for the particle class <span class="math inline">\(i\)</span>, <span class="math inline">\((P_e)_i\)</span> is the effective number of particles of class <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{(S_g)_i}{kg\ m^{-3}}\)</span> is the specific gravity for the particle class <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{\rho_w}{kg\ m^{-3}}\)</span> is the mass density of the fluid, <span class="math inline">\(\SIb{g}{m\ s^{-2}}\)</span> is the acceleration due to gravity, <span class="math inline">\(\SIb{d_i}{m}\)</span> is the diameter of the particle of class <span class="math inline">\(i\)</span> and <span class="math inline">\(V_* = \SIb{(g R
+S)^{0.5}}{m\ s^{-1}}\)</span> is the shear velocity of the flow with <span class="math inline">\(S\)</span> the slope gradient and <span class="math inline">\(\SIb{R}{m}\)</span> the hydraulic radius of the flow. The detached sediment are then routed down slope until the river network using the <code>accucapacityflux</code>, <code>accupacitystate</code> functions depending on the transport capacity from Yalin.</p>
 <p>The choice of transport capacity method for the overland flow is set up in the model section of the TOML:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">landtransportmethod</span> <span class="op">=</span> <span class="st">"yalinpart"</span> <span class="co"># Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_transport</span> <span class="op">=</span> <span class="st">"yalinpart"</span> <span class="co"># Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Note that the “govers” and “yalin” equations can only assess total transport capacity of the flow and can therefore not be used in combination with the river part of the sediment model.</p>
 </section>
 </section>
@@ -447,10 +456,11 @@ $$
 </div>
 <p>Running the river model is an option of the wflow_sediment model and is enabled using the TOML file. By default it is <code>false</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">runrivermodel</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">run_river_model</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="sediment-inputs-in-a-river-cell" class="level3">
 <h3 class="anchored" data-anchor-id="sediment-inputs-in-a-river-cell">Sediment inputs in a river cell</h3>
-<p>The first part of the river model assesses how much detached sediment are in the river cell at the beginning of the timestep <span class="math inline">\(t\)</span>. Sources of detached sediment are sediments coming from land erosion, estimated with the soil loss part of wflow_sediment model, the sediment coming from upstream river cells and the detached sediment that were left in the cell at the end of the previous timestep <code>(t-1)</code>: <span class="math display">\[
+<p>The first part of the river model assesses how much detached sediment are in the river cell at the beginning of the timestep <span class="math inline">\(t\)</span>. Sources of detached sediment are sediments coming from land erosion, estimated with the soil loss part of wflow_sediment model, the sediment coming from upstream river cells and the detached sediment that were left in the cell at the end of the previous timestep <span class="math inline">\((t-1)\)</span>:</p>
+<p><span class="math display">\[
    (\subtext{\mathrm{sed}}{in})_t = (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\text{sed}}{out})_{t-1}\right] + (\subtext{\text{sed}}{riv})_{t-1}
 \]</span></p>
 </section>
@@ -458,12 +468,13 @@ $$
 <h3 class="anchored" data-anchor-id="river-transport-and-erosion">River transport and erosion</h3>
 <p>Once the amount of sediment inputs at the beginning of the timestep is known, the model then estimates transport, and river erosion if there is a deficit of sediments. Transport in the river system is estimated via a transport capacity formula. There are several transport capacity formulas available in wflow_sediment, some requiring calibration and some not. Choosing a transport capacity equation depends on the river characteristics (some equation are more suited for narrow or wider rivers), and on the reliability of the required river parameters (such as slope, width or mean particle diameter of the river channel). Several river transport capacity are available and the choice is set up in the model section of the TOML:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">rivtransportmethod</span> <span class="op">=</span> <span class="st">"bagnold"</span> <span class="co"># River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_transport</span> <span class="op">=</span> <span class="st">"bagnold"</span> <span class="co"># River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Simplified Bagnold</strong></p>
-<p>Originally more valid for intermediate to large rivers, this simplified version of the Bagnold equation relates sediment transport to flow velocity with two simple calibration parameters (Neitsch et al, 2011): <span class="math display">\[
+<p>Originally more valid for intermediate to large rivers, this simplified version of the Bagnold equation relates sediment transport to flow velocity with two simple calibration parameters (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
 C_{\max} = \subtext{c}{sp}  \left( \dfrac{\mathrm{prf} Q}{h W} \right)^{\subtext{\mathrm{sp}}{exp}}
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{C_{\max}}{kg L^{-1}}\)</span> (or <span class="math inline">\(\SIb{}{ton m^{-1}}\)</span>) is the sediment concentration, <span class="math inline">\(\SIb{Q}{m^3 s^{-1}}\)</span> is the surface runoff in the river cell, <span class="math inline">\(\SIb{h}{m}\)</span> is the river water level, <span class="math inline">\(\SIb{W}{m}\)</span> is the river width and <span class="math inline">\(\subtext{c}{sp}\)</span>, <span class="math inline">\(\mathrm{prf}\)</span> and <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> are calibration parameters. The <span class="math inline">\(\mathrm{prf}\)</span> coefficient is usually used to deduce the peak velocity of the flow, but for simplification in <code>wflow_sediment</code>, the equation was simplified to only get two parameters to calibrate: <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> and <span class="math inline">\(\subtext{c}{Bagnold} = \subtext{c}{sp} \,
+<p>where <span class="math inline">\(\SIb{C_{\max}}{kg\ L^{-1}}\)</span> (or <span class="math inline">\(\SIb{}{ton\ m^{-1}}\)</span>) is the sediment concentration, <span class="math inline">\(\SIb{Q}{m^3\ s^{-1}}\)</span> is the surface runoff in the river cell, <span class="math inline">\(\SIb{h}{m}\)</span> is the river water level, <span class="math inline">\(\SIb{W}{m}\)</span> is the river width and <span class="math inline">\(\subtext{c}{sp}\)</span>, <span class="math inline">\(\mathrm{prf}\)</span> and <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> are calibration parameters. The <span class="math inline">\(\mathrm{prf}\)</span> coefficient is usually used to deduce the peak velocity of the flow, but for simplification in <code>wflow_sediment</code>, the equation was simplified to only get two parameters to calibrate: <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> and <span class="math inline">\(\subtext{c}{Bagnold} = \subtext{c}{sp} \,
 \mathrm{prf}^{\subtext{\mathrm{sp}}{exp}}\)</span>. The coefficient <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> usually varies between <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span> while <span class="math inline">\(\mathrm{prf}\)</span> and <span class="math inline">\(\subtext{c}{sp}\)</span> have a wider range of variation. The table below summarizes ranges and values of the three Bagnold coefficients used by other studies:</p>
 <table class="caption-top table">
 <caption>Range of the simplified Bagnold coefficients (and calibrated value)</caption>
@@ -516,8 +527,8 @@ C_{\max} = \subtext{c}{sp}  \left( \dfrac{\mathrm{prf} Q}{h W} \right)^{\subtext
 </table>
 <p><strong>Engelund and Hansen</strong> This transport capacity is not present in SWAT but used in many models such as Delft3D-WAQ, Engelund and Hansen calculates the total sediment load as (Engelund and Hansen, 1967): <span class="math display">\[
    C_w = 0.05 \left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) \left( \dfrac{u S}{\sqrt{\left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) g  D_{50}}} \right) \theta^{1/2}
-\]</span> where <span class="math inline">\(C_w\)</span> is the sediment concentration by weight, <span class="math inline">\(\SIb{\rho}{g m^{-3}}\)</span> and <span class="math inline">\(\SIb{\rho_{s}}{g m^{-3}}\)</span> are the fluid and sediment density (here respectively equal to <span class="math inline">\(\SI{1000}{g m^{-3}}\)</span> and <span class="math inline">\(\SI{2650}{g
-m^{-3}}\)</span>), <span class="math inline">\(\SIb{u}{m s^{-1}}\)</span> is the water mean velocity, <span class="math inline">\(S\)</span> is the river slope, <span class="math inline">\(g\)</span> is the acceleration due to gravity, <span class="math inline">\(\SIb{D_{50}}{m}\)</span> is the river mean diameter and <span class="math inline">\(\theta\)</span> is the Shields parameter.</p>
+\]</span></p>
+<p>where <span class="math inline">\(C_w\)</span> is the sediment concentration by weight, <span class="math inline">\(\SIb{\rho}{g\ m^{-3}}\)</span> and <span class="math inline">\(\SIb{\rho_{s}}{g\ m^{-3}}\)</span> are the fluid and sediment density (here respectively equal to <span class="math inline">\(\SI{1000}{g\ m^{-3}}\)</span> and <span class="math inline">\(\SI{2650}{g\ m^{-3}}\)</span>), <span class="math inline">\(\SIb{u}{m\ s^{-1}}\)</span> is the water mean velocity, <span class="math inline">\(S\)</span> is the river slope, <span class="math inline">\(g\)</span> is the acceleration due to gravity, <span class="math inline">\(\SIb{D_{50}}{m}\)</span> is the river mean diameter and <span class="math inline">\(\theta\)</span> is the Shields parameter.</p>
 <p><strong>Kodatie</strong> Kodatie (1999) developed the power relationships from Posada (1995) using field data and linear optimization so that they would be applicable for a wider range of riverbed sediment size. The resulting equation, for a rectangular channel, is (Neitsch et al, 2011): <span class="math display">\[
    C_{\max} = \left( \dfrac{a u^{b} h^{c} S^{d}}{\subtext{V}{in}} \right)  W
 \]</span> where <span class="math inline">\(\SIb{\subtext{V}{in}}{m^3}\)</span> in the volume of water entering the river cell during the timestep and <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(c\)</span> and <span class="math inline">\(d\)</span> are coefficients depending on the riverbed sediment size. Values of these coefficients are summarized in the table below.</p>
@@ -570,33 +581,47 @@ m^{-3}}\)</span>), <span class="math inline">\(\SIb{u}{m s^{-1}}\)</span> is the
 </tr>
 </tbody>
 </table>
-<p><strong>Yang</strong> Yang (1996) developed a set of two equations giving transport of sediments for sand-bed or gravel-bed rivers. The sand equation (<span class="math inline">\(D_{50} &lt; \SI{2.0}{mm}\)</span>) is: <span class="math display">\[
+<p><strong>Yang</strong> Yang (1996) developed a set of two equations giving transport of sediments for sand-bed or gravel-bed rivers. The sand equation (<span class="math inline">\(D_{50} &lt; \SI{2.0}{mm}\)</span>) is:</p>
+<p><span class="math display">\[
    \log\left(C_{ppm}\right) = 5.435 - 0.286\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.457\log\left(\frac{u_*}{\omega_{s,50}}\right) \\
    +\left(1.799-0.409\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.314\log\left(\frac{u_*}{\omega_{s,50}}\right)\right)\log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
-\]</span> And the gravel equation (<span class="math inline">\(\SI{2.0}{mm} \leq D_{50} &lt; \SI{10.0}{mm}\)</span>) is: <span class="math display">\[
+\]</span></p>
+<p>And the gravel equation (<span class="math inline">\(\SI{2.0}{mm} \leq D_{50} &lt; \SI{10.0}{mm}\)</span>) is:</p>
+<p><span class="math display">\[
    \log\left(C_{ppm}\right) = 6.681 - 0.633\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-4.816\log\left(\frac{u_*}{\omega_{s,50}}\right) \\
    +\left(2.784-0.305\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.282\log\left(\frac{u_*}{\omega_{s,50}}\right)\right)\log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
-\]</span> where <span class="math inline">\(C_{ppm}\)</span> is sediment concentration in parts per million by weight, <span class="math inline">\(\SIb{\omega_{s,50}}{m s^{-1}}\)</span> is the settling velocity of a particle with the median riverbed diameter estimated with Stokes, <span class="math inline">\(\SIb{\nu}{m^2 s^{-1}}\)</span> is the kinematic viscosity of the fluid, <span class="math inline">\(\SIb{u_*}{m s^{-1}}\)</span> is the shear velocity where <span class="math inline">\(u_* = \sqrt{gR_{H}S}\)</span> with <span class="math inline">\(R_{H}\)</span> the hydraulic radius of the river and <span class="math inline">\(\SIb{u_{cr}}{m s^{-1}}\)</span> is the critical velocity (equation can be found in Hessel, 2007).</p>
-<p><strong>Molinas and Wu</strong> The Molinas and Wu (2001) transport equation was developed for large sand-bed rivers based on the universal stream power <span class="math inline">\(\psi\)</span>. The corresponding equation is (Neitsch et al, 2011): <span class="math display">\[
+\]</span></p>
+<p>where <span class="math inline">\(C_{ppm}\)</span> is sediment concentration in parts per million by weight, <span class="math inline">\(\SIb{\omega_{s,50}}{m\ s^{-1}}\)</span> is the settling velocity of a particle with the median riverbed diameter estimated with Stokes, <span class="math inline">\(\SIb{\nu}{m^2\ s^{-1}}\)</span> is the kinematic viscosity of the fluid, <span class="math inline">\(\SIb{u_*}{m\ s^{-1}}\)</span> is the shear velocity where <span class="math inline">\(u_* = \sqrt{gR_{H}S}\)</span> with <span class="math inline">\(R_{H}\)</span> the hydraulic radius of the river and <span class="math inline">\(\SIb{u_{cr}}{m\ s^{-1}}\)</span> is the critical velocity (equation can be found in Hessel, 2007).</p>
+<p><strong>Molinas and Wu</strong> The Molinas and Wu (2001) transport equation was developed for large sand-bed rivers based on the universal stream power <span class="math inline">\(\psi\)</span>. The corresponding equation is (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
    C_{w} = \dfrac{1430 (0.86+\sqrt{\psi}) \psi^{1.5}}{0.016+\psi} 10^{-6}
-\]</span> where <span class="math inline">\(\psi\)</span> is the universal stream power given by: <span class="math display">\[
+\]</span></p>
+<p>where <span class="math inline">\(\psi\)</span> is the universal stream power given by:</p>
+<p><span class="math display">\[
    \psi = \dfrac{\psi^{3}}{\left(\dfrac{\rho_{s}}{\rho}-1\right) g h \omega_{s,50}  \left[ \log_{10}\left(\dfrac{h}{D_{50}}\right)\right]^{2}}
 \]</span></p>
 <p>Once the maximum concentration <span class="math inline">\(C_{\max}\)</span> is established with one of the above transport formula, the model then determines if there is erosion of the river bed and bank. In order to do that, the difference <span class="math inline">\(sed_{ex}\)</span> between the maximum amount of sediment estimated with transport (<span class="math inline">\(\mathrm{sed}_{\max} = C_{\max} \subtext{V}{in}\)</span>) and the sediment inputs to the river cell (<span class="math inline">\(\subtext{\mathrm{sed}}{in}\)</span> calculated above) is calculated. If too much sediment is coming in and <span class="math inline">\(\subtext{\mathrm{sed}}{ex}\)</span> is negative, then there is no river bed and bank erosion. And if the river has not reach its maximum transport capacity, then erosion of the river happens.</p>
 <p>First, the sediments stored in the cell from deposition in previous timesteps <span class="math inline">\(\subtext{\mathrm{sed}}{stor}\)</span> are eroded from clay to gravel. If this amount is not enough to cover <span class="math inline">\(\subtext{\mathrm{sed}}{ex}\)</span>, then erosion of the local river bed and bank material starts.</p>
 <p>Instead of just setting river erosion amount to just cover the remaining difference <span class="math inline">\(\subtext{\mathrm{sed}}{exeff}\)</span> between <span class="math inline">\(\subtext{\mathrm{sed}}{ex}\)</span> and <span class="math inline">\(\subtext{\mathrm{sed}}{stor}\)</span>, actual erosion potential is adjusted using river characteristics and is separated between the bed and bank of the river using the physics-based approach of Knight (1984).</p>
-<p>The bed and bank of the river are supposed to only be able to erode a maximum amount of their material <code>E_{R,\mathrm{bed}}</code> for the bed and <code>E_{R,\mathrm{bank}}</code> for the river bank. For a rectangular channel, assuming it is meandering and thus only one bank is prone to erosion, they are calculated from the equations (Neitsch et al, 2011): <span class="math display">\[
+<p>The bed and bank of the river are supposed to only be able to erode a maximum amount of their material <span class="math inline">\(E_{R,\mathrm{bed}}\)</span> for the bed and <span class="math inline">\(E_{R,\mathrm{bank}}\)</span> for the river bank. For a rectangular channel, assuming it is meandering and thus only one bank is prone to erosion, they are calculated from the equations (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
 \begin{gathered}
    E_{R,\mathrm{bed}} = k_{d,\mathrm{bed}} \left( \tau_{e,\mathrm{bed}} - \tau_{cr,\mathrm{bed}} \right) 10^{-6}  L  W  \rho_{b, \mathrm{bed}}  \Delta t \\
    E_{R,\mathrm{bank}} = k_{d,\mathrm{bank}} \left( \tau_{e,\mathrm{bank}} - \tau_{cr,\mathrm{bank}} \right) 10^{-6} L h \rho_{b, \mathrm{bank}}  \Delta t
 \end{gathered}
-\]</span> where <span class="math inline">\(\SIb{E_R}{ton}\)</span> is the potential bed/bank erosion rates, <span class="math inline">\(\SIb{k_d}{cm^3 N^{-1},
-s^{-1}}\)</span> is the erodibility of the bed/bank material, <span class="math inline">\(\SIb{\tau_e}{N m^{-2}}\)</span> is the effective shear stress from the flow on the bed/bank, <span class="math inline">\(\SIb{\tau_{cr}}{N m^{-2}}\)</span> is the critical shear stress for erosion to happen, <span class="math inline">\(\SIb{L}{m}\)</span>, <span class="math inline">\(\SIb{W}{m}\)</span> and <span class="math inline">\(\SIb{h}{m}\)</span> are the channel length, width and water height, <span class="math inline">\(\SIb{\rho_{b}}{g cm^{-3}}\)</span> is the bulk density of the bed/bank of the river and <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep.</p>
-<p>In wflow_sediment, the erodibility of the bed/bank are approximated using the formula from Hanson and Simon (2001): <span class="math display">\[
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{E_R}{ton}\)</span> is the potential bed/bank erosion rates, <span class="math inline">\(\SIb{k_d}{cm^3\ N^{-1}\
+s^{-1}}\)</span> is the erodibility of the bed/bank material, <span class="math inline">\(\SIb{\tau_e}{N\ m^{-2}}\)</span> is the effective shear stress from the flow on the bed/bank, <span class="math inline">\(\SIb{\tau_{cr}}{N\ m^{-2}}\)</span> is the critical shear stress for erosion to happen, <span class="math inline">\(\SIb{L}{m}\)</span>, <span class="math inline">\(\SIb{W}{m}\)</span> and <span class="math inline">\(\SIb{h}{m}\)</span> are the channel length, width and water height, <span class="math inline">\(\SIb{\rho_{b}}{g\ cm^{-3}}\)</span> is the bulk density of the bed/bank of the river and <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep.</p>
+<p>In wflow_sediment, the erodibility of the bed/bank are approximated using the formula from Hanson and Simon (2001):</p>
+<p><span class="math display">\[
    k_d=0.2 \tau_{cr}^{-0.5}
-\]</span> Normally erodibilities are evaluated using jet test in the field and there are several reviews and some adjustments possible to this equation (Simon et al, 2011). However, to avoid too heavy calibration and for the scale considered, this equation is supposed to be efficient enough. The critical shear stress <span class="math inline">\(\tau_{cr}\)</span> is evaluated differently for the bed and bank. For the bed, the most common formula from Shields initiation of movement is used. For the bank, a more recent approach from Julian and Torres (2006) is used : <span class="math display">\[
+\]</span></p>
+<p>Normally erodibilities are evaluated using jet test in the field and there are several reviews and some adjustments possible to this equation (Simon et al, 2011). However, to avoid too heavy calibration and for the scale considered, this equation is supposed to be efficient enough. The critical shear stress <span class="math inline">\(\tau_{cr}\)</span> is evaluated differently for the bed and bank. For the bed, the most common formula from Shields initiation of movement is used. For the bank, a more recent approach from Julian and Torres (2006) is used:</p>
+<p><span class="math display">\[
    \tau_{cr,\mathrm{bank}} = (0.1+0.1779 SC+0.0028 SC^{2}-2.34 10^{-5}  SC^{3}) C_{ch}
-\]</span> where <span class="math inline">\(SC\)</span> is the percent clay and silt content of the river bank and <span class="math inline">\(C_{ch}\)</span> is a coefficient taking into account the positive impact of vegetation on erosion reduction. This coefficient is then dependent on the land use and classical values are shown in the table below. These values where then adapted for use with the GlobCover land use map. Percent of clay and silt (along with sand and gravel) for the channel is estimated from the river median particle diameter assuming the same values as SWAT shown in the table below. Median particle diameter is here estimated depending on the Strahler river order. The higher the order, the smaller the diameter is. As the median diameter is only used in wflow_sediment for the estimation of the river bed/bank sediment composition, this supposition should be enough. Actual refined data or calibration may however be needed if the median diameter is also required for the transport formula. In a similar way, the bulk densities of river bed and bank are also just assumed to be of respectively <span class="math inline">\(\SI{1.5}{g cm^{-3}}\)</span> and <span class="math inline">\(\SI{1.4}{g cm^{-3}}\)</span>.</p>
+\]</span></p>
+<p>where <span class="math inline">\(SC\)</span> is the percent clay and silt content of the river bank and <span class="math inline">\(C_{ch}\)</span> is a coefficient taking into account the positive impact of vegetation on erosion reduction. This coefficient is then dependent on the land use and classical values are shown in the table below. These values where then adapted for use with the GlobCover land use map. Percent of clay and silt (along with sand and gravel) for the channel is estimated from the river median particle diameter assuming the same values as SWAT shown in the table below. Median particle diameter is here estimated depending on the Strahler river order. The higher the order, the smaller the diameter is. As the median diameter is only used in wflow_sediment for the estimation of the river bed/bank sediment composition, this supposition should be enough. Actual refined data or calibration may however be needed if the median diameter is also required for the transport formula. In a similar way, the bulk densities of river bed and bank are also just assumed to be of respectively <span class="math inline">\(\SI{1.5}{g\ cm^{-3}}\)</span> and <span class="math inline">\(\SI{1.4}{g\
+cm^{-3}}\)</span>.</p>
 <table class="caption-top table">
 <caption>Classical values of the channel cover vegetation coefficient (Julian and Torres, 2006)</caption>
 <thead>
@@ -666,70 +691,81 @@ s^{-1}}\)</span> is the erodibility of the bed/bank material, <span class="math 
 </tr>
 </tbody>
 </table>
-<p>Then, the repartition of the flow shear stress is refined into the effective shear stress and the bed and bank of the river using the equations developed by Knight (1984) for a rectangular channel: <span class="math display">\[
+<p>Then, the repartition of the flow shear stress is refined into the effective shear stress and the bed and bank of the river using the equations developed by Knight (1984) for a rectangular channel:</p>
+<p><span class="math display">\[
 \begin{gathered}
    \tau_{e,\mathrm{bed}} = \rho g R_{H} S  \left(1 - \dfrac{SF_{\mathrm{bank}}}{100}\right) \left(1+\dfrac{2h}{W}\right) \\
    \tau_{e,\mathrm{bank}} = \rho g R_{H} S  \left( SF_{\mathrm{bank}}\right)  \left(1+\dfrac{W}{2h}\right)
 \end{gathered}
-\]</span> where <span class="math inline">\(\rho g\)</span> is the fluid specific weight (<span class="math inline">\(\SI{9800}{N m^{-3}}\)</span> for water), <span class="math inline">\(\SIb{R_H}{m}\)</span> is the hydraulic radius of the channel, <span class="math inline">\(\SIb{h}{m}\)</span> and <span class="math inline">\(\SIb{W}{m}\)</span> are the water level and river width. <span class="math inline">\(SF_{\mathrm{bank}}\)</span> is the proportion of shear stress acting on the bank (%) and is estimated from (Knight, 1984): <span class="math display">\[
+\]</span></p>
+<p>where <span class="math inline">\(\rho g\)</span> is the fluid specific weight (<span class="math inline">\(\SI{9800}{N\ m^{-3}}\)</span> for water), <span class="math inline">\(\SIb{R_H}{m}\)</span> is the hydraulic radius of the channel, <span class="math inline">\(\SIb{h}{m}\)</span> and <span class="math inline">\(\SIb{W}{m}\)</span> are the water level and river width. <span class="math inline">\(SF_{\mathrm{bank}}\)</span> is the proportion of shear stress acting on the bank (%) and is estimated from (Knight, 1984):</p>
+<p><span class="math display">\[
    \mathrm{SF}_{\mathrm{bank}} = \exp \left( -3.230 \log_{10}\left(\dfrac{W}{h}+3\right)+6.146 \right)
-\]</span> Finally the relative erosion potential of the bank and bed of the river is calculated by: <span class="math display">\[
+\]</span></p>
+<p>Finally the relative erosion potential of the bank and bed of the river is calculated by:</p>
+<p><span class="math display">\[
 \begin{gathered}
    \mathrm{RTE}_{\mathrm{bed}} = \dfrac{E_{R,\mathrm{bed}}}{E_{R,\mathrm{bed}}+E_{R,\mathrm{bank}}} \\
    \mathrm{RTE}_{\mathrm{bank}} = 1 - RTE_{\mathrm{bed}}
 \end{gathered}
-\]</span> And the final actual eroded amount for the bed and bank is the maximum between <span class="math inline">\(\mathrm{RTE}
+\]</span></p>
+<p>And the final actual eroded amount for the bed and bank is the maximum between <span class="math inline">\(\mathrm{RTE}
 \subtext{\mathrm{sed}}{exeff}\)</span> and the erosion potential <span class="math inline">\(E_R\)</span>. Total eroded amount of sediment <span class="math inline">\(\subtext{\mathrm{sed}}{erod}\)</span> is then the sum of the eroded sediment coming from the storage of previously deposited sediment and the river bed/bank erosion.</p>
 </section>
 <section id="river-deposition" class="level3">
 <h3 class="anchored" data-anchor-id="river-deposition">River deposition</h3>
-<p>As sediments have a higher density than water, moving sediments in water can be deposited in the river bed. The deposition process depends on the mass of the sediment, but also on flow characteristics such as velocity. In wflow_sediment, as in SWAT, deposition is modelled with Einstein’s equation (Neitsch et al, 2011): <span class="math display">\[
+<p>As sediments have a higher density than water, moving sediments in water can be deposited in the river bed. The deposition process depends on the mass of the sediment, but also on flow characteristics such as velocity. In wflow_sediment, as in SWAT, deposition is modelled with Einstein’s equation (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
    \subtext{P}{dep}=\left(1-\dfrac{1}{e^{x}}\right)100
-\]</span> where <span class="math inline">\(\subtext{P}{dep}\)</span> is the percentage of sediments that is deposited on the river bed and x is a parameter calculated with: <span class="math display">\[
+\]</span></p>
+<p>where <span class="math inline">\(\subtext{P}{dep}\)</span> is the percentage of sediments that is deposited on the river bed and x is a parameter calculated with:</p>
+<p><span class="math display">\[
    x = \dfrac{1.055 L  \omega_{s}}{u h}
-\]</span> where <span class="math inline">\(\SIb{L}{m}\)</span> and <span class="math inline">\(\SIb{h}{m}\)</span> are channel length and water height, <span class="math inline">\(\SIb{\omega_s}{m
-s^{-1}}\)</span> is the particle settling velocity calculated with Stokes’ formula and <span class="math inline">\(\SIb{u}{m
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{L}{m}\)</span> and <span class="math inline">\(\SIb{h}{m}\)</span> are channel length and water height, <span class="math inline">\(\SIb{\omega_s}{m\
+s^{-1}}\)</span> is the particle settling velocity calculated with Stokes’ formula and <span class="math inline">\(\SIb{u}{m\
 s^{-1}}\)</span> is the mean flow velocity. The calculated percentage is then subtracted from the amount of sediment input and eroded river sediment for each particle size class (<span class="math inline">\(\subtext{\mathrm{sed}}{dep} = \subtext{P}{dep}/100 (\subtext{\mathrm{sed}}{in} +
 \subtext{\mathrm{sed}}{erod})\)</span>). Resulting deposited sediment are then stored in the river bed and can be re-mobilized in future time steps by erosion.</p>
 </section>
 <section id="mass-balance-and-sediment-concentration" class="level3">
 <h3 class="anchored" data-anchor-id="mass-balance-and-sediment-concentration">Mass balance and sediment concentration</h3>
-<p>Finally after estimating inputs, deposition and erosion with the transport capacity of the flow, the amount of sediment actually leaving the river cell to go downstream is estimated using: <span class="math display">\[
+<p>Finally after estimating inputs, deposition and erosion with the transport capacity of the flow, the amount of sediment actually leaving the river cell to go downstream is estimated using:</p>
+<p><span class="math display">\[
    \subtext{\mathrm{sed}}{out} = (\subtext{\mathrm{sed}}{in} + \subtext{\mathrm{sed}}{erod} - \subtext{\mathrm{sed}}{dep}) \dfrac{\subtext{V}{out}}{V}
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{out}}{ton}\)</span> is the amount of sediment leaving the river cell (tons), <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{in}}{ton}\)</span> is the amount of sediment coming into the river cell (storage from previous timestep, land erosion and sediment flux from upstream river cells), <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{erod}}{ton}\)</span> is the amount of sediment coming from river erosion, <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{dep}}{ton}\)</span> is the amount of deposited sediments, <span class="math inline">\(\SIb{\subtext{V}{out}}{m^3}\)</span> is the volume of water leaving the river cell (surface runoff <span class="math inline">\(Q\)</span> times timestep <span class="math inline">\(\Delta t\)</span>) and <span class="math inline">\(\SIb{V}{m^3}\)</span> is the total volume of water in the river cell (<span class="math inline">\(\subtext{V}{out}\)</span> plus storage <span class="math inline">\(h W L\)</span>).</p>
-<p>A mass balance is then used to calculate the amount of sediment remaining in the cell at the end of the timestep <span class="math inline">\((\subtext{\mathrm{sed}}{riv})_t\)</span>: <span class="math display">\[
+<p>A mass balance is then used to calculate the amount of sediment remaining in the cell at the end of the timestep <span class="math inline">\((\subtext{\mathrm{sed}}{riv})_t\)</span>:</p>
+<p><span class="math display">\[
    (\subtext{\mathrm{sed}}{riv})_t = (\subtext{\mathrm{sed}}{riv})_{t-1} + (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\mathrm{sed}}{out})_{t-1}\right] + (\subtext{\mathrm{sed}}{erod})_t - (\subtext{\mathrm{sed}}{dep})_t - (\subtext{\mathrm{sed}}{out})_t
 \]</span></p>
 </section>
 <section id="lake-and-reservoir-modelling" class="level3">
 <h3 class="anchored" data-anchor-id="lake-and-reservoir-modelling">Lake and reservoir modelling</h3>
-<p>Apart from land and river, the hydrologic <code>wflow_sbm</code> model also handles lakes and reservoirs modelling. In <code>wflow_sbm</code>, lakes and large reservoirs are modelled using a 1D bucket model at the cell corresponding to the outlet. For the other cells belonging to the lake/reservoir which are not the outlet, processes such as precipitation and evaporation are filtered out and shifted to the outlet cell. <code>wflow_sediment</code> handles the lakes and reservoirs in the same way. If a cell belongs to a lake/reservoir and is not the outlet then the model assumes that no erosion/deposition of sediments is happening and the sediments are only all transported to the lake/reservoir outlet. Once the sediments reach the outlet, then sediments are deposited in the lake/reservoir according to Camp’s model (1945) (Verstraeten et al, 2000): <span class="math display">\[
+<p>Apart from land and river, the hydrological <code>wflow_sbm</code> model also handles lakes and reservoirs modelling. In <code>wflow_sbm</code>, lakes and large reservoirs are modelled using a 1D bucket model at the cell corresponding to the outlet. For the other cells belonging to the lake/reservoir which are not the outlet, processes such as precipitation and evaporation are filtered out and shifted to the outlet cell. <code>wflow_sediment</code> handles the lakes and reservoirs in the same way. If a cell belongs to a lake/reservoir and is not the outlet then the model assumes that no erosion/deposition of sediments is happening and the sediments are only all transported to the lake/reservoir outlet. Once the sediments reach the outlet, then sediments are deposited in the lake/reservoir according to Camp’s model (1945) (Verstraeten et al, 2000):</p>
+<p><span class="math display">\[
    \mathrm{TE} = \dfrac{\omega_s}{u_{cr,\mathrm{res}}} = \dfrac{\subtext{A}{res}}{\subtext{Q}{out,res}} \omega_s
 \]</span></p>
-<p>where <span class="math inline">\(\mathrm{TE}\)</span> is the trapping efficiency of the lake/reservoir (or the fraction of particles trapped), <span class="math inline">\(\SIb{\omega_{s}}{m s^{-1}}\)</span> is the particle velocity from Stokes, <span class="math inline">\(\SIb{\subtext{u}{cr,res}}{m s^{-1}}\)</span> is the reservoir’s critical settling velocity which is equal to the reservoir’s outflow <span class="math inline">\(\SIb{\subtext{Q}{out,res}}{m^3 s^{-1}}\)</span> divided by the reservoir’s surface area <span class="math inline">\(\SIb{\subtext{A}{res}}{m^2}\)</span>.</p>
+<p>where <span class="math inline">\(\mathrm{TE}\)</span> is the trapping efficiency of the lake/reservoir (or the fraction of particles trapped), <span class="math inline">\(\SIb{\omega_{s}}{m\ s^{-1}}\)</span> is the particle velocity from Stokes, <span class="math inline">\(\SIb{\subtext{u}{cr,res}}{m\ s^{-1}}\)</span> is the reservoir’s critical settling velocity which is equal to the reservoir’s outflow <span class="math inline">\(\SIb{\subtext{Q}{out,res}}{m^3\ s^{-1}}\)</span> divided by the reservoir’s surface area <span class="math inline">\(\SIb{\subtext{A}{res}}{m^2}\)</span>.</p>
 <p>For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the dam structure. This adding trapping is taken into account with a reservoir trapping efficiency coefficient for large particles (between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>). Depending on the type of the dam, all bed load particles are trapped (<code>restrapefficiency = 1.0</code>, for example for a gravity dam) or only partly (for example for run-of-the-river dams).</p>
 <p>Lake and reservoir modelling is enabled in the model section of the TOML and require the extra following input arguments:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">doreservoir</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">dolake</span> <span class="op">=</span> <span class="cn">false</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoirs</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lakes</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.vertical]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Reservoir</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">resareas</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Lake</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">lakeareas</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river]</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Reservoir</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="dt">resarea</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">restrapefficiency</span> <span class="op">=</span> <span class="st">"ResTrapEff"</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">resareas</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="dt">reslocs</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Lake</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_location__count</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span> </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Reservoir</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="dt">restrapefficiency</span> <span class="op">=</span> <span class="st">"ResTrapEff"</span></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Lake</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="dt">lakearea</span> <span class="op">=</span> <span class="st">"LakeArea"</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="dt">lakeareas</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="dt">lakelocs</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_surface__area</span> <span class="op">=</span> <span class="st">"LakeArea"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Note that in the inland part, lake and reservoir coverage are used to filter erosion and transport in overland flow.</p>
 </section>
 </section>

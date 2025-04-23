@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Reservoirs and Lakes – Wflow.jl</title>
+<title>Groundwater flow – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -73,8 +73,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-74890307de1913927b0f16a015c31dfd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-6ef0d5eb5bdd435e91d4299c73095ba4.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -180,10 +180,6 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
@@ -230,7 +226,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/gwf.html">Groundwater flow</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -254,10 +250,16 @@ window.Quarto = {
  <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Vertical processes</span></a>
+ <span class="menu-text">Land models</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -265,20 +267,14 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sbm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SBM</span></a>
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sediment.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/shared_processes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Shared processes</span></a>
   </div>
 </li>
       </ul>
@@ -286,7 +282,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Lateral processes</span></a>
+ <span class="menu-text">Routing concepts</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -294,31 +290,31 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/kinwave.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Kinematic wave</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/local-inertial.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Local inertial</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/waterbodies.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reservoirs and Lakes</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/gwf.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Groundwater flow</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/sediment_flux.html" class="sidebar-item-text sidebar-link">
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment flux</span></a>
   </div>
 </li>
@@ -327,7 +323,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Parameters</span></a>
+ <span class="menu-text">Model parameters and variables</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -335,14 +331,26 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_vertical.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Vertical concepts</span></a>
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_lateral.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Lateral concepts</span></a>
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
       </ul>
@@ -357,12 +365,15 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link active" data-scroll-target="#reservoirs">Reservoirs</a>
+  <li><a href="#aquifer-types" id="toc-aquifer-types" class="nav-link active" data-scroll-target="#aquifer-types">Aquifer types</a></li>
+  <li><a href="#constant-head" id="toc-constant-head" class="nav-link" data-scroll-target="#constant-head">Constant head</a></li>
+  <li><a href="#aquifer-boundary-conditions" id="toc-aquifer-boundary-conditions" class="nav-link" data-scroll-target="#aquifer-boundary-conditions">Aquifer boundary conditions</a>
   <ul class="collapse">
-  <li><a href="#lakes-unregulated-and-regulated" id="toc-lakes-unregulated-and-regulated" class="nav-link" data-scroll-target="#lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</a></li>
-  <li><a href="#modified-puls-approach" id="toc-modified-puls-approach" class="nav-link" data-scroll-target="#modified-puls-approach">Modified Puls Approach</a></li>
-  <li><a href="#lake-parameters" id="toc-lake-parameters" class="nav-link" data-scroll-target="#lake-parameters">Lake parameters</a></li>
-  <li><a href="#additional-settings" id="toc-additional-settings" class="nav-link" data-scroll-target="#additional-settings">Additional settings</a></li>
+  <li><a href="#river" id="toc-river" class="nav-link" data-scroll-target="#river">River</a></li>
+  <li><a href="#drainage" id="toc-drainage" class="nav-link" data-scroll-target="#drainage">Drainage</a></li>
+  <li><a href="#recharge" id="toc-recharge" class="nav-link" data-scroll-target="#recharge">Recharge</a></li>
+  <li><a href="#head-boundary" id="toc-head-boundary" class="nav-link" data-scroll-target="#head-boundary">Head boundary</a></li>
+  <li><a href="#well-boundary" id="toc-well-boundary" class="nav-link" data-scroll-target="#well-boundary">Well boundary</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -371,9 +382,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/gwf.html">Groundwater flow</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Reservoirs and Lakes</h1>
+<h1 class="title">Groundwater flow</h1>
 </div>
 
 
@@ -390,136 +401,126 @@ window.Quarto = {
 </header>
 
 
-<p>Simplified reservoirs and lakes models can be included as part of the river network.</p>
-<section id="reservoirs" class="level2">
-<h2 class="anchored" data-anchor-id="reservoirs">Reservoirs</h2>
-<p>Simple reservoirs can be included within the river routing by supplying the following reservoir parameters:</p>
+<p>Single layer groundwater flow requires the four following components:</p>
 <ul>
-<li><code>locs</code> - Outlet of the reservoirs in which each reservoir has a unique id</li>
-<li><code>area</code> - Surface area of the reservoirs <span class="math inline">\(\SIb{}{m^2}\)</span></li>
-<li><code>areas</code> - Reservoir coverage</li>
-<li><code>targetfullfrac</code> - Target fraction full (of max storage) for the reservoir: number between 0 and 1</li>
-<li><code>targetminfrac</code> - Target minimum full fraction (of max storage). Number between 0 and 1</li>
-<li><code>maxvolume</code> - Maximum reservoir storage (above which water is spilled) <span class="math inline">\(\SIb{}{m^3}\)</span></li>
-<li><code>demand</code> - Minimum (environmental) flow requirement downstream of the reservoir <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span></li>
-<li><code>maxrelease</code> - Maximum <span class="math inline">\(Q\)</span> that can be released if below spillway <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span></li>
+<li>aquifer</li>
+<li>connectivity</li>
+<li>constanthead</li>
+<li>boundaries</li>
 </ul>
-<p>By default the reservoirs are not included in the model. To include them put the following lines in the TOML file of the model:</p>
+<p>The aquifer types, constanthead boundary and other boundaries (e.g.&nbsp;river and drainage) are described in more detail below. Which functionality of these components is supported by model type <code>sbm_gwf</code> is also clarified below.</p>
+<section id="aquifer-types" class="level2">
+<h2 class="anchored" data-anchor-id="aquifer-types">Aquifer types</h2>
+<p>Groundwater flow can occur either in a confined or unconfined aquifer. Confined aquifers are overlain by a poorly permeable confining layer (e.g.&nbsp;clay). No air can get in to fill the pore space so that the aquifer always remains fully saturated. For a confined aquifer, water will always flow along the complete height <span class="math inline">\(\SIb{H}{m}\)</span> over the aquifer and transmissivity <span class="math inline">\(\SIb{kH}{m^2\ d^{-1}}\)</span> is a constant (<span class="math inline">\(\SIb{k}{m\ d^{-1}}\)</span> is the horizontal hydraulic conductivity). Specific storage is the amount of water an aquifer releases per unit change in hydraulic head, per unit volume of aquifer, as the aquifer and the groundwater itself is compressed. Its value is much smaller than specific yield, between <span class="math inline">\(10^{-5}\)</span> (stiff) and <span class="math inline">\(10^{-2}\)</span> (weak).</p>
+<p>The upper boundary of an unconfined aquifer is the water table (the phreatic surface). Specific yield (or drainable porosity) represents the volumetric fraction the aquifer will yield when all water drains and the pore volume is filled by air instead. Specific yield will vary roughly between <span class="math inline">\(0.05\)</span> (clay) and <span class="math inline">\(0.45\)</span> (peat) (Johnson, 1967).</p>
+<p>Groundwater flow is solved forward in time and central in space. The vertically averaged governing equation for an inhomogeneous and isotropic aquifer in one dimension can be written as:</p>
+<p><span class="math display">\[
+    S \frac{\partial \phi}{\partial t} =  \frac{\partial}{\partial x} \left(kH \frac{\phi}{\delta x}\right) + Q
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{S}{m\ m^{-1}}\)</span> is storativity (or specific yield), <span class="math inline">\(\SIb{\phi}{m}\)</span> is hydraulic head, <span class="math inline">\(t\)</span> is time, <span class="math inline">\(\SIb{k}{m\ t^{-1}}\)</span> is horizontal hydraulic conductivity, <span class="math inline">\(\SIb{H}{m}\)</span> is the (saturated) aquifer height: groundwater level - aquifer bottom elevation and <span class="math inline">\(\SIb{Q}{m\ t^{-1}}\)</span> represents fluxes from boundary conditions (e.g.&nbsp;recharge or abstraction), see also <a href="#aquifer-boundary-conditions">Aquifer boundary conditions</a>.</p>
+<p>The simplest finite difference formulation is forward in time, central in space, and can be written as:</p>
+<p><span class="math display">\[
+    S_i  \frac{\phi_{i}^{t+1} - \phi_i^{t}}{\Delta t} = -C_{i-1}  (\phi_{i-1} - \phi_i) - C_i  (\phi_{i+1} - \phi_i) + Q_i
+\]</span></p>
+<p>where <span class="math inline">\(i\)</span> is the cell index, <span class="math inline">\(t\)</span> is time, <span class="math inline">\(\Delta t\)</span> is the step size, <span class="math inline">\(C_{i-1}\)</span> is the the intercell conductance between cell <span class="math inline">\(i-1\)</span> and <span class="math inline">\(i\)</span> and <span class="math inline">\(C_i\)</span> is the intercell conductance between cell <span class="math inline">\(i\)</span> and <span class="math inline">\(i+1\)</span>.</p>
+<p>Conductance <span class="math inline">\(C\)</span> is defined as:</p>
+<p><span class="math display">\[
+C = \frac{kH w}{l}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{w}{m}\)</span> is the width of the cell to cell connection, and <span class="math inline">\(\SIb{l}{m}\)</span> is the length of the cell to cell connection. <span class="math inline">\(k\)</span> and <span class="math inline">\(H\)</span> may both vary in space; intercell conductance is therefore an average using the properties of two cells. For the calculation of the intercell conductance <span class="math inline">\(C\)</span> the harmonic mean is used (see also Goode and Appel, 1992), here between cell index <span class="math inline">\(i\)</span> and cell index <span class="math inline">\(i+1\)</span>, in the <span class="math inline">\(x\)</span> direction:</p>
+<p><span class="math display">\[
+    C_i = w  \frac{k_iH_i\cdot k_{i+1}H_{i+1}}{k_iH_i \cdot l_{i+1} + k_{i+1}H_{i+1} \cdot l_i}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{H}{m}\)</span> is the aquifer top - aquifer bottom, and <span class="math inline">\(k\)</span>, <span class="math inline">\(l_i\)</span> is the length in cell <span class="math inline">\(i\)</span> (<span class="math inline">\(0.5 \Delta x_i\)</span>), <span class="math inline">\(l_{i+1}\)</span> is the length in cell <span class="math inline">\(i+1\)</span> (<span class="math inline">\(0.5 \Delta x_{i+1}\)</span>) and <span class="math inline">\(w\)</span> as previously defined. For an unconfined aquifer the intercell conductance is scaled by using the “upstream saturated fraction” as the MODFLOW documentation calls it. In this approach, the saturated thickness of a cell-to-cell is approximated using the cell with the highest head. This results in a consistent overestimation of the saturated thickness, but it avoids complexities related with cell drying and rewetting, such as having to define a “wetting threshold” or a “wetting factor”. See also the documentation for MODFLOW-NWT (Niswonger et al., 2011) or MODFLOW6 (Langevin et al., 2017) for more background information. For more background on drying and rewetting, see for example McDonald et al. (1991).</p>
+<p>For the finite difference formulation, there is only one unknown, <span class="math inline">\(\phi_i^{t+1}\)</span>. Reshuffling terms:</p>
+<p><span class="math display">\[
+\phi_i^{t+1} = \phi_i^t + (C_{i-1}  (\phi_i - \phi_{i-1}) + C_i  (\phi_{i+1} - \phi_i) + Q_i) \frac{Δt}{S_i}
+\]</span></p>
+<p>This can be generalized to two dimensions, for both regular and irregular cell connectivity. Finally, a stable time step size can be computed given the forward-in-time, central in space scheme, based on the following criterion from Chu and Willis (1984):</p>
+<p><span class="math display">\[
+  \frac{\Delta t k H}{\Delta x  \Delta y S}  \le \frac{1}{4}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\Delta t}{d}\)</span> is the stable time step size, <span class="math inline">\(\SIb{\Delta x}{m}\)</span> is the cell length in the <span class="math inline">\(x\)</span> direction and <span class="math inline">\(\SIb{\Delta y}{m}\)</span> is the cell length in the <span class="math inline">\(y\)</span> direction, <span class="math inline">\(\SIb{k}{m^2\ d^{-1}}\)</span> is the horizontal hydraulic conductivity and <span class="math inline">\(\SIb{H}{m}\)</span> is the saturated thickness of the aquifer. For each cell <span class="math inline">\(\frac{\Delta x  \Delta y S}{k H}\)</span> is calculated, the minimum of these values is determined, and multiplied by <span class="math inline">\(\frac{1}{4}\)</span>, to get the stable time step size.</p>
+<p>For more details about the finite difference formulation and the stable time step size criterion we refer to the paper of Chu and Willis (1984).</p>
+<p>Boundary conditions can be classified into three categories:</p>
+<ul>
+<li>specified head (Dirichlet)</li>
+<li>specified flux (Neumann)</li>
+<li>head-dependent flux (Robin)</li>
+</ul>
+<p>Neumann and Robin conditions are implemented by adding to or subtracting from a net (lumped) cell flux. Dirichlet conditions are special cased, since they cannot (easily) be implemented via the flux, but the head is set directly instead.</p>
+<p>The groundwater flow component of model type <code>sbm_gwf</code> consists of a single layer unconfined aquifer. The list of input parameters for an unconfined aquifer can be found <a href="../../model_docs/parameters_routing.html#input-gwf-unconfined">here</a>. Hydraulic head <span class="math inline">\(\SIb{\phi}{m}\)</span> is a state and <a href="../../model_docs/parameters_routing.html#output-gwf-unconfined">output variable</a>.</p>
+<p>Below an example of setting the <code>conductivity_profile</code> and input parameters in the TOML configuration file for an unconfined aquifer:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoirs</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Finally there is a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.reservoir]</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">areas</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">demand</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">locs</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">maxrelease</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">maxvolume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">targetfullfrac</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">targetminfrac</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<section id="lakes-unregulated-and-regulated" class="level3">
-<h3 class="anchored" data-anchor-id="lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</h3>
-<p>Lakes are modelled using a mass balance approach:</p>
-<p><span class="math display">\[
-    \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} + \dfrac{(P-E) A}{\Delta t} - \subtext{Q}{out}
-\]</span></p>
-<p>where <span class="math inline">\(\SIb{S}{m^3}\)</span> is lake storage, <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep, <span class="math inline">\(\SIb{\subtext{Q}{in}}{m^3 s^{-1}}\)</span> is the sum of inflows (river, overland and lateral subsurface flow), <span class="math inline">\(\SIb{\subtext{Q}{out}}{m^3 s^{-1}}\)</span> is the lake outflow at the outlet, <span class="math inline">\(\SIb{P}{m}\)</span> is precipitation, <span class="math inline">\(\SIb{E}{m}\)</span> is lake evaporation and <span class="math inline">\(\SIb{A}{m^2}\)</span> is the lake surface area.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../../images/lake.png" class="img-fluid figure-img"></p>
-<figcaption>Lake schematization.</figcaption>
-</figure>
-</div>
-<p>Most of the variables in this equation are already known or coming from previous timestep, apart from <span class="math inline">\(S(t+ \Delta t)\)</span> and <span class="math inline">\(\subtext{Q}{out}\)</span> which can both be linked to the water level <span class="math inline">\(H\)</span> in the lake using a storage curve <span class="math inline">\(S = f(H)\)</span> and a rating curve <span class="math inline">\(Q = f(H)\)</span>. In wflow, several options are available to select storage and rating curves, and in most cases, the mass balance is then solved by linearization and iteration or using the Modified Puls Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:</p>
-<ul>
-<li>Come from the interpolation of field data linking volume and lake height,</li>
-<li>Be computed from the simple relationship <span class="math inline">\(S = A H\)</span>.</li>
-</ul>
-<p>Rating curves in wflow can either:</p>
-<ul>
-<li>Come from the interpolation of field data linking lake outflow and water height, also appropriate for regulated lakes/ dams,</li>
-<li>Be computed from a rating curve of the form <span class="math inline">\(\subtext{Q}{out} = \alpha (H-H_0)^\beta\)</span>, where <span class="math inline">\(H_{0}\)</span> is the minimum water level under which the outflow is zero. Usual values for <span class="math inline">\(\beta\)</span> are <span class="math inline">\(\frac{3}{2}\)</span> for a rectangular weir or <span class="math inline">\(2\)</span> for a parabolic weir (Bos, 1989).</li>
-</ul>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential"</span>  <span class="co"># saturated hydraulic conductivity depth profile, default is "uniform"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface__elevation</span> <span class="op">=</span> <span class="st">"wflow_dem"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_surface_water__horizontal_saturated_hydraulic_conductivity</span> <span class="op">=</span> <span class="st">"kh_surface"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__specific_yield</span> <span class="op">=</span> <span class="st">"specific_yield"</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter</span> <span class="op">=</span> <span class="st">"gwf_f"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="modified-puls-approach" class="level3">
-<h3 class="anchored" data-anchor-id="modified-puls-approach">Modified Puls Approach</h3>
-<p>The Modified Puls Approach is a resolution method of the lake balance that uses an explicit relationship between storage and outflow. Storage is assumed to be equal to <span class="math inline">\(A H\)</span> and the rating curve for a parabolic weir (<span class="math inline">\(\beta = 2\)</span>):</p>
+<section id="constant-head" class="level2">
+<h2 class="anchored" data-anchor-id="constant-head">Constant head</h2>
+<p>For model type <code>sbm_gwf</code> Dirichlet boundary conditions can be specified (optional) in the TOML file as follows:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">constanthead</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~constant_hydraulic_head"</span> <span class="op">=</span> <span class="st">"constant_head"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="aquifer-boundary-conditions" class="level2">
+<h2 class="anchored" data-anchor-id="aquifer-boundary-conditions">Aquifer boundary conditions</h2>
+<section id="river" class="level3">
+<h3 class="anchored" data-anchor-id="river">River</h3>
+<p>The flux between river and aquifer is calculated using Darcy’s law following the approach in MODFLOW:</p>
 <p><span class="math display">\[
-    S = A H = A  (h + H_{0}) = A \sqrt{\frac{Q}{\alpha}} + A H_0
-\]</span></p>
-<p>Inserting this equation in the mass balance gives:</p>
-<p><span class="math display">\[
-    \dfrac{A}{\Delta t} \sqrt{\frac{Q}{\alpha}} + Q = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} +
-    A\dfrac{P-E}{\Delta t} - \dfrac{A H_0}{\Delta t} = \mathrm{SI} - \dfrac{A H_0}{\Delta t}
-\]</span></p>
-<p>The solution for <span class="math inline">\(Q\)</span> is then:</p>
-<p><span class="math display">\[
-  Q =
+  \subtext{Q}{riv} =
+  \begin{align*}
     \begin{cases}
-      \begin{align*}
-        \frac{1}{4}\left(-\mathrm{LF} + \sqrt{\mathrm{LF}^{2} + 4  \left(\mathrm{SI} - \dfrac{A H_0}{\Delta t} \right)}
-        \right)^2 &amp;\text{ if }\quad \mathrm{SI} &gt; \dfrac{A H_0}{\Delta t} \\
-        0 &amp;\text{ if }\quad \mathrm{SI} \leq \dfrac{A H_0}{\Delta t}
-      \end{align*}
+      C_i \min \left\{\subtext{h}{riv} - \subtext{B}{riv}, \subtext{h}{riv} - \phi\right\} &amp;\text{ if }\quad \subtext{h}{riv} &gt; \phi \\
+      C_e (\subtext{h}{riv} - \phi) &amp;\text{ if }\quad \subtext{h}{riv} \le \phi
     \end{cases}
+  \end{align*}
 \]</span></p>
-<p>where</p>
+<p>where <span class="math inline">\(\SIb{\subtext{Q}{riv}}{L^3 T^{-1}}\)</span> is the exchange flux from river to aquifer, <span class="math inline">\(\SIb{C_i}{L^2 T^{-1}}\)</span> is the river bed infiltration conductance, <span class="math inline">\(\SIb{C_e}{L^2 T^{-1}}\)</span> is the river bed exfiltration conductance, <span class="math inline">\(\SIb{\subtext{B}{riv}}{L}\)</span> the bottom of the river bed, <span class="math inline">\(\SIb{\subtext{h}{riv}}{L}\)</span> is the river stage and <span class="math inline">\(\SIb{\phi}{L}\)</span> is the hydraulic head in the river cell.</p>
+<p>The list of input parameters for the river boundary of groundwater flow that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#input-gwf-river">here</a>.</p>
+<p>The exchange flux (river to aquifer) <span class="math inline">\(\subtext{Q}{riv}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-river">output variable</a>, and is used to update the total flux in a river cell. For model type <code>sbm_gwf</code>, the water depth <span class="math inline">\(\SIb{h}{m}\)</span> of the river routing in combination with the river bottom is used to update the river stage each time step.</p>
+</section>
+<section id="drainage" class="level3">
+<h3 class="anchored" data-anchor-id="drainage">Drainage</h3>
+<p>The flux from drains to the aquifer is calculated as follows:</p>
 <p><span class="math display">\[
-\mathrm{LF} = \dfrac{A}{\Delta t \sqrt{\alpha}}.
+\subtext{Q}{drain} = \subtext{C}{drain} \min(0, \subtext{h}{drain} - \phi)
 \]</span></p>
-</section>
-<section id="lake-parameters" class="level3">
-<h3 class="anchored" data-anchor-id="lake-parameters">Lake parameters</h3>
-<p>Lakes can be included within the kinematic wave river routing in wflow, by supplying the following parameters:</p>
-<ul>
-<li><code>area</code> - Surface area of the lakes [m<span class="math inline">\(^2\)</span>]</li>
-<li><code>areas</code> - Coverage of the lakes</li>
-<li><code>locs</code> - Outlet of the lakes in which each lake has a unique id</li>
-<li><code>linkedlakelocs</code> - Outlet of linked (downstream) lakes (unique id)</li>
-<li><code>waterlevel</code> - Lake water level [m], used to reinitiate lake model</li>
-<li><code>threshold</code> - Water level threshold <span class="math inline">\(H_{0}\)</span> under which outflow is zero [m]</li>
-<li><code>storfunc</code> - Type of lake storage curve ; 1 for <span class="math inline">\(S = AH\)</span> (default) and 2 for <span class="math inline">\(S = f(H)\)</span> from lake data and interpolation</li>
-<li><code>outflowfunc</code> - Type of lake rating curve ; 1 for <span class="math inline">\(Q = f(H)\)</span> from lake data and interpolation, 2 for general <span class="math inline">\(Q = b(H - H_{0})^{e}\)</span> and 3 in the case of Puls Approach <span class="math inline">\(Q = b(H - H_{0})^{2}\)</span> (default)</li>
-<li><code>b</code> - Rating curve coefficient</li>
-<li><code>e</code> - Rating curve exponent</li>
-</ul>
-<p>By default, the lakes are not included in the model. To include them, put the following line in the TOML file of the model:</p>
+<p>where <span class="math inline">\(\SIb{\subtext{Q}{drain}}{L^3\ T^{-1}}\)</span> is the exchange flux from drains to aquifer, <span class="math inline">\(\SIb{\subtext{C}{drain}}{L^2\ T^{-1}}\)</span> is the drain conductance, <span class="math inline">\(\SIb{\subtext{h}{drain}}{L}\)</span> is the drain elevation and <span class="math inline">\(\SIb{\phi}{L}\)</span> is the hydraulic head in the cell with drainage.</p>
+<p>The list of input parameters for the drainage boundary of groundwater flow that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#input-gwf-drainage">here</a>.</p>
+<p>The exchange flux (drains to aquifer) <span class="math inline">\(\subtext{Q}{drain}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-drainage">output variable</a>, and is used to update the total flux in a cell with drains. For model type <code>sbm_gwf</code> this boundary condition is optional, and can be specified in the TOML file as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lakes</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>There is also a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river.lake]</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">area</span> <span class="op">=</span> <span class="st">"lake_area"</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">areas</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">b</span> <span class="op">=</span> <span class="st">"lake_b"</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">e</span> <span class="op">=</span> <span class="st">"lake_e"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">locs</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">outflowfunc</span> <span class="op">=</span> <span class="st">"lake_outflowfunc"</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">storfunc</span>  <span class="op">=</span> <span class="st">"lake_storfunc"</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">threshold</span>  <span class="op">=</span> <span class="st">"lake_threshold"</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">waterlevel</span> <span class="op">=</span> <span class="st">"lake_waterlevel"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">drains</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain_location__flag</span> <span class="op">=</span> <span class="st">"drain"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__conductance</span> <span class="op">=</span> <span class="st">"cond_drain"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__elevation</span> <span class="op">=</span> <span class="st">"elev_drain"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="additional-settings" class="level3">
-<h3 class="anchored" data-anchor-id="additional-settings">Additional settings</h3>
-<p>Storage and rating curves from field measurement can be supplied to wflow via CSV files supplied in the same folder of the TOML file. Naming of the files uses the ID of the lakes where data are available and is of the form <code>lake_sh_1.csv</code> and <code>lake_hq_1.csv</code> for respectively the storage and rating curves of lake with ID 1.</p>
-<p>The storage curve is stored in a CSV file with lake level <span class="math inline">\(\SIb{}{m}\)</span> in the first column <code>H</code> and corresponding lake storage <span class="math inline">\(\SIb{}{m^3}\)</span> in the second column <code>S</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H,</span>  S</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">392.21,</span> 0</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">393.21,</span> 430202000</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">393.71,</span> 649959000</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.21,</span> 869719000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The rating curve uses level and discharge data depending on the Julian day of the year (JDOY), and can be also used for regulated lakes/ dams. The first line contains <code>H</code> for the first column. The other lines contain the water level and the corresponding discharges for the different JDOY (1-365), see also the example below, that shows part of a CSV file (first 4 Julian days). The volume above the maximum water level of the rating curve is assumed to flow instantaneously out of the lake (overflow).</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">394,</span>    43,     43,     43,     43</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">394.01,</span> 44.838, 44.838, 44.838, 44.838</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">394.02,</span> 46.671, 46.671, 46.671, 46.671</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.03,</span> 48.509, 48.509, 48.509, 48.509</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">394.04,</span> 50.347, 50.347, 50.347, 50.347</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">394.05,</span> 52.179, 52.179, 52.179, 52.179</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Linked lakes: In some cases, lakes can be linked and return flow can be allowed from the downstream to the upstream lake. The linked lakes are defined in the <code>linkedlakelocs</code> parameter that represent the downstream lake location ID, at the grid cell of the upstream lake location.</p>
+<section id="recharge" class="level3">
+<h3 class="anchored" data-anchor-id="recharge">Recharge</h3>
+<p>The net recharge flux <span class="math inline">\(\subtext{Q}{net recharge}\)</span> to the aquifer is calculated as follows:</p>
+<p><span class="math display">\[
+\subtext{Q}{net recharge} = \subtext{R}{net} \, A
+\]</span></p>
+<p>with <span class="math inline">\(\SIb{\subtext{R}{net}}{L\ T^{-1}}\)</span> the net recharge rate and <span class="math inline">\(\SIb{A}{L^2}\)</span> the area of the aquifer cell.</p>
+<p>The recharge flux <span class="math inline">\(\subtext{Q}{net recharge}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-recharge">output variable</a>, and is used to update the total flux in a cell where net recharge occurs. For model type <code>sbm_gwf</code>, the recharge rate <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> from the <code>SBM</code> <code>soil</code> model is used to update the recharge rate <span class="math inline">\(\subtext{R}{net}\)</span> of the recharge boundary each time step.</p>
+</section>
+<section id="head-boundary" class="level3">
+<h3 class="anchored" data-anchor-id="head-boundary">Head boundary</h3>
+<p>This boundary is a fixed head with time (not affected by the model stresses over time) outside of the model domain, and is generally used to avoid an unnecessary extension of the model domain to the location of the fixed boundary (for example a large lake). The flux from the boundary <span class="math inline">\(\SIb{Q_{hb}}{L^3\ T^{-1}}\)</span> is calculated as follows:</p>
+<p><span class="math display">\[
+Q_{hb} = C_{hb} (\phi_{hb} - \phi)
+\]</span></p>
+<p>with <span class="math inline">\(\SIb{C_{hb}}{L^2\ T^{-1}}\)</span> the conductance of the head boundary, <span class="math inline">\(\SIb{\phi_{hb}}{L}\)</span> the head of the head boundary and <span class="math inline">\(\phi\)</span> the head of the aquifer cell.</p>
+<p>The head boundary flux <span class="math inline">\(Q_{hb}\)</span> is an output variable, and is used to update the total flux in a cell where this type of boundary occurs. The parameter Head <span class="math inline">\(\phi_{hb}\)</span> can be specified as a fixed or time dependent value.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -530,7 +531,38 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In every file, level units are meters [m] above lake bottom and not meters above sea level [m asl]. Especially with storage/rating curves coming from data, please be careful and convert units if needed.</p>
+<p>This boundary is not (yet) part of model type <code>sbm_gwf</code>.</p>
+</div>
+</div>
+</section>
+<section id="well-boundary" class="level3">
+<h3 class="anchored" data-anchor-id="well-boundary">Well boundary</h3>
+<p>A volumetric well rate <span class="math inline">\(\SIb{}{L^3\ T^{-1}}\)</span> can be specified as a boundary condition.</p>
+<p>The volumetric well rate <span class="math inline">\(\subtext{Q}{well}\)</span> can be can be specified as a fixed or time dependent value. If a cell is dry, the actual well flux is set to zero (see also the last note on this page).</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This boundary is not (yet) part model type <code>sbm_gwf</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For an unconfined aquifer the boundary fluxes are checked, in case of a dry aquifer cell a negative flux is not allowed.</p>
 </div>
 </div>
 </section>
@@ -538,8 +570,12 @@ Note
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <ul>
-<li>Bos M.G., 1989. Discharge measurement structures. Third revised edition, International Institute for Land Reclamation and Improvement ILRI, Wageningen, The Netherlands.</li>
-<li>Burek P., Van der Knijf J.M., Ad de Roo, 2013. LISFLOOD – Distributed Water Balance and flood Simulation Model – Revised User Manual. DOI: http://dx.doi.org/10.2788/24719.</li>
+<li>Chu, W. S., &amp; Willis, R. (1984). An explicit finite difference model for unconfined aquifers. Groundwater, 22(6), 728-734.</li>
+<li>Goode, D. J., &amp; Appel, C. A. (1992). Finite-Difference Interblock Transmissivity for Unconﬁned Aquifers and for Aquifers having Smoothly Varying Transmissivity Water-resources investigations report, 92, 4124.</li>
+<li>Johnson, A. I. (1967), Specific yield: compilation of specific yields for various materials, Water Supply Paper 1662-D, Washington, D.C.: U.S. Government Printing Office, p.&nbsp;74, doi:10.3133/wsp1662D.</li>
+<li>Langevin, C.D., Hughes, J.D., Banta, E.R., Niswonger, R.G., Panday, Sorab, and Provost, A.M., 2017, Documentation for the MODFLOW 6 Groundwater Flow Model: U.S. Geological Survey Techniques and Methods, book 6, chap.&nbsp;A55, 197 p., https://doi.org/10.3133/tm6A55.</li>
+<li>McDonald, M.G., Harbaugh, A.W., Orr, B.R., and Ackerman, D.J., 1991, A method of converting no-flow cells to variable-head cells for the U.S. Geological Survey modular finite-difference groundwater flow model: U.S. Geological Survey Open-File Report 91-536, 99 p.</li>
+<li>Niswonger, R.G., Panday, Sorab, and Ibaraki, Motomu, 2011, MODFLOW-NWT, A Newton formulation for MODFLOW-2005: U.S. Geological Survey Techniques and Methods 6-A37, 44 p.</li>
 </ul>
 
 

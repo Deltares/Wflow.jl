@@ -39,8 +39,8 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-74890307de1913927b0f16a015c31dfd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-6ef0d5eb5bdd435e91d4299c73095ba4.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -144,10 +144,6 @@ window.Quarto = {
   <li class="nav-item">
     <a class="nav-link" href="./user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./examples/index.html"> 
-<span class="menu-text">Examples</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./model_docs/index.html"> 
@@ -320,7 +316,7 @@ window.Quarto = {
 <li>Refactor the lateral (routing) components: as for the vertical <code>SBM</code> concept split the structs into <code>variables</code>, <code>parameters</code> and <code>boundary_conditions</code> (if applicable).</li>
 <li>Refactor the <code>sediment</code> concept: similar to the refactor of <code>SBM</code> concept, the sediment model has been split into three main structures. <code>SoilLoss</code> was split into rainfall_erosion, overland_flow_erosion and (total) soil_erosion concepts. <code>OverlandFlowSediment</code> has been split into transport_capacity, sediment_flux and to_river concepts. <code>RiverSediment</code> has been split into transport_capacity, potential_erosion, sediment_flux and concentrations concepts.</li>
 <li>Timestepping method parameters for solving the kinematic wave and local inertial approaches for river and overland flow are moved to a <code>TimeStepping</code> struct. The timestepping implementation for the kinematic wave is now similar to the local inertial method: a stable timestep is computed for each sub timestep (or a fixed sub timestep is used) as part of a while loop (for each model timestep).</li>
-<li>Map internal model variable and parameter names to <a href="https://csdms.colorado.edu/wiki/CSDMS_Standard_Names">CSDMS Standard Names</a>. The previous one to one mapping can be used to output model variables and parameters (TOML config file), but is not considered as part of the public API.</li>
+<li>Map internal model variable and parameter names based on <a href="https://csdms.colorado.edu/wiki/CSDMS_Standard_Names">CSDMS Standard Names</a>. The previous one to one mapping can be used to output model variables and parameters (TOML config file), but is not considered as part of the public API.</li>
 <li>Refactor TOML configuration file, also as a result of using internal (CSDMS) standard names. Most important changes include: there is now a distinction between static, cyclic and forcing input (<code>[input.static]</code>, <code>[input.cyclic]</code> and <code>[input.forcing]</code>) without the need to specify the internal cyclic and forcing variables in a list (only an external name mapping is required), state variables are listed below the <code>[state.variables]</code> TOML section and use of more clearly defined TOML output sections.</li>
 <li>Replaced the variables that can exchange through <code>BMI</code> (list of model components) by a list of standard names below the <code>[API]</code> TOML section.</li>
 <li>Use the instantaneous routing water depth <code>h</code> at the previous model time step to limit open water evaporation and to set the river <code>stage</code> of the <code>GroundwaterFlow</code> model for the current model time step, as it is more accurate then using the average water depth <code>h_av</code> at the previous model time step.</li>

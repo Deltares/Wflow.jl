@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Kinematic wave – Wflow.jl</title>
+<title>Land Sediment model – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,61 +20,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../">
-<link href="../../_static/logo.png" rel="icon" type="image/png">
-<script src="../../site_libs/quarto-html/quarto.js"></script>
-<script src="../../site_libs/quarto-html/popper.min.js"></script>
-<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-8352b7ccb0c9fcabe109303f7234483b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-203ae7a31bbdd3824f13122283b91499.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-d4d76bf8491c20bad77d141916dc28e1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4379b0ccadffce622b03caf4c46266b3.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-74890307de1913927b0f16a015c31dfd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-6ef0d5eb5bdd435e91d4299c73095ba4.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -101,7 +67,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="../../_static/version.js"></script>
+<script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -114,37 +80,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   };
 </script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
-<link rel="stylesheet" href="../../_static/styles.css">
+<link rel="stylesheet" href="../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -154,10 +91,10 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../_static/logo.png" alt="" class="navbar-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="../../index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -168,27 +105,23 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../index.html"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../getting_started/index.html"> 
+    <a class="nav-link" href="../getting_started/index.html"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../user_guide/index.html"> 
+    <a class="nav-link" href="../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../examples/index.html"> 
-<span class="menu-text">Examples</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
+    <a class="nav-link active" href="../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../developments/index.html"> 
+    <a class="nav-link" href="../developments/index.html"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -230,7 +163,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Kinematic wave</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_sediment.html">Land Sediment model</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -244,20 +177,26 @@ window.Quarto = {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">About</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Model configurations</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Vertical processes</span></a>
+ <span class="menu-text">Land models</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -265,20 +204,14 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sbm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SBM</span></a>
+  <a href="../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/sediment.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../model_docs/vertical/shared_processes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Shared processes</span></a>
   </div>
 </li>
       </ul>
@@ -286,7 +219,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Lateral processes</span></a>
+ <span class="menu-text">Routing concepts</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -294,31 +227,31 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/kinwave.html" class="sidebar-item-text sidebar-link active">
+  <a href="../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Kinematic wave</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/local-inertial.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Local inertial</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/waterbodies.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reservoirs and Lakes</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/gwf.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Groundwater flow</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/lateral/sediment_flux.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Sediment flux</span></a>
   </div>
 </li>
@@ -327,7 +260,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Parameters</span></a>
+ <span class="menu-text">Model parameters and variables</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -335,14 +268,26 @@ window.Quarto = {
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_vertical.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Vertical concepts</span></a>
+  <a href="../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/parameters_lateral.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Lateral concepts</span></a>
+  <a href="../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
       </ul>
@@ -357,24 +302,32 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#surface-routing" id="toc-surface-routing" class="nav-link active" data-scroll-target="#surface-routing">Surface routing</a></li>
-  <li><a href="#inflow" id="toc-inflow" class="nav-link" data-scroll-target="#inflow">Inflow</a></li>
-  <li><a href="#abstractions" id="toc-abstractions" class="nav-link" data-scroll-target="#abstractions">Abstractions</a></li>
-  <li><a href="#subsurface-flow-routing" id="toc-subsurface-flow-routing" class="nav-link" data-scroll-target="#subsurface-flow-routing">Subsurface flow routing</a></li>
-  <li><a href="#multi-threading" id="toc-multi-threading" class="nav-link" data-scroll-target="#multi-threading">Multi-Threading</a></li>
-  <li><a href="#subcatchment-flow" id="toc-subcatchment-flow" class="nav-link" data-scroll-target="#subcatchment-flow">Subcatchment flow</a></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
-  <li><a href="#external-inflows" id="toc-external-inflows" class="nav-link" data-scroll-target="#external-inflows">External inflows</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#atmospheric-forcing" id="toc-atmospheric-forcing" class="nav-link active" data-scroll-target="#atmospheric-forcing">Atmospheric forcing</a></li>
+  <li><a href="#hydrological-forcing" id="toc-hydrological-forcing" class="nav-link" data-scroll-target="#hydrological-forcing">Hydrological forcing</a></li>
+  <li><a href="#rainfall-erosion" id="toc-rainfall-erosion" class="nav-link" data-scroll-target="#rainfall-erosion">Rainfall erosion</a>
+  <ul class="collapse">
+  <li><a href="#input" id="toc-input" class="nav-link" data-scroll-target="#input">Input</a></li>
+  <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output">Output</a></li>
+  </ul></li>
+  <li><a href="#overland-flow-erosion" id="toc-overland-flow-erosion" class="nav-link" data-scroll-target="#overland-flow-erosion">Overland flow erosion</a>
+  <ul class="collapse">
+  <li><a href="#input-1" id="toc-input-1" class="nav-link" data-scroll-target="#input-1">Input</a></li>
+  <li><a href="#output-1" id="toc-output-1" class="nav-link" data-scroll-target="#output-1">Output</a></li>
+  </ul></li>
+  <li><a href="#soil-erosion" id="toc-soil-erosion" class="nav-link" data-scroll-target="#soil-erosion">Soil erosion</a>
+  <ul class="collapse">
+  <li><a href="#input-2" id="toc-input-2" class="nav-link" data-scroll-target="#input-2">Input</a></li>
+  <li><a href="#output-2" id="toc-output-2" class="nav-link" data-scroll-target="#output-2">Output</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Lateral processes</a></li><li class="breadcrumb-item"><a href="../../model_docs/lateral/kinwave.html">Kinematic wave</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_sediment.html">Land Sediment model</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Kinematic wave</h1>
+<h1 class="title">Land Sediment model</h1>
 </div>
 
 
@@ -391,131 +344,359 @@ window.Quarto = {
 </header>
 
 
-<section id="surface-routing" class="level2">
-<h2 class="anchored" data-anchor-id="surface-routing">Surface routing</h2>
-<p>The main flow routing scheme available in <code>Wflow.jl</code> is the kinematic wave approach for channel and overland flow, assuming that water flow is mostly controlled by topography. The kinematic wave equations are (Chow, 1988):</p>
-<p><span class="math display">\[
-\begin{gathered}
-  \dfrac{\partial Q}{\partial x} + \dfrac{\partial A}{\partial t} = q,\\
-   A = \alpha Q^{\beta}.
-\end{gathered}
-\]</span></p>
-<p>These equations can then be combined as a function of streamflow only:</p>
-<p><span class="math display">\[
-    \dfrac{\partial Q}{\partial x} + \alpha \beta Q^{\beta - 1} \dfrac{\partial Q}{\partial t} = q.
-\]</span></p>
-<p>Here <span class="math inline">\(\SIb{Q}{m^3 s^{-1}}\)</span> is the surface runoff in the kinematic wave, <span class="math inline">\(\SIb{x}{m}\)</span> is the length of the runoff pathway, <span class="math inline">\(\SIb{A}{m}\)</span> is the cross-section area of the runoff pathway, <span class="math inline">\(\SIb{t}{s}\)</span> is the integration timestep and <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are unitless coefficients.</p>
-<p>These equations are solved with a nonlinear scheme using Newton’s method and can also be iterated depending on the model space and time resolution. By default, the iterations are performed until a stable solution is reached (<span class="math inline">\(\epsilon &lt; 10^{-12}\)</span>). For larger models, the number of iterations can also be fixed for to a specific sub-timestep (in seconds) for both overland and channel flows to improve simulation time. To enable (fixed or not) iterations of the kinematic wave the following lines can be inserted in the TOML file of the model:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Enable iterations of the kinematic wave</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kin_wave_iteration</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed sub-timestep for iterations of channel flow (river cells)</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">kw_river_tstep</span> <span class="op">=</span> <span class="dv">900</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed sub-timestep for iterations of overland flow (land cells)</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">kw_land_tstep</span> <span class="op">=</span> <span class="dv">3600</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The <span class="math inline">\(\alpha\)</span> parameter of the kinematic wave is fixed. To estimate the wetted perimeter for the calculation of the <span class="math inline">\(\alpha\)</span> parameter a bankfull river depth map (default value is <span class="math inline">\(\SI{1.0}{m}\)</span>) for the river can be provided as follows:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.lateral.river]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bankfull_depth</span> <span class="op">=</span> <span class="st">"wflow_riverdepth"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The wetted perimeter of the river is based on half bankfull river depth. For the land part the wetted perimeter is based on the flow width.</p>
-<p>Simplified <a href="../../model_docs/lateral/waterbodies.html">reservoir and lake</a> models can be included as part of the river kinematic wave network.</p>
+<style>
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+td, th {
+  word-wrap: break-word;
+}
+</style>
+<section id="atmospheric-forcing" class="level2">
+<h2 class="anchored" data-anchor-id="atmospheric-forcing">Atmospheric forcing</h2>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>atmosphere_water__precipitation_volume_flux</code></td>
+<td>Precipitation</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="inflow" class="level2">
-<h2 class="anchored" data-anchor-id="inflow">Inflow</h2>
-<p>External water (supply/abstraction) <code>inflow</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> can be added to the kinematic wave for surface water routing, as a cyclic parameter or as part of forcing (see also <a href="../../user_guide/required_files.html">Input section</a>).</p>
+<section id="hydrological-forcing" class="level2">
+<h2 class="anchored" data-anchor-id="hydrological-forcing">Hydrological forcing</h2>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>river_water__volume_flow_rate</code></td>
+<td>River discharge</td>
+<td>m³ s⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water__depth</code></td>
+<td>River water depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>land_surface_water__volume_flow_rate</code></td>
+<td>Overland flow discharge</td>
+<td>m³ s⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>land_surface_water__depth</code></td>
+<td>Overland flow water depth</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_canopy_water__interception_volume_flux</code></td>
+<td>Rainfall interception by the vegetation</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="abstractions" class="level2">
-<h2 class="anchored" data-anchor-id="abstractions">Abstractions</h2>
-<p>Abstractions from the river through the variable <code>abstraction</code> <span class="math inline">\(\SIb{}{m^3 s^{-1}}\)</span> are possible when water demand and allocation is computed. The variable <code>abstraction</code> is set from the water demand and allocation module each time step. The <code>abstraction</code> is divided by the length of the runoff pathway and subtracted from the lateral inflow of the kinematic wave routing scheme for river flow.</p>
+<section id="rainfall-erosion" class="level2">
+<h2 class="anchored" data-anchor-id="rainfall-erosion">Rainfall erosion</h2>
+<section id="input" class="level3">
+<h3 class="anchored" data-anchor-id="input">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_erosion__rainfall_soil_detachability_factor</code></td>
+<td>Soil detachability factor</td>
+<td>g J⁻¹</td>
+<td>0.6</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion__eurosem_exponent</code></td>
+<td>Exponent EUROSEM</td>
+<td>-</td>
+<td>2.0</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_canopy__height</code></td>
+<td>Canopy height</td>
+<td>m</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_canopy__gap_fraction</code></td>
+<td>Canopy gap fraction</td>
+<td>-</td>
+<td>0.1</td>
+</tr>
+<tr class="odd">
+<td><code>soil~compacted__area_fraction</code></td>
+<td>Fraction of the soil that is covered (eg paved, snow, etc)</td>
+<td>-</td>
+<td>0.01</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion__usle_k_factor</code></td>
+<td>USLE soil erodibility factor</td>
+<td>-</td>
+<td>0.1</td>
+</tr>
+<tr class="odd">
+<td><code>soil_erosion__usle_c_factor</code></td>
+<td>USLE crop management factor</td>
+<td>-</td>
+<td>0.01</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion__answers_rainfall_factor</code></td>
+<td>Answers rainfall erosion factor</td>
+<td>-</td>
+<td>0.108</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="subsurface-flow-routing" class="level2">
-<h2 class="anchored" data-anchor-id="subsurface-flow-routing">Subsurface flow routing</h2>
-<p>In the SBM model the kinematic wave approach is used to route subsurface flow laterally. Different vertical hydraulic conductivity depth profiles are possible as part of the vertical <a href="../../model_docs/vertical/sbm.html#soil-processes">SBM</a> concept, and these profiles (after unit conversion) are also used to compute lateral subsurface flow. The following profiles (see <a href="../../model_docs/vertical/sbm.html#soil-processes">SBM</a> for a detailed description) are available: - <code>exponential</code> (default) - <code>exponential_constant</code> - <code>layered</code> - <code>layered_exponential</code></p>
-<p>For the profiles <code>exponential</code> and <code>exponential_constant</code>, the saturated store <code>S</code> is drained laterally by saturated downslope subsurface flow for a slope with width <code>\SIb{w}{m}</code> according to:</p>
-<p><span class="math display">\[
-    Q = K_0\tan(\beta)w\begin{cases}
-    \frac{1}{f}\left(e^{-fz_i}-e^{-f\subtext{z}{exp}}\right) +
-    e^{-f\subtext{z}{exp}}(z_t-\subtext{z}{exp}) &amp; \text{if $z_i &lt; \subtext{z}{exp}$}\\
-    \\
-    e^{-f\subtext{z}{exp}}(z_t - z_i) &amp; \text{if $z_i \ge \subtext{z}{exp}$},
-    \end{cases}
-\]</span></p>
-<p>where <span class="math inline">\(\beta\)</span> is element slope angle, <span class="math inline">\(\SIb{Q}{m^3 d^{-1}}\)</span> is subsurface flow, <span class="math inline">\(\SIb{K_0}{m
-d^{-1}}\)</span> is the saturated hydraulic conductivity at the soil surface, <span class="math inline">\(\SIb{z_i}{m}\)</span> is the water table depth, <span class="math inline">\(\SIb{z_{t}}{m}\)</span> is the total soil depth, <span class="math inline">\(\SIb{f}{m^{-1}}\)</span> is a scaling parameter that controls the decrease of <span class="math inline">\(K_0\)</span> with depth and <span class="math inline">\(\SIb{\subtext{z}{exp}}{m}\)</span> is the depth from soil surface for which the exponential decline of <span class="math inline">\(K_0\)</span> is valid. For the <code>exponential</code> profile, <span class="math inline">\(\subtext{z}{exp}\)</span> is equal to <span class="math inline">\(z_t\)</span>.</p>
-<p>Combining with the following continuity equation: <span class="math display">\[
-    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial Q}{\partial x} + wr
-\]</span></p>
-<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, and <span class="math inline">\(\SIb{r}{m d^{-1}}\)</span> is the net input rate to the saturated store. Substituting for <span class="math inline">\(h
-(\frac{\partial Q}{\partial h})\)</span>, gives:</p>
-<p><span class="math display">\[
-  \frac{\partial Q}{\partial t} = -c\frac{\partial Q}{\partial x} + cwr
-\]</span></p>
-<p>where celerity <span class="math inline">\(c\)</span> is calculated as follows: <span class="math display">\[
-    c = \frac{K_0 \tan(\beta)}{\theta_s-\theta_r}\begin{cases}
-    e^{-fz_i}
-    + e^{-f\subtext{z}{exp}} &amp; \text{if $z_i &lt; \subtext{z}{exp}$}\\
-    \\
-    e^{-f\subtext{z}{exp}} &amp; \text{if $z_i \ge \subtext{z}{exp}$}.
-    \end{cases}
-\]</span></p>
-<p>For the <code>layered</code> and <code>layered_exponential</code> profiles the equivalent horizontal hydraulic conductivity <span class="math inline">\(\SIb{K_h}{m d^{-1}}\)</span> is calculated for water table height <span class="math inline">\(\SIb{h = z_t-z_i}{m}\)</span> and lateral subsurface flow is calculated as follows:</p>
-<p><span class="math display">\[
-  Q = K_h h \tan(\beta) w,
-\]</span></p>
-<p>and celerity <span class="math inline">\(c\)</span> is given by:</p>
-<p><span class="math display">\[
-    c = \frac{K_h \tan(\beta)}{\theta_s-\theta_r}.
-\]</span></p>
-<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain model timestep and model grid size combinations this may result in loss of accuracy.</p>
-</div>
-</div>
+<section id="output" class="level3">
+<h3 class="anchored" data-anchor-id="output">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_erosion~rainfall__mass_flow_rate</code></td>
+<td>Total soil erosion from rainfall (splash)</td>
+<td>ton Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="multi-threading" class="level2">
-<h2 class="anchored" data-anchor-id="multi-threading">Multi-Threading</h2>
-<p>The kinematic wave calculations for surface - and subsurface flow routing can be executed in parallel using multiple threads. In the model section of the TOML file, a minimum stream order can be provided to define subbasins for the river (default is 6) and land domain (default is 5). Subbasins are created at all confluences where each branch has a minimal stream order. Based on the subbasins a directed acyclic graph is created that controls the order of execution and which subbasins can run in parallel.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">min_streamorder_river</span> <span class="op">=</span> <span class="dv">5</span> <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">min_streamorder_land</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="subcatchment-flow" class="level2">
-<h2 class="anchored" data-anchor-id="subcatchment-flow">Subcatchment flow</h2>
-<p>Normally the the kinematic wave is continuous throughout the model. By using the <code>pits</code> entry in the model and input sections of the TOML file all flow is at the subcatchment only (upstream of the pit locations, defined by the netCDF variable <code>wflow_pits</code> in the example below) and no flow is transferred from one subcatchment to another. This can be convenient when connecting the result of the model to a water allocation model such as Ribasim.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">pits</span> <span class="op">=</span> <span class="st">"wflow_pits"</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pits</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="overland-flow-erosion" class="level2">
+<h2 class="anchored" data-anchor-id="overland-flow-erosion">Overland flow erosion</h2>
+<section id="input-1" class="level3">
+<h3 class="anchored" data-anchor-id="input-1">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_erosion__answers_overland_flow_factor</code></td>
+<td>Answers overland flow erosion factor</td>
+<td>-</td>
+<td>0.9</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion__usle_k_factor</code></td>
+<td>USLE soil erodibility factor</td>
+<td>-</td>
+<td>0.1</td>
+</tr>
+<tr class="odd">
+<td><code>soil_erosion__usle_c_factor</code></td>
+<td>USLE crop management factor</td>
+<td>-</td>
+<td>0.01</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="limitations" class="level2">
-<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<p>The kinematic wave approach for channel, overland and lateral subsurface flow, assumes that the topography controls water flow mostly. This assumption holds for steep terrain, but in less steep terrain the hydraulic gradient is likely not equal to the surface slope (subsurface flow), or pressure differences and inertial momentum cannot be neglected (channel and overland flow). In addition, while the kinematic wave equations are solved with a nonlinear scheme using Newton’s method (Chow, 1988), other model equations are solved through a simple explicit scheme. In summary the following limitations apply:</p>
-<ul>
-<li>Channel flow, and to a lesser degree overland flow, may be unrealistic in terrain that is not steep, and where pressure forces and inertial momentum are important.</li>
-<li>The lateral movement of subsurface flow may be very wrong in terrain that is not steep.</li>
-</ul>
+<section id="output-1" class="level3">
+<h3 class="anchored" data-anchor-id="output-1">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_erosion~overland_flow__mass_flow_rate</code></td>
+<td>Total soil erosion from overland flow</td>
+<td>ton Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="external-inflows" class="level2">
-<h2 class="anchored" data-anchor-id="external-inflows">External inflows</h2>
-<p>External inflows, for example water supply or abstractions, can be added to the kinematic wave via the <code>inflow</code> variable. For this, the user can supply a 2D map of the inflow, as a cyclic parameter or as part of forcing (see also <a href="../../user_guide/required_files.html">Input section</a>). These inflows are added or abstracted from the upstream inflow <code>qin</code> before running the kinematic wave to solve the impact on resulting <code>q</code>. In case of a negative inflow (abstractions), a minimum of zero is applied to the upstream flow <code>qin</code>.</p>
 </section>
-<section id="references" class="level2">
-<h2 class="anchored" data-anchor-id="references">References</h2>
-<ul>
-<li>Chow, V., Maidment, D. and Mays, L., 1988, Applied Hydrology. McGraw-Hill Book Company, New York.</li>
-</ul>
+<section id="soil-erosion" class="level2">
+<h2 class="anchored" data-anchor-id="soil-erosion">Soil erosion</h2>
+<section id="input-2" class="level3">
+<h3 class="anchored" data-anchor-id="input-2">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_clay__mass_fraction</code></td>
+<td>Soil content clay</td>
+<td>-</td>
+<td>0.4</td>
+</tr>
+<tr class="even">
+<td><code>soil_silt__mass_fraction</code></td>
+<td>Soil content silt</td>
+<td>-</td>
+<td>0.3</td>
+</tr>
+<tr class="odd">
+<td><code>soil_sand__mass_fraction</code></td>
+<td>Soil content sand</td>
+<td>-</td>
+<td>0.3</td>
+</tr>
+<tr class="even">
+<td><code>soil_aggregates~small__mass_fraction</code></td>
+<td>Soil content small aggregates</td>
+<td>-</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td><code>soil_aggregates~large__mass_fraction</code></td>
+<td>Soil content large aggregates</td>
+<td>-</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-2" class="level3">
+<h3 class="anchored" data-anchor-id="output-2">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_erosion__mass_flow_rate</code></td>
+<td>Total soil erosion</td>
+<td>ton Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion_clay__mass_flow_rate</code></td>
+<td>Total clay erosion</td>
+<td>ton Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_erosion_silt__mass_flow_rate</code></td>
+<td>Total silt erosion</td>
+<td>ton Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion_sand__mass_flow_rate</code></td>
+<td>Total sand erosion</td>
+<td>ton Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_erosion_aggregates~small__mass_flow_rate</code></td>
+<td>Total small aggregates erosion</td>
+<td>ton Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_erosion_aggregates~large__mass_flow_rate</code></td>
+<td>Total large aggregates erosion</td>
+<td>ton Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
@@ -1084,7 +1265,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;
