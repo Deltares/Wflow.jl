@@ -145,6 +145,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `land_surface_water~to-river__volume_flow_rate` | Discharge overland flow that flows to the river | m³ s⁻¹ |
 | `land_surface_water__depth` | Water depth overland flow  | m |
 | `land_surface_water__volume` | Water volume overland flow  | m³ |
+| `land_surface_water__instantaneous_volume` | Water volume overland flow  | m³ |
 : {.striped .hover}
 
 
@@ -244,6 +245,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_surface_water__depth` | Water depth  | m |
+| `land_surface_water__volume` | Total surface water storage of cell (including river storage for river cells)   | m³ |
+| `land_surface_water__instantaneous_volume` | Total surface water storage of cell (including river storage for river cells) | m³ |
 : {.striped .hover}
 
 ## Groundwater flow
@@ -332,7 +335,6 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
 | `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
 | `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
-
 | `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
 | `river_water_sediment__kodatie_transport_capacity_b-coefficient` | Kodatie transport capacity coefficient b | - | - |
 | `river_water_sediment__kodatie_transport_capacity_c-coefficient` | Kodatie transport capacity coefficient c | - | - |

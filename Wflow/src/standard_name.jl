@@ -227,6 +227,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.overland_flow.variables.h_av), unit = "m"),
     "land_surface_water__volume" =>
         (lens = @optic(_.routing.overland_flow.variables.storage_av), unit = "m3"),
+    "land_surface_water__instantaneous_volume" =>
+        (lens = @optic(_.routing.overland_flow.variables.storage), unit = "m3"),
     "land_surface_water__x_component_of_instantaneous_volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.qx), unit = "m3 s-1"),
     "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
