@@ -1,0 +1,403 @@
+---
+title: Routing concepts
+---
+<style>
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+td, th {
+  word-wrap: break-word;
+}
+</style>
+
+## Water bodies
+### Lakes
+
+#### Generic input {#input-generic-lake}
+| Standard Name | Description | Unit | Default |
+| ------ | ----- | -- | -- |
+| `lake_location__count` | Outlet of the lakes in which each lake has a unique id | - | - |
+| `lake_area__count` | Lake coverage | - | - |
+: {.striped .hover}
+
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ----- | -- | -- |
+| `lake_surface__area` | Area of the lake | m² | - |
+| `lake_water__rating_curve_coefficient` | Rating curve coefficient | - | - |
+| `lake_water__rating_curve_exponent` | Rating curve exponent | - | - |
+| `lake_water_flow_threshold-level__elevation` | Water level threshold, below this level outflow is zero | m | - |
+| `lake~lower_location__count` | Index of lower lake (linked lakes) | - | 0 |
+| `lake_water__storage_curve_type_count` | Type of lake storage curve | - | - |
+| `lake_water__rating_curve_type_count` | Type of lake rating curve | - | - |
+| `lake_water_surface__initial_elevation` | Water level of lake (used for initialization) | m | - |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `lake_water_surface__instantaneous_elevation` | Lake water level | m |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `lake_water__volume` | Lake volume (average over timestep) | m³ |
+| `lake_water_surface__elevation` | Lake water level (average over timestep) | m |
+| `lake_water~outgoing__volume_flow_rate` | Outflow of the lake (average over timestep) | m³ s⁻¹ |
+| `lake_water~incoming__volume_flow_rate` | Inflow into the lake (average over timestep) | m³ s⁻¹ |
+| `lake_water__evaporation_volume_flux` | Average actual evaporation over the lake area | mm Δt⁻¹ |
+| `lake_water__precipitation_volume_flux` | Average precipitation over the lake area | mm Δt⁻¹ |
+| `lake_water__potential_evaporation_volume_flux` | Average potential evaporation over the lake area | mm Δt⁻¹ |
+: {.striped .hover}
+
+### Reservoirs
+#### Generic input {#input-generic-reservoir}
+| Standard Name | Description | Unit | Default |
+| ------ | ----- | -- | -- |
+| `reservoir_location__count` | Outlet of the reservoirs in which each reservoir has a unique id | - | - |
+| `reservoir_area__count` | Reservoir coverage | - | - |
+: {.striped .hover}
+
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ----- | -- | -- |
+| `reservoir_surface__area` | Area of the reservoir | m² | - |
+| `reservoir_water_demand~required~downstream__volume_flow_rate` | Minimum (environmental) flow released from reservoir | m³ s⁻¹ | - |
+| `reservoir_water_release-below-spillway__max_volume_flow_rate` | Maximum amount that can be released if below spillway | m³ s⁻¹ | - |
+| `reservoir_water__max_volume` | Maximum volume (above which water is spilled) | m³ | - |
+| `reservoir_water~full-target__volume_fraction` | Target fraction full (of max storage) | - | - |
+| `reservoir_water~min-target__volume_fraction` | Target minimum full fraction (of max storage)	| - | - |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `reservoir_water__instantaneous_volume` | Reservoir volume | m³ |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `reservoir_water__volume` | Reservoir volume (average over the timestep) | m³ |
+| `reservoir_water~outgoing__volume_flow_rate` | Outflow of the reservoir (average over the timestep) | m³ s⁻¹ |
+| `reservoir_water~incoming__volume_flow_rate` | Inflow into the reservoir (average over the timestep) | m³ s⁻¹ |
+| `reservoir_water__evaporation_volume_flux` |  Average actual evaporation over the reservoir area | mm Δt⁻¹ |
+| `reservoir_water__precipitation_volume_flux` | Average precipitation over the reservoir area | mm Δt⁻¹ |
+| `reservoir_water__potential_evaporation_volume_flux` | Average potential evaporation over the reservoir area | mm Δt⁻¹ |
+: {.striped .hover}
+
+## Kinematic wave
+### River flow
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.036 |
+| `river_bank_water__depth` | Bankfull river depth | m | 1.0 |
+| `river__slope` | River slope | m m⁻¹ | - |
+| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `river_water__instantaneous_volume_flow_rate` | River discharge  | m³ s⁻¹ |
+| `river_water__instantaneous_depth` | River water depth  | m |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `river_water__volume_flow_rate` | River discharge (average over timestep) | m³ s⁻¹ |
+| `river_water__depth` | River water depth (average over timestep) | m |
+| `river_water__volume` | River water volume (average over timestep) | m³ |
+| `river_water_inflow~lateral__volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
+: {.striped .hover}
+
+### Overland flow
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `land_surface_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.072 |
+| `land_surface__slope` | Land surface slope | m m⁻¹ | - |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `land_surface_water__instantaneous_volume_flow_rate` | Discharge overland flow  | m³ s⁻¹ |
+| `land_surface_water__instantaneous_depth` | Water depth overland flow  | m |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `land_surface_water__volume_flow_rate` | Discharge overland flow (average over timestep) | m³ s⁻¹ |
+| `land_surface_water__depth` | Water depth overland flow (average over timestep) | m |
+| `land_surface_water__volume` | Water volume overland flow (average over timestep) | m³ |
+: {.striped .hover}
+
+
+### Lateral subsurface flow
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio` | A muliplication factor applied to vertical hydraulic conductivity | - | 100 |
+| `land_surface__slope` | Land surface slope | m m⁻¹ | - |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `subsurface_water_sat-zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | m |
+| `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | mm Δt⁻¹ |
+| `subsurface_water~to-river__volume_flow_rate` | Part of subsurface flow that flows to the river | m³ day⁻¹ |
+: {.striped .hover}
+
+## Local inertial
+### River flow
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `river__length` | River length | m | - |
+| `model_boundary_condition~river__length` | Boundary condition river length downstream river outlets | m | 10 000 |
+| `river__width` | River width | m | - |
+| `model_boundary_condition~river_bank_water__depth` | Boundary condition bankfull depth downstream river outlets | m | 0.0 |
+| `river_bank_water__elevation` | Bankfull elevation of the river | m | - |
+| `river_bank_water__depth` | Bankfull depth of the river | m | - |
+| `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.0036 |
+| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `river_water__instantaneous_volume_flow_rate` | River discharge  | m³ s⁻¹ |
+| `river_water__instantaneous_depth` | River water depth  | m |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `river_water__volume_flow_rate` | River (+ floodplain) discharge (average over timestep) | m³ s⁻¹ |
+| `river_water__depth` | River water depth (average over timestep) | m |
+| `river_water__volume` | River water volume (average over timestep) | m³ |
+: {.striped .hover}
+
+### 1D floodplain flow
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `floodplain_water__sum_of_volume-per-depth` | Floodplain profile (cumulative volume per flood depth) | m³ | - |
+| `floodplain_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.072 |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit | |
+| --- | --- | - |
+| `floodplain_water__instantaneous_volume_flow_rate` | Floodplain discharge  | m³ s⁻¹ |
+| `floodplain_water__instantaneous_depth` | Floodplain water depth  | m |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `floodplain_water__volume` | Floodplain volume (average over timestep) | m³ |
+| `floodplain_water__volume_flow_rate` | Floodplain discharge (average over timestep) | m³ s⁻¹ |
+: {.striped .hover}
+
+### Overland flow
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `land_surface_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.072 |
+| `land_surface_water_flow__ground_elevation` | Elevation of each cell | m | - |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | ---- | - |
+| `land_surface_water__x_component_of_instantaneous_volume_flow_rate` | Flow in x direction  | m³ s⁻¹ |
+| `land_surface_water__y_component_of_instantaneous_volume_flow_rate` | Flow in y direction  | m³ s⁻¹ |
+| `land_surface_water__instantaneous_depth` | Water depth  | m |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `land_surface_water__depth` | Water depth (average over timestep) | m |
+: {.striped .hover}
+
+## Groundwater flow
+### Unconfined aquifer
+#### Input {#input-gwf-unconfined}
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `land_surface__elevation ` | Land surface elevation conductivity | m  | - |
+| `subsurface_surface_water__horizontal_saturated_hydraulic_conductivity` | Horizontal conductivity | m day⁻¹ | - |
+| `subsurface_water__specific_yield` | Specific yield | m m⁻¹ | - |
+| `subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter` | Factor controlling the reduction of horizontal conductivity with depth | - | 3.0 |
+: {.striped .hover}
+
+#### States {#output-gwf-unconfined}
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `subsurface_water__hydraulic_head` | Groundwater head | m |
+: {.striped .hover}
+
+### River boundary
+#### Input {#input-gwf-river}
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `river_water__infiltration_conductance` | River bed infiltration conductance | m² day⁻¹ | - |
+| `river_water__exfiltration_conductance` | River bed exfiltration conductance | m² day⁻¹ | - |
+| `river_bottom__elevation` | River bottom elevation | m | - |
+| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
+: {.striped .hover}
+
+#### Output {#output-gwf-river}
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `river_water~to-subsurface__volume_flow_rate` | Exchange flux (river to aquifer) | m³ day⁻¹ |
+: {.striped .hover}
+
+### Drainage boundary
+#### Input {#input-gwf-drainage}
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `land_drain__elevation` | Drain elevation | m | - |
+| `land_drain__conductance` | Drain conductance | m² day⁻¹ | - |
+| `land_drain_location__flag` | Drain location | - | - |
+: {.striped .hover}
+
+#### Output {#output-gwf-drainage}
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `land_drain_water~to-subsurface__volume_flow_rate` | Exchange flux (drain to aquifer) | m³ day⁻¹ |
+: {.striped .hover}
+
+### Recharge boundary
+#### Output {#output-gwf-recharge}
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `subsurface_water_sat-zone_top__net_recharge_volume_flow_rate` | Net recharge flux | m³ day⁻¹ |
+: {.striped .hover}
+
+### Constant head boundary
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `model_boundary_condition~constant_hydraulic_head` | Head of the boundary | m | - |
+: {.striped .hover}
+
+## Sediment
+### Transport capacity Overland flow
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `land_surface_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
+| `land_surface_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
+| `clay__d50_diameter` | Clay mean diameter | μm | 2.0 |
+| `silt__d50_diameter` | Silt mean diameter | μm | 10.0 |
+| `sand__d50_diameter` | Sand mean diameter | μm | 200.0 |
+| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | μm | 30.0 |
+| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | μm | 500.0 |
+| `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
+| `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
+: {.striped .hover}
+
+### Transport capacity River
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `river_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
+| `river_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
+| `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
+| `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
+
+| `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
+| `river_water_sediment__kodatie_transport_capacity_b-coefficient` | Kodatie transport capacity coefficient b | - | - |
+| `river_water_sediment__kodatie_transport_capacity_c-coefficient` | Kodatie transport capacity coefficient c | - | - |
+| `river_water_sediment__kodatie_transport_capacity_d-coefficient` | Kodatie transport capacity coefficient d | - | - |
+: {.striped .hover}
+
+### Overland flow transport
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `land_surface_water_sediment_transport_capacity__mass_flow_rate` | Total sediment transport capacity | ton Δt⁻¹ |
+| `land_surface_water_clay_transport_capacity__mass_flow_rate` | Clay transport capacity | ton Δt⁻¹ |
+| `land_surface_water_sediment~to-river__mass_flow_rate` | Total sediment flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_clay~to-river__mass_flow_rate` | Clay flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_silt~to-river__mass_flow_rate` | Silt flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_sand~to-river__mass_flow_rate` | Sand flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_aggregates~small~to-river__mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_aggregates~large~to-river__mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_sediment__mass_flow_rate` | Total sediment flux | ton Δt⁻¹ |
+: {.striped .hover}
+
+### River erosion
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `river_bottom-and-bank_sediment__d50_diameter` | Mean diameter in the river bed/bank | mm | 0.1
+: {.striped .hover}
+
+### River transport
+#### Input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `reservoir_surface__area` | Reservoir surface area | m² | - |
+| `lake_surface__area` | Lake surface area | m² | - |
+| `reservoir_sediment~bedload__trapping_efficiency_coefficient` | Reservoir sediment trapping efficiency | - | 1.0 |
+| `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
+| `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
+| `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
+| `river_bottom-and-bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
+| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
+| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
+| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
+| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
+| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
+| `gravel__d50_diameter` | Gravel mean diameter | µm | 2000.0 |
+: {.striped .hover}
+
+#### States
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton |
+| `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton |
+| `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton |
+| `river_bed_aggregates~small__mass` | Small aggregates stored on the river bed after deposition | ton |
+| `river_bed_aggregates~large__mass` | Large aggregates stored on the river bed after deposition | ton |
+| `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton |
+| `river_water_clay__mass` | Clay left in cell | ton |
+| `river_water_silt__mass` | Silt left in cell | ton |
+| `river_water_sand__mass` | Sand left in cell | ton |
+| `river_water_aggregates~small__mass` | Small aggregates left in cell | ton |
+| `river_water_aggregates~large__mass` | Large aggregates left in cell | ton |
+| `river_water_gravel__mass` | Gravel left in cell | ton? |
+| `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
+| `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
+| `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
+| `river_water_aggregates~small__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
+| `river_water_aggregates~large__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
+| `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
+: {.striped .hover}
+
+#### Output
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `river_water_sediment~bedload__mass_concentration` | Bed load sediment concentration in the river | g m⁻³ |
+| `river_water_sediment~suspended__mass_concentration` | Suspended sediemnt concentration in the river | g m⁻³ |
+| `river_water_sediment__mass_concentration` | Total sediment concentration in the river | g m⁻³ |
+| `river_water_sediment_erosion__mass` | Total sediment erosion (from store + direct river bed/bank) | ton Δt⁻¹ |
+| `river_water_sediment_deposition__mass` | Total sediment deposition | ton Δt⁻¹ |
+: {.striped .hover}

@@ -9,13 +9,13 @@ distinguished in two different structures.
 ## Inland Sediment Model
 
 ### Sediment Flux in overland flow
-Once the amount of soil detached by both rainfall and overland flow has been estimated, it has
-then to be routed and delivered to the river network. Inland routing in sediment models is
-usually done by comparing the amount of detached sediment with the transport capacity of the
-flow, which is the maximum amount of sediment that the flow can carry downslope. There are
-several existing formulas available in the literature. For a wide range of slopes and for
-overland flow, the Govers equation (1990) seems the most appropriate choice (Hessel et al,
-2007). However, as the wflow\_sediment model was developed to be linked to water quality
+Once the amount of soil detached by both rainfall and overland flow has been estimated, it
+has then to be routed and delivered to the river network. Inland routing in sediment models
+is usually done by comparing the amount of detached sediment with the transport capacity of
+the flow, which is the maximum amount of sediment that the flow can carry downslope. There
+are several existing formulas available in the literature. For a wide range of slopes and
+for overland flow, the Govers equation (1990) seems the most appropriate choice (Hessel et
+al, 2007). However, as the wflow\_sediment model was developed to be linked to water quality
 issues, the Yalin transport equation was chosen as it can handle particle differentiation
 (Govers equation can still be used if wflow\_sediment is used to only model inland processes
 with no particle differentiation). For land cells, wflow\_sediment assumes that erosion can
@@ -27,7 +27,6 @@ mobilize 5 classes of sediment:
 - Small aggregates (mean diameter of $\SI{30}{\mu m}$)
 - Large aggregates (mean diameter of $\SI{50}{\mu m}$).
 
-$$
 \begin{gathered}
    \mathrm{PSA} = \mathrm{SAN} (1-\mathrm{CLA})^{2.4} \\
    \mathrm{PSI} = 0.13\mathrm{SIL}\\
@@ -44,31 +43,35 @@ $$
 
    \mathrm{LAG} = 1 - \mathrm{PSA} - \mathrm{PSI} - \mathrm{PCL} - \mathrm{SAG}
 \end{gathered}
-$$
 
 where $\mathrm{CLA}$, $\mathrm{SIL}$ and $\mathrm{SAN}$ are the primary clay, silt, sand
-fractions of the topsoil and $\mathrm{PCL}$, $\mathrm{PSI}$, $\mathrm{PSA}$, $\mathrm{SAG}$ and
-$\mathrm{LAG}$ are the clay, silt, sand, small and large aggregates fractions of the detached
-sediment respectively. The transport capacity of the flow using Yalin's equation with particle
-differentiation, developed by Foster (1982), is:
+fractions of the topsoil and $\mathrm{PCL}$, $\mathrm{PSI}$, $\mathrm{PSA}$, $\mathrm{SAG}$
+and $\mathrm{LAG}$ are the clay, silt, sand, small and large aggregates fractions of the
+detached sediment respectively. The transport capacity of the flow using Yalin's equation
+with particle differentiation, developed by Foster (1982), is:
+
 $$
    \mathrm{TC}_i = (P_e)_i  (S_g)_i \, \rho_w \,  g \, d_i  V_*
 $$
+
 where $\mathrm{TC}_i$ is the transport capacity of the flow for the particle class $i$,
-$(P_e)_i$ is the effective number of particles of class $i$, $\SIb{(S_g)_i}{kg m^{-3}}$ is the
-specific gravity for the particle class $i$, $\SIb{\rho_w}{kg m^{-3}}$ is the mass density of
-the fluid, $\SIb{g}{m s^{-2}}$ is the acceleration due to gravity, $\SIb{d_i}{m}$ is the
-diameter of the particle of class $i$ and $V_* = \SIb{(g R S)^{0.5}}{m s^{-1}}$ is the shear
-velocity of the flow with $S$ the slope gradient and $\SIb{R}{m}$ the hydraulic radius of the
-flow. The detached sediment are then routed down slope until the river network using the
-`accucapacityflux`, `accupacitystate` functions depending on the transport capacity from Yalin.
+$(P_e)_i$ is the effective number of particles of class $i$, $\SIb{(S_g)_i}{kg\ m^{-3}}$ is
+the specific gravity for the particle class $i$, $\SIb{\rho_w}{kg\ m^{-3}}$ is the mass
+density of the fluid, $\SIb{g}{m\ s^{-2}}$ is the acceleration due to gravity,
+$\SIb{d_i}{m}$ is the diameter of the particle of class $i$ and $V_* = \SIb{(g R
+S)^{0.5}}{m\ s^{-1}}$ is the shear velocity of the flow with $S$ the slope gradient and
+$\SIb{R}{m}$ the hydraulic radius of the flow. The detached sediment are then routed down
+slope until the river network using the `accucapacityflux`, `accupacitystate` functions
+depending on the transport capacity from Yalin.
 
 The choice of transport capacity method for the overland flow is set up in the model section of
 the TOML:
+
 ```toml
 [model]
-landtransportmethod = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
+land_transport = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
 ```
+
 Note that the "govers" and "yalin" equations can only assess total transport capacity of the
 flow and can therefore not be used in combination with the river part of the sediment model.
 
@@ -77,22 +80,23 @@ flow and can therefore not be used in combination with the river part of the sed
 Sediment dynamics in rivers can be described by the same three processes on land: erosion,
 deposition and transport. The difference is that channel ﬂow is much higher, deeper and
 permanent compared to overland ﬂow. In channels, erosion is the direct removal of sediments
-from the river bed or bank (lateral erosion). Sediments are transported in the river either by
-rolling, sliding and silting (bed load transport) or via turbulent flow in the higher water
-column (suspended load transport). The type of transport is determined by the river bed shear
-stress. As sediment particles have a higher density than water, they can also be deposited on
-the river bed according to their settling velocity compared to the ﬂow velocity. In addition to
-regular deposition in the river, lakes, reservoirs and floodplains represents additional major
-sediment settling pools.
+from the river bed or bank (lateral erosion). Sediments are transported in the river either
+by rolling, sliding and silting (bed load transport) or via turbulent flow in the higher
+water column (suspended load transport). The type of transport is determined by the river
+bed shear stress. As sediment particles have a higher density than water, they can also be
+deposited on the river bed according to their settling velocity compared to the ﬂow
+velocity. In addition to regular deposition in the river, lakes, reservoirs and floodplains
+represents additional major sediment settling pools.
 
-Complete models of sediment dynamics based on hydrology and not on hydraulics or hydrodynamics
-are much rarer than for soil loss and inland dynamics. The simpler models such as the SWAT
-default sediment river model uses again the transport capacity of the ﬂow to determine if there
-is erosion or deposition (Neitsch et al., 2011).  A more physics-based approach (Partheniades,
-1965) to determine river erosion is used by Liu et al. (2018) and in the new SWAT's approach
-developed by Narasimhan et al. (2017). For wﬂow\_sediment, the new physics-based model of SWAT
-was chosen for transport and erosion as it enables the use of parameter estimation for erosion
-of bed and bank of the channel and separates the suspended from the bed loads.
+Complete models of sediment dynamics based on hydrology and not on hydraulics or
+hydrodynamics are much rarer than for soil loss and inland dynamics. The simpler models such
+as the SWAT default sediment river model uses again the transport capacity of the ﬂow to
+determine if there is erosion or deposition (Neitsch et al., 2011).  A more physics-based
+approach (Partheniades, 1965) to determine river erosion is used by Liu et al. (2018) and in
+the new SWAT's approach developed by Narasimhan et al. (2017). For wﬂow\_sediment, the new
+physics-based model of SWAT was chosen for transport and erosion as it enables the use of
+parameter estimation for erosion of bed and bank of the channel and separates the suspended
+from the bed loads.
 
 ![Overview of the different processes for a river cell in wflow\_sediment.](../../images/river-scheme.png)
 
@@ -100,15 +104,16 @@ Running the river model is an option of the wflow\_sediment model and is enabled
 file. By default it is `false`:
 ```toml
 [model]
-runrivermodel = true
+run_river_model = true
 ```
 
 ### Sediment inputs in a river cell
-The first part of the river model assesses how much detached sediment are in the river cell at
-the beginning of the timestep $t$. Sources of detached sediment are sediments coming from land
-erosion, estimated with the soil loss part of wflow_sediment model, the sediment coming from
-upstream river cells and the detached sediment that were left in the cell at the end of the
-previous timestep ``(t-1)``:
+The first part of the river model assesses how much detached sediment are in the river cell
+at the beginning of the timestep $t$. Sources of detached sediment are sediments coming from
+land erosion, estimated with the soil loss part of wflow_sediment model, the sediment coming
+from upstream river cells and the detached sediment that were left in the cell at the end of
+the previous timestep $(t-1)$:
+
 $$
    (\subtext{\mathrm{sed}}{in})_t = (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\text{sed}}{out})_{t-1}\right] + (\subtext{\text{sed}}{riv})_{t-1}
 $$
@@ -118,27 +123,30 @@ Once the amount of sediment inputs at the beginning of the timestep is known, th
 estimates transport, and river erosion if there is a deficit of sediments. Transport in the
 river system is estimated via a transport capacity formula. There are several transport
 capacity formulas available in wflow_sediment, some requiring calibration and some not.
-Choosing a transport capacity equation depends on the river characteristics (some equation are
-more suited for narrow or wider rivers), and on the reliability of the required river
-parameters (such as slope, width or mean particle diameter of the river channel). Several river
-transport capacity are available and the choice is set up in the model section of the TOML:
+Choosing a transport capacity equation depends on the river characteristics (some equation
+are more suited for narrow or wider rivers), and on the reliability of the required river
+parameters (such as slope, width or mean particle diameter of the river channel). Several
+river transport capacity are available and the choice is set up in the model section of the
+TOML:
+
 ```toml
 [model]
-rivtransportmethod = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
+river_transport = "bagnold" # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
 ```
 
 **Simplified Bagnold**
 
-Originally more valid for intermediate to large rivers, this simplified version of the Bagnold
-equation relates sediment transport to flow velocity with two simple calibration parameters
-(Neitsch et al, 2011):
+Originally more valid for intermediate to large rivers, this simplified version of the
+Bagnold equation relates sediment transport to flow velocity with two simple calibration
+parameters (Neitsch et al, 2011):
+
 $$
 C_{\max} = \subtext{c}{sp}  \left( \dfrac{\mathrm{prf} Q}{h W} \right)^{\subtext{\mathrm{sp}}{exp}}
 $$
 
-where $\SIb{C_{\max}}{kg L^{-1}}$ (or $\SIb{}{ton m^{-1}}$) is the sediment concentration,
-$\SIb{Q}{m^3 s^{-1}}$ is the surface runoff in the river cell, $\SIb{h}{m}$ is the river water
-level, $\SIb{W}{m}$ is the river width and $\subtext{c}{sp}$, $\mathrm{prf}$ and
+where $\SIb{C_{\max}}{kg\ L^{-1}}$ (or $\SIb{}{ton\ m^{-1}}$) is the sediment concentration,
+$\SIb{Q}{m^3\ s^{-1}}$ is the surface runoff in the river cell, $\SIb{h}{m}$ is the river
+water level, $\SIb{W}{m}$ is the river width and $\subtext{c}{sp}$, $\mathrm{prf}$ and
 $\subtext{\mathrm{sp}}{exp}$ are calibration parameters. The $\mathrm{prf}$ coefficient is
 usually used to deduce the peak velocity of the flow, but for simplification in
 `wflow_sediment`, the equation was simplified to only get two parameters to calibrate:
@@ -163,11 +171,12 @@ Hansen, 1967):
 $$
    C_w = 0.05 \left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) \left( \dfrac{u S}{\sqrt{\left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) g  D_{50}}} \right) \theta^{1/2}
 $$
-where $C_w$ is the sediment concentration by weight, $\SIb{\rho}{g m^{-3}}$ and $\SIb{\rho_{s}}{g m^{-3}}$ are the
-fluid and sediment density (here respectively equal to $\SI{1000}{g m^{-3}}$ and $\SI{2650}{g
-m^{-3}}$), $\SIb{u}{m s^{-1}}$ is the water mean velocity, $S$ is the river slope, $g$ is the
-acceleration due to gravity, $\SIb{D_{50}}{m}$ is the river mean diameter and $\theta$ is the
-Shields parameter.
+
+where $C_w$ is the sediment concentration by weight, $\SIb{\rho}{g\ m^{-3}}$ and
+$\SIb{\rho_{s}}{g\ m^{-3}}$ are the fluid and sediment density (here respectively equal to
+$\SI{1000}{g\ m^{-3}}$ and $\SI{2650}{g\ m^{-3}}$), $\SIb{u}{m\ s^{-1}}$ is the water mean
+velocity, $S$ is the river slope, $g$ is the acceleration due to gravity, $\SIb{D_{50}}{m}$
+is the river mean diameter and $\theta$ is the Shields parameter.
 
 **Kodatie** Kodatie (1999) developed the power relationships from Posada (1995) using field
 data and linear optimization so that they would be applicable for a wider range of riverbed
@@ -190,96 +199,110 @@ Table: Range of the simplified Bagnold coefficients (and calibrated value)
 
 **Yang** Yang (1996) developed a set of two equations giving transport of sediments for
 sand-bed or gravel-bed rivers. The sand equation ($D_{50} < \SI{2.0}{mm}$) is:
+
 $$
    \log\left(C_{ppm}\right) = 5.435 - 0.286\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.457\log\left(\frac{u_*}{\omega_{s,50}}\right) \\
    +\left(1.799-0.409\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.314\log\left(\frac{u_*}{\omega_{s,50}}\right)\right)\log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
 $$
+
 And the gravel equation ($\SI{2.0}{mm} \leq D_{50} < \SI{10.0}{mm}$) is:
+
 $$
    \log\left(C_{ppm}\right) = 6.681 - 0.633\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-4.816\log\left(\frac{u_*}{\omega_{s,50}}\right) \\
    +\left(2.784-0.305\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.282\log\left(\frac{u_*}{\omega_{s,50}}\right)\right)\log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
 $$
+
 where $C_{ppm}$ is sediment concentration in parts per million by weight,
-$\SIb{\omega_{s,50}}{m s^{-1}}$ is the settling velocity of a particle with the median riverbed
-diameter estimated with Stokes, $\SIb{\nu}{m^2 s^{-1}}$ is the kinematic viscosity of the
-fluid, $\SIb{u_*}{m s^{-1}}$ is the shear velocity where $u_* = \sqrt{gR_{H}S}$ with $R_{H}$
-the hydraulic radius of the river and $\SIb{u_{cr}}{m s^{-1}}$ is the critical velocity
-(equation can be found in Hessel, 2007).
+$\SIb{\omega_{s,50}}{m\ s^{-1}}$ is the settling velocity of a particle with the median
+riverbed diameter estimated with Stokes, $\SIb{\nu}{m^2\ s^{-1}}$ is the kinematic viscosity
+of the fluid, $\SIb{u_*}{m\ s^{-1}}$ is the shear velocity where $u_* = \sqrt{gR_{H}S}$ with
+$R_{H}$ the hydraulic radius of the river and $\SIb{u_{cr}}{m\ s^{-1}}$ is the critical
+velocity (equation can be found in Hessel, 2007).
 
 **Molinas and Wu** The Molinas and Wu (2001) transport equation was developed for large
 sand-bed rivers based on the universal stream power $\psi$. The corresponding equation is
 (Neitsch et al, 2011):
+
 $$
    C_{w} = \dfrac{1430 (0.86+\sqrt{\psi}) \psi^{1.5}}{0.016+\psi} 10^{-6}
 $$
+
 where $\psi$ is the universal stream power given by:
+
 $$
    \psi = \dfrac{\psi^{3}}{\left(\dfrac{\rho_{s}}{\rho}-1\right) g h \omega_{s,50}  \left[ \log_{10}\left(\dfrac{h}{D_{50}}\right)\right]^{2}}
 $$
 
 Once the maximum concentration $C_{\max}$ is established with one of the above transport
-formula, the model then determines if there is erosion of the river bed and bank. In order to
-do that, the difference $sed_{ex}$ between the maximum amount of sediment estimated with
+formula, the model then determines if there is erosion of the river bed and bank. In order
+to do that, the difference $sed_{ex}$ between the maximum amount of sediment estimated with
 transport ($\mathrm{sed}_{\max} = C_{\max} \subtext{V}{in}$) and the sediment inputs to the
-river cell ($\subtext{\mathrm{sed}}{in}$ calculated above) is calculated. If too much sediment
-is coming in and $\subtext{\mathrm{sed}}{ex}$ is negative, then there is no river bed and bank
-erosion. And if the river has not reach its maximum transport capacity, then erosion of the
-river happens.
+river cell ($\subtext{\mathrm{sed}}{in}$ calculated above) is calculated. If too much
+sediment is coming in and $\subtext{\mathrm{sed}}{ex}$ is negative, then there is no river
+bed and bank erosion. And if the river has not reach its maximum transport capacity, then
+erosion of the river happens.
 
 First, the sediments stored in the cell from deposition in previous timesteps
-$\subtext{\mathrm{sed}}{stor}$ are eroded from clay to gravel. If this amount is not enough to
-cover $\subtext{\mathrm{sed}}{ex}$, then erosion of the local river bed and bank material
+$\subtext{\mathrm{sed}}{stor}$ are eroded from clay to gravel. If this amount is not enough
+to cover $\subtext{\mathrm{sed}}{ex}$, then erosion of the local river bed and bank material
 starts.
 
 Instead of just setting river erosion amount to just cover the remaining difference
 $\subtext{\mathrm{sed}}{exeff}$ between $\subtext{\mathrm{sed}}{ex}$ and
 $\subtext{\mathrm{sed}}{stor}$, actual erosion potential is adjusted using river
-characteristics and is separated between the bed and bank of the river using the physics-based
-approach of Knight (1984).
+characteristics and is separated between the bed and bank of the river using the
+physics-based approach of Knight (1984).
 
-The bed and bank of the river are supposed to only be able to erode a maximum amount of their
-material ``E_{R,\mathrm{bed}}`` for the bed and ``E_{R,\mathrm{bank}}`` for the river bank. For
-a rectangular channel, assuming it is meandering and thus only one bank is prone to erosion,
-they are calculated from the equations (Neitsch et al, 2011):
+The bed and bank of the river are supposed to only be able to erode a maximum amount of
+their material $E_{R,\mathrm{bed}}$ for the bed and $E_{R,\mathrm{bank}}$ for the river
+bank. For a rectangular channel, assuming it is meandering and thus only one bank is prone
+to erosion, they are calculated from the equations (Neitsch et al, 2011):
+
 $$
 \begin{gathered}
    E_{R,\mathrm{bed}} = k_{d,\mathrm{bed}} \left( \tau_{e,\mathrm{bed}} - \tau_{cr,\mathrm{bed}} \right) 10^{-6}  L  W  \rho_{b, \mathrm{bed}}  \Delta t \\
    E_{R,\mathrm{bank}} = k_{d,\mathrm{bank}} \left( \tau_{e,\mathrm{bank}} - \tau_{cr,\mathrm{bank}} \right) 10^{-6} L h \rho_{b, \mathrm{bank}}  \Delta t
 \end{gathered}
 $$
-where $\SIb{E_R}{ton}$ is the potential bed/bank erosion rates, $\SIb{k_d}{cm^3 N^{-1},
-s^{-1}}$ is the erodibility of the bed/bank material, $\SIb{\tau_e}{N m^{-2}}$ is the effective
-shear stress from the flow on the bed/bank, $\SIb{\tau_{cr}}{N m^{-2}}$ is the critical shear
-stress for erosion to happen, $\SIb{L}{m}$, $\SIb{W}{m}$ and $\SIb{h}{m}$ are the channel
-length, width and water height, $\SIb{\rho_{b}}{g cm^{-3}}$ is the bulk density of the bed/bank
-of the river and $\SIb{\Delta t}{s}$ is the model timestep.
+
+where $\SIb{E_R}{ton}$ is the potential bed/bank erosion rates, $\SIb{k_d}{cm^3\ N^{-1}\
+s^{-1}}$ is the erodibility of the bed/bank material, $\SIb{\tau_e}{N\ m^{-2}}$ is the
+effective shear stress from the flow on the bed/bank, $\SIb{\tau_{cr}}{N\ m^{-2}}$ is the
+critical shear stress for erosion to happen, $\SIb{L}{m}$, $\SIb{W}{m}$ and $\SIb{h}{m}$ are
+the channel length, width and water height, $\SIb{\rho_{b}}{g\ cm^{-3}}$ is the bulk density
+of the bed/bank of the river and $\SIb{\Delta t}{s}$ is the model timestep.
 
 In wflow_sediment, the erodibility of the bed/bank are approximated using the formula from
 Hanson and Simon (2001):
+
 $$
    k_d=0.2 \tau_{cr}^{-0.5}
 $$
-Normally erodibilities are evaluated using jet test in the field and there are several reviews
-and some adjustments possible to this equation (Simon et al, 2011). However, to avoid too heavy
-calibration and for the scale considered, this equation is supposed to be efficient enough. The
-critical shear stress $\tau_{cr}$ is evaluated differently for the bed and bank. For the bed,
-the most common formula from Shields initiation of movement is used. For the bank, a more
-recent approach from Julian and Torres (2006) is used :
+
+Normally erodibilities are evaluated using jet test in the field and there are several
+reviews and some adjustments possible to this equation (Simon et al, 2011). However, to
+avoid too heavy calibration and for the scale considered, this equation is supposed to be
+efficient enough. The critical shear stress $\tau_{cr}$ is evaluated differently for the bed
+and bank. For the bed, the most common formula from Shields initiation of movement is used.
+For the bank, a more recent approach from Julian and Torres (2006) is used:
+
 $$
    \tau_{cr,\mathrm{bank}} = (0.1+0.1779 SC+0.0028 SC^{2}-2.34 10^{-5}  SC^{3}) C_{ch}
 $$
-where $SC$ is the percent clay and silt content of the river bank and $C_{ch}$ is a coefficient
-taking into account the positive impact of vegetation on erosion reduction. This coefficient is
-then dependent on the land use and classical values are shown in the table below. These values
-where then adapted for use with the GlobCover land use map. Percent of clay and silt (along
-with sand and gravel) for the channel is estimated from the river median particle diameter
-assuming the same values as SWAT shown in the table below. Median particle diameter is here
-estimated depending on the Strahler river order. The higher the order, the smaller the diameter
-is. As the median diameter is only used in wflow_sediment for the estimation of the river
-bed/bank sediment composition, this supposition should be enough. Actual refined data or
-calibration may however be needed if the median diameter is also required for the transport
-formula. In a similar way, the bulk densities of river bed and bank are also just assumed to be
-of respectively $\SI{1.5}{g cm^{-3}}$ and $\SI{1.4}{g cm^{-3}}$.
+
+where $SC$ is the percent clay and silt content of the river bank and $C_{ch}$ is a
+coefficient taking into account the positive impact of vegetation on erosion reduction. This
+coefficient is then dependent on the land use and classical values are shown in the table
+below. These values where then adapted for use with the GlobCover land use map. Percent of
+clay and silt (along with sand and gravel) for the channel is estimated from the river
+median particle diameter assuming the same values as SWAT shown in the table below. Median
+particle diameter is here estimated depending on the Strahler river order. The higher the
+order, the smaller the diameter is. As the median diameter is only used in wflow_sediment
+for the estimation of the river bed/bank sediment composition, this supposition should be
+enough. Actual refined data or calibration may however be needed if the median diameter is
+also required for the transport formula. In a similar way, the bulk densities of river bed
+and bank are also just assumed to be of respectively $\SI{1.5}{g\ cm^{-3}}$ and $\SI{1.4}{g\
+cm^{-3}}$.
 
 Table: Classical values of the channel cover vegetation coefficient (Julian and Torres, 2006)
 
@@ -300,128 +323,140 @@ Table: Composition of the river bed/bank depending on the median diameter $\SIb{
 | Clay | 0.65 | 0.15 | 0.15 | 0.05 |
 | Gravel | 0.05 | 0.05 | 0.05 | 0.65 |
 
-Then, the repartition of the flow shear stress is refined into the effective shear stress and
-the bed and bank of the river using the equations developed by Knight (1984) for a rectangular
-channel:
+Then, the repartition of the flow shear stress is refined into the effective shear stress
+and the bed and bank of the river using the equations developed by Knight (1984) for a
+rectangular channel:
+
 $$
 \begin{gathered}
    \tau_{e,\mathrm{bed}} = \rho g R_{H} S  \left(1 - \dfrac{SF_{\mathrm{bank}}}{100}\right) \left(1+\dfrac{2h}{W}\right) \\
    \tau_{e,\mathrm{bank}} = \rho g R_{H} S  \left( SF_{\mathrm{bank}}\right)  \left(1+\dfrac{W}{2h}\right)
 \end{gathered}
 $$
-where $\rho g$ is the fluid specific weight ($\SI{9800}{N m^{-3}}$ for water), $\SIb{R_H}{m}$
-is the hydraulic radius of the channel, $\SIb{h}{m}$ and $\SIb{W}{m}$ are the water level and
-river width. $SF_{\mathrm{bank}}$ is the proportion of shear stress acting on the bank (%) and
-is estimated from (Knight, 1984):
+
+where $\rho g$ is the fluid specific weight ($\SI{9800}{N\ m^{-3}}$ for water),
+$\SIb{R_H}{m}$ is the hydraulic radius of the channel, $\SIb{h}{m}$ and $\SIb{W}{m}$ are the
+water level and river width. $SF_{\mathrm{bank}}$ is the proportion of shear stress acting
+on the bank (%) and is estimated from (Knight, 1984):
+
 $$
    \mathrm{SF}_{\mathrm{bank}} = \exp \left( -3.230 \log_{10}\left(\dfrac{W}{h}+3\right)+6.146 \right)
 $$
+
 Finally the relative erosion potential of the bank and bed of the river is calculated by:
+
 $$
 \begin{gathered}
    \mathrm{RTE}_{\mathrm{bed}} = \dfrac{E_{R,\mathrm{bed}}}{E_{R,\mathrm{bed}}+E_{R,\mathrm{bank}}} \\
    \mathrm{RTE}_{\mathrm{bank}} = 1 - RTE_{\mathrm{bed}}
 \end{gathered}
 $$
+
 And the final actual eroded amount for the bed and bank is the maximum between $\mathrm{RTE}
-\subtext{\mathrm{sed}}{exeff}$ and the erosion potential $E_R$. Total eroded amount of sediment
-$\subtext{\mathrm{sed}}{erod}$ is then the sum of the eroded sediment coming from the storage
-of previously deposited sediment and the river bed/bank erosion.
+\subtext{\mathrm{sed}}{exeff}$ and the erosion potential $E_R$. Total eroded amount of
+sediment $\subtext{\mathrm{sed}}{erod}$ is then the sum of the eroded sediment coming from
+the storage of previously deposited sediment and the river bed/bank erosion.
 
 ### River deposition
 As sediments have a higher density than water, moving sediments in water can be deposited in
 the river bed. The deposition process depends on the mass of the sediment, but also on flow
 characteristics such as velocity. In wflow_sediment, as in SWAT, deposition is modelled with
 Einstein's equation (Neitsch et al, 2011):
+
 $$
    \subtext{P}{dep}=\left(1-\dfrac{1}{e^{x}}\right)100
 $$
+
 where $\subtext{P}{dep}$ is the percentage of sediments that is deposited on the river bed and
 x is a parameter calculated with:
+
 $$
    x = \dfrac{1.055 L  \omega_{s}}{u h}
 $$
-where $\SIb{L}{m}$ and $\SIb{h}{m}$ are channel length and water height, $\SIb{\omega_s}{m
-s^{-1}}$ is the particle settling velocity calculated with Stokes' formula and $\SIb{u}{m
+
+where $\SIb{L}{m}$ and $\SIb{h}{m}$ are channel length and water height, $\SIb{\omega_s}{m\
+s^{-1}}$ is the particle settling velocity calculated with Stokes' formula and $\SIb{u}{m\
 s^{-1}}$ is the mean flow velocity. The calculated percentage is then subtracted from the
 amount of sediment input and eroded river sediment for each particle size class
 ($\subtext{\mathrm{sed}}{dep} = \subtext{P}{dep}/100 (\subtext{\mathrm{sed}}{in} +
-\subtext{\mathrm{sed}}{erod})$). Resulting deposited sediment are then stored in the river bed
-and can be re-mobilized in future time steps by erosion.
+\subtext{\mathrm{sed}}{erod})$). Resulting deposited sediment are then stored in the river
+bed and can be re-mobilized in future time steps by erosion.
 
 ### Mass balance and sediment concentration
 Finally after estimating inputs, deposition and erosion with the transport capacity of the
 flow, the amount of sediment actually leaving the river cell to go downstream is estimated
 using:
+
 $$
    \subtext{\mathrm{sed}}{out} = (\subtext{\mathrm{sed}}{in} + \subtext{\mathrm{sed}}{erod} - \subtext{\mathrm{sed}}{dep}) \dfrac{\subtext{V}{out}}{V}
 $$
 
-where $\SIb{\subtext{\mathrm{sed}}{out}}{ton}$ is the amount of sediment leaving the river cell
-(tons), $\SIb{\subtext{\mathrm{sed}}{in}}{ton}$ is the amount of sediment coming into the river
-cell (storage from previous timestep, land erosion and sediment flux from upstream river
-cells), $\SIb{\subtext{\mathrm{sed}}{erod}}{ton}$ is the amount of sediment coming from river
-erosion, $\SIb{\subtext{\mathrm{sed}}{dep}}{ton}$ is the amount of deposited sediments,
-$\SIb{\subtext{V}{out}}{m^3}$ is the volume of water leaving the river cell (surface runoff $Q$
-times timestep $\Delta t$) and $\SIb{V}{m^3}$ is the total volume of water in the river cell
-($\subtext{V}{out}$ plus storage $h W L$).
+where $\SIb{\subtext{\mathrm{sed}}{out}}{ton}$ is the amount of sediment leaving the river
+cell (tons), $\SIb{\subtext{\mathrm{sed}}{in}}{ton}$ is the amount of sediment coming into
+the river cell (storage from previous timestep, land erosion and sediment flux from upstream
+river cells), $\SIb{\subtext{\mathrm{sed}}{erod}}{ton}$ is the amount of sediment coming
+from river erosion, $\SIb{\subtext{\mathrm{sed}}{dep}}{ton}$ is the amount of deposited
+sediments, $\SIb{\subtext{V}{out}}{m^3}$ is the volume of water leaving the river cell
+(surface runoff $Q$ times timestep $\Delta t$) and $\SIb{V}{m^3}$ is the total volume of
+water in the river cell ($\subtext{V}{out}$ plus storage $h W L$).
 
 A mass balance is then used to calculate the amount of sediment remaining in the cell at the
 end of the timestep $(\subtext{\mathrm{sed}}{riv})_t$:
+
 $$
    (\subtext{\mathrm{sed}}{riv})_t = (\subtext{\mathrm{sed}}{riv})_{t-1} + (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\mathrm{sed}}{out})_{t-1}\right] + (\subtext{\mathrm{sed}}{erod})_t - (\subtext{\mathrm{sed}}{dep})_t - (\subtext{\mathrm{sed}}{out})_t
 $$
 
 ### Lake and reservoir modelling
-Apart from land and river, the hydrologic `wflow_sbm` model also handles lakes and reservoirs
-modelling. In `wflow_sbm`, lakes and large reservoirs are modelled using a 1D bucket model at
-the cell corresponding to the outlet. For the other cells belonging to the lake/reservoir which
-are not the outlet, processes such as precipitation and evaporation are filtered out and
-shifted to the outlet cell. `wflow_sediment` handles the lakes and reservoirs in the same way.
-If a cell belongs to a lake/reservoir and is not the outlet then the model assumes that no
-erosion/deposition of sediments is happening and the sediments are only all transported to the
-lake/reservoir outlet. Once the sediments reach the outlet, then sediments are deposited in the
-lake/reservoir according to Camp's model (1945) (Verstraeten et al, 2000):
+Apart from land and river, the hydrological `wflow_sbm` model also handles lakes and
+reservoirs modelling. In `wflow_sbm`, lakes and large reservoirs are modelled using a 1D
+bucket model at the cell corresponding to the outlet. For the other cells belonging to the
+lake/reservoir which are not the outlet, processes such as precipitation and evaporation are
+filtered out and shifted to the outlet cell. `wflow_sediment` handles the lakes and
+reservoirs in the same way. If a cell belongs to a lake/reservoir and is not the outlet then
+the model assumes that no erosion/deposition of sediments is happening and the sediments are
+only all transported to the lake/reservoir outlet. Once the sediments reach the outlet, then
+sediments are deposited in the lake/reservoir according to Camp's model (1945) (Verstraeten
+et al, 2000):
+
 $$
    \mathrm{TE} = \dfrac{\omega_s}{u_{cr,\mathrm{res}}} = \dfrac{\subtext{A}{res}}{\subtext{Q}{out,res}} \omega_s
 $$
 
 where $\mathrm{TE}$ is the trapping efficiency of the lake/reservoir (or the fraction of
-particles trapped), $\SIb{\omega_{s}}{m s^{-1}}$ is the particle velocity from Stokes,
-$\SIb{\subtext{u}{cr,res}}{m s^{-1}}$ is the reservoir's critical settling velocity which is
-equal to the reservoir's outflow $\SIb{\subtext{Q}{out,res}}{m^3 s^{-1}}$ divided by the
+particles trapped), $\SIb{\omega_{s}}{m\ s^{-1}}$ is the particle velocity from Stokes,
+$\SIb{\subtext{u}{cr,res}}{m\ s^{-1}}$ is the reservoir's critical settling velocity which
+is equal to the reservoir's outflow $\SIb{\subtext{Q}{out,res}}{m^3\ s^{-1}}$ divided by the
 reservoir's surface area $\SIb{\subtext{A}{res}}{m^2}$.
 
-For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by
-the dam structure. This adding trapping is taken into account with a reservoir trapping
-efficiency coefficient for large particles (between $0$ and $1$). Depending on the type of the
-dam, all bed load particles are trapped (`restrapefficiency = 1.0`, for example for a gravity
-dam) or only partly (for example for run-of-the-river dams).
+For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped
+by the dam structure. This adding trapping is taken into account with a reservoir trapping
+efficiency coefficient for large particles (between $0$ and $1$). Depending on the type of
+the dam, all bed load particles are trapped (`restrapefficiency = 1.0`, for example for a
+gravity dam) or only partly (for example for run-of-the-river dams).
 
 Lake and reservoir modelling is enabled in the model section of the TOML and require the extra
 following input arguments:
 
 ```toml
 [model]
-doreservoir = true
-dolake = false
+reservoirs = true
+lakes = true
 
-[input.vertical]
+[input]
 # Reservoir
-resareas = "wflow_reservoirareas"
+reservoir_area__count = "wflow_reservoirareas"
+reservoir_location__count = "wflow_reservoirlocs"
 # Lake
-lakeareas = "wflow_lakeareas"
+lake_area__count = "wflow_lakeareas"
+lake_location__count = "wflow_lakelocs" 
 
-[input.lateral.river]
+[input.static]
 # Reservoir
-resarea = "ResSimpleArea"
+reservoir_surface__area = "ResSimpleArea"
 restrapefficiency = "ResTrapEff"
-resareas = "wflow_reservoirareas"
-reslocs = "wflow_reservoirlocs"
 # Lake
-lakearea = "LakeArea"
-lakeareas = "wflow_lakeareas"
-lakelocs = "wflow_lakelocs"
+lake_surface__area = "LakeArea"
 ```
 
 Note that in the inland part, lake and reservoir coverage are used to filter erosion and

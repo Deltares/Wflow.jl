@@ -88,7 +88,7 @@ snow = false
 thicknesslayers = [100, 300, 800]
 type = "sbm_gwf"
 
-[output.nectdf_grid]
+[output.netcdf_grid]
 path = "output_example-sbm-gwf.nc"
 
 [output.netcdf_grid.variables]
