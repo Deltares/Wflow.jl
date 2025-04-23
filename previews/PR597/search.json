@@ -266,7 +266,7 @@
     "href": "model_docs/routing/local-inertial.html#external-inflows",
     "title": "Local inertial",
     "section": "External inflows",
-    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can to added the local inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted as part of the continuity equation of the local inertial model.",
+    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can to added the local inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted as part of the continuity equation of the local inertial model. Abstractions are limited to a maximum of \\(\\SI{80}{\\%}\\) of the river volume.",
     "crumbs": [
       "Model documentation",
       "Routing concepts",
