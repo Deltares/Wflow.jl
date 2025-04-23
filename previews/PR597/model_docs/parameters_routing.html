@@ -969,6 +969,11 @@ td, th {
 <td>Water volume overland flow</td>
 <td>m³</td>
 </tr>
+<tr class="odd">
+<td><code>land_surface_water__instantaneous_volume</code></td>
+<td>Water volume overland flow</td>
+<td>m³</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -1376,6 +1381,11 @@ td, th {
 <section id="output-7" class="level4">
 <h4 class="anchored" data-anchor-id="output-7">Output</h4>
 <table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Standard Name</th>
@@ -1388,6 +1398,16 @@ td, th {
 <td><code>land_surface_water__depth</code></td>
 <td>Water depth</td>
 <td>m</td>
+</tr>
+<tr class="even">
+<td><code>land_surface_water__volume</code></td>
+<td>Total surface water storage of cell (including river storage for river cells)</td>
+<td>m³</td>
+</tr>
+<tr class="odd">
+<td><code>land_surface_water__instantaneous_volume</code></td>
+<td>Total surface water storage of cell (including river storage for river cells)</td>
+<td>m³</td>
 </tr>
 </tbody>
 </table>
@@ -1737,7 +1757,7 @@ td, th {
 <h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity River</h3>
 <section id="input-10" class="level4">
 <h4 class="anchored" data-anchor-id="input-10">Input</h4>
-<table class="caption-top table">
+<table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1777,13 +1797,32 @@ td, th {
 <td>-</td>
 <td>-</td>
 </tr>
+<tr class="odd">
+<td><code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code></td>
+<td>Kodatie transport capacity coefficient a</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code></td>
+<td>Kodatie transport capacity coefficient b</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code></td>
+<td>Kodatie transport capacity coefficient c</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code></td>
+<td>Kodatie transport capacity coefficient d</td>
+<td>-</td>
+<td>-</td>
+</tr>
 </tbody>
 </table>
-<div class="line-block"><code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code> | Kodatie transport capacity coefficient a | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code> | Kodatie transport capacity coefficient b | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code> | Kodatie transport capacity coefficient c | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code> | Kodatie transport capacity coefficient d | - | - |</div>
-<p>: {.striped .hover}</p>
 </section>
 </section>
 <section id="overland-flow-transport" class="level3">
