@@ -44,6 +44,7 @@ td, th {
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `lake_water__volume` | Lake volume (average over timestep) | m³ |
+| `lake_water__instantaneous_volume` | Lake volume (instantaneous) | m³ |
 | `lake_water_surface__elevation` | Lake water level (average over timestep) | m |
 | `lake_water~outgoing__volume_flow_rate` | Outflow of the lake (average over timestep) | m³ s⁻¹ |
 | `lake_water~incoming__volume_flow_rate` | Inflow into the lake (average over timestep) | m³ s⁻¹ |
@@ -112,6 +113,7 @@ td, th {
 | `river_water__volume_flow_rate` | River discharge (average over timestep) | m³ s⁻¹ |
 | `river_water__depth` | River water depth (average over timestep) | m |
 | `river_water__volume` | River water volume (average over timestep) | m³ |
+| `river_water__instantaneous_volume` | River water volume (instantaneous)  | m³ |
 | `river_water_inflow~lateral__volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
 : {.striped .hover}
 
@@ -134,6 +136,7 @@ td, th {
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_surface_water__volume_flow_rate` | Discharge overland flow (average over timestep) | m³ s⁻¹ |
+| `land_surface_water~to-river__volume_flow_rate` | Discharge overland flow that flows to the river | m³ s⁻¹ |
 | `land_surface_water__depth` | Water depth overland flow (average over timestep) | m |
 | `land_surface_water__volume` | Water volume overland flow (average over timestep) | m³ |
 : {.striped .hover}
@@ -189,6 +192,7 @@ td, th {
 | `river_water__volume_flow_rate` | River (+ floodplain) discharge (average over timestep) | m³ s⁻¹ |
 | `river_water__depth` | River water depth (average over timestep) | m |
 | `river_water__volume` | River water volume (average over timestep) | m³ |
+| `river_water__instantaneous_volume` | River water volume (instantaneous)  | m³ |
 : {.striped .hover}
 
 ### 1D floodplain flow
@@ -210,6 +214,7 @@ td, th {
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `floodplain_water__volume` | Floodplain volume (average over timestep) | m³ |
+| `floodplain_water__instantaneous_volume` | Floodplain volume | m³ |
 | `floodplain_water__volume_flow_rate` | Floodplain discharge (average over timestep) | m³ s⁻¹ |
 : {.striped .hover}
 
