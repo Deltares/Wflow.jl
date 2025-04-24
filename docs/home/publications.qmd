@@ -214,6 +214,10 @@ Wang, X., Zhang, J., Babovic, V., 2016. Improving real-time forecasting of water
 indicators with combination of process-based models and data assimilation technique.
 Ecological Indicators 66, 428–439. <https://doi:10.1016/j.ecolind.2016.02.016>.
 
+Zang, S., Weerts, A., van Verseveld, W. J., Li, Z., & Huang, P., 2025. Compound effects of 
+river routing and local rainfall-runoff for inflow simulation of a large reservoir. 
+Hydrological Sciences Journal. <https://doi.org/10.1080/02626667.2025.2496280>
+
 ### PhD, MSc, BSc Theses & Internship reports
 
 Abdelnour, A., 2022. Bias Correction of Climate Simulations to Assess Climate Change Impacts
