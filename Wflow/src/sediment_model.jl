@@ -61,10 +61,10 @@ end
 
 "set the initial states of the `sediment` model"
 function set_states!(model::AbstractModel{<:SedimentModel})
-    # read and set states in model object if reinit=false
+    # read and set states in model object if cold_start=false
     (; config) = model
-    reinit = get(config.model, "reinit", true)::Bool
-    if reinit == false
+    cold_start = get(config.model, "cold_start", true)::Bool
+    if cold_start == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float64)

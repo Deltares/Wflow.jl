@@ -136,15 +136,15 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     land_v = routing.overland_flow.variables
     river_v = routing.river_flow.variables
 
-    reinit = get(config.model, "reinit", true)::Bool
+    cold_start = get(config.model, "cold_start", true)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
     do_lakes = get(config.model, "lakes", false)::Bool
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
-    # read and set states in model object if reinit=false
-    if reinit == false
+    # read and set states in model object if cold_start=false
+    if cold_start == false
         nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."

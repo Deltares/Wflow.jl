@@ -192,11 +192,11 @@ end
     @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before
 end
 
-# test reading and setting of warm states (reinit=false)
+# test reading and setting of warm states (cold_start=false)
 # modify existing config and initialize model with warm states
-@test config.model.reinit
-config.model["reinit"] = false
-@test !config.model.reinit
+@test config.model.cold_start
+config.model["cold_start"] = false
+@test !config.model.cold_start
 
 # test using an absolute path for the forcing
 @test !isabspath(config.input.path_forcing)

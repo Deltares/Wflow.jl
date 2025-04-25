@@ -112,7 +112,7 @@ sand__d50_diameter = "dm_sand"
 gravel__d50_diameter = "dm_gravel"
 
 [model]
-reinit = true
+cold_start = true
 run_river_model = true
 lakes = false
 reservoirs = true # cannot use reservoirs as in sbm because then states/volume need to be added

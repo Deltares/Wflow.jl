@@ -147,7 +147,7 @@ Wflow.close_files(model; delete_output = false)
 # test with warm start
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
-config.model.reinit = false
+config.model.cold_start = false
 
 model = Wflow.Model(config)
 (; domain) = model

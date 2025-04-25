@@ -11,7 +11,7 @@ The Table below shows the general model settings applicable for all model types.
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
 | `type` | Model type: [`sbm`, `sbm_gwf`, `sediment`] | - | - |
-| `reinit` | Initialize model with cold (`reinit` = `true`) or warm state | - | `true` |
+| `cold_start` | Initialize model with cold (`cold_start` = `true`) or warm state | - | `true` |
 | `sizeinmetres` | Input grid coordinates in lat/lon (`sizeinmetres` = `false`) or in meters | - | `false` |
 | `reservoirs` | Include reservoir modelling | - | `false` |
 | `lakes` | Include lake modelling | - | `false` |

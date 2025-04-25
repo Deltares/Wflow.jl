@@ -117,7 +117,7 @@ offset = 0.0
 [model]
 kin_wave_iteration = true
 gravitational_snow_transport = true
-reinit = true
+cold_start = true
 reservoirs = true
 snow = true
 thicknesslayers = [100, 300, 800]

@@ -30,7 +30,7 @@ end
 
 Struct that contains the parsed TOML configuration, as well as a reference to the TOML path,
 if it exists. It behaves largely like a dictionary, but it overloads `getproperty` and
-`setproperty` to support syntax like `config.model.reinit = false`.
+`setproperty` to support syntax like `config.model.cold_start = false`.
 """
 struct Config
     dict::Dict{String, Any}  # nested key value mapping of all settings
@@ -1734,8 +1734,8 @@ Check if required state settings in `config` object (parsed TOML file) are set f
 or writing states.
 """
 function check_config_states(config::Config)
-    reinit = get(config.model, "reinit", true)::Bool
-    if !reinit
+    cold_start = get(config.model, "cold_start", true)::Bool
+    if !cold_start
         state_settings = check_config_states(config, "path_input")
         state_settings ||
             error("The state section for reading states in the TOML file is incomplete")

@@ -93,7 +93,7 @@ end
 end
 
 # test reading warm states
-config.model["reinit"] = false
+config.model["cold_start"] = false
 model = Wflow.Model(config)
 @testset "initial warm states" begin
     river = model.routing.river_flow

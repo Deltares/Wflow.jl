@@ -73,7 +73,7 @@ Model-specific settings can be included in the model section of the TOML file.
 type = "sbm"                          # one of ("sbm" or "sbm_gwf")
 gravitational_snow_transport = true   # include lateral snow transport in the model, default is false
 snow = true                           # include snow modelling, default is false
-reinit = true                         # cold (reinit = true) or warm state (reinit = false), default is true
+cold_start = true                     # cold (cold_start = true) or warm state (cold_start = false), default is true
 reservoirs = true                     # include reservoir modelling, default is false
 kin_wave_iteration = true             # enable kinematic wave iterations in the model, default is false
 thicknesslayers = [100, 300, 800]     # specific SBM soil model setting: for each soil layer, a thickness [mm] is specified
