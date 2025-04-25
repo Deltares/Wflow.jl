@@ -747,7 +747,7 @@ $\SI{}{mm}$:
 
 ```toml
 [model]
-thicknesslayers = [100, 300, 800]
+soil_thickness_layer = [100, 300, 800]
 ```
 
 The code checks for each grid cell the specified layers against the soil thickness
