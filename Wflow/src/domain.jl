@@ -348,10 +348,10 @@ function get_cell_lengths(dataset::NCDataset, config::Config, network::NetworkLa
     y_coords = read_y_axis(dataset)
     x_coords = read_x_axis(dataset)
     y = permutedims(repeat(y_coords; outer = (1, length(x_coords))))[network.indices]
-    cellength = abs(mean(diff(x_coords)))
+    celllength = abs(mean(diff(x_coords)))
 
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
-    x_length, y_length = cell_lengths(y, cellength, sizeinmetres)
+    cell_length_in_meter = get(config.model, "cell_length_in_meter", false)::Bool
+    x_length, y_length = cell_lengths(y, celllength, cell_length_in_meter)
     return x_length, y_length
 end
 

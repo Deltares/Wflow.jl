@@ -12,7 +12,7 @@ The Table below shows the general model settings applicable for all model types.
 | --- | ----- | - | - |
 | `type` | Model type: [`sbm`, `sbm_gwf`, `sediment`] | - | - |
 | `cold_start` | Initialize model with cold (`cold_start` = `true`) or warm state | - | `true` |
-| `sizeinmetres` | Input grid coordinates in lat/lon (`sizeinmetres` = `false`) or in meters | - | `false` |
+| `cell_length_in_meter` | Unit cell length of input rasters in lat/lon degree (`cell_length_in_meter` = `false`) or in meter, cell length refers to the length of raster cells in `x` and `y` direction | - | `false` |
 | `reservoirs` | Include reservoir modelling | - | `false` |
 | `lakes` | Include lake modelling | - | `false` |
 : {.striped .hover}

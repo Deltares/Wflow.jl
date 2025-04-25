@@ -558,13 +558,13 @@ function setup_grid_netcdf(
     calendar,
     time_units,
     extra_dim,
-    sizeinmetres;
+    cell_length_in_meter;
     float_type = Float32,
     deflatelevel = 0,
 )
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
-    if sizeinmetres
+    if cell_length_in_meter
         defVar(
             ds,
             "x",
@@ -628,7 +628,7 @@ function setup_grid_netcdf(
         attrib = ["units" => time_units, "calendar" => calendar],
         deflatelevel = deflatelevel,
     )
-    if sizeinmetres
+    if cell_length_in_meter
         for (key, val) in pairs(parameters)
             if eltype(val.vector) <: AbstractFloat
                 # all floats are saved as Float32
@@ -979,7 +979,7 @@ end
 function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing)
     x_coords = read_x_axis(nc_static)
     y_coords = read_y_axis(nc_static)
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+    cell_length_in_meter = get(config.model, "cell_length_in_meter", false)::Bool
 
     calendar = get(config.time, "calendar", "standard")::String
     time_units = get(config.time, "time_units", CFTime.DEFAULT_TIME_UNITS)
@@ -1002,7 +1002,7 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             calendar,
             time_units,
             extra_dim,
-            sizeinmetres;
+            cell_length_in_meter;
             deflatelevel = deflatelevel,
         )
     else
@@ -1026,7 +1026,7 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             calendar,
             time_units,
             extra_dim,
-            sizeinmetres;
+            cell_length_in_meter;
             float_type = Float64,
         )
     else
