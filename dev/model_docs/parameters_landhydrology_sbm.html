@@ -754,6 +754,11 @@ td, th {
 <td>Throughfall</td>
 <td>mm Δt⁻¹</td>
 </tr>
+<tr class="odd">
+<td><code>vegetation_canopy_water__interception_volume_flux</code></td>
+<td>Interception</td>
+<td>mm Δt⁻¹</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -1036,6 +1041,26 @@ td, th {
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
+<td><code>soil~compacted_surface_water__excess_volume_flux</code></td>
+<td>Excess water for compacted soil fraction</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil~non-compacted_surface_water__excess_volume_flux</code></td>
+<td>Excess water for non-compacted soil fraction</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_surface_water_unsat-zone__exfiltration_volume_flux</code></td>
+<td>Water exfiltrating from unsaturated store because of rising water table</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_surface_water_sat-zone__exfiltration_volume_flux</code></td>
+<td>Water exfiltrating from saturated store during saturation excess conditions</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
 <td><code>soil_layer_water__volume_fraction</code></td>
 <td>Volumetric water content per soil layer (including residual water content and saturated zone)</td>
 <td>-</td>
@@ -1217,7 +1242,7 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>land~irrigated-non-paddy__irrigation_trigger_flag</code></td>
-<td>Irrigtation trigger (off or on, 0 or 1)</td>
+<td>Irrigation trigger (off or on, 0 or 1)</td>
 <td>-</td>
 <td>-</td>
 </tr>
@@ -1328,7 +1353,7 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>land~irrigated-paddy__irrigation_trigger_flag</code></td>
-<td>Irrigtation trigger (off or on, 0 or 1)</td>
+<td>Irrigation trigger (off or on, 0 or 1)</td>
 <td>-</td>
 <td>-</td>
 </tr>
@@ -1448,6 +1473,11 @@ td, th {
 <tr class="even">
 <td><code>land~non-irrigated__allocated_water_volume_flux</code></td>
 <td>Allocated water for non-irrigation</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>land~non-irrigation__return_flow_volume_flux</code></td>
+<td>Return flow from non-irrgation sectors</td>
 <td>mm Δt⁻¹</td>
 </tr>
 </tbody>

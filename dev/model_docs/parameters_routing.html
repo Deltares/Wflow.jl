@@ -398,6 +398,7 @@ td, th {
   word-wrap: break-word;
 }
 </style>
+<p>Standard names in the Tables below that contain <code>instantaneous</code> in the <code>quantity</code> part of the standard name can be valid for an internal time step (for example for kinematic wave routing an internal time step is optional (and recommended), with a time step equal to the model simulation time step the standard name nonetheless contains <code>instantaneous</code>) and thus considered instantaneous compared to the model simulation time step Δt <span class="math inline">\(\SIb{}{s}\)</span>.</p>
 <section id="water-bodies" class="level2">
 <h2 class="anchored" data-anchor-id="water-bodies">Water bodies</h2>
 <section id="lakes" class="level3">
@@ -541,35 +542,40 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>lake_water__volume</code></td>
-<td>Lake volume (average over timestep)</td>
+<td>Lake volume</td>
 <td>m³</td>
 </tr>
 <tr class="even">
-<td><code>lake_water_surface__elevation</code></td>
-<td>Lake water level (average over timestep)</td>
-<td>m</td>
+<td><code>lake_water__instantaneous_volume</code></td>
+<td>Lake volume</td>
+<td>m³</td>
 </tr>
 <tr class="odd">
+<td><code>lake_water_surface__elevation</code></td>
+<td>Lake water level</td>
+<td>m</td>
+</tr>
+<tr class="even">
 <td><code>lake_water~outgoing__volume_flow_rate</code></td>
-<td>Outflow of the lake (average over timestep)</td>
+<td>Outflow of the lake</td>
+<td>m³ s⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>lake_water~incoming__volume_flow_rate</code></td>
+<td>Inflow into the lake</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>lake_water~incoming__volume_flow_rate</code></td>
-<td>Inflow into the lake (average over timestep)</td>
-<td>m³ s⁻¹</td>
-</tr>
-<tr class="odd">
 <td><code>lake_water__evaporation_volume_flux</code></td>
 <td>Average actual evaporation over the lake area</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>lake_water__precipitation_volume_flux</code></td>
 <td>Average precipitation over the lake area</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>lake_water__potential_evaporation_volume_flux</code></td>
 <td>Average potential evaporation over the lake area</td>
 <td>mm Δt⁻¹</td>
@@ -707,17 +713,17 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>reservoir_water__volume</code></td>
-<td>Reservoir volume (average over the timestep)</td>
+<td>Reservoir volume</td>
 <td>m³</td>
 </tr>
 <tr class="even">
 <td><code>reservoir_water~outgoing__volume_flow_rate</code></td>
-<td>Outflow of the reservoir (average over the timestep)</td>
+<td>Outflow of the reservoir</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="odd">
 <td><code>reservoir_water~incoming__volume_flow_rate</code></td>
-<td>Inflow into the reservoir (average over the timestep)</td>
+<td>Inflow into the reservoir</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="even">
@@ -836,20 +842,25 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>river_water__volume_flow_rate</code></td>
-<td>River discharge (average over timestep)</td>
+<td>River discharge</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="even">
 <td><code>river_water__depth</code></td>
-<td>River water depth (average over timestep)</td>
+<td>River water depth</td>
 <td>m</td>
 </tr>
 <tr class="odd">
 <td><code>river_water__volume</code></td>
-<td>River water volume (average over timestep)</td>
+<td>River water volume</td>
 <td>m³</td>
 </tr>
 <tr class="even">
+<td><code>river_water__instantaneous_volume</code></td>
+<td>River water volume</td>
+<td>m³</td>
+</tr>
+<tr class="odd">
 <td><code>river_water_inflow~lateral__volume_flow_rate</code></td>
 <td>Lateral inflow into the river</td>
 <td>m³ s⁻¹</td>
@@ -940,17 +951,27 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>land_surface_water__volume_flow_rate</code></td>
-<td>Discharge overland flow (average over timestep)</td>
+<td>Discharge overland flow</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>land_surface_water__depth</code></td>
-<td>Water depth overland flow (average over timestep)</td>
-<td>m</td>
+<td><code>land_surface_water~to-river__volume_flow_rate</code></td>
+<td>Discharge overland flow that flows to the river</td>
+<td>m³ s⁻¹</td>
 </tr>
 <tr class="odd">
+<td><code>land_surface_water__depth</code></td>
+<td>Water depth overland flow</td>
+<td>m</td>
+</tr>
+<tr class="even">
 <td><code>land_surface_water__volume</code></td>
-<td>Water volume overland flow (average over timestep)</td>
+<td>Water volume overland flow</td>
+<td>m³</td>
+</tr>
+<tr class="odd">
+<td><code>land_surface_water__instantaneous_volume</code></td>
+<td>Water volume overland flow</td>
 <td>m³</td>
 </tr>
 </tbody>
@@ -1167,17 +1188,22 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>river_water__volume_flow_rate</code></td>
-<td>River (+ floodplain) discharge (average over timestep)</td>
+<td>River (+ floodplain) discharge</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="even">
 <td><code>river_water__depth</code></td>
-<td>River water depth (average over timestep)</td>
+<td>River water depth</td>
 <td>m</td>
 </tr>
 <tr class="odd">
 <td><code>river_water__volume</code></td>
-<td>River water volume (average over timestep)</td>
+<td>River water volume</td>
+<td>m³</td>
+</tr>
+<tr class="even">
+<td><code>river_water__instantaneous_volume</code></td>
+<td>River water volume</td>
 <td>m³</td>
 </tr>
 </tbody>
@@ -1251,11 +1277,6 @@ td, th {
 <section id="output-6" class="level4">
 <h4 class="anchored" data-anchor-id="output-6">Output</h4>
 <table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Standard Name</th>
@@ -1266,12 +1287,17 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>floodplain_water__volume</code></td>
-<td>Floodplain volume (average over timestep)</td>
+<td>Floodplain volume</td>
 <td>m³</td>
 </tr>
 <tr class="even">
+<td><code>floodplain_water__instantaneous_volume</code></td>
+<td>Floodplain volume</td>
+<td>m³</td>
+</tr>
+<tr class="odd">
 <td><code>floodplain_water__volume_flow_rate</code></td>
-<td>Floodplain discharge (average over timestep)</td>
+<td>Floodplain discharge</td>
 <td>m³ s⁻¹</td>
 </tr>
 </tbody>
@@ -1365,8 +1391,18 @@ td, th {
 <tbody>
 <tr class="odd">
 <td><code>land_surface_water__depth</code></td>
-<td>Water depth (average over timestep)</td>
+<td>Water depth</td>
 <td>m</td>
+</tr>
+<tr class="even">
+<td><code>land_surface_water__volume</code></td>
+<td>Total surface water storage of cell (including river storage for river cells)</td>
+<td>m³</td>
+</tr>
+<tr class="odd">
+<td><code>land_surface_water__instantaneous_volume</code></td>
+<td>Total surface water storage of cell (including river storage for river cells)</td>
+<td>m³</td>
 </tr>
 </tbody>
 </table>
@@ -1716,7 +1752,7 @@ td, th {
 <h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity River</h3>
 <section id="input-10" class="level4">
 <h4 class="anchored" data-anchor-id="input-10">Input</h4>
-<table class="caption-top table">
+<table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1756,13 +1792,32 @@ td, th {
 <td>-</td>
 <td>-</td>
 </tr>
+<tr class="odd">
+<td><code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code></td>
+<td>Kodatie transport capacity coefficient a</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code></td>
+<td>Kodatie transport capacity coefficient b</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code></td>
+<td>Kodatie transport capacity coefficient c</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code></td>
+<td>Kodatie transport capacity coefficient d</td>
+<td>-</td>
+<td>-</td>
+</tr>
 </tbody>
 </table>
-<div class="line-block"><code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code> | Kodatie transport capacity coefficient a | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code> | Kodatie transport capacity coefficient b | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code> | Kodatie transport capacity coefficient c | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code> | Kodatie transport capacity coefficient d | - | - |</div>
-<p>: {.striped .hover}</p>
 </section>
 </section>
 <section id="overland-flow-transport" class="level3">

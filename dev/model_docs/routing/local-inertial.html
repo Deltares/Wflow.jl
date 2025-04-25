@@ -459,7 +459,7 @@ Q_{(i+1/2)}^{n})\right]- g h_f \frac{\Delta t}{\Delta x} (\eta^n_i - \eta^n_{i-1
 <p>External inflows <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> for example water supply or abstractions can to added the local inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_inflow~external__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"river_inflow"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>These inflows are added or subtracted as part of the continuity equation of the local inertial model.</p>
+<p>These inflows are added or subtracted as part of the continuity equation of the local inertial model. Abstractions are limited to a maximum of <span class="math inline">\(\SI{80}{\%}\)</span> of the river volume.</p>
 </section>
 <section id="abstractions" class="level2">
 <h2 class="anchored" data-anchor-id="abstractions">Abstractions</h2>
