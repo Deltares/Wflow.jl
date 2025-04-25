@@ -24,6 +24,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.interception.variables.stemflow), unit = "mm dt-1"),
     "vegetation_canopy_water__throughfall_volume_flux" =>
         (lens = @optic(_.land.interception.variables.throughfall), unit = "mm dt-1"),
+    "vegetation_canopy_water__interception_volume_flux" => (
+        lens = @optic(_.land.interception.variables.interception_rate),
+        unit = "mm dt-1",
+    ),
     "snowpack__leq-depth" => (lens = @optic(_.land.snow.variables.swe), unit = "mm"),
     "snowpack_meltwater__volume_flux" =>
         (lens = @optic(_.land.snow.variables.snow_melt), unit = "mm dt-1"),
@@ -47,6 +51,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.river_flow.variables.h_av), unit = "m"),
     "river_water__volume" =>
         (lens = @optic(_.routing.river_flow.variables.storage_av), unit = "m3"),
+    "river_water__instantaneous_volume" =>
+        (lens = @optic(_.routing.river_flow.variables.storage), unit = "m3"),
     "land_surface_water_abstraction__volume_flux" => (
         lens = @optic(_.routing.river_flow.allocation.variables.act_surfacewater_abst),
         unit = "mm dt-1",
@@ -55,6 +61,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.floodplain.variables.storage_av),
         unit = "m3",
     ),
+    "floodplain_water__instantaneous_volume" =>
+        (lens = @optic(_.routing.river_flow.floodplain.variables.storage), unit = "m3"),
     "floodplain_water__instantaneous_depth" =>
         (lens = @optic(_.routing.river_flow.floodplain.variables.h), unit = "m"),
     "floodplain_water__instantaneous_volume_flow_rate" =>
@@ -105,6 +113,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage_av),
         unit = "m3",
     ),
+    "lake_water__instantaneous_volume" => (
+        lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage),
+        unit = "m3",
+    ),
     "lake_water_surface__instantaneous_elevation" => (
         lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.waterlevel),
         unit = "m",
@@ -149,6 +161,14 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.runoff), unit = "mm dt-1"),
     "soil_surface_water__net_runoff_volume_flux" =>
         (lens = @optic(_.land.soil.variables.net_runoff), unit = "mm dt-1"),
+    "soil_surface_water_unsat-zone__exfiltration_volume_flux" =>
+        (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
+    "soil_surface_water_sat-zone__exfiltration_volume_flux" =>
+        (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
+    "soil~compacted_surface_water__excess_volume_flux" =>
+        (lens = @optic(_.land.soil.variables.excesswatersoil), unit = "mm dt-1"),
+    "soil~non-compacted_surface_water__excess_volume_flux" =>
+        (lens = @optic(_.land.soil.variables.excesswaterpath), unit = "mm dt-1"),
     "soil_layer_water__volume_fraction" =>
         (lens = @optic(_.land.soil.variables.vwc), unit = "m3 m-3"),
     "soil_layer_water__volume_percentage" =>
@@ -199,12 +219,16 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.overland_flow.variables.q), unit = "m3 s-1"),
     "land_surface_water__volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.q_av), unit = "m3 s-1"),
+    "land_surface_water~to-river__volume_flow_rate" =>
+        (lens = @optic(_.routing.overland_flow.variables.to_river), unit = "m3 s-1"),
     "land_surface_water__instantaneous_depth" =>
         (lens = @optic(_.routing.overland_flow.variables.h), unit = "m"),
     "land_surface_water__depth" =>
         (lens = @optic(_.routing.overland_flow.variables.h_av), unit = "m"),
     "land_surface_water__volume" =>
         (lens = @optic(_.routing.overland_flow.variables.storage_av), unit = "m3"),
+    "land_surface_water__instantaneous_volume" =>
+        (lens = @optic(_.routing.overland_flow.variables.storage), unit = "m3"),
     "land_surface_water__x_component_of_instantaneous_volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.qx), unit = "m3 s-1"),
     "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
@@ -243,6 +267,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.allocation.variables.nonirri_alloc), unit = "mm dt-1"),
     "subsurface_water_abstraction__volume_flux" => (
         lens = @optic(_.land.allocation.variables.act_groundwater_abst),
+        unit = "mm dt-1",
+    ),
+    "land~non-irrigation__return_flow_volume_flux" => (
+        lens = @optic(_.land.allocation.variables.nonirri_returnflow),
         unit = "mm dt-1",
     ),
     "subsurface_water__hydraulic_head" =>

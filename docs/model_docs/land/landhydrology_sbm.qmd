@@ -753,35 +753,17 @@ thicknesslayers = [100, 300, 800]
 The code checks for each grid cell the specified layers against the soil thickness
 $\SIb{}{mm}$, and adds or removes (partly) layer(s) based on the soil thickness.
 
-Assuming a unit head gradient, the potential transfer of water $\SIb{Q_\mathrm{transfer, pot}}{mm\ t^{-1}}$
-from the unsaturated storage in a layer $\SIb{S_\mathrm{unsat}}{mm}$ is controlled by the
-vertical saturated hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$
-at depth $\SIb{z_\mathrm{bottom}}{mm}$ (bottom layer) or $\SIb{z_\mathrm{watertable}}{mm}$,
-the effective saturation degree of the layer, and a Brooks-Corey power coefficient $c$ based
-on the pore size distribution index $\lambda$ (Brooks and Corey, 1964):
+Assuming a unit head gradient, the potential transfer of water $\SIb{Q_{\mathrm{transfer,
+pot,} n}}{mm\ t^{-1}}$ from an unsaturated layer $n$ is controlled by the vertical saturated
+hydraulic conductivity $\SIb{K_{\mathrm{vz},n}}{mm\ t^{-1}}$, the effective saturation
+degree of layer $n$, and a Brooks-Corey power coefficient $\SIb{c_n}{-}$ based on the pore
+size distribution index $\SIb{\lambda_n}{-}$ (Brooks and Corey, 1964) of layer $n$:
 
 $$
 \begin{gathered}
-    Q_\mathrm{transfer, pot} = K_\mathrm{vz}\left(\frac{\theta-\theta_r}{\theta_s-\theta_r}\right)^c\\
-    c=\frac{2+3\lambda}{\lambda}.
+    Q_{\mathrm{transfer, pot,} n} = K_{\mathrm{vz},n}\left(\frac{\theta_n-\theta_\mathrm{r}}{\theta_\mathrm{s}-\theta_\mathrm{r}}\right)^{c_n}\\
+    c_n=\frac{2+3\lambda_n}{\lambda_n}.
 \end{gathered}
-$$
-
-When the soil bucket is not split-up into different layers, it is possible to use the
-original Topog_SBM vertical transfer formulation, by specifying in the TOML file:
-
-```toml
-[model]
-transfermethod = true
-```
-
-The potential transfer of water from the unsaturated store to the saturated store is in that
-case controlled by the vertical saturated hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$
-at depth $\SIb{z_\mathrm{watertable}}{mm}$ and the ratio between
-$\SIb{S_\mathrm{unsat}}{mm}$ and $\SIb{S_\mathrm{deficit}}{mm}$:
-
-$$
-    Q_\mathrm{transfer, pot} = K_\mathrm{vz}\frac{S_\mathrm{unsat}}{S_\mathrm{deficit}}.
 $$
 
 Four different saturated hydraulic conductivity depth profiles
@@ -798,16 +780,22 @@ to estimate the saturated hydraulic conductivity, while these measurements are o
 for soil depths beyond $\SI{1.5-2}{m}$. These different profiles allow to extent the
 saturated hydraulic conductivity profile based on measurements (either an exponential fit or
 hydraulic conductivity value per soil layer) with an exponential or constant profile. By
-default, with `saturated_hydraulic_conductivity_profile` "exponential", the saturated
-hydraulic conductivity $\SIb{K_\mathrm{vz}}{mm\ t^{-1}}$ declines with soil depth
-$\SIb{z}{mm}$ in the model according to:
+default, with `saturated_hydraulic_conductivity_profile` "exponential", the vertical
+saturated hydraulic conductivity $\SIb{K_{\mathrm{vz,} n}}{mm\ t^{-1}}$ of unsaturated soil
+layer $n$ for $m$ unsaturated soil layers is given by:
 
 $$
-    K_\mathrm{vz} = K_0 e^{-\subtext{f}{Kv} z},
+    K_{\mathrm{vz},n} = f_{\mathrm{Kv,} n} K_\mathrm{v0} \begin{cases}
+     e^{(-f_\mathrm{Kv} z_{\mathrm{bottom},n})} & \text{if $n < m$}\\
+     e^{(-f_\mathrm{Kv} z_\mathrm{watertable})} & \text{if $n = m$},\\
+  \end{cases}
 $$
 
-where $\SIb{K_0}{mm\ t^{-1}}$ is the vertical saturated hydraulic conductivity at the soil
-surface and $\SIb{\subtext{f}{Kv}}{mm^{-1}}$ is a scaling parameter.
+where $\SIb{K_\mathrm{v0}}{mm\ t^{-1}}$ is the vertical saturated hydraulic conductivity at
+the soil surface, $\SIb{f_{\mathrm{Kv,} n}}{-}$ is an optional (default: $1.0$)
+multiplication factor for each soil layer $n$ to correct the vertical saturated hydraulic
+conductivity, $\SIb{\subtext{f}{Kv}}{mm^{-1}}$ is a scaling parameter and
+$\SIb{z_{\mathrm{bottom},n}}{mm}$ is the soil depth at the bottom of soil layer $n$.
 
 The plot below shows the relation between soil depth $z$ and vertical saturated hydraulic
 conductivity $K_\mathrm{vz}$ for different values of $\subtext{f}{Kv}$.
@@ -836,37 +824,60 @@ let
 end
 ```
 
-With `saturated_hydraulic_conductivity_profile` "exponential\_constant", $K_\mathrm{vz}$
-declines exponentially with soil depth $\SIb{z}{mm}$ until $\SIb{z_\mathrm{exp}}{mm}$
-below the soil surface, and stays constant at and beyond soil depth $z_\mathrm{exp}$:
+With `saturated_hydraulic_conductivity_profile` "exponential\_constant", $K_{\mathrm{vz,}
+n}$ declines exponentially (if $f_{\mathrm{Kv,} n} = 1.0$) with soil depth $\SIb{z}{mm}$
+until $\SIb{z_\mathrm{exp}}{mm}$ below the soil surface, and stays constant at and beyond
+soil depth $z_\mathrm{exp}$ by default ($f_{\mathrm{Kv,} n} = 1.0$):
 
 $$
-    K_\mathrm{vz} = \begin{cases}
-    K_0e^{-\subtext{f}{Kv} z} & \text{if $z < \subtext{z}{exp}$}\\
-    K_0e^{-\subtext{f}{Kv}\subtext{z}{exp}} & \text{if $z \ge \subtext{z}{exp}$}.
+    K_{\mathrm{vz,} n} = f_{\mathrm{Kv,} n} K_\mathrm{v0} \begin{cases}
+    e^{-\subtext{f}{Kv} z_{\mathrm{bottom,} n}} & \text{if $z_{\mathrm{bottom,} n} < \subtext{z}{exp}$}\\
+    e^{-\subtext{f}{Kv}\subtext{z}{exp}} & \text{if $z_{\mathrm{bottom,} n} \ge \subtext{z}{exp}$}.
     \end{cases}
 $$
 
-It is also possible to provide a $K_\mathrm{vz}$ value per soil layer by specifying
-`saturated_hydraulic_conductivity_profile` "layered", these $K_\mathrm{vz}$ values are used
-directly to compute the vertical transfer of water between soil layers and to the saturated
-store $S_\mathrm{sat}$. Finally, with the `saturated_hydraulic_conductivity_profile`
-"layered\_exponential" a $K_\mathrm{vz}$ value per soil layer is used until depth
-$z_\mathrm{layered}$ below the soil surface, and beyond $z_\mathrm{layered}$ an exponential
-decline of $K_\mathrm{vz}$ (of the soil layer with bottom $z_\mathrm{layered}$) controlled
-by $f$ occurs. The different available `saturated_hydraulic_conductivity_profile` options
-are schematized in the figure below where the blue line represents the $K_\mathrm{vz}$
-value.
+It is also possible to provide a vertical saturated hydraulic conductivity value per soil
+layer by specifying `saturated_hydraulic_conductivity_profile` "layered", these values are
+used in combination with $f_{\mathrm{Kv,} n}$ to compute the vertical transfer of water
+between unsaturated soil layers and to the saturated store $S_\mathrm{sat}$. Finally, with
+the `saturated_hydraulic_conductivity_profile` "layered\_exponential" $K_{\mathrm{vz,} n}$
+for depth $z_\mathrm{layered}$ below the soil surface is based on provided vertical
+saturated hydraulic conductivity values (in combination with $f_{\mathrm{Kv,} n}$), and
+beyond $z_\mathrm{layered}$, $K_{\mathrm{vz,} n}$ is controlled by $K_\mathrm{vz}$ of layer
+$n$ with bottom $z_\mathrm{layered}$, $\subtext{f}{Kv}$ and $f_{\mathrm{Kv,} n}$. The
+different available `saturated_hydraulic_conductivity_profile` options are schematized in
+the figure below:
 
 ![Overview of available `saturated_hydraulic_conductivity_profile` options, for a soil column with five layers](../../images/sbm_ksat_profiles.png)
+
+When the soil bucket is not split-up into different layers, it is possible to use the
+original Topog_SBM vertical transfer formulation, by specifying in the TOML file:
+
+```toml
+[model]
+transfermethod = true
+```
+
+The potential transfer of water from the unsaturated store to the saturated store is in that
+case controlled by the vertical saturated hydraulic conductivity at the water table depth
+$\SIb{z_\mathrm{watertable}}{mm}$, an optional multiplication factor $\SIb{f_\mathrm{Kv,
+1}}{-}$ to correct the vertical saturated hydraulic conductivity, and the ratio between
+$\SIb{S_\mathrm{unsat}}{mm}$ and $\SIb{S_\mathrm{deficit}}{mm}$:
+
+$$
+    Q_{\mathrm{transfer, pot,} 1} = f_{\mathrm{Kv,} 1} K_\mathrm{v0} e^{-\subtext{f}{Kv} z_\mathrm{watertable}}\frac{S_\mathrm{unsat}}{S_\mathrm{deficit}}.
+$$
 
 ### Infiltration
 
 The water available for infiltration is taken as throughfall, stemflow, snow runoff and
 glaciermelt. Infiltration is determined separately for the compacted and non-compacted
-areas, as these have different infiltration capacities. Naturally, only the water that can
-be stored in the soil can infiltrate. If not all water can infiltrate, this is added as
-excess water to the runoff routing scheme.
+areas, as these have different infiltration capacities. The infiltration capacity of
+non-compacted areas is based on the vertical saturated conductivity at the soil surface
+$\SIb{K_\mathrm{v0}}{mm\ t^{-1}}$ and an optional multiplication factor $\SIb{f_\mathrm{Kv,
+1}}{-}$ to correct the vertical saturated hydraulic conductivity of the upper soil layer.
+Naturally, only the water that can be stored in the soil can infiltrate. If not all water
+can infiltrate, this is added as excess water to the runoff routing scheme.
 
 The infiltrating water is split in two parts, the part that falls on compacted areas and the
 part that falls on non-compacted areas. The maximum infiltration rate in these areas is
@@ -1092,8 +1103,8 @@ of about 15 cm (in this case represented by two soil layers of $\SI{5}{cm}$ and
 $\SI{10}{cm}$ thickness), a plow soil layer of 5 cm with relative low permeability (vertical
 hydraulic conductivity $\subtext{K}{vz}$ of about $\SI{5}{mm\ d^{-1}}$), and a non-puddled
 soil below the plow soil layer. The low vertical hydraulic conductivity of the plow soil
-layer can be realized by making use of a multiplication factor $\SIb{}{-}$ applied to the
-vertical saturated hydraulic conductivity at soil depth $\SIb{z}{mm}$.
+layer can be realized by making use of the optional multiplication factor
+$\SIb{f_{\mathrm{Kv,} n}}{-}$ (default is 1.0) applied to each soil layer $n$.
 
 ![Schematic diagram of a paddy field with water balance components and soil profile](../../images/paddy_profile.png)
 

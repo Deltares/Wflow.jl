@@ -101,6 +101,7 @@ td, th {
 | ---- | --- | - |
 | `vegetation_canopy_water__stemflow_volume_flux` | Stemflow | mm Δt⁻¹ |
 | `vegetation_canopy_water__throughfall_volume_flux` | Throughfall | mm Δt⁻¹ |
+| `vegetation_canopy_water__interception_volume_flux` | Interception | mm Δt⁻¹ |
 : {.striped .hover}
 
 ## Soil
@@ -155,6 +156,10 @@ td, th {
 | `soil_water__transpiration_volume_flux` | Transpiration from vegetation | mm Δt⁻¹ |
 | `soil_surface_water__runoff_volume_flux` | Total surface runoff from infiltration and saturation excess | mm Δt⁻¹ |
 | `soil_surface_water__net_runoff_volume_flux` | Net surface runoff (after open water evaporation) | mm Δt⁻¹ |
+| `soil~compacted_surface_water__excess_volume_flux` | Excess water for compacted soil fraction | mm Δt⁻¹ |
+| `soil~non-compacted_surface_water__excess_volume_flux` | Excess water for non-compacted soil fraction | mm Δt⁻¹ |
+| `soil_surface_water_unsat-zone__exfiltration_volume_flux` | Water exfiltrating from unsaturated store because of rising water table | mm Δt⁻¹ |
+| `soil_surface_water_sat-zone__exfiltration_volume_flux` | Water exfiltrating from saturated store during saturation excess conditions | mm Δt⁻¹ |
 | `soil_layer_water__volume_fraction` | Volumetric water content per soil layer (including residual water content and saturated zone) | - |
 | `soil_layer_water__volume_percentage` | Volumetric water content per soil layer (including residual water content and saturated zone) | % |
 | `soil_water_root-zone__volume_fraction` | Volumetric water content in root zone (including residual water content and saturated zone) | - |
@@ -194,7 +199,7 @@ td, th {
 #### Input static and cyclic
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land~irrigated-non-paddy__irrigation_trigger_flag` | Irrigtation trigger (off or on, 0 or 1) | - | - |
+| `land~irrigated-non-paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
 : {.striped .hover}
 
 #### Output
@@ -218,7 +223,7 @@ td, th {
 #### Input static and cyclic
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land~irrigated-paddy__irrigation_trigger_flag` | Irrigtation trigger (off or on, 0 or 1) | - | - |
+| `land~irrigated-paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
 : {.striped .hover}
 
 #### States
@@ -248,4 +253,5 @@ td, th {
 | `subsurface_water_abstraction__volume_flux` | Actual groundwater abstraction | mm Δt⁻¹ |
 | `land~irrigated__allocated_water_volume_flux` | Allocated water for irrigation | mm Δt⁻¹ |
 | `land~non-irrigated__allocated_water_volume_flux` | Allocated water for non-irrigation | mm Δt⁻¹ |
+| `land~non-irrigation__return_flow_volume_flux` | Return flow from non-irrgation sectors | mm Δt⁻¹ |
 : {.striped .hover}
