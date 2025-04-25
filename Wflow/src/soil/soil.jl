@@ -349,16 +349,16 @@ function SbmSoilParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
+    config_soil_layer_thickness = get(config.model, "soil_layer_thickness", Float64[])
 
-    if length(config_thicknesslayers) > 0
-        thicknesslayers =
-            SVector(Tuple(push!(Float64.(config_thicknesslayers), MISSING_VALUE)))
-        cum_depth_layers = pushfirst(cumsum(thicknesslayers), 0.0)
-        maxlayers = length(thicknesslayers) # max number of soil layers
+    if length(config_soil_layer_thickness) > 0
+        soil_layer_thickness =
+            SVector(Tuple(push!(Float64.(config_soil_layer_thickness), MISSING_VALUE)))
+        cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
+        maxlayers = length(soil_layer_thickness) # max number of soil layers
     else
-        thicknesslayers = SVector.(soilthickness)
-        cum_depth_layers = pushfirst(cumsum(thicknesslayers), 0.0)
+        soil_layer_thickness = SVector.(soilthickness)
+        cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
         maxlayers = 1
     end
 
@@ -497,11 +497,12 @@ function SbmSoilParameters(
     )
     cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
 
-    act_thickl = set_layerthickness.(soilthickness, (cum_depth_layers,), (thicknesslayers,))
+    act_thickl =
+        set_layerthickness.(soilthickness, (cum_depth_layers,), (soil_layer_thickness,))
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
-    if length(config_thicknesslayers) > 0
+    if length(config_soil_layer_thickness) > 0
         # root fraction read from dataset file, in case of multiple soil layers and TOML file
         # includes "soil_root__length_density_fraction"
         par_name = "soil_root__length_density_fraction"

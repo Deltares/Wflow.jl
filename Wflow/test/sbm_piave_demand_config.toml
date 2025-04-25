@@ -130,7 +130,7 @@ glacier = true
 kin_wave_iteration = true
 kw_river_tstep = 900
 kw_land_tstep = 3600
-thicknesslayers = [ 50, 100, 50, 200, 800,]
+soil_layer_thickness = [ 50, 100, 50, 200, 800,]
 river_routing = "kinematic-wave"
 
 [model.water_demand]

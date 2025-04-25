@@ -108,7 +108,7 @@ cold_start = true
 reservoirs = true
 snow = true
 kinematic-wave_subsurface = false
-thicknesslayers = [100, 300, 800]
+soil_layer_thickness = [100, 300, 800]
 type = "sbm"
 
 [output.netcdf_grid]

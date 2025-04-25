@@ -76,7 +76,7 @@ subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio 
 vegetation__leaf-area_index = "LAI"
 
 [model]
-thicknesslayers = [100, 300, 800]
+soil_layer_thickness = [100, 300, 800]
 type = "sbm"
 
 [output.csv]
