@@ -317,12 +317,12 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
-| `land_surface_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
-| `clay__d50_diameter` | Clay mean diameter | μm | 2.0 |
-| `silt__d50_diameter` | Silt mean diameter | μm | 10.0 |
-| `sand__d50_diameter` | Sand mean diameter | μm | 200.0 |
-| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | μm | 30.0 |
-| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | μm | 500.0 |
+| `land_surface_sediment__median_diameter` | Particle median diameter | mm | 0.1 |
+| `clay_mean_diameter` | Clay mean diameter | μm | 2.0 |
+| `silt_mean_diameter` | Silt mean diameter | μm | 10.0 |
+| `sand_mean_diameter` | Sand mean diameter | μm | 200.0 |
+| `sediment_aggregates~small__mean_diameter` | Small aggregates mean diameter | μm | 30.0 |
+| `sediment_aggregates~large__mean_diameter` | Large aggregates mean diameter | μm | 500.0 |
 | `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
 | `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
 : {.striped .hover}
@@ -332,7 +332,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 
-| `river_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
+| `river_sediment__median_diameter` | Particle mean diameter | mm | 0.1 |
 | `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
 | `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
 | `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
@@ -360,7 +360,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `river_bottom-and-bank_sediment__d50_diameter` | Mean diameter in the river bed/bank | mm | 0.1
+| `river_bottom-and-bank_sediment__median_diameter` | Median diameter in the river bed/bank | mm | 0.1
 : {.striped .hover}
 
 ### River transport
@@ -374,12 +374,12 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
 | `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
 | `river_bottom-and-bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
-| `clay__d50_diameter` | Clay mean diameter | µm | 2.0 |
-| `silt__d50_diameter` | Silt mean diameter | µm | 10.0 |
-| `sand__d50_diameter` | Sand mean diameter | µm | 200.0 |
-| `sediment_aggregates~small__d50_diameter` | Small aggregates mean diameter | µm | 30.0 |
-| `sediment_aggregates~large__d50_diameter` | Large aggregates mean diameter | µm | 500.0 |
-| `gravel__d50_diameter` | Gravel mean diameter | µm | 2000.0 |
+| `clay_mean_diameter` | Clay mean diameter | µm | 2.0 |
+| `silt_mean_diameter` | Silt mean diameter | µm | 10.0 |
+| `sand_mean_diameter` | Sand mean diameter | µm | 200.0 |
+| `sediment_aggregates~small__mean_diameter` | Small aggregates mean diameter | µm | 30.0 |
+| `sediment_aggregates~large__mean_diameter` | Large aggregates mean diameter | µm | 500.0 |
+| `gravel_mean_diameter` | Gravel mean diameter | µm | 2000.0 |
 : {.striped .hover}
 
 #### States

@@ -162,7 +162,7 @@ function TransportCapacityYalinParameters(
     density =
         ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
 
-    lens = lens_input_parameter(config, "land_surface_sediment__d50_diameter")
+    lens = lens_input_parameter(config, "land_surface_sediment__median_diameter")
     d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
 
     tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
@@ -284,15 +284,15 @@ function TransportCapacityYalinDifferentiationParameters(
     lens = lens_input_parameter(config, "sediment__particle_density")
     density =
         ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
-    lens = lens_input_parameter(config, "clay__d50_diameter")
+    lens = lens_input_parameter(config, "clay_mean_diameter")
     dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
-    lens = lens_input_parameter(config, "silt__d50_diameter")
+    lens = lens_input_parameter(config, "silt_mean_diameter")
     dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
-    lens = lens_input_parameter(config, "sand__d50_diameter")
+    lens = lens_input_parameter(config, "sand_mean_diameter")
     dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
-    lens = lens_input_parameter(config, "sediment_aggregates~small__d50_diameter")
+    lens = lens_input_parameter(config, "sediment_aggregates~small__mean_diameter")
     dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
-    lens = lens_input_parameter(config, "sediment_aggregates~large__d50_diameter")
+    lens = lens_input_parameter(config, "sediment_aggregates~large__mean_diameter")
     dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
 
     tc_parameters = TransportCapacityYalinDifferentiationParameters(;
@@ -437,7 +437,7 @@ function TransportCapacityRiverParameters(
     lens = lens_input_parameter(config, "sediment__particle_density")
     density =
         ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
-    lens = lens_input_parameter(config, "river_sediment__d50_diameter")
+    lens = lens_input_parameter(config, "river_sediment__median_diameter")
     d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
 
     tc_parameters = TransportCapacityRiverParameters(; density = density, d50 = d50)
