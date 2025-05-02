@@ -67,7 +67,7 @@ function TransportCapacityGoversParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
+    lens = lens_input_parameter(config, "sediment__particle_density")
     density =
         ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
     lens = lens_input_parameter(
@@ -158,7 +158,7 @@ function TransportCapacityYalinParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
+    lens = lens_input_parameter(config, "sediment__particle_density")
     density =
         ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
 
@@ -281,7 +281,7 @@ function TransportCapacityYalinDifferentiationParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "land_surface_sediment__particle_density")
+    lens = lens_input_parameter(config, "sediment__particle_density")
     density =
         ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
     lens = lens_input_parameter(config, "clay__d50_diameter")
@@ -434,7 +434,7 @@ function TransportCapacityRiverParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "river_sediment__particle_density")
+    lens = lens_input_parameter(config, "sediment__particle_density")
     density =
         ncread(dataset, config, lens; sel = indices, defaults = 2650.0, type = Float64)
     lens = lens_input_parameter(config, "river_sediment__d50_diameter")

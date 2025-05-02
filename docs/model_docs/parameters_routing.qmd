@@ -316,7 +316,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land_surface_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
+| `sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
 | `land_surface_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
 | `clay__d50_diameter` | Clay mean diameter | μm | 2.0 |
 | `silt__d50_diameter` | Silt mean diameter | μm | 10.0 |
@@ -331,7 +331,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `river_sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
+
 | `river_sediment__d50_diameter` | Particle mean diameter | mm | 0.1 |
 | `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
 | `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
