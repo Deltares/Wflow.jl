@@ -49,32 +49,3 @@ in the unsaturated store of the first soil layer of the `SBM` `soil` model.
 
 The model state and output variable standard names are provided in the "Model parameters and
 variables" section of the [Model documentation](../model_docs/parameters_intro.qmd).
-
-## Couple to a groundwater model
-For the coupling of wflow\_sbm with kinematic wave routing for subsurface flow with a
-groundwater model (e.g. MODFLOW) it is possible to run:
-- wflow\_sbm in parts from the BMI, and
-- to switch off the lateral subsurface kinematic flow component of wflow\_sbm.
-
-The lateral subsurface kinematic flow component of wflow\_sbm is not initialized by wflow when the
-`model` setting `kinematic-wave_subsurface` is set to `false` in the TOML file:
-
-```toml
-[model]
-kinematic-wave_subsurface = false # optional, default is false
-```
-
-Then from the BMI it is possible to run first the recharge part of SBM:
-
-```julia
-model = BMI.update(model, run="sbm_until_recharge")
-```
-and to exchange recharge and for example river waterlevels to the groundwater model. After
-the groundwater model update, and the exchange of groundwater head and for example drain and
-river flux to wflow\_sbm, the SBM part that mainly determines exfiltration of water from the
-unsaturated store, and the kinematic wave for river - and overland flow can be run as
-follows:
-
-```julia
-model = BMI.update(model, run="sbm_after_subsurfaceflow")
-```

@@ -7,37 +7,22 @@ function initialize_subsurface_flow(
     soil::SbmSoilModel,
     type::SbmModel,
 )
-    do_subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool
-    if do_subsurface_flow
-        (; parameters) = domain.land
-        subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
+    (; parameters) = domain.land
+    subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
 
-        kh_profile_type = get(
-            config.model,
-            "saturated_hydraulic_conductivity_profile",
-            "exponential",
-        )::String
+    kh_profile_type =
+        get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
 
-        if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
-            initialize_lateral_ssf!(
-                subsurface_flow,
-                parameters,
-                subsurface_flow.parameters.kh_profile,
-            )
-        elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
-            (; kv_profile) = soil.parameters
-            dt = Second(config.time.timestepsecs)
-            initialize_lateral_ssf!(
-                subsurface_flow,
-                soil,
-                parameters,
-                kv_profile,
-                tosecond(dt),
-            )
-        end
-    else
-        n = length(domain.land.network.indices)
-        subsurface_flow = GroundwaterExchange(n)
+    if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
+        initialize_lateral_ssf!(
+            subsurface_flow,
+            parameters,
+            subsurface_flow.parameters.kh_profile,
+        )
+    elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+        (; kv_profile) = soil.parameters
+        dt = Second(config.time.timestepsecs)
+        initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))
     end
     return subsurface_flow
 end
