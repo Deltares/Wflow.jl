@@ -23,12 +23,12 @@ function LocalInertialRiverFlowParameters(
     config::Config,
     domain::DomainRiver,
 )
-    cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
-    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at edge
+    alpha = get(config.model, "local_inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    waterdepth_threshold = get(config.model, "waterdepth_threshold", 1.0e-03)::Float64 # depth threshold for flow at edge
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
     floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
-    @info "Local inertial approach is used for river flow." cfl h_thresh froude_limit floodplain_1d
+    @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
 
     (; pit_indices, indices, graph, local_drain_direction, nodes_at_edge) = domain.network
     (; flow_width, flow_length, waterbody_outlet) = domain.parameters
@@ -86,7 +86,7 @@ function LocalInertialRiverFlowParameters(
         active_e = active_index,
         g = 9.80665,
         froude_limit,
-        h_thresh,
+        h_thresh = waterdepth_threshold,
         zb,
         zb_max,
         bankfull_storage,
@@ -568,14 +568,14 @@ function LocalInertialOverlandFlowParameters(
     domain::Domain,
 )
     froude_limit = get(config.model, "froude_limit", true)::Bool # limit flow to subcritical according to Froude number
-    cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
-    theta = get(config.model, "inertial_flow_theta", 0.8)::Float64 # weighting factor
-    h_thresh = get(config.model, "h_thresh", 1.0e-03)::Float64 # depth threshold for flow at edge
+    alpha = get(config.model, "local_inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    theta = get(config.model, "local_inertial_flow_theta", 0.8)::Float64 # weighting factor
+    waterdepth_threshold = get(config.model, "waterdepth_threshold", 1.0e-03)::Float64 # depth threshold for flow at edge
 
     (; edge_indices, indices) = domain.land.network
     (; x_length, y_length) = domain.land.parameters
 
-    @info "Local inertial approach is used for overlandflow." cfl theta h_thresh froude_limit
+    @info "Local inertial approach is used for overlandflow." alpha theta waterdepth_threshold froude_limit
 
     lens = lens_input_parameter(config, "land_surface_water_flow__manning_n_parameter")
     mannings_n =
@@ -614,7 +614,7 @@ function LocalInertialOverlandFlowParameters(
         ywidth = we_y,
         g = 9.80665,
         theta,
-        h_thresh,
+        h_thresh = waterdepth_threshold,
         zx_max,
         zy_max,
         mannings_n_sq = mannings_n .* mannings_n,
@@ -646,7 +646,7 @@ end
 
 "Initialize local inertial overland flow model"
 function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::Domain)
-    cfl = get(config.model, "inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    cfl = get(config.model, "local_inertial_flow_alpha", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
     n = length(domain.land.network.indices)

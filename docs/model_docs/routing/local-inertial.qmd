@@ -47,9 +47,9 @@ for the `sbm` and `sbm_gwf` model types:
 ```toml
 [model]
 river_routing = "local-inertial"  # default is "kinematic-wave"
-inertial_flow_alpha = 0.5         # alpha coefficient for model stability (default = 0.7)
+local_inertial_flow_alpha = 0.5   # alpha coefficient for model stability (default = 0.7)
 froude_limit = true               # default is true, limit flow to subcritical-critical according to Froude number
-h_thresh = 0.1                    # water depth [m] threshold for calculating flow between cells (default = 1e-03)
+waterdepth_threshold = 0.1        # water depth [m] threshold for calculating flow between cells (default = 1e-03)
 floodplain_1d = true              # include 1D floodplain schematization (default = false)
 ```
 
@@ -133,17 +133,18 @@ routing and 2D overland flow can be provided for the `sbm` and `sbm_gwf` model t
 
 ```toml
 [model]
-land_routing = "local-inertial"  # default is kinematic-wave
-river_routing = "local-inertial" # default is kinematic-wave
-inertial_flow_alpha = 0.5        # alpha coefficient for model stability (default = 0.7)
-froude_limit = true              # default is true, limit flow to subcritical-critical according to Froude number
-h_thresh = 0.1                   # water depth [m] threshold for calculating flow between cells (default = 1e-03)
+land_routing = "local-inertial"   # default is kinematic-wave
+river_routing = "local-inertial"  # default is kinematic-wave
+local_inertial_flow_alpha = 0.5   # alpha coefficient for model stability (default = 0.7)
+froude_limit = true               # default is true, limit flow to subcritical-critical according to Froude number
+waterdepth_threshold = 0.1        # water depth [m] threshold for calculating flow between cells (default = 1e-03)
 ```
 
-The properties `inertial_flow_alpha`, `froude_limit` and `h_thresh` apply to 1D river routing
-as well as 2D overland flow. The properties `inertial_flow_alpha` and `froude_limit`, and the
-adaptive model time step $\Delta t$ are explained in more detail in the [River and floodplain
-routing](#river-and-floodplain-routing) section of the local inertial model.
+The properties `local_inertial_flow_alpha`, `froude_limit` and `waterdepth_threshold` apply
+to 1D river routing as well as 2D overland flow. The properties `local_inertial_flow_alpha`
+and `froude_limit`, and the adaptive model time step $\Delta t$ are explained in more detail
+in the [River and floodplain routing](#river-and-floodplain-routing) section of the local
+inertial model.
 
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can to added

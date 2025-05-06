@@ -27,7 +27,7 @@ The Tables in this subsection show the available models settings for the model t
 | `gravitational_snow_transport` | Include gravitional lateral snow transport | - | `false` |
 | `glacier` | Include glacier modelling | - | false |
 | `soilinfreduction` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
-| `thicknesslayers` | Thickness of soil layers | mm | - |
+| `soil_thickness_layer` | Thickness of soil layers | mm | - |
 | `topog_sbm_transfer` | Enable original Topog_SBM vertical transfer formulation  | - | `false` |
 | `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
 : {.striped .hover}
@@ -53,9 +53,9 @@ The Tables in this subsection show the available models settings for the model t
 ### Local inertial routing
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
-| `inertial_flow_alpha` | Stability coefficient for internal model time step (CFL condition) | - | 0.7 |
-| `inertial_flow_theta` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 0.8 |
-| `h_thresh` | Water depth threshold for calculating flow between cells | m | 0.001 |
+| `local_inertial_flow_alpha` | Stability coefficient for internal model time step (CFL condition) | - | 0.7 |
+| `local_inertial_flow_theta` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 0.8 |
+| `waterdepth_threshold` | Water depth threshold for calculating flow between cells | m | 0.001 |
 | `froude_limit` | Limit flow to subcritical-critical according to Froude number | - | `true` |
 | `floodplain_1d` | Include 1D floodplain schematization for local inertial river routing | - | `false` |
 : {.striped .hover}
