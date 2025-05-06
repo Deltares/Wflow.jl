@@ -732,21 +732,21 @@ function infiltration!(model::SbmSoilModel)
 end
 
 """
-    unsaturated_zone_flow!(model::SbmSoilModel; transfermethod = false)
+    unsaturated_zone_flow!(model::SbmSoilModel; topog_sbm_transfer = false)
 
 Update unsaturated storage `ustorelayerdepth` and the `transfer` of water from the
 unsaturated to the saturated store of the SBM soil model for a single timestep, based on the
-original Topog_SBM formulation (`transfermethod = true` and one soil layer) or the
-Brooks-Corey approach (`transfermethod = false` and one or multiple soil layers).
+original Topog_SBM formulation (`topog_sbm_transfer = true` and one soil layer) or the
+Brooks-Corey approach (`topog_sbm_transfer = false` and one or multiple soil layers).
 """
-function unsaturated_zone_flow!(model::SbmSoilModel; transfermethod = false)
+function unsaturated_zone_flow!(model::SbmSoilModel; topog_sbm_transfer = false)
     v = model.variables
     p = model.parameters
 
     n = length(v.transfer)
     threaded_foreach(1:n; basesize = 250) do i
         if v.n_unsatlayers[i] > 0
-            if transfermethod && p.maxlayers == 1
+            if topog_sbm_transfer && p.maxlayers == 1
                 # original Topog_SBM formulation
                 ustorelayerdepth = v.ustorelayerdepth[i][1] + v.infiltsoilpath[i]
                 kv_z =
@@ -1100,7 +1100,7 @@ function update!(
 )
     soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
-    transfermethod = get(config.model, "transfermethod", false)::Bool
+    topog_sbm_transfer = get(config.model, "topog_sbm_transfer", false)::Bool
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
@@ -1122,7 +1122,7 @@ function update!(
     )
     infiltration!(model)
     # unsaturated zone flow
-    unsaturated_zone_flow!(model; transfermethod = transfermethod)
+    unsaturated_zone_flow!(model; topog_sbm_transfer = topog_sbm_transfer)
     # soil evaporation and transpiration
     soil_evaporation!(model)
     transpiration!(model, dt)
