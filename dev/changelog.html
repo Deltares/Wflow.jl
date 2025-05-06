@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.29">
+<meta name="generator" content="quarto-1.7.30">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -36,9 +36,9 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-0815c480559380816a4d1ea211a47e91.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-748b535e376f14d4692bf2b2e5fd6380.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-0815c480559380816a4d1ea211a47e91.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-2b3e328b71be8d25427581baeb23079b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
@@ -270,6 +270,7 @@ window.Quarto = {
       toggleColorMode(toAlternate);
       setStyleSentinel(toAlternate);
       toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
     };
     // Switch to dark mode if need be
     if (hasAlternateSentinel()) {
@@ -487,6 +488,7 @@ window.Quarto = {
 <li>Use the instantaneous routing water depth <code>h</code> at the previous model time step to limit open water evaporation and to set the river <code>stage</code> of the <code>GroundwaterFlow</code> model for the current model time step, as it is more accurate then using the average water depth <code>h_av</code> at the previous model time step.</li>
 <li>Removed <code>LoopVectorization</code> dependency because of compilation issues and the risk of deprecation for newer Julia versions. The <code>tturbo</code> macro has been replaced by the <code>batch</code> macro of <code>Polyester</code>, performance loss is acceptable.</li>
 <li>Use for the infiltration capacity of soil, represented by parameter <code>infiltcapsoil</code>, the actual saturated hydraulic conductivity at the soil surface based on parameters <code>kv_0</code> and <code>kvfrac</code>. This parameter is now better linked to soil properties and setting this parameter directly by an external netCDF variable is not supported anymore.</li>
+<li>Removed the <code>GroundwaterExchange</code> component that can be used to replace the kinematic wave lateral subsurface flow routing with an external groundwater model (e.g.&nbsp;Modflow). This feature has been added as part of the following <a href="https://studenttheses.uu.nl/handle/20.500.12932/41091">MSc thesis</a> work. One of the potential improvements recommended by this work was to re-activate the lateral subsurface flow routing for coupling with Modflow 6, as a rapid runoff (interflow) generating mechanism was missing and the current coupling did not yield satisfactory results. More work is needed to support this kind of coupling in a good way.</li>
 </ul>
 </section>
 <section id="added" class="level3">
