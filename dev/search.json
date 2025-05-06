@@ -1232,7 +1232,7 @@
     "href": "model_docs/parameters_sediment.html#rainfall-erosion",
     "title": "Land Sediment model",
     "section": "Rainfall erosion",
-    "text": "Rainfall erosion\n\nInput\n\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\nDefault\n\n\n\n\nsoil_erosion__rainfall_soil_detachability_factor\nSoil detachability factor\ng J⁻¹\n0.6\n\n\nsoil_erosion__eurosem_exponent\nExponent EUROSEM\n-\n2.0\n\n\nvegetation_canopy__height\nCanopy height\nm\n0.5\n\n\nvegetation_canopy__gap_fraction\nCanopy gap fraction\n-\n0.1\n\n\nsoil~compacted__area_fraction\nFraction of the soil that is covered (eg paved, snow, etc)\n-\n0.01\n\n\nsoil_erosion__usle_k_factor\nUSLE soil erodibility factor\n-\n0.1\n\n\nsoil_erosion__usle_c_factor\nUSLE crop management factor\n-\n0.01\n\n\n\n\n\nOutput\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\n\n\n\n\nsoil_erosion~rainfall__mass_flow_rate\nTotal soil erosion from rainfall (splash)\nton Δt⁻¹",
+    "text": "Rainfall erosion\n\nInput\n\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\nDefault\n\n\n\n\nsoil_erosion__rainfall_soil_detachability_factor\nSoil detachability factor\ng J⁻¹\n0.6\n\n\nsoil_erosion__eurosem_exponent\nExponent EUROSEM\n-\n2.0\n\n\nvegetation_canopy__height\nCanopy height\nm\n0.5\n\n\nvegetation_canopy__gap_fraction\nCanopy gap fraction\n-\n0.1\n\n\nsoil~compacted__area_fraction\nFraction of the soil that is covered (eg paved, snow, etc)\n-\n0.01\n\n\nsoil_erosion__usle_k_factor\nUSLE soil erodibility factor\n-\n0.1\n\n\nsoil_erosion__usle_c_factor\nUSLE crop management factor\n-\n0.01\n\n\nsoil_erosion__answers_rainfall_factor\nAnswers rainfall erosion factor\n-\n0.108\n\n\n\n\n\nOutput\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\n\n\n\n\nsoil_erosion~rainfall__mass_flow_rate\nTotal soil erosion from rainfall (splash)\nton Δt⁻¹",
     "crumbs": [
       "Model documentation",
       "Model parameters and variables",
@@ -1244,7 +1244,7 @@
     "href": "model_docs/parameters_sediment.html#overland-flow-erosion",
     "title": "Land Sediment model",
     "section": "Overland flow erosion",
-    "text": "Overland flow erosion\n\nInput\n\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\nDefault\n\n\n\n\nsoil_erosion__answers_overland_flow_factor\nAnswers overland flow factor\n-\n0.9\n\n\nsoil_erosion__usle_k_factor\nUSLE soil erodibility factor\n-\n0.1\n\n\nsoil_erosion__usle_c_factor\nUSLE crop management factor\n-\n0.01\n\n\n\n\n\nOutput\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\n\n\n\n\nsoil_erosion~overland_flow__mass_flow_rate\nTotal soil erosion from overland flow\nton Δt⁻¹",
+    "text": "Overland flow erosion\n\nInput\n\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\nDefault\n\n\n\n\nsoil_erosion__answers_overland_flow_factor\nAnswers overland flow erosion factor\n-\n0.9\n\n\nsoil_erosion__usle_k_factor\nUSLE soil erodibility factor\n-\n0.1\n\n\nsoil_erosion__usle_c_factor\nUSLE crop management factor\n-\n0.01\n\n\n\n\n\nOutput\n\n\n\n\n\n\n\n\nStandard Name\nDescription\nUnit\n\n\n\n\nsoil_erosion~overland_flow__mass_flow_rate\nTotal soil erosion from overland flow\nton Δt⁻¹",
     "crumbs": [
       "Model documentation",
       "Model parameters and variables",
