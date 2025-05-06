@@ -39,6 +39,7 @@ td, th {
 | `soil~compacted__area_fraction` | Fraction of the soil that is covered (eg paved, snow, etc) | - | 0.01 |
 | `soil_erosion__usle_k_factor` | USLE soil erodibility factor | - | 0.1 |
 | `soil_erosion__usle_c_factor` | USLE crop management factor | - | 0.01 |
+| `soil_erosion__answers_rainfall_factor` | Answers rainfall erosion factor | - | 0.108
 : {.striped .hover}
 
 ### Output
@@ -51,7 +52,7 @@ td, th {
 ### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `soil_erosion__answers_overland_flow_factor` | Answers overland flow factor | - | 0.9
+| `soil_erosion__answers_overland_flow_factor` | Answers overland flow erosion factor | - | 0.9
 | `soil_erosion__usle_k_factor` | USLE soil erodibility factor | - | 0.1 |
 | `soil_erosion__usle_c_factor` | USLE crop management factor | - | 0.01 |
 : {.striped .hover}

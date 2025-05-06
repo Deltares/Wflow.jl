@@ -174,6 +174,8 @@ end
     usle_k::Vector{Float64}
     # Crop management factor [-]
     usle_c::Vector{Float64}
+    # ANSWERS rainfall erosion factor [-]
+    answers_rainfall_factor::Vector{Float64}
 end
 
 "Initialize ANSWERS rainfall erosion model parameters"
@@ -186,8 +188,11 @@ function RainfallErosionAnswersParameters(
     usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
     usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
+    lens = lens_input_parameter(config, "soil_erosion__answers_rainfall_factor")
+    answers_rainfall_factor = ncread(dataset, config, lens; sel = indices, defaults = 0.108, type = Float64)
+    
     answers_parameters =
-        RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c)
+        RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c, answers_rainfall_factor = answers_rainfall_factor)
     return answers_parameters
 end
 
@@ -233,7 +238,7 @@ function update!(
     dt::Float64,
 )
     (; precipitation) = model.boundary_conditions
-    (; usle_k, usle_c) = model.parameters
+    (; usle_k, usle_c, answers_rainfall_factor) = model.parameters
     (; amount) = model.variables
 
     n = length(precipitation)
@@ -242,6 +247,7 @@ function update!(
             precipitation[i],
             usle_k[i],
             usle_c[i],
+            answers_rainfall_factor[i],
             parameters.area[i],
             dt,
         )

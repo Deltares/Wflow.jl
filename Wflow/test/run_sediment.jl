@@ -30,7 +30,7 @@ Wflow.run_timestep!(model)
     @test eros.hydrological_forcing.q_land[1] ≈ 0.0
     @test eros.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934
     @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
-    @test eros.overland_flow_erosion.parameters.answers_k[1] ≈ 0.8999999761581421
+    @test eros.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈ 0.8999999761581421
     @test eros.overland_flow_erosion.variables.amount[1] ≈ 0.0
     @test eros.rainfall_erosion.variables.amount[1] ≈ 0.00027245577922893746
     @test model.clock.iteration == 1

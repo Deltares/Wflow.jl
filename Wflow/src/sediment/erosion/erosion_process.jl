@@ -71,6 +71,7 @@ end
         precip,
         usle_k,
         usle_c,
+        answers_rainfall_factor,
         area,
         dt,
     )
@@ -81,18 +82,18 @@ Rainfall erosion model based on ANSWERS.
 - `precip` (precipitation [mm Δt⁻¹])
 - `usle_k` (USLE soil erodibility [t ha-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
-- `soilcover_fraction` (soil cover fraction [-])
+- `answers_rainfall_factor` (ANSWERS rainfall erosion factor [-])
 - `area` (area [m2])
 - `dt` (timestep [seconds])
 
 # Output
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
-function rainfall_erosion_answers(precip, usle_k, usle_c, area, dt)
+function rainfall_erosion_answers(precip, usle_k, usle_c, answers_rainfall_factor, area, dt)
     # calculate rainfall intensity [mm/min]
     rintnsty = precip / (dt / 60)
     # splash erosion [kg/min]
-    rainfall_erosion = 0.108 * usle_c * usle_k * area * rintnsty^2
+    rainfall_erosion = answers_rainfall_factor * usle_c * usle_k * area * rintnsty^2
     # [ton/timestep]
     rainfall_erosion = rainfall_erosion * (dt / 60) * 1e-3
     return rainfall_erosion
@@ -104,7 +105,7 @@ end
         waterlevel,
         usle_k,
         usle_c,
-        answers_k,
+        answers_overland_flow_factor,
         slope,
         soilcover_fraction,
         area,
@@ -118,7 +119,7 @@ Overland flow erosion model based on ANSWERS.
 - `waterlevel` (water level [m])
 - `usle_k` (USLE soil erodibility [t ha-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
-- `answers_k` (ANSWERS overland flow factor [-])
+- `answers_overland_flow_factor` (ANSWERS overland flow factor [-])
 - `slope` (slope [-])
 - `area` (area [m2])
 - `dt` (timestep [seconds])
@@ -130,7 +131,7 @@ function overland_flow_erosion_answers(
     overland_flow,
     usle_k,
     usle_c,
-    answers_k,
+    answers_overland_flow_factor,
     slope,
     area,
     dt,
@@ -142,7 +143,7 @@ function overland_flow_erosion_answers(
 
     # Overland flow erosion [kg/min]
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant
-    erosion = answers_k * usle_c * usle_k * area * sinslope * qr_land
+    erosion = answers_overland_flow_factor * usle_c * usle_k * area * sinslope * qr_land
     # [ton/timestep]
     erosion = erosion * (dt / 60) * 1e-3
     return erosion

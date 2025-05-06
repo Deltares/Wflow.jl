@@ -31,8 +31,8 @@ end
     usle_k::Vector{Float64}
     # Crop management factor [-]
     usle_c::Vector{Float64}
-    # Answers overland flow factor [-]
-    answers_k::Vector{Float64}
+    # ANSWERS overland flow erosion factor [-]
+    answers_overland_flow_factor::Vector{Float64}
 end
 
 "Initialize ANSWERS overland flow erosion model parameters"
@@ -46,12 +46,12 @@ function OverlandFlowErosionAnswersParameters(
     lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
     usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
     lens = lens_input_parameter(config, "soil_erosion__answers_overland_flow_factor")
-    answers_k = ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float64)
+    answers_overland_flow_factor = ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float64)
 
     answers_parameters = OverlandFlowErosionAnswersParameters(;
         usle_k = usle_k,
         usle_c = usle_c,
-        answers_k = answers_k,
+        answers_overland_flow_factor = answers_overland_flow_factor,
     )
     return answers_parameters
 end
@@ -98,7 +98,7 @@ function update!(
     dt::Float64,
 )
     (; q) = model.boundary_conditions
-    (; usle_k, usle_c, answers_k) = model.parameters
+    (; usle_k, usle_c, answers_overland_flow_factor) = model.parameters
     (; amount) = model.variables
 
     n = length(q)
@@ -107,7 +107,7 @@ function update!(
             q[i],
             usle_k[i],
             usle_c[i],
-            answers_k[i],
+            answers_overland_flow_factor[i],
             geometry.slope[i],
             geometry.area[i],
             dt,
