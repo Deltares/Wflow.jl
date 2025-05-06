@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Multithreading – Wflow.jl</title>
+<title>Groundwater flow – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -58,27 +58,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<link href="../_static/logo.png" rel="icon" type="image/png">
-<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-2b3e328b71be8d25427581baeb23079b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-416ad870b8d51e530e1d919ad2de2faf.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-2b3e328b71be8d25427581baeb23079b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-416ad870b8d51e530e1d919ad2de2faf.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -105,7 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="../_static/version.js"></script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -118,8 +118,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   };
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="../_static/styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
@@ -291,10 +320,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -305,23 +334,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../getting_started/index.html"> 
+    <a class="nav-link" href="../../getting_started/index.html"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../user_guide/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../model_docs/index.html"> 
+    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../developments/index.html"> 
+    <a class="nav-link" href="../../developments/index.html"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -363,7 +392,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../user_guide/warm_states.html">Supported options</a></li><li class="breadcrumb-item"><a href="../user_guide/multi_threading.html">Multithreading</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/gwf.html">Groundwater flow</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -377,26 +406,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">User guide</span></a>
+  <a href="../../model_docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/required_files.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Required files</span></a>
+  <a href="../../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/toml_file.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation settings</span></a>
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Supported options</span></a>
+ <span class="menu-text">Land models</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -404,20 +433,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/warm_states.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Starting with “warm” states</span></a>
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/model_config.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Different model configurations</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/multi_threading.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Multithreading</span></a>
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment</span></a>
   </div>
 </li>
       </ul>
@@ -425,7 +448,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
- <span class="menu-text">Integrations</span></a>
+ <span class="menu-text">Routing concepts</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -433,30 +456,71 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/bmi.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Basic Model Interface (BMI)</span></a>
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematic wave</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/fews.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Run from Delft-FEWS</span></a>
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local inertial</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/zmq_server.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Run wflow as a ZMQ Server</span></a>
+  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs and Lakes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Groundwater flow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment flux</span></a>
   </div>
 </li>
       </ul>
   </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Model parameters and variables</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/faq.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Frequently asked questions</span></a>
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -467,8 +531,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#using-wflow-in-julia" id="toc-using-wflow-in-julia" class="nav-link active" data-scroll-target="#using-wflow-in-julia">Using wflow in Julia</a></li>
-  <li><a href="#using-the-command-line-interface" id="toc-using-the-command-line-interface" class="nav-link" data-scroll-target="#using-the-command-line-interface">Using the command line interface</a></li>
+  <li><a href="#aquifer-types" id="toc-aquifer-types" class="nav-link active" data-scroll-target="#aquifer-types">Aquifer types</a></li>
+  <li><a href="#constant-head" id="toc-constant-head" class="nav-link" data-scroll-target="#constant-head">Constant head</a></li>
+  <li><a href="#aquifer-boundary-conditions" id="toc-aquifer-boundary-conditions" class="nav-link" data-scroll-target="#aquifer-boundary-conditions">Aquifer boundary conditions</a>
+  <ul class="collapse">
+  <li><a href="#river" id="toc-river" class="nav-link" data-scroll-target="#river">River</a></li>
+  <li><a href="#drainage" id="toc-drainage" class="nav-link" data-scroll-target="#drainage">Drainage</a></li>
+  <li><a href="#recharge" id="toc-recharge" class="nav-link" data-scroll-target="#recharge">Recharge</a></li>
+  <li><a href="#head-boundary" id="toc-head-boundary" class="nav-link" data-scroll-target="#head-boundary">Head boundary</a></li>
+  <li><a href="#well-boundary" id="toc-well-boundary" class="nav-link" data-scroll-target="#well-boundary">Well boundary</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
     </div>
@@ -476,9 +549,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../user_guide/warm_states.html">Supported options</a></li><li class="breadcrumb-item"><a href="../user_guide/multi_threading.html">Multithreading</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/gwf.html">Groundwater flow</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Multithreading</h1>
+<h1 class="title">Groundwater flow</h1>
 </div>
 
 
@@ -495,17 +568,182 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="using-wflow-in-julia" class="level2">
-<h2 class="anchored" data-anchor-id="using-wflow-in-julia">Using wflow in Julia</h2>
-<p>Wflow supports multi-threading execution of the wflow_sbm model that uses the kinematic wave approach for river, overland and lateral subsurface flow. Both the vertical SBM concept and the kinematic wave components of this model can run on multiple threads. The optional <a href="../model_docs/model_configurations.html#local-inertial-river">local inertial model for river flow</a> and the optional <a href="../model_docs/model_configurations.html#local-inertial-river-1d-and-land-2d">local inertial model for river (1D) and land (2D)</a>, both part of wflow_sbm, can also run on multiple threads. The threading functionality for the kinematic wave may also be useful for the wflow_sbm model with <a href="../model_docs/model_configurations.html#groundwater-flow">groundwater flow</a>. The multi-threading functionality in wflow is considered experimental, see also the following <a href="https://github.com/Deltares/Wflow.jl/issues/139">issue</a>, where an error was not thrown running code multi-threaded. Because of this we advise to start with running a wflow model single-threaded (for example during the testing phase of setting up an new wflow model).</p>
-<p>For information on how to start Julia with multiple threads we refer to <a href="https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads">How to start Julia with multiple threads</a>.</p>
-<p>Additionally, when running Julia + wflow via the command line (note that this is different from the <code>wflow_cli</code>), it is possible to define the number of threads via the <code>-t</code> flag. An example where we start Julia with three threads:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">-t</span> 3 <span class="at">-e</span> <span class="st">'using Wflow; Wflow.run()'</span> path/to/config.toml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Single layer groundwater flow requires the four following components:</p>
+<ul>
+<li>aquifer</li>
+<li>connectivity</li>
+<li>constanthead</li>
+<li>boundaries</li>
+</ul>
+<p>The aquifer types, constanthead boundary and other boundaries (e.g.&nbsp;river and drainage) are described in more detail below. Which functionality of these components is supported by model type <code>sbm_gwf</code> is also clarified below.</p>
+<section id="aquifer-types" class="level2">
+<h2 class="anchored" data-anchor-id="aquifer-types">Aquifer types</h2>
+<p>Groundwater flow can occur either in a confined or unconfined aquifer. Confined aquifers are overlain by a poorly permeable confining layer (e.g.&nbsp;clay). No air can get in to fill the pore space so that the aquifer always remains fully saturated. For a confined aquifer, water will always flow along the complete height <span class="math inline">\(\SIb{H}{m}\)</span> over the aquifer and transmissivity <span class="math inline">\(\SIb{kH}{m^2\ d^{-1}}\)</span> is a constant (<span class="math inline">\(\SIb{k}{m\ d^{-1}}\)</span> is the horizontal hydraulic conductivity). Specific storage is the amount of water an aquifer releases per unit change in hydraulic head, per unit volume of aquifer, as the aquifer and the groundwater itself is compressed. Its value is much smaller than specific yield, between <span class="math inline">\(10^{-5}\)</span> (stiff) and <span class="math inline">\(10^{-2}\)</span> (weak).</p>
+<p>The upper boundary of an unconfined aquifer is the water table (the phreatic surface). Specific yield (or drainable porosity) represents the volumetric fraction the aquifer will yield when all water drains and the pore volume is filled by air instead. Specific yield will vary roughly between <span class="math inline">\(0.05\)</span> (clay) and <span class="math inline">\(0.45\)</span> (peat) (Johnson, 1967).</p>
+<p>Groundwater flow is solved forward in time and central in space. The vertically averaged governing equation for an inhomogeneous and isotropic aquifer in one dimension can be written as:</p>
+<p><span class="math display">\[
+    S \frac{\partial \phi}{\partial t} =  \frac{\partial}{\partial x} \left(kH \frac{\phi}{\delta x}\right) + Q
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{S}{m\ m^{-1}}\)</span> is storativity (or specific yield), <span class="math inline">\(\SIb{\phi}{m}\)</span> is hydraulic head, <span class="math inline">\(t\)</span> is time, <span class="math inline">\(\SIb{k}{m\ t^{-1}}\)</span> is horizontal hydraulic conductivity, <span class="math inline">\(\SIb{H}{m}\)</span> is the (saturated) aquifer height: groundwater level - aquifer bottom elevation and <span class="math inline">\(\SIb{Q}{m\ t^{-1}}\)</span> represents fluxes from boundary conditions (e.g.&nbsp;recharge or abstraction), see also <a href="#aquifer-boundary-conditions">Aquifer boundary conditions</a>.</p>
+<p>The simplest finite difference formulation is forward in time, central in space, and can be written as:</p>
+<p><span class="math display">\[
+    S_i  \frac{\phi_{i}^{t+1} - \phi_i^{t}}{\Delta t} = -C_{i-1}  (\phi_{i-1} - \phi_i) - C_i  (\phi_{i+1} - \phi_i) + Q_i
+\]</span></p>
+<p>where <span class="math inline">\(i\)</span> is the cell index, <span class="math inline">\(t\)</span> is time, <span class="math inline">\(\Delta t\)</span> is the step size, <span class="math inline">\(C_{i-1}\)</span> is the the intercell conductance between cell <span class="math inline">\(i-1\)</span> and <span class="math inline">\(i\)</span> and <span class="math inline">\(C_i\)</span> is the intercell conductance between cell <span class="math inline">\(i\)</span> and <span class="math inline">\(i+1\)</span>.</p>
+<p>Conductance <span class="math inline">\(C\)</span> is defined as:</p>
+<p><span class="math display">\[
+C = \frac{kH w}{l}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{w}{m}\)</span> is the width of the cell to cell connection, and <span class="math inline">\(\SIb{l}{m}\)</span> is the length of the cell to cell connection. <span class="math inline">\(k\)</span> and <span class="math inline">\(H\)</span> may both vary in space; intercell conductance is therefore an average using the properties of two cells. For the calculation of the intercell conductance <span class="math inline">\(C\)</span> the harmonic mean is used (see also Goode and Appel, 1992), here between cell index <span class="math inline">\(i\)</span> and cell index <span class="math inline">\(i+1\)</span>, in the <span class="math inline">\(x\)</span> direction:</p>
+<p><span class="math display">\[
+    C_i = w  \frac{k_iH_i\cdot k_{i+1}H_{i+1}}{k_iH_i \cdot l_{i+1} + k_{i+1}H_{i+1} \cdot l_i}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{H}{m}\)</span> is the aquifer top - aquifer bottom, and <span class="math inline">\(k\)</span>, <span class="math inline">\(l_i\)</span> is the length in cell <span class="math inline">\(i\)</span> (<span class="math inline">\(0.5 \Delta x_i\)</span>), <span class="math inline">\(l_{i+1}\)</span> is the length in cell <span class="math inline">\(i+1\)</span> (<span class="math inline">\(0.5 \Delta x_{i+1}\)</span>) and <span class="math inline">\(w\)</span> as previously defined. For an unconfined aquifer the intercell conductance is scaled by using the “upstream saturated fraction” as the MODFLOW documentation calls it. In this approach, the saturated thickness of a cell-to-cell is approximated using the cell with the highest head. This results in a consistent overestimation of the saturated thickness, but it avoids complexities related with cell drying and rewetting, such as having to define a “wetting threshold” or a “wetting factor”. See also the documentation for MODFLOW-NWT (Niswonger et al., 2011) or MODFLOW6 (Langevin et al., 2017) for more background information. For more background on drying and rewetting, see for example McDonald et al. (1991).</p>
+<p>For the finite difference formulation, there is only one unknown, <span class="math inline">\(\phi_i^{t+1}\)</span>. Reshuffling terms:</p>
+<p><span class="math display">\[
+\phi_i^{t+1} = \phi_i^t + (C_{i-1}  (\phi_i - \phi_{i-1}) + C_i  (\phi_{i+1} - \phi_i) + Q_i) \frac{Δt}{S_i}
+\]</span></p>
+<p>This can be generalized to two dimensions, for both regular and irregular cell connectivity. Finally, a stable time step size can be computed given the forward-in-time, central in space scheme, based on the following criterion from Chu and Willis (1984):</p>
+<p><span class="math display">\[
+  \frac{\Delta t k H}{\Delta x  \Delta y S}  \le \frac{1}{4}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\Delta t}{d}\)</span> is the stable time step size, <span class="math inline">\(\SIb{\Delta x}{m}\)</span> is the cell length in the <span class="math inline">\(x\)</span> direction and <span class="math inline">\(\SIb{\Delta y}{m}\)</span> is the cell length in the <span class="math inline">\(y\)</span> direction, <span class="math inline">\(\SIb{k}{m^2\ d^{-1}}\)</span> is the horizontal hydraulic conductivity and <span class="math inline">\(\SIb{H}{m}\)</span> is the saturated thickness of the aquifer. For each cell <span class="math inline">\(\frac{\Delta x  \Delta y S}{k H}\)</span> is calculated, the minimum of these values is determined, and multiplied by <span class="math inline">\(\frac{1}{4}\)</span>, to get the stable time step size.</p>
+<p>For more details about the finite difference formulation and the stable time step size criterion we refer to the paper of Chu and Willis (1984).</p>
+<p>Boundary conditions can be classified into three categories:</p>
+<ul>
+<li>specified head (Dirichlet)</li>
+<li>specified flux (Neumann)</li>
+<li>head-dependent flux (Robin)</li>
+</ul>
+<p>Neumann and Robin conditions are implemented by adding to or subtracting from a net (lumped) cell flux. Dirichlet conditions are special cased, since they cannot (easily) be implemented via the flux, but the head is set directly instead.</p>
+<p>The groundwater flow component of model type <code>sbm_gwf</code> consists of a single layer unconfined aquifer. The list of input parameters for an unconfined aquifer can be found <a href="../../model_docs/parameters_routing.html#input-gwf-unconfined">here</a>. Hydraulic head <span class="math inline">\(\SIb{\phi}{m}\)</span> is a state and <a href="../../model_docs/parameters_routing.html#output-gwf-unconfined">output variable</a>.</p>
+<p>Below an example of setting the <code>conductivity_profile</code> and input parameters in the TOML configuration file for an unconfined aquifer:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential"</span>  <span class="co"># saturated hydraulic conductivity depth profile, default is "uniform"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface__elevation</span> <span class="op">=</span> <span class="st">"wflow_dem"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_surface_water__horizontal_saturated_hydraulic_conductivity</span> <span class="op">=</span> <span class="st">"kh_surface"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__specific_yield</span> <span class="op">=</span> <span class="st">"specific_yield"</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter</span> <span class="op">=</span> <span class="st">"gwf_f"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="using-the-command-line-interface" class="level2">
-<h2 class="anchored" data-anchor-id="using-the-command-line-interface">Using the command line interface</h2>
-<p>As explained above, we need to start julia with multiple threads to make use of this speedup. For <code>wflow_cli</code>, the only way to do this is by setting the <code>JULIA_NUM_THREADS</code> environment variable, as explained in <a href="https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads">these julia docs</a>.</p>
-<p>When a model run starts, among the run information the number of threads that are used is printed, so <code>nthreads() = 4</code> means 4 threads are used, because <code>JULIA_NUM_THREADS</code> has been set to 4.</p>
+<section id="constant-head" class="level2">
+<h2 class="anchored" data-anchor-id="constant-head">Constant head</h2>
+<p>For model type <code>sbm_gwf</code> Dirichlet boundary conditions can be specified (optional) in the TOML file as follows:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">constanthead</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~constant_hydraulic_head"</span> <span class="op">=</span> <span class="st">"constant_head"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="aquifer-boundary-conditions" class="level2">
+<h2 class="anchored" data-anchor-id="aquifer-boundary-conditions">Aquifer boundary conditions</h2>
+<section id="river" class="level3">
+<h3 class="anchored" data-anchor-id="river">River</h3>
+<p>The flux between river and aquifer is calculated using Darcy’s law following the approach in MODFLOW:</p>
+<p><span class="math display">\[
+  \subtext{Q}{riv} =
+  \begin{align*}
+    \begin{cases}
+      C_i \min \left\{\subtext{h}{riv} - \subtext{B}{riv}, \subtext{h}{riv} - \phi\right\} &amp;\text{ if }\quad \subtext{h}{riv} &gt; \phi \\
+      C_e (\subtext{h}{riv} - \phi) &amp;\text{ if }\quad \subtext{h}{riv} \le \phi
+    \end{cases}
+  \end{align*}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\subtext{Q}{riv}}{L^3 T^{-1}}\)</span> is the exchange flux from river to aquifer, <span class="math inline">\(\SIb{C_i}{L^2 T^{-1}}\)</span> is the river bed infiltration conductance, <span class="math inline">\(\SIb{C_e}{L^2 T^{-1}}\)</span> is the river bed exfiltration conductance, <span class="math inline">\(\SIb{\subtext{B}{riv}}{L}\)</span> the bottom of the river bed, <span class="math inline">\(\SIb{\subtext{h}{riv}}{L}\)</span> is the river stage and <span class="math inline">\(\SIb{\phi}{L}\)</span> is the hydraulic head in the river cell.</p>
+<p>The list of input parameters for the river boundary of groundwater flow that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#input-gwf-river">here</a>.</p>
+<p>The exchange flux (river to aquifer) <span class="math inline">\(\subtext{Q}{riv}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-river">output variable</a>, and is used to update the total flux in a river cell. For model type <code>sbm_gwf</code>, the water depth <span class="math inline">\(\SIb{h}{m}\)</span> of the river routing in combination with the river bottom is used to update the river stage each time step.</p>
+</section>
+<section id="drainage" class="level3">
+<h3 class="anchored" data-anchor-id="drainage">Drainage</h3>
+<p>The flux from drains to the aquifer is calculated as follows:</p>
+<p><span class="math display">\[
+\subtext{Q}{drain} = \subtext{C}{drain} \min(0, \subtext{h}{drain} - \phi)
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\subtext{Q}{drain}}{L^3\ T^{-1}}\)</span> is the exchange flux from drains to aquifer, <span class="math inline">\(\SIb{\subtext{C}{drain}}{L^2\ T^{-1}}\)</span> is the drain conductance, <span class="math inline">\(\SIb{\subtext{h}{drain}}{L}\)</span> is the drain elevation and <span class="math inline">\(\SIb{\phi}{L}\)</span> is the hydraulic head in the cell with drainage.</p>
+<p>The list of input parameters for the drainage boundary of groundwater flow that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#input-gwf-drainage">here</a>.</p>
+<p>The exchange flux (drains to aquifer) <span class="math inline">\(\subtext{Q}{drain}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-drainage">output variable</a>, and is used to update the total flux in a cell with drains. For model type <code>sbm_gwf</code> this boundary condition is optional, and can be specified in the TOML file as follows:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">drains</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain_location__flag</span> <span class="op">=</span> <span class="st">"drain"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__conductance</span> <span class="op">=</span> <span class="st">"cond_drain"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__elevation</span> <span class="op">=</span> <span class="st">"elev_drain"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="recharge" class="level3">
+<h3 class="anchored" data-anchor-id="recharge">Recharge</h3>
+<p>The net recharge flux <span class="math inline">\(\subtext{Q}{net recharge}\)</span> to the aquifer is calculated as follows:</p>
+<p><span class="math display">\[
+\subtext{Q}{net recharge} = \subtext{R}{net} \, A
+\]</span></p>
+<p>with <span class="math inline">\(\SIb{\subtext{R}{net}}{L\ T^{-1}}\)</span> the net recharge rate and <span class="math inline">\(\SIb{A}{L^2}\)</span> the area of the aquifer cell.</p>
+<p>The recharge flux <span class="math inline">\(\subtext{Q}{net recharge}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-recharge">output variable</a>, and is used to update the total flux in a cell where net recharge occurs. For model type <code>sbm_gwf</code>, the recharge rate <span class="math inline">\(\SIb{}{mm\ t^{-1}}\)</span> from the <code>SBM</code> <code>soil</code> model is used to update the recharge rate <span class="math inline">\(\subtext{R}{net}\)</span> of the recharge boundary each time step.</p>
+</section>
+<section id="head-boundary" class="level3">
+<h3 class="anchored" data-anchor-id="head-boundary">Head boundary</h3>
+<p>This boundary is a fixed head with time (not affected by the model stresses over time) outside of the model domain, and is generally used to avoid an unnecessary extension of the model domain to the location of the fixed boundary (for example a large lake). The flux from the boundary <span class="math inline">\(\SIb{Q_{hb}}{L^3\ T^{-1}}\)</span> is calculated as follows:</p>
+<p><span class="math display">\[
+Q_{hb} = C_{hb} (\phi_{hb} - \phi)
+\]</span></p>
+<p>with <span class="math inline">\(\SIb{C_{hb}}{L^2\ T^{-1}}\)</span> the conductance of the head boundary, <span class="math inline">\(\SIb{\phi_{hb}}{L}\)</span> the head of the head boundary and <span class="math inline">\(\phi\)</span> the head of the aquifer cell.</p>
+<p>The head boundary flux <span class="math inline">\(Q_{hb}\)</span> is an output variable, and is used to update the total flux in a cell where this type of boundary occurs. The parameter Head <span class="math inline">\(\phi_{hb}\)</span> can be specified as a fixed or time dependent value.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This boundary is not (yet) part of model type <code>sbm_gwf</code>.</p>
+</div>
+</div>
+</section>
+<section id="well-boundary" class="level3">
+<h3 class="anchored" data-anchor-id="well-boundary">Well boundary</h3>
+<p>A volumetric well rate <span class="math inline">\(\SIb{}{L^3\ T^{-1}}\)</span> can be specified as a boundary condition.</p>
+<p>The volumetric well rate <span class="math inline">\(\subtext{Q}{well}\)</span> can be can be specified as a fixed or time dependent value. If a cell is dry, the actual well flux is set to zero (see also the last note on this page).</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This boundary is not (yet) part model type <code>sbm_gwf</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For an unconfined aquifer the boundary fluxes are checked, in case of a dry aquifer cell a negative flux is not allowed.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Chu, W. S., &amp; Willis, R. (1984). An explicit finite difference model for unconfined aquifers. Groundwater, 22(6), 728-734.</li>
+<li>Goode, D. J., &amp; Appel, C. A. (1992). Finite-Difference Interblock Transmissivity for Unconﬁned Aquifers and for Aquifers having Smoothly Varying Transmissivity Water-resources investigations report, 92, 4124.</li>
+<li>Johnson, A. I. (1967), Specific yield: compilation of specific yields for various materials, Water Supply Paper 1662-D, Washington, D.C.: U.S. Government Printing Office, p.&nbsp;74, doi:10.3133/wsp1662D.</li>
+<li>Langevin, C.D., Hughes, J.D., Banta, E.R., Niswonger, R.G., Panday, Sorab, and Provost, A.M., 2017, Documentation for the MODFLOW 6 Groundwater Flow Model: U.S. Geological Survey Techniques and Methods, book 6, chap.&nbsp;A55, 197 p., https://doi.org/10.3133/tm6A55.</li>
+<li>McDonald, M.G., Harbaugh, A.W., Orr, B.R., and Ackerman, D.J., 1991, A method of converting no-flow cells to variable-head cells for the U.S. Geological Survey modular finite-difference groundwater flow model: U.S. Geological Survey Open-File Report 91-536, 99 p.</li>
+<li>Niswonger, R.G., Panday, Sorab, and Ibaraki, Motomu, 2011, MODFLOW-NWT, A Newton formulation for MODFLOW-2005: U.S. Geological Survey Techniques and Methods 6-A37, 44 p.</li>
+</ul>
 
 
 </section>
@@ -927,7 +1165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Model configurations – Wflow.jl</title>
+<title>Land Hydrology SBM – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,41 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -363,7 +328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/model_configurations.html">Model configurations</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_landhydrology_sbm.html">Land Hydrology SBM</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -383,7 +348,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link active">
+  <a href="../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
@@ -474,7 +439,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
@@ -502,18 +467,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#wflow_sbm" id="toc-wflow_sbm" class="nav-link active" data-scroll-target="#wflow_sbm">wflow_sbm</a>
+  <li><a href="#atmospheric-forcing" id="toc-atmospheric-forcing" class="nav-link active" data-scroll-target="#atmospheric-forcing">Atmospheric forcing</a></li>
+  <li><a href="#snow" id="toc-snow" class="nav-link" data-scroll-target="#snow">Snow</a>
   <ul class="collapse">
-  <li><a href="#kinematic-wave" id="toc-kinematic-wave" class="nav-link" data-scroll-target="#kinematic-wave">Kinematic wave</a></li>
-  <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a></li>
-  <li><a href="#local-inertial-river" id="toc-local-inertial-river" class="nav-link" data-scroll-target="#local-inertial-river">Local inertial river</a></li>
-  <li><a href="#local-inertial-river-1d-and-land-2d" id="toc-local-inertial-river-1d-and-land-2d" class="nav-link" data-scroll-target="#local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</a></li>
+  <li><a href="#input" id="toc-input" class="nav-link" data-scroll-target="#input">Input</a></li>
+  <li><a href="#states" id="toc-states" class="nav-link" data-scroll-target="#states">States</a></li>
+  <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output">Output</a></li>
   </ul></li>
-  <li><a href="#wflow_sediment" id="toc-wflow_sediment" class="nav-link" data-scroll-target="#wflow_sediment">wflow_sediment</a>
+  <li><a href="#glacier" id="toc-glacier" class="nav-link" data-scroll-target="#glacier">Glacier</a>
   <ul class="collapse">
-  <li><a href="#configuration" id="toc-configuration" class="nav-link" data-scroll-target="#configuration">Configuration</a></li>
+  <li><a href="#input-1" id="toc-input-1" class="nav-link" data-scroll-target="#input-1">Input</a></li>
+  <li><a href="#states-1" id="toc-states-1" class="nav-link" data-scroll-target="#states-1">States</a></li>
+  <li><a href="#output-1" id="toc-output-1" class="nav-link" data-scroll-target="#output-1">Output</a></li>
   </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#vegetation" id="toc-vegetation" class="nav-link" data-scroll-target="#vegetation">Vegetation</a>
+  <ul class="collapse">
+  <li><a href="#input-2" id="toc-input-2" class="nav-link" data-scroll-target="#input-2">Input</a></li>
+  <li><a href="#input-cyclic-lai" id="toc-input-cyclic-lai" class="nav-link" data-scroll-target="#input-cyclic-lai">Input static and cyclic</a></li>
+  <li><a href="#states-2" id="toc-states-2" class="nav-link" data-scroll-target="#states-2">States</a></li>
+  <li><a href="#output-2" id="toc-output-2" class="nav-link" data-scroll-target="#output-2">Output</a></li>
+  </ul></li>
+  <li><a href="#soil" id="toc-soil" class="nav-link" data-scroll-target="#soil">Soil</a>
+  <ul class="collapse">
+  <li><a href="#input-3" id="toc-input-3" class="nav-link" data-scroll-target="#input-3">Input</a></li>
+  <li><a href="#states-3" id="toc-states-3" class="nav-link" data-scroll-target="#states-3">States</a></li>
+  <li><a href="#output-3" id="toc-output-3" class="nav-link" data-scroll-target="#output-3">Output</a></li>
+  </ul></li>
+  <li><a href="#water-demand" id="toc-water-demand" class="nav-link" data-scroll-target="#water-demand">Water demand</a>
+  <ul class="collapse">
+  <li><a href="#non-irrigation" id="toc-non-irrigation" class="nav-link" data-scroll-target="#non-irrigation">Non-irrigation</a></li>
+  <li><a href="#non-paddy-irrigation" id="toc-non-paddy-irrigation" class="nav-link" data-scroll-target="#non-paddy-irrigation">Non-paddy irrigation</a></li>
+  <li><a href="#paddy-irrigation" id="toc-paddy-irrigation" class="nav-link" data-scroll-target="#paddy-irrigation">Paddy irrigation</a></li>
+  <li><a href="#allocation" id="toc-allocation" class="nav-link" data-scroll-target="#allocation">Allocation</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -521,9 +507,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_landhydrology_sbm.html">Land Hydrology SBM</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Model configurations</h1>
+<h1 class="title">Land Hydrology SBM</h1>
 </div>
 
 
@@ -540,113 +526,1132 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>There are several model configurations supported by wflow. These model configurations require slightly different input requirements, yet the general structure is similar for each model. A wflow model configuration consists of a <a href="../model_docs/land/landhydrology_sbm.html">Land hydrology SBM</a> model in combination with <code>routing</code> concepts that control how water is routed for example over the land or river domain. For the wflow_sbm model different model configurations are possible. The following model configurations are supported in wflow:</p>
-<ul>
-<li>wflow_sbm:
-<ul>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and surface flow</li>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface and overland flow + local inertial river (+ optional floodplain)</li>
-<li>Land Hydrology <code>SBM</code> + kinematic wave for subsurface flow + local inertial river (1D) and land (2D)</li>
-<li>Land Hydrology <code>SBM</code> + groundwater flow + kinematic wave for surface flow</li>
-</ul></li>
-<li>wflow_sediment as post processing of wflow_sbm output</li>
-</ul>
-<p>Below, some explanation will be given on how to prepare a basic wflow_sbm model. Example data for other model configurations is provided in the section with <a href="../getting_started/download_example_models.html">sample data</a>.</p>
-<section id="wflow_sbm" class="level2">
-<h2 class="anchored" data-anchor-id="wflow_sbm">wflow_sbm</h2>
-<p>Wflow_sbm represents hydrological models derived from the CQflow model (Köhler et al., 2006) that have the <a href="../model_docs/land/landhydrology_sbm.html">Land Hydrology SBM</a> model concept in common, but can have different routing concepts that control how water is routed for example over the land or river domain. The <code>soil</code> model of the Land Hydrology <code>SBM</code> model is largely based on the Topog_SBM model but has had considerable changes over time. Topog_SBM is specifically designed to simulate fast runoff processes in small catchments while the wflow_sbm model can be applied more widely. The main differences between the Land Hydrology <code>SBM</code> model and Topog_SBM are as follows:</p>
-<ul>
-<li>the addition of evapotranspiration and interception losses;</li>
-<li>the addition of a root water uptake reduction function (Feddes et al., 1978);</li>
-<li>the addition of a capillary rise;</li>
-<li>the addition of glacier, snow build-up and melting processes;</li>
-<li>the introduction of an option to divide the soil column into different layers to allow for transfer of water within the unsaturated zone;</li>
-<li>the addition of water demand and allocation computations.</li>
-</ul>
-<p>Topog_SBM uses an element network based on contour lines and trajectories for water routing. Wflow_sbm models differ in how the routing components river, land, and subsurface are solved. Below the different wflow_sbm model configurations are described, according to the used routing approach.</p>
-<section id="kinematic-wave" class="level3">
-<h3 class="anchored" data-anchor-id="kinematic-wave">Kinematic wave</h3>
-<p>Water is routed over a D8 network, and the kinematic wave approach is used for river, overland and lateral subsurface flow. This is described in more detail in the section <a href="../model_docs/routing/kinwave.html">Kinematic wave</a>.</p>
-<p>An overview of the different processes and fluxes in the wflow_sbm model with the kinematic wave approach for river, overland and lateral subsurface flow:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../images/wflow_sbm_soil.png" class="img-fluid figure-img"></p>
-<figcaption>Conceptual overview of the wflow_sbm model</figcaption>
-</figure>
-</div>
+<style>
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+td, th {
+  word-wrap: break-word;
+}
+</style>
+<section id="atmospheric-forcing" class="level2">
+<h2 class="anchored" data-anchor-id="atmospheric-forcing">Atmospheric forcing</h2>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>atmosphere_water__precipitation_volume_flux</code></td>
+<td>Precipitation</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>land_surface_water__potential_evaporation_volume_flux</code></td>
+<td>Potential evaporation</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>atmosphere_air__temperature</code></td>
+<td>Temperature</td>
+<td>ᵒC</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="groundwater-flow" class="level3">
-<h3 class="anchored" data-anchor-id="groundwater-flow">Groundwater flow</h3>
-<p>For river and overland flow the kinematic wave approach over a D8 network is used for this wflow_sbm model. For the subsurface domain, an unconfined aquifer with groundwater flow in four directions (adjacent cells) is used. This is described in more detail in the section <a href="../model_docs/routing/gwf.html">Groundwater flow</a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm_gwf"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="snow" class="level2">
+<h2 class="anchored" data-anchor-id="snow">Snow</h2>
+<section id="input" class="level3">
+<h3 class="anchored" data-anchor-id="input">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>atmosphere_air__snowfall_temperature_threshold</code></td>
+<td>Threshold temperature for snowfall</td>
+<td>ᵒC</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td><code>atmosphere_air__snowfall_temperature_interval</code></td>
+<td>Threshold temperature interval length</td>
+<td>ᵒC</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td><code>snowpack__melting_temperature_threshold</code></td>
+<td>Threshold temperature for snowmelt</td>
+<td>ᵒC</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td><code>snowpack__degree-day_coefficient</code></td>
+<td>Degree-day factor for snowmelt</td>
+<td>mm ᵒC⁻¹ Δt⁻¹</td>
+<td>3.75653 mm ᵒC⁻¹ day⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>snowpack__liquid_water_holding_capacity</code></td>
+<td>Water holding capacity as fraction of current snow pack</td>
+<td>-</td>
+<td>0.1</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="local-inertial-river" class="level3">
-<h3 class="anchored" data-anchor-id="local-inertial-river">Local inertial river</h3>
-<p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river flow. There is also the option to use the local inertial model for river flow with an optional 1D floodplain schematization (routing is done separately for the river channel and floodplain), by providing the following in the TOML file:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span>    <span class="co"># optional, default is "kinematic-wave"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d</span> <span class="op">=</span> <span class="cn">true</span>                <span class="co"># optional, default is false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="states" class="level3">
+<h3 class="anchored" data-anchor-id="states">States</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>snowpack~dry__leq-depth</code></td>
+<td>Liquid-water equivalent of dry snow</td>
+<td>mm</td>
+</tr>
+<tr class="even">
+<td><code>snowpack~liquid__depth</code></td>
+<td>Liquid water content in the snow pack</td>
+<td>mm</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="local-inertial-river-1d-and-land-2d" class="level3">
-<h3 class="anchored" data-anchor-id="local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</h3>
-<p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river and overland flow. There is also the option to use the local inertial model for 1D river and 2D overland flow, by providing the following in the TOML file:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The local inertial approach is described in more detail in the section <a href="../model_docs/routing/local-inertial.html">Local inertial model</a>.</p>
+<section id="output" class="level3">
+<h3 class="anchored" data-anchor-id="output">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>snowpack__leq-depth</code></td>
+<td>Liquid-water equivalent of snow pack (SWE)</td>
+<td>mm</td>
+</tr>
+<tr class="even">
+<td><code>snowpack_meltwater__volume_flux</code></td>
+<td>Amount of snow melt</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>snowpack_water__runoff_volume_flux</code></td>
+<td>Runoff from snowpack</td>
+<td>mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
-<section id="wflow_sediment" class="level2">
-<h2 class="anchored" data-anchor-id="wflow_sediment">wflow_sediment</h2>
-<p>The processes and fate of many particles and pollutants impacting water quality at the catchment level are intricately linked to the processes governing sediment dynamics. Both nutrients such as phosphorus, carbon or other pollutants such as metals are influenced by sediment properties in processes such as mobilization, flocculation or deposition. To better assert and model water quality in inland systems, a better comprehension and modelling of sediment sources and fate in the river is needed at a spatial and time scale relevant to such issues.</p>
-<p>The wflow_sediment model was developed to answer such issues. It is a distributed physics-based model, based on the distributed hydrologic wflow_sbm model. It is able to simulate both land and in-stream processes, and relies on available global datasets, parameter estimation and small calibration effort.</p>
-<p>In order to model the exports of terrestrial sediment to the coast through the Land Ocean Aquatic Continuum or LOAC (inland waters network such as streams, lakes…), two different modelling parts were considered. The first part, called the inland sediment model, is the modelling and estimation of soil loss and sediment yield to the river system by land erosion, separated into vertical <a href="../model_docs/land/sediment.html#soil-erosion">Soil Erosion</a> processes and lateral <a href="../model_docs/routing/sediment_flux.html#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a>. The second part, called the <a href="../model_docs/routing/sediment_flux.html#river-sediment-model">River Sediment Model</a> is the transport and processes of the sediment in the river system. The two parts together constitute the wflow_sediment model.</p>
-<p>Overview of the concepts of the wflow_sediment model: <img src="../images/wflow_sediment.png" class="img-fluid" alt="wflow_sediment"></p>
-<section id="configuration" class="level3">
-<h3 class="anchored" data-anchor-id="configuration">Configuration</h3>
-<p>As sediment generation and transport processes are linked to the hydrology and water flows, the inputs to the wflow_sediment model come directly from a hydrological model. The required dynamic inputs to run wflow_sediment are:</p>
-<ul>
-<li>Precipitation (can also come from the hydrological forcing data),</li>
-<li>Land runoff (overland flow) from the kinematic wave,</li>
-<li>River runoff from the kinematic wave,</li>
-<li>Land water level in the kinematic wave,</li>
-<li>River water level in the kinematic wave,</li>
-<li>Rainfall interception by the vegetation.</li>
-</ul>
-<p>These inputs can be obtained from wflow_sbm or from other sources.</p>
-<p>Model outputs can be saved for both the inland and the instream part of the model. Some examples are listed below.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # Total soil erosion rate [ton/t] from rainfall (splash)</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion~rainfall__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"rainfall_erosion"</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Soil erosion rate by overland flow [ton/t]</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion~overland_flow__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"overland_flow_erosion"</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Total soil loss rate [ton/t]</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_erosion__mass_flow_rate</span> <span class="op">=</span> <span class="st">"soilloss"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Total transport capacity of overland flow [ton/t]</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment_transport_capacity__mass_flow_rate</span> <span class="op">=</span> <span class="st">"TCsed"</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment flux in overland flow [ton/t]</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment__mass_flow_rate</span> <span class="op">=</span> <span class="st">"olsed"</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Total (or per particle class) sediment yield to the river [ton/t]</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_sediment~to-river__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandsed"</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_clay~to-river__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandclay"</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment concentration in the river (suspended + bed load) [kg/m3]</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__mass_concentration</span> <span class="op">=</span> <span class="st">"Sedconc"</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Suspended load [kg/m3]</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment~suspended__mass_concentration"</span> <span class="op">=</span> <span class="st">"SSconc"</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Bed load [kg/m3]</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment~bedload__mass_concentration"</span> <span class="op">=</span> <span class="st">"Bedconc"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="glacier" class="level2">
+<h2 class="anchored" data-anchor-id="glacier">Glacier</h2>
+<section id="input-1" class="level3">
+<h3 class="anchored" data-anchor-id="input-1">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 30%">
+<col style="width: 15%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>glacier_ice__initial_leq-depth</code></td>
+<td>Initial glacier liquid-water equivalent (cold state)</td>
+<td>mm</td>
+<td>5500.0</td>
+</tr>
+<tr class="even">
+<td><code>glacier_ice__melting_temperature_threshold</code></td>
+<td>Threshold temperature for glacier melt</td>
+<td>ᵒC</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td><code>glacier_ice__degree-day_coefficient</code></td>
+<td>Degree-day factor for melt from glacier</td>
+<td>mm ᵒC⁻¹ Δt⁻¹</td>
+<td>3.0 mm ᵒC⁻¹ day⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>glacier_firn_accumulation__snowpack~dry_leq-depth_fraction</code></td>
+<td>Fraction of the snowpack on top of the glacier converted into ice</td>
+<td>Δt⁻¹</td>
+<td>0.001 day⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>glacier_surface__area_fraction</code></td>
+<td>Fraction covered by a glacier</td>
+<td>-</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="states-1" class="level3">
+<h3 class="anchored" data-anchor-id="states-1">States</h3>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>glacier_ice__leq-depth</code></td>
+<td>Glacier liquid-water equivalent</td>
+<td>mm</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-1" class="level3">
+<h3 class="anchored" data-anchor-id="output-1">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>glacier_ice__melt_volume_flux</code></td>
+<td>Melt from the glacier</td>
+<td>mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
-<section id="references" class="level2">
-<h2 class="anchored" data-anchor-id="references">References</h2>
-<ul>
-<li>Köhler, L., Mulligan, M., Schellekens, J., Schmid, S., Tobón, C., 2006, Hydrological impacts of converting tropical montane cloud forest to pasture, with initial reference to northern Costa Rica. Final Technical Report DFID‐FRP Project No.&nbsp;R799.</li>
-</ul>
+<section id="vegetation" class="level2">
+<h2 class="anchored" data-anchor-id="vegetation">Vegetation</h2>
+<section id="input-2" class="level3">
+<h3 class="anchored" data-anchor-id="input-2">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 30%">
+<col style="width: 15%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>vegetation_root__depth</code></td>
+<td>Rooting depth</td>
+<td>mm</td>
+<td>750.0</td>
+</tr>
+<tr class="even">
+<td><code>vegetation__crop_factor</code></td>
+<td>Crop coefficient</td>
+<td>-</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation__specific-leaf_storage</code></td>
+<td>Specific leaf storage</td>
+<td>mm</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_wood_water__storage_capacity</code></td>
+<td>Storage woody part of vegetation</td>
+<td>mm</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_canopy__light-extinction_coefficient</code></td>
+<td>Extinction coefficient (to calculate canopy gap fraction)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio</code></td>
+<td>Gash interception model parameter</td>
+<td>-</td>
+<td>0.1</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_canopy__gap_fraction</code></td>
+<td>Canopy gap fraction</td>
+<td>-</td>
+<td>0.1</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_water__storage_capacity</code></td>
+<td>Maximum canopy storage</td>
+<td>mm</td>
+<td>1.0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="input-cyclic-lai" class="level3">
+<h3 class="anchored" data-anchor-id="input-cyclic-lai">Input static and cyclic</h3>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>vegetation__leaf-area_index</code></td>
+<td>Leaf area index</td>
+<td>m² m⁻²</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="states-2" class="level3">
+<h3 class="anchored" data-anchor-id="states-2">States</h3>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>vegetation_canopy_water__depth</code></td>
+<td>Canopy storage</td>
+<td>mm</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-2" class="level3">
+<h3 class="anchored" data-anchor-id="output-2">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 37%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>vegetation_canopy_water__stemflow_volume_flux</code></td>
+<td>Stemflow</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_canopy_water__throughfall_volume_flux</code></td>
+<td>Throughfall</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_canopy_water__interception_volume_flux</code></td>
+<td>Interception</td>
+<td>mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="soil" class="level2">
+<h2 class="anchored" data-anchor-id="soil">Soil</h2>
+<section id="input-3" class="level3">
+<h3 class="anchored" data-anchor-id="input-3">Input</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 41%">
+<col style="width: 41%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth</code></td>
+<td>Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an <code>exponential_constant</code> saturated hydraulic conductivity profile is used</td>
+<td>mm</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>soil_layer_water__vertical_saturated_hydraulic_conductivity</code></td>
+<td>Vertical saturated hydraulic conductivity per soil layer, when a <code>layered</code> or <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
+<td>mm</td>
+<td>1000.0 mm day⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth</code></td>
+<td>Depth from soil surface for which <code>layered</code> profile is valid, when a <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
+<td>mm</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>soil_surface_temperature__weight_coefficient</code></td>
+<td>Weighting coefficient for soil surface temperature</td>
+<td>-</td>
+<td>0.1125</td>
+</tr>
+<tr class="odd">
+<td><code>soil_surface_water__infiltration_reduction_parameter</code></td>
+<td>Controls soil infiltration reduction factor when soil is frozen</td>
+<td>-</td>
+<td>0.038</td>
+</tr>
+<tr class="even">
+<td><code>soil_water__saturated_volume_fraction</code></td>
+<td>Saturated water content</td>
+<td>-</td>
+<td>0.6</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water__residual_volume_fraction</code></td>
+<td>Residual water content</td>
+<td>-</td>
+<td>0.01</td>
+</tr>
+<tr class="even">
+<td><code>soil_surface_water__vertical_saturated_hydraulic_conductivity</code></td>
+<td>Vertical saturated hydraulic conductivity at soil surface</td>
+<td>mm day⁻¹</td>
+<td>3000.0</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter</code></td>
+<td>Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth</td>
+<td>mm⁻¹</td>
+<td>0.001</td>
+</tr>
+<tr class="even">
+<td><code>soil_water__air_entry_pressure_head</code></td>
+<td>Air entry pressure head of soil</td>
+<td>cm</td>
+<td>-10.0</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_root__feddes_critial_pressure_head_h~1</code></td>
+<td>Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
+<td>cm</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_root__feddes_critial_pressure_head_h~2</code></td>
+<td>Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
+<td>cm</td>
+<td>-100.0</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_root__feddes_critial_pressure_head_h~3~high</code></td>
+<td>Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
+<td>cm</td>
+<td>-400.0</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_root__feddes_critial_pressure_head_h~3~low</code></td>
+<td>Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
+<td>cm</td>
+<td>-1000.0</td>
+</tr>
+<tr class="odd">
+<td><code>vegetation_root__feddes_critial_pressure_head_h~4</code></td>
+<td>Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
+<td>cm</td>
+<td>-15849.0</td>
+</tr>
+<tr class="even">
+<td><code>vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient</code></td>
+<td>Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
+<td>-</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td><code>soil__thickness</code></td>
+<td>Soil thickness</td>
+<td>mm</td>
+<td>2000.0</td>
+</tr>
+<tr class="even">
+<td><code>soil~compacted_surface_water__infiltration_capacity</code></td>
+<td>Infiltration capacity of compacted areas</td>
+<td>mm Δt⁻¹</td>
+<td>10 mm day⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil~non-compacted_surface_water__infiltration_capacity</code></td>
+<td>Soil infiltration capacity</td>
+<td>mm Δt⁻¹</td>
+<td>100.0 mm day⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_sat-zone_bottom__max_leakage_volume_flux</code></td>
+<td>Maximum leakage from saturated zone</td>
+<td>mm Δt⁻¹</td>
+<td>0.0 mm day⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_layer_water__brooks-corey_exponent</code></td>
+<td>Brooks-Corey power coefficient per soil layer</td>
+<td>-</td>
+<td>10.0</td>
+</tr>
+<tr class="even">
+<td><code>land~water-covered__area_fraction</code></td>
+<td>Fraction of open water (excluding rivers)</td>
+<td>-</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td><code>soil_layer_water__vertical_saturated_hydraulic_conductivity_factor</code></td>
+<td>Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer</td>
+<td>-</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td><code>soil~compacted__area_fraction</code></td>
+<td>Fraction of compacted soil area</td>
+<td>-</td>
+<td>0.01</td>
+</tr>
+<tr class="odd">
+<td><code>soil_root~wet__sigmoid_function_shape_parameter</code></td>
+<td>Controls sharpness of transition between fully wet and fully dry roots</td>
+<td>-</td>
+<td>-500.0</td>
+</tr>
+<tr class="even">
+<td><code>soil_root__length_density_fraction</code></td>
+<td>Fraction of the root length density per soil layer</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water_sat-zone_bottom__max_leakage_volume_flux</code></td>
+<td>Maximum leakage from the saturated zone</td>
+<td>mm day⁻¹</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_sat-zone_top_capillary-rise__max_water-table_depth</code></td>
+<td>Maximum water table depth for capillary rise</td>
+<td>mm</td>
+<td>2000.0</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water_sat-zone_top_capillary-rise__averianov_exponent</code></td>
+<td>Averianov exponent controlling capillary rise</td>
+<td>-</td>
+<td>2.0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="states-3" class="level3">
+<h3 class="anchored" data-anchor-id="states-3">States</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>soil_surface__temperature</code></td>
+<td>Soil surface temperature, only when snow is modelled</td>
+<td>ᵒC</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_sat-zone__depth</code></td>
+<td>Amount of water in the saturated store</td>
+<td>mm</td>
+</tr>
+<tr class="odd">
+<td><code>soil_layer_water_unsat-zone__depth</code></td>
+<td>Amount of water in the unsaturated store, per soil layer</td>
+<td>mm</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-3" class="level3">
+<h3 class="anchored" data-anchor-id="output-3">Output</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land_surface__evapotranspiration_volume_flux</code></td>
+<td>Total actual evapotranspiration</td>
+<td>mm</td>
+</tr>
+<tr class="even">
+<td><code>land_water~storage~total__depth</code></td>
+<td>Total water storage (excluding floodplains, lakes and reservoirs)</td>
+<td>mm</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water__infiltration_volume_flux</code></td>
+<td>Actual infiltration into the unsaturated zone</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_water__transpiration_volume_flux</code></td>
+<td>Transpiration from vegetation</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_surface_water__runoff_volume_flux</code></td>
+<td>Total surface runoff from infiltration and saturation excess</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_surface_water__net_runoff_volume_flux</code></td>
+<td>Net surface runoff (after open water evaporation)</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil~compacted_surface_water__excess_volume_flux</code></td>
+<td>Excess water for compacted soil fraction</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil~non-compacted_surface_water__excess_volume_flux</code></td>
+<td>Excess water for non-compacted soil fraction</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_surface_water_unsat-zone__exfiltration_volume_flux</code></td>
+<td>Water exfiltrating from unsaturated store because of rising water table</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_surface_water_sat-zone__exfiltration_volume_flux</code></td>
+<td>Water exfiltrating from saturated store during saturation excess conditions</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_layer_water__volume_fraction</code></td>
+<td>Volumetric water content per soil layer (including residual water content and saturated zone)</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>soil_layer_water__volume_percentage</code></td>
+<td>Volumetric water content per soil layer (including residual water content and saturated zone)</td>
+<td>%</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water_root-zone__volume_fraction</code></td>
+<td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_root-zone__volume_percentage</code></td>
+<td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
+<td>%</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water_root-zone__depth</code></td>
+<td>Root water storage in unsaturated and saturated zone (excluding residual water content)</td>
+<td>mm</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_unsat-zone__depth</code></td>
+<td>Amount of water in the unsaturated store</td>
+<td>mm</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water_sat-zone_top__capillary_volume_flux</code></td>
+<td>Actual capillary rise</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_sat-zone_top__recharge_volume_flux</code></td>
+<td>Downward flux from unsaturated to saturated zone</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water_sat-zone_top__net_recharge_volume_flux</code></td>
+<td>Net recharge to saturated zone</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_sat-zone_bottom__leakage_volume_flux</code></td>
+<td>Actual leakage from saturated store</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>soil_water_sat-zone_top__depth</code></td>
+<td>Pseudo-water table depth (top of the saturated zone)</td>
+<td>mm</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="water-demand" class="level2">
+<h2 class="anchored" data-anchor-id="water-demand">Water demand</h2>
+<section id="non-irrigation" class="level3">
+<h3 class="anchored" data-anchor-id="non-irrigation">Non-irrigation</h3>
+<section id="input-static-and-cyclic" class="level4">
+<h4 class="anchored" data-anchor-id="input-static-and-cyclic">Input static and cyclic</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land~domestic__gross_water_demand_volume_flux</code></td>
+<td>Gross domestic water demand</td>
+<td>mm Δt⁻¹</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td><code>land~domestic__net_water_demand_volume_flux</code></td>
+<td>Net domestic water demand</td>
+<td>mm Δt⁻¹</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td><code>land~industry__gross_water_demand_volume_flux</code></td>
+<td>Gross industry water demand</td>
+<td>mm Δt⁻¹</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td><code>land~industry__net_water_demand_volume_flux</code></td>
+<td>Net industry water demand</td>
+<td>mm Δt⁻¹</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td><code>land~livestock__gross_water_demand_volume_flux</code></td>
+<td>Gross livestock water demand</td>
+<td>mm Δt⁻¹</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td><code>land~livestock__net_water_demand_volume_flux</code></td>
+<td>Net livestock water demand</td>
+<td>mm Δt⁻¹</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="non-paddy-irrigation" class="level3">
+<h3 class="anchored" data-anchor-id="non-paddy-irrigation">Non-paddy irrigation</h3>
+<section id="input-4" class="level4">
+<h4 class="anchored" data-anchor-id="input-4">Input</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land~irrigated-non-paddy__irrigation_efficiency</code></td>
+<td>Irrigation efficiency</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>land~irrigated-non-paddy_area__number</code></td>
+<td>Irrigation areas (non-paddy)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>land~irrigated-non-paddy__max_irrigation_rate</code></td>
+<td>Maximum irrigation rate</td>
+<td>mm Δt⁻¹</td>
+<td>25.0 mm day⁻¹</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="input-static-and-cyclic-1" class="level4">
+<h4 class="anchored" data-anchor-id="input-static-and-cyclic-1">Input static and cyclic</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land~irrigated-non-paddy__irrigation_trigger_flag</code></td>
+<td>Irrigation trigger (off or on, 0 or 1)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-4" class="level4">
+<h4 class="anchored" data-anchor-id="output-4">Output</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land~irrigated-non-paddy__gross_water_demand_volume_flux</code></td>
+<td>Irrigation (non-paddy) gross demand</td>
+<td>mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="paddy-irrigation" class="level3">
+<h3 class="anchored" data-anchor-id="paddy-irrigation">Paddy irrigation</h3>
+<section id="input-5" class="level4">
+<h4 class="anchored" data-anchor-id="input-5">Input</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land~irrigated-paddy__min_depth</code></td>
+<td>Minimum required water depth in the irrigated paddy fields</td>
+<td>mm</td>
+<td>20.0</td>
+</tr>
+<tr class="even">
+<td><code>land~irrigated-paddy__optimal_depth</code></td>
+<td>Optimal water depth in the irrigated paddy fields</td>
+<td>mm</td>
+<td>50.0</td>
+</tr>
+<tr class="odd">
+<td><code>land~irrigated-paddy__max_depth</code></td>
+<td>Water depth when paddy field starts spilling water (overflow)</td>
+<td>mm</td>
+<td>80.0</td>
+</tr>
+<tr class="even">
+<td><code>land~irrigated-paddy__irrigation_efficiency</code></td>
+<td>Irrigation efficiency</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>land~irrigated-paddy_area__number</code></td>
+<td>Irrigation areas (paddy)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>land~irrigated-paddy__max_irrigation_rate</code></td>
+<td>Maximum irrigation rate</td>
+<td>mm Δt⁻¹</td>
+<td>25.0 mm day⁻¹</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="input-static-and-cyclic-2" class="level4">
+<h4 class="anchored" data-anchor-id="input-static-and-cyclic-2">Input static and cyclic</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land~irrigated-paddy__irrigation_trigger_flag</code></td>
+<td>Irrigation trigger (off or on, 0 or 1)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="states-4" class="level4">
+<h4 class="anchored" data-anchor-id="states-4">States</h4>
+<table class="table-striped table-hover caption-top table">
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land_surface_water~paddy__depth</code></td>
+<td>Water depth in paddy field</td>
+<td>mm</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-5" class="level4">
+<h4 class="anchored" data-anchor-id="output-5">Output</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land~irrigated-paddy__gross_water_demand_volume_flux</code></td>
+<td>Irrigation (paddy) gross demand</td>
+<td>mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="allocation" class="level3">
+<h3 class="anchored" data-anchor-id="allocation">Allocation</h3>
+<section id="input-6" class="level4">
+<h4 class="anchored" data-anchor-id="input-6">Input</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land_surface_water__withdrawal_fraction</code></td>
+<td>Fraction surface water used</td>
+<td>-</td>
+<td>1.0</td>
+</tr>
+<tr class="even">
+<td><code>land_water_allocation_area__number</code></td>
+<td>Allocation areas</td>
+<td>-</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-6" class="level4">
+<h4 class="anchored" data-anchor-id="output-6">Output</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land_surface_water_abstraction__volume_flux</code></td>
+<td>Actual surface water abstraction</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>subsurface_water_abstraction__volume_flux</code></td>
+<td>Actual groundwater abstraction</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>land~irrigated__allocated_water_volume_flux</code></td>
+<td>Allocated water for irrigation</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>land~non-irrigated__allocated_water_volume_flux</code></td>
+<td>Allocated water for non-irrigation</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="odd">
+<td><code>land~non-irrigation__return_flow_volume_flux</code></td>
+<td>Return flow from non-irrgation sectors</td>
+<td>mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Download example models – Wflow.jl</title>
+<title>Reservoirs and Lakes – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -58,27 +58,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<link href="../_static/logo.png" rel="icon" type="image/png">
-<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-2b3e328b71be8d25427581baeb23079b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-416ad870b8d51e530e1d919ad2de2faf.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-2b3e328b71be8d25427581baeb23079b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-416ad870b8d51e530e1d919ad2de2faf.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-470b330d677022cb74bea5fa73932577.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -105,7 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="../_static/version.js"></script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 <script>
   window.MathJax = {
     tex: {
@@ -118,8 +118,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   };
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="../_static/styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
@@ -291,10 +320,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Wflow.jl</span>
     </a>
   </div>
@@ -305,23 +334,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../getting_started/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../getting_started/index.html"> 
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../user_guide/index.html"> 
+    <a class="nav-link" href="../../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../model_docs/index.html"> 
+    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../developments/index.html"> 
+    <a class="nav-link" href="../../developments/index.html"> 
 <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -363,7 +392,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting_started/download_example_models.html">Download example models</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -377,34 +406,121 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting_started/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Getting started</span></a>
+  <a href="../../model_docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting_started/install.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Installing wflow</span></a>
+  <a href="../../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model configurations</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting_started/download_example_models.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Download example models</span></a>
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Land models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting_started/building_a_model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Building a model from scratch</span></a>
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting_started/running_wflow.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Running a simulation</span></a>
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment</span></a>
   </div>
 </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Routing concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematic wave</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local inertial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Reservoirs and Lakes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Groundwater flow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment flux</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Model parameters and variables</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -415,9 +531,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#wflow_sbm-kinematic-wave" id="toc-wflow_sbm-kinematic-wave" class="nav-link active" data-scroll-target="#wflow_sbm-kinematic-wave">wflow_sbm + kinematic wave</a></li>
-  <li><a href="#wflow_sbm-groundwater-flow" id="toc-wflow_sbm-groundwater-flow" class="nav-link" data-scroll-target="#wflow_sbm-groundwater-flow">wflow_sbm + groundwater flow</a></li>
-  <li><a href="#wflow_sediment" id="toc-wflow_sediment" class="nav-link" data-scroll-target="#wflow_sediment">wflow_sediment</a></li>
+  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link active" data-scroll-target="#reservoirs">Reservoirs</a>
+  <ul class="collapse">
+  <li><a href="#lakes-unregulated-and-regulated" id="toc-lakes-unregulated-and-regulated" class="nav-link" data-scroll-target="#lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</a></li>
+  <li><a href="#modified-puls-approach" id="toc-modified-puls-approach" class="nav-link" data-scroll-target="#modified-puls-approach">Modified Puls Approach</a></li>
+  <li><a href="#lake-parameters" id="toc-lake-parameters" class="nav-link" data-scroll-target="#lake-parameters">Lake parameters</a></li>
+  <li><a href="#additional-settings" id="toc-additional-settings" class="nav-link" data-scroll-target="#additional-settings">Additional settings</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
     </div>
@@ -425,9 +546,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Download example models</h1>
+<h1 class="title">Reservoirs and Lakes</h1>
 </div>
 
 
@@ -444,87 +565,145 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>For each wflow Model a test model is available that can help to understand the data requirements and the usage of each Model. The TOML configuration file per available model are listed in the Table below:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th style="text-align: left;">model</th>
-<th>TOML configuration file</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">wflow_sbm + kinematic wave</td>
-<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml">sbm_config.toml</a></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">wflow_sbm + groundwater flow</td>
-<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml">sbm_gwf_config.toml</a></td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">wflow_sediment</td>
-<td><a href="https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml">sediment_config.toml</a></td>
-</tr>
-</tbody>
-</table>
-<p>The associated Model files (input static, forcing and state files) can easily be downloaded and for this we share the following Julia code (per Model) that downloads the required files to your current working directory. For running these test model see also <a href="../getting_started/running_wflow.html#running-a-simulation">Usage</a> and <a href="../getting_started/running_wflow.html#using-the-command-line-interface">Command Line Interface</a>.</p>
-<section id="wflow_sbm-kinematic-wave" class="level2">
-<h2 class="anchored" data-anchor-id="wflow_sbm-kinematic-wave">wflow_sbm + kinematic wave</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_config.toml"</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.9/staticmaps-moselle.nc"</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/forcing-moselle.nc"</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>instates <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/instates-moselle.nc"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data/input" directory in the current directory</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>testdir <span class="op">=</span> <span class="pp">@__DIR__</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>inputdir <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"data/input"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">isdir</span>(inputdir) <span class="op">||</span> <span class="fu">mkpath</span>(inputdir)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"sbm_config.toml"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and input directories</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(inputdir, <span class="st">"staticmaps-moselle.nc"</span>))</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(inputdir, <span class="st">"forcing-moselle.nc"</span>))</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(instates, <span class="fu">joinpath</span>(inputdir, <span class="st">"instates-moselle.nc"</span>))</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Reservoirs and lakes models can be included as part of the river network.</p>
+<section id="reservoirs" class="level2">
+<h2 class="anchored" data-anchor-id="reservoirs">Reservoirs</h2>
+<p>By default the reservoirs are not included in the model. To include them put the following lines in the TOML file of the model:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoirs</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally there is a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The list of reservoir input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#reservoirs">here</a>.</p>
+<section id="lakes-unregulated-and-regulated" class="level3">
+<h3 class="anchored" data-anchor-id="lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</h3>
+<p>Lakes are modelled using a mass balance approach:</p>
+<p><span class="math display">\[
+    \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} + \dfrac{(P-E) A}{\Delta t} - \subtext{Q}{out}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{S}{m^3}\)</span> is lake storage, <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep, <span class="math inline">\(\SIb{\subtext{Q}{in}}{m^3\ s^{-1}}\)</span> is the sum of inflows (river, overland and lateral subsurface flow), <span class="math inline">\(\SIb{\subtext{Q}{out}}{m^3\ s^{-1}}\)</span> is the lake outflow at the outlet, <span class="math inline">\(\SIb{P}{m}\)</span> is precipitation, <span class="math inline">\(\SIb{E}{m}\)</span> is lake evaporation and <span class="math inline">\(\SIb{A}{m^2}\)</span> is the lake surface area.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/lake.png" class="img-fluid figure-img"></p>
+<figcaption>Lake schematization.</figcaption>
+</figure>
+</div>
+<p>Most of the variables in this equation are known at the current or previous timestep, apart from <span class="math inline">\(S(t+ \Delta t)\)</span> and <span class="math inline">\(\subtext{Q}{out}\)</span> which can both be linked to the water level <span class="math inline">\(H\)</span> in the lake using a storage curve <span class="math inline">\(S = f(H)\)</span> and a rating curve <span class="math inline">\(Q = f(H)\)</span>. In wflow, several options are available to select storage and rating curves, and in most cases, the mass balance is then solved by linearization and iteration or using the Modified Puls Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:</p>
+<ul>
+<li>Come from the interpolation of field data linking volume and lake height,</li>
+<li>Be computed from the simple relationship <span class="math inline">\(S = A H\)</span>.</li>
+</ul>
+<p>Rating curves in wflow can either:</p>
+<ul>
+<li>Come from the interpolation of field data linking lake outflow and water height, also appropriate for regulated lakes/ dams,</li>
+<li>Be computed from a rating curve of the form <span class="math inline">\(\subtext{Q}{out} = \alpha (H-H_0)^\beta\)</span>, where <span class="math inline">\(H_{0}\)</span> is the minimum water level under which the outflow is zero. Usual values for <span class="math inline">\(\beta\)</span> are <span class="math inline">\(\frac{3}{2}\)</span> for a rectangular weir or <span class="math inline">\(2\)</span> for a parabolic weir (Bos, 1989).</li>
+</ul>
 </section>
-<section id="wflow_sbm-groundwater-flow" class="level2">
-<h2 class="anchored" data-anchor-id="wflow_sbm-groundwater-flow">wflow_sbm + groundwater flow</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sbm_gwf_config.toml"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/staticmaps-sbm-groundwater.nc"</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/forcing-sbm-groundwater.nc"</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data/input" directory in the current directory</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>testdir <span class="op">=</span> <span class="pp">@__DIR__</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>inputdir <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"data/input"</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">isdir</span>(inputdir) <span class="op">||</span> <span class="fu">mkpath</span>(inputdir)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@testdir</span>, <span class="st">"sbm_gwf_config.toml"</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and data dirs</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(inputdir, <span class="st">"staticmaps-sbm-groundwater.nc"</span>))</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(inputdir, <span class="st">"forcing-sbm-groundwater.nc"</span>))</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="modified-puls-approach" class="level3">
+<h3 class="anchored" data-anchor-id="modified-puls-approach">Modified Puls Approach</h3>
+<p>The Modified Puls Approach is a resolution method of the lake balance that uses an explicit relationship between storage and outflow. Storage is assumed to be equal to <span class="math inline">\(A H\)</span> and the rating curve for a parabolic weir (<span class="math inline">\(\beta = 2\)</span>):</p>
+<p><span class="math display">\[
+    S = A H = A  (h + H_{0}) = A \sqrt{\frac{Q}{\alpha}} + A H_0
+\]</span></p>
+<p>Inserting this equation in the mass balance gives:</p>
+<p><span class="math display">\[
+    \dfrac{A}{\Delta t} \sqrt{\frac{Q}{\alpha}} + Q = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} +
+    A\dfrac{P-E}{\Delta t} - \dfrac{A H_0}{\Delta t} = \mathrm{SI} - \dfrac{A H_0}{\Delta t}
+\]</span></p>
+<p>The solution for <span class="math inline">\(Q\)</span> is then:</p>
+<p><span class="math display">\[
+  Q =
+    \begin{cases}
+      \begin{align*}
+        \frac{1}{4}\left(-\mathrm{LF} + \sqrt{\mathrm{LF}^{2} + 4  \left(\mathrm{SI} - \dfrac{A H_0}{\Delta t} \right)}
+        \right)^2 &amp;\text{ if }\quad \mathrm{SI} &gt; \dfrac{A H_0}{\Delta t} \\
+        0 &amp;\text{ if }\quad \mathrm{SI} \leq \dfrac{A H_0}{\Delta t}
+      \end{align*}
+    \end{cases}
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[
+\mathrm{LF} = \dfrac{A}{\Delta t \sqrt{\alpha}}.
+\]</span></p>
 </section>
-<section id="wflow_sediment" class="level2">
-<h2 class="anchored" data-anchor-id="wflow_sediment">wflow_sediment</h2>
-<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># urls to TOML and netCDF of the Moselle example model</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>toml_url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/Deltares/Wflow.jl/master/test/sediment_config.toml"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>staticmaps <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.3.0/staticmaps-moselle-sed.nc"</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>forcing <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/forcing-moselle-sed.nc"</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>instates <span class="op">=</span> <span class="st">"https://github.com/visr/wflow-artifacts/releases/download/v0.3.0/instates-moselle-sed.nc"</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># create a "data/input" directory in the current directory</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>testdir <span class="op">=</span> <span class="pp">@__DIR__</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>inputdir <span class="op">=</span> <span class="fu">joinpath</span>(testdir, <span class="st">"data/input"</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">isdir</span>(inputdir) <span class="op">||</span> <span class="fu">mkpath</span>(inputdir)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="fu">joinpath</span>(<span class="pp">@__DIR__</span>, <span class="st">"sediment_config.toml"</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># download resources to current and data dirs</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(staticmaps, <span class="fu">joinpath</span>(inputdir, <span class="st">"staticmaps-moselle-sed.nc"</span>))</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(forcing, <span class="fu">joinpath</span>(inputdir, <span class="st">"forcing-moselle-sed.nc"</span>))</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(instates, <span class="fu">joinpath</span>(inputdir, <span class="st">"instates-moselle-sed.nc"</span>))</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">download</span>(toml_url, toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="lake-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="lake-parameters">Lake parameters</h3>
+<p>By default, the lakes are not included in the model. To include them, put the following line in the TOML file of the model:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lakes</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>There is also a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_location__count</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_surface__area</span> <span class="op">=</span> <span class="st">"lake_area"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_coefficient</span> <span class="op">=</span> <span class="st">"lake_b"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_exponent</span> <span class="op">=</span> <span class="st">"lake_e"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_type_count</span> <span class="op">=</span> <span class="st">"lake_outflowfunc"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__storage_curve_type_count</span>  <span class="op">=</span> <span class="st">"lake_storfunc"</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_flow_threshold-level__elevation</span>  <span class="op">=</span> <span class="st">"lake_threshold"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_level__initial_elevation</span> <span class="op">=</span> <span class="st">"lake_waterlevel"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The list of lake input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#lakes">here</a>. The following lake storage curve types <code>lake_water__storage_curve_type_count</code> are available:</p>
+<ul>
+<li>1 for <span class="math inline">\(S = AH\)</span></li>
+<li>2 for <span class="math inline">\(S = f(H)\)</span> from lake data and interpolation</li>
+</ul>
+<p>And the following lake rating curve types <code>lake_water__rating_curve_type_count</code> are available:</p>
+<ul>
+<li>1 for <span class="math inline">\(Q = f(H)\)</span> from lake data and interpolation</li>
+<li>2 for general <span class="math inline">\(Q = b(H - H_{0})^{e}\)</span></li>
+<li>3 in the case of Puls Approach <span class="math inline">\(Q = b(H - H_{0})^{2}\)</span></li>
+</ul>
+</section>
+<section id="additional-settings" class="level3">
+<h3 class="anchored" data-anchor-id="additional-settings">Additional settings</h3>
+<p>Storage and rating curves from field measurement can be supplied to wflow via CSV files supplied in the same folder of the TOML file. Naming of the files uses the ID of the lakes where data are available and is of the form <code>lake_sh_1.csv</code> and <code>lake_hq_1.csv</code> for respectively the storage and rating curves of lake with ID 1.</p>
+<p>The storage curve is stored in a CSV file with lake level <span class="math inline">\(\SIb{}{m}\)</span> in the first column <code>H</code> and corresponding lake storage <span class="math inline">\(\SIb{}{m^3}\)</span> in the second column <code>S</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H,</span>  S</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">392.21,</span> 0</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">393.21,</span> 430202000</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">393.71,</span> 649959000</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.21,</span> 869719000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The rating curve uses level and discharge data depending on the Julian day of the year (JDOY), and can be also used for regulated lakes/ dams. The first line contains <code>H</code> for the first column. The other lines contain the water level and the corresponding discharges for the different JDOY (1-365), see also the example below, that shows part of a CSV file (first 4 Julian days). The volume above the maximum water level of the rating curve is assumed to flow instantaneously out of the lake (overflow).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">394,</span>    43,     43,     43,     43</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">394.01,</span> 44.838, 44.838, 44.838, 44.838</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">394.02,</span> 46.671, 46.671, 46.671, 46.671</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.03,</span> 48.509, 48.509, 48.509, 48.509</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">394.04,</span> 50.347, 50.347, 50.347, 50.347</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">394.05,</span> 52.179, 52.179, 52.179, 52.179</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Linked lakes: In some cases, lakes can be linked and return flow can be allowed from the downstream to the upstream lake. The linked lakes are defined in the <code>lake~lower_location__count</code> (standard name) input parameter that represent the downstream lake location ID, at the grid cell of the upstream lake location.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In every file, level units are meters [m] above lake bottom and not meters above sea level [m asl]. Especially with storage/rating curves coming from data, please be careful and convert units if needed.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Bos M.G., 1989. Discharge measurement structures. Third revised edition, International Institute for Land Reclamation and Improvement ILRI, Wageningen, The Netherlands.</li>
+<li>Burek P., Van der Knijf J.M., Ad de Roo, 2013. LISFLOOD – Distributed Water Balance and flood Simulation Model – Revised User Manual. DOI: http://dx.doi.org/10.2788/24719.</li>
+</ul>
 
 
 </section>
@@ -946,7 +1125,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;
