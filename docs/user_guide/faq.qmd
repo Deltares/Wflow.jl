@@ -10,19 +10,99 @@ that both options work for any parameter.
 
 ### How do I start wflow with initial conditions from a previous run?{#sec-modify-pars}
 
-See [here](./toml_file.qmd#state-options)
+See [here](./warm_states.qmd)
 
 ### How do I add external inflows and/or abstractions?
 
-`lateral.river.inflow`: positive for inflows, negative for abstraction. If parameter is time
-varying, add it to the correct section, see [below](#how-do-i-add-time-varying-parameters).
+`river_water_inflow~external__volume_flow_rate`: positive for inflows, negative for
+abstraction. If parameter is time varying, add it to the correct section, see
+[below](#how-do-i-add-time-varying-parameters). Note that these values can only be specified
+on river cells.
 
 ### How do I add time-varying parameters?
 
-Either through cyclic (add parameter to `cyclic` list in the toml), or to the forcing section.
+Either through cyclic (add parameter to `cyclic` list in the toml), or to the `forcing`
+section.
 
 ### How do I add different output?
 
 See [here for csv output](./toml_file.qmd#output-csv-section), [here for scalar netcdf
-data](./toml_file.qmd#scalar-data), and [here for gridded
+data](./toml_file.qmd#scalar-data), and [here for gridded netcdf
 output](./toml_file.qmd#output-netcdf-section).
+
+### Which river routing option should I choose?
+
+The choice of a specific river routing option can vary depending on the model and use case.
+However, the numerical properties of the routing schemes provide an indication of their
+advantages and disadvantages.
+
+The Kinematic Wave method is driven by the river slope within each cell, assuming that the
+water surface slope is parallel to the bed slope. This results in sharper discharge peaks
+with minimal damping, as the waves travel through the system without deformation. This
+approach is especially suitable for steep (upstream) areas where flow propagation is
+dominated by topography. The Kinematic Wave approach does not include any form of backwater
+effects. This method is computationally efficient because the momentum equation can be
+solved independently for each cell.
+
+On the other hand, the Local Inertial method incorporates the slope of the water surface
+into the momentum equation. This results in 'damping effects' on flow propagating through
+the cells and yields better results in scenarios where the water surface slope differs from
+the bed slope. This is particularly relevant in flat (downstream) regions where the river
+slope is limited or during the propagation of larger flood waves where the water surface
+slope is greater than the river slope itself. The Local Inertial method does incorporate
+backwater effects, although not as comprehensively as the full dynamic wave equation.
+
+Currently, only the Local Inertial approach supports the inclusion of floodplains in river
+routing, see also [this
+question](./faq.qmd#what-is-the-difference-between-1d-2d-and-no-floodplains).
+
+### Which land routing option should I choose?
+
+Similar to river routing, the selection of the type of land routing depends on the model and
+use case. In practice, the Kinematic Wave approach is often sufficient for land routing.
+When the Kinematic Wave approach is used, water can flow from land cells into river cells,
+but not the other way around. The Local Inertial method for land routing is considered in
+cases where routing occurs over very flat areas or where complicated inundation patterns
+need to be included in both land and river routing.
+
+The computational differences between the two options are more significant than those
+between river routing options. This is due to the fact that there are typically more land
+cells than river cells in a model, and that for Local Inertial land routing, the land cells
+and river cells are connected. This means that flow can propagate from a river cell back to
+a land cell when the Local Inertial approximation is used. Consequently, a larger system of
+equations must be solved compared to the combination of Kinematic Wave for land routing and
+Local Inertial for river routing.
+
+### What is the difference between 1D, 2D and no floodplains?
+
+Effects of floodplain flow can be included in several ways. A one-dimensional subgrid
+approximation (hence the name 1D floodplains) can be included when Kinematic Wave land
+routing is combined with Local Inertial river routing. When the water depth in the river
+cell rises above the river depth, the flow area is adjusted based on the provided floodplain
+information. This essentially means that flow width increases as water levels increase,
+attentuating the discharge peaks.
+
+![Schematization of the 1D floodplain concept (side view)](../images/floodplains_1d.png)
+
+This still means that the water remains inside the river cell and that no distinct
+floodplain storage is modelled; it is only included through a correction factor on the water
+level of that cell used in the momentum equation, resulting in attenuating effects. Using
+this feature does not result in longer computational times.
+
+Water can flow from river cells to land cells when the Local Inertial approximation is used
+for both land and river routing. There is no distinction between floodplain cells and land
+cells; the whole land cell is considered as the 'floodplain' where water can flow, resulting
+in additional storage outside the river cell. This two-dimensional effect is why we call
+this the 2D floodplain method. Note that overland flow can only occur in two directions and
+therefore not diagonally, this can potentially overestimate the flow paths. Furthermore,
+since the full land is covered with water as soon as the river starts to overflow, which can
+overestimate the inundation area, especially for smaller rivers. If these limitations are
+not acceptable, the 1D floodplain method can be used instead.
+
+![Schematization of the 2D floodplain concept (top view)](../images/floodplains_2d.png)
+
+It is also possible to run the model without 1D or 2D floodplains. This means that the model
+is running using Kinematic Wave for land routing and either Kinematic Wave or Local Inertial
+for river routing. This can lead to unrealistically large water depths when the bankfull
+capacity is exceeded as no correction factor is applied (1D floodplains) and the water is
+unable to flow to land cells (2D floodplains).

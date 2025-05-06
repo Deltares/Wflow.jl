@@ -31,11 +31,11 @@ Wflow.run_timestep!(model)
     @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
     @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
-    @test lake.variables.waterlevel_av ≈ [24.143207490889875]
-    @test lake.variables.storage_av ≈ [1.5644798454096633e8]
-    @test lake.variables.outflow_av ≈ [3.2987797843728366]
-    @test reservoir.variables.storage_av ≈ [4.2798909526192345e7, 7.159752155889235e7]
-    @test reservoir.variables.outflow_av ≈ [5.006045233380978, 14.032226692922634]
+    @test lake.variables.waterlevel_av ≈ [24.14318343563826]
+    @test lake.variables.storage_av ≈ [1.5644782866293564e8]
+    @test lake.variables.outflow_av ≈ [3.298773211095155]
+    @test reservoir.variables.storage_av ≈ [4.27988993439572e7, 7.15974972305922e7]
+    @test reservoir.variables.outflow_av ≈ [5.0051051714211425, 14.03229941817713]
     @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.902500152587073]
 end
 
@@ -52,11 +52,11 @@ Wflow.run_timestep!(model)
     @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
     @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
           [0.0, 3.9938486455693436, 4.6316316016074115]
-    @test lake.variables.waterlevel_av ≈ [24.132227749090518]
-    @test lake.variables.storage_av ≈ [1.5637683581410643e8]
-    @test lake.variables.outflow_av ≈ [3.295780210974653]
-    @test reservoir.variables.storage_av ≈ [4.279864320599316e7, 7.159769075666577e7]
-    @test reservoir.variables.outflow_av ≈ [4.670430399032648, 13.21257202829881]
+    @test lake.variables.waterlevel_av ≈ [24.13217208857201]
+    @test lake.variables.storage_av ≈ [1.5637647513394666e8]
+    @test lake.variables.outflow_av ≈ [3.2957650083040897]
+    @test reservoir.variables.storage_av ≈ [4.279863110615525e7, 7.15976692332516e7]
+    @test reservoir.variables.outflow_av ≈ [4.669596653508622, 13.213115315975323]
     @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.902500152587073]
 end
 

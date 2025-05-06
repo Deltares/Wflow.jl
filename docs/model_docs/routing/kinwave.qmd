@@ -1,0 +1,219 @@
+---
+title: Kinematic wave
+---
+
+## Surface routing
+The main flow routing scheme available in wflow is the kinematic wave approach for river and
+overland flow, assuming that water flow is mostly controlled by topography. The kinematic
+wave equations are (Chow, 1988):
+
+$$
+\begin{gathered}
+  \dfrac{\partial Q}{\partial x} + \dfrac{\partial A}{\partial t} = \subtext{q}{inflow},\\
+   A = \alpha Q^{\beta}.
+\end{gathered}
+$$
+
+These equations can then be combined as a function of flow only:
+
+$$
+    \dfrac{\partial Q}{\partial x} + \alpha \beta Q^{\beta - 1} \dfrac{\partial Q}{\partial t} = \subtext{q}{inflow},
+$$
+
+where $\SIb{Q}{m^3\ s^{-1}}$ is the surface flow in the kinematic wave, $\SIb{x}{m}$ is the
+length of the flow pathway, $\SIb{A}{m^2}$ is the cross-section area of the flow pathway,
+$\SIb{\subtext{q}{inflow}}{m^2\ s^{-1}}$ is the lateral inflow per unit length into the
+kinematic wave, $\SIb{t}{s}$ is the integration timestep and $\alpha$ and $\beta$ are
+coefficients. These coefficients can be determined by using Manning's equation (Chow, 1988),
+resulting in:
+
+$$
+  \alpha = \left(\frac{n P_\mathrm{w}^{\frac{2}{3}}}{\sqrt{c_\mathrm{slope}}}\right)^\beta \ \text{and} \ \beta = 0.6,
+$$
+
+where $\SIb{P_\mathrm{w}}{m}$ is the wetted perimeter, $c_\mathrm{slope}$ 
+($c_\mathrm{land\ slope}$ for overland flow and $c_\mathrm{river\ slope}$ for river flow) is
+the slope $\SIb{}{m\ m^{-1}}$, and $n$ ($n_\mathrm{land}$ for overland flow and
+$n_\mathrm{river}$ for river flow) is Manning's coefficient $\SIb{}{s\ m^{-\frac{1}{3}}}$.
+The wetted perimeter $\subtext{P}{w}$ for river flow is calculated by adding the river width
+($\subtext{w}{river}$) and 2 times half of the river bankfull depth
+($\subtext{h}{bankfull}$). A bankfull river depth map (default value is $\SI{1}{m}$) for the
+river can be provided as follows in the TOML configuration file:
+
+```toml
+[input.static]
+river_bank_water__depth = "riverdepth"
+```
+
+For overland flow, $\subtext{P}{w}$ is set equal to the effective flow width, determined by
+dividing the grid cell area by the flow length and subtracting $\subtext{w}{river}$.
+
+The kinematic wave equations are solved with a nonlinear scheme using Newton's method. By
+default, the iterations are performed until a stable solution is reached ($\epsilon <
+10^{-12}$). Variable internal time stepping is based on the Courant number or a fixed time
+step size $\SIb{}{s}$. To enable a fixed or variable internal time step for the kinematic
+wave the following lines can be inserted in the TOML file of the model:
+
+```toml
+[model]
+# Enable internal time stepping for the kinematic wave
+kin_wave_iteration = true
+# Fixed internal timestep for river flow (river cells)
+kw_river_tstep = 900
+# Fixed internal timestep for overland flow (land cells)
+kw_land_tstep = 3600
+```
+
+[Reservoir and lake](./waterbodies.qmd) models can be included as part of the river
+kinematic wave network.
+
+## External inflows
+External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can be added
+to the kinematic wave for river flow routing, as a cyclic parameter or as part of forcing.
+For example, cyclic inflow can be provided in the TOML file as follows:
+
+```toml
+[input.cyclic]
+"river_water_inflow~external__volume_flow_rate" = "river_inflow"
+```
+These inflows are added or subtracted from the upstream inflow before running the kinematic
+wave to solve the impact on resulting river flow $\SIb{Q}{m^3\ s^{-1}}$. In case of an
+abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of
+$0.80$ applied to sum of upstream inflow, lateral inflow and river storage, all terms
+expresssed in unit $\SI{}{m^3\ s^{-1}}$.
+
+## Abstractions
+Internal abstractions $\SIb{}{m^3\ s^{-1}}$ from the river are possible when water demand and
+allocation is computed. The abstraction is set from the water demand and allocation module
+each time step. The abstraction is divided by the flow length of the river and subtracted
+from the lateral inflow of the kinematic wave routing scheme for river flow.
+
+## Subsurface flow routing
+In the wflow\_sbm model the kinematic wave approach is used to route subsurface flow
+laterally by default. Different vertical hydraulic conductivity depth profiles are possible
+as part of the [SBM soil model](../land/landhydrology_sbm.qmd#soil-processes) concept, and
+these profiles (after unit conversion) are also used to compute lateral subsurface flow. The
+following profiles (see [SBM soil model](../land/landhydrology_sbm.qmd#soil-processes) for a
+detailed description) are available:
+
+- `exponential` (default)
+- `exponential_constant`
+- `layered`
+- `layered_exponential`
+
+For the profiles `exponential` and `exponential_constant`, the saturated store
+$\subtext{S}{sat}$ is drained laterally by saturated downslope subsurface flow for a slope
+with width $\SIb{w}{m}$ according to:
+
+$$
+    \subtext{Q}{subsurface} = K_\mathrm{h0}c_\mathrm{land\ slope}w\begin{cases}
+    \frac{1}{f}\left(e^{-f_\mathrm{ssf, Kv} \subtext{z}{ssf,watertable}}-e^{-f_\mathrm{ssf, Kv} \subtext{z}{ssf,exp}}\right) +
+    e^{-f_\mathrm{ssf, Kv} \subtext{z}{ssf, exp}}(\subtext{z}{ssf,soil}-\subtext{z}{ssf,exp}) & \text{if $\subtext{z}{ssf,watertable} < \subtext{z}{ssf,exp}$}\\
+    \\
+    e^{-f_\mathrm{ssf, Kv} \subtext{z}{ssf,exp}}(\subtext{z}{ssf,soil} - \subtext{z}{ssf,watertable}) & \text{if $\subtext{z}{ssf,watertable} \ge \subtext{z}{ssf,exp}$},
+    \end{cases}
+$$
+
+where $\SIb{c_\mathrm{land\ slope}}{m\ m^{-1}}$ is the land slope,
+$\SIb{\subtext{Q}{subsurface}}{m^3\ d^{-1}}$ is subsurface flow, 
+$\SIb{K_\mathrm{h0}}{m\ d^{-1}}$ is the saturated hydraulic conductivity at the soil
+surface, $\SIb{\subtext{z}{ssf, watertable}}{m}$ is the water table depth,
+$\SIb{\subtext{z}{ssf,soil}}{m}$ is the soil depth, $\SIb{f_\mathrm{ssf, Kv}}{m^{-1}}$ is a
+scaling parameter that controls the decrease of $K_\mathrm{h0}$ with depth and
+$\SIb{\subtext{z}{ssf,exp}}{m}$ is the depth from soil surface for which the exponential decline
+of $K_\mathrm{h0}$ is valid. For the `exponential` profile, $\subtext{z}{ssf,exp}$ is equal to
+$\subtext{z}{ssf,soil}$.
+
+Combining with the following continuity equation:
+$$
+    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
+$$
+
+where $\SIb{h}{m}$ is the water table height, $\SIb{x}{m}$ is the distance downslope,
+$\SIb{R}{m\ d^{-1}}$ is the net input rate to the saturated store, $\SIb{\theta_{s}}{-}$ and
+$\SIb{\theta_{r}}{-}$ are the saturated and residual soil water contents, respectively.
+Substituting for $h (\frac{\partial Q}{\partial h})$, gives:
+
+$$
+  \frac{\partial \subtext{Q}{subsurface}}{\partial t} = -c\frac{\partial \subtext{Q}{subsurface}}{\partial x} + cwR
+$$
+
+where celerity $c$ is calculated as follows:
+$$
+    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
+    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
+    + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} & \text{if $\subtext{z}{ssf,watertable} < \subtext{z}{ssf,exp}$}\\
+    \\
+    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} & \text{if $\subtext{z}{ssf,watertable} \ge \subtext{z}{ssf,exp}$}.
+    \end{cases}
+$$
+
+For the `layered` and `layered_exponential` profiles the equivalent horizontal hydraulic
+conductivity $\SIb{\subtext{K}{h}}{m\ d^{-1}}$ is calculated for water table height 
+$\SIb{h = \subtext{z}{ssf,soil}-\subtext{z}{ssf,watertable}}{m}$ and lateral subsurface flow
+is calculated as follows:
+
+$$
+  \subtext{Q}{subsurface} = \subtext{K}{h} h c_\mathrm{land\ slope} w,
+$$
+
+and celerity $c$ is given by:
+
+$$
+    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_r}.
+$$
+
+The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
+method.
+
+::: {.callout-note}
+For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain
+model timestep and model grid size combinations this may result in loss of accuracy.
+:::
+
+## Multi-Threading
+The kinematic wave calculations for surface - and subsurface flow routing can be executed in
+parallel using multiple threads. In the model section of the TOML file, a minimum stream order
+can be provided to define subbasins for the river (default is 6) and land domain (default is
+5). Subbasins are created at all confluences where each branch has a minimal stream order.
+Based on the subbasins a directed acyclic graph is created that controls the order of execution
+and which subbasins can run in parallel.
+
+```toml
+[model]
+min_streamorder_river = 5 # minimum stream order to delineate subbasins for river domain, default is 6
+min_streamorder_land = 4  # minimum stream order to delineate subbasins for land domain, default is 5
+```
+
+## Subcatchment flow
+Normally the the kinematic wave is continuous throughout the model. By using the `pits` entry
+in the model and input sections of the TOML file all flow is at the subcatchment only (upstream
+of the pit locations, defined by the netCDF variable `wflow_pits` in the example below) and no
+flow is transferred from one subcatchment to another. This can be convenient when connecting
+the result of the model to a water allocation model such as Ribasim.
+
+```toml
+[input]
+# these are not directly part of the model
+pits = "wflow_pits"
+
+[model]
+pits = true
+```
+
+## Limitations
+The kinematic wave approach for river, overland and lateral subsurface flow, assumes that
+the topography controls water flow mostly. This assumption holds for steep terrain, but in
+less steep terrain the hydraulic gradient is likely not equal to the surface slope
+(subsurface flow), or pressure differences and inertial momentum cannot be neglected
+(channel and overland flow). In addition, while the kinematic wave equations are solved with
+a nonlinear scheme using Newton's method (Chow, 1988), other model equations are solved
+through a simple explicit scheme. In summary the following limitations apply:
+
++ River flow, and to a lesser degree overland flow, may be unrealistic in terrain that is not
+  steep, and where pressure forces and inertial momentum are important.
++ The lateral movement of subsurface flow may be very wrong in terrain that is not steep.
+
+## References
++ Chow, V., Maidment, D. and Mays, L., 1988, Applied Hydrology. McGraw-Hill Book Company,
+  New York.

@@ -413,12 +413,14 @@ function kinwave_river_update!(
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If inflow < 0, abstraction is limited
                 if inflow[v] < 0.0
-                    max_abstract =
-                        min((inwater[v] + qin[v] + storage[v] / dt) * 0.80, -inflow[v])
-                    _inflow = -max_abstract / flow_length[v]
+                    _inflow =
+                        max(-((inwater[v] + qin[v] + storage[v] / dt) * 0.80), inflow[v])
+                    _inflow = _inflow / flow_length[v]
                 else
                     _inflow = inflow[v] / flow_length[v]
                 end
+                # internal abstraction (water demand) is limited by river storage and
+                # negative external inflow as part of water allocation computations.
                 _inflow -= abstraction[v] / flow_length[v]
 
                 q[v] = kinematic_wave(
@@ -647,8 +649,6 @@ get_inflow_waterbody(::KinWaveRiverFlow, model::KinWaveOverlandFlow) = model.var
 get_inflow_waterbody(::KinWaveRiverFlow, model::LateralSSF) =
     model.variables.ssf ./ tosecond(BASETIMESTEP)
 
-# Exclude subsurface flow for other groundwater components than `LateralSSF`.
+# Exclude subsurface flow from `GroundwaterFlow`.
 get_inflow_waterbody(::AbstractRiverFlowModel, model::GroundwaterFlow) =
     zeros(model.connectivity.ncell)
-get_inflow_waterbody(::AbstractRiverFlowModel, model::GroundwaterExchange) =
-    model.variables.to_river .* 0.0

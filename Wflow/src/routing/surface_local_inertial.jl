@@ -417,6 +417,8 @@ function local_inertial_river_update!(
         @batch per = thread minbatch = 1000 for i in river_p.active_n
             q_src = sum_at(river_v.q, edges_at_node.src[i])
             q_dst = sum_at(river_v.q, edges_at_node.dst[i])
+            # internal abstraction (water demand) is limited by river storage and negative
+            # external inflow as part of water allocation computations.
             river_v.storage[i] =
                 river_v.storage[i] + (q_src - q_dst + inwater[i] - abstraction[i]) * dt
 
@@ -424,7 +426,13 @@ function local_inertial_river_update!(
                 river_v.error[i] = river_v.error[i] + abs(river_v.storage[i])
                 river_v.storage[i] = 0.0 # set storage to zero
             end
-            river_v.storage[i] = max(river_v.storage[i] + inflow[i] * dt, 0.0) # add external inflow
+            # limit negative external inflow
+            _inflow = if inflow[i] < 0.0
+                max(-(0.80 * river_v.storage[i] / dt), inflow[i])
+            else
+                inflow[i]
+            end
+            river_v.storage[i] += _inflow * dt # add external inflow
             river_v.h[i] = river_v.storage[i] / (flow_length[i] * flow_width[i])
 
             if !isnothing(model.floodplain)
@@ -433,8 +441,6 @@ function local_inertial_river_update!(
                 q_src = sum_at(floodplain_v.q, edges_at_node.src[i])
                 q_dst = sum_at(floodplain_v.q, edges_at_node.dst[i])
                 floodplain_v.storage[i] = floodplain_v.storage[i] + (q_src - q_dst) * dt
-                # TODO check following approach:
-                # if floodplain storage negative, extract from river storage first
                 if floodplain_v.storage[i] < 0.0
                     floodplain_v.error[i] =
                         floodplain_v.error[i] + abs(floodplain_v.storage[i])
@@ -918,18 +924,33 @@ function local_inertial_update!(
                     land_bc.runoff[i] +
                     (land_v.qx[xd] - land_v.qx[i] + land_v.qy[yd] - land_v.qy[i])
             else
+                # internal abstraction (water demand) is limited by river storage and negative
+                # external inflow as part of water allocation computations.
                 land_v.storage[i] +=
                     (
                         sum_at(river_v.q, edges_at_node.src[inds_river[i]]) -
                         sum_at(river_v.q, edges_at_node.dst[inds_river[i]]) +
                         land_v.qx[xd] - land_v.qx[i] + land_v.qy[yd] - land_v.qy[i] +
-                        river_bc.inflow[inds_river[i]] +
                         land_bc.runoff[i] - river_bc.abstraction[inds_river[i]]
                     ) * dt
                 if land_v.storage[i] < 0.0
                     land_v.error[i] = land_v.error[i] + abs(land_v.storage[i])
                     land_v.storage[i] = 0.0 # set storage to zero
                 end
+                # limit negative external inflow
+                if river_bc.inflow[inds_river[i]] < 0.0
+                    available_volume =
+                        if land_v.storage[i] >= river_p.bankfull_storage[inds_river[i]]
+                            river_p.bankfull_depth[inds_river[i]]
+                        else
+                            river_v.storage[inds_river[i]]
+                        end
+                    _inflow =
+                        max(-(0.80 * available_volume / dt), river_bc.inflow[inds_river[i]])
+                else
+                    _inflow = river_bc.inflow[inds_river[i]]
+                end
+                land_v.storage[i] += _inflow * dt
                 if land_v.storage[i] >= river_p.bankfull_storage[inds_river[i]]
                     river_v.h[inds_river[i]] =
                         river_p.bankfull_depth[inds_river[i]] +
