@@ -75,7 +75,7 @@ gravitational_snow_transport = true     # include lateral snow transport in the 
 snow = true                             # include snow modelling, default is false
 cold_start = true                       # cold (cold_start = true) or warm state (cold_start = false), default is true
 reservoirs = true                       # include reservoir modelling, default is false
-kin_wave_iteration = true               # enable kinematic wave iterations in the model, default is false
+kinematic_wave_adaptive_tstep = true    # enable kinematic wave adaptive (internal) timestepping in the model, default is false
 soil_thickness_layer = [100, 300, 800]  # specific SBM soil model setting: for each soil layer, a thickness [mm] is specified
 min_streamorder_river = 5               # minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
 min_streamorder_land = 4                # minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)

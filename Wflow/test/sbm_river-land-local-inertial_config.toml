@@ -105,7 +105,7 @@ subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio 
 vegetation__leaf-area_index = "LAI"
 
 [model]
-kin_wave_iteration = true
+kinematic_wave_adaptive_tstep = true
 gravitational_snow_transport = true
 cold_start = true
 reservoirs = true

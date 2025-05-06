@@ -50,18 +50,27 @@ dividing the grid cell area by the flow length and subtracting $\subtext{w}{rive
 
 The kinematic wave equations are solved with a nonlinear scheme using Newton's method. By
 default, the iterations are performed until a stable solution is reached ($\epsilon <
-10^{-12}$). Variable internal time stepping is based on the Courant number or a fixed time
-step size $\SIb{}{s}$. To enable a fixed or variable internal time step for the kinematic
-wave the following lines can be inserted in the TOML file of the model:
+10^{-12}$). The internal time stepping is based on the Courant number or a fixed time step
+size $\SIb{}{s}$. To enable a fixed internal time step for the kinematic wave the following
+lines can be inserted in the TOML file of the model:
 
 ```toml
 [model]
-# Enable internal time stepping for the kinematic wave
-kin_wave_iteration = true
+# Adaptive (internal) time stepping for the kinematic wave
+kinematic_wave_adaptive_tstep = false    # optional, default is false
 # Fixed internal timestep for river flow (river cells)
-kw_river_tstep = 900
+kinematic_wave_river_tstep = 900        # optional, default is model timestep
 # Fixed internal timestep for overland flow (land cells)
-kw_land_tstep = 3600
+kinematic_wave_land_tstep = 3600        # optional, default is model timestep
+```
+
+Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of
+the model:
+
+```toml
+[model]
+# Adaptive (internal) time stepping for the kinematic wave
+kinematic_wave_adaptive_tstep = true    # optional, default is false
 ```
 
 [Reservoir and lake](./waterbodies.qmd) models can be included as part of the river

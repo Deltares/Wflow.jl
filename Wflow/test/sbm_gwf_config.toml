@@ -81,7 +81,7 @@ river_water__exfiltration_conductance = "infiltration_conductance"
 [model]
 constanthead = true
 drains = true
-kin_wave_iteration = true
+kinematic_wave_adaptive_tstep = true
 cold_start = true
 cell_length_in_meter = true
 snow = false

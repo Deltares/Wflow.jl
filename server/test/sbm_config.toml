@@ -116,7 +116,7 @@ scale = 1.0
 offset = 0.0
 
 [model]
-kin_wave_iteration = true
+kinematic_wave_adaptive_tstep = true
 gravitational_snow_transport = true
 cold_start = true
 reservoirs = true

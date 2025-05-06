@@ -45,7 +45,9 @@ The Tables in this subsection show the available models settings for the model t
 | `pits` | Include pits for kinematic wave flow continuous at subcatchment only (upstream of provided pit locations)  | - | `false` |
 | `min_streamorder_river` | Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)  | - | 6 |
 | `min_streamorder_land` | Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)  | - | 5 |
-| `kin_wave_iteration` | Enable kinematic wave internal time stepping  | - | `false` |
+| `kinematic_wave_adaptive_tstep` | Enable kinematic wave adaptive (internal) time stepping  | - | `false` |
+| `kinematic_wave_river_tstep` | Enable kinematic wave fixed internal time stepping (`kinematic_wave_adaptive_tstep` = `false`) | s | Δt |
+| `kinematic_wave_land_tstep` | Enable kinematic wave fixed internal time stepping (`kinematic_wave_adaptive_tstep` = `false`) | s | Δt |
 : {.striped .hover}
 
 ### Local inertial routing

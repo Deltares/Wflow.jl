@@ -102,12 +102,11 @@ reservoir_water__max_volume = "ResMaxVolume"
 vegetation__leaf-area_index = "LAI"
 
 [model]
-kin_wave_iteration = true
+kinematic_wave_adaptive_tstep = true
 gravitational_snow_transport = true
 cold_start = true
 reservoirs = true
 snow = true
-kinematic-wave_subsurface = false
 soil_layer_thickness = [100, 300, 800]
 type = "sbm"
 

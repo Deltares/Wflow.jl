@@ -17,14 +17,14 @@ function init_kinematic_wave_timestepping(
     domain::String,
     dt_fixed::Float64,
 )
-    adaptive = get(config.model, "kin_wave_iteration", false)::Bool
+    adaptive = get(config.model, "kinematic_wave_adaptive_tstep", false)::Bool
     @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
 
     if adaptive
         stable_timesteps = zeros(n)
         timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
-        dt_fixed = get(config.model, "kw_$(domain)_tstep", dt_fixed)
+        dt_fixed = get(config.model, "kinematic_wave_$(domain)_tstep", dt_fixed)
         @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave $domain flow."
         timestepping = TimeStepping(; dt_fixed, adaptive)
     end
