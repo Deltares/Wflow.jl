@@ -332,7 +332,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 
-| `river_sediment__median_diameter` | Particle mean diameter | mm | 0.1 |
+| `river_sediment__median_diameter` | Particle median diameter | mm | 0.1 |
 | `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
 | `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
 | `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
