@@ -649,6 +649,6 @@ get_inflow_waterbody(::KinWaveRiverFlow, model::KinWaveOverlandFlow) = model.var
 get_inflow_waterbody(::KinWaveRiverFlow, model::LateralSSF) =
     model.variables.ssf ./ tosecond(BASETIMESTEP)
 
-# Exclude subsurface flow for other groundwater components than `LateralSSF`.
+# Exclude subsurface flow from `GroundwaterFlow`.
 get_inflow_waterbody(::AbstractRiverFlowModel, model::GroundwaterFlow) =
-    model.flow.connectivity.ncell .* 0.0
+    zeros(model.connectivity.ncell)
