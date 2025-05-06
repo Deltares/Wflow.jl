@@ -104,12 +104,12 @@ river_bottom-and-bank_sand__mass_fraction = "SandF_River"
 river_bottom-and-bank_gravel__mass_fraction = "GravelF_River"
 
 sediment__particle_density = "sediment_density"
-clay_mean_diameter = "dm_clay"
-silt_mean_diameter = "dm_silt"
-sand_mean_diameter = "dm_sand"
+clay__mean_diameter = "dm_clay"
+silt__mean_diameter = "dm_silt"
+sand__mean_diameter = "dm_sand"
 "sediment_aggregates~small__mean_diameter" = "dm_sagg"
 "sediment_aggregates~large__mean_diameter" = "dm_lagg"
-gravel_mean_diameter = "dm_gravel"
+gravel__mean_diameter = "dm_gravel"
 
 [model]
 reinit = true

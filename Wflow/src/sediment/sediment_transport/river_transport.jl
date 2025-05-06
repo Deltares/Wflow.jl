@@ -181,17 +181,17 @@ function SedimentRiverTransportParameters(
     if any(abs.(river_fractions .- 1.0) .> 1e-3)
         error("Particle fractions in the river bed must sum to 1")
     end
-    lens = lens_input_parameter(config, "clay_mean_diameter")
+    lens = lens_input_parameter(config, "clay__mean_diameter")
     dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
-    lens = lens_input_parameter(config, "silt_mean_diameter")
+    lens = lens_input_parameter(config, "silt__mean_diameter")
     dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
-    lens = lens_input_parameter(config, "sand_mean_diameter")
+    lens = lens_input_parameter(config, "sand__mean_diameter")
     dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
     lens = lens_input_parameter(config, "sediment_aggregates~small__mean_diameter")
     dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
     lens = lens_input_parameter(config, "sediment_aggregates~large__mean_diameter")
     dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
-    lens = lens_input_parameter(config, "gravel_mean_diameter")
+    lens = lens_input_parameter(config, "gravel__mean_diameter")
     dm_gravel =
         ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
     # Waterbodies
@@ -788,17 +788,17 @@ function SedimentConcentrationsRiverParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "clay_mean_diameter")
+    lens = lens_input_parameter(config, "clay__mean_diameter")
     dm_clay = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
-    lens = lens_input_parameter(config, "silt_mean_diameter")
+    lens = lens_input_parameter(config, "silt__mean_diameter")
     dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
-    lens = lens_input_parameter(config, "sand_mean_diameter")
+    lens = lens_input_parameter(config, "sand__mean_diameter")
     dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
     lens = lens_input_parameter(config, "sediment_aggregates~small__mean_diameter")
     dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
     lens = lens_input_parameter(config, "sediment_aggregates~large__mean_diameter")
     dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
-    lens = lens_input_parameter(config, "gravel_mean_diameter")
+    lens = lens_input_parameter(config, "gravel__mean_diameter")
     dm_gravel =
         ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
     conc_parameters = SedimentConcentrationsRiverParameters(;
