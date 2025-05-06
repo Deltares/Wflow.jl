@@ -170,52 +170,6 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @test BMI.get_var_location(model, "river_water__depth") == "node"
         BMI.finalize(model)
     end
-
-    @testset "BMI run SBM in parts" begin
-        tomlpath = joinpath(@__DIR__, "sbm_gw.toml")
-        model = BMI.initialize(Wflow.Model, tomlpath)
-
-        # update the recharge part of the SBM model
-        BMI.update(model; run = "sbm_until_recharge")
-
-        @testset "recharge part of SBM" begin
-            sbm = model.land
-            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716
-            @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0
-            @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876
-            @test sbm.soil.variables.recharge[5] ≈ 0.0
-            @test sbm.soil.variables.zi[5] ≈ 300.0
-        end
-
-        # set zi and exfiltwater from external source (e.g. a groundwater model)
-        BMI.set_value(
-            model,
-            "subsurface_water_sat-zone_top__depth",
-            fill(0.25, BMI.get_grid_node_count(model, 6)),
-        )
-        BMI.set_value(
-            model,
-            "subsurface_water__exfiltration_volume_flux",
-            fill(1.0e-5, BMI.get_grid_node_count(model, 6)),
-        )
-        # update SBM after subsurface flow
-        BMI.update(model; run = "sbm_after_subsurfaceflow")
-
-        @testset "SBM after subsurface flow" begin
-            sbm = model.land
-            sub = model.routing.subsurface_flow
-            @test sbm.interception.variables.interception_rate[1] ≈ 0.32734913737568716
-            @test sbm.soil.variables.ustorelayerdepth[1][1] ≈ 0.0
-            @test sbm.snow.variables.snow_storage[1] ≈ 3.4847899611762876
-            @test sbm.soil.variables.recharge[5] ≈ 0.0
-            @test sbm.soil.variables.zi[5] ≈ 250.0
-            @test sub.variables.zi[5] ≈ 0.25
-            @test sub.variables.exfiltwater[1] ≈ 1.0e-5
-            @test sub.variables.ssf[1] ≈ 0.0
-        end
-
-        BMI.finalize(model)
-    end
 end
 
 @testset "BMI extension functions" begin

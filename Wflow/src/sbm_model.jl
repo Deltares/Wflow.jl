@@ -23,7 +23,6 @@ function Model(config::Config, type::SbmModel)
         lakes = get(config.model, "lakes", false)::Bool,
         reservoirs = get(config.model, "reservoirs", false)::Bool,
         pits = get(config.model, "pits", false)::Bool,
-        subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool,
         water_demand = haskey(config.model, "water_demand"),
         drains = get(config.model, "drains", false)::Bool,
         kh_profile_type = get(
@@ -200,8 +199,12 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
             lakes = routing.river_flow.boundary_conditions.lake
-            lakes.storage .=
-                initialize_storage(lakes.storfunc, lakes.area, lakes.waterlevel, lakes.sh)
+            lakes.variables.storage .= initialize_storage(
+                lakes.parameters.storfunc,
+                lakes.parameters.area,
+                lakes.variables.waterlevel,
+                lakes.parameters.sh,
+            )
         end
     else
         @info "Set initial conditions from default values."
