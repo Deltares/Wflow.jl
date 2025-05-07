@@ -4,18 +4,18 @@ title: Starting with "warm" states
 
 The `state` section in the TOML file provides information on the input file if the model is
 initialized with a warm state (`path_input`) and to what file the states are written at the
-end of the model run (`path_output`). Please note that the model setting `cold_start` needs
-to be set to `false` in order to initialize the model with states from the file located at
-`path_input`. A mapping between external netCDF variable state names and model state
-variable standard names is required below the `[state.variables]` section. The model state
-variable standard names are listed on the left side, and the external netCDF variable state
-names are listed on the right side. Note that `path_input` is only required when
-`cold_start` is set to false. `path_output` is optional, an output state file is only
+end of the model run (`path_output`). Please note that the model setting `cold_start__flag`
+needs to be set to `false` in order to initialize the model with states from the file
+located at `path_input`. A mapping between external netCDF variable state names and model
+state variable standard names is required below the `[state.variables]` section. The model
+state variable standard names are listed on the left side, and the external netCDF variable
+state names are listed on the right side. Note that `path_input` is only required when
+`cold_start__flag` is set to false. `path_output` is optional, an output state file is only
 written when it is defined. If neither is set, the entire `state` section can be left out.
 
 ```toml
 [model]
-cold_start = false # cold (cold_start = true) or warm state (cold_start = false), default is true
+cold_start__flag = false # cold (cold_start__flag = true) or warm state (cold_start__flag = false), default is true
 
 [state]
 path_input = "data/instates-moselle.nc"     # Location of the file with the input states

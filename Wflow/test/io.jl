@@ -194,9 +194,9 @@ end
 
 # test reading and setting of warm states (cold_start=false)
 # modify existing config and initialize model with warm states
-@test config.model.cold_start
-config.model["cold_start"] = false
-@test !config.model.cold_start
+@test config.model.cold_start__flag
+config.model["cold_start__flag"] = false
+@test !config.model.cold_start__flag
 
 # test using an absolute path for the forcing
 @test !isabspath(config.input.path_forcing)

@@ -111,14 +111,14 @@ function extract_required_states(config::Config)
     model_type = config.model.type::String
 
     # Extract model settings
-    do_snow = get(config.model, "snow", false)::Bool
-    do_glaciers = get(config.model, "glacier", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_floodplains = get(config.model, "floodplain_1d", false)::Bool
+    do_snow = get(config.model, "snow__flag", false)::Bool
+    do_glaciers = get(config.model, "glacier__flag", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_floodplains = get(config.model, "floodplain_1d__flag", false)::Bool
     do_paddy = false
     if haskey(config.model, "water_demand")
-        do_paddy = get(config.model.water_demand, "paddy", false)::Bool
+        do_paddy = get(config.model.water_demand, "paddy__flag", false)::Bool
     end
 
     # Extract required stated based on model configuration file
@@ -138,11 +138,10 @@ function extract_required_states(config::Config)
     # Subsurface states
     if model_type == "sbm_gwf"
         ssf_states = ("subsurface_water__hydraulic_head",)
-    elseif model_type == "sediment"
-        ssf_states = ()
+    elseif model_type == "sbm"
+        ssf_states = ("subsurface_water__volume_flow_rate",)
     else
-        do_subsurface_flow = get(config.model, "kinematic-wave_subsurface", true)::Bool
-        ssf_states = do_subsurface_flow ? ("subsurface_water__volume_flow_rate",) : ()
+        ssf_states = ()
     end
 
     # Land states

@@ -70,7 +70,7 @@ end
 end
 
 @testset "no drains" begin
-    config.model.drains = false
+    config.model.drain__flag = false
     delete!(
         Dict(config.output.netcdf_grid.variables),
         "land_drain_water~to-subsurface__volume_flow_rate",
@@ -147,7 +147,7 @@ Wflow.close_files(model; delete_output = false)
 # test with warm start
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
-config.model.cold_start = false
+config.model.cold_start__flag = false
 
 model = Wflow.Model(config)
 (; domain) = model

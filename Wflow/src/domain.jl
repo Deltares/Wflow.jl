@@ -350,7 +350,7 @@ function get_cell_lengths(dataset::NCDataset, config::Config, network::NetworkLa
     y = permutedims(repeat(y_coords; outer = (1, length(x_coords))))[network.indices]
     celllength = abs(mean(diff(x_coords)))
 
-    cell_length_in_meter = get(config.model, "cell_length_in_meter", false)::Bool
+    cell_length_in_meter = get(config.model, "cell_length_in_meter__flag", false)::Bool
     x_length, y_length = cell_lengths(y, celllength, cell_length_in_meter)
     return x_length, y_length
 end
@@ -378,8 +378,8 @@ function waterbody_mask(
     network::NetworkLand;
     region = "location",
 )
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
     waterbodies = fill(0, length(network.indices))
     if do_reservoirs
         lens = lens_input(config, "reservoir_$(region)__count"; optional = false)
@@ -404,8 +404,8 @@ function mask_waterbody_coverage!(
     domain::Domain;
     mask_value = 0,
 )
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
     if do_reservoirs
         inds_cov = collect(Iterators.flatten(domain.reservoir.network.indices_coverage))
         mask[inds_cov] .= mask_value
@@ -420,7 +420,7 @@ end
 "Return indices of 1D land and river domains per allocation area number."
 function get_allocation_area_indices(dataset::NCDataset, config::Config, domain::Domain)
     (; indices) = domain.land.network
-    lens = lens_input_parameter(config, "land_water_allocation_area__number")
+    lens = lens_input_parameter(config, "land_water_allocation_area__count")
     logging = false
     areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int, logging)
     unique_areas = unique(areas)

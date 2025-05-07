@@ -116,15 +116,15 @@ scale = 1.0
 offset = 0.0
 
 [model]
-kinematic_wave_adaptive_tstep = true
-gravitational_snow_transport = true
-cold_start = true
-reservoirs = true
-snow = true
-soil_layer_thickness = [100, 300, 800]
+kinematic_wave__adaptive_time_step_flag = true
+snow_gravitional_transport__flag = true
+cold_start__flag = true
+reservoir__flag = true
+snow__flag = true
+soil_layer__thickness = [100, 300, 800]
 type = "sbm"
-min_streamorder_river = 6
-min_streamorder_land = 5
+river_streamorder__min_count = 6
+land_streamorder__min_count = 5
 
 [output.netcdf_grid]
 path = "output_moselle.nc"

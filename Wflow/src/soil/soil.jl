@@ -349,7 +349,7 @@ function SbmSoilParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    config_soil_layer_thickness = get(config.model, "soil_layer_thickness", Float64[])
+    config_soil_layer_thickness = get(config.model, "soil_layer__thickness", Float64[])
 
     if length(config_soil_layer_thickness) > 0
         soil_layer_thickness =
@@ -1099,9 +1099,9 @@ function update!(
     dt::Float64,
 )
     soil_infiltration_reduction =
-        get(config.model, "soil_infiltration_reduction", false)::Bool
-    modelsnow = get(config.model, "snow", false)::Bool
-    topog_sbm_transfer = get(config.model, "topog_sbm_transfer", false)::Bool
+        get(config.model, "soil_infiltration_reduction__flag", false)::Bool
+    modelsnow = get(config.model, "snow__flag", false)::Bool
+    topog_sbm_transfer = get(config.model, "topog_sbm_transfer__flag", false)::Bool
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing

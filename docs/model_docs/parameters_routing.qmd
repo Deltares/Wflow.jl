@@ -288,7 +288,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | ------ | ---- | -- | -- |
 | `land_drain__elevation` | Drain elevation | m | - |
 | `land_drain__conductance` | Drain conductance | m² day⁻¹ | - |
-| `land_drain_location__flag` | Drain location | - | - |
+| `land_drain_location__mask` | Drain location | - | - |
 : {.striped .hover}
 
 #### Output {#output-gwf-drainage}

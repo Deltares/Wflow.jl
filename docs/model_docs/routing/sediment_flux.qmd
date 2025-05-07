@@ -104,7 +104,7 @@ Running the river model is an option of the wflow\_sediment model and is enabled
 file. By default it is `false`:
 ```toml
 [model]
-run_river_model = true
+run_river_model__flag = true
 ```
 
 ### Sediment inputs in a river cell
@@ -440,8 +440,8 @@ following input arguments:
 
 ```toml
 [model]
-reservoirs = true
-lakes = true
+reservoir__flag = true
+lake__flag = true
 
 [input]
 # Reservoir

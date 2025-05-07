@@ -93,7 +93,7 @@ end
 end
 
 # test reading warm states
-config.model["cold_start"] = false
+config.model["cold_start__flag"] = false
 model = Wflow.Model(config)
 @testset "initial warm states" begin
     river = model.routing.river_flow
@@ -158,7 +158,7 @@ Wflow.close_files(model)
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(tomlpath)
 # Update config to run only the land model
-config.model.run_river_model = false
+config.model.run_river_model__flag = false
 # Use govers equation for land transport capacity
 config.model.land_transport = "govers"
 
@@ -183,7 +183,7 @@ Wflow.close_files(model)
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(tomlpath)
 # Update config to run only the land model
-config.model.run_river_model = false
+config.model.run_river_model__flag = false
 # Use yalin equation for land transport capacity
 config.model.land_transport = "yalin"
 

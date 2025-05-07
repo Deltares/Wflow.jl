@@ -157,8 +157,8 @@ Wflow.close_files(model; delete_output = false)
 # resulting in 3 basins)
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
-config["model"]["pits"] = true
-config["input"]["pits"] = "wflow_pits"
+config["model"]["pit__flag"] = true
+config["input"]["basin_pit_location__mask"] = "wflow_pits"
 config.time.endtime = DateTime(2000, 1, 9)
 config.logging.loglevel = "info"
 

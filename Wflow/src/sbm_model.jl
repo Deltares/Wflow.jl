@@ -13,25 +13,25 @@ function Model(config::Config, type::SbmModel)
     clock = Clock(config, reader)
 
     modelsettings = (;
-        snow = get(config.model, "snow", false)::Bool,
+        snow = get(config.model, "snow__flag", false)::Bool,
         gravitational_snow_transport = get(
             config.model,
-            "gravitational_snow_transport",
+            "snow_gravitional_transport__flag",
             false,
         )::Bool,
-        glacier = get(config.model, "glacier", false)::Bool,
-        lakes = get(config.model, "lakes", false)::Bool,
-        reservoirs = get(config.model, "reservoirs", false)::Bool,
-        pits = get(config.model, "pits", false)::Bool,
+        glacier = get(config.model, "glacier__flag", false)::Bool,
+        lakes = get(config.model, "lake__flag", false)::Bool,
+        reservoirs = get(config.model, "reservoir__flag", false)::Bool,
+        pits = get(config.model, "pit__flag", false)::Bool,
         water_demand = haskey(config.model, "water_demand"),
-        drains = get(config.model, "drains", false)::Bool,
+        drains = get(config.model, "drain__flag", false)::Bool,
         kh_profile_type = get(
             config.model,
             "saturated_hydraulic_conductivity_profile",
             "exponential",
         )::String,
-        min_streamorder_river = get(config.model, "min_streamorder_river", 6),
-        min_streamorder_land = get(config.model, "min_streamorder_land", 5),
+        min_streamorder_river = get(config.model, "river_streamorder__min_count", 6),
+        min_streamorder_land = get(config.model, "land_streamorder__min_count", 5),
     )
 
     @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...
@@ -135,12 +135,12 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     land_v = routing.overland_flow.variables
     river_v = routing.river_flow.variables
 
-    cold_start = get(config.model, "cold_start", true)::Bool
+    cold_start = get(config.model, "cold_start__flag", true)::Bool
     routing_options = ("kinematic-wave", "local-inertial")
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
-    do_lakes = get(config.model, "lakes", false)::Bool
-    floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
+    floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
 
     # read and set states in model object if cold_start=false
     if cold_start == false

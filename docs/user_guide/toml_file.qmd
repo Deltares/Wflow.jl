@@ -10,12 +10,12 @@ structured in several sections, which are explained below.
 ## General
 The file paths provided in this file are relative to the location of the TOML file, or to
 `dir_input` and `dir_output` if they are specified. To indicate that a wflow model [runs
-from Delft-FEWS](fews.qmd), the `fews_run` setting needs to be set at `true`.
+from Delft-FEWS](fews.qmd), the `fews_run__flag` setting needs to be set at `true`.
 
 ```toml
 dir_input = "data/input"      # optional, default is the path of the TOML
 dir_output = "data/output"    # optional, default is the path of the TOML
-fews_run = false              # optional, default value is false
+fews_run__flag = false              # optional, default value is false
 ```
 
 
@@ -63,22 +63,22 @@ print any debug-level messages. Note that for finer control, you can also pass a
 log level. For details, see Julia's
 [Logging](https://docs.julialang.org/en/v1/stdlib/Logging/#Log-event-structure)
 documentation. `path_log` sets the desired output path for the log file. For information on
-`fews_run`, see [Run from Delft-FEWS](./fews.qmd).
+`fews_run__flag`, see [Run from Delft-FEWS](./fews.qmd).
 
 ## Model section
 Model-specific settings can be included in the model section of the TOML file.
 
 ```toml
 [model]
-type = "sbm"                            # one of ("sbm" or "sbm_gwf")
-gravitational_snow_transport = true     # include lateral snow transport in the model, default is false
-snow = true                             # include snow modelling, default is false
-cold_start = true                       # cold (cold_start = true) or warm state (cold_start = false), default is true
-reservoirs = true                       # include reservoir modelling, default is false
-kinematic_wave_adaptive_tstep = true    # enable kinematic wave adaptive (internal) timestepping in the model, default is false
-soil_thickness_layer = [100, 300, 800]  # specific SBM soil model setting: for each soil layer, a thickness [mm] is specified
-min_streamorder_river = 5               # minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
-min_streamorder_land = 4                # minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
+type = "sbm"                                    # one of ("sbm" or "sbm_gwf")
+snow_gravitional_transport__flag = true         # include lateral snow transport in the model, default is false
+snow__flag = true                               # include snow modelling, default is false
+cold_start__flag = true                         # cold (cold_start__flag = true) or warm state (cold_start__flag = false), default is true
+reservoir__flag = true                          # include reservoir modelling, default is false
+kinematic_wave__adaptive_time_step_flag = true  # enable kinematic wave adaptive (internal) timestepping in the model, default is false
+soil_layer__thickness = [100, 300, 800]         # specific SBM soil model setting: for each soil layer, a thickness [mm] is specified
+river_streamorder__min_count = 5                # minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
+land_streamorder__min_count = 4                 # minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
 ```
 
 A complete overview of the model settings for the different model types is available

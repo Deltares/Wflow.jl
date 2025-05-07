@@ -201,10 +201,10 @@ is optional, and can be specified in the TOML file as follows:
 
 ```toml
 [model]
-drains = true # optional, default is "false"
+drain__flag = true # optional, default is "false"
 
 [input.static]
-land_drain_location__flag = "drain"
+land_drain_location__mask = "drain"
 land_drain__conductance = "cond_drain"
 land_drain__elevation = "elev_drain"
 ```

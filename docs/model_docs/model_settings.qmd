@@ -11,10 +11,10 @@ The Table below shows the general model settings applicable for all model types.
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
 | `type` | Model type: [`sbm`, `sbm_gwf`, `sediment`] | - | - |
-| `cold_start` | Initialize model with cold (`cold_start` = `true`) or warm state | - | `true` |
-| `cell_length_in_meter` | Unit cell length of input rasters in lat/lon degree (`cell_length_in_meter` = `false`) or in meter, cell length refers to the length of raster cells in `x` and `y` direction | - | `false` |
-| `reservoirs` | Include reservoir modelling | - | `false` |
-| `lakes` | Include lake modelling | - | `false` |
+| `cold_start__flag` | Initialize model with cold (`cold_start__flag` = `true`) or warm state | - | `true` |
+| `cell_length_in_meter__flag` | Unit cell length of input rasters in lat/lon degree (`cell_length_in_meter__flag` = `false`) or in meter, cell length refers to the length of raster cells in `x` and `y` direction | - | `false` |
+| `reservoir__flag` | Include reservoir modelling | - | `false` |
+| `lake__flag` | Include lake modelling | - | `false` |
 : {.striped .hover}
 
 ## Model types `sbm` and `sbm_gwf`
@@ -23,12 +23,12 @@ The Tables in this subsection show the available models settings for the model t
 ### Land Hydrology `SBM`
 | Setting | Description | Unit | Default |
 | ----- | ----- | -- | -- |
-| `snow` | Include snow modelling | - | `false` |
-| `gravitational_snow_transport` | Include gravitional lateral snow transport | - | `false` |
-| `glacier` | Include glacier modelling | - | false |
-| `soil_infiltration_reduction` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
-| `soil_thickness_layer` | Thickness of soil layers | mm | - |
-| `topog_sbm_transfer` | Enable original Topog_SBM vertical transfer formulation  | - | `false` |
+| `snow__flag` | Include snow modelling | - | `false` |
+| `snow_gravitional_transport__flag` | Include gravitional lateral snow transport | - | `false` |
+| `glacier__flag` | Include glacier modelling | - | false |
+| `soil_infiltration_reduction__flag` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
+| `soil_thickness__layer` | Thickness of soil layers | mm | - |
+| `topog_sbm_transfer__flag` | Enable original Topog_SBM vertical transfer formulation  | - | `false` |
 | `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
 : {.striped .hover}
 
@@ -42,30 +42,34 @@ The Tables in this subsection show the available models settings for the model t
 ### Kinematic wave routing
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
-| `pits` | Include pits for kinematic wave flow continuous at subcatchment only (upstream of provided pit locations)  | - | `false` |
-| `min_streamorder_river` | Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)  | - | 6 |
-| `min_streamorder_land` | Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)  | - | 5 |
-| `kinematic_wave_adaptive_tstep` | Enable kinematic wave adaptive (internal) time stepping  | - | `false` |
-| `kinematic_wave_river_tstep` | Enable kinematic wave fixed internal time stepping (`kinematic_wave_adaptive_tstep` = `false`) | s | Δt |
-| `kinematic_wave_land_tstep` | Enable kinematic wave fixed internal time stepping (`kinematic_wave_adaptive_tstep` = `false`) | s | Δt |
+| `pit__flag` | Include pits for kinematic wave flow continuous at subbasin only (upstream of provided pit locations)  | - | `false` |
+| `river_streamorder__min_count` | Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)  | - | 6 |
+| `land_streamorder__min_count` | Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)  | - | 5 |
+| `kinematic_wave__adaptive_time_step_flag` | Enable kinematic wave adaptive (internal) time stepping  | - | `false` |
+| `river_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for river domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | Δt |
+| `land_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for land domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | Δt |
 : {.striped .hover}
 
 ### Local inertial routing
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
-| `local_inertial_flow_alpha` | Stability coefficient for internal model time step (CFL condition) | - | 0.7 |
-| `local_inertial_flow_theta` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 0.8 |
-| `waterdepth_threshold` | Water depth threshold for calculating flow between cells | m | 0.001 |
-| `froude_limit` | Limit flow to subcritical-critical according to Froude number | - | `true` |
-| `floodplain_1d` | Include 1D floodplain schematization for local inertial river routing | - | `false` |
+| `river_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step river flow routing (CFL condition) | - | 0.7 |
+| `land_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step overland flow routing (CFL condition) | - | 0.7 |
+| `land_local_inertial_flow__theta_coefficient` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 0.8 |
+| `river_water_flow_threshold__depth` | Water depth threshold for calculating river flow between cells | m | 0.001 |
+| `land_surface_water_flow_threshold__depth` | Water depth threshold for calculating overland flow between cells | m | 0.001 |
+| `river_water_flow__froude_limit_flag` | Limit river flow to subcritical-critical according to Froude number | - | `true` |
+| `land_surface_water_flow__froude_limit_flag` | Limit overland flow to subcritical-critical according to Froude number | - | `true` |
+| `river_water_flow__froude_limit_flag` | Limit river flow to subcritical-critical according to Froude number | - | `true` |
+| `floodplain_1d__flag` | Include 1D floodplain schematization for local inertial river routing | - | `false` |
 : {.striped .hover}
 
 ### Groundwater flow
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
 | `conductivity_profile` | Hydraulic conductivity depth profile: ["uniform", "exponential"] | - | "uniform" |
-| `drains` | Include drainage boundary condition  | - | `false` |
-| `constanthead` | Include constant head boundary condition  | - | `false` |
+| `drain__flag` | Include drainage boundary condition  | - | `false` |
+| `constanthead__flag` | Include constant head boundary condition  | - | `false` |
 : {.striped .hover}
 
 ## Model type `sediment`
@@ -75,7 +79,7 @@ The Table below shows the model settings for the model type `sediment`.
 | --- | ----- | - | - |
 | `rainfall_erosion` | Rainfall erosion model: ["answers", "eurosem"]  | - | "answers" |
 | `overland_flow_erosion` | Overland flow erosion model: ["answers"]  | - | "answers" |
-| `run_river_model` |  Include river sediment model | - | `false` |
+| `run_river_model__flag` |  Include river sediment model | - | `false` |
 | `land_transport` | Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]  | - | "yalin" |
 | `river_transport` | River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]  | - | "bagnold"  |
 : {.striped .hover}

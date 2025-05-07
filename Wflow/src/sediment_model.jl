@@ -16,9 +16,9 @@ function Model(config::Config, type::SedimentModel)
     clock = Clock(config, reader)
 
     modelsettings = (;
-        reservoirs = get(config.model, "reservoirs", false)::Bool,
-        lakes = get(config.model, "lakes", false)::Bool,
-        pits = get(config.model, "pits", false)::Bool,
+        reservoirs = get(config.model, "reservoir__flag", false)::Bool,
+        lakes = get(config.model, "lake__flag", false)::Bool,
+        pits = get(config.model, "pit__flag", false)::Bool,
     )
 
     @info "General model settings" modelsettings[keys(modelsettings)[1:2]]...
@@ -51,7 +51,7 @@ function update!(model::AbstractModel{<:SedimentModel})
     update!(routing.overland_flow, land.soil_erosion, domain.land, dt)
 
     # River sediment transport
-    do_river = get(config.model, "run_river_model", false)::Bool
+    do_river = get(config.model, "run_river_model__flag", false)::Bool
     if do_river
         update!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
     end
@@ -63,7 +63,7 @@ end
 function set_states!(model::AbstractModel{<:SedimentModel})
     # read and set states in model object if cold_start=false
     (; config) = model
-    cold_start = get(config.model, "cold_start", true)::Bool
+    cold_start = get(config.model, "cold_start__flag", true)::Bool
     if cold_start == false
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
