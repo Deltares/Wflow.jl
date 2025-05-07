@@ -1918,7 +1918,13 @@ td, th {
 <h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity River</h3>
 <section id="input-10" class="level4">
 <h4 class="anchored" data-anchor-id="input-10">Input</h4>
-<table class="caption-top">
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Standard Name</th>
@@ -1928,16 +1934,50 @@ td, th {
 </tr>
 </thead>
 <tbody>
+<tr class="odd">
+<td><code>river_sediment__median_diameter</code></td>
+<td>Particle median diameter</td>
+<td>mm</td>
+<td>0.1</td>
+</tr>
+<tr class="even">
+<td><code>river_water_sediment__bagnold_transport_capacity_coefficient</code></td>
+<td>Bagnold transport capacity coefficient</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>river_water_sediment__bagnold_transport_capacity_exponent</code></td>
+<td>Bagnold transport capacity exponent</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code></td>
+<td>Kodatie transport capacity coefficient a</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code></td>
+<td>Kodatie transport capacity coefficient b</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code></td>
+<td>Kodatie transport capacity coefficient c</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code></td>
+<td>Kodatie transport capacity coefficient d</td>
+<td>-</td>
+<td>-</td>
+</tr>
 </tbody>
 </table>
-<div class="line-block"><code>river_sediment__median_diameter</code> | Particle median diameter | mm | 0.1 |<br>
-<code>river_water_sediment__bagnold_transport_capacity_coefficient</code> | Bagnold transport capacity coefficient | - | - |<br>
-<code>river_water_sediment__bagnold_transport_capacity_exponent</code> | Bagnold transport capacity exponent | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_a-coefficient</code> | Kodatie transport capacity coefficient a | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_b-coefficient</code> | Kodatie transport capacity coefficient b | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_c-coefficient</code> | Kodatie transport capacity coefficient c | - | - |<br>
-<code>river_water_sediment__kodatie_transport_capacity_d-coefficient</code> | Kodatie transport capacity coefficient d | - | - |</div>
-<p>: {.striped .hover}</p>
 </section>
 </section>
 <section id="overland-flow-transport" class="level3">
@@ -2070,8 +2110,8 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>reservoir_sediment~bedload__trapping_efficiency_coefficient</code></td>
-<td>Reservoir sediment trapping efficiency</td>
+<td><code>reservoir_water_sediment~bedload__trapping_efficiency</code></td>
+<td>Reservoir sediment bedload trapping efficiency</td>
 <td>-</td>
 <td>1.0</td>
 </tr>
