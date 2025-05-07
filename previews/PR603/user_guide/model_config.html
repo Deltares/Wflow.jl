@@ -505,9 +505,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="enabling-snow-and-glacier-processes" class="level2">
 <h2 class="anchored" data-anchor-id="enabling-snow-and-glacier-processes">Enabling snow and glacier processes</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">gravitational_snow_transport</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">glacier</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">snow__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snow_gravitional_transport__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">glacier__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">atmosphere_air__snowfall_temperature_threshold</span> <span class="op">=</span> <span class="st">"TT"</span></span>
@@ -529,7 +529,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="enabling-reservoirs" class="level2">
 <h2 class="anchored" data-anchor-id="enabling-reservoirs">Enabling reservoirs</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoirs</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
@@ -549,7 +549,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="enabling-lakes" class="level2">
 <h2 class="anchored" data-anchor-id="enabling-lakes">Enabling lakes</h2>
 <div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lakes</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lake__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
@@ -574,7 +574,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="d-floodplains">1D floodplains</h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__sum_of_volume-per-depth</span> <span class="op">=</span> <span class="st">"floodplain_volume"</span></span>
@@ -604,11 +604,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The model types <code>sbm</code> and <code>sbm_gwf</code> support water demand and allocation computations, in combination with the kinematic wave and local inertial runoff routing scheme for river and overland flow.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># example of water demand and allocation input parameters as cyclic data</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">industry</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy</span> <span class="op">=</span> <span class="cn">true</span>        <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">industry__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock__flag</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy__flag</span> <span class="op">=</span> <span class="cn">true</span>        <span class="co"># optional, default is "false"</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_gross"</span></span>
@@ -621,10 +621,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__number</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__count</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span>
 <span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy_area__number"</span> <span class="op">=</span> <span class="st">"paddy_irrigation_areas"</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy_area__number"</span> <span class="op">=</span> <span class="st">"nonpaddy_irrigation_areas"</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy_area__count"</span> <span class="op">=</span> <span class="st">"paddy_irrigation_areas"</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy_area__count"</span> <span class="op">=</span> <span class="st">"nonpaddy_irrigation_areas"</span></span>
 <span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="co"># required if paddy is set to "true"</span></span>
 <span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>

@@ -530,25 +530,25 @@ ul.task-list li input[type="checkbox"] {
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>cold_start</code></td>
-<td>Initialize model with cold (<code>cold_start</code> = <code>true</code>) or warm state</td>
+<td><code>cold_start__flag</code></td>
+<td>Initialize model with cold (<code>cold_start__flag</code> = <code>true</code>) or warm state</td>
 <td>-</td>
 <td><code>true</code></td>
 </tr>
 <tr class="odd">
-<td><code>cell_length_in_meter</code></td>
-<td>Unit cell length of input rasters in lat/lon degree (<code>cell_length_in_meter</code> = <code>false</code>) or in meter, cell length refers to the length of raster cells in <code>x</code> and <code>y</code> direction</td>
+<td><code>cell_length_in_meter__flag</code></td>
+<td>Unit cell length of input rasters in lat/lon degree (<code>cell_length_in_meter__flag</code> = <code>false</code>) or in meter, cell length refers to the length of raster cells in <code>x</code> and <code>y</code> direction</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="even">
-<td><code>reservoirs</code></td>
+<td><code>reservoir__flag</code></td>
 <td>Include reservoir modelling</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="odd">
-<td><code>lakes</code></td>
+<td><code>lake__flag</code></td>
 <td>Include lake modelling</td>
 <td>-</td>
 <td><code>false</code></td>
@@ -578,37 +578,37 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>snow</code></td>
+<td><code>snow__flag</code></td>
 <td>Include snow modelling</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="even">
-<td><code>gravitational_snow_transport</code></td>
+<td><code>snow_gravitional_transport__flag</code></td>
 <td>Include gravitional lateral snow transport</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="odd">
-<td><code>glacier</code></td>
+<td><code>glacier__flag</code></td>
 <td>Include glacier modelling</td>
 <td>-</td>
 <td>false</td>
 </tr>
 <tr class="even">
-<td><code>soil_infiltration_reduction</code></td>
+<td><code>soil_infiltration_reduction__flag</code></td>
 <td>Enable reduction factor applied to the soil infiltration capacity</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="odd">
-<td><code>soil_thickness_layer</code></td>
+<td><code>soil_thickness__layer</code></td>
 <td>Thickness of soil layers</td>
 <td>mm</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>topog_sbm_transfer</code></td>
+<td><code>topog_sbm_transfer__flag</code></td>
 <td>Enable original Topog_SBM vertical transfer formulation</td>
 <td>-</td>
 <td><code>false</code></td>
@@ -674,38 +674,38 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>pits</code></td>
-<td>Include pits for kinematic wave flow continuous at subcatchment only (upstream of provided pit locations)</td>
+<td><code>pit__flag</code></td>
+<td>Include pits for kinematic wave flow continuous at subbasin only (upstream of provided pit locations)</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="even">
-<td><code>min_streamorder_river</code></td>
+<td><code>river_streamorder__min_count</code></td>
 <td>Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)</td>
 <td>-</td>
 <td>6</td>
 </tr>
 <tr class="odd">
-<td><code>min_streamorder_land</code></td>
+<td><code>land_streamorder__min_count</code></td>
 <td>Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)</td>
 <td>-</td>
 <td>5</td>
 </tr>
 <tr class="even">
-<td><code>kinematic_wave_adaptive_tstep</code></td>
+<td><code>kinematic_wave__adaptive_time_step_flag</code></td>
 <td>Enable kinematic wave adaptive (internal) time stepping</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="odd">
-<td><code>kinematic_wave_river_tstep</code></td>
-<td>Enable kinematic wave fixed internal time stepping (<code>kinematic_wave_adaptive_tstep</code> = <code>false</code>)</td>
+<td><code>river_kinematic_wave__time_step</code></td>
+<td>Enable kinematic wave fixed internal time stepping for river domain (<code>kinematic_wave__adaptive_time_step_flag</code> = <code>false</code>)</td>
 <td>s</td>
 <td>Δt</td>
 </tr>
 <tr class="even">
-<td><code>kinematic_wave_land_tstep</code></td>
-<td>Enable kinematic wave fixed internal time stepping (<code>kinematic_wave_adaptive_tstep</code> = <code>false</code>)</td>
+<td><code>land_kinematic_wave__time_step</code></td>
+<td>Enable kinematic wave fixed internal time stepping for land domain (<code>kinematic_wave__adaptive_time_step_flag</code> = <code>false</code>)</td>
 <td>s</td>
 <td>Δt</td>
 </tr>
@@ -731,31 +731,55 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>local_inertial_flow_alpha</code></td>
-<td>Stability coefficient for internal model time step (CFL condition)</td>
+<td><code>river_local_inertial_flow__alpha_coefficient</code></td>
+<td>Stability coefficient for internal model time step river flow routing (CFL condition)</td>
 <td>-</td>
 <td>0.7</td>
 </tr>
 <tr class="even">
-<td><code>local_inertial_flow_theta</code></td>
+<td><code>land_local_inertial_flow__alpha_coefficient</code></td>
+<td>Stability coefficient for internal model time step overland flow routing (CFL condition)</td>
+<td>-</td>
+<td>0.7</td>
+</tr>
+<tr class="odd">
+<td><code>land_local_inertial_flow__theta_coefficient</code></td>
 <td>Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow</td>
 <td>-</td>
 <td>0.8</td>
 </tr>
+<tr class="even">
+<td><code>river_water_flow_threshold__depth</code></td>
+<td>Water depth threshold for calculating river flow between cells</td>
+<td>m</td>
+<td>0.001</td>
+</tr>
 <tr class="odd">
-<td><code>waterdepth_threshold</code></td>
-<td>Water depth threshold for calculating flow between cells</td>
+<td><code>land_surface_water_flow_threshold__depth</code></td>
+<td>Water depth threshold for calculating overland flow between cells</td>
 <td>m</td>
 <td>0.001</td>
 </tr>
 <tr class="even">
-<td><code>froude_limit</code></td>
-<td>Limit flow to subcritical-critical according to Froude number</td>
+<td><code>river_water_flow__froude_limit_flag</code></td>
+<td>Limit river flow to subcritical-critical according to Froude number</td>
 <td>-</td>
 <td><code>true</code></td>
 </tr>
 <tr class="odd">
-<td><code>floodplain_1d</code></td>
+<td><code>land_surface_water_flow__froude_limit_flag</code></td>
+<td>Limit overland flow to subcritical-critical according to Froude number</td>
+<td>-</td>
+<td><code>true</code></td>
+</tr>
+<tr class="even">
+<td><code>river_water_flow__froude_limit_flag</code></td>
+<td>Limit river flow to subcritical-critical according to Froude number</td>
+<td>-</td>
+<td><code>true</code></td>
+</tr>
+<tr class="odd">
+<td><code>floodplain_1d__flag</code></td>
 <td>Include 1D floodplain schematization for local inertial river routing</td>
 <td>-</td>
 <td><code>false</code></td>
@@ -788,13 +812,13 @@ ul.task-list li input[type="checkbox"] {
 <td>“uniform”</td>
 </tr>
 <tr class="even">
-<td><code>drains</code></td>
+<td><code>drain__flag</code></td>
 <td>Include drainage boundary condition</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
 <tr class="odd">
-<td><code>constanthead</code></td>
+<td><code>constanthead__flag</code></td>
 <td>Include constant head boundary condition</td>
 <td>-</td>
 <td><code>false</code></td>
@@ -835,7 +859,7 @@ ul.task-list li input[type="checkbox"] {
 <td>“answers”</td>
 </tr>
 <tr class="odd">
-<td><code>run_river_model</code></td>
+<td><code>run_river_model__flag</code></td>
 <td>Include river sediment model</td>
 <td>-</td>
 <td><code>false</code></td>

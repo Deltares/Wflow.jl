@@ -536,7 +536,7 @@ window.Quarto = {
   <li><a href="#abstractions" id="toc-abstractions" class="nav-link" data-scroll-target="#abstractions">Abstractions</a></li>
   <li><a href="#subsurface-flow-routing" id="toc-subsurface-flow-routing" class="nav-link" data-scroll-target="#subsurface-flow-routing">Subsurface flow routing</a></li>
   <li><a href="#multi-threading" id="toc-multi-threading" class="nav-link" data-scroll-target="#multi-threading">Multi-Threading</a></li>
-  <li><a href="#subcatchment-flow" id="toc-subcatchment-flow" class="nav-link" data-scroll-target="#subcatchment-flow">Subcatchment flow</a></li>
+  <li><a href="#subbasin-flow" id="toc-subbasin-flow" class="nav-link" data-scroll-target="#subbasin-flow">Subbasin flow</a></li>
   <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -590,15 +590,15 @@ window.Quarto = {
 10^{-12}\)</span>). The internal time stepping is based on the Courant number or a fixed time step size <span class="math inline">\(\SIb{}{s}\)</span>. To enable a fixed internal time step for the kinematic wave the following lines can be inserted in the TOML file of the model:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Adaptive (internal) time stepping for the kinematic wave</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave_adaptive_tstep</span> <span class="op">=</span> <span class="cn">false</span>    <span class="co"># optional, default is false</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">false</span>    <span class="co"># optional, default is false</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed internal timestep for river flow (river cells)</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave_river_tstep</span> <span class="op">=</span> <span class="dv">900</span>        <span class="co"># optional, default is model timestep</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">river_kinematic_wave__time_step</span> <span class="op">=</span> <span class="dv">900</span>        <span class="co"># optional, default is model timestep</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed internal timestep for overland flow (land cells)</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave_land_tstep</span> <span class="op">=</span> <span class="dv">3600</span>        <span class="co"># optional, default is model timestep</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_kinematic_wave__time_step</span> <span class="op">=</span> <span class="dv">3600</span>        <span class="co"># optional, default is model timestep</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of the model:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Adaptive (internal) time stepping for the kinematic wave</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave_adaptive_tstep</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><a href="../../model_docs/routing/waterbodies.html">Reservoir and lake</a> models can be included as part of the river kinematic wave network.</p>
 </section>
 <section id="external-inflows" class="level2">
@@ -673,18 +673,18 @@ Note
 <h2 class="anchored" data-anchor-id="multi-threading">Multi-Threading</h2>
 <p>The kinematic wave calculations for surface - and subsurface flow routing can be executed in parallel using multiple threads. In the model section of the TOML file, a minimum stream order can be provided to define subbasins for the river (default is 6) and land domain (default is 5). Subbasins are created at all confluences where each branch has a minimal stream order. Based on the subbasins a directed acyclic graph is created that controls the order of execution and which subbasins can run in parallel.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">min_streamorder_river</span> <span class="op">=</span> <span class="dv">5</span> <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">min_streamorder_land</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_streamorder__min_count</span> <span class="op">=</span> <span class="dv">5</span> <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_streamorder__min_count</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="subcatchment-flow" class="level2">
-<h2 class="anchored" data-anchor-id="subcatchment-flow">Subcatchment flow</h2>
-<p>Normally the the kinematic wave is continuous throughout the model. By using the <code>pits</code> entry in the model and input sections of the TOML file all flow is at the subcatchment only (upstream of the pit locations, defined by the netCDF variable <code>wflow_pits</code> in the example below) and no flow is transferred from one subcatchment to another. This can be convenient when connecting the result of the model to a water allocation model such as Ribasim.</p>
+<section id="subbasin-flow" class="level2">
+<h2 class="anchored" data-anchor-id="subbasin-flow">Subbasin flow</h2>
+<p>Normally the the kinematic wave is continuous throughout the model. By using the <code>pit__flag</code> entry and <code>basin_pit_location__mask</code> in the model and input sections of the TOML file all flow is at the subbasin only (upstream of the pit locations, defined by the netCDF variable <code>wflow_pits</code> in the example below) and no flow is transferred from one subbasin to another. This can be convenient when connecting the result of the model to a water allocation model such as Ribasim.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">pits</span> <span class="op">=</span> <span class="st">"wflow_pits"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">basin_pit_location__mask</span> <span class="op">=</span> <span class="st">"wflow_pits"</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pits</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pit__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>

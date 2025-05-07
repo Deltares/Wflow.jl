@@ -623,7 +623,7 @@ S)^{0.5}}{m\ s^{-1}}\)</span> is the shear velocity of the flow with <span class
 </div>
 <p>Running the river model is an option of the wflow_sediment model and is enabled using the TOML file. By default it is <code>false</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">run_river_model</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">run_river_model__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="sediment-inputs-in-a-river-cell" class="level3">
 <h3 class="anchored" data-anchor-id="sediment-inputs-in-a-river-cell">Sediment inputs in a river cell</h3>
 <p>The first part of the river model assesses how much detached sediment are in the river cell at the beginning of the timestep <span class="math inline">\(t\)</span>. Sources of detached sediment are sediments coming from land erosion, estimated with the soil loss part of wflow_sediment model, the sediment coming from upstream river cells and the detached sediment that were left in the cell at the end of the previous timestep <span class="math inline">\((t-1)\)</span>:</p>
@@ -916,8 +916,8 @@ s^{-1}}\)</span> is the mean flow velocity. The calculated percentage is then su
 <p>For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the dam structure. This adding trapping is taken into account with a reservoir trapping efficiency coefficient for large particles (between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>). Depending on the type of the dam, all bed load particles are trapped (<code>restrapefficiency = 1.0</code>, for example for a gravity dam) or only partly (for example for run-of-the-river dams).</p>
 <p>Lake and reservoir modelling is enabled in the model section of the TOML and require the extra following input arguments:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoirs</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lakes</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lake__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Reservoir</span></span>
