@@ -45,9 +45,9 @@ path_forcing = "forcing-moselle-sed.nc"
 path_static = "staticmaps-moselle-sed.nc"
 
 # these are not directly part of the model
-local_drain_direction = "wflow_ldd"
+basin__local_drain_direction = "wflow_ldd"
 river_location__mask = "wflow_river"
-subcatchment_location__count = "wflow_subcatch"
+subbasin_location__count = "wflow_subcatch"
 reservoir_location__count = "wflow_reservoirlocs"
 reservoir_area__count = "wflow_reservoirareas"
 lake_location__count = "wflow_lakelocs"

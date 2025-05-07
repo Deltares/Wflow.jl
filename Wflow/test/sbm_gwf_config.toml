@@ -39,9 +39,9 @@ path_forcing = "forcing-sbm-groundwater-part*.nc"
 path_static = "staticmaps-sbm-groundwater.nc"
 
 # these are not directly part of the model
-local_drain_direction = "wflow_ldd"
+basin__local_drain_direction = "wflow_ldd"
 river_location__mask = "wflow_river"
-subcatchment_location__count = "wflow_subcatch"
+subbasin_location__count = "wflow_subcatch"
 
 [input.forcing]
 atmosphere_water__precipitation_volume_flux = "P"

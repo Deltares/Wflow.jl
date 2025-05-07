@@ -80,7 +80,7 @@ Initialize `NetworkLand` fields related to catchment (active indices model domai
 drainage network.
 """
 function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
-    lens = lens_input(config, "subcatchment_location__count"; optional = false)
+    lens = lens_input(config, "subbasin_location__count"; optional = false)
     subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
@@ -153,7 +153,7 @@ function get_drainage_network(
     do_pits = false,
     logging = true,
 )
-    lens = lens_input(config, "local_drain_direction"; optional = false)
+    lens = lens_input(config, "basin__local_drain_direction"; optional = false)
     ldd_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits

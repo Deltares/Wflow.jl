@@ -31,7 +31,7 @@ over the land or river domain. The `soil` model of the Land Hydrology `SBM` mode
 based on the Topog\_SBM model but has had considerable changes over time. Topog\_SBM is
 specifically designed to simulate fast runoff processes in small catchments while the
 wflow\_sbm model can be applied more widely. The main differences between the Land Hydrology
-`SBM` model and Topog_SBM are as follows: 
+`SBM` model and Topog_SBM are as follows:
 
 - the addition of evapotranspiration and interception losses;
 - the addition of a root water uptake reduction function (Feddes et al., 1978);
@@ -94,13 +94,12 @@ The local inertial approach is described in more detail in the section [Local in
 model](./routing/local-inertial.qmd).
 
 ## wflow\_sediment
-The processes and fate of many particles and pollutants impacting water quality at the
-catchment level are intricately linked to the processes governing sediment dynamics. Both
-nutrients such as phosphorus, carbon or other pollutants such as metals are influenced by
-sediment properties in processes such as mobilization, flocculation or deposition. To better
-assert and model water quality in inland systems, a better comprehension and modelling of
-sediment sources and fate in the river is needed at a spatial and time scale relevant to
-such issues.
+The processes and fate of many particles and pollutants impacting water quality at the basin
+level are intricately linked to the processes governing sediment dynamics. Both nutrients
+such as phosphorus, carbon or other pollutants such as metals are influenced by sediment
+properties in processes such as mobilization, flocculation or deposition. To better assert
+and model water quality in inland systems, a better comprehension and modelling of sediment
+sources and fate in the river is needed at a spatial and time scale relevant to such issues.
 
 The wflow\_sediment model was developed to answer such issues. It is a distributed
 physics-based model, based on the distributed hydrologic wflow\_sbm model. It is able to
