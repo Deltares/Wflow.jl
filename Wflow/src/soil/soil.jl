@@ -689,7 +689,7 @@ end
 function infiltration_reduction_factor!(
     model::SbmSoilModel;
     modelsnow = false,
-    soilinfreduction = false,
+    soil_infiltration_reduction = false,
 )
     v = model.variables
     p = model.parameters
@@ -699,8 +699,8 @@ function infiltration_reduction_factor!(
         v.f_infiltration_reduction[i] = infiltration_reduction_factor(
             v.tsoil[i],
             p.cf_soil[i];
-            modelsnow = modelsnow,
-            soilinfreduction = soilinfreduction,
+            modelsnow,
+            soil_infiltration_reduction,
         )
     end
     return nothing
@@ -1098,7 +1098,8 @@ function update!(
     config::Config,
     dt::Float64,
 )
-    soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
+    soil_infiltration_reduction =
+        get(config.model, "soil_infiltration_reduction", false)::Bool
     modelsnow = get(config.model, "snow", false)::Bool
     topog_sbm_transfer = get(config.model, "topog_sbm_transfer", false)::Bool
 
@@ -1115,14 +1116,10 @@ function update!(
 
     # infiltration
     soil_temperature!(model, snow, temperature)
-    infiltration_reduction_factor!(
-        model;
-        modelsnow = modelsnow,
-        soilinfreduction = soilinfreduction,
-    )
+    infiltration_reduction_factor!(model; modelsnow, soil_infiltration_reduction)
     infiltration!(model)
     # unsaturated zone flow
-    unsaturated_zone_flow!(model; topog_sbm_transfer = topog_sbm_transfer)
+    unsaturated_zone_flow!(model; topog_sbm_transfer)
     # soil evaporation and transpiration
     soil_evaporation!(model)
     transpiration!(model, dt)

@@ -894,11 +894,11 @@ overland flow).
 #### Infiltration in frozen soils
 
 An optional reduction factor is applied to the infiltration capacity when snow is modelled,
-and the model setting `soilinfreduction` is set to true:
+and the model setting `soil_infiltration_reduction` is set to true:
 
 ```toml
 [model]
-soilinfreduction = true
+soil_infiltration_reduction = true
 snow = true
 ```
 This reduction factor depends on the near-surface soil temperature, which is modelled based
@@ -955,7 +955,7 @@ let
           temps,
           cf_soil;
           modelsnow = true,
-          soilinfreduction = true,
+          soil_infiltration_reduction = true,
       )
       lines!(ax, temps, y_vals; label = "$cf_soil", color = color)
   end

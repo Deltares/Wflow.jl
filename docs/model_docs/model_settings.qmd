@@ -26,7 +26,7 @@ The Tables in this subsection show the available models settings for the model t
 | `snow` | Include snow modelling | - | `false` |
 | `gravitational_snow_transport` | Include gravitional lateral snow transport | - | `false` |
 | `glacier` | Include glacier modelling | - | false |
-| `soilinfreduction` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
+| `soil_infiltration_reduction` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
 | `soil_thickness_layer` | Thickness of soil layers | mm | - |
 | `topog_sbm_transfer` | Enable original Topog_SBM vertical transfer formulation  | - | `false` |
 | `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
