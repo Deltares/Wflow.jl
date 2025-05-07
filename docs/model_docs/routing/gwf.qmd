@@ -142,7 +142,7 @@ TOML file as follows:
 
 ```toml
 [model]
-constanthead = true # optional, default is "false"
+constanthead__flag = true # optional, default is "false"
 
 [input.static]
 "model_boundary_condition~constant_hydraulic_head" = "constant_head"

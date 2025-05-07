@@ -771,7 +771,7 @@ Four different saturated hydraulic conductivity depth profiles
 `saturated_hydraulic_conductivity_profile` can be specified in the TOML file as follows:
 
 ```toml
-[input.vertical]
+[input.static]
 saturated_hydraulic_conductivity_profile = "exponential_constant" # optional, one of ("exponential", "exponential_constant", "layered", "layered_exponential"), default is "exponential"
 ```
 
@@ -855,7 +855,7 @@ original Topog_SBM vertical transfer formulation, by specifying in the TOML file
 
 ```toml
 [model]
-topog_sbm_transfer = true
+topog_sbm_transfer__flag = true
 ```
 
 The potential transfer of water from the unsaturated store to the saturated store is in that
@@ -894,7 +894,7 @@ overland flow).
 #### Infiltration in frozen soils
 
 An optional reduction factor is applied to the infiltration capacity when snow is modelled,
-and the model setting `soil_infiltration_reduction` is set to true:
+and the model setting `soil_infiltration_reduction__flag` is set to true:
 
 ```toml
 [model]

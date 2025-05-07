@@ -69,7 +69,7 @@ river__width = "wflow_riverwidth"
 
 reservoir_surface__area = "ResSimpleArea"
 lake_surface__area = "LakeArea"
-"reservoir_sediment~bedload__trapping_efficiency_coefficient" = "ResTrapEff"
+"reservoir_water_sediment~bedload__trapping_efficiency" = "ResTrapEff"
 
 vegetation_canopy__height = "CanopyHeight"
 soil_erosion__rainfall_soil_detachability_factor = "soil_detachability"

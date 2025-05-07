@@ -432,8 +432,9 @@ reservoir's surface area $\SIb{\subtext{A}{res}}{m^2}$.
 For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped
 by the dam structure. This adding trapping is taken into account with a reservoir trapping
 efficiency coefficient for large particles (between $0$ and $1$). Depending on the type of
-the dam, all bed load particles are trapped (`restrapefficiency = 1.0`, for example for a
-gravity dam) or only partly (for example for run-of-the-river dams).
+the dam, all bed load particles are trapped
+(`reservoir_water_sediment~bedload__trapping_efficiency = 1.0`, for example for a gravity dam)
+or only partly (for example for run-of-the-river dams).
 
 Lake and reservoir modelling is enabled in the model section of the TOML and require the extra
 following input arguments:
@@ -454,7 +455,7 @@ lake_location__count = "wflow_lakelocs"
 [input.static]
 # Reservoir
 reservoir_surface__area = "ResSimpleArea"
-restrapefficiency = "ResTrapEff"
+"reservoir_water_sediment~bedload__trapping_efficiency" = "ResTrapEff"
 # Lake
 lake_surface__area = "LakeArea"
 ```

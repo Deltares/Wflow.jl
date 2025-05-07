@@ -208,7 +208,7 @@ function SedimentRiverTransportParameters(
         resarea = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
         lens = lens_input_parameter(
             config,
-            "reservoir_sediment~bedload__trapping_efficiency_coefficient";
+            "reservoir_water_sediment~bedload__trapping_efficiency";
             optional = false,
         )
         restrapefficiency = ncread(

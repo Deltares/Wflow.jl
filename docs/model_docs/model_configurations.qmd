@@ -76,7 +76,7 @@ providing the following in the TOML file:
 ```toml
 [model]
 river_routing = "local-inertial"    # optional, default is "kinematic-wave"
-floodplain_1d = true                # optional, default is false
+floodplain_1d__flag = true                # optional, default is false
 ```
 
 ### Local inertial river (1D) and land (2D)
