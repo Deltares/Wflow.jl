@@ -25,7 +25,7 @@ function init_kinematic_wave_timestepping(
         timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
         dt_fixed = get(config.model, "kinematic_wave_$(domain)_tstep", dt_fixed)
-        @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave $domain flow."
+        @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
         timestepping = TimeStepping(; dt_fixed, adaptive)
     end
     return timestepping
