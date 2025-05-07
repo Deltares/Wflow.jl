@@ -1261,9 +1261,9 @@ n}\)</span> declines exponentially (if <span class="math inline">\(f_{\mathrm{Kv
 <p>Infiltration excess occurs when the infiltration capacity is smaller then the water available for infiltration. This amount of water becomes overland flow (infiltration excess overland flow). Saturation excess occurs when the (upper) soil becomes saturated and water cannot infiltrate anymore. This amount of water becomes overland flow (saturation excess overland flow).</p>
 <section id="infiltration-in-frozen-soils" class="level4">
 <h4 class="anchored" data-anchor-id="infiltration-in-frozen-soils">Infiltration in frozen soils</h4>
-<p>An optional reduction factor is applied to the infiltration capacity when snow is modelled, and the model setting <code>soilinfreduction</code> is set to true:</p>
+<p>An optional reduction factor is applied to the infiltration capacity when snow is modelled, and the model setting <code>soil_infiltration_reduction</code> is set to true:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soilinfreduction</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_infiltration_reduction</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snow</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This reduction factor depends on the near-surface soil temperature, which is modelled based on the approach of Wigmosta et al., 2009:</p>
 <p><span class="math display">\[
@@ -1306,7 +1306,7 @@ T_\mathrm{soil}^t = T_\mathrm{soil}^{t-1} + w_\mathrm{soil}  (T_\mathrm{air} - T
 <span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>          temps,</span>
 <span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>          cf_soil;</span>
 <span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>          modelsnow <span class="op">=</span> <span class="cn">true</span>,</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>          soilinfreduction <span class="op">=</span> <span class="cn">true</span>,</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>          soil_infiltration_reduction <span class="op">=</span> <span class="cn">true</span>,</span>
 <span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      )</span>
 <span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">lines!</span>(ax, temps, y_vals; label <span class="op">=</span> <span class="st">"</span><span class="sc">$</span>cf_soil<span class="st">"</span>, color <span class="op">=</span> color)</span>
 <span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
