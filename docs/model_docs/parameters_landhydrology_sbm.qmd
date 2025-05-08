@@ -109,14 +109,14 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ----- | ----- | - | - |
 | `soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth` |  Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an `exponential_constant` saturated hydraulic conductivity profile is used | mm | - |
-| `soil_layer_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used | mm | 1000.0 mm day⁻¹
+| `soil_layer_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used | mm | - |
 | `soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth`| Depth from soil surface for which `layered` profile is valid, when a `layered_exponential` saturated hydraulic conductivity profile is used| mm | - |
 | `soil_surface_temperature__weight_coefficient` | Weighting coefficient for soil surface temperature | - | 0.1125 |
 | `soil_surface_water__infiltration_reduction_parameter` | Controls soil infiltration reduction factor when soil is frozen | - | 0.038 |
-| `soil_water__saturated_volume_fraction` | Saturated water content | - | 0.6 |
-| `soil_water__residual_volume_fraction` | Residual water content | - | 0.01 |
-| `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm day⁻¹ | 3000.0 |
-| `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth | mm⁻¹ | 0.001 |
+| `soil_water__saturated_volume_fraction` | Saturated water content | - | - |
+| `soil_water__residual_volume_fraction` | Residual water content | - | - |
+| `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm day⁻¹ | - |
+| `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth | mm⁻¹ | - |
 | `soil_water__air_entry_pressure_head` | Air entry pressure head of soil | cm | -10.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
@@ -124,17 +124,16 @@ td, th {
 | `vegetation_root__feddes_critial_pressure_head_h~3~low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -15849.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
-| `soil__thickness` | Soil thickness | mm | 2000.0 |
+| `soil__thickness` | Soil thickness | mm | - |
 | `soil~compacted_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
 | `soil~non-compacted_surface_water__infiltration_capacity` | Soil infiltration capacity | mm Δt⁻¹ | 100.0 mm day⁻¹ |
 | `soil_water_sat-zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
 | `soil_layer_water__brooks-corey_exponent` | Brooks-Corey power coefficient per soil layer | - | 10.0 |
 | `land~water-covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
 | `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer | - | 1.0 |
-| `soil~compacted__area_fraction` | Fraction of compacted soil area | - | 0.01 |
+| `soil~compacted__area_fraction` | Fraction of compacted soil area | - | - |
 | `soil_root~wet__sigmoid_function_shape_parameter` | Controls sharpness of transition between fully wet and fully dry roots | - | -500.0 |
 | `soil_root__length_density_fraction` | Fraction of the root length density per soil layer | - | - |
-| `soil_water_sat-zone_bottom__max_leakage_volume_flux` | Maximum leakage from the saturated zone | mm day⁻¹ | 0.0 |
 | `soil_water_sat-zone_top_capillary-rise__max_water-table_depth` | Maximum water table depth for capillary rise | mm | 2000.0 |
 | `soil_water_sat-zone_top_capillary-rise__averianov_exponent` | Averianov exponent controlling capillary rise | - | 2.0 |
 : {.striped .hover}

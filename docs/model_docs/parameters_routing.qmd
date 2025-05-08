@@ -257,7 +257,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `land_surface__elevation ` | Land surface elevation conductivity | m | - |
 | `subsurface_surface_water__horizontal_saturated_hydraulic_conductivity` | Horizontal conductivity | m day⁻¹ | - |
 | `subsurface_water__specific_yield` | Specific yield | m m⁻¹ | - |
-| `subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter` | Factor controlling the reduction of horizontal conductivity with depth | - | 3.0 |
+| `subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter` | Factor controlling the reduction of horizontal conductivity with depth | - | - |
 : {.striped .hover}
 
 #### States {#output-gwf-unconfined}
