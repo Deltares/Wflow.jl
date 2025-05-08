@@ -300,7 +300,6 @@ function sbm_kv_profiles(
                 config,
                 lens;
                 sel = indices,
-                defaults = 1000.0,
                 type = Float64,
                 dimname = :layer,
             ) .* (dt / BASETIMESTEP)
@@ -373,24 +372,23 @@ function SbmSoilParameters(
 
     # soil parameters
     lens = lens_input_parameter(config, "soil_water__saturated_volume_fraction")
-    theta_s = ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float64)
+    theta_s = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens = lens_input_parameter(config, "soil_water__residual_volume_fraction")
-    theta_r = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
+    theta_r = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens = lens_input_parameter(
         config,
         "soil_surface_water__vertical_saturated_hydraulic_conductivity",
     )
     kv_0 =
-        ncread(dataset, config, lens; sel = indices, defaults = 3000.0, type = Float64) .*
-        (dt / BASETIMESTEP)
+        ncread(dataset, config, lens; sel = indices, type = Float64) .* (dt / BASETIMESTEP)
 
     lens = lens_input_parameter(
         config,
         "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter",
     )
-    f = ncread(dataset, config, lens; sel = indices, defaults = 0.001, type = Float64)
+    f = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens = lens_input_parameter(config, "soil_water__air_entry_pressure_head")
     hb = ncread(dataset, config, lens; sel = indices, defaults = -10.0, type = Float64)
@@ -425,8 +423,7 @@ function SbmSoilParameters(
     alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
     lens = lens_input_parameter(config, "soil__thickness")
-    soilthickness =
-        ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
+    soilthickness = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens =
         lens_input_parameter(config, "soil~compacted_surface_water__infiltration_capacity")
@@ -478,7 +475,7 @@ function SbmSoilParameters(
     infiltcapsoil = kv_0 .* @view kvfrac[1, :]
     # fraction compacted area
     lens = lens_input_parameter(config, "soil~compacted__area_fraction")
-    pathfrac = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
+    pathfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # vegetation parameters
     lens = lens_input_parameter(config, "soil_root~wet__sigmoid_function_shape_parameter")
