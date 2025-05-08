@@ -123,6 +123,11 @@ M.F.P., 2016. Improved large-scale hydrological modelling through the assimilati
 streamflow and downscaled satellite soil moisture observations. Hydrol. Earth Syst. Sci.,
 20, 3059–3076. <https://doi.org/10.5194/hess-20-3059-2016>.
 
+Mendoza, R., van Verseveld, W., Seijger, C. and Weerts, A. (2025), Assessment of Saturated
+Hydraulic Conductivity-Depth Relationships and Extended Soil Column Thickness in Catchment
+Hydrological Modelling. Hydrological Processes, 39, e70149.
+<https://doi.org/10.1002/hyp.70149>
+
 Pranoto, B., Soekarno, H., Hartulistiyoso, E., Nur Aidi, M., Sutrisno, D., Pohan, D.,
 Radhika, Sutejo, B., Heru Kuncoro, A., Nahib, I., 2024. Integrating Flood Early Warning
 System (FEWS) for Optimizing Small Hydropower Sites: A West Java Case Study. EVERGREEN Joint
