@@ -83,9 +83,9 @@ vwc_1_size = 0
         name = "soil_water_sat-zone_top__depth",
         dest = fill(0.0, zi_size),
     )
-    @test mean(request(msg)["value"]) ≈ 277.3620724821974
+    @test mean(request(msg)["value"]) ≈ 277.36207954616316
     msg = (fn = "get_value_ptr", name = "soil_water_root-zone__depth")
-    @test mean(request(msg)["value_ptr"]) ≈ 29.00870713806498
+    @test mean(request(msg)["value_ptr"]) ≈ 29.008687556081266
     msg = (
         fn = "get_value_at_indices",
         name = "river_water__instantaneous_volume_flow_rate",
@@ -93,7 +93,7 @@ vwc_1_size = 0
         inds = [1, 5, 10],
     )
     @test request(msg)["value_at_indices"] ≈
-          [2.100780004751114, 2.5707002864065154, 3.292002704767432]
+          [2.1007742084273087, 2.570693479402013, 3.291994363149598]
     msg = (
         fn = "set_value",
         name = "soil_water_sat-zone_top__depth",
@@ -125,7 +125,7 @@ vwc_1_size = 0
         name = "soil_layer~1_water__volume_fraction",
         dest = fill(0.0, vwc_1_size),
     )
-    @test mean(request(msg)["value"]) ≈ 0.18602528294012882
+    @test mean(request(msg)["value"]) ≈ 0.1860250793570359
     msg = (
         fn = "get_value_at_indices",
         name = "soil_layer~1_water__volume_fraction",

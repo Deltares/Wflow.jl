@@ -414,7 +414,7 @@ function SbmSoilParameters(
         ncread(dataset, config, lens; sel = indices, defaults = -1000.0, type = Float64)
 
     lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~4")
-    h4 = ncread(dataset, config, lens; sel = indices, defaults = -15849.0, type = Float64)
+    h4 = ncread(dataset, config, lens; sel = indices, defaults = -16000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
@@ -437,15 +437,7 @@ function SbmSoilParameters(
         (dt / BASETIMESTEP)
 
     lens = lens_input_parameter(config, "soil_layer_water__brooks-corey_exponent")
-    c = ncread(
-        dataset,
-        config,
-        lens;
-        sel = indices,
-        defaults = 10.0,
-        type = Float64,
-        dimname = :layer,
-    )
+    c = ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :layer)
     if size(c, 1) != maxlayers
         parname = lens(config)
         size1 = size(c, 1)

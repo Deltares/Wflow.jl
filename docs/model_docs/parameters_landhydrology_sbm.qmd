@@ -27,7 +27,7 @@ td, th {
 | `atmosphere_air__snowfall_temperature_threshold` | Threshold temperature for snowfall | ᵒC | 0.0 |
 | `atmosphere_air__snowfall_temperature_interval` | Threshold temperature interval length | ᵒC | 1.0 |
 | `snowpack__melting_temperature_threshold` | Threshold temperature for snowmelt | ᵒC | 0.0 |
-| `snowpack__degree-day_coefficient` | Degree-day factor for snowmelt | mm ᵒC⁻¹ Δt⁻¹ | 3.75653 mm ᵒC⁻¹ day⁻¹|
+| `snowpack__degree-day_coefficient` | Degree-day factor for snowmelt | mm ᵒC⁻¹ Δt⁻¹ | 3.75 mm ᵒC⁻¹ day⁻¹|
 | `snowpack__liquid_water_holding_capacity` | Water holding capacity as fraction of current snow pack | - | 0.1 |
 : {.striped .hover}
 
@@ -74,13 +74,13 @@ td, th {
 ### Input
 | Standard Name | Description | Unit | Default |
 | ----- | ---- | -- | -- |
-| `vegetation_root__depth` | Rooting depth | mm | 750.0 |
+| `vegetation_root__depth` | Rooting depth | mm | - |
 | `vegetation__crop_factor` | Crop coefficient | - | 1.0 |
 | `vegetation__specific-leaf_storage` | Specific leaf storage | mm | - |
 | `vegetation_wood_water__storage_capacity` | Storage woody part of vegetation | mm | - |
 | `vegetation_canopy__light-extinction_coefficient` | Extinction coefficient (to calculate canopy gap fraction) | - | - |
 | `vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio` | Gash interception model parameter | - | 0.1 |
-| `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | 0.1 |
+| `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | - |
 | `vegetation_water__storage_capacity` | Maximum canopy storage | mm | 1.0 |
 : {.striped .hover}
 
@@ -109,26 +109,26 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ----- | ----- | - | - |
 | `soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth` |  Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an `exponential_constant` saturated hydraulic conductivity profile is used | mm | - |
-| `soil_layer_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used | mm | - |
+| `soil_layer_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used | mm Δt⁻¹ | - |
 | `soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth`| Depth from soil surface for which `layered` profile is valid, when a `layered_exponential` saturated hydraulic conductivity profile is used| mm | - |
 | `soil_surface_temperature__weight_coefficient` | Weighting coefficient for soil surface temperature | - | 0.1125 |
 | `soil_surface_water__infiltration_reduction_parameter` | Controls soil infiltration reduction factor when soil is frozen | - | 0.038 |
 | `soil_water__saturated_volume_fraction` | Saturated water content | - | - |
 | `soil_water__residual_volume_fraction` | Residual water content | - | - |
-| `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm day⁻¹ | - |
+| `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm Δt⁻¹ | - |
 | `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth | mm⁻¹ | - |
 | `soil_water__air_entry_pressure_head` | Air entry pressure head of soil | cm | -10.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~3~high` | Critical pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~3~low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
-| `vegetation_root__feddes_critial_pressure_head_h~4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -15849.0 |
+| `vegetation_root__feddes_critial_pressure_head_h~4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -16000.0 |
 | `vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
 | `soil__thickness` | Soil thickness | mm | - |
 | `soil~compacted_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
 | `soil~non-compacted_surface_water__infiltration_capacity` | Soil infiltration capacity | mm Δt⁻¹ | 100.0 mm day⁻¹ |
 | `soil_water_sat-zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
-| `soil_layer_water__brooks-corey_exponent` | Brooks-Corey power coefficient per soil layer | - | 10.0 |
+| `soil_layer_water__brooks-corey_exponent` | Brooks-Corey power coefficient per soil layer | - | - |
 | `land~water-covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
 | `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer | - | 1.0 |
 | `soil~compacted__area_fraction` | Fraction of compacted soil area | - | - |

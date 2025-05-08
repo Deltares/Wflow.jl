@@ -170,25 +170,25 @@ end
 @testset "river domain warm start (kinematic wave)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.011918378125641867
-    @test q[6] ≈ 0.0024355453044100587
-    @test river.variables.storage[6] ≈ 2.2278920306090555
-    @test river.boundary_conditions.inwater[6] ≈ -1.298187928273214e-5
-    @test q[13] ≈ 7.335203306033115e-5
-    @test q[domain.river.network.order[end]] ≈ 0.002472763875440307
+    @test sum(q) ≈ 0.011918302776165372
+    @test q[6] ≈ 0.002435524985929997
+    @test river.variables.storage[6] ≈ 2.2278805130264883
+    @test river.boundary_conditions.inwater[6] ≈ -1.2985462545754242e-5
+    @test q[13] ≈ 7.335056957297285e-5
+    @test q[domain.river.network.order[end]] ≈ 0.0024727437195071356
 end
 
 @testset "groundwater warm start" begin
     gw = model.routing.subsurface_flow
     @test gw.boundaries.river.variables.stage[1] ≈ 1.2030201719029363
     @test gw.aquifer.variables.head[17:21] ≈ [
-        1.2277413823642467,
-        1.2868963785900465,
+        1.2277387243899684,
+        1.2868951594984024,
         1.7999999523162842,
-        1.5901747023422137,
-        1.2094146088822748,
+        1.590166154813516,
+        1.2094134130011027,
     ]
-    @test gw.boundaries.river.variables.flux[1] ≈ -6.693790653429019
+    @test gw.boundaries.river.variables.flux[1] ≈ -6.693665350868727
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
     @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
 end
