@@ -12,7 +12,10 @@ that can be exchanged (input and output) with standard names (subsection below) 
 These tables include standard names, descriptions, units and default values (input
 parameters) for model parameters, states and variables. Note that a state variable can also
 be specified as a model output variable but is listed only in the states table and not in in
-the output table.
+the output table. The time unit of input flux parameters is day (the model base time step
+size), hence default values for these parameters are expressed per day. During model
+initialization these input parameters are converted to the user-defined model time step size
+Δt.
 
 ## Standard names
 The standard names of model parameters, states and variables are based on [CSDMS Standard
