@@ -76,7 +76,7 @@ function SnowHbvParameters(
 )
     lens = lens_input_parameter(config, "snowpack__degree-day_coefficient")
     cfmax =
-        ncread(dataset, config, lens; sel = indices, defaults = 3.75653, type = Float64) .*
+        ncread(dataset, config, lens; sel = indices, defaults = 3.75, type = Float64) .*
         (dt / BASETIMESTEP)
     lens = lens_input_parameter(config, "atmosphere_air__snowfall_temperature_threshold")
     tt = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)

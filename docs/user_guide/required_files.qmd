@@ -51,9 +51,12 @@ Standard Name | Description | NC variable name | unit
 `river__slope` | River slope | `RiverSlope` | m m$^{-1}$
 
 As mentioned before, the model parameters can also be defined as spatial maps. They can be
-included in the same netCDF file, as long as their variable names are correctly mapped in the
-TOML settings file. See the section on [example
+included in the same netCDF file, as long as their variable names are correctly mapped in
+the TOML settings file. See the section on [example
 models](../getting_started/download_example_models.qmd) on how to use this functionality.
+The time unit of input flux parameters should be day (the model base time step size), these
+input parameters are converted to the user-defined model time step size during
+initialization.
 
 ::: callout-important
 When using cyclic data, three different options are supported:
@@ -72,13 +75,14 @@ provided) or 166 (when 366 values are provided).
 
 The forcing data typically contains the meteorological boundary conditions. This data is
 provided as a single netCDF file, with several variables containing the forcing data for
-precipitation, temperature and potential evaporation. The code snippet below shows the contents
+precipitation, temperature and potential evaporation. The time unit of forcing data should
+be equal to the user-defined model time step size. The code snippet below shows the contents
 of the example file (downloaded
 [here](../getting_started/download_example_models.qmd#wflow_sbm-kinematic-wave)), and
 displaying the content with `NCDatasets` in Julia. As can be seen, each forcing variable
 (`precip`, `pet` and `temp`) consists of a three-dimensional dataset (`x`, `y`, and `time`),
-and each timestep consists of a two-dimensional map with values at each grid cell. Only values
-within the basin are required.
+and each timestep consists of a two-dimensional map with values at each grid cell. Only
+values within the basin are required.
 
 ::: callout-important
 Wflow expects the forcing to be "right-labelled". This means that e.g. daily precipitation at

@@ -134,6 +134,7 @@ function UnconfinedAquiferParameters(
     bottom::Vector{Float64},
     area::Vector{Float64},
 )
+    conductivity_profile = get(config.model, "conductivity_profile", "uniform")
     lens = lens_input_parameter(
         config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
@@ -143,12 +144,15 @@ function UnconfinedAquiferParameters(
     lens = lens_input_parameter(config, "subsurface_water__specific_yield")
     specific_yield = ncread(dataset, config, lens; sel = indices, type = Float64)
 
-    lens = lens_input_parameter(
-        config,
-        "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
-    )
-    f = ncread(dataset, config, lens; sel = indices, type = Float64, defaults = 3.0)
-
+    if conductivity_profile == "exponential"
+        lens = lens_input_parameter(
+            config,
+            "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
+        )
+        f = ncread(dataset, config, lens; sel = indices, type = Float64)
+    else
+        f = Float64[]
+    end
     parameters = UnconfinedAquiferParameters(; k, top, bottom, area, specific_yield, f)
     return parameters
 end

@@ -88,6 +88,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   routing for coupling with Modflow 6, as a rapid runoff (interflow) generating mechanism
   was missing and the current coupling did not yield satisfactory results. More work is
   needed to support this kind of coupling in a good way.
+- Removed default values for the following (sensitive) input parameters: `khfrac`, `kv_0`,
+  `kv`, `f`, `c`, `theta_s`, `theta_r`, `soilthickness`, `canopygapfraction`, `rootingdepth`
+  and `pathfrac`.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
