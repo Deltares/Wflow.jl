@@ -17,21 +17,21 @@ function Model(config::Config, type::SbmGwfModel)
     clock = Clock(config, reader)
 
     modelsettings = (;
-        snow = get(config.model, "snow", false)::Bool,
+        snow = get(config.model, "snow__flag", false)::Bool,
         gravitational_snow_transport = get(
             config.model,
-            "gravitational_snow_transport",
+            "snow_gravitional_transport__flag",
             false,
         )::Bool,
-        glacier = get(config.model, "glacier", false)::Bool,
-        reservoirs = get(config.model, "reservoirs", false)::Bool,
-        lakes = get(config.model, "lakes", false)::Bool,
-        drains = get(config.model, "drains", false)::Bool,
-        constanthead = get(config.model, "constanthead", false)::Bool,
+        glacier = get(config.model, "glacier__flag", false)::Bool,
+        reservoirs = get(config.model, "reservoir__flag", false)::Bool,
+        lakes = get(config.model, "lake__flag", false)::Bool,
+        drains = get(config.model, "drain__flag", false)::Bool,
+        constanthead = get(config.model, "constanthead__flag", false)::Bool,
         water_demand = haskey(config.model, "water_demand"),
         pits = false,
-        min_streamorder_river = get(config.model, "min_streamorder_river", 6),
-        min_streamorder_land = get(config.model, "min_streamorder_land", 5),
+        min_streamorder_river = get(config.model, "river_streamorder__min_count", 6),
+        min_streamorder_land = get(config.model, "land_streamorder__min_count", 5),
     )
 
     @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...

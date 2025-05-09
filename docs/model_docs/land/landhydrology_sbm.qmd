@@ -130,8 +130,8 @@ Both options can be enabled by specifying the following in the TOML file:
 
 ```toml
 [model]
-snow = true
-glacier = true
+snow__flag = true
+glacier__flag = true
 ```
 
 ### Snow modelling
@@ -747,7 +747,7 @@ $\SI{}{mm}$:
 
 ```toml
 [model]
-thicknesslayers = [100, 300, 800]
+soil_layer__thickness = [100, 300, 800]
 ```
 
 The code checks for each grid cell the specified layers against the soil thickness
@@ -771,7 +771,7 @@ Four different saturated hydraulic conductivity depth profiles
 `saturated_hydraulic_conductivity_profile` can be specified in the TOML file as follows:
 
 ```toml
-[input.vertical]
+[input.static]
 saturated_hydraulic_conductivity_profile = "exponential_constant" # optional, one of ("exponential", "exponential_constant", "layered", "layered_exponential"), default is "exponential"
 ```
 
@@ -855,7 +855,7 @@ original Topog_SBM vertical transfer formulation, by specifying in the TOML file
 
 ```toml
 [model]
-transfermethod = true
+topog_sbm_transfer__flag = true
 ```
 
 The potential transfer of water from the unsaturated store to the saturated store is in that
@@ -894,12 +894,12 @@ overland flow).
 #### Infiltration in frozen soils
 
 An optional reduction factor is applied to the infiltration capacity when snow is modelled,
-and the model setting `soilinfreduction` is set to true:
+and the model setting `soil_infiltration_reduction__flag` is set to true:
 
 ```toml
 [model]
-soilinfreduction = true
-snow = true
+soil_infiltration_reduction__flag = true
+snow__flag = true
 ```
 This reduction factor depends on the near-surface soil temperature, which is modelled based
 on the approach of Wigmosta et al., 2009:
@@ -955,7 +955,7 @@ let
           temps,
           cf_soil;
           modelsnow = true,
-          soilinfreduction = true,
+          soil_infiltration_reduction = true,
       )
       lines!(ax, temps, y_vals; label = "$cf_soil", color = color)
   end
@@ -1019,9 +1019,9 @@ TOML file:
 
 ```toml
 [model.water_demand]
-domestic = true
-industry = true
-livestock = true
+domestic__flag = true
+industry__flag = true
+livestock__flag = true
 ```
 
 For these non-irrigation sectors the gross demand ($d_\mathrm{gross}$ $\SIb{}{mm\ t^{-1}}$)
@@ -1049,7 +1049,7 @@ supported. These computations can be enabled by specifying the following in the 
 
 ```toml
 [model.water_demand]
-nonpaddy = true
+nonpaddy__flag = true
 ```
 Irrigation is applied during the growing season when input parameter irrigation trigger
 $\SIb{}{-}$ for non-paddy irrigation is `true` (or `on`) and when water depletion exceeds
@@ -1083,7 +1083,7 @@ can be enabled by specifying the following in the TOML file:
 
 ```toml
 [model.water_demand]
-paddy = true
+paddy__flag = true
 ```
 Irrigation is applied during the growing season when input parameter irrigation trigger
 $\SIb{}{-}$ is `true` (or `on`) and when the paddy water depth `h` $\SIb{}{mm}$ reaches
@@ -1145,7 +1145,7 @@ Allocation areas can be specified as follows in the TOML file:
 
 ```toml
 [input.static]
-land_water_allocation_area__number = "allocation_areas"
+land_water_allocation_area__count = "allocation_areas"
 ```
 
 For allocation areas the water demand $\SIb{\subtext{V}{sw, demand}}{m^3}$ and availability

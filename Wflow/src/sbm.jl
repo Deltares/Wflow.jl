@@ -26,20 +26,20 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         interception = RutterInterceptionModel(vegetation_parameters, n)
     end
 
-    do_snow = get(config.model, "snow", false)::Bool
+    do_snow = get(config.model, "snow__flag", false)::Bool
     if do_snow
         snow = SnowHbvModel(dataset, config, indices, dt)
     else
         snow = NoSnowModel()
     end
-    do_glacier = get(config.model, "glacier", false)::Bool
+    do_glacier = get(config.model, "glacier__flag", false)::Bool
     if do_snow && do_glacier
         glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
         glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif do_snow == false && do_glacier == true
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
-            "glacier modelling, set `snow` to `true` in the Model section of the TOML file.",
+            "glacier modelling, set `snow__flag` to `true` in the Model section of the TOML file.",
         )
         glacier = NoGlacierModel()
     else
@@ -90,7 +90,7 @@ function update!(
     update!(snow, atmospheric_forcing)
 
     # lateral snow transport
-    if get(config.model, "gravitational_snow_transport", false)::Bool
+    if get(config.model, "snow_gravitional_transport__flag", false)::Bool
         lateral_snow_transport!(
             snow.variables.snow_storage,
             snow.variables.snow_water,

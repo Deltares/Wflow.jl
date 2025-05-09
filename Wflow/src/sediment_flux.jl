@@ -17,7 +17,7 @@ function OverlandFlowSediment(
     (; hydrological_forcing) = soilloss
 
     # Check what transport capacity equation will be used
-    do_river = get(config.model, "run_river_model", false)::Bool
+    do_river = get(config.model, "run_river_model__flag", false)::Bool
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     landtransportmethod = get(config.model, "land_transport", "yalinpart")::String
 

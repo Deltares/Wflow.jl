@@ -192,7 +192,7 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land~irrigated-non-paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
-| `land~irrigated-non-paddy_area__number` | Irrigation areas (non-paddy) | - | - |
+| `land~irrigated-non-paddy_area__count` | Irrigation areas (non-paddy) | - | - |
 | `land~irrigated-non-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
@@ -216,7 +216,7 @@ td, th {
 | `land~irrigated-paddy__optimal_depth` | Optimal water depth in the irrigated paddy fields | mm | 50.0 |
 | `land~irrigated-paddy__max_depth` | Water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
 | `land~irrigated-paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
-| `land~irrigated-paddy_area__number` | Irrigation areas (paddy) | - | - |
+| `land~irrigated-paddy_area__count` | Irrigation areas (paddy) | - | - |
 | `land~irrigated-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
@@ -243,7 +243,7 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land_surface_water__withdrawal_fraction` | Fraction surface water used | - | 1.0 |
-| `land_water_allocation_area__number` | Allocation areas | - | 1 |
+| `land_water_allocation_area__count` | Allocation areas | - | 1 |
 : {.striped .hover}
 
 #### Output

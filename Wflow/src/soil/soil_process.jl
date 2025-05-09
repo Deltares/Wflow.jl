@@ -202,22 +202,22 @@ end
         tsoil,
         cf_soil;
         modelsnow = false,
-        soilinfreduction = false,
+        soil_infiltration_reduction = false,
     )
 
-When both `modelsnow` and `soilinfreduction` are `true` an infiltration reduction factor
-`f_infiltration_reduction` is computed. The infiltration reduction factor is based on the
-near surface soil temperature `tsoil`, parameter `cf_soil` and a s-curve to make a smooth
-transition of `f_infiltration_reduction` as a function of `tsoil` and `cf_soil`. Otherwise,
-`f_infiltration_reduction` is set to 1.0.
+When both `modelsnow` and `soil_infiltration_reduction` are `true` an infiltration reduction
+factor `f_infiltration_reduction` is computed. The infiltration reduction factor is based on
+the near surface soil temperature `tsoil`, parameter `cf_soil` and a s-curve to make a
+smooth transition of `f_infiltration_reduction` as a function of `tsoil` and `cf_soil`.
+Otherwise, `f_infiltration_reduction` is set to 1.0.
 """
 function infiltration_reduction_factor(
     tsoil,
     cf_soil;
     modelsnow = false,
-    soilinfreduction = false,
+    soil_infiltration_reduction = false,
 )
-    if modelsnow && soilinfreduction
+    if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)
         f_infiltration_reduction = scurve(tsoil, 0.0, bb, 8.0) + cf_soil
     else

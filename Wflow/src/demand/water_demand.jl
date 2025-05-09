@@ -91,7 +91,7 @@ function NonPaddy(
 
     lens = lens_input_parameter(
         config,
-        "land~irrigated-non-paddy_area__number";
+        "land~irrigated-non-paddy_area__count";
         optional = false,
     )
     areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
@@ -236,7 +236,7 @@ function Paddy(
         ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
     lens =
-        lens_input_parameter(config, "land~irrigated-paddy_area__number"; optional = false)
+        lens_input_parameter(config, "land~irrigated-paddy_area__count"; optional = false)
     areas = ncread(dataset, config, lens; sel = indices, type = Bool)
 
     lens = lens_input_parameter(
@@ -405,27 +405,27 @@ function Demand(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    domestic = if get(config.model.water_demand, "domestic", false)
+    domestic = if get(config.model.water_demand, "domestic__flag", false)
         NonIrrigationDemand(dataset, config, indices, dt, "domestic")
     else
         NoNonIrrigationDemand()
     end
-    industry = if get(config.model.water_demand, "industry", false)
+    industry = if get(config.model.water_demand, "industry__flag", false)
         NonIrrigationDemand(dataset, config, indices, dt, "industry")
     else
         NoNonIrrigationDemand()
     end
-    livestock = if get(config.model.water_demand, "livestock", false)
+    livestock = if get(config.model.water_demand, "livestock__flag", false)
         NonIrrigationDemand(dataset, config, indices, dt, "livestock")
     else
         NoNonIrrigationDemand()
     end
-    paddy = if get(config.model.water_demand, "paddy", false)
+    paddy = if get(config.model.water_demand, "paddy__flag", false)
         Paddy(dataset, config, indices, dt)
     else
         NoIrrigationPaddy()
     end
-    nonpaddy = if get(config.model.water_demand, "nonpaddy", false)
+    nonpaddy = if get(config.model.water_demand, "nonpaddy__flag", false)
         NonPaddy(dataset, config, indices, dt)
     else
         NoIrrigationNonPaddy()
@@ -520,7 +520,7 @@ function AllocationLand(
     frac_sw_used =
         ncread(dataset, config, lens; sel = indices, defaults = 1, type = Float64)
 
-    lens = lens_input_parameter(config, "land_water_allocation_area__number")
+    lens = lens_input_parameter(config, "land_water_allocation_area__count")
     areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
 
     n = length(indices)

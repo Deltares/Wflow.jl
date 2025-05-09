@@ -42,11 +42,11 @@ Example data for the other model configurations can be found
 
 Standard Name | Description | NC variable name | unit
 ---- | --- | -- | -
-`local_drain_direction` | Local drain direction (1-9) | `wflow_ldd` | -
+`basin__local_drain_direction` | Local drain direction (1-9) | `wflow_ldd` | -
 `river_location__mask` | River mask (0-1) | `wflow_river` | -
 `river__length` | River length | `wflow_riverlength` | m
 `river__width ` | River width | `wflow_riverwidth` | m
-`subcatchment_location__count` | Subcatchment ids | `wflow_subcatch` | -
+`subbasin_location__count` | Subbasin ids | `wflow_subcatch` | -
 `land_surface__slope ` | Land slope | `Slope` | m m$^{-1}$
 `river__slope` | River slope | `RiverSlope` | m m$^{-1}$
 

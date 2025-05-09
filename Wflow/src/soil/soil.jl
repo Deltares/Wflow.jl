@@ -349,16 +349,16 @@ function SbmSoilParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    config_thicknesslayers = get(config.model, "thicknesslayers", Float64[])
+    config_soil_layer_thickness = get(config.model, "soil_layer__thickness", Float64[])
 
-    if length(config_thicknesslayers) > 0
-        thicknesslayers =
-            SVector(Tuple(push!(Float64.(config_thicknesslayers), MISSING_VALUE)))
-        cum_depth_layers = pushfirst(cumsum(thicknesslayers), 0.0)
-        maxlayers = length(thicknesslayers) # max number of soil layers
+    if length(config_soil_layer_thickness) > 0
+        soil_layer_thickness =
+            SVector(Tuple(push!(Float64.(config_soil_layer_thickness), MISSING_VALUE)))
+        cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
+        maxlayers = length(soil_layer_thickness) # max number of soil layers
     else
-        thicknesslayers = SVector.(soilthickness)
-        cum_depth_layers = pushfirst(cumsum(thicknesslayers), 0.0)
+        soil_layer_thickness = SVector.(soilthickness)
+        cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
         maxlayers = 1
     end
 
@@ -497,11 +497,12 @@ function SbmSoilParameters(
     )
     cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
 
-    act_thickl = set_layerthickness.(soilthickness, (cum_depth_layers,), (thicknesslayers,))
+    act_thickl =
+        set_layerthickness.(soilthickness, (cum_depth_layers,), (soil_layer_thickness,))
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
-    if length(config_thicknesslayers) > 0
+    if length(config_soil_layer_thickness) > 0
         # root fraction read from dataset file, in case of multiple soil layers and TOML file
         # includes "soil_root__length_density_fraction"
         par_name = "soil_root__length_density_fraction"
@@ -688,7 +689,7 @@ end
 function infiltration_reduction_factor!(
     model::SbmSoilModel;
     modelsnow = false,
-    soilinfreduction = false,
+    soil_infiltration_reduction = false,
 )
     v = model.variables
     p = model.parameters
@@ -698,8 +699,8 @@ function infiltration_reduction_factor!(
         v.f_infiltration_reduction[i] = infiltration_reduction_factor(
             v.tsoil[i],
             p.cf_soil[i];
-            modelsnow = modelsnow,
-            soilinfreduction = soilinfreduction,
+            modelsnow,
+            soil_infiltration_reduction,
         )
     end
     return nothing
@@ -731,21 +732,21 @@ function infiltration!(model::SbmSoilModel)
 end
 
 """
-    unsaturated_zone_flow!(model::SbmSoilModel; transfermethod = false)
+    unsaturated_zone_flow!(model::SbmSoilModel; topog_sbm_transfer = false)
 
 Update unsaturated storage `ustorelayerdepth` and the `transfer` of water from the
 unsaturated to the saturated store of the SBM soil model for a single timestep, based on the
-original Topog_SBM formulation (`transfermethod = true` and one soil layer) or the
-Brooks-Corey approach (`transfermethod = false` and one or multiple soil layers).
+original Topog_SBM formulation (`topog_sbm_transfer = true` and one soil layer) or the
+Brooks-Corey approach (`topog_sbm_transfer = false` and one or multiple soil layers).
 """
-function unsaturated_zone_flow!(model::SbmSoilModel; transfermethod = false)
+function unsaturated_zone_flow!(model::SbmSoilModel; topog_sbm_transfer = false)
     v = model.variables
     p = model.parameters
 
     n = length(v.transfer)
     threaded_foreach(1:n; basesize = 250) do i
         if v.n_unsatlayers[i] > 0
-            if transfermethod && p.maxlayers == 1
+            if topog_sbm_transfer && p.maxlayers == 1
                 # original Topog_SBM formulation
                 ustorelayerdepth = v.ustorelayerdepth[i][1] + v.infiltsoilpath[i]
                 kv_z =
@@ -1097,9 +1098,10 @@ function update!(
     config::Config,
     dt::Float64,
 )
-    soilinfreduction = get(config.model, "soilinfreduction", false)::Bool
-    modelsnow = get(config.model, "snow", false)::Bool
-    transfermethod = get(config.model, "transfermethod", false)::Bool
+    soil_infiltration_reduction =
+        get(config.model, "soil_infiltration_reduction__flag", false)::Bool
+    modelsnow = get(config.model, "snow__flag", false)::Bool
+    topog_sbm_transfer = get(config.model, "topog_sbm_transfer__flag", false)::Bool
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
@@ -1114,14 +1116,10 @@ function update!(
 
     # infiltration
     soil_temperature!(model, snow, temperature)
-    infiltration_reduction_factor!(
-        model;
-        modelsnow = modelsnow,
-        soilinfreduction = soilinfreduction,
-    )
+    infiltration_reduction_factor!(model; modelsnow, soil_infiltration_reduction)
     infiltration!(model)
     # unsaturated zone flow
-    unsaturated_zone_flow!(model; transfermethod = transfermethod)
+    unsaturated_zone_flow!(model; topog_sbm_transfer)
     # soil evaporation and transpiration
     soil_evaporation!(model)
     transpiration!(model, dt)

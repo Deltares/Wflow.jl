@@ -10,7 +10,7 @@ lines in the TOML file of the model:
 
 ```toml
 [model]
-reservoirs = true
+reservoir__flag = true
 ```
 Finally there is a mapping required between external and internal parameter names in the TOML
 file, with below an example:
@@ -105,7 +105,7 @@ the TOML file of the model:
 
 ```toml
 [model]
-lakes = true
+lake__flag = true
 ```
 There is also a mapping required between external and internal parameter names in the TOML
 file, with below an example:
