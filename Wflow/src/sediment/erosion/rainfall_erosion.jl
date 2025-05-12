@@ -3,13 +3,13 @@ abstract type AbstractRainfallErosionModel end
 "Struct for storing rainfall erosion model variables"
 @with_kw struct RainfallErosionModelVariables
     # Total soil erosion rate [t dt-1] from rainfall (splash)
-    amount::Vector{Float64}
+    amount::Vector{Float}
 end
 
 "Initialize rainfall erosion model variables"
 function RainfallErosionModelVariables(
     n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+    amount::Vector{Float} = fill(MISSING_VALUE, n),
 )
     return RainfallErosionModelVariables(; amount = amount)
 end
@@ -17,19 +17,19 @@ end
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionEurosemBC
     # precipitation [mm dt-1]
-    precipitation::Vector{Float64}
+    precipitation::Vector{Float}
     # Interception [mm dt-1]
-    interception::Vector{Float64}
+    interception::Vector{Float}
     # Waterlevel on land [m]
-    waterlevel::Vector{Float64}
+    waterlevel::Vector{Float}
 end
 
 "Initialize EUROSEM rainfall erosion model boundary conditions"
 function RainfallErosionEurosemBC(
     n::Int;
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
-    interception::Vector{Float64} = fill(MISSING_VALUE, n),
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n),
+    precipitation::Vector{Float} = fill(MISSING_VALUE, n),
+    interception::Vector{Float} = fill(MISSING_VALUE, n),
+    waterlevel::Vector{Float} = fill(MISSING_VALUE, n),
 )
     return RainfallErosionEurosemBC(;
         precipitation = precipitation,
@@ -41,15 +41,15 @@ end
 "Struct for storing EUROSEM rainfall erosion model parameters"
 @with_kw struct RainfallErosionEurosemParameters
     # Soil detachability factor [g J-1]
-    soil_detachability::Vector{Float64}
+    soil_detachability::Vector{Float}
     # Exponent EUROSEM [-]
-    eurosem_exponent::Vector{Float64}
+    eurosem_exponent::Vector{Float}
     # Canopy height [m]
-    canopyheight::Vector{Float64}
+    canopyheight::Vector{Float}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{Float64}
+    canopygapfraction::Vector{Float}
     # Fraction of the soil that is covered (eg paved, snow, etc) [-]
-    soilcover_fraction::Vector{Float64}
+    soilcover_fraction::Vector{Float}
 end
 
 "Initialize EUROSEM rainfall erosion model parameters"
@@ -60,19 +60,19 @@ function RainfallErosionEurosemParameters(
 )
     lens = lens_input_parameter(config, "soil_erosion__rainfall_soil_detachability_factor")
     soil_detachability =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float)
     lens = lens_input_parameter(config, "soil_erosion__eurosem_exponent")
     eurosem_exponent =
-        ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float)
     lens = lens_input_parameter(config, "vegetation_canopy__height")
     canopyheight =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.5, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.5, type = Float)
     lens = lens_input_parameter(config, "vegetation_canopy__gap_fraction")
     canopygapfraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
     lens = lens_input_parameter(config, "soil~compacted__area_fraction")
     soilcover_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
 
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability = soil_detachability,
@@ -122,11 +122,7 @@ function update_boundary_conditions!(
 end
 
 "Update EUROSEM rainfall erosion model for a single timestep"
-function update!(
-    model::RainfallErosionEurosemModel,
-    parameters::LandParameters,
-    dt::Float64,
-)
+function update!(model::RainfallErosionEurosemModel, parameters::LandParameters, dt::Float)
     (; precipitation, interception, waterlevel) = model.boundary_conditions
     (;
         soil_detachability,
@@ -157,13 +153,13 @@ end
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionAnswersBC
     # precipitation [mm dt-1]
-    precipitation::Vector{Float64}
+    precipitation::Vector{Float}
 end
 
 "Initialize ANSWERS rainfall erosion model boundary conditions"
 function RainfallErosionAnswersBC(
     n::Int;
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
+    precipitation::Vector{Float} = fill(MISSING_VALUE, n),
 )
     return RainfallErosionAnswersBC(; precipitation = precipitation)
 end
@@ -171,11 +167,11 @@ end
 "Struct for storing ANSWERS rainfall erosion model parameters"
 @with_kw struct RainfallErosionAnswersParameters
     # Soil erodibility factor [-]
-    usle_k::Vector{Float64}
+    usle_k::Vector{Float}
     # Crop management factor [-]
-    usle_c::Vector{Float64}
+    usle_c::Vector{Float}
     # ANSWERS rainfall erosion factor [-]
-    answers_rainfall_factor::Vector{Float64}
+    answers_rainfall_factor::Vector{Float}
 end
 
 "Initialize ANSWERS rainfall erosion model parameters"
@@ -185,14 +181,18 @@ function RainfallErosionAnswersParameters(
     indices::Vector{CartesianIndex{2}},
 )
     lens = lens_input_parameter(config, "soil_erosion__usle_k_factor")
-    usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+    usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
     lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
-    usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
+    usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float)
     lens = lens_input_parameter(config, "soil_erosion__answers_rainfall_factor")
-    answers_rainfall_factor = ncread(dataset, config, lens; sel = indices, defaults = 0.108, type = Float64)
-    
-    answers_parameters =
-        RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c, answers_rainfall_factor = answers_rainfall_factor)
+    answers_rainfall_factor =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.108, type = Float)
+
+    answers_parameters = RainfallErosionAnswersParameters(;
+        usle_k = usle_k,
+        usle_c = usle_c,
+        answers_rainfall_factor = answers_rainfall_factor,
+    )
     return answers_parameters
 end
 
@@ -232,11 +232,7 @@ function update_boundary_conditions!(
 end
 
 "Update ANSWERS rainfall erosion model for a single timestep"
-function update!(
-    model::RainfallErosionAnswersModel,
-    parameters::LandParameters,
-    dt::Float64,
-)
+function update!(model::RainfallErosionAnswersModel, parameters::LandParameters, dt::Float)
     (; precipitation) = model.boundary_conditions
     (; usle_k, usle_c, answers_rainfall_factor) = model.parameters
     (; amount) = model.variables

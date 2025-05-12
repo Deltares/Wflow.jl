@@ -474,7 +474,7 @@ function setup_scalar_netcdf(
     defVar(
         ds,
         "time",
-        Float64,
+        Float,
         ("time",);
         attrib = ["units" => time_units, "calendar" => calendar],
     )
@@ -535,10 +535,10 @@ function set_extradim_netcdf(
     extra_dim::NamedTuple{
         (:name, :value),
         Tuple{String, Vector{T}},
-    } where {T <: Union{String, Float64}},
+    } where {T <: Union{String, Float}},
 )
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
-    # values of this dimension `extra_dim.value` should be of type Float64
+    # values of this dimension `extra_dim.value` should be of type Float
     if extra_dim.name == "layer"
         attributes =
             ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
@@ -623,7 +623,7 @@ function setup_grid_netcdf(
     defVar(
         ds,
         "time",
-        Float64,
+        Float,
         ("time",);
         attrib = ["units" => time_units, "calendar" => calendar],
         deflatelevel = deflatelevel,
@@ -1027,7 +1027,7 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             time_units,
             extra_dim,
             cell_length_in_meter;
-            float_type = Float64,
+            float_type = Float,
         )
     else
         ds_outstate = nothing
@@ -1165,7 +1165,7 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{Float64, Missing}, domain.land.network.modelsize)
+    buffer = zeros(Union{Float, Missing}, domain.land.network.modelsize)
     for (key, val) in parameters
         (; par, vector) = val
         sel = active_indices(domain, par)
@@ -1363,8 +1363,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             error("unknown index used")
         end
     elseif haskey(col, "coordinate")
-        x = col["coordinate"]["x"]::Float64
-        y = col["coordinate"]["y"]::Float64
+        x = col["coordinate"]["x"]::Float
+        y = col["coordinate"]["y"]::Float
         # find the closest cell center index
         _, iy = findmin(abs.(y_nc .- y))
         _, ix = findmin(abs.(x_nc .- x))
@@ -1440,7 +1440,7 @@ end
 
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
-    data, header = readdlm(path, ',', Float64; header = true)
+    data, header = readdlm(path, ',', Float; header = true)
     names = vec(uppercase.(header))
     idx_h = findfirst(==("H"), names)
     idx_s = findfirst(==("S"), names)
@@ -1454,7 +1454,7 @@ end
 
 "Read a specific storage curve from CSV into a NamedTuple of vectors"
 function read_hq_csv(path)
-    data = readdlm(path, ',', Float64; skipstart = 1)
+    data = readdlm(path, ',', Float; skipstart = 1)
     # Q is a matrix with 365 columns, one for each day in the year
     return (H = data[:, 1], Q = data[:, 2:end])
 end
@@ -1667,14 +1667,14 @@ end
 """
     read_x_axis(ds::CFDataset)
 
-Return the x coordinate Vector{Float64}, whether it is called x, lon or longitude.
+Return the x coordinate Vector{Float}, whether it is called x, lon or longitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_x_axis(ds::CFDataset)::Vector{Float64}
+function read_x_axis(ds::CFDataset)::Vector{Float}
     candidates = ("x", "lon", "longitude")
     for candidate in candidates
         if haskey(ds.dim, candidate)
-            return sort!(Float64.(ds[candidate][:]))
+            return sort!(Float.(ds[candidate][:]))
         end
     end
     return error("no x axis found in $(path(ds))")
@@ -1683,14 +1683,14 @@ end
 """
     read_y_axis(ds::CFDataset)
 
-Return the y coordinate Vector{Float64}, whether it is called y, lat or latitude.
+Return the y coordinate Vector{Float}, whether it is called y, lat or latitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_y_axis(ds::CFDataset)::Vector{Float64}
+function read_y_axis(ds::CFDataset)::Vector{Float}
     candidates = ("y", "lat", "latitude")
     for candidate in candidates
         if haskey(ds.dim, candidate)
-            return sort!(Float64.(ds[candidate][:]))
+            return sort!(Float.(ds[candidate][:]))
         end
     end
     return error("no y axis found in $(path(ds))")
@@ -1711,7 +1711,7 @@ end
 "Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
-        v = get(config.model, "soil_layer__thickness", Float64[])
+        v = get(config.model, "soil_layer__thickness", Float[])
         inds = collect(1:(length(v) + 1))
         index = inds[dim_value]
     else

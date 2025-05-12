@@ -3,15 +3,15 @@ abstract type AbstractRunoffModel end
 "Struct for storing open water runoff variables"
 @with_kw struct OpenWaterRunoffVariables
     # Runoff from river based on riverfrac [mm Δt⁻¹]
-    runoff_river::Vector{Float64}
+    runoff_river::Vector{Float}
     # Net runoff from river [mm Δt⁻¹]
-    net_runoff_river::Vector{Float64}
+    net_runoff_river::Vector{Float}
     # Runoff from land based on waterfrac [mm Δt⁻¹]
-    runoff_land::Vector{Float64}
+    runoff_land::Vector{Float}
     # Actual evaporation from open water (land) [mm Δt⁻¹]
-    ae_openw_l::Vector{Float64}
+    ae_openw_l::Vector{Float}
     # Actual evaporation from river [mm Δt⁻¹]
-    ae_openw_r::Vector{Float64}
+    ae_openw_r::Vector{Float}
 end
 
 "Initialize open water runoff model variables"
@@ -27,9 +27,9 @@ end
 
 "Struct for storing open water runoff boundary conditions"
 @with_kw struct OpenWaterRunoffBC
-    water_flux_surface::Vector{Float64} # [mm dt-1]
-    waterdepth_land::Vector{Float64} # [mm]
-    waterdepth_river::Vector{Float64} # [mm]
+    water_flux_surface::Vector{Float} # [mm dt-1]
+    waterdepth_land::Vector{Float} # [mm]
+    waterdepth_river::Vector{Float} # [mm]
 end
 
 "Initialize open water runoff boundary conditions"
@@ -57,7 +57,7 @@ end
 
 "Return the water flux at the surface (boundary condition) when snow is not modelled"
 function get_water_flux_surface!(
-    water_flux_surface::Vector{Float64},
+    water_flux_surface::Vector{Float},
     snow::NoSnowModel,
     glacier::AbstractGlacierModel,
     interception::AbstractInterceptionModel,
@@ -69,7 +69,7 @@ end
 
 "Return the water flux at the surface (boundary condition) when snow is modelled"
 function get_water_flux_surface!(
-    water_flux_surface::Vector{Float64},
+    water_flux_surface::Vector{Float},
     snow::AbstractSnowModel,
     glacier::AbstractGlacierModel,
     interception::AbstractInterceptionModel,

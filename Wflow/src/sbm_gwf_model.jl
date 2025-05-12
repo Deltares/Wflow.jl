@@ -49,7 +49,7 @@ function Model(config::Config, type::SbmGwfModel)
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim = (name = "layer", value = Float.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -82,8 +82,8 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     # determine stable time step for groundwater flow
     conductivity_profile = get(config.model, "conductivity_profile", "uniform")
-    dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
-    dt_sbm = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
+    dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float)
+    dt_sbm = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float)
     if dt_gw < dt_sbm
         @warn(
             "stable time step dt $dt_gw for groundwater flow is smaller than `LandHydrologySBM` model dt $dt_sbm"

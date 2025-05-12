@@ -73,7 +73,7 @@ All correction factors (RFCF and SFCF) are set to 1.
 function precipitation_hbv(precipitation, temperature, tti, tt; rfcf = 1.0, sfcf = 1.0)
     # fraction of precipitation which falls as rain
     rainfrac = if iszero(tti)
-        Float64(temperature > tt)
+        Float(temperature > tt)
     else
         frac = (temperature - (tt - tti / 2.0)) / tti
         min(frac, 1.0)

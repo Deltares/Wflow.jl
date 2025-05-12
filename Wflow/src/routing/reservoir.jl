@@ -28,34 +28,33 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         "reservoir_water_demand~required~downstream__volume_flow_rate";
         optional = false,
     )
-    resdemand =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+    resdemand = ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(
         config,
         "reservoir_water_release-below-spillway__max_volume_flow_rate";
         optional = false,
     )
     resmaxrelease =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(config, "reservoir_water__max_volume"; optional = false)
     resmaxstorage =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)
-    resarea = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+    resarea = ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(
         config,
         "reservoir_water~full-target__volume_fraction";
         optional = false,
     )
     res_targetfullfrac =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(
         config,
         "reservoir_water~min-target__volume_fraction";
         optional = false,
     )
     res_targetminfrac =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
 
     parameters = ReservoirParameters(;
         demand = resdemand,
@@ -170,9 +169,9 @@ element rather than all at once.
 function update!(
     model::SimpleReservoir,
     i::Int,
-    inflow::Float64,
-    dt::Float64,
-    dt_forcing::Float64,
+    inflow::Float,
+    dt::Float,
+    dt_forcing::Float,
 )
     res_bc = model.boundary_conditions
     res_p = model.parameters

@@ -22,9 +22,9 @@ non-zero values).
 struct Connectivity
     ncell::Int
     nconnection::Int
-    length1::Vector{Float64}
-    length2::Vector{Float64}
-    width::Vector{Float64}
+    length1::Vector{Float}
+    length2::Vector{Float}
+    width::Vector{Float}
     colptr::Vector{Int}
     rowval::Vector{Int}
 end
@@ -69,8 +69,8 @@ const NEIGHBORS = (
 function Connectivity(
     indices::Vector{CartesianIndex{2}},
     reverse_indices::Matrix{Int},
-    dx::Vector{Float64},
-    dy::Vector{Float64},
+    dx::Vector{Float},
+    dy::Vector{Float},
 )
     # indices: These map from the 1D internal domain to the 2D external domain.
     # reverse_indices: from the 2D external domain to the 1D internal domain,
@@ -80,9 +80,9 @@ function Connectivity(
     ncell = length(indices)
     colptr = Vector{Int}(undef, ncell + 1)
     rowval = Vector{Int}(undef, ncell * 4)
-    length1 = similar(rowval, Float64)
-    length2 = similar(rowval, Float64)
-    width = similar(rowval, Float64)
+    length1 = similar(rowval, Float)
+    length2 = similar(rowval, Float)
+    width = similar(rowval, Float)
 
     i = 1  # column index of sparse matrix
     j = 1  # row index of sparse matrix

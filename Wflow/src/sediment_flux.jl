@@ -58,7 +58,7 @@ function update!(
     model::OverlandFlowSediment,
     erosion_model::SoilErosionModel,
     domain::DomainLand,
-    dt::Float64,
+    dt::Float,
 )
     # Transport capacity
     update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
@@ -141,7 +141,7 @@ function update!(
     model::RiverSediment,
     to_river_model::SedimentToRiverDifferentiationModel,
     domain::DomainRiver,
-    dt::Float64,
+    dt::Float,
 )
     # Transport capacity
     update_boundary_conditions!(

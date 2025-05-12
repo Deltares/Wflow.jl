@@ -350,7 +350,7 @@ function NetworkDrain(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    surface_flow_width::Vector{Float64},
+    surface_flow_width::Vector{Float},
 )
     n_cells = length(indices)
     lens = lens_input_parameter(config, "land_drain_location__mask")

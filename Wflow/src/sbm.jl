@@ -77,7 +77,7 @@ function update!(
     routing::Routing,
     domain::Domain,
     config::Config,
-    dt::Float64,
+    dt::Float,
 )
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (; parameters) = domain.land

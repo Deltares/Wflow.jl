@@ -32,23 +32,23 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
     (; indices_outlet) = network
 
     lens = lens_input_parameter(config, "lake_surface__area"; optional = false)
-    lakearea = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+    lakearea = ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(
         config,
         "lake_water__rating_curve_coefficient";
         optional = false,
     )
-    lake_b = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+    lake_b = ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens =
         lens_input_parameter(config, "lake_water__rating_curve_exponent"; optional = false)
-    lake_e = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+    lake_e = ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input_parameter(
         config,
         "lake_water_flow_threshold-level__elevation";
         optional = false,
     )
     lake_threshold =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
     lens = lens_input(config, "lake~lower_location__count")
     linked_lakelocs = ncread(
         dataset,
@@ -79,7 +79,7 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
         optional = false,
     )
     lake_waterlevel =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
+        ncread(dataset, config, lens; sel = indices_outlet, type = Float, fill = 0)
 
     n_lakes = length(indices_outlet)
     lakelocs = get_waterbody_locs(dataset, config, indices_outlet, "lake")
@@ -160,7 +160,7 @@ function Adapt.adapt_structure(to, from::LakeVariables)
 end
 
 "Initialize lake model variables"
-function LakeVariables(n::Int, parameters::LakeParameters, lake_waterlevel::Vector{Float64})
+function LakeVariables(n::Int, parameters::LakeParameters, lake_waterlevel::Vector{Float})
     (; storfunc, area, sh) = parameters
     variables = LakeVariables(;
         waterlevel = lake_waterlevel,
@@ -222,8 +222,8 @@ end
 "Determine the initial storage depending on the storage function"
 function initialize_storage(
     storfunc::Vector{Int},
-    area::Vector{Float64},
-    waterlevel::Vector{Float64},
+    area::Vector{Float},
+    waterlevel::Vector{Float},
     sh::Vector{Union{SH, Missing}},
 )
     storage = similar(area)
@@ -240,8 +240,8 @@ end
 "Determine the water level depending on the storage function"
 function waterlevel(
     storfunc::Vector{Int},
-    area::Vector{Float64},
-    storage::Vector{Float64},
+    area::Vector{Float},
+    storage::Vector{Float},
     sh::Vector{Union{SH, Missing}},
 )
     waterlevel = similar(area)
@@ -259,11 +259,11 @@ end
 function maximum_storage(
     storfunc::Vector{Int},
     outflowfunc::Vector{Int},
-    area::Vector{Float64},
+    area::Vector{Float},
     sh::Vector{Union{SH, Missing}},
     hq::Vector{Union{HQ, Missing}},
 )
-    maxstorage = Vector{Union{Float64, Missing}}(missing, length(area))
+    maxstorage = Vector{Union{Float, Missing}}(missing, length(area))
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     for i in eachindex(maxstorage)
         if outflowfunc[i] == 1
@@ -297,14 +297,7 @@ Update a single lake at position `i`.
 This is called from within the kinematic wave loop, therefore updating only for a single
 element rather than all at once.
 """
-function update!(
-    model::Lake,
-    i::Int,
-    inflow::Float64,
-    doy::Int,
-    dt::Float64,
-    dt_forcing::Float64,
-)
+function update!(model::Lake, i::Int, inflow::Float, doy::Int, dt::Float, dt_forcing::Float)
     lake_bc = model.boundary_conditions
     lake_p = model.parameters
     lake_v = model.variables
@@ -363,7 +356,7 @@ function update!(
                     maxflow = (dh * lake_p.area[i]) / dt
                     outflow = min(outflow, maxflow)
                 else
-                    outflow = Float64(0)
+                    outflow = Float(0)
                 end
             else
                 if lake_v.waterlevel[lo] > lake_p.threshold[i]
@@ -372,7 +365,7 @@ function update!(
                     maxflow = (dh * lake_p.area[lo]) / dt
                     outflow = max(outflow, -maxflow)
                 else
-                    outflow = Float64(0)
+                    outflow = Float(0)
                 end
             end
         end

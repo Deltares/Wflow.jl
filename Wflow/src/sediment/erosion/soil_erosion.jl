@@ -3,28 +3,28 @@ abstract type AbstractSoilErosionModel end
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
     # Total soil erosion rate [t dt-1]
-    amount::Vector{Float64}
+    amount::Vector{Float}
     # Total clay erosion rate [t dt-1]
-    clay::Vector{Float64}
+    clay::Vector{Float}
     # Total silt erosion rate [t dt-1]
-    silt::Vector{Float64}
+    silt::Vector{Float}
     # Total sand erosion rate [t dt-1]
-    sand::Vector{Float64}
+    sand::Vector{Float}
     # Total small aggregates erosion rate [t dt-1]
-    sagg::Vector{Float64}
+    sagg::Vector{Float}
     # Total large aggregates erosion rate [t dt-1]
-    lagg::Vector{Float64}
+    lagg::Vector{Float}
 end
 
 "Initialize soil erosion model variables"
 function SoilErosionModelVariables(
     n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
-    clay::Vector{Float64} = fill(MISSING_VALUE, n),
-    silt::Vector{Float64} = fill(MISSING_VALUE, n),
-    sand::Vector{Float64} = fill(MISSING_VALUE, n),
-    sagg::Vector{Float64} = fill(MISSING_VALUE, n),
-    lagg::Vector{Float64} = fill(MISSING_VALUE, n),
+    amount::Vector{Float} = fill(MISSING_VALUE, n),
+    clay::Vector{Float} = fill(MISSING_VALUE, n),
+    silt::Vector{Float} = fill(MISSING_VALUE, n),
+    sand::Vector{Float} = fill(MISSING_VALUE, n),
+    sagg::Vector{Float} = fill(MISSING_VALUE, n),
+    lagg::Vector{Float} = fill(MISSING_VALUE, n),
 )
     return SoilErosionModelVariables(;
         amount = amount,
@@ -39,16 +39,16 @@ end
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
     # Rainfall erosion rate [t dt-1]
-    rainfall_erosion::Vector{Float64}
+    rainfall_erosion::Vector{Float}
     # Overland flow erosion rate [t dt-1]
-    overland_flow_erosion::Vector{Float64}
+    overland_flow_erosion::Vector{Float}
 end
 
 "Initialize soil erosion model boundary conditions"
 function SoilErosionBC(
     n::Int;
-    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n),
-    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n),
+    rainfall_erosion::Vector{Float} = fill(MISSING_VALUE, n),
+    overland_flow_erosion::Vector{Float} = fill(MISSING_VALUE, n),
 )
     return SoilErosionBC(;
         rainfall_erosion = rainfall_erosion,
@@ -59,15 +59,15 @@ end
 "Struct for storing soil erosion model parameters"
 @with_kw struct SoilErosionParameters
     # Soil content clay [-]
-    clay_fraction::Vector{Float64}
+    clay_fraction::Vector{Float}
     # Soil content silt [-]
-    silt_fraction::Vector{Float64}
+    silt_fraction::Vector{Float}
     # Soil content sand [-]
-    sand_fraction::Vector{Float64}
+    sand_fraction::Vector{Float}
     # Soil content small aggregates [-]
-    sagg_fraction::Vector{Float64}
+    sagg_fraction::Vector{Float}
     # Soil content large aggregates [-]
-    lagg_fraction::Vector{Float64}
+    lagg_fraction::Vector{Float}
 end
 
 "Initialize soil erosion model parameters"
@@ -78,19 +78,19 @@ function SoilErosionParameters(
 )
     lens = lens_input_parameter(config, "soil_clay__mass_fraction")
     clay_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.4, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.4, type = Float)
     lens = lens_input_parameter(config, "soil_silt__mass_fraction")
     silt_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float)
     lens = lens_input_parameter(config, "soil_sand__mass_fraction")
     sand_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float)
     lens = lens_input_parameter(config, "soil_aggregates~small__mass_fraction")
     sagg_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
     lens = lens_input_parameter(config, "soil_aggregates~large__mass_fraction")
     lagg_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction

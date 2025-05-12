@@ -3,15 +3,15 @@ abstract type AbstractInterceptionModel end
 "Struct for storing interception model variables"
 @with_kw struct InterceptionVariables
     # Canopy potential evaporation [mm Δt⁻¹]
-    canopy_potevap::Vector{Float64}
+    canopy_potevap::Vector{Float}
     # Interception loss by evaporation [mm Δt⁻¹]
-    interception_rate::Vector{Float64}
+    interception_rate::Vector{Float}
     # Canopy storage [mm]
-    canopy_storage::Vector{Float64}
+    canopy_storage::Vector{Float}
     # Stemflow [mm Δt⁻¹]
-    stemflow::Vector{Float64}
+    stemflow::Vector{Float}
     # Throughfall [mm Δt⁻¹]
-    throughfall::Vector{Float64}
+    throughfall::Vector{Float}
 end
 
 "Initialize interception model variables"
@@ -28,7 +28,7 @@ end
 "Struct for storing Gash interception model parameters"
 @with_kw struct GashParameters
     # ratio [-] of wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
-    e_r::Vector{Float64}
+    e_r::Vector{Float}
     vegetation_parameter_set::VegetationParameters
 end
 
@@ -49,7 +49,7 @@ function GashInterceptionModel(
         config,
         "vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio",
     )
-    e_r = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+    e_r = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
     n = length(indices)
     params =
         GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)

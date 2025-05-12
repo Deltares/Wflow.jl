@@ -3,15 +3,15 @@ abstract type AbstractSnowModel end
 "Struct for storing snow model variables"
 @with_kw struct SnowVariables
     # Snow storage [mm]
-    snow_storage::Vector{Float64}
+    snow_storage::Vector{Float}
     # Liquid water content in the snow pack [mm]
-    snow_water::Vector{Float64}
+    snow_water::Vector{Float}
     # Snow water equivalent (SWE) [mm]
-    swe::Vector{Float64}
+    swe::Vector{Float}
     # Snow melt [mm Δt⁻¹]
-    snow_melt::Vector{Float64}
+    snow_melt::Vector{Float}
     # Runoff from snowpack [mm Δt⁻¹]
-    runoff::Vector{Float64}
+    runoff::Vector{Float}
 end
 
 "Initialize snow model variables"
@@ -28,11 +28,11 @@ end
 "Struct for storing snow model boundary conditions"
 @with_kw struct SnowBC
     # Effective precipitation [mm Δt⁻¹]
-    effective_precip::Vector{Float64}
+    effective_precip::Vector{Float}
     # Snow precipitation [mm Δt⁻¹]
-    snow_precip::Vector{Float64}
+    snow_precip::Vector{Float}
     # Liquid precipitation [mm Δt⁻¹]
-    liquid_precip::Vector{Float64}
+    liquid_precip::Vector{Float}
 end
 
 "Initialize snow model boundary conditions"
@@ -47,15 +47,15 @@ end
 "Struct for storing snow HBV model parameters"
 @with_kw struct SnowHbvParameters
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{Float64}
+    cfmax::Vector{Float}
     # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{Float64}
+    tt::Vector{Float}
     # Threshold temperature interval length [ᵒC]
-    tti::Vector{Float64}
+    tti::Vector{Float}
     # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{Float64}
+    ttm::Vector{Float}
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{Float64}
+    whc::Vector{Float}
 end
 
 "Snow HBV model"
@@ -76,19 +76,19 @@ function SnowHbvParameters(
 )
     lens = lens_input_parameter(config, "snowpack__degree-day_coefficient")
     cfmax =
-        ncread(dataset, config, lens; sel = indices, defaults = 3.75, type = Float64) .*
+        ncread(dataset, config, lens; sel = indices, defaults = 3.75, type = Float) .*
         (dt / BASETIMESTEP)
     lens = lens_input_parameter(config, "atmosphere_air__snowfall_temperature_threshold")
-    tt = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
+    tt = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
 
     lens = lens_input_parameter(config, "atmosphere_air__snowfall_temperature_interval")
-    tti = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
+    tti = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float)
 
     lens = lens_input_parameter(config, "snowpack__melting_temperature_threshold")
-    ttm = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
+    ttm = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float)
 
     lens = lens_input_parameter(config, "snowpack__liquid_water_holding_capacity")
-    whc = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+    whc = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float)
     snow_hbv_params =
         SnowHbvParameters(; cfmax = cfmax, tt = tt, tti = tti, ttm = ttm, whc = whc)
     return snow_hbv_params

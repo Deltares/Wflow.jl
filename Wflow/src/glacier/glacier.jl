@@ -3,9 +3,9 @@ abstract type AbstractGlacierModel end
 "Struct for storing glacier model variables"
 @with_kw struct GlacierVariables
     # Water within the glacier [mm]
-    glacier_store::Vector{Float64}
+    glacier_store::Vector{Float}
     # Glacier melt [mm Δt⁻¹]  
-    glacier_melt::Vector{Float64}
+    glacier_melt::Vector{Float}
 end
 
 "Initialize glacier model variables"
@@ -21,7 +21,7 @@ function GlacierVariables(
         lens;
         sel = indices,
         defaults = 5500.0,
-        type = Float64,
+        type = Float,
         fill = 0.0,
     )
     n = length(glacier_store)
@@ -35,21 +35,21 @@ end
 "Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
 @with_kw struct SnowStateBC
     # Snow storage [mm]
-    snow_storage::Vector{Float64}
+    snow_storage::Vector{Float}
 end
 
 "Struct for storing glacier HBV model parameters"
 @with_kw struct GlacierHbvParameters
     # Threshold temperature for glacier melt [ᵒC]
-    g_ttm::Vector{Float64}
+    g_ttm::Vector{Float}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{Float64}
+    g_cfmax::Vector{Float}
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{Float64}
+    g_sifrac::Vector{Float}
     # Fraction covered by a glacier [-]
-    glacier_frac::Vector{Float64}
+    glacier_frac::Vector{Float}
     # Maximum snow to glacier conversion rate [mm Δt⁻¹]
-    max_snow_to_glacier::Float64
+    max_snow_to_glacier::Float
 end
 
 "Glacier HBV model"
@@ -75,7 +75,7 @@ function GlacierHbvParameters(
         lens;
         sel = indices,
         defaults = 0.0,
-        type = Float64,
+        type = Float,
         fill = 0.0,
     )
     lens = lens_input_parameter(config, "glacier_ice__degree-day_coefficient")
@@ -86,7 +86,7 @@ function GlacierHbvParameters(
             lens;
             sel = indices,
             defaults = 3.0,
-            type = Float64,
+            type = Float,
             fill = 0.0,
         ) .* (dt / BASETIMESTEP)
     lens = lens_input_parameter(
@@ -100,7 +100,7 @@ function GlacierHbvParameters(
             lens;
             sel = indices,
             defaults = 0.001,
-            type = Float64,
+            type = Float,
             fill = 0.0,
         ) .* (dt / BASETIMESTEP)
     lens = lens_input_parameter(config, "glacier_surface__area_fraction")
@@ -110,7 +110,7 @@ function GlacierHbvParameters(
         lens;
         sel = indices,
         defaults = 0.0,
-        type = Float64,
+        type = Float,
         fill = 0.0,
     )
     max_snow_to_glacier = 8.0 * (dt / BASETIMESTEP)

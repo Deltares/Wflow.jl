@@ -12,7 +12,7 @@ const PCR_DIR = [
     CartesianIndex(1, 1),  # 9
 ]
 
-const MISSING_VALUE = Float64(NaN)
+const MISSING_VALUE = Float(NaN)
 
 # timestep that the parameter units are defined in
 const BASETIMESTEP = Second(Day(1))
@@ -527,7 +527,7 @@ end
 """
     tosecond(x::Period)
 
-Convert a Period into a Float64, which represents the number of seconds. Will fail if this
+Convert a Period into a Float, which represents the number of seconds. Will fail if this
 is not well defined, such as for Month.
 
 # Examples
@@ -536,9 +536,9 @@ julia> tosecond(Day(1))
 86400.0
 ```
 """
-tosecond(x::Hour) = Float64(Dates.value(Second(x)))
-tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
+tosecond(x::Hour) = Float(Dates.value(Second(x)))
+tosecond(x::Minute) = Float(Dates.value(Second(x)))
+tosecond(x::T) where {T <: DatePeriod} = Float(Dates.value(Second(x)))
 tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 
 """
@@ -578,7 +578,7 @@ function add_vertex_edge_graph!(graph, pits)
 end
 
 """
-    set_effective_flowwidth!(we_x::Vector{Float64}, we_y::Vector{Float64}, domain::Domain)
+    set_effective_flowwidth!(we_x::Vector{Float}, we_y::Vector{Float}, domain::Domain)
 
 For river cells (D8 flow direction) in a staggered grid the effective flow width at cell
 edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is corrected by
@@ -588,11 +588,7 @@ is defined as the edge between node `idx` and the adjacent node (+ CartesianInde
 x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody_outlet` (reservoir
 or lake), the effective flow width is set to zero.
 """
-function set_effective_flowwidth!(
-    we_x::Vector{Float64},
-    we_y::Vector{Float64},
-    domain::Domain,
-)
+function set_effective_flowwidth!(we_x::Vector{Float}, we_y::Vector{Float}, domain::Domain)
     (; local_drain_direction, indices) = domain.river.network
     (; edge_indices, reverse_indices) = domain.land.network
     (; flow_width, waterbody_outlet) = domain.river.parameters

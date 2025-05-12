@@ -85,18 +85,18 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 transmissivity).
 """
 @with_kw struct ConfinedAquiferParameters
-    k::Vector{Float64}                    # horizontal conductivity [m d⁻¹]
-    top::Vector{Float64}                  # top of groundwater layer [m]
-    bottom::Vector{Float64}               # bottom of groundwater layer [m]
-    area::Vector{Float64}                 # area of cell [m²]
-    specific_storage::Vector{Float64}     # [m m⁻¹ m⁻¹]
-    storativity::Vector{Float64}          # [m m⁻¹]
+    k::Vector{Float}                    # horizontal conductivity [m d⁻¹]
+    top::Vector{Float}                  # top of groundwater layer [m]
+    bottom::Vector{Float}               # bottom of groundwater layer [m]
+    area::Vector{Float}                 # area of cell [m²]
+    specific_storage::Vector{Float}     # [m m⁻¹ m⁻¹]
+    storativity::Vector{Float}          # [m m⁻¹]
 end
 
 @with_kw struct ConfinedAquiferVariables
-    head::Vector{Float64}             # hydraulic head [m]
-    conductance::Vector{Float64}      # Confined aquifer conductance is constant [m² d⁻¹]
-    storage::Vector{Float64}          # total storage of water that can be released [m³]
+    head::Vector{Float}             # hydraulic head [m]
+    conductance::Vector{Float}      # Confined aquifer conductance is constant [m² d⁻¹]
+    storage::Vector{Float}          # total storage of water that can be released [m³]
 end
 
 @with_kw struct ConfinedAquifer <: Aquifer
@@ -116,12 +116,12 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
 @with_kw struct UnconfinedAquiferParameters
-    k::Vector{Float64}                # reference horizontal conductivity [m d⁻¹]
-    top::Vector{Float64}              # top of groundwater layer [m]
-    bottom::Vector{Float64}           # bottom of groundwater layer [m]
-    area::Vector{Float64}             # area of cell [m²]
-    specific_yield::Vector{Float64}   # [m m⁻¹]
-    f::Vector{Float64}                # factor controlling the reduction of reference horizontal conductivity [-]
+    k::Vector{Float}                # reference horizontal conductivity [m d⁻¹]
+    top::Vector{Float}              # top of groundwater layer [m]
+    bottom::Vector{Float}           # bottom of groundwater layer [m]
+    area::Vector{Float}             # area of cell [m²]
+    specific_yield::Vector{Float}   # [m m⁻¹]
+    f::Vector{Float}                # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
 end
@@ -130,37 +130,37 @@ function UnconfinedAquiferParameters(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    top::Vector{Float64},
-    bottom::Vector{Float64},
-    area::Vector{Float64},
+    top::Vector{Float},
+    bottom::Vector{Float},
+    area::Vector{Float},
 )
     conductivity_profile = get(config.model, "conductivity_profile", "uniform")
     lens = lens_input_parameter(
         config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
     )
-    k = ncread(dataset, config, lens; sel = indices, type = Float64)
+    k = ncread(dataset, config, lens; sel = indices, type = Float)
 
     lens = lens_input_parameter(config, "subsurface_water__specific_yield")
-    specific_yield = ncread(dataset, config, lens; sel = indices, type = Float64)
+    specific_yield = ncread(dataset, config, lens; sel = indices, type = Float)
 
     if conductivity_profile == "exponential"
         lens = lens_input_parameter(
             config,
             "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
         )
-        f = ncread(dataset, config, lens; sel = indices, type = Float64)
+        f = ncread(dataset, config, lens; sel = indices, type = Float)
     else
-        f = Float64[]
+        f = Float[]
     end
     parameters = UnconfinedAquiferParameters(; k, top, bottom, area, specific_yield, f)
     return parameters
 end
 
 @with_kw struct UnconfinedAquiferVariables
-    head::Vector{Float64}         # hydraulic head [m]
-    conductance::Vector{Float64}  # conductance [m² d⁻¹]
-    storage::Vector{Float64}      # total storage of water that can be released [m³]
+    head::Vector{Float}         # hydraulic head [m]
+    conductance::Vector{Float}  # conductance [m² d⁻¹]
+    storage::Vector{Float}      # total storage of water that can be released [m³]
 end
 
 @with_kw struct UnconfinedAquifer <: Aquifer
@@ -172,11 +172,11 @@ function UnconfinedAquifer(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    top::Vector{Float64},
-    bottom::Vector{Float64},
-    area::Vector{Float64},
-    conductance::Vector{Float64},
-    head::Vector{Float64},
+    top::Vector{Float},
+    bottom::Vector{Float},
+    area::Vector{Float},
+    conductance::Vector{Float},
+    head::Vector{Float},
 )
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
 
@@ -368,7 +368,7 @@ function conductance(
 end
 
 function flux!(
-    Q::Vector{Float64},
+    Q::Vector{Float},
     aquifer::Aquifer,
     connectivity::Connectivity,
     conductivity_profile::String,
@@ -387,7 +387,7 @@ function flux!(
 end
 
 @with_kw struct ConstantHeadVariables
-    head::Vector{Float64} # [m]
+    head::Vector{Float} # [m]
 end
 
 @with_kw struct ConstantHead
@@ -402,7 +402,7 @@ function ConstantHead(
 )
     lens = lens_input_parameter(config, "model_boundary_condition~constant_hydraulic_head")
     constanthead =
-        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
+        ncread(dataset, config, lens; sel = indices, type = Float, fill = MISSING_VALUE)
 
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
@@ -463,8 +463,8 @@ end
 
 function update!(
     gwf::GroundwaterFlow{A},
-    Q::Vector{Float64},
-    dt::Float64,
+    Q::Vector{Float},
+    dt::Float,
     conductivity_profile::String,
 ) where {A <: Aquifer}
     Q .= 0.0  # TODO: Probably remove this when linking with other components

@@ -49,7 +49,7 @@ function Model(config::Config, type::SbmModel)
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim = (name = "layer", value = Float.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -147,7 +147,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float64, dimname = :layer)
+        set_states!(instate_path, model; type = Float, dimname = :layer)
         # update zi for SBM soil model
         zi =
             max.(

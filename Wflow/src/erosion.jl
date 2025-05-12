@@ -50,7 +50,7 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
 end
 
 "Update soil loss model for a single timestep"
-function update!(model::SoilLoss, parameters::LandParameters, dt::Float64)
+function update!(model::SoilLoss, parameters::LandParameters, dt::Float)
     (;
         atmospheric_forcing,
         hydrological_forcing,
