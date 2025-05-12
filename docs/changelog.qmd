@@ -96,7 +96,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
   equivalent (SWE).
-- Support output of actual river water abstraction based on external negative inflow.
+- Support computation and output of actual river water abstraction based on external
+  negative inflow.
 
 ## v0.x releases
 
