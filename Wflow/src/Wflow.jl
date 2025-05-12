@@ -59,6 +59,9 @@ const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 const ROUTING_OPTIONS = (("kinematic-wave", "local-inertial"))
 
+const Float = Float32
+const Integ = Int32
+
 mutable struct Clock{T}
     time::T
     iteration::Int
