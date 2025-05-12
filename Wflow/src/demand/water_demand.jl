@@ -438,11 +438,20 @@ function Demand(
 end
 
 "Struct to store river allocation model variables"
-@with_kw struct AllocationRiverVariables
-    act_surfacewater_abst::Vector{Float64}        # actual surface water abstraction [mm Δt⁻¹]
-    act_surfacewater_abst_vol::Vector{Float64}    # actual surface water abstraction [m³ Δt⁻¹]
-    available_surfacewater::Vector{Float64}       # available surface water [m³]
-    nonirri_returnflow::Vector{Float64}           # return flow from non irrigation [mm Δt⁻¹] 
+@with_kw struct AllocationRiverVariables{T <: DenseArray{Float}}
+    act_surfacewater_abst::T                      # actual surface water abstraction [mm Δt⁻¹]
+    act_surfacewater_abst_vol::T                  # actual surface water abstraction [m³ Δt⁻¹]
+    available_surfacewater::T                     # available surface water [m³]
+    nonirri_returnflow::T                         # return flow from non irrigation [mm Δt⁻¹] 
+end
+
+function Adapt.adapt_structure(to, from::AllocationRiverVariables)
+    return AllocationRiverVariables(
+        adapt(to, from.act_surfacewater_abst),
+        adapt(to, from.act_surfacewater_abst_vol),
+        adapt(to, from.available_surfacewater),
+        adapt(to, from.nonirri_returnflow),
+    )
 end
 
 "Initialize river allocation model variables"
@@ -456,8 +465,12 @@ function AllocationRiverVariables(n::Int)
 end
 
 "River allocation model"
-@with_kw struct AllocationRiver <: AbstractAllocationModel
-    variables::AllocationRiverVariables
+@with_kw struct AllocationRiver{T <: DenseArray{Float}} <: AbstractAllocationModel
+    variables::AllocationRiverVariables{T}
+end
+
+function Adapt.adapt_structure(to, from::AllocationRiver)
+    return AllocationRiver(adapt(to, from.variables))
 end
 
 get_nonirrigation_returnflow(model::AllocationRiver) = model.variables.nonirri_returnflow

@@ -1,20 +1,43 @@
 "Struct for storing local inertial river flow model parameters"
-@with_kw struct LocalInertialRiverFlowParameters
-    n::Int                                  # number of cells [-]
-    ne::Int                                 # number of edges [-]
-    active_n::Vector{Int}                   # active nodes [-]
-    active_e::Vector{Int}                   # active edges [-]
-    g::Float64                              # acceleration due to gravity [m s⁻²]
+@with_kw struct LocalInertialRiverFlowParameters{
+    T <: DenseArray{Float},
+    I <: DenseArray{Integ},
+}
+    n::Integ                                # number of cells [-]
+    ne::Integ                               # number of edges [-]
+    active_n::I                             # active nodes [-]
+    active_e::I                             # active edges [-]
+    g::Float                                # acceleration due to gravity [m s⁻²]
     froude_limit::Bool                      # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
-    h_thresh::Float64                       # depth threshold for calculating flow [m]
-    zb::Vector{Float64}                     # river bed elevation [m]
-    zb_max::Vector{Float64}                 # maximum channel bed elevation [m]
-    bankfull_storage::Vector{Float64}       # bankfull storage [m³]
-    bankfull_depth::Vector{Float64}         # bankfull depth [m]
-    mannings_n_sq::Vector{Float64}          # Manning's roughness squared at edge [(s m-1/3)2]
-    mannings_n::Vector{Float64}             # Manning's roughness [s m-1/3] at node
-    flow_length_at_edge::Vector{Float64}    # flow (river) length at edge [m]
-    flow_width_at_edge::Vector{Float64}     # flow (river) width at edge [m]
+    h_thresh::Float                         # depth threshold for calculating flow [m]
+    zb::T                                   # river bed elevation [m]
+    zb_max::T                               # maximum channel bed elevation [m]
+    bankfull_storage::T                     # bankfull storage [m³]
+    bankfull_depth::T                       # bankfull depth [m]
+    mannings_n_sq::T                        # Manning's roughness squared at edge [(s m-1/3)2]
+    mannings_n::T                           # Manning's roughness [s m-1/3] at node
+    flow_length_at_edge::T                  # flow (river) length at edge [m]
+    flow_width_at_edge::T                   # flow (river) width at edge [m]
+end
+
+function Adapt.adapt_structure(to, from::LocalInertialRiverFlowParameters)
+    return LocalInertialRiverFlowParameters(
+        adapt(to, from.n),
+        adapt(to, from.ne),
+        adapt(to, from.active_n),
+        adapt(to, from.active_e),
+        adapt(to, from.g),
+        adapt(to, from.froude_limit),
+        adapt(to, from.h_thresh),
+        adapt(to, from.zb),
+        adapt(to, from.zb_max),
+        adapt(to, from.bankfull_storage),
+        adapt(to, from.bankfull_depth),
+        adapt(to, from.mannings_n_sq),
+        adapt(to, from.mannings_n),
+        adapt(to, from.flow_length_at_edge),
+        adapt(to, from.flow_width_at_edge),
+    )
 end
 
 "Initialize local inertial river flow model parameters"
@@ -101,22 +124,42 @@ function LocalInertialRiverFlowParameters(
 end
 
 "Struct for storing local inertial river flow model variables"
-@with_kw struct LocalInertialRiverFlowVariables
-    q::Vector{Float64}                        # river discharge at edge (subgrid channel) [m³ s⁻¹]
-    q0::Vector{Float64}                       # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
-    q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
-    q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
-    h::Vector{Float64}                        # water depth [m]
-    zs_max::Vector{Float64}                   # maximum water elevation at edge [m]
-    zs_src::Vector{Float64}                   # water elevation of source node of edge [m]
-    zs_dst::Vector{Float64}                   # water elevation of downstream node of edge [m]
-    hf::Vector{Float64}                       # water depth at edge [m]
-    h_av::Vector{Float64}                     # average water depth for model timestep Δt [m]
-    a::Vector{Float64}                        # flow area at edge [m²]
-    r::Vector{Float64}                        # wetted perimeter at edge [m]
-    storage::Vector{Float64}                  # river storage [m³]
-    storage_av::Vector{Float64}               # average river storage for model timestep Δt [m³]
-    error::Vector{Float64}                    # error storage [m³]
+@with_kw struct LocalInertialRiverFlowVariables{T <: DenseArray{Float}}
+    q::T                                      # river discharge at edge (subgrid channel) [m³ s⁻¹]
+    q0::T                                     # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
+    q_av::T                                   # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
+    q_channel_av::T                           # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
+    h::T                                      # water depth [m]
+    zs_max::T                                 # maximum water elevation at edge [m]
+    zs_src::T                                 # water elevation of source node of edge [m]
+    zs_dst::T                                 # water elevation of downstream node of edge [m]
+    hf::T                                     # water depth at edge [m]
+    h_av::T                                   # average water depth for model timestep Δt [m]
+    a::T                                      # flow area at edge [m²]
+    r::T                                      # wetted perimeter at edge [m]
+    storage::T                                # river storage [m³]
+    storage_av::T                             # average river storage for model timestep Δt [m³]
+    error::T                                  # error storage [m³]
+end
+
+function Adapt.adapt_structure(to, from::LocalInertialRiverFlowVariables)
+    return LocalInertialRiverFlowVariables(
+        adapt(to, from.q),
+        adapt(to, from.q0),
+        adapt(to, from.q_av),
+        adapt(to, from.q_channel_av),
+        adapt(to, from.h),
+        adapt(to, from.zs_max),
+        adapt(to, from.zs_src),
+        adapt(to, from.zs_dst),
+        adapt(to, from.hf),
+        adapt(to, from.h_av),
+        adapt(to, from.a),
+        adapt(to, from.r),
+        adapt(to, from.storage),
+        adapt(to, from.storage_av),
+        adapt(to, from.error),
+    )
 end
 
 "Initialize shallow water river flow model variables"
@@ -160,13 +203,20 @@ function LocalInertialRiverFlowVariables(
 end
 
 "Shallow water river flow model using the local inertial method"
-@with_kw struct LocalInertialRiverFlow{R, L, F, A} <: AbstractRiverFlowModel
-    timestepping::TimeStepping
-    boundary_conditions::RiverFlowBC{R, L}
-    parameters::LocalInertialRiverFlowParameters
-    variables::LocalInertialRiverFlowVariables
-    floodplain::F                                       # Floodplain (1D) schematization
-    allocation::A                                       # Water allocation
+@with_kw struct LocalInertialRiverFlow{
+    T <: DenseArray{Float},
+    I <: DenseArray{Integ},
+    R,
+    L,
+    F,
+    A,
+} <: AbstractRiverFlowModel
+    timestepping::TimeStepping{T}
+    boundary_conditions::RiverFlowBC{T, R, L}
+    parameters::LocalInertialRiverFlowParameters{T, I}
+    variables::LocalInertialRiverFlowVariables{T}
+    floodplain::F{T}                                    # Floodplain (1D) schematization
+    allocation::A{T}                                    # Water allocation
 end
 
 "Initialize shallow water river flow model `LocalIntertialRiverFlow`"
@@ -1002,12 +1052,22 @@ Floodplain `storage` is a function of `depth` (flood depth intervals). Based on 
 cumulative floodplain `storage` a floodplain profile as a function of `flood_depth` is
 derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
 """
-@with_kw struct FloodPlainProfile{N}
-    depth::Vector{Float64}        # Flood depth [m]
-    storage::Array{Float64, 2}    # Flood storage (cumulative) [m³]
-    width::Array{Float64, 2}      # Flood width [m]
-    a::Array{Float64, 2}          # Flow area (cumulative) [m²]
-    p::Array{Float64, 2}          # Wetted perimeter (cumulative) [m]
+@with_kw struct FloodPlainProfile{N, T <: DenseArray{Float}}
+    depth::T                      # Flood depth [m]
+    storage::T                    # Flood storage (cumulative) [m³]
+    width::T                      # Flood width [m]
+    a::T                          # Flow area (cumulative) [m²]
+    p::T                          # Wetted perimeter (cumulative) [m]
+end
+
+function Adapt.adapt_structure(to, from::FloodPlainProfile)
+    return FloodPlainProfile(
+        adapt(to, from.depth),
+        adapt(to, from.storage),
+        adapt(to, from.width),
+        adapt(to, from.a),
+        adapt(to, from.p),
+    )
 end
 
 "Initialize floodplain profile `FloodPlainProfile`"
@@ -1101,11 +1161,20 @@ function FloodPlainProfile(
 end
 
 "Struct to store floodplain flow model parameters"
-@with_kw struct FloodPlainParameters{P}
-    profile::P                          # floodplain profile
-    mannings_n::Vector{Float64}         # manning's roughness [s m-1/3]
-    mannings_n_sq::Vector{Float64}      # manning's roughness squared at edge [(s m-1/3)2]
-    zb_max::Vector{Float64}             # maximum bankfull elevation at edge [m]
+@with_kw struct FloodPlainParameters{P, T <: DenseArray{Float}}
+    profile::P{T}                       # floodplain profile
+    mannings_n::T                       # manning's roughness [s m-1/3]
+    mannings_n_sq::T                    # manning's roughness squared at edge [(s m-1/3)2]
+    zb_max::T                           # maximum bankfull elevation at edge [m]
+end
+
+function Adapt.adapt_structure(to, from::FloodPlainParameters)
+    return FloodPlainParameters(
+        adapt(to, from.profile),
+        adapt(to, from.mannings_n),
+        adapt(to, from.mannings_n_sq),
+        adapt(to, from.zb_max),
+    )
 end
 
 "Initialize floodplain flow model parameters"
@@ -1144,19 +1213,36 @@ function FloodPlainParameters(
 end
 
 "Struct to store floodplain flow model variables"
-@with_kw struct FloodPlainVariables
-    storage::Vector{Float64}        # storage [m³]
-    storage_av::Vector{Float64}     # average storage for model timestep Δt [m³]
-    h::Vector{Float64}              # water depth [m]
-    h_av::Vector{Float64}           # average water depth [m] for model timestep Δt
-    error::Vector{Float64}          # error storage [m³]
-    a::Vector{Float64}              # flow area at egde [m²]
-    r::Vector{Float64}              # hydraulic radius at edge [m]
-    hf::Vector{Float64}             # water depth at edge [m]
-    q0::Vector{Float64}             # discharge at edge at previous time step
-    q::Vector{Float64}              # discharge at edge  [m³ s⁻¹]
-    q_av::Vector{Float64}           # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
-    hf_index::Vector{Int}           # edge index with `hf` [-] above depth threshold
+@with_kw struct FloodPlainVariables{T <: DenseArray{Float}, I <: DenseArray{Integ}}
+    storage::T                      # storage [m³]
+    storage_av::T                   # average storage for model timestep Δt [m³]
+    h::T                            # water depth [m]
+    h_av::T                         # average water depth [m] for model timestep Δt
+    error::T                        # error storage [m³]
+    a::T                            # flow area at egde [m²]
+    r::T                            # hydraulic radius at edge [m]
+    hf::T                           # water depth at edge [m]
+    q0::T                           # discharge at edge at previous time step
+    q::T                            # discharge at edge  [m³ s⁻¹]
+    q_av::T                         # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
+    hf_index::I                     # edge index with `hf` [-] above depth threshold
+end
+
+function Adapt.adapt_structure(to, from::FloodPlainVariables)
+    return FloodPlainVariables(
+        adapt(to, from.storage),
+        adapt(to, from.storage_av),
+        adapt(to, from.h),
+        adapt(to, from.h_av),
+        adapt(to, from.error),
+        adapt(to, from.a),
+        adapt(to, from.r),
+        adapt(to, from.hf),
+        adapt(to, from.q0),
+        adapt(to, from.q),
+        adapt(to, from.q_av),
+        adapt(to, from.hf_index),
+    )
 end
 
 "Initialize floodplain flow model variables"
@@ -1179,9 +1265,9 @@ function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
 end
 
 "Floodplain flow model"
-@with_kw struct FloodPlain{P}
-    parameters::FloodPlainParameters{P}
-    variables::FloodPlainVariables
+@with_kw struct FloodPlain{P, T <: DenseArray{Float}, I <: DenseArray{Integ}}
+    parameters::FloodPlainParameters{P, T}
+    variables::FloodPlainVariables{T, I}
 end
 
 "Determine the initial floodplain storage"

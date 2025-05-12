@@ -61,6 +61,7 @@ const ROUTING_OPTIONS = (("kinematic-wave", "local-inertial"))
 
 const Float = Float32
 const Integ = Int32
+const ArrayType = Vector  # or e.g. AMDGPU.ROCArray
 
 mutable struct Clock{T}
     time::T

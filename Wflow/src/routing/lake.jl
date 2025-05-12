@@ -1,15 +1,30 @@
 "Struct for storing lake model parameters"
-@with_kw struct LakeParameters
-    lowerlake_ind::Vector{Int}                  # Index of lower lake (linked lakes) [-]
-    area::Vector{Float64}                       # lake area [m²]
-    maxstorage::Vector{Union{Float64, Missing}} # lake maximum storage from rating curve 1 [m³]
-    threshold::Vector{Float64}                  # water level threshold H₀ [m] below that level outflow is zero
-    storfunc::Vector{Int}                       # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
-    outflowfunc::Vector{Int}                    # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
-    b::Vector{Float64}                          # rating curve coefficient [m3/2 s-1] (if e=3/2)
-    e::Vector{Float64}                          # rating curve exponent [-]
-    sh::Vector{Union{SH, Missing}}              # data for storage curve
-    hq::Vector{Union{HQ, Missing}}              # data for rating curve    
+@with_kw struct LakeParameters{T <: DenseArray{Float}, I <: DenseArray{Integ}}
+    lowerlake_ind::I                            # Index of lower lake (linked lakes) [-]
+    area::T                                     # lake area [m²]
+    maxstorage::T                               # lake maximum storage from rating curve 1 [m³]
+    threshold::T                                # water level threshold H₀ [m] below that level outflow is zero
+    storfunc::I                                 # type of lake storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
+    outflowfunc::I                              # type of lake rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    b::T                                        # rating curve coefficient [m3/2 s-1] (if e=3/2)
+    e::T                                        # rating curve exponent [-]
+    sh::Vector{Union{SH{T}, Missing}}           # data for storage curve
+    hq::Vector{Union{HQ{T}, Missing}}           # data for rating curve    
+end
+
+function Adapt.adapt_structure(to, from::LakeParameters)
+    return LakeParameters(
+        adapt(to, from.lowerlake_ind),
+        adapt(to, from.area),
+        adapt(to, from.maxstorage),
+        adapt(to, from.threshold),
+        adapt(to, from.storfunc),
+        adapt(to, from.outflowfunc),
+        adapt(to, from.b),
+        adapt(to, from.e),
+        [adapt(to, sh) for sh in from.sh],  # TODO: See how this works with GPU computations...
+        [adapt(to, hq) for hq in from.hq],  # also investigate if SH or HQ is missing.
+    )
 end
 
 "Initialize lake model parameters"
@@ -122,14 +137,26 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
 end
 
 "Struct for storing Lake model parameters"
-@with_kw struct LakeVariables
-    waterlevel::Vector{Float64}       # waterlevel H [m] of lake
-    waterlevel_av::Vector{Float64}    # average waterlevel H [m] of lake for model timestep Δt
-    storage::Vector{Float64}          # storage lake [m³]
-    storage_av::Vector{Float64}       # average storage lake for model timestep Δt [m³]
-    outflow::Vector{Float64}          # outflow of lake outlet [m³ s⁻¹]
-    outflow_av::Vector{Float64}       # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
-    actevap::Vector{Float64}          # average actual evapotranspiration for lake area [mm Δt⁻¹] 
+@with_kw struct LakeVariables{T <: DenseArray{Float}}
+    waterlevel::T                     # waterlevel H [m] of lake
+    waterlevel_av::T                  # average waterlevel H [m] of lake for model timestep Δt
+    storage::T                        # storage lake [m³]
+    storage_av::T                     # average storage lake for model timestep Δt [m³]
+    outflow::T                        # outflow of lake outlet [m³ s⁻¹]
+    outflow_av::T                     # average outflow lake [m³ s⁻¹] for model timestep Δt (including flow from lower to upper lake)
+    actevap::T                        # average actual evapotranspiration for lake area [mm Δt⁻¹] 
+end
+
+function Adapt.adapt_structure(to, from::LakeVariables)
+    return LakeVariables(
+        adapt(to, from.waterlevel),
+        adapt(to, from.waterlevel_av),
+        adapt(to, from.storage),
+        adapt(to, from.storage_av),
+        adapt(to, from.outflow),
+        adapt(to, from.outflow_av),
+        adapt(to, from.actevap),
+    )
 end
 
 "Initialize lake model variables"
@@ -148,14 +175,14 @@ function LakeVariables(n::Int, parameters::LakeParameters, lake_waterlevel::Vect
 end
 
 "Struct for storing lake model boundary conditions"
-@with_kw struct LakeBC
-    inflow::Vector{Float64}           # inflow to the lake [m³ s⁻¹] for model timestep Δt
-    precipitation::Vector{Float64}    # average precipitation for lake area [mm Δt⁻¹]
-    evaporation::Vector{Float64}      # average potential evaporation for lake area [mm Δt⁻¹]
+@with_kw struct LakeBC{T <: DenseArray{Float}}
+    inflow::T                         # inflow to the lake [m³ s⁻¹] for model timestep Δt
+    precipitation::T                  # average precipitation for lake area [mm Δt⁻¹]
+    evaporation::T                    # average potential evaporation for lake area [mm Δt⁻¹]
 end
 
 "Initialize lake model boundary conditions"
-function LakeBC(n::Int)
+function LakeBC(n::Integ)
     bc = LakeBC(;
         inflow = fill(MISSING_VALUE, n),
         precipitation = fill(MISSING_VALUE, n),
@@ -165,10 +192,18 @@ function LakeBC(n::Int)
 end
 
 "Lake model"
-@with_kw struct Lake
-    boundary_conditions::LakeBC
-    parameters::LakeParameters
-    variables::LakeVariables
+@with_kw struct Lake{T <: DenseArray{Float}, I <: DenseArray{Integ}}
+    boundary_conditions::LakeBC{T}
+    parameters::LakeParameters{T, I}
+    variables::LakeVariables{T}
+end
+
+function Adapt.adapt_structure(to, from::Lake)
+    return Lake(
+        adapt(to, from.boundary_conditions),
+        adapt(to, from.parameters),
+        adapt(to, from.variables),
+    )
 end
 
 "Initialize lake model"

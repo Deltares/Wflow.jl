@@ -1,11 +1,22 @@
 "Struct for storing reservoir model parameters"
-@with_kw struct ReservoirParameters
-    maxstorage::Vector{Float64}       # maximum storage (above which water is spilled) [m³]
-    area::Vector{Float64}             # reservoir area [m²]
-    maxrelease::Vector{Float64}       # maximum amount that can be released if below spillway [m³ s⁻¹]
-    demand::Vector{Float64}           # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
-    targetminfrac::Vector{Float64}    # target minimum full fraction (of max storage) [-]
-    targetfullfrac::Vector{Float64}   # target fraction full (of max storage
+@with_kw struct ReservoirParameters{T <: DenseArray{Float}}
+    maxstorage::T                     # maximum storage (above which water is spilled) [m³]
+    area::T                           # reservoir area [m²]
+    maxrelease::T                     # maximum amount that can be released if below spillway [m³ s⁻¹]
+    demand::T                         # minimum (environmental) flow requirement downstream of the reservoir [m³ s⁻¹]
+    targetminfrac::T                  # target minimum full fraction (of max storage) [-]
+    targetfullfrac::T                 # target fraction full (of max storage
+end
+
+function Adapt.adapt_structure(to, from::ReservoirParameters)
+    return ReservoirParameters(
+        adapt(to, from.maxstorage),
+        adapt(to, from.area),
+        adapt(to, from.maxrelease),
+        adapt(to, from.demand),
+        adapt(to, from.targetminfrac),
+        adapt(to, from.targetfullfrac),
+    )
 end
 
 "Initialize reservoir model parameters"
@@ -59,14 +70,26 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 end
 
 "Struct for storing reservoir model variables"
-@with_kw struct ReservoirVariables
-    storage::Vector{Float64}          # reservoir storage [m³]
-    storage_av::Vector{Float64}       # average reservoir storage [m³] for model timestep Δt
-    outflow::Vector{Float64}          # outflow from reservoir [m³ s⁻¹]
-    outflow_av::Vector{Float64}       # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
-    percfull::Vector{Float64}         # fraction full (of max storage) [-]
-    demandrelease::Vector{Float64}    # minimum (environmental) flow released from reservoir [m³ s⁻¹]
-    actevap::Vector{Float64}          # average actual evaporation for reservoir area [mm Δt⁻¹]
+@with_kw struct ReservoirVariables{T <: DenseArray{Float}}
+    storage::T                        # reservoir storage [m³]
+    storage_av::T                     # average reservoir storage [m³] for model timestep Δt
+    outflow::T                        # outflow from reservoir [m³ s⁻¹]
+    outflow_av::T                     # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
+    percfull::T                       # fraction full (of max storage) [-]
+    demandrelease::T                  # minimum (environmental) flow released from reservoir [m³ s⁻¹]
+    actevap::T                        # average actual evaporation for reservoir area [mm Δt⁻¹]
+end
+
+function Adapt.adapt_structure(to, from::ReservoirVariables)
+    return ReservoirVariables(
+        adapt(to, from.storage),
+        adapt(to, from.storage_av),
+        adapt(to, from.outflow),
+        adapt(to, from.outflow_av),
+        adapt(to, from.percfull),
+        adapt(to, from.demandrelease),
+        adapt(to, from.actevap),
+    )
 end
 
 "Initialize reservoir model variables"
@@ -85,10 +108,18 @@ function ReservoirVariables(n::Int, parameters::ReservoirParameters)
 end
 
 "Struct for storing reservoir model boundary conditions"
-@with_kw struct ReservoirBC
-    inflow::Vector{Float64}               # inflow into reservoir [m³ s⁻¹] for model timestep Δt
-    precipitation::Vector{Float64}        # average precipitation for reservoir area [mm Δt⁻¹]
-    evaporation::Vector{Float64}          # average potential evaporation for reservoir area [mm Δt⁻¹]
+@with_kw struct ReservoirBC{T <: DenseArray{Float}}
+    inflow::T                             # inflow into reservoir [m³ s⁻¹] for model timestep Δt
+    precipitation::T                      # average precipitation for reservoir area [mm Δt⁻¹]
+    evaporation::T                        # average potential evaporation for reservoir area [mm Δt⁻¹]
+end
+
+function Adapt.adapt_structure(to, from::ReservoirBC)
+    return ReservoirBC(
+        adapt(to, from.inflow),
+        adapt(to, from.precipitation),
+        adapt(to, from.evaporation),
+    )
 end
 
 "Initialize reservoir model boundary conditions"
@@ -102,10 +133,18 @@ function ReservoirBC(n::Int)
 end
 
 "Reservoir model `SimpleReservoir`"
-@with_kw struct SimpleReservoir
-    boundary_conditions::ReservoirBC
-    parameters::ReservoirParameters
-    variables::ReservoirVariables
+@with_kw struct SimpleReservoir{T <: DenseArray{Float}}
+    boundary_conditions::ReservoirBC{T}
+    parameters::ReservoirParameters{T}
+    variables::ReservoirVariables{T}
+end
+
+function Adapt.adapt_structure(to, from::SimpleReservoir)
+    return SimpleReservoir(
+        adapt(to, from.boundary_conditions),
+        adapt(to, from.parameters),
+        adapt(to, from.variables),
+    )
 end
 
 "Initialize reservoir model `SimpleReservoir`"
