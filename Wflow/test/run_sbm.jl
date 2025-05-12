@@ -218,6 +218,7 @@ Wflow.run_timestep!(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.routing.river_flow.boundary_conditions.inflow[44] ≈ 0.75
+    @test model.routing.river_flow.boundary_conditions.actual_abstraction_av[44] == 0.0
     @test model.routing.river_flow.variables.q_av[44] ≈ 10.550836922801588
 end
 
