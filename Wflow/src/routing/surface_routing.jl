@@ -9,7 +9,7 @@ function surface_routing!(model)
     (; soil, runoff, allocation) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
 
-    dt = tosecond(clock.dt)
+    dt = Float(tosecond(clock.dt))
     # update lateral inflow for kinematic wave overland flow
     update_lateral_inflow!(
         overland_flow,
@@ -52,7 +52,7 @@ function surface_routing!(
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
 
-    dt = tosecond(clock.dt)
+    dt = Float(tosecond(clock.dt))
     update_boundary_conditions!(
         overland_flow,
         (; river_flow, subsurface_flow, soil, runoff),

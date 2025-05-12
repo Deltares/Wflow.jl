@@ -106,7 +106,7 @@ function LateralSsfVariables(
         ssf = fill(MISSING_VALUE, n),
         ssfin = fill(MISSING_VALUE, n),
         ssfmax = fill(MISSING_VALUE, n),
-        to_river = zeros(n),
+        to_river = zeros(Float, n),
         storage,
     )
     return variables
@@ -122,7 +122,7 @@ function LateralSSF(
     (; indices) = domain.network
     (; area) = domain.parameters
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
-    zi = 0.001 * soil.variables.zi
+    zi = Float(0.001) * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi, area)
     boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
@@ -185,4 +185,5 @@ end
 get_water_depth(model::LateralSSF) = model.variables.zi
 get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
-get_flux_to_river(model::LateralSSF) = model.variables.to_river ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+get_flux_to_river(model::LateralSSF) =
+    model.variables.to_river ./ Float(tosecond(BASETIMESTEP)) # [m³ s⁻¹]

@@ -375,7 +375,9 @@ function SbmSoilParameters(
         config,
         "soil_surface_water__vertical_saturated_hydraulic_conductivity",
     )
-    kv_0 = ncread(dataset, config, lens; sel = indices, type = Float) .* (dt / BASETIMESTEP)
+    kv_0 =
+        ncread(dataset, config, lens; sel = indices, type = Float) .*
+        Float(dt / BASETIMESTEP)
 
     lens = lens_input_parameter(
         config,

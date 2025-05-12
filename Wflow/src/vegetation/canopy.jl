@@ -19,7 +19,7 @@ function InterceptionVariables(n::Int)
     return InterceptionVariables(;
         canopy_potevap = fill(MISSING_VALUE, n),
         interception_rate = fill(MISSING_VALUE, n),
-        canopy_storage = zeros(n),
+        canopy_storage = zeros(Float, n),
         stemflow = fill(MISSING_VALUE, n),
         throughfall = fill(MISSING_VALUE, n),
     )

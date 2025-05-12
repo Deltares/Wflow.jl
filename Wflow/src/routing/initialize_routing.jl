@@ -22,7 +22,13 @@ function initialize_subsurface_flow(
     elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
         (; kv_profile) = soil.parameters
         dt = Second(config.time.timestepsecs)
-        initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))
+        initialize_lateral_ssf!(
+            subsurface_flow,
+            soil,
+            parameters,
+            kv_profile,
+            Float(tosecond(dt)),
+        )
     end
     return subsurface_flow
 end

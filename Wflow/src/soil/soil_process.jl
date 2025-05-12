@@ -144,7 +144,7 @@ Return soil water pressure head `h3` of Feddes root water uptake reduction funct
 """
 function feddes_h3(h3_high, h3_low, tpot, Δt)
     # value of h3 is a function of potential transpiration [mm/d]
-    tpot_daily = tpot * (tosecond(BASETIMESTEP) / Δt)
+    tpot_daily = tpot * Float(tosecond(BASETIMESTEP) / Δt)
     if (tpot_daily >= 0.0) && (tpot_daily <= 1.0)
         h3 = h3_low
     elseif (tpot_daily > 1.0) && (tpot_daily < 5.0)

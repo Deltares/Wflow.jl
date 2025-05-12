@@ -1363,8 +1363,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             error("unknown index used")
         end
     elseif haskey(col, "coordinate")
-        x = col["coordinate"]["x"]::Float
-        y = col["coordinate"]["y"]::Float
+        x = Float(col["coordinate"]["x"])
+        y = Float(col["coordinate"]["y"])
         # find the closest cell center index
         _, iy = findmin(abs.(y_nc .- y))
         _, ix = findmin(abs.(x_nc .- x))
@@ -1460,8 +1460,8 @@ function read_hq_csv(path)
 end
 
 # these represent the type of the rating curve and specific storage data
-const SH = NamedTuple{(:H, :S), Tuple{T, T}}
-const HQ = NamedTuple{(:H, :Q), Tuple{T, T}}
+const SH{T <: DenseArray{Float}} = NamedTuple{(:H, :S), Tuple{T, T}}
+const HQ{T <: DenseArray{Float}} = NamedTuple{(:H, :Q), Tuple{T, T}}
 
 is_increasing(v) = last(v) > first(v)
 

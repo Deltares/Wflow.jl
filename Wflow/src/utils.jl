@@ -752,7 +752,7 @@ function kh_layered_profile!(
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
 
-    t_factor = (tosecond(BASETIMESTEP) / dt)
+    t_factor = Float(tosecond(BASETIMESTEP) / dt)
     for i in eachindex(kh)
         m = nlayers[i]
 
@@ -788,7 +788,7 @@ function kh_layered_profile!(
     (; n_unsatlayers, zi) = soil.variables
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
-    t_factor = (tosecond(BASETIMESTEP) / dt)
+    t_factor = Float(tosecond(BASETIMESTEP) / dt)
 
     for i in eachindex(kh)
         m = nlayers[i]

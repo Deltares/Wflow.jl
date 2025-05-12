@@ -21,7 +21,7 @@ function init_kinematic_wave_timestepping(
     @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
 
     if adaptive
-        stable_timesteps = zeros(n)
+        stable_timesteps = zeros(Float, n)
         timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
         dt_fixed = get(config.model, "$(domain)_kinematic_wave__time_step", dt_fixed)
@@ -110,8 +110,8 @@ end
     inflow::T                           # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     inflow_waterbody::T                 # inflow waterbody (lake or reservoir model) from land part [m³ s⁻¹]
     abstraction::T                      # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    reservoir::R{T}                     # Reservoir model struct of arrays
-    lake::L{T}                          # Lake model struct of arrays
+    reservoir::R                        # Reservoir model struct of arrays
+    lake::L                             # Lake model struct of arrays
 end
 
 function Adapt.adapt_structure(to, from::RiverFlowBC)
@@ -162,8 +162,12 @@ function KinWaveRiverFlow(
     (; indices) = domain.network
     n = length(indices)
 
-    timestepping =
-        init_kinematic_wave_timestepping(config, n; domain = "river", dt_fixed = 900.0)
+    timestepping = init_kinematic_wave_timestepping(
+        config,
+        n;
+        domain = "river",
+        dt_fixed = Float(900.0),
+    )
 
     do_water_demand = haskey(config.model, "water_demand")
     allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver()
@@ -222,8 +226,12 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
         ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float)
 
     n = length(indices)
-    timestepping =
-        init_kinematic_wave_timestepping(config, n; domain = "land", dt_fixed = 3600.0)
+    timestepping = init_kinematic_wave_timestepping(
+        config,
+        n;
+        domain = "land",
+        dt_fixed = Float(3600.0),
+    )
 
     variables = OverLandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float, n))
     parameters = ManningFlowParameters(mannings_n, slope)
@@ -376,7 +384,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float)
     t = 0.0
     while t < dt
         dt_s =
-            adaptive ? stable_timestep(model, flow_length, 0.02) :
+            adaptive ? stable_timestep(model, flow_length, Float(0.02)) :
             model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_land_update!(model, domain, dt_s)
@@ -522,7 +530,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, doy::Int, dt::Float)
     t = 0.0
     while t < dt
         dt_s =
-            adaptive ? stable_timestep(model, flow_length, 0.05) :
+            adaptive ? stable_timestep(model, flow_length, Float(0.05)) :
             model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_river_update!(model, domain.river, doy, dt_s, dt)
@@ -620,8 +628,8 @@ function update_lateral_inflow!(
     do_drains = get(config.model, "drain__flag", false)::Bool
     if do_drains
         drain = subsurface_flow.boundaries.drain
-        drainflux = zeros(length(net_runoff))
-        drainflux[drain.index] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
+        drainflux = zeros(Float, length(net_runoff))
+        drainflux[drain.index] = -drain.variables.flux ./ Float(tosecond(BASETIMESTEP))
     else
         drainflux = 0.0
     end
@@ -657,7 +665,7 @@ end
 # is added to the river kinematic wave.
 get_inflow_waterbody(::KinWaveRiverFlow, model::KinWaveOverlandFlow) = model.variables.q_av
 get_inflow_waterbody(::KinWaveRiverFlow, model::LateralSSF) =
-    model.variables.ssf ./ tosecond(BASETIMESTEP)
+    model.variables.ssf ./ Float(tosecond(BASETIMESTEP))
 
 # Exclude subsurface flow from `GroundwaterFlow`.
 get_inflow_waterbody(::AbstractRiverFlowModel, model::GroundwaterFlow) =

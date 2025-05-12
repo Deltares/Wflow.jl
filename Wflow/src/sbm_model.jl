@@ -65,24 +65,24 @@ end
 "update the `sbm` model type for a single timestep"
 function update!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
-    dt = tosecond(clock.dt)
+    dt = Float(tosecond(clock.dt))
     do_water_demand = haskey(config.model, "water_demand")
     (; kv_profile) = land.soil.parameters
 
     update_until_recharge!(model)
     # exchange of recharge between SBM soil model and subsurface flow domain
     routing.subsurface_flow.boundary_conditions.recharge .=
-        land.soil.variables.recharge ./ 1000.0
+        land.soil.variables.recharge ./ Float(1000.0)
     if do_water_demand
         @. routing.subsurface_flow.boundary_conditions.recharge -=
-            land.allocation.variables.act_groundwater_abst / 1000.0
+            land.allocation.variables.act_groundwater_abst / Float(1000.0)
     end
     routing.subsurface_flow.boundary_conditions.recharge .*=
         domain.land.parameters.flow_width
-    routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
+    routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ Float(1000.0)
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, domain.land, clock.dt / BASETIMESTEP)
+    update!(routing.subsurface_flow, domain.land, Float(clock.dt / BASETIMESTEP))
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
@@ -96,7 +96,7 @@ through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
-    dt = tosecond(clock.dt)
+    dt = Float(tosecond(clock.dt))
     update!(land, routing, domain, config, dt)
     return nothing
 end
@@ -151,7 +151,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         # update zi for SBM soil model
         zi =
             max.(
-                0.0,
+                Float(0.0),
                 land.soil.parameters.soilthickness .-
                 land.soil.variables.satwaterdepth ./
                 (land.soil.parameters.theta_s .- land.soil.parameters.theta_r),
@@ -161,9 +161,9 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             (; surface_flow_width, flow_length) = domain.land.parameters
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(surface_flow_width)
-                if surface_flow_width[i] <= 0.0
-                    land_v.q[i] = 0.0
-                    land_v.h[i] = 0.0
+                if surface_flow_width[i] <= Float(0.0)
+                    land_v.q[i] = Float(0.0)
+                    land_v.h[i] = Float(0.0)
                 end
             end
             land_v.storage .= land_v.h .* surface_flow_width .* flow_length
@@ -174,7 +174,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             for i in eachindex(routing.overland_flow.storage)
                 if river[i]
                     j = domain.land.network.river_indices[i]
-                    if land_v.h[i] > 0.0
+                    if land_v.h[i] > Float(0.0)
                         land_v.storage[i] =
                             land_v.h[i] * x_length[i] * y_length[i] + bankfull_storage[j]
                     else

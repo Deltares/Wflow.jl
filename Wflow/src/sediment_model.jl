@@ -42,7 +42,7 @@ end
 "update `sediment` model for a single timestep"
 function update!(model::AbstractModel{<:SedimentModel})
     (; routing, land, domain, config, clock) = model
-    dt = tosecond(clock.dt)
+    dt = Float(tosecond(clock.dt))
 
     # Soil erosion
     update!(land, domain.land.parameters, dt)

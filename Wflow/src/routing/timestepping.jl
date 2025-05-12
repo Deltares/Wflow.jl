@@ -21,5 +21,5 @@ function check_timestepsize(timestepsize, currenttime, endtime)
     if currenttime + timestepsize > endtime
         timestepsize = endtime - currenttime
     end
-    return timestepsize
+    return Float(timestepsize)
 end

@@ -51,7 +51,7 @@ function update!(model::SedimentToRiverModel, rivers::Vector{Bool})
     (; deposition) = model.boundary_conditions
     (; amount) = model.variables
 
-    zeros = fill(0.0, length(amount))
+    zeros = fill(Float(0.0), length(amount))
     amount .= ifelse.(rivers, deposition, zeros)
 end
 

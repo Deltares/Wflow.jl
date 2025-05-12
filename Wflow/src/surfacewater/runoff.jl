@@ -37,7 +37,7 @@ function OpenWaterRunoffBC(n::Int)
     return OpenWaterRunoffBC(;
         water_flux_surface = fill(MISSING_VALUE, n),
         waterdepth_land = fill(MISSING_VALUE, n),
-        waterdepth_river = zeros(n),
+        waterdepth_river = zeros(Float, n),
     )
 end
 

@@ -178,26 +178,26 @@ function LocalInertialRiverFlowVariables(
     n = length(indices)
     n_edges = ne(graph)
     # set river depth h to zero (including reservoir and lake locations)
-    h = zeros(n)
-    q_av = zeros(n_edges)
+    h = zeros(Float, n)
+    q_av = zeros(Float, n_edges)
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
     append!(h, riverdepth_bc)
     variables = LocalInertialRiverFlowVariables(;
-        q = zeros(n_edges),
-        q0 = zeros(n_edges),
+        q = zeros(Float, n_edges),
+        q0 = zeros(Float, n_edges),
         q_av = q_av,
-        q_channel_av = floodplain_1d ? zeros(n_edges) : q_av,
+        q_channel_av = floodplain_1d ? zeros(Float, n_edges) : q_av,
         h = h,
-        zs_max = zeros(n_edges),
-        zs_src = zeros(n_edges),
-        zs_dst = zeros(n_edges),
-        hf = zeros(n_edges),
-        h_av = zeros(n),
-        a = zeros(n_edges),
-        r = zeros(n_edges),
-        storage = zeros(n),
-        storage_av = zeros(n),
-        error = zeros(n),
+        zs_max = zeros(Float, n_edges),
+        zs_src = zeros(Float, n_edges),
+        zs_dst = zeros(Float, n_edges),
+        hf = zeros(Float, n_edges),
+        h_av = zeros(Float, n),
+        a = zeros(Float, n_edges),
+        r = zeros(Float, n_edges),
+        storage = zeros(Float, n),
+        storage_av = zeros(Float, n),
+        error = zeros(Float, n),
     )
     return variables
 end
@@ -215,8 +215,8 @@ end
     boundary_conditions::RiverFlowBC{T, R, L}
     parameters::LocalInertialRiverFlowParameters{T, I}
     variables::LocalInertialRiverFlowVariables{T}
-    floodplain::F{T}                                    # Floodplain (1D) schematization
-    allocation::A{T}                                    # Water allocation
+    floodplain::F                                       # Floodplain (1D) schematization
+    allocation::A                                       # Water allocation
 end
 
 "Initialize shallow water river flow model `LocalIntertialRiverFlow`"
@@ -282,7 +282,7 @@ end
 get_inflow_waterbody(::LocalInertialRiverFlow, model::KinWaveOverlandFlow) =
     model.variables.q_av .+ model.variables.to_river
 get_inflow_waterbody(::LocalInertialRiverFlow, model::LateralSSF) =
-    (model.variables.ssf .+ model.variables.to_river) ./ tosecond(BASETIMESTEP)
+    (model.variables.ssf .+ model.variables.to_river) ./ Float(tosecond(BASETIMESTEP))
 
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
@@ -584,15 +584,15 @@ end
 "Initialize local inertial overland flow model variables"
 function LocalInertialOverlandFlowVariables(n::Int)
     variables = LocalInertialOverlandFlowVariables(;
-        qx0 = zeros(n + 1),
-        qy0 = zeros(n + 1),
-        qx = zeros(n + 1),
-        qy = zeros(n + 1),
-        storage = zeros(n),
-        storage_av = zeros(n),
-        error = zeros(n),
-        h = zeros(n),
-        h_av = zeros(n),
+        qx0 = zeros(Float, n + 1),
+        qy0 = zeros(Float, n + 1),
+        qx = zeros(Float, n + 1),
+        qy = zeros(Float, n + 1),
+        storage = zeros(Float, n),
+        storage_av = zeros(Float, n),
+        error = zeros(Float, n),
+        h = zeros(Float, n),
+        h_av = zeros(Float, n),
     )
     return variables
 end
@@ -685,7 +685,10 @@ end
 
 "Struct to store shallow water overland flow model boundary conditions"
 function LocalInertialOverlandFlowBC(n::Int)
-    bc = LocalInertialOverlandFlowBC(; runoff = zeros(n), inflow_waterbody = zeros(n))
+    bc = LocalInertialOverlandFlowBC(;
+        runoff = zeros(Float, n),
+        inflow_waterbody = zeros(Float, n),
+    )
     return bc
 end
 
@@ -1162,7 +1165,7 @@ end
 
 "Struct to store floodplain flow model parameters"
 @with_kw struct FloodPlainParameters{P, T <: DenseArray{Float}}
-    profile::P{T}                       # floodplain profile
+    profile::P                          # floodplain profile
     mannings_n::T                       # manning's roughness [s m-1/3]
     mannings_n_sq::T                    # manning's roughness squared at edge [(s m-1/3)2]
     zb_max::T                           # maximum bankfull elevation at edge [m]

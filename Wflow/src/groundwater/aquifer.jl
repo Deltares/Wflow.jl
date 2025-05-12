@@ -509,6 +509,6 @@ function get_flux_to_river(
     ncell = subsurface_flow.connectivity.ncell
     flux = zeros(ncell)
     index = river.index
-    flux[index] = -river.variables.flux ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+    flux[index] = -river.variables.flux ./ Float(tosecond(BASETIMESTEP)) # [m³ s⁻¹]
     return flux
 end

@@ -235,7 +235,7 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
 
     water_fraction = get_water_fraction(dataset, config, network, river_fraction)
 
-    land_area = @. (1.0 - river_fraction) * area
+    land_area = @. (Float(1.0) - river_fraction) * area
     surface_flow_width =
         map(get_surface_width, flow_width, flow_length, land_area, river_location)
 
@@ -280,7 +280,7 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
 
     lens = lens_input_parameter(config, "river__slope"; optional = false)
     slope = ncread(dataset, config, lens; sel = indices, type = Float)
-    clamp!(slope, 0.00001, Inf)
+    clamp!(slope, Float(0.00001), Float(Inf))
 
     river_parameters = RiverParameters(; flow_width, flow_length, slope)
     return river_parameters
@@ -310,7 +310,7 @@ function get_water_fraction(
     lens = lens_input_parameter(config, "land~water-covered__area_fraction")
     water_fraction =
         ncread(dataset, config, lens; sel = network.indices, defaults = 0.0, type = Float)
-    water_fraction = max.(water_fraction .- river_fraction, 0.0)
+    water_fraction = max.(water_fraction .- river_fraction, Float(0.0))
     return water_fraction
 end
 
@@ -335,9 +335,9 @@ function get_river_fraction(
     river_fraction = fill(MISSING_VALUE, n)
     for i in 1:n
         river_fraction[i] = if river_location[i]
-            min((river_length[i] * river_width[i]) / (area[i]), 1.0)
+            min((river_length[i] * river_width[i]) / (area[i]), Float(1.0))
         else
-            0.0
+            Float(0.0)
         end
     end
     return river_fraction
@@ -359,7 +359,7 @@ end
 function get_landsurface_slope(dataset::NCDataset, config::Config, network::NetworkLand)
     lens = lens_input_parameter(config, "land_surface__slope"; optional = false)
     slope = ncread(dataset, config, lens; sel = network.indices, type = Float)
-    clamp!(slope, 0.00001, Inf)
+    clamp!(slope, Float(0.00001), Float(Inf))
     return slope
 end
 
