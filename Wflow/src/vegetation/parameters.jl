@@ -26,8 +26,7 @@ function VegetationParameters(
 )
     n = length(indices)
     lens = lens_input_parameter(config, "vegetation_root__depth")
-    rootingdepth =
-        ncread(dataset, config, lens; sel = indices, defaults = 750.0, type = Float64)
+    rootingdepth = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(config, "vegetation__crop_factor")
     kc = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
     do_cyclic = haskey(config.input, "cyclic")
@@ -62,8 +61,7 @@ function VegetationParameters(
         )
     else
         lens = lens_input_parameter(config, "vegetation_canopy__gap_fraction")
-        canopygapfraction =
-            ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+        canopygapfraction = ncread(dataset, config, lens; sel = indices, type = Float64)
         lens = lens_input_parameter(config, "vegetation_water__storage_capacity")
         cmax = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
         vegetation_parameter_set = VegetationParameters(;
