@@ -222,6 +222,25 @@ Wflow.run_timestep!(model)
     @test model.routing.river_flow.variables.q_av[44] ≈ 10.550836922801588
 end
 
+# test negative inflow
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+config = Wflow.Config(tomlpath)
+model = Wflow.Model(config)
+model.routing.river_flow.boundary_conditions.inflow[44] = -10.0
+(; actual_abstraction_av) = model.routing.river_flow.boundary_conditions
+(; q_av) = model.routing.river_flow.variables
+@testset "river negative inflow" begin
+    Wflow.run_timestep!(model)
+    @test actual_abstraction_av[44] ≈ -2.8679304138607975
+    @test q_av[44] ≈ 0.1843871721222499
+    Wflow.run_timestep!(model)
+    @test actual_abstraction_av[44] ≈ -9.371093118791716
+    @test q_av[44] ≈ 0.4743693733726534
+    Wflow.run_timestep!(model)
+    @test actual_abstraction_av[44] ≈ -10.0
+    @test q_av[44] ≈ 7.98460718979927
+end
+
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
 config.input.forcing.atmosphere_water__precipitation_volume_flux = Dict("value" => 2.5)
