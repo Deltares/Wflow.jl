@@ -121,6 +121,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_water__volume` | River water volume | m³ |
 | `river_water__instantaneous_volume` | River water volume | m³ |
 | `river_water_inflow~lateral__volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
+| `river_water_abstraction__volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
 : {.striped .hover}
 
 ### Overland flow
@@ -200,6 +201,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_water__depth` | River water depth | m |
 | `river_water__volume` | River water volume | m³ |
 | `river_water__instantaneous_volume` | River water volume | m³ |
+| `river_water_abstraction__volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
 : {.striped .hover}
 
 ### 1D floodplain flow
