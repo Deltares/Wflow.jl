@@ -80,7 +80,7 @@ Initialize `NetworkLand` fields related to catchment (active indices model domai
 drainage network.
 """
 function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
-    lens = lens_input(config, "subcatchment_location__count"; optional = false)
+    lens = lens_input(config, "subbasin_location__count"; optional = false)
     subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
@@ -108,7 +108,7 @@ domain.
 """
 function network_subdomains(config::Config, network::NetworkLand)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
-    min_streamorder = get(config.model, "min_streamorder_land", 5)
+    min_streamorder = get(config.model, "land_streamorder__min_count", 5)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
         network.order,
@@ -153,11 +153,11 @@ function get_drainage_network(
     do_pits = false,
     logging = true,
 )
-    lens = lens_input(config, "local_drain_direction"; optional = false)
+    lens = lens_input(config, "basin__local_drain_direction"; optional = false)
     ldd_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        lens = lens_input(config, "pits"; optional = false)
+        lens = lens_input(config, "basin_pit_location__mask"; optional = false)
         pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
@@ -243,7 +243,7 @@ nthreads > 1 to run the kinematic wave parallel, otherwise it is equal to the co
 domain.
 """
 function network_subdomains(config::Config, network::NetworkRiver)
-    min_streamorder = get(config.model, "min_streamorder_river", 6)
+    min_streamorder = get(config.model, "river_streamorder__min_count", 6)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
@@ -353,7 +353,7 @@ function NetworkDrain(
     surface_flow_width::Vector{Float64},
 )
     n_cells = length(indices)
-    lens = lens_input_parameter(config, "land_drain_location__flag")
+    lens = lens_input_parameter(config, "land_drain_location__mask")
     drain_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     drain = drain_2d[indices]
 

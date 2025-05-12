@@ -107,18 +107,18 @@ function lattometres(lat::Real)
     return longlen, latlen
 end
 
-function cell_lengths(y::AbstractVector, cellength::Real, sizeinmetres::Bool)
+function cell_lengths(y::AbstractVector, celllength::Real, cell_length_in_meter::Bool)
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
-    if sizeinmetres
-        xl .= cellength
-        yl .= cellength
+    if cell_length_in_meter
+        xl .= celllength
+        yl .= celllength
     else
         for i in 1:n
             longlen, latlen = lattometres(y[i])
-            xl[i] = longlen * cellength
-            yl[i] = latlen * cellength
+            xl[i] = longlen * celllength
+            yl[i] = latlen * celllength
         end
     end
     return xl, yl

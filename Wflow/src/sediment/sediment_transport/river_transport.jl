@@ -198,8 +198,8 @@ function SedimentRiverTransportParameters(
     wblocs = zeros(Float64, n)
     wbarea = zeros(Float64, n)
     wbtrap = zeros(Float64, n)
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
 
     if do_reservoirs
         lens = lens_input(config, "reservoir_location__count"; optional = false)
@@ -208,7 +208,7 @@ function SedimentRiverTransportParameters(
         resarea = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
         lens = lens_input_parameter(
             config,
-            "reservoir_sediment~bedload__trapping_efficiency_coefficient";
+            "reservoir_water_sediment~bedload__trapping_efficiency";
             optional = false,
         )
         restrapefficiency = ncread(

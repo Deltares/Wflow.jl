@@ -6,9 +6,9 @@ title: Different model configurations
 
 ```toml
 [model]
-snow = true
-gravitational_snow_transport = true
-glacier = true
+snow__flag = true
+snow_gravitional_transport__flag = true
+glacier__flag = true
 
 [input.static]
 atmosphere_air__snowfall_temperature_threshold = "TT"
@@ -32,7 +32,7 @@ glacier_ice__leq-depth = "glacierstore"
 
 ```toml
 [model]
-reservoirs = true
+reservoir__flag = true
 
 [input]
 reservoir_area__count = "wflow_reservoirareas"
@@ -54,7 +54,7 @@ reservoir_water__instantaneous_volume = "volume_reservoir"
 
 ```toml
 [model]
-lakes = true
+lake__flag = true
 
 [input]
 lake_area__count = "wflow_lakeareas"
@@ -81,7 +81,7 @@ As part of the local inertial model for river flow.
 ```toml
 [model]
 river_routing = "local-inertial"
-floodplain_1d = true
+floodplain_1d__flag = true
 
 [input.static]
 floodplain_water__sum_of_volume-per-depth = "floodplain_volume"
@@ -104,6 +104,7 @@ river_bank_water__elevation = "RiverZ"
 land_surface_water_flow__ground_elevation = "FloodplainZ"
 
 [state.variables]
+land_surface_water__instantaneous_depth = "h_land"
 land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
 land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
 
@@ -117,11 +118,11 @@ overland flow.
 ```toml
 # example of water demand and allocation input parameters as cyclic data
 [model.water_demand]
-domestic = true     # optional, default is "false"
-industry = true     # optional, default is "false"
-livestock = true    # optional, default is "false"
-paddy = true        # optional, default is "false"
-nonpaddy = true     # optional, default is "false"
+domestic__flag = true     # optional, default is "false"
+industry__flag = true     # optional, default is "false"
+livestock__flag = true    # optional, default is "false"
+paddy__flag = true        # optional, default is "false"
+nonpaddy__flag = true     # optional, default is "false"
 
 [input.cyclic]
 "land~domestic__gross_water_demand_volume_flux" = "dom_gross"
@@ -134,10 +135,10 @@ nonpaddy = true     # optional, default is "false"
 "land~irrigated-non-paddy__irrigation_trigger_flag" = "irrigation_trigger"
 
 [input.static]
-land_water_allocation_area__number = "allocation_areas"
+land_water_allocation_area__count = "allocation_areas"
 land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
-"land~irrigated-paddy_area__number" = "paddy_irrigation_areas"
-"land~irrigated-non-paddy_area__number" = "nonpaddy_irrigation_areas"
+"land~irrigated-paddy_area__count" = "paddy_irrigation_areas"
+"land~irrigated-non-paddy_area__count" = "nonpaddy_irrigation_areas"
 
 # required if paddy is set to "true"
 [state.variables]

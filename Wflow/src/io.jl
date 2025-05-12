@@ -30,7 +30,7 @@ end
 
 Struct that contains the parsed TOML configuration, as well as a reference to the TOML path,
 if it exists. It behaves largely like a dictionary, but it overloads `getproperty` and
-`setproperty` to support syntax like `config.model.reinit = false`.
+`setproperty` to support syntax like `config.model.cold_start__flag = false`.
 """
 struct Config
     dict::Dict{String, Any}  # nested key value mapping of all settings
@@ -221,8 +221,8 @@ function load_fixed_forcing!(model)
     (; reader, land, domain, config) = model
     (; forcing_parameters) = reader
 
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
 
     reverse_indices = domain.land.network.reverse_indices
     if do_reservoirs
@@ -288,8 +288,8 @@ function update_forcing!(model)
     (; clock, reader, land, domain, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
-    do_lakes = get(config.model, "lakes", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
 
     if do_reservoirs
         sel_reservoirs = domain.reservoir.network.indices_coverage
@@ -558,13 +558,13 @@ function setup_grid_netcdf(
     calendar,
     time_units,
     extra_dim,
-    sizeinmetres;
+    cell_length_in_meter;
     float_type = Float32,
     deflatelevel = 0,
 )
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
-    if sizeinmetres
+    if cell_length_in_meter
         defVar(
             ds,
             "x",
@@ -628,7 +628,7 @@ function setup_grid_netcdf(
         attrib = ["units" => time_units, "calendar" => calendar],
         deflatelevel = deflatelevel,
     )
-    if sizeinmetres
+    if cell_length_in_meter
         for (key, val) in pairs(parameters)
             if eltype(val.vector) <: AbstractFloat
                 # all floats are saved as Float32
@@ -979,7 +979,7 @@ end
 function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing)
     x_coords = read_x_axis(nc_static)
     y_coords = read_y_axis(nc_static)
-    sizeinmetres = get(config.model, "sizeinmetres", false)::Bool
+    cell_length_in_meter = get(config.model, "cell_length_in_meter__flag", false)::Bool
 
     calendar = get(config.time, "calendar", "standard")::String
     time_units = get(config.time, "time_units", CFTime.DEFAULT_TIME_UNITS)
@@ -1002,7 +1002,7 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             calendar,
             time_units,
             extra_dim,
-            sizeinmetres;
+            cell_length_in_meter;
             deflatelevel = deflatelevel,
         )
     else
@@ -1026,7 +1026,7 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             calendar,
             time_units,
             extra_dim,
-            sizeinmetres;
+            cell_length_in_meter;
             float_type = Float64,
         )
     else
@@ -1711,7 +1711,7 @@ end
 "Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
-        v = get(config.model, "thicknesslayers", Float64[])
+        v = get(config.model, "soil_layer__thickness", Float64[])
         inds = collect(1:(length(v) + 1))
         index = inds[dim_value]
     else
@@ -1734,8 +1734,8 @@ Check if required state settings in `config` object (parsed TOML file) are set f
 or writing states.
 """
 function check_config_states(config::Config)
-    reinit = get(config.model, "reinit", true)::Bool
-    if !reinit
+    cold_start = get(config.model, "cold_start__flag", true)::Bool
+    if !cold_start
         state_settings = check_config_states(config, "path_input")
         state_settings ||
             error("The state section for reading states in the TOML file is incomplete")

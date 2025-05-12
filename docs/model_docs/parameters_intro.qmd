@@ -50,8 +50,8 @@ required to run wflow.
 
 | Standard Name | Description | Unit | Default value |
 | ---- | ----- | - | -- |
-| `local_drain_direction` | Local drain direction (1-9) | - | - |
-| `subcatchment_location__count` | Subcatchment ids | - | - |
+| `basin__local_drain_direction` | Local drain direction (1-9) | - | - |
+| `subbasin_location__count` | Subbasin ids | - | - |
 | `river_location__mask` | River mask (0-1) | - | - |
 : {.striped .hover}
 

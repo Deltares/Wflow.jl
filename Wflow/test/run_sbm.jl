@@ -62,10 +62,11 @@ end
         8.601765,
         2.7730224,
     ]
-    @test ds["Q_river_gauge"].attrib["cf_role"] == "timeseries_id"
+    @test ds["Q_river_gauge__count"].attrib["cf_role"] == "timeseries_id"
     @test ds["temp_index"][:] ≈ [2.39]
     @test ds["temp_coord"][:] ≈ [2.39]
-    @test keys(ds.dim) == ["time", "layer", "Q_river_gauge", "temp_bycoord", "temp_byindex"]
+    @test keys(ds.dim) ==
+          ["time", "layer", "Q_river_gauge__count", "temp_bycoord", "temp_byindex"]
 end
 
 @testset "first timestep" begin
@@ -156,8 +157,8 @@ Wflow.close_files(model; delete_output = false)
 # resulting in 3 basins)
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
-config["model"]["pits"] = true
-config["input"]["pits"] = "wflow_pits"
+config["model"]["pit__flag"] = true
+config["input"]["basin_pit_location__mask"] = "wflow_pits"
 config.time.endtime = DateTime(2000, 1, 9)
 config.logging.loglevel = "info"
 

@@ -35,8 +35,8 @@ function initialize_subsurface_flow(
     soil::SbmSoilModel,
     type::SbmGwfModel,
 )
-    do_drains = get(config.model, "drains", false)::Bool
-    do_constanthead = get(config.model, "constanthead", false)::Bool
+    do_drains = get(config.model, "drain__flag", false)::Bool
+    do_constanthead = get(config.model, "constanthead__flag", false)::Bool
 
     (; land, river, drain) = domain
 
@@ -134,14 +134,14 @@ function initialize_river_flow(
     domain::Domain,
     routing_types::NamedTuple,
 )
-    do_reservoirs = get(config.model, "reservoirs", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     if do_reservoirs
         reservoir = SimpleReservoir(dataset, config, domain.reservoir.network)
     else
         reservoir = nothing
     end
 
-    do_lakes = get(config.model, "lakes", false)::Bool
+    do_lakes = get(config.model, "lake__flag", false)::Bool
     if do_lakes
         lake = Lake(dataset, config, domain.lake.network)
     else

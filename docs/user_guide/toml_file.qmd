@@ -10,12 +10,12 @@ structured in several sections, which are explained below.
 ## General
 The file paths provided in this file are relative to the location of the TOML file, or to
 `dir_input` and `dir_output` if they are specified. To indicate that a wflow model [runs
-from Delft-FEWS](fews.qmd), the `fews_run` setting needs to be set at `true`.
+from Delft-FEWS](fews.qmd), the `fews_run__flag` setting needs to be set at `true`.
 
 ```toml
 dir_input = "data/input"      # optional, default is the path of the TOML
 dir_output = "data/output"    # optional, default is the path of the TOML
-fews_run = false              # optional, default value is false
+fews_run__flag = false              # optional, default value is false
 ```
 
 
@@ -63,22 +63,22 @@ print any debug-level messages. Note that for finer control, you can also pass a
 log level. For details, see Julia's
 [Logging](https://docs.julialang.org/en/v1/stdlib/Logging/#Log-event-structure)
 documentation. `path_log` sets the desired output path for the log file. For information on
-`fews_run`, see [Run from Delft-FEWS](./fews.qmd).
+`fews_run__flag`, see [Run from Delft-FEWS](./fews.qmd).
 
 ## Model section
 Model-specific settings can be included in the model section of the TOML file.
 
 ```toml
 [model]
-type = "sbm"                          # one of ("sbm" or "sbm_gwf")
-gravitational_snow_transport = true   # include lateral snow transport in the model, default is false
-snow = true                           # include snow modelling, default is false
-reinit = true                         # cold (reinit = true) or warm state (reinit = false), default is true
-reservoirs = true                     # include reservoir modelling, default is false
-kin_wave_iteration = true             # enable kinematic wave iterations in the model, default is false
-thicknesslayers = [100, 300, 800]     # specific SBM soil model setting: for each soil layer, a thickness [mm] is specified
-min_streamorder_river = 5             # minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
-min_streamorder_land = 4              # minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
+type = "sbm"                                    # one of ("sbm" or "sbm_gwf")
+snow_gravitional_transport__flag = true         # include lateral snow transport in the model, default is false
+snow__flag = true                               # include snow modelling, default is false
+cold_start__flag = true                         # cold (cold_start__flag = true) or warm state (cold_start__flag = false), default is true
+reservoir__flag = true                          # include reservoir modelling, default is false
+kinematic_wave__adaptive_time_step_flag = true  # enable kinematic wave adaptive (internal) timestepping in the model, default is false
+soil_layer__thickness = [100, 300, 800]         # specific SBM soil model setting: for each soil layer, a thickness [mm] is specified
+river_streamorder__min_count = 5                # minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
+land_streamorder__min_count = 4                 # minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
 ```
 
 A complete overview of the model settings for the different model types is available
@@ -134,9 +134,9 @@ a default value will be used, if available.
 
 Forcing parameters should be available in `input.path_forcing` file and both static and
 cyclic parameters in `input.path_static` netcdf file. The main `input` section also lists
-variables describing the different modelling domains or masks (for example subcatchment,
-river, reservoir or lake) as well as the flow directions. Additional locations to save outputs
-for should also be listed here (eg gauges).
+variables describing the different modelling domains or masks (for example subbasin, river,
+reservoir or lake) as well as the flow directions. Additional locations to save outputs for
+should also be listed here (eg gauges).
 
 ```toml
 [input]
@@ -145,14 +145,14 @@ path_forcing = "forcing-moselle.nc"
 path_static = "staticmaps-moselle.nc"
 
 # Flow direction and modelling domains
-local_drain_direction = "wflow_ldd"
+basin__local_drain_direction = "wflow_ldd"
 river_location__mask = "wflow_river"
 reservoir_area__count = "wflow_reservoirareas"
 reservoir_location__count = "wflow_reservoirlocs"
-subcatchment_location__count = "wflow_subcatch"
+subbasin_location__count = "wflow_subcatch"
 
 # Ouput locations: these are not directly part of the model
-river_gauge = "wflow_gauges_grdc"
+river_gauge__count = "wflow_gauges_grdc"
 
 # Map forcing parameter standard names that vary over time to variable names in the forcing netCDF file
 [input.forcing]
@@ -254,24 +254,24 @@ In addition to gridded data, scalar data can also be written to a netCDF file. B
 example that shows how to write scalar data to the file "output\_scalar\_moselle.nc". For
 each netCDF variable, a `name` (external variable name) and a `parameter` (model parameter
 standard name) are required. A `reducer` can be specified to apply to the model output. See
-more details in the [Output CSV section](#output-csv-section) section. If a `map` (from the `input` section) is
-provided to extract data for specific locations (e.g. `river_gauge`) or areas (e.g.
-`subcatchment_location__count`), the netCDF location names are extracted from these maps.
-For a specific location (grid cell) a `location` is required. For layered model parameters
-and variables that have an extra `layer` dimension and are part of the `SBM` `soil` model,
-an internal layer index can be specified (an example is provided below). If multiple layers
-are desired, this can be specified in separate `[[output.netcdf_scalar.variable]]` entries.
-Note that the additional dimension should be specified when wflow is integrated with
-Delft-FEWS, for netCDF scalar data an extra dimension is not allowed by the
-`importNetcdfActivity` of the Delft-FEWS General Adapter. In the section [Output CSV
-section](#output-csv-section), similar functionality is available for CSV. For integration
-with Delft-FEWS, it is recommended to write scalar data to netCDF format, as the General
-Adapter of Delft-FEWS can directly ingest data from netCDF files. For more information, see
-[Run from Delft-FEWS](./fews.qmd).
+more details in the [Output CSV section](#output-csv-section) section. If a `map` (from the
+`input` section) is provided to extract data for specific locations (e.g.
+`river_gauge__count`) or areas (e.g. `subbasin_location__count`), the netCDF location names
+are extracted from these maps. For a specific location (grid cell) a `location` is required.
+For layered model parameters and variables that have an extra `layer` dimension and are part
+of the `SBM` `soil` model, an internal layer index can be specified (an example is provided
+below). If multiple layers are desired, this can be specified in separate
+`[[output.netcdf_scalar.variable]]` entries. Note that the additional dimension should be
+specified when wflow is integrated with Delft-FEWS, for netCDF scalar data an extra
+dimension is not allowed by the `importNetcdfActivity` of the Delft-FEWS General Adapter. In
+the section [Output CSV section](#output-csv-section), similar functionality is available
+for CSV. For integration with Delft-FEWS, it is recommended to write scalar data to netCDF
+format, as the General Adapter of Delft-FEWS can directly ingest data from netCDF files. For
+more information, see [Run from Delft-FEWS](./fews.qmd).
 
 ```toml
 [input]
-river_gauge = "wflow_gauges_grdc"
+river_gauge__count = "wflow_gauges_grdc"
 
 [output.netcdf_scalar]
 path = "output_scalar_moselle.nc"    # Location of the results
@@ -280,7 +280,7 @@ path = "output_scalar_moselle.nc"    # Location of the results
 # and assign it with the name 'Q' as a variable in the netCDF file
 [[output.netcdf_scalar.variable]]
 name = "Q"
-map = "river_gauge"
+map = "river_gauge__count"
 parameter = "river_water__volume_flow_rate"
 
 # Using coordinates to extract temperature
@@ -326,13 +326,13 @@ output, with the following available reducers:
 
 with `only` as the default. To extract data for a specific location (grid cell), the `index`
 of the vector, the coordinates `coordinate.x` and `coordinate.y`, or the x and y indices of
-the 2D array (`index.x` and `index.y`) can be provided. Additionally, a `map` (from the `input` section) can be
-provided to extract data for certain locations (e.g. `river_gauge`) or areas (e.g.
-`subcatchment_location__count`). In this case, a single entry can lead to multiple columns
-in the CSV file, which will be of the form `header_id`, e.g. `Q_20`, for a gauge with
-integer ID $20$. For layered model parameters and variables that have an extra dimension
-`layer` and are part of the `SBM` `soil` model an internal layer index (see also example
-below) should be specified.
+the 2D array (`index.x` and `index.y`) can be provided. Additionally, a `map` (from the
+`input` section) can be provided to extract data for certain locations (e.g.
+`river_gauge__count`) or areas (e.g. `subbasin_location__count`). In this case, a single
+entry can lead to multiple columns in the CSV file, which will be of the form `header_id`,
+e.g. `Q_20`, for a gauge with integer ID $20$. For layered model parameters and variables
+that have an extra dimension `layer` and are part of the `SBM` `soil` model an internal
+layer index (see also example below) should be specified.
 
 The double brackets in `[[output.csv.column]]` follow TOML syntax, indicating that it is
 part of a list. You can specify as many entries as you want.
@@ -340,9 +340,9 @@ part of a list. You can specify as many entries as you want.
 ```toml
 [input]
 # Modelling domains
-subcatchment_location__count = "wflow_subcatch"
+subbasin_location__count = "wflow_subcatch"
 # Ouput locations: these are not directly part of the model
-river_gauge = "wflow_gauges_grdc"
+river_gauge__count = "wflow_gauges_grdc"
 
 [output.csv]
 path = "output_moselle.csv"
@@ -378,12 +378,12 @@ parameter = "atmosphere_air__temperature"
 
 [[output.csv.column]]
 header = "Q"
-map = "river_gauge"
+map = "river_gauge__count"
 parameter = "river_water__volume_flow_rate"
 
 [[output.csv.column]]
 header = "recharge"
-map = "subcatchment_location__count"
+map = "subbasin_location__count"
 parameter = "soil_water_sat-zone_top__net_recharge_volume_flux"
 reducer = "mean"
 ```

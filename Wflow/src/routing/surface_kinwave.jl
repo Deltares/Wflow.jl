@@ -17,15 +17,15 @@ function init_kinematic_wave_timestepping(
     domain::String,
     dt_fixed::Float64,
 )
-    adaptive = get(config.model, "kin_wave_iteration", false)::Bool
+    adaptive = get(config.model, "kinematic_wave__adaptive_time_step_flag", false)::Bool
     @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
 
     if adaptive
         stable_timesteps = zeros(n)
         timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
-        dt_fixed = get(config.model, "kw_$(domain)_tstep", dt_fixed)
-        @info "Using a fixed sub-timestep (seconds) $dt_fixed for kinematic wave $domain flow."
+        dt_fixed = get(config.model, "$(domain)_kinematic_wave__time_step", dt_fixed)
+        @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
         timestepping = TimeStepping(; dt_fixed, adaptive)
     end
     return timestepping
@@ -607,7 +607,7 @@ function update_lateral_inflow!(
     (; net_runoff) = soil.variables
     (; inwater) = model.boundary_conditions
 
-    do_drains = get(config.model, "drains", false)::Bool
+    do_drains = get(config.model, "drain__flag", false)::Bool
     if do_drains
         drain = subsurface_flow.boundaries.drain
         drainflux = zeros(length(net_runoff))

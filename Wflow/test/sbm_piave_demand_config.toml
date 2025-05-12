@@ -36,11 +36,11 @@ glacier_ice__leq-depth = "glacierstore"
 path_forcing = "forcing-piave.nc"
 path_static = "staticmaps-piave.nc"
 
-local_drain_direction = "wflow_ldd"
+basin__local_drain_direction = "wflow_ldd"
 river_location__mask = "wflow_river"
-subcatchment_location__count = "wflow_subcatch"
-river_gauge = "wflow_gauges"
-river_gauge_grdc = "wflow_gauges_grdc"
+subbasin_location__count = "wflow_subcatch"
+river_gauge__count = "wflow_gauges"
+river_gauge_grdc__count = "wflow_gauges_grdc"
 reservoir_area__count = "wflow_reservoirareas"
 reservoir_location__count = "wflow_reservoirlocs"
 lake_area__count = "wflow_lakeareas"
@@ -93,11 +93,11 @@ soil__thickness = "SoilThickness"
 soil_layer_water__brooks-corey_exponent = "c"
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
-land_water_allocation_area__number = "allocation_areas_admin2"
+land_water_allocation_area__count = "allocation_areas_admin2"
 land_surface_water__withdrawal_fraction = "frac_sw_used"
 soil_water__vertical_saturated_hydraulic_conductivity_factor = "kvfrac"
-"land~irrigated-paddy_area__number" = "paddy_irrigation_areas"
-"land~irrigated-non-paddy_area__number" = "nonpaddy_irrigation_areas"
+"land~irrigated-paddy_area__count" = "paddy_irrigation_areas"
+"land~irrigated-non-paddy_area__count" = "nonpaddy_irrigation_areas"
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio.value = 100
 
 [input.cyclic]
@@ -113,24 +113,22 @@ vegetation__leaf-area_index = "LAI"
 
 [model]
 type = "sbm"
-gravitational_snow_transport = true
-snow = true
-reinit = false
-reservoirs = true
-lakes = true
-glacier = true
-kin_wave_iteration = true
-kw_river_tstep = 900
-kw_land_tstep = 3600
-thicknesslayers = [ 50, 100, 50, 200, 800,]
+snow_gravitional_transport__flag = true
+snow__flag = true
+cold_start__flag = false
+reservoir__flag = true
+lake__flag = true
+glacier__flag = true
+kinematic_wave__adaptive_time_step_flag = true
+soil_layer__thickness = [ 50, 100, 50, 200, 800,]
 river_routing = "kinematic-wave"
 
 [model.water_demand]
-domestic = true
-industry = true
-livestock = true
-paddy = true
-nonpaddy = true
+domestic__flag = true
+industry__flag = true
+livestock__flag = true
+paddy__flag = true
+nonpaddy__flag = true
 
 [output.netcdf_grid]
 path = "output-piave-demand.nc"
@@ -144,12 +142,12 @@ path = "output-piave-demand.csv"
 
 [[output.csv.column]]
 header = "Q"
-map = "river_gauge"
+map = "river_gauge__count"
 parameter = "river_water__volume_flow_rate"
 
 [[output.csv.column]]
 header = "Q"
-map = "river_gauge_grdc"
+map = "river_gauge_grdc__count"
 parameter = "river_water__volume_flow_rate"
 
 [[output.csv.column]]

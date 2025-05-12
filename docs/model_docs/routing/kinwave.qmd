@@ -50,18 +50,27 @@ dividing the grid cell area by the flow length and subtracting $\subtext{w}{rive
 
 The kinematic wave equations are solved with a nonlinear scheme using Newton's method. By
 default, the iterations are performed until a stable solution is reached ($\epsilon <
-10^{-12}$). Variable internal time stepping is based on the Courant number or a fixed time
-step size $\SIb{}{s}$. To enable a fixed or variable internal time step for the kinematic
-wave the following lines can be inserted in the TOML file of the model:
+10^{-12}$). The internal time stepping is based on the Courant number or a fixed time step
+size $\SIb{}{s}$. To enable a fixed internal time step for the kinematic wave the following
+lines can be inserted in the TOML file of the model:
 
 ```toml
 [model]
-# Enable internal time stepping for the kinematic wave
-kin_wave_iteration = true
+# Adaptive (internal) time stepping for the kinematic wave
+kinematic_wave__adaptive_time_step_flag = false    # optional, default is false
 # Fixed internal timestep for river flow (river cells)
-kw_river_tstep = 900
+river_kinematic_wave__time_step = 900        # optional, default is model timestep
 # Fixed internal timestep for overland flow (land cells)
-kw_land_tstep = 3600
+land_kinematic_wave__time_step = 3600        # optional, default is model timestep
+```
+
+Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of
+the model:
+
+```toml
+[model]
+# Adaptive (internal) time stepping for the kinematic wave
+kinematic_wave__adaptive_time_step_flag = true    # optional, default is false
 ```
 
 [Reservoir and lake](./waterbodies.qmd) models can be included as part of the river
@@ -181,24 +190,25 @@ and which subbasins can run in parallel.
 
 ```toml
 [model]
-min_streamorder_river = 5 # minimum stream order to delineate subbasins for river domain, default is 6
-min_streamorder_land = 4  # minimum stream order to delineate subbasins for land domain, default is 5
+river_streamorder__min_count = 5 # minimum stream order to delineate subbasins for river domain, default is 6
+land_streamorder__min_count = 4  # minimum stream order to delineate subbasins for land domain, default is 5
 ```
 
-## Subcatchment flow
-Normally the the kinematic wave is continuous throughout the model. By using the `pits` entry
-in the model and input sections of the TOML file all flow is at the subcatchment only (upstream
-of the pit locations, defined by the netCDF variable `wflow_pits` in the example below) and no
-flow is transferred from one subcatchment to another. This can be convenient when connecting
-the result of the model to a water allocation model such as Ribasim.
+## Subbasin flow
+Normally the the kinematic wave is continuous throughout the model. By using the `pit__flag`
+entry and `basin_pit_location__mask` in the model and input sections of the TOML file all
+flow is at the subbasin only (upstream of the pit locations, defined by the netCDF variable
+`wflow_pits` in the example below) and no flow is transferred from one subbasin to another.
+This can be convenient when connecting the result of the model to a water allocation model
+such as Ribasim.
 
 ```toml
 [input]
 # these are not directly part of the model
-pits = "wflow_pits"
+basin_pit_location__mask = "wflow_pits"
 
 [model]
-pits = true
+pit__flag = true
 ```
 
 ## Limitations

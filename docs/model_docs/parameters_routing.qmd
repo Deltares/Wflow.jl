@@ -288,7 +288,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | ------ | ---- | -- | -- |
 | `land_drain__elevation` | Drain elevation | m | - |
 | `land_drain__conductance` | Drain conductance | m² day⁻¹ | - |
-| `land_drain_location__flag` | Drain location | - | - |
+| `land_drain_location__mask` | Drain location | - | - |
 : {.striped .hover}
 
 #### Output {#output-gwf-drainage}
@@ -331,7 +331,6 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-
 | `river_sediment__median_diameter` | Particle median diameter | mm | 0.1 |
 | `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
 | `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
@@ -369,7 +368,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | ------ | ---- | -- | -- |
 | `reservoir_surface__area` | Reservoir surface area | m² | - |
 | `lake_surface__area` | Lake surface area | m² | - |
-| `reservoir_sediment~bedload__trapping_efficiency_coefficient` | Reservoir sediment trapping efficiency | - | 1.0 |
+| `reservoir_water_sediment~bedload__trapping_efficiency` | Reservoir sediment bedload trapping efficiency | - | 1.0 |
 | `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
 | `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
 | `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |

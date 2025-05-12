@@ -99,7 +99,7 @@ function Clock(config, reader)
     end
 
     calendar = get(config.time, "calendar", "standard")::String
-    fews_run = get(config, "fews_run", false)::Bool
+    fews_run = get(config, "fews_run__flag", false)::Bool
     if fews_run
         config.time.starttime = starttime + dt
     end
