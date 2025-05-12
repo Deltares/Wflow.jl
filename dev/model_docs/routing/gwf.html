@@ -631,7 +631,7 @@ C = \frac{kH w}{l}
 <h2 class="anchored" data-anchor-id="constant-head">Constant head</h2>
 <p>For model type <code>sbm_gwf</code> Dirichlet boundary conditions can be specified (optional) in the TOML file as follows:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">constanthead</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">constanthead__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~constant_hydraulic_head"</span> <span class="op">=</span> <span class="st">"constant_head"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -664,10 +664,10 @@ C = \frac{kH w}{l}
 <p>The list of input parameters for the drainage boundary of groundwater flow that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#input-gwf-drainage">here</a>.</p>
 <p>The exchange flux (drains to aquifer) <span class="math inline">\(\subtext{Q}{drain}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-drainage">output variable</a>, and is used to update the total flux in a cell with drains. For model type <code>sbm_gwf</code> this boundary condition is optional, and can be specified in the TOML file as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">drains</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">drain__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain_location__flag</span> <span class="op">=</span> <span class="st">"drain"</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain_location__mask</span> <span class="op">=</span> <span class="st">"drain"</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__conductance</span> <span class="op">=</span> <span class="st">"cond_drain"</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__elevation</span> <span class="op">=</span> <span class="st">"elev_drain"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
