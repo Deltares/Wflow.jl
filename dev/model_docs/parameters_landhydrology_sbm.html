@@ -616,7 +616,7 @@ td, th {
 <td><code>snowpack__degree-day_coefficient</code></td>
 <td>Degree-day factor for snowmelt</td>
 <td>mm ᵒC⁻¹ Δt⁻¹</td>
-<td>3.75653 mm ᵒC⁻¹ day⁻¹</td>
+<td>3.75 mm ᵒC⁻¹ day⁻¹</td>
 </tr>
 <tr class="odd">
 <td><code>snowpack__liquid_water_holding_capacity</code></td>
@@ -807,7 +807,7 @@ td, th {
 <td><code>vegetation_root__depth</code></td>
 <td>Rooting depth</td>
 <td>mm</td>
-<td>750.0</td>
+<td>-</td>
 </tr>
 <tr class="even">
 <td><code>vegetation__crop_factor</code></td>
@@ -843,7 +843,7 @@ td, th {
 <td><code>vegetation_canopy__gap_fraction</code></td>
 <td>Canopy gap fraction</td>
 <td>-</td>
-<td>0.1</td>
+<td>-</td>
 </tr>
 <tr class="even">
 <td><code>vegetation_water__storage_capacity</code></td>
@@ -958,8 +958,8 @@ td, th {
 <tr class="even">
 <td><code>soil_layer_water__vertical_saturated_hydraulic_conductivity</code></td>
 <td>Vertical saturated hydraulic conductivity per soil layer, when a <code>layered</code> or <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
-<td>mm</td>
-<td>1000.0 mm day⁻¹</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
 </tr>
 <tr class="odd">
 <td><code>soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth</code></td>
@@ -983,25 +983,25 @@ td, th {
 <td><code>soil_water__saturated_volume_fraction</code></td>
 <td>Saturated water content</td>
 <td>-</td>
-<td>0.6</td>
+<td>-</td>
 </tr>
 <tr class="odd">
 <td><code>soil_water__residual_volume_fraction</code></td>
 <td>Residual water content</td>
 <td>-</td>
-<td>0.01</td>
+<td>-</td>
 </tr>
 <tr class="even">
 <td><code>soil_surface_water__vertical_saturated_hydraulic_conductivity</code></td>
 <td>Vertical saturated hydraulic conductivity at soil surface</td>
-<td>mm day⁻¹</td>
-<td>3000.0</td>
+<td>mm Δt⁻¹</td>
+<td>-</td>
 </tr>
 <tr class="odd">
 <td><code>soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter</code></td>
 <td>Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth</td>
 <td>mm⁻¹</td>
-<td>0.001</td>
+<td>-</td>
 </tr>
 <tr class="even">
 <td><code>soil_water__air_entry_pressure_head</code></td>
@@ -1037,7 +1037,7 @@ td, th {
 <td><code>vegetation_root__feddes_critial_pressure_head_h~4</code></td>
 <td>Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
-<td>-15849.0</td>
+<td>-16000.0</td>
 </tr>
 <tr class="even">
 <td><code>vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient</code></td>
@@ -1049,7 +1049,7 @@ td, th {
 <td><code>soil__thickness</code></td>
 <td>Soil thickness</td>
 <td>mm</td>
-<td>2000.0</td>
+<td>-</td>
 </tr>
 <tr class="even">
 <td><code>soil~compacted_surface_water__infiltration_capacity</code></td>
@@ -1073,7 +1073,7 @@ td, th {
 <td><code>soil_layer_water__brooks-corey_exponent</code></td>
 <td>Brooks-Corey power coefficient per soil layer</td>
 <td>-</td>
-<td>10.0</td>
+<td>-</td>
 </tr>
 <tr class="even">
 <td><code>land~water-covered__area_fraction</code></td>
@@ -1091,7 +1091,7 @@ td, th {
 <td><code>soil~compacted__area_fraction</code></td>
 <td>Fraction of compacted soil area</td>
 <td>-</td>
-<td>0.01</td>
+<td>-</td>
 </tr>
 <tr class="odd">
 <td><code>soil_root~wet__sigmoid_function_shape_parameter</code></td>
@@ -1106,18 +1106,12 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_bottom__max_leakage_volume_flux</code></td>
-<td>Maximum leakage from the saturated zone</td>
-<td>mm day⁻¹</td>
-<td>0.0</td>
-</tr>
-<tr class="even">
 <td><code>soil_water_sat-zone_top_capillary-rise__max_water-table_depth</code></td>
 <td>Maximum water table depth for capillary rise</td>
 <td>mm</td>
 <td>2000.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water_sat-zone_top_capillary-rise__averianov_exponent</code></td>
 <td>Averianov exponent controlling capillary rise</td>
 <td>-</td>
