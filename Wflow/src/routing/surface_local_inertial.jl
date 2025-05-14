@@ -245,7 +245,8 @@ function local_inertial_river_update!(
 )
     (; nodes_at_edge, edges_at_node) = domain.river.network
     (; flow_length, flow_width) = domain.river.parameters
-    (; inwater, abstraction, inflow, actual_abstraction_av) = model.boundary_conditions
+    (; inwater, abstraction, inflow, actual_external_abstraction_av) =
+        model.boundary_conditions
 
     river_v = model.variables
     river_p = model.parameters
@@ -430,7 +431,7 @@ function local_inertial_river_update!(
             # limit negative external inflow
             if inflow[i] < 0.0
                 _inflow = max(-(0.80 * river_v.storage[i] / dt), inflow[i])
-                actual_abstraction_av[i] += _inflow * dt
+                actual_external_abstraction_av[i] += _inflow * dt
             else
                 _inflow = inflow[i]
             end
@@ -485,7 +486,7 @@ function update!(
     dt::Float64;
     update_h = true,
 )
-    (; reservoir, lake, actual_abstraction_av) = model.boundary_conditions
+    (; reservoir, lake, actual_external_abstraction_av) = model.boundary_conditions
     (; flow_length) = domain.river.parameters
 
     set_waterbody_vars!(reservoir)
@@ -494,7 +495,7 @@ function update!(
     if !isnothing(model.floodplain)
         set_flow_vars!(model.floodplain.variables)
     end
-    set_flow_vars!(model.variables, actual_abstraction_av)
+    set_flow_vars!(model.variables, actual_external_abstraction_av)
 
     t = 0.0
     while t < dt
@@ -505,7 +506,7 @@ function update!(
         local_inertial_river_update!(model, domain, dt_s, dt, doy, update_h)
         t = t + dt_s
     end
-    average_flow_vars!(model.variables, actual_abstraction_av, dt)
+    average_flow_vars!(model.variables, actual_external_abstraction_av, dt)
     average_waterbody_vars!(reservoir, dt)
     average_waterbody_vars!(lake, dt)
 
@@ -772,13 +773,13 @@ function update!(
     dt::Float64;
     update_h = false,
 )
-    (; reservoir, lake, actual_abstraction_av) = river.boundary_conditions
+    (; reservoir, lake, actual_external_abstraction_av) = river.boundary_conditions
     (; flow_length) = domain.river.parameters
     (; parameters) = domain.land
 
     set_waterbody_vars!(reservoir)
     set_waterbody_vars!(lake)
-    set_flow_vars!(river.variables, actual_abstraction_av)
+    set_flow_vars!(river.variables, actual_external_abstraction_av)
     set_flow_vars!(land.variables)
 
     t = 0.0
@@ -793,7 +794,7 @@ function update!(
         local_inertial_update!(land, river, domain, dt_s)
         t = t + dt_s
     end
-    average_flow_vars!(river.variables, actual_abstraction_av, dt)
+    average_flow_vars!(river.variables, actual_external_abstraction_av, dt)
     average_flow_vars!(land.variables, dt)
     average_waterbody_vars!(reservoir, dt)
     average_waterbody_vars!(lake, dt)
@@ -950,7 +951,7 @@ function local_inertial_update!(
                         end
                     _inflow =
                         max(-(0.80 * available_volume / dt), river_bc.inflow[inds_river[i]])
-                    river_bc.actual_abstraction_av[inds_river[i]] += _inflow * dt
+                    river_bc.actual_external_abstraction_av[inds_river[i]] += _inflow * dt
                 else
                     _inflow = river_bc.inflow[inds_river[i]]
                 end
