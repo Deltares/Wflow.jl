@@ -150,7 +150,7 @@ end
 function SimpleReservoir(dataset::NCDataset, config::Config, network::NetworkWaterBody)
     parameters = ReservoirParameters(dataset, config, network)
 
-    n_reservoirs = length(parameters.area)
+    n_reservoirs = Int(length(parameters.area))
     @info "Read `$n_reservoirs` reservoir locations."
 
     variables = ReservoirVariables(n_reservoirs, parameters)

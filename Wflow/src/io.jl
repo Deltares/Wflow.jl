@@ -988,7 +988,7 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
     # data
     if check_config_output(config, "netcdf_grid", "variables")
         nc_path = output_path(config, config.output.netcdf_grid.path)
-        deflatelevel = get(config.output.netcdf_grid, "compressionlevel", 0)::Int
+        deflatelevel = get(config.output.netcdf_grid, "compressionlevel", 0)::Int64
         @info "Create an output netCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
         # create a flat mapping from internal parameter locations to netCDF variable names
         output_ncnames = ncnames(config.output.netcdf_grid.variables)
@@ -1547,7 +1547,7 @@ function read_dims(A::CFVariable_MF, dim_sel::NamedTuple)
                 push!(indexer, idx)
                 # Would be nice to generalize this to anything that drops the dimension
                 # when used to index. Not sure how we could support `begin` or `end` here.
-                if !(idx isa Int)
+                if !(idx isa Int64)
                     push!(data_dim_order, dim)
                 end
             else

@@ -44,13 +44,13 @@ end
 "Struct for storing network information land domain."
 @kwdef struct NetworkLand
     # dimension of 2D model
-    modelsize::Tuple{Int, Int} = (0, 0)
+    modelsize::Tuple{Int, Int} = (Int(0), Int(0))
     # local drain direction using the 8 point pour algorithm
     local_drain_direction::Vector{UInt8} = UInt8[]
     # water allocation areas [-]
-    allocation_area_indices::Vector{Vector{Int64}} = Vector{Int}[]
+    allocation_area_indices::Vector{Vector{Int}} = Vector{Int}[]
     # directed acyclic graph
-    graph::SimpleDiGraph{Int} = DiGraph(0)
+    graph::SimpleDiGraph{Int64} = DiGraph(0)
     # Strahler stream order
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
@@ -126,7 +126,7 @@ end
 "Initialize `EdgeConnectivity`"
 function EdgeConnectivity(network::NetworkLand)
     (; modelsize, indices, reverse_indices) = network
-    n = length(indices)
+    n = Int(length(indices))
     edge_indices =
         EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
 
@@ -170,11 +170,11 @@ end
     # local drain direction using the 8 point pour algorithm
     local_drain_direction::Vector{UInt8} = UInt8[]
     # water allocation areas [-]
-    allocation_area_indices::Vector{Vector{Int64}} = Vector{Int}[]
+    allocation_area_indices::Vector{Vector{Int}} = Vector{Int}[]
     # source and destination edge of a node
     edges_at_node::EdgesAtNode = EdgesAtNode()
     # directed graph
-    graph::SimpleDiGraph{Int} = DiGraph(0)
+    graph::SimpleDiGraph{Int64} = DiGraph(0)
     # Strahler stream order
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal river domain to the 2D model (external) domain
@@ -307,7 +307,7 @@ function NetworkWaterBody(
 
     # construct a map from the rivers to the waterbody and
     # a map of the waterbody to the 2D model grid
-    inds_map2river = fill(0, length(indices))
+    inds_map2river = fill(Int(0), length(indices))
     inds = CartesianIndex{2}[]
     counter = 0
     for (i, ind) in enumerate(indices)
@@ -341,7 +341,7 @@ external model domain, and 1D land domain indices `land_indices` of `Drainage` c
 """
 @kwdef struct NetworkDrain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    reverse_indices::Matrix{Int64} = zeros(Int, 0, 0)
+    reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     land_indices::Vector{Int} = Int[]
 end
 

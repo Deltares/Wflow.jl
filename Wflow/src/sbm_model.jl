@@ -144,7 +144,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
 
     # read and set states in model object if cold_start=false
     if cold_start == false
-        nriv = length(domain.river.network.indices)
+        nriv = Int(length(domain.river.network.indices))
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float, dimname = :layer)

@@ -191,8 +191,8 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         excesswaterpath = fill(MISSING_VALUE, n),
         runoff = fill(MISSING_VALUE, n),
         net_runoff = fill(MISSING_VALUE, n),
-        vwc = svectorscopy(vwc, Val{maxlayers}()),
-        vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
+        vwc = svectorscopy(vwc, Val{Int64(maxlayers)}()),
+        vwc_perc = svectorscopy(vwc_perc, Val{Int64(maxlayers)}()),
         rootstore = fill(MISSING_VALUE, n),
         vwc_root = fill(MISSING_VALUE, n),
         vwc_percroot = fill(MISSING_VALUE, n),
@@ -303,7 +303,7 @@ function sbm_kv_profiles(
             error("$parname needs a layer dimension of size $maxlayers, but is $size1")
         end
         if kv_profile_type == "layered"
-            kv_profile = KvLayered(svectorscopy(kv, Val{maxlayers}()))
+            kv_profile = KvLayered(svectorscopy(kv, Val{Int64(maxlayers)}()))
         else
             lens = lens_input_parameter(
                 config,
@@ -320,7 +320,7 @@ function sbm_kv_profiles(
             end
             kv_profile = KvLayeredExponential(
                 f,
-                svectorscopy(kv, Val{maxlayers}()),
+                svectorscopy(kv, Val{Int64(maxlayers)}()),
                 nlayers_kv,
                 z_layered,
             )
@@ -348,11 +348,11 @@ function SbmSoilParameters(
         soil_layer_thickness =
             SVector(Tuple(push!(Float.(config_soil_layer_thickness), MISSING_VALUE)))
         cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
-        maxlayers = length(soil_layer_thickness) # max number of soil layers
+        maxlayers = Int(length(soil_layer_thickness)) # max number of soil layers
     else
         soil_layer_thickness = SVector.(soilthickness)
         cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
-        maxlayers = 1
+        maxlayers = Int(1)
     end
 
     lens = lens_input_parameter(config, "soil_surface_temperature__weight_coefficient")
@@ -481,7 +481,7 @@ function SbmSoilParameters(
     act_thickl =
         set_layerthickness.(soilthickness, (cum_depth_layers,), (soil_layer_thickness,))
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
-    nlayers = number_of_active_layers.(act_thickl)
+    nlayers = Vector{Int}(number_of_active_layers.(act_thickl))
 
     if length(config_soil_layer_thickness) > 0
         # root fraction read from dataset file, in case of multiple soil layers and TOML file
@@ -540,7 +540,7 @@ function SbmSoilParameters(
         soilwatercapacity,
         theta_s,
         theta_r,
-        kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
+        kvfrac = svectorscopy(kvfrac, Val{Int64(maxlayers)}()),  # casting N to 64-bit int is required because of bug; https://github.com/JuliaArrays/StaticArrays.jl/issues/1233
         hb,
         h1,
         h2,
@@ -556,10 +556,10 @@ function SbmSoilParameters(
         maxleakage,
         pathfrac,
         rootdistpar,
-        rootfraction = svectorscopy(rootfraction, Val{maxlayers}()),
+        rootfraction = svectorscopy(rootfraction, Val{Int64(maxlayers)}()),
         cap_hmax,
         cap_n,
-        c = svectorscopy(c, Val{maxlayers}()),
+        c = svectorscopy(c, Val{Int64(maxlayers)}()),
         w_soil,
         cf_soil,
         soil_fraction = fill(MISSING_VALUE, n),
@@ -584,7 +584,7 @@ function SbmSoilModel(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    n = length(indices)
+    n = Int(length(indices))
     params = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     vars = SbmSoilVariables(n, params)
     bc = SbmSoilBC(n)

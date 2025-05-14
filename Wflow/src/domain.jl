@@ -97,14 +97,14 @@ function Domain(
     end
 
     pits = zeros(Bool, network_land.modelsize)
-    nriv = length(network_river.indices)
+    nriv = Int(length(network_river.indices))
     if modelsettings.reservoirs
         network_reservoir, inds_reservoir_map2river =
             NetworkWaterBody(dataset, config, network_river.indices, "reservoir")
         pits[network_reservoir.indices_outlet] .= true
     else
         network_reservoir = NetworkWaterBody()
-        inds_reservoir_map2river = fill(0, nriv)
+        inds_reservoir_map2river = fill(Int(0), nriv)
     end
     @reset network_river.reservoir_indices = inds_reservoir_map2river
 
@@ -114,7 +114,7 @@ function Domain(
         pits[network_lake.indices_outlet] .= true
     else
         network_lake = NetworkWaterBody()
-        inds_lake_map2river = fill(0, nriv)
+        inds_lake_map2river = fill(Int(0), nriv)
     end
     @reset network_river.lake_indices = inds_lake_map2river
 
@@ -331,7 +331,7 @@ function get_river_fraction(
     river_length_2d = ncread(dataset, config, lens; type = Float, fill = 0, logging)
     river_length = river_length_2d[network.indices]
 
-    n = length(river_location)
+    n = Int(length(river_location))
     river_fraction = fill(MISSING_VALUE, n)
     for i in 1:n
         river_fraction[i] = if river_location[i]
@@ -380,7 +380,7 @@ function waterbody_mask(
 )
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     do_lakes = get(config.model, "lake__flag", false)::Bool
-    waterbodies = fill(0, length(network.indices))
+    waterbodies = fill(Int(0), length(network.indices))
     if do_reservoirs
         lens = lens_input(config, "reservoir_$(region)__count"; optional = false)
         reservoirs =

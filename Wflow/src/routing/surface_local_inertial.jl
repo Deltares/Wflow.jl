@@ -1,10 +1,10 @@
 "Struct for storing local inertial river flow model parameters"
 @with_kw struct LocalInertialRiverFlowParameters{
     T <: DenseArray{Float},
-    I <: DenseArray{Integ},
+    I <: DenseArray{Int},
 }
-    n::Integ                                # number of cells [-]
-    ne::Integ                               # number of edges [-]
+    n::Int                                  # number of cells [-]
+    ne::Int                                 # number of edges [-]
     active_n::I                             # active nodes [-]
     active_e::I                             # active edges [-]
     g::Float                                # acceleration due to gravity [m s⁻²]
@@ -46,9 +46,10 @@ function LocalInertialRiverFlowParameters(
     config::Config,
     domain::DomainRiver,
 )
-    alpha = get(config.model, "river_local_inertial_flow__alpha_coefficient", 0.7)::Float # stability coefficient for model time step (0.2-0.7)
+    alpha =
+        get(config.model, "river_local_inertial_flow__alpha_coefficient", Float(0.7))::Float # stability coefficient for model time step (0.2-0.7)
     waterdepth_threshold =
-        get(config.model, "river_water_flow_threshold__depth", 1.0e-03)::Float # depth threshold for flow at edge
+        get(config.model, "river_water_flow_threshold__depth", Float(1.0e-03))::Float # depth threshold for flow at edge
     froude_limit = get(config.model, "river_water_flow__froude_limit_flag", true)::Bool # limit flow to subcritical according to Froude number
     floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
 
@@ -72,7 +73,7 @@ function LocalInertialRiverFlowParameters(
     mannings_n =
         ncread(dataset, config, lens; sel = indices, defaults = 0.036, type = Float)
 
-    n = length(indices)
+    n = Int(length(indices))
     index_pit = findall(x -> x == 5, local_drain_direction)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell.
@@ -83,7 +84,7 @@ function LocalInertialRiverFlowParameters(
     append!(bankfull_depth, bankfull_depth[index_pit])
 
     # determine z, width, length and manning's n at edges
-    n_edges = ne(graph)
+    n_edges = Int(ne(graph))
     zb_max = fill(Float(0), n_edges)
     width_at_edge = fill(Float(0), n_edges)
     length_at_edge = fill(Float(0), n_edges)
@@ -101,14 +102,14 @@ function LocalInertialRiverFlowParameters(
             ) / (flow_length[dst_node] + flow_length[src_node])
         mannings_n_sq[i] = mannings_n_i * mannings_n_i
     end
-    active_index = findall(x -> x == 0, waterbody_outlet)
+    active_index = Vector{Int}(findall(x -> x == 0, waterbody_outlet))
 
     parameters = LocalInertialRiverFlowParameters(;
         n,
         ne = n_edges,
         active_n = active_index,
         active_e = active_index,
-        g = 9.80665,
+        g = Float(9.80665),
         froude_limit,
         h_thresh = waterdepth_threshold,
         zb,
@@ -205,7 +206,7 @@ end
 "Shallow water river flow model using the local inertial method"
 @with_kw struct LocalInertialRiverFlow{
     T <: DenseArray{Float},
-    I <: DenseArray{Integ},
+    I <: DenseArray{Int},
     R,
     L,
     F,
@@ -239,13 +240,14 @@ function LocalInertialRiverFlow(
 
     # The following boundary conditions can be set at ghost nodes, downstream of river
     # outlets (pits): river length and river depth
-    cfl = get(config.model, "river_local_inertial_flow__alpha_coefficient", 0.7)::Float # stability coefficient for model time step (0.2-0.7)
+    cfl =
+        get(config.model, "river_local_inertial_flow__alpha_coefficient", Float(0.7))::Float # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
     parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
     variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
 
-    n = length(domain.network.indices)
+    n = Int(length(domain.network.indices))
     boundary_conditions = RiverFlowBC(n, reservoir, lake)
 
     floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
@@ -304,7 +306,11 @@ function local_inertial_river_update!(
     if !isnothing(model.floodplain)
         model.floodplain.variables.q0 .= model.floodplain.variables.q
     end
-    @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
+    AK.foreachindex(
+        river_p.active_e;
+        scheduler = :polyester,  # Use Polyester.jl on cpu
+        min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
+    ) do j
         i = river_p.active_e[j]
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
@@ -315,7 +321,8 @@ function local_inertial_river_update!(
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
         river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.r[i] =
+            river_v.a[i] / (river_p.flow_width_at_edge[i] + Float(2.0) * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
@@ -336,11 +343,20 @@ function local_inertial_river_update!(
         )
 
         # limit q in case water is not available
-        river_v.q[i] = ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
-        river_v.q[i] = ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
+        river_v.q[i] = ifelse(
+            river_v.h[i_src] <= Float(0.0),
+            min(river_v.q[i], Float(0.0)),
+            river_v.q[i],
+        )
+        river_v.q[i] = ifelse(
+            river_v.h[i_dst] <= Float(0.0),
+            max(river_v.q[i], Float(0.0)),
+            river_v.q[i],
+        )
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
     end
+
     if !isnothing(model.floodplain)
         floodplain_p = model.floodplain.parameters
         floodplain_v = model.floodplain.variables
@@ -448,7 +464,7 @@ function local_inertial_river_update!(
         i = inds_reservoir[v]
 
         q_in = get_inflow_waterbody(model, edges_at_node.src[i])
-        update!(reservoir, v, q_in + inflow_waterbody[i], dt, dt_forcing)
+        update!(reservoir, Int(v), q_in + inflow_waterbody[i], dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
@@ -545,15 +561,18 @@ function update!(
     end
     set_flow_vars!(model.variables)
 
+    _m = adapt(backend, model)
     t = 0.0
     while t < dt
-        dt_s = stable_timestep(model, flow_length)
+        dt_s = stable_timestep(_m, flow_length)
         if t + dt_s > dt
             dt_s = dt - t
         end
-        local_inertial_river_update!(model, domain, dt_s, dt, doy, update_h)
+        local_inertial_river_update!(_m, domain, dt_s, dt, doy, update_h)
         t = t + dt_s
     end
+    KernelAbstractions.synchronize(backend)
+
     average_flow_vars!(model.variables, dt)
     average_waterbody_vars!(reservoir, dt)
     average_waterbody_vars!(lake, dt)
@@ -620,10 +639,12 @@ function LocalInertialOverlandFlowParameters(
 )
     froude_limit =
         get(config.model, "land_surface_water_flow__froude_limit_flag", true)::Bool # limit flow to subcritical according to Froude number
-    alpha = get(config.model, "land_local_inertial_flow__alpha_coefficient", 0.7)::Float # stability coefficient for model time step (0.2-0.7)
-    theta = get(config.model, "land_local_inertial_flow__theta_coefficient", 0.8)::Float # weighting factor
+    alpha =
+        get(config.model, "land_local_inertial_flow__alpha_coefficient", Float(0.7))::Float # stability coefficient for model time step (0.2-0.7)
+    theta =
+        get(config.model, "land_local_inertial_flow__theta_coefficient", Float(0.8))::Float # weighting factor
     waterdepth_threshold =
-        get(config.model, "land_surface_water_flow_threshold__depth", 1.0e-03)::Float # depth threshold for flow at edge
+        get(config.model, "land_surface_water_flow_threshold__depth", Float(1.0e-03))::Float # depth threshold for flow at edge
 
     (; edge_indices, indices) = domain.land.network
     (; x_length, y_length) = domain.land.parameters
@@ -702,10 +723,11 @@ end
 
 "Initialize local inertial overland flow model"
 function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::Domain)
-    cfl = get(config.model, "land_local_inertial_flow__alpha_coefficient", 0.7)::Float # stability coefficient for model time step (0.2-0.7)
+    cfl =
+        get(config.model, "land_local_inertial_flow__alpha_coefficient", Float(0.7))::Float # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
-    n = length(domain.land.network.indices)
+    n = Int(length(domain.land.network.indices))
     boundary_conditions = LocalInertialOverlandFlowBC(n)
     parameters = LocalInertialOverlandFlowParameters(dataset, config, domain)
     variables = LocalInertialOverlandFlowVariables(n)
@@ -837,11 +859,11 @@ function update!(
     while t < dt
         dt_river = stable_timestep(river, flow_length)
         dt_land = stable_timestep(land, parameters)
-        dt_s = min(dt_river, dt_land)
+        dt_s = Float(min(dt_river, dt_land))
         if t + dt_s > dt
             dt_s = dt - t
         end
-        local_inertial_river_update!(river, domain, dt_s, dt, doy, update_h)
+        @inbounds local_inertial_river_update!(river, domain, dt_s, dt, doy, update_h)
         local_inertial_update!(land, river, domain, dt_s)
         t = t + dt_s
     end
@@ -1216,7 +1238,7 @@ function FloodPlainParameters(
 end
 
 "Struct to store floodplain flow model variables"
-@with_kw struct FloodPlainVariables{T <: DenseArray{Float}, I <: DenseArray{Integ}}
+@with_kw struct FloodPlainVariables{T <: DenseArray{Float}, I <: DenseArray{Int}}
     storage::T                      # storage [m³]
     storage_av::T                   # average storage for model timestep Δt [m³]
     h::T                            # water depth [m]
@@ -1268,7 +1290,7 @@ function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
 end
 
 "Floodplain flow model"
-@with_kw struct FloodPlain{P, T <: DenseArray{Float}, I <: DenseArray{Integ}}
+@with_kw struct FloodPlain{P, T <: DenseArray{Float}, I <: DenseArray{Int}}
     parameters::FloodPlainParameters{P, T}
     variables::FloodPlainVariables{T, I}
 end

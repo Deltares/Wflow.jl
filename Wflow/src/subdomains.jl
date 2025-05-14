@@ -49,7 +49,7 @@ directed acyclic graph `g` and topological order `toposort`.
 """
 function subbasins(g, streamorder, toposort, min_sto)
     n = length(toposort)
-    subbas = fill(0, n)
+    subbas = fill(Int(0), n)
 
     i = 1
     for v in toposort
@@ -152,13 +152,13 @@ function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto
     if nthreads() > 1
         # extract basins (per outlet/pit), assign unique basin id
         n_pits = length(index_pit)
-        basin = fill(0, length(toposort))
+        basin = fill(Int(0), length(toposort))
         basin[index_pit] = [1:n_pits;]
         basin_fill = fillnodata_upstream(graph, toposort, basin, 0)
 
         # pre-allocate the Vector with indices matching the topological order of the
         # complete domain (upstream neighbors are stored at these indices)
-        index_toposort = fill(0, length(toposort))
+        index_toposort = fill(Int(0), length(toposort))
         for (i, j) in enumerate(toposort)
             index_toposort[j] = i
         end

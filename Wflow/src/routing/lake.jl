@@ -1,5 +1,5 @@
 "Struct for storing lake model parameters"
-@with_kw struct LakeParameters{T <: DenseArray{Float}, I <: DenseArray{Integ}}
+@with_kw struct LakeParameters{T <: DenseArray{Float}, I <: DenseArray{Int}}
     lowerlake_ind::I                            # Index of lower lake (linked lakes) [-]
     area::T                                     # lake area [m²]
     maxstorage::T                               # lake maximum storage from rating curve 1 [m³]
@@ -88,7 +88,7 @@ function LakeParameters(dataset::NCDataset, config::Config, network::NetworkWate
 
     sh = Vector{Union{SH, Missing}}(missing, n_lakes)
     hq = Vector{Union{HQ, Missing}}(missing, n_lakes)
-    lowerlake_ind = fill(0, n_lakes)
+    lowerlake_ind = fill(Int(0), n_lakes)
     # lake CSV parameter files are expected in the same directory as path_static
     path = dirname(input_path(config, config.input.path_static))
 
@@ -182,7 +182,7 @@ end
 end
 
 "Initialize lake model boundary conditions"
-function LakeBC(n::Integ)
+function LakeBC(n::Int)
     bc = LakeBC(;
         inflow = fill(MISSING_VALUE, n),
         precipitation = fill(MISSING_VALUE, n),
@@ -192,7 +192,7 @@ function LakeBC(n::Integ)
 end
 
 "Lake model"
-@with_kw struct Lake{T <: DenseArray{Float}, I <: DenseArray{Integ}}
+@with_kw struct Lake{T <: DenseArray{Float}, I <: DenseArray{Int}}
     boundary_conditions::LakeBC{T}
     parameters::LakeParameters{T, I}
     variables::LakeVariables{T}

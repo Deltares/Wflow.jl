@@ -92,7 +92,7 @@ end
 "Initialize the river sediment transport model"
 function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
-    n = length(indices)
+    n = Int(length(indices))
     hydrological_forcing = HydrologicalForcing(n)
 
     # Check what transport capacity equation will be used

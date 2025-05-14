@@ -9,7 +9,7 @@ end
 
 "Initialize soil loss model"
 function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
-    n = length(indices)
+    n = Int(length(indices))
 
     atmospheric_forcing = AtmosphericForcing(n)
     hydrological_forcing = HydrologicalForcing(n)

@@ -59,7 +59,7 @@ function initialize_subsurface_flow(
         constant_head = ConstantHead(dataset, config, indices)
     else
         variables = ConstantHeadVariables(; head = Float[])
-        constant_head = ConstantHead(; variables, index = Int64[])
+        constant_head = ConstantHead(; variables, index = Int[])
     end
 
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)

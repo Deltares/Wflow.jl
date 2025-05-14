@@ -655,7 +655,7 @@ end
 function julian_day(time)
     # for all years February 28 is day 59 and March 1 is day 60.
     day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60)
-    return day
+    return Int(day)
 end
 
 "Partition indices with at least size `basesize`"

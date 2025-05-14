@@ -101,7 +101,7 @@ function SnowHbvModel(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    n = length(indices)
+    n = Int(length(indices))
     params = SnowHbvParameters(dataset, config, indices, dt)
     vars = SnowVariables(n)
     bc = SnowBC(n)
