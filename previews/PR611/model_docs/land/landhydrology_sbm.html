@@ -951,7 +951,7 @@ S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}
 </section>
 <section id="transpiration" class="level3">
 <h3 class="anchored" data-anchor-id="transpiration">Transpiration</h3>
-<p>The maximum possible root water extraction rate for each soil layer is determined by partitioning the potential transpiration rate <span class="math inline">\(T_p\)</span> based on the fraction of the total root length density fraction in each soil layer. See also the conceptual figure below.</p>
+<p>The maximum possible root water extraction rate for each unsaturated soil layer is determined by partitioning the potential transpiration rate <span class="math inline">\(T_p\)</span> based on the fraction of the total root length density in each unsaturated soil layer. The fractions of the total root length density in each unsaturated soil layer are scaled by the inverse of the sum of these fractions. Transpiration can then be fully satisfied from the unsaturated zone first, independent of the water table that can intersect the root zone. Root water extraction is limited by available soil water in each unsaturated soil layer that is a function of rooting depth and water table depth illustrated in the conceptual figure below.</p>
 <div id="8" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1099,7 +1099,7 @@ S_\mathrm{snow} = S_\mathrm{snow} - S_\mathrm{snow\ to\ ice}  f_\mathrm{glacier}
 <p>Root water uptake reduction coefficient as a function of soil water pressure</p>
 </div>
 </div>
-<p>The computation of transpiration from the saturated store depends on the water table depth, rooting depth, the reduction coefficient <span class="math inline">\(\alpha\)</span>, the fraction of wet roots and the root fraction below the water table. The fraction of wet roots is determined using a sigmoid function (see figure below). The parameter <code>rootdistpar</code> defines the sharpness of the transition between fully wet and fully dry roots. If the water table depth is equal to or lower than the rooting depth, the remaining potential transpiration is used based on the potential transpiration and actual transpiration in the unsaturated zone. The remaining potential transpiration is multiplied by the wet roots fraction and <span class="math inline">\(\alpha\)</span> (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil. If the water table depth intersects the rooting depth, the potential transpiration is multiplied by the remaining root fraction (below the water table), wet roots fraction and the reduction coefficient (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil.</p>
+<p>The computation of transpiration from the saturated store depends on the water table depth, rooting depth, the reduction coefficient <span class="math inline">\(\alpha\)</span> and the fraction of wet roots. The fraction of wet roots is determined using a sigmoid function (see figure below). The parameter <code>rootdistpar</code> defines the sharpness of the transition between fully wet and fully dry roots. The remaining potential transpiration is multiplied by the wet roots fraction and <span class="math inline">\(\alpha\)</span> (and limited by the available water in saturated zone) to get the transpiration from the saturated part of the soil.</p>
 <div id="12" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
