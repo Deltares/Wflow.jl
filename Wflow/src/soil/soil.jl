@@ -360,6 +360,7 @@ function SbmSoilParameters(
         cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
         maxlayers = 1
     end
+    @info "Using `$maxlayers` soil layers with the following thickness: `$soil_layer_thickness`"
 
     lens = lens_input_parameter(config, "soil_surface_temperature__weight_coefficient")
     w_soil =
