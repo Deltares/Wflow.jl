@@ -750,16 +750,19 @@ Compute a stable timestep size for the local inertial approach, based on Bates e
 
 dt = cfl * (Δx / sqrt(g max(h))
 """
-function stable_timestep(model::LocalInertialRiverFlow, flow_length::Vector{Float})
-    dt_min = Inf
+function stable_timestep(
+    model::LocalInertialRiverFlow,
+    flow_length::T,
+) where {T <: DenseArray{Float}}
     (; cfl) = model.timestepping
     (; n, g) = model.parameters
     (; h) = model.variables
-    @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
-        @fastmath @inbounds dt = cfl * flow_length[i] / sqrt(g * h[i])
-        dt_min = min(dt, dt_min)
+    dt = array_from_host(Array{Float}(undef, n))
+    AK.foreachindex(h) do i
+        @fastmath @inbounds dt[i] = cfl * flow_length[i] / sqrt(g / h[i])
     end
-    dt_min = isinf(dt_min) ? 60.0 : dt_min
+    dt_min = AK.minimum(dt; init = Float(Inf))
+    dt_min = isinf(dt_min) ? Float(60.0) : dt_min
     return dt_min
 end
 
