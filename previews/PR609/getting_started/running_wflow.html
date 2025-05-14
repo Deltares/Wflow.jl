@@ -446,15 +446,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="using-julia" class="level2">
 <h2 class="anchored" data-anchor-id="using-julia">Using Julia</h2>
 <p>Once you installed Julia and Wflow.jl, a simulation can be started from the command line as follows:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">-e</span> <span class="st">'using Wflow; Wflow.run()'</span> path/to/config.toml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">julia</span> <span class="at">-e</span> <span class="st">"using Wflow; Wflow.run()"</span> <span class="st">"path/to/config.toml"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Furthermore, it is possible to write a Julia script to run a simulation. Example data to explore how this works can be found <a href="../getting_started/download_example_models.html">here</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Wflow</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Wflow.<span class="fu">run</span>(toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="st">"path/to/config.toml"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Wflow.<span class="fu">run</span>(toml_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Julia can also be used to modify settings after reading the settings file. In the example below, we show how to adjust the end date of the simulation.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Dates</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>config <span class="op">=</span> Wflow.<span class="fu">Config</span>(toml_path)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>config.endtime <span class="op">=</span> <span class="fu">DateTime</span>(<span class="st">"2000-01-03T00:00:00"</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>Wflow.<span class="fu">run</span>(config)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>toml_path <span class="op">=</span> <span class="st">"path/to/config.toml"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>config <span class="op">=</span> Wflow.<span class="fu">Config</span>(toml_path)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>config.endtime <span class="op">=</span> <span class="fu">DateTime</span>(<span class="st">"2000-01-03T00:00:00"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>Wflow.<span class="fu">run</span>(config)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="using-the-command-line-interface" class="level2">
 <h2 class="anchored" data-anchor-id="using-the-command-line-interface">Using the command line interface</h2>
@@ -465,16 +467,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">lib</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">share</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Simply running <code>wflow_cli</code> with no arguments will give the following message:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Usage:</span> wflow_cli <span class="st">'path/to/config.toml'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Usage:</span> wflow_cli <span class="st">"path/to/config.toml"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note that this only works if the <code>bin</code> folder is in your PATH. If you want to run it from any directory, you can add the <code>bin</code> folder to your PATH. Alternatively, you can run it from any location by specifying the full path to the executable. For example (but please adjust the path to your own installation):</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="st">"C:\Program Files\Deltares\wflow\wflow x.x.x\wflow_cli\bin\wflow_cli.exe"</span> <span class="st">"path/to/config.toml"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>When starting a run, you will see basic run information on the screen, as well as a progress bar, that gives an estimate of how much time is needed to finish the simulation:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">┌</span> Info: Run information</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   model_type = <span class="st">"sbm"</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   starttime = CFTime.DateTimeStandard<span class="er">(</span><span class="ex">2000-01-01T00:00:00</span><span class="kw">)</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   dt = 86400 seconds</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   endtime = CFTime.DateTimeStandard<span class="er">(</span><span class="ex">2000-12-31T00:00:00</span><span class="kw">)</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">└</span>   nthreads<span class="er">(</span><span class="kw">)</span> <span class="ex">=</span> 4</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Progress:</span> 100%<span class="kw">|</span><span class="ex">██████████████████████████████████████████████████</span><span class="kw">|</span> <span class="ex">Time:</span> 0:00:27</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">┌</span> Info: Run information</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   model_type = <span class="st">"sbm"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   starttime = CFTime.DateTimeStandard<span class="er">(</span><span class="ex">2000-01-01T00:00:00</span><span class="kw">)</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   dt = 86400 seconds</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   endtime = CFTime.DateTimeStandard<span class="er">(</span><span class="ex">2000-12-31T00:00:00</span><span class="kw">)</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">└</span>   nthreads<span class="er">(</span><span class="kw">)</span> <span class="ex">=</span> 4</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Progress:</span> 100%<span class="kw">|</span><span class="ex">██████████████████████████████████████████████████</span><span class="kw">|</span> <span class="ex">Time:</span> 0:00:27</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
