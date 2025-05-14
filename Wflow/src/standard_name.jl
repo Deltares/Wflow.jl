@@ -37,7 +37,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.boundary_conditions.inflow),
         unit = "m3 s-1",
     ),
-    "river_water_abstraction__volume_flow_rate" => (
+    "river_water_abstraction~external__volume_flow_rate" => (
         lens = @optic(
             _.routing.river_flow.boundary_conditions.actual_external_abstraction_av
         ),
