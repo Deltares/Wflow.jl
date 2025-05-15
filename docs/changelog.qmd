@@ -91,7 +91,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Removed default values for the following (sensitive) input parameters: `khfrac`, `kv_0`,
   `kv`, `f`, `c`, `theta_s`, `theta_r`, `soilthickness`, `canopygapfraction`, `rootingdepth`
   and `pathfrac`.
-- Changed default values of `h4` from -15849.0 to -16000.0, and `cfmax` from 3.75653 to 3.75
+- Changed default values of `h4` from -15849.0 to -16000.0, and `cfmax` from 3.75653 to 3.75.
+- The root length density fraction in unsaturated soil layers is scaled by using the total
+  root length density fraction of the unsaturated zone. Plant transpiration can then be
+  fully satisfied from the unsaturated zone when the water table intersects the root zone.
+  For the transpiration from the saturated store the remaining potential transpiration is
+  used in combination with the wet root fraction (root length density fraction in the
+  saturated soil layers is not used).
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water

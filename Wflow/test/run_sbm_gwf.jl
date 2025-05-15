@@ -35,7 +35,7 @@ Wflow.run_timestep!(model)
     @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104
     @test sbm.soil.variables.runoff[1] == 0.0
     @test sbm.soil.variables.soilevap[1] == 0.0
-    @test sbm.soil.variables.transpiration[4] ≈ 0.7000003898938235
+    @test sbm.soil.variables.transpiration[4] ≈ 0.9545461724219301
 end
 
 @testset "overland flow (kinematic wave)" begin
@@ -62,7 +62,7 @@ end
         1.3481205868263955,
         1.7999999523162842,
         1.6225103807809076,
-        1.4061108676063327,
+        1.400811075413439,
     ]
     @test gw.boundaries.river.variables.flux[1] ≈ -51.32817280138138
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
@@ -158,8 +158,8 @@ Wflow.run_timestep!(model)
 @testset "second timestep warm start" begin
     sbm = model.land
     @test sbm.soil.variables.runoff[1] == 0.0
-    @test sbm.soil.variables.soilevap[1] ≈ 0.2888846391558502
-    @test sbm.soil.variables.transpiration[1] ≈ 0.8370726722706481
+    @test sbm.soil.variables.soilevap[1] ≈ 0.28488618656022874
+    @test sbm.soil.variables.transpiration[1] ≈ 1.0122634204681036
 end
 
 @testset "overland flow warm start (kinematic wave)" begin
@@ -185,7 +185,7 @@ end
         1.2277387243899684,
         1.2868951594984024,
         1.7999999523162842,
-        1.590166154813516,
+        1.5901818206391656,
         1.2094134130011027,
     ]
     @test gw.boundaries.river.variables.flux[1] ≈ -6.693665350868727
