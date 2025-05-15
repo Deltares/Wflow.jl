@@ -348,19 +348,15 @@ function SbmSoilParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    config_soil_layer_thickness = get(config.model, "soil_layer__thickness", Float64[])
+    config_soil_layer_thickness =
+        get(config.model, "soil_layer__thickness", [100, 300, 800])::Vector{Int64}
 
-    if length(config_soil_layer_thickness) > 0
-        soil_layer_thickness =
-            SVector(Tuple(push!(Float64.(config_soil_layer_thickness), MISSING_VALUE)))
-        cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
-        maxlayers = length(soil_layer_thickness) # max number of soil layers
-    else
-        soil_layer_thickness = SVector.(soilthickness)
-        cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
-        maxlayers = 1
-    end
-    @info "Using `$maxlayers` soil layers with the following thickness: `$soil_layer_thickness`"
+    soil_layer_thickness =
+        SVector(Tuple(push!(Float64.(config_soil_layer_thickness), MISSING_VALUE)))
+    cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
+    maxlayers = length(soil_layer_thickness) # max number of soil layers
+
+    @info "Using `$(maxlayers - 1)` soil layers with the following thickness: `$config_soil_layer_thickness`"
 
     lens = lens_input_parameter(config, "soil_surface_temperature__weight_coefficient")
     w_soil =
@@ -492,46 +488,34 @@ function SbmSoilParameters(
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
-    if length(config_soil_layer_thickness) > 0
-        # root fraction read from dataset file, in case of multiple soil layers and TOML file
-        # includes "soil_root__length_density_fraction"
-        par_name = "soil_root__length_density_fraction"
-        do_cyclic = haskey(config.input, "cyclic")
-        do_root_fraction =
-            do_cyclic ? haskey(config.input.cyclic, par_name) :
-            haskey(config.input.static, par_name)
-        if do_root_fraction
-            lens = lens_input_parameter(config, par_name; optional = false)
-            rootfraction = ncread(
-                dataset,
-                config,
-                lens;
-                sel = indices,
-                type = Float64,
-                dimname = :layer,
-            )
-        else
-            n = length(indices)
-            (; rootingdepth) = vegetation_parameter_set
-            # default root fraction in case of multiple soil layers
-            rootfraction = zeros(Float64, maxlayers, n)
-            for i in 1:n
-                if rootingdepth[i] > 0.0
-                    for k in 1:maxlayers
-                        if (rootingdepth[i] - sumlayers[i][k]) >= act_thickl[i][k]
-                            rootfraction[k, i] = act_thickl[i][k] / rootingdepth[i]
-                        else
-                            rootfraction[k, i] =
-                                max(rootingdepth[i] - sumlayers[i][k], 0.0) /
-                                rootingdepth[i]
-                        end
+    # root fraction read from dataset file, in case of multiple soil layers and TOML file
+    # includes "soil_root__length_density_fraction"
+    par_name = "soil_root__length_density_fraction"
+    do_cyclic = haskey(config.input, "cyclic")
+    do_root_fraction =
+        do_cyclic ? haskey(config.input.cyclic, par_name) :
+        haskey(config.input.static, par_name)
+    if do_root_fraction
+        lens = lens_input_parameter(config, par_name; optional = false)
+        rootfraction =
+            ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :layer)
+    else
+        n = length(indices)
+        (; rootingdepth) = vegetation_parameter_set
+        # default root fraction in case of multiple soil layers
+        rootfraction = zeros(Float64, maxlayers, n)
+        for i in 1:n
+            if rootingdepth[i] > 0.0
+                for k in 1:maxlayers
+                    if (rootingdepth[i] - sumlayers[i][k]) >= act_thickl[i][k]
+                        rootfraction[k, i] = act_thickl[i][k] / rootingdepth[i]
+                    else
+                        rootfraction[k, i] =
+                            max(rootingdepth[i] - sumlayers[i][k], 0.0) / rootingdepth[i]
                     end
                 end
             end
         end
-    else
-        # for the case of 1 soil layer
-        rootfraction = ones(Float64, maxlayers, n)
     end
 
     kv_profile = sbm_kv_profiles(
@@ -722,55 +706,35 @@ function infiltration!(model::SbmSoilModel)
 end
 
 """
-    unsaturated_zone_flow!(model::SbmSoilModel; topog_sbm_transfer = false)
+    unsaturated_zone_flow!(model::SbmSoilModel)
 
-Update unsaturated storage `ustorelayerdepth` and the `transfer` of water from the
-unsaturated to the saturated store of the SBM soil model for a single timestep, based on the
-original Topog_SBM formulation (`topog_sbm_transfer = true` and one soil layer) or the
-Brooks-Corey approach (`topog_sbm_transfer = false` and one or multiple soil layers).
+Update unsaturated storage `ustorelayerdepth` and the `transfer` of water from the unsaturated
+to the saturated store of the SBM soil model for a single timestep, based on the Brooks-Corey
+approach.
 """
-function unsaturated_zone_flow!(model::SbmSoilModel; topog_sbm_transfer = false)
+function unsaturated_zone_flow!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
 
     n = length(v.transfer)
     threaded_foreach(1:n; basesize = 250) do i
         if v.n_unsatlayers[i] > 0
-            if topog_sbm_transfer && p.maxlayers == 1
-                # original Topog_SBM formulation
-                ustorelayerdepth = v.ustorelayerdepth[i][1] + v.infiltsoilpath[i]
-                kv_z =
-                    hydraulic_conductivity_at_depth(p.kv_profile, p.kvfrac, v.zi[i], i, 1)
-                ustorelayerdepth, v.transfer[i] = unsatzone_flow_sbm(
-                    ustorelayerdepth,
-                    p.soilwatercapacity[i],
-                    v.satwaterdepth[i],
-                    kv_z,
-                    v.ustorelayerthickness[1],
-                    p.theta_s[i],
-                    p.theta_r[i],
-                )
-                v.ustorelayerdepth[i] = setindex(v.ustorelayerdepth[i], ustorelayerdepth, 1)
-            else
-                # Brooks-Corey approach
-                z = cumsum(v.ustorelayerthickness[i])
-                flow_rate = 0.0
-                for m in 1:v.n_unsatlayers[i]
-                    l_sat = v.ustorelayerthickness[i][m] * (p.theta_s[i] - p.theta_r[i])
-                    kv_z =
-                        hydraulic_conductivity_at_depth(p.kv_profile, p.kvfrac, z[m], i, m)
-                    ustorelayerdepth = if m == 1
-                        v.ustorelayerdepth[i][m] + v.infiltsoilpath[i]
-                    else
-                        v.ustorelayerdepth[i][m] + flow_rate
-                    end
-                    ustorelayerdepth, flow_rate =
-                        unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, p.c[i][m])
-                    v.ustorelayerdepth[i] =
-                        setindex(v.ustorelayerdepth[i], ustorelayerdepth, m)
+            # Brooks-Corey approach
+            z = cumsum(v.ustorelayerthickness[i])
+            flow_rate = 0.0
+            for m in 1:v.n_unsatlayers[i]
+                l_sat = v.ustorelayerthickness[i][m] * (p.theta_s[i] - p.theta_r[i])
+                kv_z = hydraulic_conductivity_at_depth(p.kv_profile, p.kvfrac, z[m], i, m)
+                ustorelayerdepth = if m == 1
+                    v.ustorelayerdepth[i][m] + v.infiltsoilpath[i]
+                else
+                    v.ustorelayerdepth[i][m] + flow_rate
                 end
-                v.transfer[i] = flow_rate
+                ustorelayerdepth, flow_rate =
+                    unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, p.c[i][m])
+                v.ustorelayerdepth[i] = setindex(v.ustorelayerdepth[i], ustorelayerdepth, m)
             end
+            v.transfer[i] = flow_rate
         else
             v.transfer[i] = 0.0
         end
@@ -1091,7 +1055,6 @@ function update!(
     soil_infiltration_reduction =
         get(config.model, "soil_infiltration_reduction__flag", false)::Bool
     modelsnow = get(config.model, "snow__flag", false)::Bool
-    topog_sbm_transfer = get(config.model, "topog_sbm_transfer__flag", false)::Bool
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
@@ -1109,7 +1072,7 @@ function update!(
     infiltration_reduction_factor!(model; modelsnow, soil_infiltration_reduction)
     infiltration!(model)
     # unsaturated zone flow
-    unsaturated_zone_flow!(model; topog_sbm_transfer)
+    unsaturated_zone_flow!(model)
     # soil evaporation and transpiration
     soil_evaporation!(model)
     transpiration!(model, dt)

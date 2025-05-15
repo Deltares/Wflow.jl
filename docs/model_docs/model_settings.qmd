@@ -28,7 +28,6 @@ The Tables in this subsection show the available models settings for the model t
 | `glacier__flag` | Include glacier modelling | - | false |
 | `soil_infiltration_reduction__flag` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
 | `soil_layer__thickness` | Thickness of soil layers | mm | - |
-| `topog_sbm_transfer__flag` | Enable original Topog_SBM vertical transfer formulation  | - | `false` |
 | `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
 : {.striped .hover}
 

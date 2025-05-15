@@ -1711,7 +1711,7 @@ end
 "Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
-        v = get(config.model, "soil_layer__thickness", Float64[])
+        v = get(config.model, "soil_layer__thickness", [100, 300, 800])::Vector{Int64}
         inds = collect(1:(length(v) + 1))
         index = inds[dim_value]
     else

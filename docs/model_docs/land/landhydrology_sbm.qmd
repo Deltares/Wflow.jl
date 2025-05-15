@@ -850,14 +850,6 @@ the figure below:
 
 ![Overview of available `saturated_hydraulic_conductivity_profile` options, for a soil column with five layers](../../images/sbm_ksat_profiles.png)
 
-When the soil bucket is not split-up into different layers, it is possible to use the
-original Topog_SBM vertical transfer formulation, by specifying in the TOML file:
-
-```toml
-[model]
-topog_sbm_transfer__flag = true
-```
-
 The potential transfer of water from the unsaturated store to the saturated store is in that
 case controlled by the vertical saturated hydraulic conductivity at the water table depth
 $\SIb{z_\mathrm{watertable}}{mm}$, an optional multiplication factor $\SIb{f_\mathrm{Kv,
