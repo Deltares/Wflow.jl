@@ -218,7 +218,29 @@ Wflow.run_timestep!(model)
 
 @testset "river inflow (cyclic)" begin
     @test model.routing.river_flow.boundary_conditions.inflow[44] ≈ 0.75
+    @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
+          0.0
     @test model.routing.river_flow.variables.q_av[44] ≈ 10.550836922801588
+end
+
+# test negative inflow
+tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+config = Wflow.Config(tomlpath)
+model = Wflow.Model(config)
+model.routing.river_flow.boundary_conditions.inflow[44] = -10.0
+(; actual_external_abstraction_av, inflow) = model.routing.river_flow.boundary_conditions
+(; q_av) = model.routing.river_flow.variables
+@testset "river negative inflow" begin
+    Wflow.run_timestep!(model)
+    @test actual_external_abstraction_av[44] ≈ -2.8679304138607975
+    @test q_av[44] ≈ 0.1843871721222499
+    Wflow.run_timestep!(model)
+    @test actual_external_abstraction_av[44] ≈ -9.371093118791716
+    @test q_av[44] ≈ 0.4743693733726534
+    Wflow.run_timestep!(model)
+    @test actual_external_abstraction_av[44] ≈ -10.0
+    @test inflow[44] == -10.0
+    @test q_av[44] ≈ 7.98460718979927
 end
 
 # test fixed forcing (precipitation = 2.5)
@@ -274,6 +296,28 @@ Wflow.run_timestep!(model)
     q_channel = model.routing.river_flow.variables.q_channel_av
     @test q ≈ q_channel
 end
+
+# test external negative inflow local-inertial river flow
+tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
+config = Wflow.Config(tomlpath)
+model = Wflow.Model(config)
+model.routing.river_flow.boundary_conditions.inflow[44] = -10.0
+(; actual_external_abstraction_av, inflow) = model.routing.river_flow.boundary_conditions
+(; q_av) = model.routing.river_flow.variables
+@testset "river negative inflow (local inertial)" begin
+    Wflow.run_timestep!(model)
+    @test actual_external_abstraction_av[44] ≈ -3.0125200444690616
+    @test q_av[44] ≈ 0.0007487510598495983
+    Wflow.run_timestep!(model)
+    @test actual_external_abstraction_av[44] ≈ -9.735759902024228
+    @test q_av[44] ≈ 0.0817706506826257
+    Wflow.run_timestep!(model)
+    @test actual_external_abstraction_av[44] ≈ -10.0
+    @test inflow[44] == -10.0
+    @test q_av[44] ≈ 7.917527921132608
+end
+model = Wflow.Model(config)
+
 Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow
