@@ -41,9 +41,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-9d91982fd9fa9b60711a2091855f9b0b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-cf8e59b621fd4a2eeb4c1faf86254081.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-9d91982fd9fa9b60711a2091855f9b0b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-5b6e4a37d8638ee4dbe6ce7f99414b77.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-d949c2599482553e8bdcf0c72e079de6.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-5b6e4a37d8638ee4dbe6ce7f99414b77.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -491,12 +491,14 @@ window.Quarto = {
 <li>Removed the <code>GroundwaterExchange</code> component that can be used to replace the kinematic wave lateral subsurface flow routing with an external groundwater model (e.g.&nbsp;Modflow). This feature has been added as part of the following <a href="https://studenttheses.uu.nl/handle/20.500.12932/41091">MSc thesis</a> work. One of the potential improvements recommended by this work was to re-activate the lateral subsurface flow routing for coupling with Modflow 6, as a rapid runoff (interflow) generating mechanism was missing and the current coupling did not yield satisfactory results. More work is needed to support this kind of coupling in a good way.</li>
 <li>Removed default values for the following (sensitive) input parameters: <code>khfrac</code>, <code>kv_0</code>, <code>kv</code>, <code>f</code>, <code>c</code>, <code>theta_s</code>, <code>theta_r</code>, <code>soilthickness</code>, <code>canopygapfraction</code>, <code>rootingdepth</code> and <code>pathfrac</code>.</li>
 <li>Changed default values of <code>h4</code> from -15849.0 to -16000.0, and <code>cfmax</code> from 3.75653 to 3.75</li>
+<li>Removed support for 1 layer models, and therefore also removed the <code>topog_sbm_transfer__flag</code> option. With this removal, the default soil layer thickness is set to <code>[100, 300, 800]</code>.</li>
 </ul>
 </section>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
 <ul>
 <li>Support direct output of snow and glacier melt, and add computation of snow water equivalent (SWE).</li>
+<li>Support computation and output of actual river water abstraction based on external negative inflow.</li>
 </ul>
 </section>
 </section>
