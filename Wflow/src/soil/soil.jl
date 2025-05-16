@@ -760,20 +760,14 @@ function soil_evaporation!(model::SbmSoilModel)
         potsoilevap = potential_soilevaporation[i]
         # First calculate the evaporation of unsaturated storage into the
         # atmosphere from the upper layer.
-        if p.maxlayers == 1
-            saturationdeficit = p.soilwatercapacity[i] - v.satwaterdepth[i]
-            soilevapunsat =
-                potsoilevap * min(1.0, saturationdeficit / p.soilwatercapacity[i])
-        else
-            soilevapunsat = soil_evaporation_unsatured_store(
-                potsoilevap,
-                v.ustorelayerdepth[i][1],
-                v.ustorelayerthickness[i][1],
-                v.n_unsatlayers[i],
-                v.zi[i],
-                p.theta_s[i] - p.theta_r[i],
-            )
-        end
+        soilevapunsat = soil_evaporation_unsatured_store(
+            potsoilevap,
+            v.ustorelayerdepth[i][1],
+            v.ustorelayerthickness[i][1],
+            v.n_unsatlayers[i],
+            v.zi[i],
+            p.theta_s[i] - p.theta_r[i],
+        )
         # Ensure that the unsaturated evaporation rate does not exceed the
         # available unsaturated moisture
         soilevapunsat = min(soilevapunsat, v.ustorelayerdepth[i][1])
@@ -782,17 +776,14 @@ function soil_evaporation!(model::SbmSoilModel)
         v.ustorelayerdepth[i] =
             setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][1] - soilevapunsat, 1)
 
-        if p.maxlayers == 1
-            soilevapsat = 0.0
-        else
-            soilevapsat = soil_evaporation_satured_store(
-                potsoilevap,
-                v.n_unsatlayers[i],
-                p.act_thickl[i][1],
-                v.zi[i],
-                p.theta_s[i] - p.theta_r[i],
-            )
-        end
+        soilevapsat = soil_evaporation_satured_store(
+            potsoilevap,
+            v.n_unsatlayers[i],
+            p.act_thickl[i][1],
+            v.zi[i],
+            p.theta_s[i] - p.theta_r[i],
+        )
+
         v.soilevapsat[i] = soilevapsat
         v.soilevap[i] = soilevapunsat + soilevapsat
         v.satwaterdepth[i] = v.satwaterdepth[i] - soilevapsat
