@@ -133,8 +133,8 @@ function ncvar_name_modifier(var; config = nothing)
             ncname = var.netcdf.variable.name
             scale = param(var, "scale", 1.0)
             offset = param(var, "offset", 0.0)
-            if haskey(var, "layer") || haskey(var, "class")
-                haskey(var, "layer") ? dim_name = "layer" : dim_name = "class"
+            if haskey(var, "layer")
+                dim_name = "layer"
                 if length(var[dim_name]) > 1
                     # if modifier is provided as a list for each dim item
                     indices = []
