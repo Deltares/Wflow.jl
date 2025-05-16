@@ -12,8 +12,8 @@ differences between the Land Hydrology `SBM` model and Topog_SBM are as follows:
 - the addition of a root water uptake reduction function (Feddes et al., 1978);
 - the addition of a capillary rise;
 - the addition of glacier, snow build-up and melting processes;
-- the introduction of an option to divide the soil column into different layers to allow for
-  transfer of water within the unsaturated zone;
+- the addition to divide the soil column into different layers to allow for transfer of
+  water within the unsaturated zone;
 - the addition of water demand and allocation computations.
 
 The Land Hydrology `SBM` model contains besides a `SBM` `soil` model (including
@@ -397,13 +397,17 @@ covered by a glacier.
 
 ### Bare soil evaporation
 
-If there is only one soil layer present in the `SBM` `soil` model, the bare soil evaporation
-is scaled according to the wetness of the soil layer. The fraction of bare soil is assumed
-to be equal to the fraction not covered by the canopy gap fraction corrected by the total
-water fraction and glacier fraction. When the soil is fully saturated, evaporation is set to
-equal the potential reference evaporation. When the soil is not fully saturated, actual
-evaporation decreases linearly with decreasing soil moisture values, as indicated by the
-figure below.
+The fraction of bare soil is assumed to be equal to the fraction not covered by the canopy
+gap fraction corrected by the total water fraction and glacier fraction. Bare soil
+evaporation is only provided from the upper soil layer, and soil evaporation is split in
+evaporation from the unsaturated store and evaporation from the saturated store. Water is
+first evaporated from the unsaturated store. The remaining potential soil evaporation can be
+used for evaporation from the saturated store, but only when the water table is present in
+the upper soil layer. Both the evaporation from the unsaturated store and the evaporation
+from the saturated store are limited by the minimum of the remaining potential soil
+evaporation and the available water in the unsaturated/saturated zone of the upper soil
+layer. The evaporation (both unsaturated and saturated) decreases linearly with decreasing
+water availability, as indicated by the figure below.
 
 ```{julia}
 # | code-fold: true
@@ -455,16 +459,6 @@ let
   fig
 end
 ```
-
-When more soil layers are present, soil evaporation is only provided from the upper soil layer,
-and soil evaporation is split in evaporation from the unsaturated store and evaporation from
-the saturated store. Water is first evaporated from the unsaturated store. The remaining
-potential soil evaporation can be used for evaporation from the saturated store, but only when
-the water table is present in the upper soil layer. Both the evaporation from the unsaturated
-store and the evaporation from the saturated store are limited by the minimum of the remaining
-potential soil evaporation and the available water in the unsaturated/saturated zone of the
-upper soil layer. Also for multiple soil layers, the evaporation (both unsaturated and
-saturated) decreases linearly with decreasing water availability.
 
 ### Transpiration
 
@@ -850,14 +844,6 @@ the figure below:
 
 ![Overview of available `saturated_hydraulic_conductivity_profile` options, for a soil column with five layers](../../images/sbm_ksat_profiles.png)
 
-When the soil bucket is not split-up into different layers, it is possible to use the
-original Topog_SBM vertical transfer formulation, by specifying in the TOML file:
-
-```toml
-[model]
-topog_sbm_transfer__flag = true
-```
-
 The potential transfer of water from the unsaturated store to the saturated store is in that
 case controlled by the vertical saturated hydraulic conductivity at the water table depth
 $\SIb{z_\mathrm{watertable}}{mm}$, an optional multiplication factor $\SIb{f_\mathrm{Kv,
@@ -990,10 +976,9 @@ where $\SIb{C_\mathrm{act}}{mm\ t^{-1}}$ is the capillary rate, $\SIb{z_\mathrm{
 maxdepth}}{mm}$ is the critical water depth beyond which capillary rise ceases,
 $\SIb{n_\mathrm{cap}}{-}$ is an empirical coefficient related to soil properties and
 climate, generally set between $1$ and $3$, $\SIb{z_\mathrm{watertable}}{mm}$ is the water
-table depth and $\SIb{z_\mathrm{rooting}}{mm}$ is the rooting depth. When the soil bucket in
-the `SBM` soil model is split-up into different layers, $C_\mathrm{act}$ is divided over the
-different unsaturated soil layers, from the bottom to the top unsaturated soil layer,
-without exceeding the saturated water content.
+table depth and $\SIb{z_\mathrm{rooting}}{mm}$ is the rooting depth. $C_\mathrm{act}$ is
+divided over the different unsaturated soil layers, from the bottom to the top unsaturated
+soil layer, without exceeding the saturated water content.
 
 ### Leakage
 

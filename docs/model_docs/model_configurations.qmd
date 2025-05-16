@@ -30,21 +30,13 @@ common, but can have different routing concepts that control how water is routed
 over the land or river domain. The `soil` model of the Land Hydrology `SBM` model is largely
 based on the Topog\_SBM model but has had considerable changes over time. Topog\_SBM is
 specifically designed to simulate fast runoff processes in small catchments while the
-wflow\_sbm model can be applied more widely. The main differences between the Land Hydrology
-`SBM` model and Topog_SBM are as follows:
-
-- the addition of evapotranspiration and interception losses;
-- the addition of a root water uptake reduction function (Feddes et al., 1978);
-- the addition of a capillary rise;
-- the addition of glacier, snow build-up and melting processes;
-- the introduction of an option to divide the soil column into different layers to allow for
-  transfer of water within the unsaturated zone;
-- the addition of water demand and allocation computations.
+wflow\_sbm model can be applied more widely.
 
 Topog\_SBM uses an element network based on contour lines and trajectories for water
 routing. Wflow\_sbm models differ in how the routing components river, land, and subsurface
-are solved. Below the different wflow\_sbm model configurations are described, according to
-the used routing approach.
+are solved. More details and the differences with the Topog\_SBM model can be found
+[here](./land/landhydrology_sbm.qmd#Introduction). Below the different wflow\_sbm model
+configurations are described, according to the used routing approach.
 
 ### Kinematic wave
 Water is routed over a D8 network, and the kinematic wave approach is used for river,

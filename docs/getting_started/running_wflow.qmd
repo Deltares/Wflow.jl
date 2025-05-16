@@ -8,7 +8,7 @@ Once you installed Julia and Wflow.jl, a simulation can be started from the comm
 follows:
 
 ```bash
-julia -e 'using Wflow; Wflow.run()' path/to/config.toml
+julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 ```
 
 Furthermore, it is possible to write a Julia script to run a simulation. Example data to
@@ -16,6 +16,7 @@ explore how this works can be found [here](./download_example_models.qmd).
 
 ```julia
 using Wflow
+toml_path = "path/to/config.toml"
 Wflow.run(toml_path)
 ```
 
@@ -24,6 +25,7 @@ below, we show how to adjust the end date of the simulation.
 
 ```julia
 using Dates
+toml_path = "path/to/config.toml"
 config = Wflow.Config(toml_path)
 config.endtime = DateTime("2000-01-03T00:00:00")
 Wflow.run(config)
@@ -52,7 +54,16 @@ share
 Simply running `wflow_cli` with no arguments will give the following message:
 
 ```bash
-Usage: wflow_cli 'path/to/config.toml'
+Usage: wflow_cli "path/to/config.toml"
+```
+
+Note that this only works if the `bin` folder is in your PATH. If you want to run it from any
+directory, you can add the `bin` folder to your PATH. Alternatively, you can run it from any
+location by specifying the full path to the executable. For example (but please adjust the path
+to your own installation):
+
+```bash
+"C:\Program Files\Deltares\wflow\wflow x.x.x\wflow_cli\bin\wflow_cli.exe" "path/to/config.toml"
 ```
 
 When starting a run, you will see basic run information on the screen, as well as a progress

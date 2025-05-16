@@ -34,7 +34,7 @@ function Model(config::Config, type::SbmModel)
         min_streamorder_land = get(config.model, "land_streamorder__min_count", 5),
     )
 
-    @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...
+    @info "General model settings" modelsettings[keys(modelsettings)[1:7]]...
 
     routing_types = get_routing_types(config)
     domain = Domain(dataset, config, modelsettings, routing_types)
