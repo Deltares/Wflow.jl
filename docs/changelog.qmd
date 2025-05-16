@@ -92,7 +92,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `kv`, `f`, `c`, `theta_s`, `theta_r`, `soilthickness`, `canopygapfraction`, `rootingdepth`
   and `pathfrac`.
 - Changed default values of `h4` from -15849.0 to -16000.0, and `cfmax` from 3.75653 to 3.75
-- Removed support for 1 layer models, and therefore also removed the
+- Removed support for one layer models, and therefore also removed the
   `topog_sbm_transfer__flag` option. With this removal, the default soil layer thickness is
   set to `[100, 300, 800]`.
 
