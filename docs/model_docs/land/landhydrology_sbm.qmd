@@ -397,8 +397,10 @@ covered by a glacier.
 
 ### Bare soil evaporation
 
-Soil evaporation is only provided from the upper soil layer, and soil evaporation is split
-in evaporation from the unsaturated store and evaporation from the saturated store. Water is
+The fraction of bare soil is assumed to be equal to the fraction not covered by the canopy
+gap fraction corrected by the total water fraction and glacier fraction. Bare soil
+evaporation is only provided from the upper soil layer, and soil evaporation is split in
+evaporation from the unsaturated store and evaporation from the saturated store. Water is
 first evaporated from the unsaturated store. The remaining potential soil evaporation can be
 used for evaporation from the saturated store, but only when the water table is present in
 the upper soil layer. Both the evaporation from the unsaturated store and the evaporation
