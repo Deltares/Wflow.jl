@@ -491,7 +491,7 @@ window.Quarto = {
 <li>Removed the <code>GroundwaterExchange</code> component that can be used to replace the kinematic wave lateral subsurface flow routing with an external groundwater model (e.g.&nbsp;Modflow). This feature has been added as part of the following <a href="https://studenttheses.uu.nl/handle/20.500.12932/41091">MSc thesis</a> work. One of the potential improvements recommended by this work was to re-activate the lateral subsurface flow routing for coupling with Modflow 6, as a rapid runoff (interflow) generating mechanism was missing and the current coupling did not yield satisfactory results. More work is needed to support this kind of coupling in a good way.</li>
 <li>Removed default values for the following (sensitive) input parameters: <code>khfrac</code>, <code>kv_0</code>, <code>kv</code>, <code>f</code>, <code>c</code>, <code>theta_s</code>, <code>theta_r</code>, <code>soilthickness</code>, <code>canopygapfraction</code>, <code>rootingdepth</code> and <code>pathfrac</code>.</li>
 <li>Changed default values of <code>h4</code> from -15849.0 to -16000.0, and <code>cfmax</code> from 3.75653 to 3.75</li>
-<li>Removed support for 1 layer models, and therefore also removed the <code>topog_sbm_transfer__flag</code> option. With this removal, the default soil layer thickness is set to <code>[100, 300, 800]</code>.</li>
+<li>Removed support for one layer models, and therefore also removed the <code>topog_sbm_transfer__flag</code> option. With this removal, the default soil layer thickness is set to <code>[100, 300, 800]</code>.</li>
 </ul>
 </section>
 <section id="added" class="level3">
