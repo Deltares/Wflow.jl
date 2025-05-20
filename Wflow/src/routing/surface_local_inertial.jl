@@ -1191,7 +1191,7 @@ function initialize_storage!(river, domain::Domain, nriv::Int)
     (; flow_width, flow_length) = domain.river.parameters
     (; floodplain) = river
     (; profile) = floodplain.parameters
-    river = for i in 1:nriv
+    for i in 1:nriv
         i1, i2 = interpolation_indices(floodplain.variables.h[i], profile.depth)
         a = flow_area(
             profile.width[i2, i],
