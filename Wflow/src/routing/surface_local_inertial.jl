@@ -526,7 +526,7 @@ end
     qx0::Vector{Float64}              # flow in x direction at edge at previous time step [m³ s⁻¹]
     qx::Vector{Float64}               # flow in x direction at egde [m³ s⁻¹]
     qy::Vector{Float64}               # flow in y direction at edge [m³ s⁻¹]
-    storage::Vector{Float64}          # total storage of cell [m³] (including river storage for river cells) 
+    storage::Vector{Float64}          # total storage of cell [m³] (including river storage for river cells)
     storage_av::Vector{Float64}       # average total storage of cell [m³] (including river storage for river cells) (model timestep Δt)
     error::Vector{Float64}            # error storage [m³]
     h::Vector{Float64}                # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
@@ -1188,9 +1188,9 @@ end
 
 "Determine the initial floodplain storage"
 function initialize_storage!(river, nriv::Int)
-    (; flow_width, flow_length) = river.parameters
+    (; flow_width_at_edge, flow_length_at_edge) = river.parameters
     (; floodplain) = river
-    profile = floodplain.parameters
+    (; profile) = floodplain.parameters
     river = for i in 1:nriv
         i1, i2 = interpolation_indices(floodplain.variables.h[i], profile.depth)
         a = flow_area(
@@ -1199,8 +1199,8 @@ function initialize_storage!(river, nriv::Int)
             profile.depth[i1],
             floodplain.variables.h[i],
         )
-        a = max(a - (flow_width[i] * floodplain.h[i]), 0.0)
-        floodplain.variables.storage[i] = flow_length[i] * a
+        a = max(a - (flow_width_at_edge[i] * floodplain.variables.h[i]), 0.0)
+        floodplain.variables.storage[i] = flow_length_at_edge[i] * a
     end
     return nothing
 end
