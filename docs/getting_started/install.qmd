@@ -51,7 +51,7 @@ automatically resolved and installed from the Pkg General registry.
 You can also install wflow from the `master` branch on the repository as follows:
 
 ```bash
-pkg> add Wflow#master
+pkg> add Wflow:Wflow#master
 ```
 
 This command tracks the `master` branch and updates to the latest commit on that branch when
@@ -64,12 +64,14 @@ If you want to modify any files in the repository, you need to do a development 
 can be done using:
 
 ```bash
-pkg> dev Wflow
+pkg> dev Wflow:Wflow
 ```
 
 This will clone the git repository, place it under your home directory in `.julia/dev/Wflow`,
 and add the wflow package to your project environment. To receive updates, you'll need to pull
-the latest changes manually using `git pull`.
+the latest changes manually using `git pull`. Additionally, the `--local` option can be passed
+to ensure that the package is installed in the current project environment (instead of the
+`.julia/dev/Wflow` folder).
 
 ### Check installation of wflow
 
