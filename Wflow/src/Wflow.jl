@@ -75,6 +75,18 @@ AMDGPU.device!(AMDGPU.devices()[2])
 const gpu_backend = AMDGPU.ROCBackend()
 const backend = gpu_backend
 
+# Allows creation of an array on the backend, e.g. `array_from_host(ones(Int32, 10))` or `array_from_host(1:10, Int32)`
+#  copied from https://github.com/JuliaGPU/AcceleratedKernels.jl/blob/main/test/runtests.jl#L140 (MIT License)
+function array_from_host(h_arr::AbstractArray, dtype = nothing)
+    d_arr = KernelAbstractions.zeros(
+        backend,
+        isnothing(dtype) ? eltype(h_arr) : dtype,
+        size(h_arr),
+    )
+    copyto!(d_arr, h_arr isa Array ? h_arr : Array(h_arr))      # Allow unmaterialised types, e.g. ranges
+    d_arr
+end
+
 mutable struct Clock{T}
     time::T
     iteration::Int
