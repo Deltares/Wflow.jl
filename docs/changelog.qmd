@@ -76,8 +76,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Removed `LoopVectorization` dependency because of compilation issues and the risk of
   deprecation for newer Julia versions. The `tturbo` macro has been replaced by the `batch`
   macro of `Polyester`, performance loss is acceptable.
-- Use for the infiltration capacity of soil, represented by parameter `infiltcapsoil`, 
-  the actual saturated hydraulic conductivity at the soil surface based on parameters 
+- Use for the infiltration capacity of soil, represented by parameter `infiltcapsoil`,
+  the actual saturated hydraulic conductivity at the soil surface based on parameters
   `kv_0` and `kvfrac`. This parameter is now better linked to soil properties and setting
   this parameter directly by an external netCDF variable is not supported anymore.
 - Removed the `GroundwaterExchange` component that can be used to replace the kinematic wave
@@ -92,6 +92,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `kv`, `f`, `c`, `theta_s`, `theta_r`, `soilthickness`, `canopygapfraction`, `rootingdepth`
   and `pathfrac`.
 - Changed default values of `h4` from -15849.0 to -16000.0, and `cfmax` from 3.75653 to 3.75.
+- Removed support for one layer models, and therefore also removed the
+  `topog_sbm_transfer__flag` option. With this removal, the default soil layer thickness is
+  set to `[100, 300, 800]`.
 - The root length density fraction in unsaturated soil layers is scaled by using the total
   root length density fraction of the unsaturated zone. Plant transpiration can then be
   fully satisfied from the unsaturated zone when the water table intersects the root zone.
