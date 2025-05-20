@@ -1187,8 +1187,8 @@ end
 end
 
 "Determine the initial floodplain storage"
-function initialize_storage!(river, nriv::Int)
-    (; flow_width_at_edge, flow_length_at_edge) = river.parameters
+function initialize_storage!(river, domain::Domain, nriv::Int)
+    (; flow_width, flow_length) = domain.river.parameters
     (; floodplain) = river
     (; profile) = floodplain.parameters
     river = for i in 1:nriv
@@ -1199,8 +1199,8 @@ function initialize_storage!(river, nriv::Int)
             profile.depth[i1],
             floodplain.variables.h[i],
         )
-        a = max(a - (flow_width_at_edge[i] * floodplain.variables.h[i]), 0.0)
-        floodplain.variables.storage[i] = flow_length_at_edge[i] * a
+        a = max(a - (flow_width[i] * floodplain.variables.h[i]), 0.0)
+        floodplain.variables.storage[i] = flow_length[i] * a
     end
     return nothing
 end
