@@ -455,11 +455,31 @@ end
 "Faster method for exponentiation"
 pow(x, y) = exp(y * log(x))
 
+"""
+Ragged arrays (Vector of vector with varying lengths) is not gpu-compatible
+this function converts a ragged array into a 2-d matrix, with 0 as padding value.
+
+Can be used in combination with `sum_at`
+"""
+function ragged_to_dense(ragged::Vector{Vector{T}}) where {T <: Any}
+    nrows = length(ragged)
+    ncols = maximum(length.(ragged))
+    dense = zeros(T, nrows, ncols)
+    for i in eachindex(ragged)
+        for j in eachindex(ragged[i])
+            dense[i, j] = ragged[i][j]
+        end
+    end
+    return dense
+end
+
 "Return the sum of the array `A` at indices `inds`"
 function sum_at(A, inds)
     v = zero(eltype(A))
     for i in inds
-        v += A[i]
+        if i != 0
+            v += A[i]
+        end
     end
     return v
 end
@@ -468,7 +488,9 @@ end
 function sum_at(f::Function, inds, T)
     v = zero(T)
     for i in inds
-        v += f(i)
+        if i != 0
+            v += f(i)
+        end
     end
     return v
 end
