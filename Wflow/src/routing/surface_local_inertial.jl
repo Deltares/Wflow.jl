@@ -888,32 +888,37 @@ function update!(
 
     _m = adapt(BackendArray, river)
     t = Float(0.0)
-    # dt_s = Float(30.0)
+    dt_s = Float(30.0)
+    steps = 10
     while t < dt
         # dt_river = stable_timestep(_m, flow_length)
         # dt_land = stable_timestep(land, parameters)
         # dt_s = Float(min(dt_river, dt_land))
-
         @inbounds @inline dt_s = stable_timestep(_m, flow_length)
-        if t + dt_s > dt
-            dt_s = dt - t
+
+        dt_s *= 0.9  # safety margin
+        if t + steps * dt_s > dt
+            dt_s = (dt - t) / steps
         end
-        t = t + dt_s
-        @inbounds @inline local_inertial_river_update!(
-            _m,
-            # domain,
-            dt_s,
-            dt,
-            doy,
-            update_h,
-            nodes_at_edge,
-            edges_at_node,
-            flow_length,
-            flow_width,
-            inds_lake,
-            inds_reservoir,
-        )
-        # local_inertial_update!(land, river, domain, dt_s)
+        t = t + steps * dt_s
+
+        for _ in 1:steps
+            @inbounds @inline local_inertial_river_update!(
+                _m,
+                # domain,
+                Float(dt_s),
+                dt,
+                doy,
+                update_h,
+                nodes_at_edge,
+                edges_at_node,
+                flow_length,
+                flow_width,
+                inds_lake,
+                inds_reservoir,
+            )
+            # local_inertial_update!(land, river, domain, dt_s)
+        end
     end
     KernelAbstractions.synchronize(backend)
 
