@@ -325,10 +325,14 @@ function run!(model::Model; close_files = true)
     times = range(starttime + dt, endtime; step = dt)
 
     @info "Run information" model_type starttime dt endtime nthreads()
+    run_timestep!(model)
     runstart_time = now()
+
     @progress for (i, time) in enumerate(times)
-        @debug "Starting timestep." time i now()
-        run_timestep!(model)
+        if i != 1
+            @debug "Starting timestep." time i now()
+            run_timestep!(model)
+        end
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
