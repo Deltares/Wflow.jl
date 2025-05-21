@@ -30,15 +30,23 @@ The edges are defined as follows:
 end
 
 "Struct for storing source `src` node and destination `dst` node of an edge."
-@kwdef struct NodesAtEdge
-    src::Vector{Int} = Int[]
-    dst::Vector{Int} = Int[]
+@kwdef struct NodesAtEdge{I <: DenseArray{Int}}
+    src::I = Int[]
+    dst::I = Int[]
+end
+
+function Adapt.adapt_structure(to, from::NodesAtEdge)
+    return NodesAtEdge(adapt(to, from.src), adapt(to, from.dst))
 end
 
 "Struct for storing source `src` edge and destination `dst` edge of a node."
-@kwdef struct EdgesAtNode
-    src::Vector{Vector{Int}} = Vector{Int}[]
-    dst::Vector{Vector{Int}} = Vector{Int}[]
+@kwdef struct EdgesAtNode{I <: DenseArray{Int}}
+    src::I = Int[]
+    dst::I = Int[]
+end
+
+function Adapt.adapt_structure(to, from::EdgesAtNode)
+    return EdgesAtNode(adapt(to, from.src), adapt(to, from.dst))
 end
 
 "Struct for storing network information land domain."
@@ -50,7 +58,7 @@ end
     # water allocation areas [-]
     allocation_area_indices::Vector{Vector{Int}} = Vector{Int}[]
     # directed acyclic graph
-    graph::SimpleDiGraph{Int64} = DiGraph(0)
+    graph::SimpleDiGraph{Int} = DiGraph{Int}(0)
     # Strahler stream order
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
@@ -165,42 +173,24 @@ function get_drainage_network(
     return graph, ldd
 end
 
-"Struct for storing network information river domain."
-@kwdef struct NetworkRiver
-    # local drain direction using the 8 point pour algorithm
-    local_drain_direction::Vector{UInt8} = UInt8[]
-    # water allocation areas [-]
-    allocation_area_indices::Vector{Vector{Int}} = Vector{Int}[]
-    # source and destination edge of a node
-    edges_at_node::EdgesAtNode = EdgesAtNode()
-    # directed graph
-    graph::SimpleDiGraph{Int64} = DiGraph(0)
-    # Strahler stream order
-    streamorder::Vector{Int} = Int[]
-    # maps from the 1D internal river domain to the 2D model (external) domain
-    indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # maps lakes to the river domain (zero value represents no lake)
-    lake_indices::Vector{Int} = Int[]
-    # land domain indices masked by river domain (zero value represents no river)
-    land_indices::Vector{Int} = Int[]
-    # maps 1D pits (local drain direction) to the 2D model (external) domain
-    pit_indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # source and destination node of an edge
-    nodes_at_edge::NodesAtEdge = NodesAtEdge()
-    # traversion order of river domain
-    order::Vector{Int} = Int[]
-    # execution order of sub-domains for kinematic wave river flow routing
-    order_of_subdomains::Vector{Vector{Int}} = Vector{Int}[]
-    # traversion order per sub-domain
-    order_subdomain::Vector{Vector{Int}} = Vector{Int}[]
-    # maps reservoirs to the river domain (zero value represents no reservoir)
-    reservoir_indices::Vector{Int} = Int[]
-    # maps from the 2D model (external) domain to the 1D internal river domain
-    reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
-    # maps `order_subdomain` to traversion order of the complete domain
-    subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
-    # upstream nodes (directed graph)
-    upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
+@kwdef struct NetworkRiver{I <: DenseArray{Int}, I8 <: DenseArray{UInt8}}
+    local_drain_direction::I8 = UInt8[]                           # local drain direction using the 8 point pour algorithm
+    allocation_area_indices::Vector{Vector{Int}} = Vector{Int}[]  # water allocation areas [-]
+    edges_at_node::EdgesAtNode = EdgesAtNode()                 # source and destination edge of a node
+    graph::SimpleDiGraph{Int} = DiGraph{Int}(0)                   # directed graph
+    streamorder::I = Int[]                                        # Strahler stream order
+    indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]      # maps from the 1D internal river domain to the 2D model (external) domain
+    lake_indices::I = Int[]                                       # maps lakes to the river domain (zero value represents no lake)
+    land_indices::I = Int[]                                       # land domain indices masked by river domain (zero value represents no river)
+    pit_indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]  # maps 1D pits (local drain direction) to the 2D model (external) domain
+    nodes_at_edge::NodesAtEdge = NodesAtEdge()                 # source and destination node of an edge
+    order::I = Int[]                                              # traversion order of river domain
+    order_of_subdomains::Vector{Vector{Int}} = Vector{Int}[]      # execution order of sub-domains for kinematic wave river flow routing
+    order_subdomain::Vector{Vector{Int}} = Vector{Int}[]          # traversion order per sub-domain
+    reservoir_indices::I = Int[]                                  # maps reservoirs to the river domain (zero value represents no reservoir)
+    reverse_indices::Matrix{Int} = zeros(Int, 0, 0)                         # maps from the 2D model (external) domain to the 1D internal river domain
+    subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]        # maps `order_subdomain` to traversion order of the complete domain
+    upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]           # upstream nodes (directed graph)
 end
 
 """
@@ -221,17 +211,18 @@ function NetworkRiver(
         get_drainage_network(dataset, config, indices; do_pits, logging)
     order = topological_sort_by_dfs(graph)
     river_location = river_location_2d[network.indices]
-    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
+    land_indices =
+        Vector{Int}(filter(i -> !isequal(river_location[i], 0), 1:length(network.indices)))
     streamorder = network.streamorder[land_indices]
 
     network = NetworkRiver(;
-        indices,
-        reverse_indices,
         local_drain_direction,
         graph,
-        order,
         streamorder,
+        indices,
         land_indices,
+        order,
+        reverse_indices,
     )
 
     return network
@@ -268,8 +259,8 @@ end
 
 "Initialize `EdgesAtNode`"
 function EdgesAtNode(network::NetworkRiver)
-    edges_at_node =
-        EdgesAtNode(; adjacent_edges_at_node(network.graph, network.nodes_at_edge)...)
+    (; src, dst) = adjacent_edges_at_node(network.graph, network.nodes_at_edge)
+    edges_at_node = EdgesAtNode(ragged_to_dense(src), ragged_to_dense(dst))
     return edges_at_node
 end
 

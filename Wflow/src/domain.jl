@@ -29,19 +29,13 @@
 end
 
 "Struct to store (shared) river parameters"
-@with_kw struct RiverParameters
-    # river flow width [m]
-    flow_width::Vector{Float} = Float[]
-    # river flow length [m]
-    flow_length::Vector{Float} = Float[]
-    # slope [-]
-    slope::Vector{Float} = Float[]
-    # water body (reservoir and lake) location
-    waterbody_outlet::Vector{Bool} = Bool[]
-    # waterbody coverage [-]
-    waterbody_coverage::Vector{Bool} = Bool[]
-    # grid cell area [m²]
-    cell_area::Vector{Float} = Float[]
+@with_kw struct RiverParameters{T <: DenseArray{Float}, B <: DenseArray{Bool}}
+    flow_width::T = Float[]          # river flow width [m]
+    flow_length::T = Float[]         # river flow length [m]
+    slope::T = Float[]               # slope [-]
+    waterbody_outlet::B = Bool[]    # water body (reservoir and lake) location
+    waterbody_coverage::B = Bool[]  # waterbody coverage [-]
+    cell_area::T = Float[]          # grid cell area [m²]
 end
 
 @kwdef struct DomainLand
@@ -49,17 +43,34 @@ end
     parameters::LandParameters = LandParameters()
 end
 
-@kwdef struct DomainRiver
-    network::NetworkRiver = NetworkRiver()
-    parameters::RiverParameters = RiverParameters()
+@kwdef struct DomainRiver{
+    T <: DenseArray{Float},
+    I <: DenseArray{Int},
+    I8 <: DenseArray{UInt8},
+    B <: DenseArray{Bool},
+}
+    network::NetworkRiver{I, I8} = ()
+    parameters::RiverParameters{T, B} = RiverParameters()
+end
+
+function Adapt.adapt_structure(to, from::DomainRiver)
+    return DomainRiver(adapt(to, from.network), adapt(to, from.parameters))
 end
 
 @kwdef struct DomainWaterBody
     network::NetworkWaterBody = NetworkWaterBody()
 end
 
+function Adapt.adapt_structure(to, from::DomainWaterBody)
+    return DomainWaterBody(adapt(to, from.network))
+end
+
 @kwdef struct DomainDrain
     network::NetworkDrain = NetworkDrain()
+end
+
+function Adapt.adapt_structure(to, from::DomainDrain)
+    return DomainDrain(adapt(to, from.network))
 end
 
 """
@@ -75,6 +86,16 @@ each domain that can used by different model components.
     reservoir::DomainWaterBody = DomainWaterBody()
     lake::DomainWaterBody = DomainWaterBody()
     drain::DomainDrain = DomainDrain()
+end
+
+function Adapt.adapt_structure(to, from::Domain)
+    return Domain(
+        adapt(to, from.land),
+        adapt(to, from.river),
+        adapt(to, from.reservoir),
+        adapt(to, from.lake),
+        adapt(to, from.drain),
+    )
 end
 
 "Initialize `Domain` for model types `sbm` and `sbm_gwf`"

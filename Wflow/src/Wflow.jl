@@ -70,10 +70,14 @@ const Int = Int32
 const cpu_backend = KernelAbstractions.CPU()
 
 using AMDGPU
-AMDGPU.device!(AMDGPU.devices()[2])
 
 const gpu_backend = AMDGPU.ROCBackend()
 const backend = gpu_backend
+const BackendArray = ROCArray
+# const backend = cpu_backend
+# const BackendArray = Array
+
+# AMDGPU.device!(AMDGPU.devices()[2])
 
 # Allows creation of an array on the backend, e.g. `array_from_host(ones(Int32, 10))` or `array_from_host(1:10, Int32)`
 #  copied from https://github.com/JuliaGPU/AcceleratedKernels.jl/blob/main/test/runtests.jl#L140 (MIT License)
