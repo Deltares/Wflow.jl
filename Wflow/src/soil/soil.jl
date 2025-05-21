@@ -201,7 +201,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         recharge = fill(MISSING_VALUE, n),
         actleakage = fill(MISSING_VALUE, n),
         tsoil = fill(10.0, n),
-        total_storage = zeros(Float64, n), # Set the total water storage from initialized values
+        total_storage = zeros(Float64, n),
     )
     return vars
 end
@@ -805,11 +805,44 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
 
     rootingdepth = get_rootingdepth(model)
     n = length(rootingdepth)
+
     threaded_foreach(1:n; basesize = 250) do i
-        actevapustore = 0.0
-        rootfraction_unsat = 0.0
         v.h3[i] = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i], dt)
+
+        # compute sum of root fraction in unsaturated soil layers and adapt root fraction
+        # lowest unsaturated soil layer if water table depth intersects the unsaturated root
+        # zone
+        sum_rootfraction_unsat = 0.0
+        rootfraction_unsat_lowest = 0.0
         for k in 1:v.n_unsatlayers[i]
+            # the root fraction is valid for the root length in a soil layer, if zi decreases
+            # the root length the root fraction needs to be adapted
+            if k == v.n_unsatlayers[i] && v.zi[i] < rootingdepth[i]
+                rootlength = min(p.act_thickl[i][k], rootingdepth[i] - p.sumlayers[i][k])
+                rootfraction_unsat =
+                    p.rootfraction[i][k] * (v.ustorelayerthickness[i][k] / rootlength)
+                sum_rootfraction_unsat += rootfraction_unsat
+            else
+                rootfraction_unsat = p.rootfraction[i][k]
+                sum_rootfraction_unsat += rootfraction_unsat
+            end
+            # rootfraction lowest unsaturated layer
+            rootfraction_unsat_lowest = rootfraction_unsat
+        end
+
+        actevapustore = 0.0
+        for k in 1:v.n_unsatlayers[i]
+            # scale rootfraction soil layer unsaturated zone based on sum of rootfraction in
+            # unsaturated zone
+            if k < v.n_unsatlayers[i]
+                rootfraction_unsat = p.rootfraction[i][k]
+            else
+                rootfraction_unsat = rootfraction_unsat_lowest
+            end
+            rootfraction_unsat_scaled =
+                rootingdepth[i] > 0.0 ?
+                max((1.0 / sum_rootfraction_unsat), 1.0) * rootfraction_unsat : 0.0
+
             vwc = max(
                 v.ustorelayerdepth[i][k] / v.ustorelayerthickness[i][k],
                 Float64(0.0000001),
@@ -832,18 +865,8 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
                 ),
             )
             maxextr = v.ustorelayerdepth[i][k] * availcap
-            # the rootfraction is valid for the root length in a soil layer, if zi decreases the root length
-            # the rootfraction needs to be adapted
-            if k == v.n_unsatlayers[i] && v.zi[i] < rootingdepth[i]
-                rootlength = min(p.act_thickl[i][k], rootingdepth[i] - p.sumlayers[i][k])
-                rootfraction_act =
-                    p.rootfraction[i][k] * (v.ustorelayerthickness[i][k] / rootlength)
-            else
-                rootfraction_act = p.rootfraction[i][k]
-            end
             actevapustore_layer =
-                min(alpha * rootfraction_act * potential_transpiration[i], maxextr)
-            rootfraction_unsat = rootfraction_unsat + rootfraction_act
+                min(alpha * rootfraction_unsat_scaled * potential_transpiration[i], maxextr)
             ustorelayerdepth = v.ustorelayerdepth[i][k] - actevapustore_layer
             actevapustore = actevapustore + actevapustore_layer
             v.ustorelayerdepth[i] = setindex(v.ustorelayerdepth[i], ustorelayerdepth, k)
@@ -859,15 +882,8 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
             p.h4[i],
             p.alpha_h1[i],
         )
-        # include remaining root fraction if rooting depth is below water table zi
-        if v.zi[i] >= rootingdepth[i]
-            f_roots = wetroots
-            restevap = potential_transpiration[i] - actevapustore
-        else
-            f_roots = wetroots * (1.0 - rootfraction_unsat)
-            restevap = potential_transpiration[i]
-        end
-        actevapsat = min(restevap * f_roots * alpha, v.satwaterdepth[i])
+        restpottrans = potential_transpiration[i] - actevapustore
+        actevapsat = min(restpottrans * wetroots * alpha, v.satwaterdepth[i])
 
         v.ae_ustore[i] = actevapustore
         v.actevapsat[i] = actevapsat

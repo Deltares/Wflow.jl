@@ -192,7 +192,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
 
         if floodplain_1d
-            initialize_storage!(routing.river_flow, nriv)
+            initialize_storage!(routing.river_flow, domain, nriv)
         end
 
         if do_lakes
