@@ -168,11 +168,11 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             end
             land_v.storage .= land_v.h .* surface_flow_width .* flow_length
         elseif land_routing == "local-inertial"
-            (; river, x_length, y_length) = domain.land.parameters
+            (; river_location, x_length, y_length) = domain.land.parameters
             (; flow_width, flow_length) = domain.river.parameters
-            (; bankfull_storage) = routing.overland_flow.parameters
-            for i in eachindex(routing.overland_flow.storage)
-                if river[i]
+            (; bankfull_storage) = routing.river_flow.parameters
+            for i in eachindex(land_v.storage)
+                if river_location[i]
                     j = domain.land.network.river_indices[i]
                     if land_v.h[i] > 0.0
                         land_v.storage[i] =
@@ -181,8 +181,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                         land_v.storage[i] = river_v.h[j] * flow_width[j] * flow_length[j]
                     end
                 else
-                    routing.overland_flow.storage[i] =
-                        routing.overland_flow.h[i] * x_length[i] * y_length[i]
+                    land_v.storage[i] = land_v.h[i] * x_length[i] * y_length[i]
                 end
             end
         end
