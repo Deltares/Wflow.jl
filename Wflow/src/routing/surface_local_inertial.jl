@@ -500,9 +500,7 @@ function update!(
     t = 0.0
     while t < dt
         dt_s = stable_timestep(model, flow_length)
-        if t + dt_s > dt
-            dt_s = dt - t
-        end
+        dt_s = check_timestepsize(dt_s, t, dt)
         local_inertial_river_update!(model, domain, dt_s, dt, doy, update_h)
         t = t + dt_s
     end
@@ -787,9 +785,8 @@ function update!(
         dt_river = stable_timestep(river, flow_length)
         dt_land = stable_timestep(land, parameters)
         dt_s = min(dt_river, dt_land)
-        if t + dt_s > dt
-            dt_s = dt - t
-        end
+        dt_s = check_timestepsize(dt_s, t, dt)
+
         local_inertial_update_fluxes!(land, domain, dt_s)
         update_inflow_waterbody!(land, river, domain)
         local_inertial_river_update!(river, domain, dt_s, dt, doy, update_h)
