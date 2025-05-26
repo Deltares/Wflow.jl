@@ -31,8 +31,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   flow) for river cells in the diagonal flow direction. For both cases the width should be
   based on land area and flow length (area conservative).
 - Limit external negative inflow for local inertial routing (maximum of 80% of river volume).
-- Water depth for waterbody locations (boundary condition) of the local inertial model for
-  river and land routing was computed and should remain zero during the simulation.
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
@@ -103,6 +101,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   For the transpiration from the saturated store the remaining potential transpiration is
   used in combination with the wet root fraction (root length density fraction in the
   saturated soil layers is not used).
+- Changed order of computations for 1D-2D local inertial model that improves the accuracy of
+  reservoir or lake state after initialization with a warm state. The inflow from land to a
+  reservoir or lake was updated during the overland flow routing (final computation during
+  each internal time step). This results in small inflow deviations when starting with a
+  warm state as the inflow from land to a reservoir or lake has not been updated yet, while
+  a reservoir or lake is updated as part of the river routing. Order of computations has
+  been changed to: 1) overland flow routing, 2) reservoir or lake inflow and 3) river
+  routing.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
