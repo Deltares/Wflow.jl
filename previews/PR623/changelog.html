@@ -471,7 +471,6 @@ window.Quarto = {
 <li>Limit flux from <code>River</code> boundary of <code>GroundwaterFlow</code> to unconfined aquifer based on available river storage (from river flow routing).</li>
 <li>Fixed computation of flow width in diagonal flow direction for model type <code>sediment</code> and fixed the computation of the remaining surface flow width (kinematic wave overland flow) for river cells in the diagonal flow direction. For both cases the width should be based on land area and flow length (area conservative).</li>
 <li>Limit external negative inflow for local inertial routing (maximum of 80% of river volume).</li>
-<li>Water depth for waterbody locations (boundary condition) of the local inertial model for river and land routing was computed and should remain zero during the simulation.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
@@ -494,6 +493,7 @@ window.Quarto = {
 <li>Changed default values of <code>h4</code> from -15849.0 to -16000.0, and <code>cfmax</code> from 3.75653 to 3.75.</li>
 <li>Removed support for one layer models, and therefore also removed the <code>topog_sbm_transfer__flag</code> option. With this removal, the default soil layer thickness is set to <code>[100, 300, 800]</code>.</li>
 <li>The root length density fraction in unsaturated soil layers is scaled by using the total root length density fraction of the unsaturated zone. Plant transpiration can then be fully satisfied from the unsaturated zone when the water table intersects the root zone. For the transpiration from the saturated store the remaining potential transpiration is used in combination with the wet root fraction (root length density fraction in the saturated soil layers is not used).</li>
+<li>Changed order of computations for 1D-2D local inertial model that improves the accuracy of reservoir or lake state after initialization with a warm state. The inflow from land to a reservoir or lake was updated during the overland flow routing (final computation during each internal time step). This results in small inflow deviations when starting with a warm state as the inflow from land to a reservoir or lake has not been updated yet, while a reservoir or lake is updated as part of the river routing. Order of computations has been changed to: 1) overland flow routing, 2) reservoir or lake inflow and 3) river routing.</li>
 </ul>
 </section>
 <section id="added" class="level3">
