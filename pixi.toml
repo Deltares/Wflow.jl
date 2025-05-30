@@ -4,7 +4,7 @@ authors = [
     "Joost Buitink <joost.buitink@deltares.nl>",
     "Willem van Verseveld <willem.vanVerseveld@deltares.nl>",
     "Hofer-Julian <julian.hofer@deltares.nl>",
-    "Bart de Koning <bart.dekoning@deltares.nl>"
+    "Bart de Koning <bart.dekoning@deltares.nl>",
 ]
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
@@ -15,10 +15,17 @@ install-julia = "juliaup add 1.11.3 && juliaup override set 1.11.3"
 # Julia
 # Clear SSL_CERT_DIR to avoid Julia warnings, see https://github.com/JuliaLang/Downloads.jl/issues/244
 update-registry-julia = { cmd = "julia --eval='using Pkg; Registry.update()'", env = { SSL_CERT_DIR = "" } }
-instantiate-julia = {cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'", cwd = "Wflow", env = { SSL_CERT_DIR = "" } }
+instantiate-julia = { cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'", cwd = "Wflow", env = { SSL_CERT_DIR = "" } }
 initialize-julia = { depends-on = [
     "update-registry-julia",
     "instantiate-julia",
+] }
+generate-sbom = { cmd = "julia --project=Wflow -- Wflow/utils/generate-sbom.jl", depends-on = [
+    "instantiate-julia",
+], inputs = [
+    "Wflow/Project.toml",
+], outputs = [
+    "Wflow.spdx.json",
 ] }
 # Build
 instantiate-create-binaries = { cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'", cwd = "build/create_binaries" }
