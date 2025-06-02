@@ -32,14 +32,14 @@ build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_b
     "instantiate-wflow-cli",
 ], env = { SSL_CERT_DIR = "", JULIA_SSL_CA_ROOTS_PATH = "" } }
 # Test
-test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test()'", cwd = "build/wflow_cli", depends-on = [
+test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false)'", cwd = "build/wflow_cli", depends-on = [
     "download-test-data",
 ] }
-test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
+test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
     "initialize-julia",
 ] }
 # Server
-test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", coverage=true)'", depends-on = [
+test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", allow_reresolve=false, coverage=true)'", depends-on = [
     "instantiate-wflow-server",
 ] }
 instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instantiate()'"
