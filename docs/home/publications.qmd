@@ -17,9 +17,10 @@ To cite a specific software version please use the DOI provided in the Zenodo ba
 that points to the latest release. The DOIs of previous versions are also available at Zenodo.
 If you use a snapshot of the development (without a DOI) please cite as follows:
 
-van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Bouaziz, Laurène, Boisgontier, Hélène,
-Bootsma, Huite, Weerts, Albrecht, Baptista, Carlos Fernando, Pronk, Maarten, Eilander, Dirk,
-Hartgring, Sebastian, Dalmijn, Brendan, Hofer, Julian, Hegnauer, Mark, & Mendoza, Raul, (YEAR).
+van Verseveld, Willem, Visser, Martijn, Buitink, Joost, Boisgontier, Hélène, Bouaziz,
+Laurène, Weerts, Albrecht, Bootsma, Huite,  Baptista, Carlos Fernando, de Koning, Bart,
+Hartgring, Sebastian, Shin, Peter, Pronk, Maarten, Dalmijn, Brendan, Eilander, Dirk, Hofer,
+Julian, Hegnauer, Mark, Mendoza, Raul, Nelemans, Peter, & Meshgi, Ali, (YEAR).
 Deltares/Wflow.jl: unstable-master. <https://github.com/Deltares/Wflow.jl>, obtained:
 DATE\_OF\_DOWNLOAD.
 
