@@ -2,6 +2,8 @@ using PkgToSoftwareBOM
 using UUIDs
 using Pkg
 
+Pkg.activate("../../Wflow")
+
 wflowLicense = SpdxLicenseExpressionV2("MIT")
 organization = SpdxCreatorV2("Organization", "Deltares", "software@deltares.nl")
 packageInstructions = spdxPackageInstructions(;
@@ -12,7 +14,7 @@ packageInstructions = spdxPackageInstructions(;
     name = "Wflow",
 )
 
-dependencies =  filter(p-> !(p.first in ["PkgToSoftwareBOM", "SPDX"]), Pkg.project().dependencies);
+dependencies =  Pkg.project().dependencies
 spdxData = spdxCreationData(;
     Name = "Wflow.jl",
     Creators = [organization],
@@ -25,4 +27,4 @@ spdxData = spdxCreationData(;
 )
 
 sbom = generateSPDX(spdxData)
-writespdx(sbom, "Wflow.spdx.json")
+writespdx(sbom, "../../Wflow.spdx.json")
