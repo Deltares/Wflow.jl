@@ -39,7 +39,7 @@
 end
 
 "Initialize reservoir model parameters"
-function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkWaterBody)
+function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkReservoir)
     (; indices_outlet) = network
 
     lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)
@@ -76,7 +76,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     )
 
     n_reservoirs = length(area)
-    reslocs = get_waterbody_locs(dataset, config, indices_outlet, "reservoir")
+    lens = lens_input(config, "reservoir_location__count"; optional = false)
+    reslocs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
     @info "Read `$n_reservoirs` reservoir locations."
 
     parameters = ReservoirParameters(; area, outflowfunc, storfunc)
@@ -236,7 +237,7 @@ end
 end
 
 "Initialize reservoir model `SimpleReservoir`"
-function Reservoir(dataset::NCDataset, config::Config, network::NetworkWaterBody)
+function Reservoir(dataset::NCDataset, config::Config, network::NetworkReservoir)
     parameters, waterlevel = ReservoirParameters(dataset, config, network)
     variables = ReservoirVariables(parameters, waterlevel)
     boundary_conditions = ReservoirBC(n_reservoirs)

@@ -585,8 +585,8 @@ edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is co
 subtracting the river width `flow_width` from the cell edges. For diagonal directions, the
 `flow_width` is split between the two adjacent cell edges. A cell edge at linear index `idx`
 is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1, 0)) for
-x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody_outlet` (reservoir
-or lake), the effective flow width is set to zero.
+x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `reservoir_outlet`
+(reservoir), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
     we_x::Vector{Float64},
@@ -595,7 +595,7 @@ function set_effective_flowwidth!(
 )
     (; local_drain_direction, indices) = domain.river.network
     (; edge_indices, reverse_indices) = domain.land.network
-    (; flow_width, waterbody_outlet) = domain.river.parameters
+    (; flow_width, reservoir_outlet) = domain.river.parameters
     reverse_indices = reverse_indices[indices]
 
     graph = flowgraph(local_drain_direction, indices, PCR_DIR)
@@ -609,47 +609,47 @@ function set_effective_flowwidth!(
         idx = reverse_indices[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
-            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
-            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
+            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
-            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
-            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
     return nothing

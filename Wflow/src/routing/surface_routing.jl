@@ -28,7 +28,7 @@ function surface_routing!(model)
         domain,
         dt,
     )
-    update_inflow_waterbody!(
+    update_inflow_reservoir!(
         river_flow,
         (; overland_flow, subsurface_flow),
         domain.river.network.land_indices,

@@ -16,10 +16,10 @@
     flow_fraction_to_river::Vector{Float64} = Float64[]
     # slope [-]
     slope::Vector{Float64} = Float64[]
-    # water body (reservoir and lake) location [-]
-    waterbody_outlet::Vector{Bool} = Bool[]
-    # waterbody coverage [-]
-    waterbody_coverage::Vector{Bool} = Bool[]
+    # reservoir location [-]
+    reservoir_outlet::Vector{Bool} = Bool[]
+    # reservoir coverage [-]
+    reservoir_coverage::Vector{Bool} = Bool[]
     # river location [-]
     river_location::Vector{Bool} = Bool[]
     # fraction of river [-]
@@ -36,10 +36,10 @@ end
     flow_length::Vector{Float64} = Float64[]
     # slope [-]
     slope::Vector{Float64} = Float64[]
-    # water body (reservoir and lake) location
-    waterbody_outlet::Vector{Bool} = Bool[]
-    # waterbody coverage [-]
-    waterbody_coverage::Vector{Bool} = Bool[]
+    # reservoir location
+    reservoir_outlet::Vector{Bool} = Bool[]
+    # reservoir coverage [-]
+    reservoir_coverage::Vector{Bool} = Bool[]
     # grid cell area [m²]
     cell_area::Vector{Float64} = Float64[]
 end
@@ -54,8 +54,8 @@ end
     parameters::RiverParameters = RiverParameters()
 end
 
-@kwdef struct DomainWaterBody
-    network::NetworkWaterBody = NetworkWaterBody()
+@kwdef struct DomainReservoir
+    network::NetworkReservoir = NetworkReservoir()
 end
 
 @kwdef struct DomainDrain
@@ -63,8 +63,8 @@ end
 end
 
 """
-Struct for storing information about different model domains 'land`, `river`, `reservoir`,
-`lake` and `drain` (`Drainage` boundary condition of `GroundwaterFlow`). It holds network
+Struct for storing information about different model domains 'land`, `river`, `reservoir`
+and `drain` (`Drainage` boundary condition of `GroundwaterFlow`). It holds network
 information for each domain like active indices in the 2D model domain and connectivity
 information for flow routing. The `land` and `river` domains contain shared parameters for
 each domain that can used by different model components.
@@ -72,8 +72,7 @@ each domain that can used by different model components.
 @kwdef struct Domain
     land::DomainLand = DomainLand()
     river::DomainRiver = DomainRiver()
-    reservoir::DomainWaterBody = DomainWaterBody()
-    lake::DomainWaterBody = DomainWaterBody()
+    reservoir::DomainReservoir = DomainReservoir()
     drain::DomainDrain = DomainDrain()
 end
 
@@ -100,23 +99,13 @@ function Domain(
     nriv = length(network_river.indices)
     if modelsettings.reservoirs
         network_reservoir, inds_reservoir_map2river =
-            NetworkWaterBody(dataset, config, network_river.indices, "reservoir")
+            NetworkReservoir(dataset, config, network_river.indices)
         pits[network_reservoir.indices_outlet] .= true
     else
-        network_reservoir = NetworkWaterBody()
+        network_reservoir = NetworkReservoir()
         inds_reservoir_map2river = fill(0, nriv)
     end
     @reset network_river.reservoir_indices = inds_reservoir_map2river
-
-    if modelsettings.lakes
-        network_lake, inds_lake_map2river =
-            NetworkWaterBody(dataset, config, network_river.indices, "lake")
-        pits[network_lake.indices_outlet] .= true
-    else
-        network_lake = NetworkWaterBody()
-        inds_lake_map2river = fill(0, nriv)
-    end
-    @reset network_river.lake_indices = inds_lake_map2river
 
     if routing_types.river == "kinematic-wave"
         @reset network_river.upstream_nodes =
@@ -145,8 +134,7 @@ function Domain(
     domain = Domain(;
         land = domain_land,
         river = domain_river,
-        reservoir = DomainWaterBody(; network = network_reservoir),
-        lake = DomainWaterBody(; network = network_lake),
+        reservoir = DomainReservoir(; network = network_reservoir),
     )
 
     land_params, river_params = initialize_shared_parameters(dataset, config, domain)
@@ -167,8 +155,8 @@ function Domain(
         @reset domain.river.network.allocation_area_indices = river_allocation_indices
 
         mask = copy(domain.river.network.reverse_indices)
-        mask_waterbody_coverage!(mask, config, domain)
-        @reset domain.land.network.river_inds_excl_waterbody =
+        mask_reservoir_coverage!(mask, config, domain)
+        @reset domain.land.network.river_inds_excl_reservoir =
             mask[domain.land.network.indices]
     end
 
@@ -206,16 +194,16 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
     area = x_length .* y_length
     flow_width = map(get_flow_width, network.local_drain_direction, x_length, y_length)
     slope = get_landsurface_slope(dataset, config, network)
-    waterbody_outlet = waterbody_mask(dataset, config, network)
-    waterbody_coverage = waterbody_mask(dataset, config, network; region = "area")
+    reservoir_outlet = reservoir_mask(dataset, config, network)
+    reservoir_coverage = reservoir_mask(dataset, config, network; region = "area")
     river_location = river_mask(dataset, config, network)
 
     land_parameters = LandParameters(;
         area,
         flow_width,
         slope,
-        waterbody_outlet,
-        waterbody_coverage,
+        reservoir_outlet,
+        reservoir_coverage,
         river_location,
     )
     return land_parameters
@@ -246,8 +234,8 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
         slope,
     )
 
-    waterbody_outlet = waterbody_mask(dataset, config, network)
-    waterbody_coverage = waterbody_mask(dataset, config, network; region = "area")
+    reservoir_outlet = reservoir_mask(dataset, config, network)
+    reservoir_coverage = reservoir_mask(dataset, config, network; region = "area")
 
     land_parameters = LandParameters(;
         x_length,
@@ -259,8 +247,8 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
         slope,
         river_location,
         flow_fraction_to_river,
-        waterbody_outlet,
-        waterbody_coverage,
+        reservoir_outlet,
+        reservoir_coverage,
         river_fraction,
         water_fraction,
     )
@@ -292,10 +280,10 @@ function initialize_shared_parameters(dataset::NCDataset, config::Config, domain
     river_params = RiverParameters(dataset, config, domain.river.network)
 
     @reset river_params.cell_area = land_params.area[domain.river.network.land_indices]
-    @reset river_params.waterbody_coverage =
-        land_params.waterbody_coverage[domain.river.network.land_indices]
-    @reset river_params.waterbody_outlet =
-        land_params.waterbody_outlet[domain.river.network.land_indices]
+    @reset river_params.reservoir_coverage =
+        land_params.reservoir_coverage[domain.river.network.land_indices]
+    @reset river_params.reservoir_outlet =
+        land_params.reservoir_outlet[domain.river.network.land_indices]
 
     return land_params, river_params
 end
@@ -371,47 +359,34 @@ function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
     return river_location
 end
 
-"Return waterbody (reservoir or lake) mask"
-function waterbody_mask(
+"Return reservoir mask"
+function reservoir_mask(
     dataset::NCDataset,
     config::Config,
     network::NetworkLand;
     region = "location",
 )
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    do_lakes = get(config.model, "lake__flag", false)::Bool
-    waterbodies = fill(0, length(network.indices))
+    reservoirs = fill(0, length(network.indices))
     if do_reservoirs
         lens = lens_input(config, "reservoir_$(region)__count"; optional = false)
         reservoirs =
             ncread(dataset, config, lens; sel = network.indices, type = Float64, fill = 0)
-        waterbodies = waterbodies .+ reservoirs
     end
-    if do_lakes
-        lens = lens_input(config, "lake_$(region)__count"; optional = false)
-        lakes =
-            ncread(dataset, config, lens; sel = network.indices, type = Float64, fill = 0)
-        waterbodies = waterbodies .+ lakes
-    end
-    waterbodies = Vector{Bool}(waterbodies .> 0)
-    return waterbodies
+    reservoirs = Vector{Bool}(reservoirs .> 0)
+    return reservoirs
 end
 
-"Mask reservoir and lake coverage based on mask value `mask_value`"
-function mask_waterbody_coverage!(
+"Mask reservoir coverage based on mask value `mask_value`"
+function mask_reservoir_coverage!(
     mask::AbstractMatrix,
     config::Config,
     domain::Domain;
     mask_value = 0,
 )
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    do_lakes = get(config.model, "lake__flag", false)::Bool
     if do_reservoirs
         inds_cov = collect(Iterators.flatten(domain.reservoir.network.indices_coverage))
-        mask[inds_cov] .= mask_value
-    end
-    if do_lakes
-        inds_cov = collect(Iterators.flatten(domain.lake.network.indices_coverage))
         mask[inds_cov] .= mask_value
     end
     return nothing

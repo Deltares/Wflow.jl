@@ -372,7 +372,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
     ) = model.variables
 
     (; graph, order) = domain.network
-    (; slope, flow_width, flow_length, waterbody_coverage) = domain.parameters
+    (; slope, flow_width, flow_length, reservoir_coverage) = domain.parameters
 
     # Sediment transport - water balance in the river
     for v in order
@@ -406,7 +406,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         # Erosion only if the load is below the transport capacity of the flow.
         sediment_need = max(transport_capacity[v] - input_sediment, 0.0)
         # No erosion in reservoirs
-        if waterbody_coverage[v]
+        if reservoir_coverage[v]
             sediment_need = 0.0
         end
 
@@ -511,7 +511,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             erosion_gravel
 
         ### Deposition / settling ###
-        # Different deposition if waterbody outlet or river
+        # Different deposition if reservoir outlet or river
         if waterbodies_locs[v]
             # Deposition in waterbodies outlets
             deposition_clay = reservoir_deposition_camp(
@@ -568,7 +568,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 dm_gravel[v],
                 slope[v],
             )
-        elseif waterbody_coverage[v]
+        elseif reservoir_coverage[v]
             # No deposition in waterbodies, only at the outlets
             deposition_clay = 0.0
             deposition_silt = 0.0

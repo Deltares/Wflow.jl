@@ -125,7 +125,7 @@ function update!(
     (; density, c_govers, n_govers) = model.parameters
     (; amount) = model.variables
 
-    (; slope, flow_width, waterbody_coverage, river_location) = parameters
+    (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -137,7 +137,7 @@ function update!(
             density[i],
             slope[i],
             flow_width[i],
-            waterbody_coverage[i],
+            reservoir_coverage[i],
             river_location[i],
             dt,
         )
@@ -205,7 +205,7 @@ function update!(
     (; density, d50) = model.parameters
     (; amount) = model.variables
 
-    (; slope, flow_width, waterbody_coverage, river_location) = parameters
+    (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -216,7 +216,7 @@ function update!(
             d50[i],
             slope[i],
             flow_width[i],
-            waterbody_coverage[i],
+            reservoir_coverage[i],
             river_location[i],
             dt,
         )
@@ -342,7 +342,7 @@ function update!(
     (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = model.parameters
     (; amount, clay, silt, sand, sagg, lagg) = model.variables
 
-    (; slope, flow_width, river_location, waterbody_coverage) = parameters
+    (; slope, flow_width, river_location, reservoir_coverage) = parameters
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -363,7 +363,7 @@ function update!(
             dm_clay[i],
             slope[i],
             flow_width[i],
-            waterbody_coverage[i],
+            reservoir_coverage[i],
             river_location[i],
             dtot,
             dt,
@@ -375,7 +375,7 @@ function update!(
             dm_silt[i],
             slope[i],
             flow_width[i],
-            waterbody_coverage[i],
+            reservoir_coverage[i],
             river_location[i],
             dtot,
             dt,
@@ -387,7 +387,7 @@ function update!(
             dm_sand[i],
             slope[i],
             flow_width[i],
-            waterbody_coverage[i],
+            reservoir_coverage[i],
             river_location[i],
             dtot,
             dt,
@@ -399,7 +399,7 @@ function update!(
             dm_sagg[i],
             slope[i],
             flow_width[i],
-            waterbody_coverage[i],
+            reservoir_coverage[i],
             river_location[i],
             dtot,
             dt,
@@ -411,7 +411,7 @@ function update!(
             dm_lagg[i],
             slope[i],
             flow_width[i],
-            waterbody_coverage[i],
+            reservoir_coverage[i],
             river_location[i],
             dtot,
             dt,
