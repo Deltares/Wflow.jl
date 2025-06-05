@@ -77,7 +77,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 
     n_reservoirs = length(area)
     lens = lens_input(config, "reservoir_location__count"; optional = false)
-    reslocs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
+    reslocs = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     @info "Read `$n_reservoirs` reservoir locations."
 
     parameters = ReservoirParameters(; area, outflowfunc, storfunc)
@@ -136,6 +136,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     end
 
+    # reservoir CSV parameter files are expected in the same directory as path_static
+    path = dirname(input_path(config, config.input.path_static))
     for i in 1:n_reservoirs
         resloc = reslocs[i]
         if linked_reslocs[i] > 0
@@ -240,7 +242,7 @@ end
 function Reservoir(dataset::NCDataset, config::Config, network::NetworkReservoir)
     parameters, waterlevel = ReservoirParameters(dataset, config, network)
     variables = ReservoirVariables(parameters, waterlevel)
-    boundary_conditions = ReservoirBC(n_reservoirs)
+    boundary_conditions = ReservoirBC(length(parameters.area))
     reservoir = Reservoir(; boundary_conditions, parameters, variables)
 
     return reservoir
