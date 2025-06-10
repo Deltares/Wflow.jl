@@ -294,30 +294,16 @@ function interpolate_linear(x, xp, fp)
     end
 end
 
-function vertical_fluxes(model::Reservoir, i::Int, dt::Float64, dt_forcing::Float64)
-    res_bc = model.boundary_conditions
-    res_v = model.variables
-    res_p = model.parameters
-
-    # limit reservoir evaporation based on total available volume [m³]
-    precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
-    available_storage = res_v.storage[i] + inflow * dt + precipitation
-    evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
-    actevap = min(available_storage, evap) # [m³/dt]
-    return precipitation, actevap
-end
-
 function update_reservoir_simple(
     model::Reservoir,
     i::Int,
-    inflow::Float64,
+    boundary_vars::NamedTuple,
     dt::Float64,
-    dt_forcing::Float64,
 )
     res_p = model.parameters
     res_v = model.variables
+    (; precipitation, actevap, inflow) = boundary_vars
 
-    precipitation, actevap = vertical_fluxes(model, i, dt, dt_forcing)
     storage = res_v.storage[i] + (inflow * dt) + precipitation - actevap
     storage = max(storage, 0.0)
 
@@ -335,24 +321,22 @@ function update_reservoir_simple(
     outflow = torelease + demandrelease
     percfull = storage / res_p.maxstorage[i]
 
-    # update values in place
-    res_v.demandrelease[i] = demandrelease / dt
-    res_v.percfull[i] = percfull
+    outflow /= dt
+    demandrelease /= dt
 
-    return outflow / dt, storage
+    return outflow, storage, demandrelease, percfull
 end
 
 function update_reservoir_modified_puls(
     model::Reservoir,
     i::Int,
-    inflow::Float64,
+    boundary_vars::NamedTuple,
     dt::Float64,
-    dt_forcing::Float64,
 )
     res_p = model.parameters
     res_v = model.variables
+    (; precipitation, actevap, inflow) = boundary_vars
 
-    precipitation, actevap = vertical_fluxes(model, i, dt, dt_forcing)
     lakefactor = res_p.area[i] / (dt * pow(res_p.b[i], 0.5))
     si_factor = (res_v.storage[i] + precipitation - actevap) / dt + inflow
     # Adjust SIFactor for ResThreshold != 0
@@ -377,15 +361,14 @@ end
 function update_reservoir_hq(
     model::Reservoir,
     i::Int,
-    inflow::Float64,
+    boundary_vars::NamedTuple,
     doy::Int,
     dt::Float64,
-    dt_forcing::Float64,
 )
     res_p = model.parameters
     res_v = model.variables
+    (; precipitation, actevap, inflow) = boundary_vars
 
-    precipitation, actevap = vertical_fluxes(model, i, dt, dt_forcing)
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
     outflow = interpolate_linear(res_v.waterlevel[i], res_p.hq[i].H, res_p.hq[i].Q[:, doy])
     outflow = min(outflow, storage_input)
@@ -402,16 +385,15 @@ end
 function update_reservoir_free_weir(
     model::Reservoir,
     i::Int,
-    inflow::Float64,
+    boundary_vars::NamedTuple,
     dt::Float64,
-    dt_forcing::Float64,
 )
     res_p = model.parameters
     res_v = model.variables
+    (; precipitation, actevap, inflow) = boundary_vars
 
     diff_wl = has_lowerlake ? res_v.waterlevel[i] - res_v.waterlevel[lo] : 0.0
 
-    precipitation, actevap = vertical_fluxes(model, i, dt, dt_forcing)
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
 
     if diff_wl >= 0.0
@@ -472,14 +454,23 @@ function update!(
     res_p = model.parameters
     res_v = model.variables
 
+    # limit reservoir evaporation based on total available volume [m³]
+    precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
+    available_storage = res_v.storage[i] + inflow * dt + precipitation
+    evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
+    actevap = min(available_storage, evap) # [m³/dt]
+
+    boundary_vars = (precipitation, actevap, inflow)
+
     if res_p.outflowfunc[i] == 1
-        outflow, storage = update_reservoir_hq(model, i, inflow, doy, dt, dt_forcing)
+        outflow, storage = update_reservoir_hq(model, i, boundary_vars, doy, dt)
     elseif res_p.outflowfunc[i] == 2
-        outflow, storage = update_reservoir_free_weir(model, i, inflow, dt, dt_forcing)
+        outflow, storage = update_reservoir_free_weir(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 3
-        outflow, storage = update_reservoir_modified_puls(model, i, inflow, dt, dt_forcing)
+        outflow, storage = update_reservoir_modified_puls(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 4
-        outflow, storage = update_reservoir_simple(model, i, inflow, dt, dt_forcing)
+        outflow, storage, demandrelease, percfull =
+            update_reservoir_simple(model, i, boundary_vars, dt)
     end
 
     waterlevel = if res_p.storfunc[i] == 1
@@ -493,6 +484,10 @@ function update!(
     res_v.storage[i] = storage
     res_v.waterlevel[i] = waterlevel
     res_v.outflow[i] = outflow
+    if res_p.outflowfunc[i] == 4
+        res_v.demandrelease[i] = demandrelease
+        res_v.percfull[i] = percfull
+    end
     # average variables (here accumulated for model timestep Δt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt
