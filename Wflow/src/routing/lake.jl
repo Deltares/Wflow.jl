@@ -203,19 +203,11 @@ function initialize_storage(
 end
 
 "Determine the water level depending on the storage function"
-function waterlevel(
-    storfunc::Vector{Int},
-    area::Vector{Float64},
-    storage::Vector{Float64},
-    sh::Vector{Union{SH, Missing}},
-)
-    waterlevel = similar(area)
-    for i in eachindex(storage)
-        if storfunc[i] == 1
-            waterlevel[i] = storage[i] / area[i]
-        else
-            waterlevel[i] = interpolate_linear(storage[i], sh[i].S, sh[i].H)
-        end
+function waterlevel(storfunc::Int, area::Float64, storage::Float64, sh::Union{SH, Missing})
+    if storfunc == 1
+        waterlevel = storage / area
+    else
+        waterlevel = interpolate_linear(storage, sh.S, sh.H)
     end
     return waterlevel
 end

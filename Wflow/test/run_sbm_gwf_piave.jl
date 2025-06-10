@@ -31,9 +31,9 @@ Wflow.run_timestep!(model)
     @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
     @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
-    @test lake.variables.waterlevel_av ≈ [24.14318343563826]
-    @test lake.variables.storage_av ≈ [1.5644782866293564e8]
-    @test lake.variables.outflow_av ≈ [3.298773211095155]
+    @test lake.variables.waterlevel_av ≈ [24.133845543200554]
+    @test lake.variables.storage_av ≈ [1.5638731911993942e8]
+    @test lake.variables.outflow_av ≈ [3.296221998738197]
     @test reservoir.variables.storage_av ≈ [4.27988993439572e7, 7.15974972305922e7]
     @test reservoir.variables.outflow_av ≈ [5.0020613113757655, 14.032299418177125]
     @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.902500152587073]
@@ -52,11 +52,11 @@ Wflow.run_timestep!(model)
     @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
     @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
           [0.0, 3.9938486455693436, 7.247366763912886]
-    @test lake.variables.waterlevel_av ≈ [24.132171235869226]
-    @test lake.variables.storage_av ≈ [1.5637646960843256e8]
-    @test lake.variables.outflow_av ≈ [3.2957647750851233]
+    @test lake.variables.waterlevel_av ≈ [24.12254653847234]
+    @test lake.variables.storage_av ≈ [1.5631410156930065e8]
+    @test lake.variables.outflow_av ≈ [3.293136213509418]
     @test reservoir.variables.storage_av ≈ [4.279863110615525e7, 7.15976692332516e7]
-    @test reservoir.variables.outflow_av ≈ [4.669356695770292, 13.213113785088437]
+    @test reservoir.variables.outflow_av ≈ [4.669352620704039, 13.213106942821879]
     @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.902500152587073]
 end
 

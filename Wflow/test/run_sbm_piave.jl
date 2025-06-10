@@ -27,16 +27,16 @@ Wflow.close_files(model; delete_output = false)
 @testset "piave with and without water demand" begin
     idx = 1:3:28
     @test q_demand[idx] ≈ [
-        232.21908404827036,
-        202.34029037883514,
-        279.1525391310617,
-        168.30677829068287,
-        173.55300809377695,
-        158.94561981631065,
-        134.37841760566945,
-        119.92496168460622,
-        190.21077819643733,
-        117.2221914711728,
+        232.2190840397006,
+        202.33701987699484,
+        279.149069926829,
+        168.30384212407193,
+        173.54980693804254,
+        158.94278207941792,
+        134.37527199930102,
+        119.92194171416998,
+        190.2080942823956,
+        117.21918571350398,
     ]
     @test q_[idx] ≈ [
         233.55717697324866,
@@ -51,16 +51,16 @@ Wflow.close_files(model; delete_output = false)
         123.39989025858517,
     ]
     @test riv_storage_demand[idx] ≈ [
-        61886.98629951244,
-        57404.42718580188,
-        63378.77690517135,
-        51245.707409686685,
-        54128.96460721268,
-        46376.95520687404,
-        44745.98970224481,
-        42771.7640627971,
-        46737.11663969533,
-        42124.995083857626,
+        61889.76178114282,
+        57407.04754054791,
+        63381.35514200626,
+        51249.03165593826,
+        54132.20108490535,
+        46380.934070560324,
+        44749.90001555048,
+        42776.01142061794,
+        46740.83476372728,
+        42129.08350382318,
     ]
     @test riv_storage[idx] ≈ [
         62246.98305925363,
@@ -134,9 +134,9 @@ Wflow.run_timestep!(model)
     @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
     @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
-    @test lake.variables.waterlevel_av ≈ [29.32689174422988]
-    @test lake.variables.storage_av ≈ [1.9003825850260958e8]
-    @test lake.variables.outflow_av ≈ [4.8673824615955565]
+    @test lake.variables.waterlevel_av ≈ [29.317055978102708]
+    @test lake.variables.storage_av ≈ [1.899745227381052e8]
+    @test lake.variables.outflow_av ≈ [4.864118606306291]
     @test reservoir.variables.storage_av ≈ [4.279958230848676e7, 7.159979217490469e7]
     @test reservoir.variables.outflow_av ≈ [9.756582435870733, 58.08691586159454]
     @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.902500152587074]
@@ -156,11 +156,11 @@ Wflow.run_timestep!(model)
     @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
     @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
           [3.6972708565911336, 0.600567004968002, 7.152276973950631]
-    @test lake.variables.waterlevel_av ≈ [29.334003728024157]
-    @test lake.variables.storage_av ≈ [1.9008434415759638e8]
-    @test lake.variables.outflow_av ≈ [4.86974340288621]
+    @test lake.variables.waterlevel_av ≈ [29.324133605862848]
+    @test lake.variables.storage_av ≈ [1.9002038576599127e8]
+    @test lake.variables.outflow_av ≈ [4.866466879468348]
     @test reservoir.variables.storage_av ≈ [4.2799519150418326e7, 7.159979154258619e7]
-    @test reservoir.variables.outflow_av ≈ [9.353217867613148, 54.86473773119802]
+    @test reservoir.variables.outflow_av ≈ [9.35321545413373, 54.86473366042814]
     @test reservoir.variables.demandrelease ≈ [1.182999968528626, 7.9025001525870735]
 end
 
