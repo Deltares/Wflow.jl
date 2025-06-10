@@ -31,7 +31,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   flow) for river cells in the diagonal flow direction. For both cases the width should be
   based on land area and flow length (area conservative).
 - Limit external negative inflow for local inertial routing (maximum of 80% of river volume).
-- Abstraction from lakes as part of water demand and allocation computations.
+- Abstraction from lakes as part of water demand and allocation computations was skipped
+  because of an incorrect if-statement.
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
