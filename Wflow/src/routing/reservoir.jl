@@ -102,7 +102,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
         )
         e = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-    elseif 4 in outflowfunc
+    end
+    if 4 in outflowfunc
         lens = lens_input_parameter(
             config,
             "reservoir_water_demand~required~downstream__volume_flow_rate";
