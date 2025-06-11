@@ -66,10 +66,9 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     e_r = model.parameters.e_r
-    n = length(precipitation)
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(model)
-        threaded_foreach(1:n; basesize = 1000) do i
+        AK.foreachindex(precipitation; scheduler = :polyester, min_elems = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
             e_r[i] =
@@ -77,7 +76,7 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
                 min(0.25, ewet / max(0.0001, canopyfraction * precipitation[i])) : 0.0
         end
     end
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(throughfall; scheduler = :polyester, min_elems = 1000) do i
         canopy_potevap[i] = kc[i] * potential_evaporation[i] * (1.0 - canopygapfraction[i])
         throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
             rainfall_interception_gash(
@@ -142,8 +141,7 @@ function update_canopy_parameters!(model::AbstractInterceptionModel)
         cmax,
     ) = model.parameters.vegetation_parameter_set
 
-    n = length(leaf_area_index)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(cmax; scheduler = :polyester, min_elems = 1000) do i
         cmax[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
         canopygapfraction[i] = exp(-kext[i] * leaf_area_index[i])
     end

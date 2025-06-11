@@ -72,10 +72,10 @@ const cpu_backend = KernelAbstractions.CPU()
 using AMDGPU
 
 const gpu_backend = AMDGPU.ROCBackend()
-const backend = gpu_backend
-const BackendArray = ROCArray
-# const backend = cpu_backend
-# const BackendArray = Array
+# const backend = gpu_backend
+# const BackendArray = ROCArray
+const backend = cpu_backend
+const BackendArray = Array
 
 # AMDGPU.device!(AMDGPU.devices()[2])
 
@@ -328,10 +328,17 @@ function run!(model::Model; close_files = true)
     run_timestep!(model)
     runstart_time = now()
 
-    @progress for (i, time) in enumerate(times)
+    t0 = time()
+    @progress for (i, _time) in enumerate(times)
         if i != 1
-            @debug "Starting timestep." time i now()
+            @debug "Starting timestep." _time i now()
             run_timestep!(model)
+        end
+
+        if i % 100 == 0
+            t1 = time()
+            @info "Timestep run time: $((t1-t0)/100)"
+            t0 = time()
         end
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"

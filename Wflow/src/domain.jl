@@ -1,31 +1,48 @@
 "Struct to store (shared) land parameters"
-@with_kw struct LandParameters
+@with_kw struct LandParameters{T <: DenseArray{Float}, B <: DenseArray{Bool}}
     # cell length x direction [m]
-    x_length::Vector{Float} = Float[]
+    x_length::T = Float[]
     # cell length y direction [m]
-    y_length::Vector{Float} = Float[]
+    y_length::T = Float[]
     # cell area [m²]
-    area::Vector{Float} = Float[]
+    area::T = Float[]
     # flow width [m]
-    flow_width::Vector{Float} = Float[]
+    flow_width::T = Float[]
     # suface flow width [m]
-    surface_flow_width::Vector{Float} = Float[]
+    surface_flow_width::T = Float[]
     # flow length [m]
-    flow_length::Vector{Float} = Float[]
+    flow_length::T = Float[]
     # flow fraction to river [-] 
-    flow_fraction_to_river::Vector{Float} = Float[]
+    flow_fraction_to_river::T = Float[]
     # slope [-]
-    slope::Vector{Float} = Float[]
+    slope::T = Float[]
     # water body (reservoir and lake) location [-]
-    waterbody_outlet::Vector{Bool} = Bool[]
+    waterbody_outlet::B = Bool[]
     # waterbody coverage [-]
-    waterbody_coverage::Vector{Bool} = Bool[]
+    waterbody_coverage::B = Bool[]
     # river location [-]
-    river_location::Vector{Bool} = Bool[]
+    river_location::B = Bool[]
     # fraction of river [-]
-    river_fraction = Float[]
+    river_fraction::T = Float[]
     # fraction of open water (excluding rivers) [-]
-    water_fraction = Float[]
+    water_fraction::T = Float[]
+end
+
+function Adapt.adapt_structure(to, from::LandParameters)
+    return LandParameters(
+        adapt(to, from.x_length),
+        adapt(to, from.y_length),
+        adapt(to, from.area),
+        adapt(to, from.flow_width),
+        adapt(to, from.flow_length),
+        adapt(to, from.flow_fraction_to_river),
+        adapt(to, from.slope),
+        adapt(to, from.waterbody_outlet),
+        adapt(to, from.waterbody_coverage),
+        adapt(to, from.river_location),
+        adapt(to, from.river_fraction),
+        adapt(to, from.water_fraction),
+    )
 end
 
 "Struct to store (shared) river parameters"
@@ -381,7 +398,7 @@ function get_landsurface_slope(dataset::NCDataset, config::Config, network::Netw
     lens = lens_input_parameter(config, "land_surface__slope"; optional = false)
     slope = ncread(dataset, config, lens; sel = network.indices, type = Float)
     clamp!(slope, Float(0.00001), Float(Inf))
-    return slope
+    return Vector{Float}(slope)
 end
 
 "Return river mask"

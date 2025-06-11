@@ -10,7 +10,7 @@ struct NoRiverFlow <: AbstractRiverFlowModel end
 Struct for storing routing model components overland flow `overland_flow`, river flow
 `river_flow` and subsurface flow `subsurface_flow`.
 """
-@kwdef struct Routing{
+@kwdef mutable struct Routing{
     O <: AbstractOverlandFlowModel,
     R <: AbstractRiverFlowModel,
     S <: AbstractSubsurfaceFlowModel,

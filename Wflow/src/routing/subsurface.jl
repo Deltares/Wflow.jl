@@ -141,7 +141,8 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float)
 
     ns = length(order_of_subdomains)
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+        AK.foreachindex(order_of_subdomains[k]; scheduler = :polyester, min_elems = 1) do i
+            # threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir or lake part of the upstream

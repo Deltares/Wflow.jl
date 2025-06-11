@@ -511,7 +511,7 @@ index `i`.
 """
 function get_flow_fraction_to_river(graph, ldd, inds_river, slope)
     n = length(slope)
-    fraction = zeros(n)
+    fraction = zeros(Float, n)
     for i in inds_river
         nbs = inneighbors(graph, i)
         for j in nbs

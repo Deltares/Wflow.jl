@@ -397,7 +397,7 @@ function local_inertial_flow(
     dt,
 )
     slope = (zs1 - zs0) / length
-    pow_R = cbrt(R * R * R * R)
+    pow_R = R^(4.0f0 / 3.0f0)
     unit = one(hf)
     q = (
         (q0 - g * A * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_R * A))

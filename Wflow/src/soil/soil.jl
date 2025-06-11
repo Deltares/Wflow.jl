@@ -669,8 +669,11 @@ function infiltration_reduction_factor!(
     v = model.variables
     p = model.parameters
 
-    n = length(v.tsoil)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(
+        v.f_infiltration_reduction;
+        scheduler = :polyester,
+        min_elems = 1000,
+    ) do i
         v.f_infiltration_reduction[i] = infiltration_reduction_factor(
             v.tsoil[i],
             p.cf_soil[i];
@@ -692,8 +695,7 @@ function infiltration!(model::SbmSoilModel)
     p = model.parameters
     (; water_flux_surface) = model.boundary_conditions
 
-    n = length(v.infiltsoilpath)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(v.infiltsoilpath; scheduler = :polyester, min_elems = 1000) do i
         v.infiltsoilpath[i], v.infiltexcess[i] = infiltration(
             water_flux_surface[i],
             p.pathfrac[i],
@@ -718,8 +720,7 @@ function unsaturated_zone_flow!(model::SbmSoilModel; topog_sbm_transfer = false)
     v = model.variables
     p = model.parameters
 
-    n = length(v.transfer)
-    threaded_foreach(1:n; basesize = 250) do i
+    AK.foreachindex(v.transfer; scheduler = :polyester, min_elems = 250) do i
         if v.n_unsatlayers[i] > 0
             if topog_sbm_transfer && p.maxlayers == 1
                 # original Topog_SBM formulation
@@ -776,8 +777,7 @@ function soil_evaporation!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
 
-    n = length(potential_soilevaporation)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(v.satwaterdepth; scheduler = :polyester, min_elems = 250) do i
         potsoilevap = potential_soilevaporation[i]
         # First calculate the evaporation of unsaturated storage into the
         # atmosphere from the upper layer.
@@ -834,8 +834,7 @@ function transpiration!(model::SbmSoilModel, dt::Float)
     p = model.parameters
 
     rootingdepth = get_rootingdepth(model)
-    n = length(rootingdepth)
-    threaded_foreach(1:n; basesize = 250) do i
+    AK.foreachindex(rootingdepth; scheduler = :polyester, min_elems = 250) do i
         actevapustore = 0.0
         rootfraction_unsat = 0.0
         v.h3[i] = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i], dt)
@@ -921,8 +920,7 @@ function actual_infiltration!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
 
-    n = length(v.actinfilt)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(v.actinfilt; scheduler = :polyester, min_elems = 1000) do i
         # check soil moisture balance per layer
         ustoredepth_excess = 0.0
         for k in v.n_unsatlayers[i]:-1:1
@@ -961,8 +959,7 @@ function actual_infiltration_soil_path!(model::SbmSoilModel)
     p = model.parameters
     (; water_flux_surface) = model.boundary_conditions
 
-    n = length(water_flux_surface)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(v.actinfiltsoil; scheduler = :polyester, min_elems = 1000) do i
         v.actinfiltsoil[i], v.actinfiltpath[i] = actual_infiltration_soil_path(
             water_flux_surface[i],
             v.actinfilt[i],
@@ -985,8 +982,7 @@ function capillary_flux!(model::SbmSoilModel)
     p = model.parameters
     rootingdepth = get_rootingdepth(model)
 
-    n = length(rootingdepth)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(rootingdepth; scheduler = :polyester, min_elems = 1000) do i
         if v.n_unsatlayers[i] > 0
             ksat = hydraulic_conductivity_at_depth(
                 p.kv_profile,
@@ -1039,8 +1035,7 @@ function leakage!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
 
-    n = length(v.actleakage)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(v.actleakage; scheduler = :polyester, min_elems = 1000) do i
         deepksat = hydraulic_conductivity_at_depth(
             p.kv_profile,
             p.kvfrac,
@@ -1143,8 +1138,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0
     rootingdepth = get_rootingdepth(model)
 
-    n = length(model.variables.zi)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(v.zi; scheduler = :polyester, min_elems = 1000) do i
         ustorelayerthickness = set_layerthickness(zi[i], p.sumlayers[i], p.act_thickl[i])
         n_unsatlayers = number_of_active_layers(ustorelayerthickness)
         # exfiltration from ustore

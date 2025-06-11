@@ -129,12 +129,11 @@ function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; effective_precip, snow_precip, liquid_precip) = model.boundary_conditions
     (; tt, tti, ttm, cfmax, whc) = model.parameters
 
-    n = length(temperature)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(snow_precip; scheduler = :polyester, min_elems = 1000) do i
         snow_precip[i], liquid_precip[i] =
             precipitation_hbv(effective_precip[i], temperature[i], tti[i], tt[i])
     end
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(snow_storage; scheduler = :polyester, min_elems = 1000) do i
         snow_storage[i], snow_water[i], swe[i], snow_melt[i], runoff[i] = snowpack_hbv(
             snow_storage[i],
             snow_water[i],
