@@ -324,8 +324,6 @@ function local_inertial_river_update!(
 
     river_v.q0 .= river_v.q
 
-    print(maximum(river_v.q))
-    print(", ")
     if !isnothing(model.floodplain)
         model.floodplain.variables.q0 .= model.floodplain.variables.q
     end
@@ -379,9 +377,6 @@ function local_inertial_river_update!(
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
     end
-
-    print(maximum(river_v.q))
-    print(", ")
 
     if !isnothing(model.floodplain)
         floodplain_p = model.floodplain.parameters
@@ -520,9 +515,6 @@ function local_inertial_river_update!(
         river_v.q_av[i] += river_v.q[i] * dt
     end
 
-    print(maximum(river_v.q))
-    print(", ")
-
     if update_h
         AK.foreachindex(river_p.active_n; scheduler = :polyester, min_elems = 1000) do i
             q_src = sum_at(river_v.q, edges_at_node.src[i, :])
@@ -537,11 +529,12 @@ function local_inertial_river_update!(
                 river_v.storage[i] = Float(0.0) # set storage to zero
             end
             # limit negative external inflow
-            _inflow = if inflow[i] < Float(0.0)
-                max(-(Float(0.80) * river_v.storage[i] / dt), inflow[i])
+            if inflow[i] < Float(0.0)
+                _inflow = max(-(Float(0.80) * river_v.storage[i] / dt), inflow[i])
             else
-                inflow[i]
+                _inflow = inflow[i]
             end
+
             river_v.storage[i] += _inflow * dt # add external inflow
             river_v.h[i] = river_v.storage[i] / (flow_length[i] * flow_width[i])
 
@@ -581,8 +574,6 @@ function local_inertial_river_update!(
             river_v.h_av[i] += river_v.h[i] * dt
         end
     end
-    println(maximum(river_v.q))
-
     return nothing
 end
 
@@ -600,6 +591,13 @@ function update!(
     (; reservoir, lake) = model.boundary_conditions
     (; flow_length) = domain.river.parameters
 
+    flow_length = domain.river.parameters.flow_length
+    flow_width = domain.river.parameters.flow_width
+    nodes_at_edge = domain.river.network.nodes_at_edge
+    edges_at_node = domain.river.network.edges_at_node
+    inds_reservoir = domain.reservoir.network.river_indices
+    inds_lake = domain.lake.network.river_indices
+
     set_waterbody_vars!(reservoir)
     set_waterbody_vars!(lake)
 
@@ -608,17 +606,36 @@ function update!(
     end
     set_flow_vars!(model.variables)
 
-    _m = adapt(backend, model)
-    t = 0.0
+    t = Float(0.0)
+    steps = 100
+
     while t < dt
-        dt_s = stable_timestep(_m, flow_length)
-        if t + dt_s > dt
-            dt_s = dt - t
+        dt_s = stable_timestep(model, flow_length)
+        dt_s *= Float(0.9)  # safety margin
+        if t + steps * dt_s > dt
+            dt_s = (dt - t) / steps
         end
-        local_inertial_river_update!(_m, domain, dt_s, dt, doy, update_h)
-        t = t + dt_s
+        t = t + steps * dt_s
+
+        for i in 1:steps
+            local_inertial_river_update!(
+                model,
+                # domain,
+                Float(dt_s),
+                dt,
+                doy,
+                update_h,
+                nodes_at_edge,
+                edges_at_node,
+                flow_length,
+                flow_width,
+                inds_lake,
+                inds_reservoir,
+            )
+        end
     end
-    KernelAbstractions.synchronize(backend)
+
+    println(maximum(model.variables.q))
 
     average_flow_vars!(model.variables, dt)
     average_waterbody_vars!(reservoir, dt)
@@ -806,11 +823,11 @@ function stable_timestep(
     (; h) = model.variables
     dt = array_from_host(Array{Float}(undef, n))
     AK.foreachindex(dt) do i
-        @fastmath @inbounds dt[i] = cfl * flow_length[i] / sqrt(g * h[i])
+        @inbounds dt[i] = cfl * flow_length[i] / sqrt(g * h[i])
     end
     dt_min = AK.minimum(dt; init = Float(Inf))
-    dt_min = isinf(dt_min) ? Float(60.0) : dt_min
-    return dt_min
+    dt_min = (isinf(dt_min) || isnan(dt_min)) ? Float(60.0) : dt_min
+    dt_min = return dt_min
 end
 
 function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParameters)
@@ -821,7 +838,7 @@ function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParam
     (; h) = model.variables
     # dt = array_from_host(Array{Float}(undef, n))
     dt = Array{Float}(undef, n)  # temporary to force on cpu
-    @fastmath @inbounds AK.foreachindex(dt; scheduler = :polyester, min_elems = 1000) do i
+    @inbounds AK.foreachindex(dt; scheduler = :polyester, min_elems = 1000) do i
         if river_location[i] == 0
             dt[i] = cfl * min(x_length[i], y_length[i]) / sqrt(g * h[i])
         else
@@ -829,7 +846,7 @@ function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParam
         end
     end
     dt_min = AK.minimum(dt; init = Float(Inf))
-    dt_min = isinf(dt_min) ? Float(60.0) : dt_min
+    dt_min = (isinf(dt_min) || isnan(dt_min)) ? Float(60.0) : dt_min
     return dt_min
 end
 

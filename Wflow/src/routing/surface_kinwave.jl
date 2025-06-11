@@ -160,7 +160,7 @@ function KinWaveRiverFlow(
     lake::Union{Lake, Nothing},
 )
     (; indices) = domain.network
-    n = length(indices)
+    n = Int(length(indices))
 
     timestepping = init_kinematic_wave_timestepping(
         config,
@@ -225,7 +225,7 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
     mannings_n =
         ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float)
 
-    n = length(indices)
+    n = Int(length(indices))
     timestepping = init_kinematic_wave_timestepping(
         config,
         n;
@@ -315,7 +315,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+        AK.foreachindex(order_of_subdomains[k]; min_elems = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir or lake part of the upstream surface
