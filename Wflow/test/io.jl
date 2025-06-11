@@ -222,7 +222,8 @@ end
 
 @testset "warm states" begin
     nt = Wflow.standard_name_map(model.land)
-    @test nt["reservoir_water__instantaneous_volume"].lens(model)[1] ≈ 3.2807224993363418e7
+    @test nt["reservoir_water_surface__instantaneous_elevation"].lens(model)[1] ≈
+          3.6172022486284856
     @test nt["soil_water_sat-zone__depth"].lens(model)[9115] ≈ 477.13548089422125
     @test nt["snowpack~dry__leq-depth"].lens(model)[5] ≈ 11.019233179897599
     @test nt["soil_surface__temperature"].lens(model)[5] ≈ 0.21814478119608938
@@ -474,7 +475,7 @@ end
     @test "vegetation_canopy_water__depth" in required_states
     @test "subsurface_water__volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
-    @test "reservoir_water__instantaneous_volume" in required_states
+    @test "reservoir_water_surface__instantaneous_elevation" in required_states
     @test "snowpack~liquid__depth" in required_states
     @test !("lake_water_level__elevation" in required_states)
 

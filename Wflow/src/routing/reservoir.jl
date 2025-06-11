@@ -1,8 +1,8 @@
 "Struct for storing reservoir model parameters"
 @with_kw struct ReservoirParameters
-    # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from lake data and interpolation
+    # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and interpolation
     storfunc::Vector{Int}
-    # type of reservoir rating curve, 1: Q = f(H) from lake data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    # type of reservoir rating curve, 1: Q = f(H) from reservoir data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
     outflowfunc::Vector{Int}
     # reservoir area [m²]
     area::Vector{Float64}
@@ -157,7 +157,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         if outflowfunc[i] == 1
             csv_path = joinpath(path, "reservoir_hq_$resloc.csv")
             @info(
-                "Read a rating curve from CSV file `$csv_path`, for lake location `$resloc`"
+                "Read a rating curve from CSV file `$csv_path`, for reservoir location `$resloc`"
             )
             @reset parameters.hq[i] = read_hq_csv(csv_path)
             @reset parameters.maxstorage[i] = maximum_storage(parameters, i)
@@ -175,7 +175,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 
         if outflowfunc[i] == 3 && storfunc[i] != 1
             @warn(
-                "For the modified puls approach (LakeOutflowFunc = 3) the LakeStorFunc should be 1"
+                "For the modified puls approach (outflowfunc = 3) the storfunc should be 1"
             )
         end
     end
@@ -247,6 +247,16 @@ function Reservoir(dataset::NCDataset, config::Config, network::NetworkReservoir
     reservoir = Reservoir(; boundary_conditions, parameters, variables)
 
     return reservoir
+end
+
+"Determine the water level depending on the storage function"
+function waterlevel(storfunc::Int, area::Float64, storage::Float64, sh::Union{SH, Missing})
+    if storfunc == 1
+        waterlevel = storage / area
+    else
+        waterlevel = interpolate_linear(storage, sh.S, sh.H)
+    end
+    return waterlevel
 end
 
 "Determine the maximum storage for reservoirs with a rating curve of type 1"
@@ -338,14 +348,14 @@ function update_reservoir_modified_puls(
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
-    lakefactor = res_p.area[i] / (dt * pow(res_p.b[i], 0.5))
+    res_factor = res_p.area[i] / (dt * pow(res_p.b[i], 0.5))
     si_factor = (res_v.storage[i] + precipitation - actevap) / dt + inflow
-    # Adjust SIFactor for ResThreshold != 0
+    # Adjust si_factor for reservoir threshold != 0
     si_factor_adj = si_factor - res_p.area[i] * res_p.threshold[i] / dt
-    # Calculate the new lake outflow/waterlevel/storage
+    # Calculate the new reservoir outflow/waterlevel/storage
     if si_factor_adj > 0.0
         quadratic_sol_term =
-            -lakefactor + pow((pow(lakefactor, 2.0) + 4.0 * si_factor_adj), 0.5)
+            -res_factor + pow((pow(res_factor, 2.0) + 4.0 * si_factor_adj), 0.5)
         if quadratic_sol_term > 0.0
             outflow = pow(0.5 * quadratic_sol_term, 2.0)
         else
@@ -393,7 +403,9 @@ function update_reservoir_free_weir(
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
-    diff_wl = has_lowerlake ? res_v.waterlevel[i] - res_v.waterlevel[lo] : 0.0
+    lo = res_p.lower_reservoir_ind[i]
+    has_lower_res = lo != 0
+    diff_wl = has_lower_res ? res_v.waterlevel[i] - res_v.waterlevel[lo] : 0.0
 
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
 
@@ -420,19 +432,19 @@ function update_reservoir_free_weir(
 
     # update lower reservoir (linked reservoirs) in case flow from lower reservoir to upper reservoir occurs
     if diff_wl < 0.0
-        lowerlake_storage = res_v.storage[lo] + outflow * dt
+        lower_res_storage = res_v.storage[lo] + outflow * dt
 
-        lowerlake_waterlevel = if res_p.storfunc[lo] == 1
-            res_v.waterlevel[lo] + (lowerlake_storage - res_v.storage[lo]) / res_p.area[lo]
+        lower_res_waterlevel = if res_p.storfunc[lo] == 1
+            res_v.waterlevel[lo] + (lower_res_storage - res_v.storage[lo]) / res_p.area[lo]
         else
-            interpolate_linear(lowerlake_storage, res_p.sh[lo].S, res_p.sh[lo].H)
+            interpolate_linear(lower_res_storage, res_p.sh[lo].S, res_p.sh[lo].H)
         end
 
         # update values for the lower reservoir in place
         res_v.outflow[lo] = -outflow
         res_v.outflow_av[lo] += -outflow * dt
-        res_v.storage[lo] = lowerlake_storage
-        res_v.waterlevel[lo] = lowerlake_waterlevel
+        res_v.storage[lo] = lower_res_storage
+        res_v.waterlevel[lo] = lower_res_waterlevel
     end
     return outflow, storage
 end
@@ -461,7 +473,7 @@ function update!(
     evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
     actevap = min(available_storage, evap) # [m³/dt]
 
-    boundary_vars = (precipitation, actevap, inflow)
+    boundary_vars = (; precipitation, actevap, inflow)
 
     if res_p.outflowfunc[i] == 1
         outflow, storage = update_reservoir_hq(model, i, boundary_vars, doy, dt)

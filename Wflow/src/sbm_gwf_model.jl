@@ -25,7 +25,6 @@ function Model(config::Config, type::SbmGwfModel)
         )::Bool,
         glacier = get(config.model, "glacier__flag", false)::Bool,
         reservoirs = get(config.model, "reservoir__flag", false)::Bool,
-        lakes = get(config.model, "lake__flag", false)::Bool,
         drains = get(config.model, "drain__flag", false)::Bool,
         constanthead = get(config.model, "constanthead__flag", false)::Bool,
         water_demand = haskey(config.model, "water_demand"),
@@ -34,7 +33,7 @@ function Model(config::Config, type::SbmGwfModel)
         min_streamorder_land = get(config.model, "land_streamorder__min_count", 5),
     )
 
-    @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...
+    @info "General model settings" modelsettings[keys(modelsettings)[1:7]]...
 
     routing_types = get_routing_types(config)
     domain = Domain(dataset, config, modelsettings, routing_types)

@@ -134,7 +134,7 @@ function LocalInertialRiverFlowVariables(
 
     n = length(indices)
     n_edges = ne(graph)
-    # set river depth h to zero (including reservoir and lake locations)
+    # set river depth h to zero (including reservoir locations)
     h = zeros(n)
     q_av = zeros(n_edges)
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
@@ -195,7 +195,7 @@ function LocalInertialRiverFlow(
     variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
 
     n = length(domain.network.indices)
-    boundary_conditions = RiverFlowBC(n, reservoir, lake)
+    boundary_conditions = RiverFlowBC(n, reservoir)
 
     floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
     if floodplain_1d
@@ -474,7 +474,7 @@ function update!(
     dt::Float64;
     update_h = true,
 )
-    (; reservoir, lake, actual_external_abstraction_av) = model.boundary_conditions
+    (; reservoir, actual_external_abstraction_av) = model.boundary_conditions
     (; flow_length) = domain.river.parameters
 
     set_reservoir_vars!(reservoir)
@@ -715,7 +715,7 @@ function update_boundary_conditions!(
         net_runoff ./ 1000.0 .* area ./ dt .+ get_flux_to_river(subsurface_flow) .+
         net_runoff_river .* area .* 0.001 ./ dt
 
-    if !isnothing(reservoir) || !isnothing(lake)
+    if !isnothing(reservoir)
         inflow_subsurface = get_inflow_reservoir(river_flow, subsurface_flow)
 
         @. inflow_reservoir[network.land_indices] = inflow_subsurface[network.land_indices]

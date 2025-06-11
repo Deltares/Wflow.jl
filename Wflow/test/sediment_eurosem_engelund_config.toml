@@ -114,8 +114,7 @@ gravel__mean_diameter = "dm_gravel"
 [model]
 cold_start__flag = true
 run_river_model__flag = true
-lake__flag = false
-reservoir__flag = true # cannot use reservoirs as in sbm because then states/volume need to be added
+reservoir__flag = true
 rainfall_erosion = "eurosem" # Rainfall erosion equation: ["answers", "eurosem"]
 overland_flow_erosion = "answers" # Overland flow erosion equation: ["answers"]
 land_transport = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]

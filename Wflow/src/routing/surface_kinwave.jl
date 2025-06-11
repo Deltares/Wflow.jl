@@ -314,10 +314,10 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
         threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
-                # for a river cell without a reservoir or lake part of the upstream surface
-                # flow goes to the river (flow_fraction_to_river) and part goes to the
-                # surface flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with
-                # a reservoir or lake are excluded
+                # for a river cell without a reservoir part of the upstream surface flow
+                # goes to the river (flow_fraction_to_river) and part goes to the surface
+                # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
+                # reservoir are excluded
                 to_river[v] +=
                     sum_at(
                         i -> q[i] * flow_fraction_to_river[i],
@@ -427,7 +427,7 @@ function kinwave_river_update!(
         threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
-                # qin by outflow from upstream reservoir or lake location is added
+                # qin by outflow from upstream reservoir location is added
                 qin[v] += sum_at(q, upstream_nodes[n])
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If inflow < 0, abstraction is limited
@@ -631,7 +631,7 @@ function update_inflow_reservoir!(
     (; overland_flow, subsurface_flow) = external_models
     (; reservoir, inflow_reservoir) = model.boundary_conditions
 
-    if !isnothing(reservoir) || !isnothing(lake)
+    if !isnothing(reservoir)
         inflow_land = get_inflow_reservoir(model, overland_flow)
         inflow_subsurface = get_inflow_reservoir(model, subsurface_flow)
 

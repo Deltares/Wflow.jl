@@ -81,7 +81,7 @@ with_logger(NullLogger()) do
         include("routing_process.jl")
         include("io.jl")
         include("land_process.jl")
-        include("reservoir_lake.jl")
+        include("reservoir.jl")
         include("run_sbm.jl")
         include("run_sbm_piave.jl")
         include("run_sbm_gwf_piave.jl")

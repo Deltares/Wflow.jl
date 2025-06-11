@@ -20,7 +20,6 @@ function Model(config::Config, type::SbmModel)
             false,
         )::Bool,
         glacier = get(config.model, "glacier__flag", false)::Bool,
-        lakes = get(config.model, "lake__flag", false)::Bool,
         reservoirs = get(config.model, "reservoir__flag", false)::Bool,
         pits = get(config.model, "pit__flag", false)::Bool,
         water_demand = haskey(config.model, "water_demand"),
@@ -34,7 +33,7 @@ function Model(config::Config, type::SbmModel)
         min_streamorder_land = get(config.model, "land_streamorder__min_count", 5),
     )
 
-    @info "General model settings" modelsettings[keys(modelsettings)[1:7]]...
+    @info "General model settings" modelsettings[keys(modelsettings)[1:6]]...
 
     routing_types = get_routing_types(config)
     domain = Domain(dataset, config, modelsettings, routing_types)
@@ -139,7 +138,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     routing_options = ("kinematic-wave", "local-inertial")
     land_routing =
         get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
-    do_lakes = get(config.model, "lake__flag", false)::Bool
+    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
 
     # read and set states in model object if cold_start=false
@@ -194,15 +193,15 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             initialize_storage!(routing.river_flow, domain, nriv)
         end
 
-        if do_lakes
+        if do_reservoirs
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
-            lakes = routing.river_flow.boundary_conditions.lake
-            lakes.variables.storage .= initialize_storage(
-                lakes.parameters.storfunc,
-                lakes.parameters.area,
-                lakes.variables.waterlevel,
-                lakes.parameters.sh,
+            reservoirs = routing.river_flow.boundary_conditions.reservoir
+            reservoirs.variables.storage .= initialize_storage(
+                reservoirs.parameters.storfunc,
+                reservoirs.parameters.area,
+                reservoirs.variables.waterlevel,
+                reservoirs.parameters.sh,
             )
         end
     else

@@ -80,8 +80,6 @@ end
 function active_indices(domain::Domain, key::AbstractString)
     if occursin("reservoir", key)
         return domain.reservoir.network.indices_outlet
-    elseif occursin("lake", key)
-        return domain.lake.network.indices_outlet
     elseif occursin("river", key) || occursin("floodplain", key)
         return domain.river.network.indices
     elseif occursin("drain", key)

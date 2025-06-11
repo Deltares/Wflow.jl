@@ -65,7 +65,7 @@ end
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     # maps from the land domain to the river domain (zero value represents no river)
     river_indices::Vector{Int} = Int[]
-    # maps from the land domain to the river domain excluding reservoir and lake locations
+    # maps from the land domain to the river domain excluding reservoir locations
     river_inds_excl_reservoir::Vector{Int} = Int[]
     # 2D staggered grid edge indices
     edge_indices::EdgeConnectivity = EdgeConnectivity()
@@ -271,7 +271,7 @@ function EdgesAtNode(network::NetworkRiver)
     return edges_at_node
 end
 
-"Struct for storing network information water body (reservoir or lake)."
+"Struct for storing network information reservoir."
 @kwdef struct NetworkReservoir
     # list of 2D indices representing water body area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
@@ -295,7 +295,7 @@ function NetworkReservoir(
     lens = lens_input(config, "reservoir_location__count"; optional = false)
     locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0, logging)
 
-    # this holds the same ids as locs, but covers the entire reservoir or lake
+    # this holds the same ids as locs, but covers the entire reservoir
     lens = lens_input(config, "reservoir_area__count"; optional = false)
     coverage_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation

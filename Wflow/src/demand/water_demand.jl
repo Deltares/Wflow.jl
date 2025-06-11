@@ -577,9 +577,9 @@ function surface_water_allocation_local!(
     (; storage) = river.variables
 
     (; area) = domain.parameters
-    indices_river = domain.network.river_inds_excl_waterbody
+    indices_river = domain.network.river_inds_excl_reservoir
 
-    # maps from the land domain to the internal river domain (linear index), excluding water bodies
+    # maps from the land domain to the internal river domain (linear index), excluding reservoirs
     for i in eachindex(surfacewater_demand)
         if indices_river[i] > 0.0
             # the available volume is limited by a fixed scaling factor of 0.8 to prevent
@@ -623,14 +623,13 @@ function surface_water_allocation_area!(
     inds_river = domain.river.network.allocation_area_indices
     inds_land = domain.land.network.allocation_area_indices
     inds_reservoir = domain.river.network.reservoir_indices
-    inds_lake = domain.river.network.lake_indices
     (; area) = domain.land.parameters
 
     (; available_surfacewater, act_surfacewater_abst_vol, act_surfacewater_abst) =
         river.allocation.variables
     (; surfacewater_alloc) = model.variables
     (; surfacewater_demand) = demand.variables
-    (; reservoir, lake) = river.boundary_conditions
+    (; reservoir) = river.boundary_conditions
 
     # loop over allocation areas
     for i in eachindex(inds_river)
@@ -647,12 +646,6 @@ function surface_water_allocation_area!(
                 k = inds_reservoir[j]
                 available_surfacewater[j] = reservoir.variables.storage[k] * 0.98 # limit available reservoir storage
                 sw_available += available_surfacewater[j]
-            elseif inds_lake[j] > 0
-                # for lake locations use lake storage
-                k = inds_lake[j]
-                available_surfacewater[j] = lake.variables.storage[k] * 0.98 # limit available lake storage
-                sw_available += available_surfacewater[j]
-
             else
                 # river volume
                 sw_available += available_surfacewater[j]
@@ -669,8 +662,8 @@ function surface_water_allocation_area!(
         # allocation area level. 
         frac_allocate_sw = bounded_divide(sw_abstraction, sw_demand_vol)
 
-        # water abstracted from surface water at each river cell (including reservoir and
-        # lake locations).
+        # water abstracted from surface water at each river cell (including reservoir
+        # locations).
         for j in inds_river[i]
             act_surfacewater_abst_vol[j] += frac_abstract_sw * available_surfacewater[j]
             act_surfacewater_abst[j] =
@@ -701,13 +694,13 @@ function groundwater_allocation_local!(
         groundwater_alloc,
     ) = model.variables
     (; groundwater_demand, total_gross_demand) = demand.variables
-    (; area, waterbody_coverage) = parameters
+    (; area, reservoir_coverage) = parameters
 
     for i in eachindex(groundwater_demand)
         # groundwater demand based on allocation from surface water.
         groundwater_demand[i] = max(total_gross_demand[i] - surfacewater_alloc[i], 0.0)
-        # excluding water bodies
-        if !waterbody_coverage[i]
+        # excluding reservoirs
+        if !reservoir_coverage[i]
             # satisfy groundwater demand with available local groundwater volume
             groundwater_demand_vol = groundwater_demand[i] * 0.001 * area[i]
             available_volume = groundwater_storage[i] * 0.75 # limit available groundwater volume
@@ -809,8 +802,8 @@ groundwater_storage(model) = model.aquifer.variables.storage
 Update water allocation for the land domain `AllocationLand` and water allocation for the
 river domain (part of `routing`) based on the water `demand` model for a single timestep.
 First, surface water abstraction is computed to satisfy local water demand (non-irrigation
-and irrigation), and then updated (including lakes and reservoirs) to satisfy the remaining
-water demand for allocation areas. Then groundwater abstraction is computed to satisfy the
+and irrigation), and then updated (including reservoirs) to satisfy the remaining water
+demand for allocation areas. Then groundwater abstraction is computed to satisfy the
 remaining local water demand, and then updated to satisfy the remaining water demand for
 allocation areas. Finally, non-irrigation return flows are updated.
 """
@@ -822,9 +815,8 @@ function update_water_allocation!(
     dt::Float64,
 )
     river = routing.river_flow
-    inds_river = domain.land.network.river_inds_excl_waterbody
+    inds_river = domain.land.network.river_inds_excl_reservoir
     inds_reservoir = domain.reservoir.network.river_indices
-    inds_lake = domain.lake.network.river_indices
     (;
         groundwater_alloc,
         surfacewater_alloc,
@@ -841,7 +833,7 @@ function update_water_allocation!(
 
     (; frac_sw_used) = model.parameters
     (; act_surfacewater_abst, act_surfacewater_abst_vol) = river.allocation.variables
-    (; abstraction, reservoir, lake) = river.boundary_conditions
+    (; abstraction, reservoir) = river.boundary_conditions
 
     surfacewater_alloc .= 0.0
     act_surfacewater_abst .= 0.0
@@ -850,26 +842,23 @@ function update_water_allocation!(
     @. surfacewater_demand =
         frac_sw_used * nonirri_demand_gross + frac_sw_used * irri_demand_gross
 
-    # local surface water demand and allocation (river, excluding reservoirs and lakes)
+    # local surface water demand and allocation (river, excluding reservoirs)
     surface_water_allocation_local!(model, demand, river, domain.land, dt)
     # surface water demand and allocation for areas
     surface_water_allocation_area!(model, demand, river, domain)
 
     @. abstraction = act_surfacewater_abst_vol / dt
 
-    # for reservoir and lake locations set river abstraction at zero and abstract volume
-    # from reservoir and lake, including an update of lake waterlevel
+    # for reservoir locations set river abstraction at zero and abstract volume
+    # from reservoir, including an update of waterlevel
     if !isnothing(reservoir)
         @. abstraction[inds_reservoir] = 0.0
         @. reservoir.variables.storage -= act_surfacewater_abst_vol[inds_reservoir]
-    elseif !isnothing(lake)
-        @. abstraction[inds_lake] = 0.0
-        @. lake.variables.storage -= act_surfacewater_abst_vol[inds_lake]
-        @. lake.variables.waterlevel = waterlevel(
-            lake.parameters.storfunc,
-            lake.parameters.area,
-            lake.parameters.storage,
-            lake.parameters.sh,
+        @. reservoir.variables.waterlevel = waterlevel(
+            reservoir.parameters.storfunc,
+            reservoir.parameters.area,
+            reservoir.variables.storage,
+            reservoir.parameters.sh,
         )
     end
 
