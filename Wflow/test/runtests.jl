@@ -36,7 +36,7 @@ end
 
 staticmaps_rhine_path = testdata(v"0.1", "staticmaps.nc", "staticmaps-rhine.nc")
 staticmaps_moselle_path =
-    testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
+    testdata(v"0.3.1", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
 forcing_moselle_sed_path =
     testdata(v"0.2.3", "forcing-moselle-sed.nc", "forcing-moselle-sed.nc")
@@ -44,7 +44,7 @@ staticmaps_moselle_sed_path =
     testdata(v"0.3.0", "staticmaps-moselle-sed.nc", "staticmaps-moselle-sed.nc")
 instates_moselle_sed_path =
     testdata(v"0.3.0", "instates-moselle-sed.nc", "instates-moselle-sed.nc")
-instates_moselle_path = testdata(v"0.2.6", "instates-moselle.nc", "instates-moselle.nc")
+instates_moselle_path = testdata(v"0.3.1", "instates-moselle.nc", "instates-moselle.nc")
 forcing_sbm_gw_path = testdata(
     v"0.2.1",
     "forcing-sbm-groundwater-part1.nc",
@@ -65,10 +65,10 @@ lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")
 forcing_calendar_noleap_path =
     testdata(v"0.2.8", "forcing-calendar-noleap.nc", "forcing-calendar-noleap.nc")
 forcing_piave_path = testdata(v"0.2.9", "inmaps-era5-2010-piave.nc", "forcing-piave.nc")
-staticmaps_piave_path = testdata(v"0.3.0", "staticmaps-piave.nc", "staticmaps-piave.nc")
-instates_piave_path = testdata(v"0.3.0", "instates-piave.nc", "instates-piave.nc")
+staticmaps_piave_path = testdata(v"0.3.1", "staticmaps-piave.nc", "staticmaps-piave.nc")
+instates_piave_path = testdata(v"0.3.1", "instates-piave.nc", "instates-piave.nc")
 instates_piave_gwf_path =
-    testdata(v"0.3.0", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
+    testdata(v"0.3.1", "instates-piave-gwf.nc", "instates-piave-gwf.nc")
 
 include("testing_utils.jl")
 
