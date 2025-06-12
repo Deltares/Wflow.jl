@@ -862,13 +862,14 @@ function update_water_allocation!(
     if !isnothing(reservoir)
         @. abstraction[inds_reservoir] = 0.0
         @. reservoir.variables.storage -= act_surfacewater_abst_vol[inds_reservoir]
-    elseif !isnothing(lake)
+    end
+    if !isnothing(lake)
         @. abstraction[inds_lake] = 0.0
         @. lake.variables.storage -= act_surfacewater_abst_vol[inds_lake]
         @. lake.variables.waterlevel = waterlevel(
             lake.parameters.storfunc,
             lake.parameters.area,
-            lake.parameters.storage,
+            lake.variables.storage,
             lake.parameters.sh,
         )
     end

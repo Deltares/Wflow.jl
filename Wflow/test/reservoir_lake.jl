@@ -75,8 +75,12 @@ lake = Wflow.Lake(;
     Wflow.set_waterbody_vars!(lake)
     Wflow.update!(lake, 1, 2500.0, 181, 86400.0, 86400.0)
     Wflow.average_waterbody_vars!(lake, 86400.0)
-    @test Wflow.waterlevel(lake_p.storfunc, lake_p.area, lake_v.storage, lake_p.sh)[1] ≈
-          19.672653848925634
+    @test Wflow.waterlevel(
+        lake_p.storfunc[1],
+        lake_p.area[1],
+        lake_v.storage[1],
+        lake_p.sh[1],
+    ) ≈ 19.672653848925634
     @test lake_v.outflow[1] ≈ 85.14292808113598
     @test lake_v.outflow_av ≈ lake_v.outflow
     @test lake_v.storage[1] ≈ 3.55111879238499e9
@@ -206,8 +210,12 @@ end
     Wflow.average_waterbody_vars!(lake, 86400.0)
     lake_p = lake.parameters
     lake_v = lake.variables
-    @test Wflow.waterlevel(lake_p.storfunc, lake_p.area, lake_v.storage, lake_p.sh) ≈
-          [398.0] atol = 1e-2
+    @test Wflow.waterlevel(
+        lake_p.storfunc[1],
+        lake_p.area[1],
+        lake_v.storage[1],
+        lake_p.sh[1],
+    ) ≈ 398.0 atol = 1e-2
     @test lake_v.outflow ≈ [1303.67476852]
     @test lake_v.outflow_av ≈ lake_v.outflow
     @test lake_v.storage ≈ [4.293225e8]
