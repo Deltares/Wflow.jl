@@ -9,33 +9,25 @@
     # index of lower reservoir (linked reservoirs) [-]
     lower_reservoir_ind::Vector{Int} = fill(0, length(area))
     # reservoir maximum storage for rating curve types 1 and 4 [m³]
-    maxstorage::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    maxstorage::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # water level threshold H₀ [m] below that level outflow is zero
-    threshold::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    threshold::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # rating curve coefficient [m3/2 s-1] (if e=3/2)
-    b::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    b::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # rating curve exponent [-]
-    e::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    e::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # data for storage curve
     sh::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
     # data for rating curve
     hq::Vector{Union{HQ, Missing}} = Vector{Union{HQ, Missing}}(missing, length(area))
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
-    maxrelease::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    maxrelease::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # minimum (environmental) flow requirement downstream of the reservoir for rating curve type 4 [m³ s⁻¹]
-    demand::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    demand::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # target minimum full fraction (of max storage) for rating curve type 4 [-]
-    targetminfrac::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    targetminfrac::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # target fraction full (of max storage) for rating curve type 4 [-]
-    targetfullfrac::Vector{Union{Float64, Missing}} =
-        Vector{Union{Float64, Missing}}(missing, length(area))
+    targetfullfrac::Vector{Float64} = fill(MISSING_VALUE, length(area))
 end
 
 "Initialize reservoir model parameters"
