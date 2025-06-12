@@ -59,9 +59,9 @@ staticmaps_sbm_gw_path =
     testdata(v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
 instates_sbm_gw_path =
     testdata(v"0.2.3", "instates-example-sbm-gwf.nc", "instates-example-sbm-gwf.nc")
-lake_sh_1_path = testdata(v"0.2.1", "lake_sh_1.csv", "lake_sh_1.csv")
-lake_sh_2_path = testdata(v"0.2.1", "lake_sh_2.csv", "lake_sh_2.csv")
-lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "lake_hq_2.csv")
+lake_sh_1_path = testdata(v"0.2.1", "lake_sh_1.csv", "reservoir_sh_1.csv")
+lake_sh_2_path = testdata(v"0.2.1", "lake_sh_2.csv", "reservoir_sh_2.csv")
+lake_hq_2_path = testdata(v"0.2.1", "lake_hq_2.csv", "reservoir_hq_2.csv")
 forcing_calendar_noleap_path =
     testdata(v"0.2.8", "forcing-calendar-noleap.nc", "forcing-calendar-noleap.nc")
 forcing_piave_path = testdata(v"0.2.9", "inmaps-era5-2010-piave.nc", "forcing-piave.nc")

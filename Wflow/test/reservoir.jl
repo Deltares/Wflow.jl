@@ -80,12 +80,12 @@ end
 # Linked reservoirs with free weir (outflowfunc = 1)
 datadir = joinpath(@__DIR__, "data")
 sh = Vector{Union{Wflow.SH, Missing}}([
-    Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_1.csv")),
-    Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv")),
+    Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
+    Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
 ])
 hq = Vector{Union{Wflow.HQ, Missing}}([
     missing,
-    Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv")),
+    Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
 ])
 @testset "Linked reservoirs with free weir (outflowfunc = 2)" begin
     @test keys(sh[1]) == (:H, :S)
@@ -152,10 +152,10 @@ end
     res_bc =
         Wflow.ReservoirBC(; inflow = [0.0], precipitation = [10.0], evaporation = [2.0])
     sh = Vector{Union{Wflow.SH, Missing}}([
-        Wflow.read_sh_csv(joinpath(datadir, "input", "lake_sh_2.csv")),
+        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
     ])
     hq = Vector{Union{Wflow.HQ, Missing}}([
-        Wflow.read_hq_csv(joinpath(datadir, "input", "lake_hq_2.csv")),
+        Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
     res_params = Wflow.ReservoirParameters(;
         area = [200_000_000],
