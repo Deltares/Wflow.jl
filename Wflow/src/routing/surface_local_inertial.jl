@@ -486,18 +486,18 @@ function local_inertial_river_update!(
     (; reservoir, inflow_waterbody) = model.boundary_conditions
     # inds_reservoir = domain.reservoir.network.river_indices
 
-    # AK.foreachindex(
-    #     inds_reservoir;
-    #     scheduler = :polyester,  # Use Polyester.jl on cpu
-    #     min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-    # ) do v
-    #     i = inds_reservoir[v]
-    #     q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
-    #     update!(reservoir, Int(v), q_in_reservoir + inflow_waterbody[i], dt, dt_forcing)
-    #     river_v.q[i] = reservoir.variables.outflow[v]
-    #     # average river discharge (here accumulated for model timestep Δt)
-    #     river_v.q_av[i] += river_v.q[i] * dt
-    # end
+    AK.foreachindex(
+        inds_reservoir;
+        scheduler = :polyester,  # Use Polyester.jl on cpu
+        min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
+    ) do v
+        i = inds_reservoir[v]
+        q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
+        update!(reservoir, Int(v), q_in_reservoir + inflow_waterbody[i], dt, dt_forcing)
+        river_v.q[i] = reservoir.variables.outflow[v]
+        # average river discharge (here accumulated for model timestep Δt)
+        river_v.q_av[i] += river_v.q[i] * dt
+    end
 
     (; lake) = model.boundary_conditions
     # inds_lake = domain.lake.network.river_indices
@@ -958,22 +958,25 @@ function update!(
                 inds_lake,
                 inds_reservoir,
             )
-        end
-    end
-
-    t = Float(0.0)
-    while t < dt
-        dt_s = stable_timestep(land, parameters)
-        dt_s *= 0.9  # safety margin
-        if t + steps * dt_s > dt
-            dt_s = (dt - t) / steps
-        end
-        t = t + steps * dt_s
-
-        for i in 1:steps
             local_inertial_update!(land, river, domain, Float(dt_s))
         end
     end
+    println(maximum(river.variables.q_av))
+    println(maximum(river.variables.q))
+
+    # t = Float(0.0)
+    # while t < dt
+    #     dt_s = stable_timestep(land, parameters)
+    #     dt_s *= 0.9  # safety margin
+    #     if t + steps * dt_s > dt
+    #         dt_s = (dt - t) / steps
+    #     end
+    #     t = t + steps * dt_s
+
+    #     for i in 1:steps
+    #         local_inertial_update!(land, river, domain, Float(dt_s))
+    #     end
+    # end
 
     average_flow_vars!(river.variables, dt)
     average_flow_vars!(land.variables, dt)
