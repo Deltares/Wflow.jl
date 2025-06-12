@@ -149,12 +149,12 @@ end
     dm_lagg::Vector{Float64}
     # Gravel mean diameter [µm]
     dm_gravel::Vector{Float64}
-    # Waterbodies outlets [-]
-    waterbodies_locs::Vector{Bool}
-    # Waterbodies area [m²]
-    waterbodies_area::Vector{Float64}
-    # Waterbodies trapping efficiency [-]
-    waterbodies_trapping_efficiency::Vector{Float64}
+    # Reservoir outlets [-]
+    reservoir_outlet::Vector{Bool}
+    # Reservoir area [m²]
+    reservoir_area::Vector{Float64}
+    # Reservoir trapping efficiency [-]
+    reservoir_trapping_efficiency::Vector{Float64}
 end
 
 "Initialize river sediment transport model parameters"
@@ -194,24 +194,22 @@ function SedimentRiverTransportParameters(
     lens = lens_input_parameter(config, "gravel__mean_diameter")
     dm_gravel =
         ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
-    # Waterbodies
-    wblocs = zeros(Float64, n)
-    wbarea = zeros(Float64, n)
-    wbtrap = zeros(Float64, n)
+    # Reservoirs
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    do_lakes = get(config.model, "lake__flag", false)::Bool
 
     if do_reservoirs
         lens = lens_input(config, "reservoir_location__count"; optional = false)
-        reslocs = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
+        reservoir_outlet =
+            ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
         lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)
-        resarea = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
+        reservoir_area =
+            ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
         lens = lens_input_parameter(
             config,
             "reservoir_water_sediment~bedload__trapping_efficiency";
             optional = false,
         )
-        restrapefficiency = ncread(
+        reservoir_trapping_efficiency = ncread(
             dataset,
             config,
             lens;
@@ -220,18 +218,10 @@ function SedimentRiverTransportParameters(
             defaults = 1.0,
             fill = 0.0,
         )
-        wblocs = wblocs .+ reslocs
-        wbarea = wbarea .+ resarea
-        wbtrap = wbtrap .+ restrapefficiency
-    end
-
-    if do_lakes
-        lens = lens_input(config, "lake_location__count"; optional = false)
-        lakelocs = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
-        lens = lens_input_parameter(config, "lake_surface__area"; optional = false)
-        lakearea = ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
-        wblocs = wblocs .+ lakelocs
-        wbarea = wbarea .+ lakearea
+    else
+        reservoir_outlet = zeros(Float64, n)
+        reservoir_area = zeros(Float64, n)
+        reservoir_trapping_efficiency = zeros(Float64, n)
     end
 
     river_parameters = SedimentRiverTransportParameters(;
@@ -245,9 +235,9 @@ function SedimentRiverTransportParameters(
         dm_sagg = dm_sagg,
         dm_lagg = dm_lagg,
         dm_gravel = dm_gravel,
-        waterbodies_locs = wblocs .> 0,
-        waterbodies_area = wbarea,
-        waterbodies_trapping_efficiency = wbtrap,
+        reservoir_outlet = reservoir_outlet .> 0,
+        reservoir_area,
+        reservoir_trapping_efficiency,
     )
 
     return river_parameters
@@ -343,9 +333,9 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         dm_sagg,
         dm_lagg,
         dm_gravel,
-        waterbodies_locs,
-        waterbodies_area,
-        waterbodies_trapping_efficiency,
+        reservoir_outlet,
+        reservoir_area,
+        reservoir_trapping_efficiency,
     ) = model.parameters
     (;
         amount,
@@ -512,14 +502,14 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
 
         ### Deposition / settling ###
         # Different deposition if reservoir outlet or river
-        if waterbodies_locs[v]
+        if reservoir_outlet[v]
             # Deposition in waterbodies outlets
             deposition_clay = reservoir_deposition_camp(
                 (input_clay + erosion_clay),
                 q[v],
                 waterlevel[v],
-                waterbodies_area[v],
-                waterbodies_trapping_efficiency[v],
+                reservoir_area[v],
+                reservoir_trapping_efficiency[v],
                 dm_clay[v],
                 slope[v],
             )
@@ -527,8 +517,8 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 (input_silt + erosion_silt),
                 q[v],
                 waterlevel[v],
-                waterbodies_area[v],
-                waterbodies_trapping_efficiency[v],
+                reservoir_area[v],
+                reservoir_trapping_efficiency[v],
                 dm_silt[v],
                 slope[v],
             )
@@ -536,8 +526,8 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 (input_sand + erosion_sand),
                 q[v],
                 waterlevel[v],
-                waterbodies_area[v],
-                waterbodies_trapping_efficiency[v],
+                reservoir_area[v],
+                reservoir_trapping_efficiency[v],
                 dm_sand[v],
                 slope[v],
             )
@@ -545,8 +535,8 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 (input_sagg + erosion_sagg),
                 q[v],
                 waterlevel[v],
-                waterbodies_area[v],
-                waterbodies_trapping_efficiency[v],
+                reservoir_area[v],
+                reservoir_trapping_efficiency[v],
                 dm_sagg[v],
                 slope[v],
             )
@@ -554,8 +544,8 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 (input_lagg + erosion_lagg),
                 q[v],
                 waterlevel[v],
-                waterbodies_area[v],
-                waterbodies_trapping_efficiency[v],
+                reservoir_area[v],
+                reservoir_trapping_efficiency[v],
                 dm_lagg[v],
                 slope[v],
             )
@@ -563,8 +553,8 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 (input_gravel + erosion_gravel),
                 q[v],
                 waterlevel[v],
-                waterbodies_area[v],
-                waterbodies_trapping_efficiency[v],
+                reservoir_area[v],
+                reservoir_trapping_efficiency[v],
                 dm_gravel[v],
                 slope[v],
             )
