@@ -8,6 +8,7 @@ function surface_routing!(model)
     (; land, routing, domain, config, clock) = model
     (; soil, runoff, allocation) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
+    (; reservoir) = river_flow.boundary_conditions
 
     dt = tosecond(clock.dt)
     # update lateral inflow for kinematic wave overland flow
@@ -33,7 +34,10 @@ function surface_routing!(model)
         (; overland_flow, subsurface_flow),
         domain.river.network.land_indices,
     )
-    update!(river_flow, domain, julian_day(clock.time - clock.dt), dt)
+    # update column index for reservoir with rating curve HQ
+    update_index_hq!(reservoir, clock)
+    # update river flow
+    update!(river_flow, domain, dt)
     return nothing
 end
 
@@ -51,6 +55,7 @@ function surface_routing!(
     (; routing, land, domain, clock) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
+    (; reservoir) = river_flow.boundary_conditions
 
     dt = tosecond(clock.dt)
     update_boundary_conditions!(
@@ -59,8 +64,10 @@ function surface_routing!(
         domain,
         dt,
     )
-
-    update!(overland_flow, river_flow, domain, julian_day(clock.time - clock.dt), dt)
+    # update column index for reservoir with rating curve HQ
+    update_index_hq!(reservoir, clock)
+    # update overland and river flow
+    update!(overland_flow, river_flow, domain, dt)
 
     return nothing
 end

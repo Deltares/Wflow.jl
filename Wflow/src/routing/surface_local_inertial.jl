@@ -239,7 +239,6 @@ function local_inertial_river_update!(
     domain::Domain,
     dt::Float64,
     dt_forcing::Float64,
-    doy::Int,
     update_h::Bool,
 )
     (; nodes_at_edge, edges_at_node) = domain.river.network
@@ -398,7 +397,7 @@ function local_inertial_river_update!(
         i = inds_reservoir[v]
 
         q_in = get_inflow_reservoir(model, edges_at_node.src[i])
-        update!(reservoir, v, q_in + inflow_reservoir[i], doy, dt, dt_forcing)
+        update!(reservoir, v, q_in + inflow_reservoir[i], dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
@@ -470,7 +469,6 @@ timestepping method is used (computing a sub timestep `dt_s`).
 function update!(
     model::LocalInertialRiverFlow,
     domain::Domain,
-    doy::Int,
     dt::Float64;
     update_h = true,
 )
@@ -488,7 +486,7 @@ function update!(
     while t < dt
         dt_s = stable_timestep(model, flow_length)
         dt_s = check_timestepsize(dt_s, t, dt)
-        local_inertial_river_update!(model, domain, dt_s, dt, doy, update_h)
+        local_inertial_river_update!(model, domain, dt_s, dt, update_h)
         t = t + dt_s
     end
     average_flow_vars!(model.variables, actual_external_abstraction_av, dt)
@@ -753,7 +751,6 @@ function update!(
     land::LocalInertialOverlandFlow,
     river::LocalInertialRiverFlow,
     domain::Domain,
-    doy::Int,
     dt::Float64;
     update_h = false,
 )
@@ -774,7 +771,7 @@ function update!(
 
         local_inertial_update_fluxes!(land, domain, dt_s)
         update_inflow_reservoir!(land, river, domain)
-        local_inertial_river_update!(river, domain, dt_s, dt, doy, update_h)
+        local_inertial_river_update!(river, domain, dt_s, dt, update_h)
         local_inertial_update_water_depth!(land, river, domain, dt_s)
 
         t = t + dt_s

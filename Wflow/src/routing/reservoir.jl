@@ -20,6 +20,8 @@
     sh::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
     # data for rating curve
     hq::Vector{Union{HQ, Missing}} = Vector{Union{HQ, Missing}}(missing, length(area))
+    # column index of rating curve data hq
+    col_index_hq::Vector{Int} = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
     maxrelease::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # minimum (environmental) flow requirement downstream of the reservoir for rating curve type 4 [m³ s⁻¹]
@@ -297,6 +299,15 @@ function interpolate_linear(x, xp, fp)
     end
 end
 
+function update_index_hq!(reservoir::Reservoir, clock::Clock)
+    (; outflowfunc, col_index_hq) = reservoir.parameters
+    if outflowfunc == 1
+        col_index_hq = julian_day(clock.time - clock.dt)
+    end
+    return nothing
+end
+update_index_hq!(reservoir, clock::Clock) = nothing
+
 function update_reservoir_simple(
     model::Reservoir,
     i::Int,
@@ -365,7 +376,6 @@ function update_reservoir_hq(
     model::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
-    doy::Int,
     dt::Float64,
 )
     res_p = model.parameters
@@ -373,7 +383,11 @@ function update_reservoir_hq(
     (; precipitation, actevap, inflow) = boundary_vars
 
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
-    outflow = interpolate_linear(res_v.waterlevel[i], res_p.hq[i].H, res_p.hq[i].Q[:, doy])
+    outflow = interpolate_linear(
+        res_v.waterlevel[i],
+        res_p.hq[i].H,
+        res_p.hq[i].Q[:, res_p.col_index_hq[1]],
+    )
     outflow = min(outflow, storage_input)
 
     storage = (storage_input - outflow) * dt
@@ -451,7 +465,6 @@ function update!(
     model::Reservoir,
     i::Int,
     inflow::Float64,
-    doy::Int,
     dt::Float64,
     dt_forcing::Float64,
 )
@@ -468,7 +481,7 @@ function update!(
     boundary_vars = (; precipitation, actevap, inflow)
 
     if res_p.outflowfunc[i] == 1
-        outflow, storage = update_reservoir_hq(model, i, boundary_vars, doy, dt)
+        outflow, storage = update_reservoir_hq(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 2
         outflow, storage = update_reservoir_free_weir(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 3

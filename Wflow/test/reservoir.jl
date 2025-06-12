@@ -20,7 +20,7 @@ res = Wflow.Reservoir(;
 )
 @testset "Update reservoir simple (outflowfunc = 4)" begin
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 100.0, 1, 86400.0, 86400.0)
+    Wflow.update!(res, 1, 100.0, 86400.0, 86400.0)
     Wflow.average_reservoir_vars!(res, 86400.0)
     @test res.variables.outflow[1] ≈ 91.3783714867453
     @test res.variables.outflow_av[1] == res.variables.outflow[1]
@@ -58,7 +58,7 @@ res = Wflow.Reservoir(;
     res_v = res.variables
     res_bc = res.boundary_conditions
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 2500.0, 181, 86400.0, 86400.0)
+    Wflow.update!(res, 1, 2500.0, 86400.0, 86400.0)
     Wflow.average_reservoir_vars!(res, 86400.0)
     @test Wflow.waterlevel(
         res_p.storfunc[1],
@@ -101,6 +101,7 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
         e = [1.5, NaN],
         sh,
         hq,
+        col_index_hq = [15],
     )
     @reset res_params.maxstorage[2] = Wflow.maximum_storage(res_params, 2)
 
@@ -125,8 +126,8 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
         variables = res_vars,
     )
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 500.0, 15, 86400.0, 86400.0)
-    Wflow.update!(res, 2, 500.0, 15, 86400.0, 86400.0)
+    Wflow.update!(res, 1, 500.0, 86400.0, 86400.0)
+    Wflow.update!(res, 2, 500.0, 86400.0, 86400.0)
     Wflow.average_reservoir_vars!(res, 86400.0)
     res_v = res.variables
     res_bc = res.boundary_conditions
@@ -135,8 +136,8 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
     @test res_v.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8]
     @test res_v.storage ≈ res_v.storage_av
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 500.0, 15, 86400.0, 86400.0)
-    Wflow.update!(res, 2, 500.0, 15, 86400.0, 86400.0)
+    Wflow.update!(res, 1, 500.0, 86400.0, 86400.0)
+    Wflow.update!(res, 2, 500.0, 86400.0, 86400.0)
     Wflow.average_reservoir_vars!(res, 86400.0)
     @test res_v.outflow ≈ [-259.8005149014703, 239.66710359986183]
     @test res_v.outflow_av ≈ [-259.8005149014703, 499.4676185013321]
@@ -163,6 +164,7 @@ end
         outflowfunc = [1],
         sh,
         hq,
+        col_index_hq = [15],
     )
     @reset res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
     res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
@@ -172,7 +174,7 @@ end
         variables = res_vars,
     )
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 1500.0, 15, 86400.0, 86400.0)
+    Wflow.update!(res, 1, 1500.0, 86400.0, 86400.0)
     Wflow.average_reservoir_vars!(res, 86400.0)
     res_p = res.parameters
     res_v = res.variables

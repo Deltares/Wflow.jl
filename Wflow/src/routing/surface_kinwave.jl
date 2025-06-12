@@ -395,7 +395,6 @@ end
 function kinwave_river_update!(
     model::KinWaveRiverFlow,
     domain::DomainRiver,
-    doy::Int,
     dt::Float64,
     dt_forcing::Float64,
 )
@@ -457,7 +456,7 @@ function kinwave_river_update!(
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
                     i = reservoir_indices[v]
-                    update!(reservoir, i, q[v] + inflow_reservoir[v], doy, dt, dt_forcing)
+                    update!(reservoir, i, q[v] + inflow_reservoir[v], dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -492,7 +491,7 @@ end
 Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::KinWaveRiverFlow, domain::Domain, doy::Int, dt::Float64)
+function update!(model::KinWaveRiverFlow, domain::Domain, dt::Float64)
     (; reservoir, inwater, actual_external_abstraction_av) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) = model.parameters
     (; slope, flow_width, flow_length) = domain.river.parameters
@@ -513,7 +512,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, doy::Int, dt::Float64)
             adaptive ? stable_timestep(model, flow_length, 0.05) :
             model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        kinwave_river_update!(model, domain.river, doy, dt_s, dt)
+        kinwave_river_update!(model, domain.river, dt_s, dt)
         t = t + dt_s
     end
 
