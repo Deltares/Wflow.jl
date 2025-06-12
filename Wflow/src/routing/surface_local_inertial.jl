@@ -323,7 +323,6 @@ function local_inertial_river_update!(
     river_p = model.parameters
 
     river_v.q0 .= river_v.q
-
     if !isnothing(model.floodplain)
         model.floodplain.variables.q0 .= model.floodplain.variables.q
     end
@@ -917,14 +916,19 @@ function update!(
 )
     (; reservoir, lake) = river.boundary_conditions
     (; parameters) = domain.land
-    # AMDGPU.device!(AMDGPU.devices()[2])
     # (; flow_length) = domain.river.parameters
-    flow_length = adapt(BackendArray, domain.river.parameters.flow_length)
-    flow_width = adapt(BackendArray, domain.river.parameters.flow_width)
-    nodes_at_edge = adapt(BackendArray, domain.river.network.nodes_at_edge)
-    edges_at_node = adapt(BackendArray, domain.river.network.edges_at_node)
-    inds_reservoir = adapt(BackendArray, domain.reservoir.network.river_indices)
-    inds_lake = adapt(BackendArray, domain.lake.network.river_indices)
+    # flow_length = adapt(BackendArray, domain.river.parameters.flow_length)
+    # flow_width = adapt(BackendArray, domain.river.parameters.flow_width)
+    # nodes_at_edge = adapt(BackendArray, domain.river.network.nodes_at_edge)
+    # edges_at_node = adapt(BackendArray, domain.river.network.edges_at_node)
+    # inds_reservoir = adapt(BackendArray, domain.reservoir.network.river_indices)
+    # inds_lake = adapt(BackendArray, domain.lake.network.river_indices)
+    flow_length = domain.river.parameters.flow_length
+    flow_width = domain.river.parameters.flow_width
+    nodes_at_edge = domain.river.network.nodes_at_edge
+    edges_at_node = domain.river.network.edges_at_node
+    inds_reservoir = domain.reservoir.network.river_indices
+    inds_lake = domain.lake.network.river_indices
     # @infiltrate
     set_waterbody_vars!(reservoir)
     set_waterbody_vars!(lake)
@@ -935,31 +939,37 @@ function update!(
     steps = 100
 
     while t < dt
-        @inbounds @inline dt_s = stable_timestep(river, flow_length)
+        # dt_s = stable_timestep(river, flow_length)
 
-        dt_s *= Float(0.9)  # safety margin
-        if t + steps * dt_s > dt
-            dt_s = (dt - t) / steps
-        end
-        t = t + steps * dt_s
+        # dt_s *= Float(0.9)  # safety margin
+        # if t + steps * dt_s > dt
+        #     dt_s = (dt - t) / steps
+        # end
+        # t = t + steps * dt_s
 
-        for i in 1:steps
-            @inbounds @inline local_inertial_river_update!(
-                river,
-                # domain,
-                Float(dt_s),
-                dt,
-                doy,
-                update_h,
-                nodes_at_edge,
-                edges_at_node,
-                flow_length,
-                flow_width,
-                inds_lake,
-                inds_reservoir,
-            )
-            local_inertial_update!(land, river, domain, Float(dt_s))
+        # for i in 1:steps
+        dt_river = stable_timestep(river, flow_length)
+        dt_land = stable_timestep(land, parameters)
+        dt_s = min(dt_river, dt_land)
+        if t + dt_s > dt
+            dt_s = dt - t
         end
+        local_inertial_river_update!(
+            river,
+            # domain,
+            Float(dt_s),
+            dt,
+            doy,
+            update_h,
+            nodes_at_edge,
+            edges_at_node,
+            flow_length,
+            flow_width,
+            inds_lake,
+            inds_reservoir,
+        )
+        local_inertial_update!(land, river, domain, Float(dt_s))
+        t = t + dt_s
     end
     println(maximum(river.variables.q_av))
     println(maximum(river.variables.q))
@@ -1117,8 +1127,8 @@ function local_inertial_update!(
                 # external inflow as part of water allocation computations.
                 land_v.storage[i] +=
                     (
-                        sum_at(river_v.q, edges_at_node.src[j]) -
-                        sum_at(river_v.q, edges_at_node.dst[j]) + land_v.qx[xd] -
+                        sum_at(river_v.q, edges_at_node.src[j, :]) -
+                        sum_at(river_v.q, edges_at_node.dst[j, :]) + land_v.qx[xd] -
                         land_v.qx[i] + land_v.qy[yd] - land_v.qy[i] + land_bc.runoff[i] -
                         river_bc.abstraction[j]
                     ) * dt
