@@ -41,9 +41,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-51275d0eefeb690601880449c96fcd0c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-27118d36b9f0b1af82c00d55902851b0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-51275d0eefeb690601880449c96fcd0c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-e2603ff5cfd09a8a129b1ad434859879.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -471,6 +471,7 @@ window.Quarto = {
 <li>Limit flux from <code>River</code> boundary of <code>GroundwaterFlow</code> to unconfined aquifer based on available river storage (from river flow routing).</li>
 <li>Fixed computation of flow width in diagonal flow direction for model type <code>sediment</code> and fixed the computation of the remaining surface flow width (kinematic wave overland flow) for river cells in the diagonal flow direction. For both cases the width should be based on land area and flow length (area conservative).</li>
 <li>Limit external negative inflow for local inertial routing (maximum of 80% of river volume).</li>
+<li>Abstraction from lakes as part of water demand and allocation computations was skipped because of an incorrect if-statement.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
