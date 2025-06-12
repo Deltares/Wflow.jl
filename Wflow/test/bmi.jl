@@ -32,8 +32,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         end
 
         @testset "variable information functions" begin
-            @test BMI.get_var_grid(model, "soil_water__infiltration_volume_flux") == 6
-            @test BMI.get_var_grid(model, "river_water__volume_flow_rate") == 3
+            @test BMI.get_var_grid(model, "soil_water__infiltration_volume_flux") == 5
+            @test BMI.get_var_grid(model, "river_water__volume_flow_rate") == 2
             @test BMI.get_var_grid(model, "reservoir_water~outgoing__volume_flow_rate") == 0
             @test BMI.get_var_type(model, "reservoir_water~incoming__volume_flow_rate") ==
                   "Float64"
@@ -102,13 +102,13 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_grid_rank(model, 6) == 2
             @test_throws ErrorException BMI.get_grid_rank(model, 8)
             @test BMI.get_grid_node_count(model, 0) == 2
-            @test BMI.get_grid_node_count(model, 3) == 5809
+            @test BMI.get_grid_node_count(model, 2) == 5809
+            @test BMI.get_grid_node_count(model, 3) == 50063
             @test BMI.get_grid_node_count(model, 4) == 50063
-            @test BMI.get_grid_node_count(model, 5) == 50063
             @test BMI.get_grid_size(model, 0) == 2
-            @test BMI.get_grid_size(model, 3) == 5809
+            @test BMI.get_grid_size(model, 2) == 5809
+            @test BMI.get_grid_size(model, 3) == 50063
             @test BMI.get_grid_size(model, 4) == 50063
-            @test BMI.get_grid_size(model, 5) == 50063
             @test minimum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈
                   5.426666666666667
             @test maximum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈
@@ -143,11 +143,11 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @test BMI.get_var_grid(
             model,
             "land_surface_water__x_component_of_instantaneous_volume_flow_rate",
-        ) == 4
+        ) == 3
         @test BMI.get_var_grid(
             model,
             "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
-        ) == 5
+        ) == 4
         @test BMI.get_grid_edge_count(model, 4) == 50063
         @test BMI.get_grid_edge_count(model, 5) == 50063
         @test_logs (

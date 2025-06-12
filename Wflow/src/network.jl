@@ -65,8 +65,8 @@ end
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     # maps from the land domain to the river domain (zero value represents no river)
     river_indices::Vector{Int} = Int[]
-    # maps from the land domain to the river domain excluding reservoir and lake locations
-    river_inds_excl_waterbody::Vector{Int} = Int[]
+    # maps from the land domain to the river domain excluding reservoir locations
+    river_inds_excl_reservoir::Vector{Int} = Int[]
     # 2D staggered grid edge indices
     edge_indices::EdgeConnectivity = EdgeConnectivity()
     # maps `order_subdomain` to traversion order of the complete domain
@@ -179,8 +179,6 @@ end
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal river domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # maps lakes to the river domain (zero value represents no lake)
-    lake_indices::Vector{Int} = Int[]
     # land domain indices masked by river domain (zero value represents no river)
     land_indices::Vector{Int} = Int[]
     # maps 1D pits (local drain direction) to the 2D model (external) domain
@@ -273,40 +271,39 @@ function EdgesAtNode(network::NetworkRiver)
     return edges_at_node
 end
 
-"Struct for storing network information water body (reservoir or lake)."
-@kwdef struct NetworkWaterBody
-    # list of 2D indices representing water body area (coverage)
+"Struct for storing network information reservoir."
+@kwdef struct NetworkReservoir
+    # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
-    # list of 2D indices representing water body outlet
+    # list of 2D indices representing reservoir outlet
     indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # maps from the 2D model (external) domain to a list of water bodies
+    # maps from the 2D model (external) domain to a list of reservoirs
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
-    # maps from the 1D river domain to a list of water bodies (zero value represents no water body)
+    # maps from the 1D river domain to a list of reservoirs (zero value represents no reservoir)
     river_indices::Vector{Int} = Int[]
 end
 
-"Initialize `NetworkWaterBody`"
-function NetworkWaterBody(
+"Initialize `NetworkReservoir`"
+function NetworkReservoir(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    waterbody_type::String,
 )
     logging = false
-    # allow waterbody only in river cells
-    # note that these locations are only the waterbody outlet pixels
-    lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
+    # allow reservoir only in river cells
+    # note that these locations are only the reservoir outlet pixels
+    lens = lens_input(config, "reservoir_location__count"; optional = false)
     locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0, logging)
 
-    # this holds the same ids as locs, but covers the entire reservoir or lake
-    lens = lens_input(config, "$(waterbody_type)_area__count"; optional = false)
+    # this holds the same ids as locs, but covers the entire reservoir
+    lens = lens_input(config, "reservoir_area__count"; optional = false)
     coverage_2d = ncread(dataset, config, lens; allow_missing = true, logging)
-    # for each waterbody, a list of 2D indices, needed for getting the mean precipitation
+    # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]
     rev_inds = zeros(Int, size(coverage_2d))
 
-    # construct a map from the rivers to the waterbody and
-    # a map of the waterbody to the 2D model grid
+    # construct a map from the rivers to the reservoir and
+    # a map of the reservoir to the 2D model grid
     inds_map2river = fill(0, length(indices))
     inds = CartesianIndex{2}[]
     counter = 0
@@ -318,14 +315,14 @@ function NetworkWaterBody(
             inds_map2river[i] = counter
             rev_inds[ind] = counter
 
-            # get all indices related to this waterbody outlet
+            # get all indices related to this reservoir outlet
             # done in this loop to ensure that the order is equal to the order in the
-            # waterbody model struct
+            # reservoir model struct
             cov = findall(isequal(id), coverage_2d)
             push!(inds_coverage, cov)
         end
     end
-    network = NetworkWaterBody(;
+    network = NetworkReservoir(;
         indices_outlet = inds,
         indices_coverage = inds_coverage,
         reverse_indices = rev_inds,

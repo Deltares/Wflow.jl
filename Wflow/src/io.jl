@@ -197,15 +197,6 @@ function get_param_res(model)
     )
 end
 
-function get_param_lake(model)
-    return Dict(
-        "atmosphere_water__precipitation_volume_flux" =>
-            model.routing.river_flow.boundary_conditions.lake.boundary_conditions.precipitation,
-        "land_surface_water__potential_evaporation_volume_flux" =>
-            model.routing.river_flow.boundary_conditions.lake.boundary_conditions.evaporation,
-    )
-end
-
 mover_params = (
     "atmosphere_water__precipitation_volume_flux",
     "land_surface_water__potential_evaporation_volume_flux",
@@ -222,16 +213,11 @@ function load_fixed_forcing!(model)
     (; forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    do_lakes = get(config.model, "lake__flag", false)::Bool
 
     reverse_indices = domain.land.network.reverse_indices
     if do_reservoirs
         sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
-    end
-    if do_lakes
-        sel_lakes = domain.lake.network.indices_coverage
-        param_lake = get_param_lake(model)
     end
 
     for (par, ncvar) in forcing_parameters
@@ -240,20 +226,14 @@ function load_fixed_forcing!(model)
             lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
             param_vector .= val
-            # set fixed precipitation and evaporation over the lakes and reservoirs and put
-            # these into the lakes and reservoirs structs and set the precipitation and
-            # evaporation to 0 in the land model
+            # set fixed precipitation and evaporation over the reservoirs and put these into
+            # the reservoir structs and set the precipitation and evaporation to 0 in the
+            # land model
             if par in mover_params
                 if do_reservoirs
                     for (i, sel_reservoir) in enumerate(sel_reservoirs)
                         param_vector[reverse_indices[sel_reservoir]] .= 0
                         param_res[par][i] = val
-                    end
-                end
-                if do_lakes
-                    for (i, sel_lake) in enumerate(sel_lakes)
-                        param_vector[reverse_indices[sel_lake]] .= 0
-                        param_lake[par][i] = val
                     end
                 end
             end
@@ -289,15 +269,10 @@ function update_forcing!(model)
     (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    do_lakes = get(config.model, "lake__flag", false)::Bool
 
     if do_reservoirs
         sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
-    end
-    if do_lakes
-        sel_lakes = domain.lake.network.indices_coverage
-        param_lake = get_param_lake(model)
     end
 
     # load from netCDF into the model according to the mapping
@@ -312,22 +287,15 @@ function update_forcing!(model)
             data .= data .* ncvar.scale .+ ncvar.offset
         end
 
-        # calculate the mean precipitation and evaporation over the lakes and reservoirs
-        # and put these into the lakes and reservoirs structs
-        # and set the precipitation and evaporation to 0 in the land model
+        # calculate the mean precipitation and evaporation over reservoirs and put these
+        # into the reservoir structs and set the precipitation and evaporation to 0 in the
+        # land model
         if par in mover_params
             if do_reservoirs
                 for (i, sel_reservoir) in enumerate(sel_reservoirs)
                     avg = mean(data[sel_reservoir])
                     data[sel_reservoir] .= 0
                     param_res[par][i] = avg
-                end
-            end
-            if do_lakes
-                for (i, sel_lake) in enumerate(sel_lakes)
-                    avg = mean(data[sel_lake])
-                    data[sel_lake] .= 0
-                    param_lake[par][i] = avg
                 end
             end
         end
@@ -965,8 +933,6 @@ function get_reducer_func(col, domain, args...)
     parameter = col["parameter"]
     if occursin("reservoir", parameter)
         reducer_func = reducer(col, domain.reservoir.network.reverse_indices, args...)
-    elseif occursin("lake", parameter)
-        reducer_func = reducer(col, domain.lake.network.reverse_indices, args...)
     elseif occursin("river", parameter)
         reducer_func = reducer(col, domain.river.network.reverse_indices, args...)
     elseif occursin("drain", parameter)
@@ -1779,16 +1745,4 @@ function get_routing_types(config::Config)
     subsurface = config.model.type == "sbm" ? "kinematic-wave" : "groundwaterflow"
 
     return (; land, river, subsurface)
-end
-
-"Return waterbody (reservoir or lake) locations"
-function get_waterbody_locs(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    waterbody_type::String,
-)
-    lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
-    locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
-    return locs
 end
