@@ -477,7 +477,7 @@ end
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "reservoir_water_surface__instantaneous_elevation" in required_states
     @test "snowpack~liquid__depth" in required_states
-    @test !("lake_water_level__elevation" in required_states)
+    @test !("reservoir_water_level__elevation" in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
     config.state.variables.additional_state = "additional_state"

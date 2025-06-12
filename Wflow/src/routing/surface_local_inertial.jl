@@ -226,7 +226,7 @@ function get_inflow_reservoir(model::LocalInertialRiverFlow, src_edge::Vector{In
     return q_in
 end
 
-# For local inertial river routing, `to_river` is included, as water body cells are excluded
+# For local inertial river routing, `to_river` is included, as reservoir cells are excluded
 # (boundary condition).
 get_inflow_reservoir(::LocalInertialRiverFlow, model::KinWaveOverlandFlow) =
     model.variables.q_av .+ model.variables.to_river

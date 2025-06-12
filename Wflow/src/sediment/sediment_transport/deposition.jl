@@ -9,7 +9,7 @@
         slope,
     )
 
-Deposition of sediment in waterbodies from Camp 1945.
+Deposition of sediment in reservoirs from Camp 1945.
 
 # Arguments
 - `input` (sediment input [t Δt⁻¹])

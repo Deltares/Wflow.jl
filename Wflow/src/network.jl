@@ -273,13 +273,13 @@ end
 
 "Struct for storing network information reservoir."
 @kwdef struct NetworkReservoir
-    # list of 2D indices representing water body area (coverage)
+    # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
-    # list of 2D indices representing water body outlet
+    # list of 2D indices representing reservoir outlet
     indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # maps from the 2D model (external) domain to a list of water bodies
+    # maps from the 2D model (external) domain to a list of reservoirs
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
-    # maps from the 1D river domain to a list of water bodies (zero value represents no water body)
+    # maps from the 1D river domain to a list of reservoirs (zero value represents no reservoir)
     river_indices::Vector{Int} = Int[]
 end
 

@@ -503,7 +503,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         ### Deposition / settling ###
         # Different deposition if reservoir outlet or river
         if reservoir_outlet[v]
-            # Deposition in waterbodies outlets
+            # Deposition in reservoir outlets
             deposition_clay = reservoir_deposition_camp(
                 (input_clay + erosion_clay),
                 q[v],
@@ -559,7 +559,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 slope[v],
             )
         elseif reservoir_coverage[v]
-            # No deposition in waterbodies, only at the outlets
+            # No deposition in reservoir coverage, only at the outlets
             deposition_clay = 0.0
             deposition_silt = 0.0
             deposition_sand = 0.0
