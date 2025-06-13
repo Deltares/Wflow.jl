@@ -940,36 +940,33 @@ function update!(
 
     while t < dt
         # dt_s = stable_timestep(river, flow_length)
-
-        # dt_s *= Float(0.9)  # safety margin
-        # if t + steps * dt_s > dt
-        #     dt_s = (dt - t) / steps
-        # end
-        # t = t + steps * dt_s
-
-        # for i in 1:steps
         dt_river = stable_timestep(river, flow_length)
         dt_land = stable_timestep(land, parameters)
         dt_s = min(dt_river, dt_land)
-        if t + dt_s > dt
-            dt_s = dt - t
+
+        dt_s *= Float(0.9)  # safety margin
+        if t + steps * dt_s > dt
+            dt_s = (dt - t) / steps
         end
-        local_inertial_river_update!(
-            river,
-            # domain,
-            Float(dt_s),
-            dt,
-            doy,
-            update_h,
-            nodes_at_edge,
-            edges_at_node,
-            flow_length,
-            flow_width,
-            inds_lake,
-            inds_reservoir,
-        )
-        local_inertial_update!(land, river, domain, Float(dt_s))
-        t = t + dt_s
+        t = t + steps * dt_s
+
+        for i in 1:steps
+            @inbounds local_inertial_river_update!(
+                river,
+                # domain,
+                Float(dt_s),
+                dt,
+                doy,
+                update_h,
+                nodes_at_edge,
+                edges_at_node,
+                flow_length,
+                flow_width,
+                inds_lake,
+                inds_reservoir,
+            )
+            @inbounds local_inertial_update!(land, river, domain, Float(dt_s))
+        end
     end
     println(maximum(river.variables.q_av))
     println(maximum(river.variables.q))
