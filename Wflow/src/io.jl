@@ -1344,7 +1344,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         return reducerfunction(reducer_name)
     elseif haskey(col, "index")
         index = col["index"]
-        if index isa Int
+        if index isa Int || index isa Int64
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
             @info "Adding scalar output for linear index." fileformat param index
@@ -1353,8 +1353,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
             # index into the 2D input/output arrays
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
-            i = index["x"]::Int
-            j = index["y"]::Int
+            i = Int(index["x"])
+            j = Int(index["y"])
             ind = rev_inds[i, j]
             @info "Adding scalar output for 2D index." fileformat param index
             iszero(ind) && error("inactive loc specified for output")

@@ -615,7 +615,6 @@ function update!(
             dt_s = (dt - t) / steps
         end
         t = t + steps * dt_s
-
         for i in 1:steps
             local_inertial_river_update!(
                 model,
@@ -633,8 +632,6 @@ function update!(
             )
         end
     end
-
-    println(maximum(model.variables.q))
 
     average_flow_vars!(model.variables, dt)
     average_waterbody_vars!(reservoir, dt)
@@ -968,22 +965,6 @@ function update!(
             @inbounds local_inertial_update!(land, river, domain, Float(dt_s))
         end
     end
-    println(maximum(river.variables.q_av))
-    println(maximum(river.variables.q))
-
-    # t = Float(0.0)
-    # while t < dt
-    #     dt_s = stable_timestep(land, parameters)
-    #     dt_s *= 0.9  # safety margin
-    #     if t + steps * dt_s > dt
-    #         dt_s = (dt - t) / steps
-    #     end
-    #     t = t + steps * dt_s
-
-    #     for i in 1:steps
-    #         local_inertial_update!(land, river, domain, Float(dt_s))
-    #     end
-    # end
 
     average_flow_vars!(river.variables, dt)
     average_flow_vars!(land.variables, dt)
