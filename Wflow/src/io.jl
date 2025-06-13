@@ -1792,15 +1792,3 @@ function get_waterbody_locs(
     locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0)
     return locs
 end
-
-"Read LST model inputs"
-function read_lst_inputs(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
-    RS_in = ncread(dataset, config, "downward_shortwave_radiation"; sel = indices) #e.g. LSA-SAF 2024a https://datalsasaf.lsasvcs.ipma.pt/PRODUCTS/MSG/MDIDSSF/NETCDF/ 
-    albedo = ncread(dataset, config, "albedo"; sel = indices) #e.g. LSA-SAF 2024b https://datalsasaf.lsasvcs.ipma.pt/PRODUCTS/MSG/MDAL/NETCDF/ 
-    crop_height = ncread(dataset, config, "crop_height"; sel = indices) #e.g. ?? for aerodynamic resistance
-    return RS_in, albedo, crop_height
-end
