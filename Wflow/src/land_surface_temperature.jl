@@ -34,14 +34,14 @@ function initialize_lst(
     indices::Vector{CartesianIndex{2}},
     dt::Second
 )
-    albedo, dssf, ra = read_lst_inputs(dataset, config, indices)
+    RS_in, albedo, crop_height = read_lst_inputs(dataset, config, indices)
     n = length(indices)
     ts = fill(0.0, n)  # Initial surface temperature
     
     return LSTModel(
         albedo = albedo,
-        dssf = dssf,
-        ra = ra,
+        dssf = RS_in,
+        ra = crop_height,
         ts = ts
     )
 end
