@@ -32,6 +32,12 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     else
         snow = NoSnowModel()
     end
+    do_lst = get(config.model, "lst__flag", false)::Bool
+    if do_lst
+        lst = LSTModel(dataset, config, indices, dt)
+    else
+        lst = NoLSTModel()
+    end
     do_glacier = get(config.model, "glacier__flag", false)::Bool
     if do_snow && do_glacier
         glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
