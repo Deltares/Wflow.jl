@@ -301,8 +301,8 @@ end
 
 function update_index_hq!(reservoir::Reservoir, clock::Clock)
     (; outflowfunc, col_index_hq) = reservoir.parameters
-    if outflowfunc == 1
-        col_index_hq = julian_day(clock.time - clock.dt)
+    if 1 in outflowfunc
+        col_index_hq[1] = julian_day(clock.time - clock.dt)
     end
     return nothing
 end

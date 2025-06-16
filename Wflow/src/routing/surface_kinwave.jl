@@ -491,7 +491,7 @@ end
 Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::KinWaveRiverFlow, domain::Domain, dt::Float64)
+function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
     (; reservoir, inwater, actual_external_abstraction_av) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) = model.parameters
     (; slope, flow_width, flow_length) = domain.river.parameters
@@ -505,7 +505,9 @@ function update!(model::KinWaveRiverFlow, domain::Domain, dt::Float64)
 
     set_flow_vars!(model.variables, actual_external_abstraction_av)
     set_reservoir_vars!(reservoir)
+    update_index_hq!(reservoir, clock)
 
+    dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
         dt_s =

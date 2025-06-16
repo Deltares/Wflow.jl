@@ -469,19 +469,21 @@ timestepping method is used (computing a sub timestep `dt_s`).
 function update!(
     model::LocalInertialRiverFlow,
     domain::Domain,
-    dt::Float64;
+    clock::Clock;
     update_h = true,
 )
     (; reservoir, actual_external_abstraction_av) = model.boundary_conditions
     (; flow_length) = domain.river.parameters
 
     set_reservoir_vars!(reservoir)
+    update_index_hq!(reservoir, clock)
 
     if !isnothing(model.floodplain)
         set_flow_vars!(model.floodplain.variables)
     end
     set_flow_vars!(model.variables, actual_external_abstraction_av)
 
+    dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
         dt_s = stable_timestep(model, flow_length)
@@ -751,7 +753,7 @@ function update!(
     land::LocalInertialOverlandFlow,
     river::LocalInertialRiverFlow,
     domain::Domain,
-    dt::Float64;
+    clock::Clock;
     update_h = false,
 )
     (; reservoir, actual_external_abstraction_av) = river.boundary_conditions
@@ -759,9 +761,11 @@ function update!(
     (; parameters) = domain.land
 
     set_reservoir_vars!(reservoir)
+    update_index_hq!(reservoir, clock)
     set_flow_vars!(river.variables, actual_external_abstraction_av)
     set_flow_vars!(land.variables)
 
+    dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
         dt_river = stable_timestep(river, flow_length)
