@@ -77,7 +77,7 @@ vwc_1_size = 0
         request((fn = "get_var_itemsize", name = "soil_layer~1_water__volume_fraction"))["var_itemsize"]
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
     @test request((fn = "get_var_grid", name = "river_water__depth")) ==
-          Dict("var_grid" => 3)
+          Dict("var_grid" => 2)
     msg = (
         fn = "get_value",
         name = "soil_water_sat-zone_top__depth",
