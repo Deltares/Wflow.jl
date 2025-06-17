@@ -1,8 +1,10 @@
 "Struct for storing reservoir model parameters"
 @with_kw struct ReservoirParameters
-    # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and interpolation
+    # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and
+    # interpolation
     storfunc::Vector{Int}
-    # type of reservoir rating curve, 1: Q = f(H) from reservoir data and interpolation, 2: General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)²
+    # type of reservoir rating curve, 1: Q = f(H) from reservoir data and interpolation, 2:
+    # General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)², 4: Simple reservoir
     outflowfunc::Vector{Int}
     # reservoir area [m²]
     area::Vector{Float64}
@@ -24,7 +26,8 @@
     col_index_hq::Vector{Int} = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
     maxrelease::Vector{Float64} = fill(MISSING_VALUE, length(area))
-    # minimum (environmental) flow requirement downstream of the reservoir for rating curve type 4 [m³ s⁻¹]
+    # minimum (environmental) flow requirement downstream of the reservoir for rating curve
+    # type 4 [m³ s⁻¹]
     demand::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # target minimum full fraction (of max storage) for rating curve type 4 [-]
     targetminfrac::Vector{Float64} = fill(MISSING_VALUE, length(area))
@@ -299,6 +302,7 @@ function interpolate_linear(x, xp, fp)
     end
 end
 
+"Update the column index of reservoir rating curve HQ data"
 function update_index_hq!(reservoir::Reservoir, clock::Clock)
     (; outflowfunc, col_index_hq) = reservoir.parameters
     if 1 in outflowfunc
@@ -308,6 +312,7 @@ function update_index_hq!(reservoir::Reservoir, clock::Clock)
 end
 update_index_hq!(reservoir, clock::Clock) = nothing
 
+"Update reservoir with rating curve type (`ouflowfunc`) 4 for a single timestep"
 function update_reservoir_simple(
     model::Reservoir,
     i::Int,
@@ -341,6 +346,10 @@ function update_reservoir_simple(
     return outflow, storage, demandrelease, percfull
 end
 
+"""
+Update reservoir with rating curve type (`ouflowfunc`) 3 (Modified Puls approach) for a
+single timestep.
+"""
 function update_reservoir_modified_puls(
     model::Reservoir,
     i::Int,
@@ -372,6 +381,7 @@ function update_reservoir_modified_puls(
     return outflow, storage
 end
 
+"Update reservoir with rating curve type (`ouflowfunc`) 1 (HQ data) for a single timestep."
 function update_reservoir_hq(
     model::Reservoir,
     i::Int,
@@ -399,6 +409,7 @@ function update_reservoir_hq(
     return outflow, storage
 end
 
+"Update reservoir with rating curve type (`ouflowfunc`) 2 (free weir) for a single timestep."
 function update_reservoir_free_weir(
     model::Reservoir,
     i::Int,
