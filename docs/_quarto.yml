@@ -110,7 +110,7 @@ website:
           contents:
           - file: model_docs/routing/kinwave.qmd
           - file: model_docs/routing/local-inertial.qmd
-          - file: model_docs/routing/waterbodies.qmd
+          - file: model_docs/routing/reservoirs.qmd
           - file: model_docs/routing/gwf.qmd
           - file: model_docs/routing/sediment_flux.qmd
         - text: Model parameters and variables

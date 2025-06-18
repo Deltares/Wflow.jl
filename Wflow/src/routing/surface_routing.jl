@@ -28,12 +28,13 @@ function surface_routing!(model)
         domain,
         dt,
     )
-    update_inflow_waterbody!(
+    update_inflow_reservoir!(
         river_flow,
         (; overland_flow, subsurface_flow),
         domain.river.network.land_indices,
     )
-    update!(river_flow, domain, julian_day(clock.time - clock.dt), dt)
+    # update river flow
+    update!(river_flow, domain, clock)
     return nothing
 end
 
@@ -59,8 +60,8 @@ function surface_routing!(
         domain,
         dt,
     )
-
-    update!(overland_flow, river_flow, domain, julian_day(clock.time - clock.dt), dt)
+    # update overland and river flow
+    update!(overland_flow, river_flow, domain, clock)
 
     return nothing
 end

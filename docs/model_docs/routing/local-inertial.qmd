@@ -87,13 +87,13 @@ the water velocity from the local inertial model is causing the Froude number to
 than $1.0$ , the water velocity (and flow) is reduced in order to maintain a Froude number of
 $1.0$.
 
-[Reservoir and lake](./waterbodies.qmd) models can be included as part of the local inertial
-model for river flow (1D) and river and overland flow combined (see next section). Reservoir
-and lake models are included as a boundary point with zero water depth for both river and
-overland flow. For river flow the reservoir or lake model replaces the local inertial model
-at the reservoir or lake location, and river flow $Q$ is set by the outflow from the
-reservoir or lake. Overland flow at a reservoir or lake location is not allowed to or from
-the downstream river grid cell.
+[Reservoir](./reservoirs.qmd) models representing reservoirs, (natural) lakes or other water
+storage features can be included as part of the local inertial model for river flow (1D) and
+river and overland flow combined (see next section). Reservoir models are included as a
+boundary point with zero water depth for both river and overland flow. For river flow the
+reservoir model replaces the local inertial model at the reservoir location, and river flow
+$Q$ is set by the outflow from the reservoir. Overland flow at a reservoir location is not
+allowed to or from the downstream river grid cell.
 
 ## Overland flow (2D)
 For the simulation of 2D overland flow on a staggered grid the numerical scheme proposed by de

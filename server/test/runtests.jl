@@ -24,9 +24,9 @@ function testdata(version, source_filename, target_filename)
 end
 
 staticmaps_moselle_path =
-    testdata(v"0.2.9", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
+    testdata(v"0.3.1", "staticmaps-moselle.nc", "staticmaps-moselle.nc")
 forcing_moselle_path = testdata(v"0.2.6", "forcing-moselle.nc", "forcing-moselle.nc")
-instates_moselle_path = testdata(v"0.2.6", "instates-moselle.nc", "instates-moselle.nc")
+instates_moselle_path = testdata(v"0.3.1", "instates-moselle.nc", "instates-moselle.nc")
 
 with_logger(NullLogger()) do
     @testset "Test client server Wflow ZMQ Server" begin

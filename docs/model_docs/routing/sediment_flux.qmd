@@ -407,23 +407,23 @@ $$
    (\subtext{\mathrm{sed}}{riv})_t = (\subtext{\mathrm{sed}}{riv})_{t-1} + (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\mathrm{sed}}{out})_{t-1}\right] + (\subtext{\mathrm{sed}}{erod})_t - (\subtext{\mathrm{sed}}{dep})_t - (\subtext{\mathrm{sed}}{out})_t
 $$
 
-### Lake and reservoir modelling
-Apart from land and river, the hydrological `wflow_sbm` model also handles lakes and
-reservoirs modelling. In `wflow_sbm`, lakes and large reservoirs are modelled using a 1D
-bucket model at the cell corresponding to the outlet. For the other cells belonging to the
-lake/reservoir which are not the outlet, processes such as precipitation and evaporation are
-filtered out and shifted to the outlet cell. `wflow_sediment` handles the lakes and
-reservoirs in the same way. If a cell belongs to a lake/reservoir and is not the outlet then
-the model assumes that no erosion/deposition of sediments is happening and the sediments are
-only all transported to the lake/reservoir outlet. Once the sediments reach the outlet, then
-sediments are deposited in the lake/reservoir according to Camp's model (1945) (Verstraeten
-et al, 2000):
+### Reservoir modelling
+Apart from land and river, the hydrological `wflow_sbm` model also handles reservoir
+modelling. In `wflow_sbm`, `reservoir` nodes representing reservoirs, (natural) lakes or
+other water storage features are modelled using a 1D bucket model at the cell corresponding
+to the outlet. For the other cells belonging to the reservoir which are not the outlet,
+processes such as precipitation and evaporation are filtered out and shifted to the outlet
+cell. `wflow_sediment` handles the reservoirs in the same way. If a cell belongs to a
+reservoir and is not the outlet then the model assumes that no erosion/deposition of
+sediments is happening and the sediments are transported to the reservoir outlet. Once the
+sediments reach the outlet, then sediments are deposited in the reservoir according to
+Camp's model (1945) (Verstraeten et al, 2000):
 
 $$
    \mathrm{TE} = \dfrac{\omega_s}{u_{cr,\mathrm{res}}} = \dfrac{\subtext{A}{res}}{\subtext{Q}{out,res}} \omega_s
 $$
 
-where $\mathrm{TE}$ is the trapping efficiency of the lake/reservoir (or the fraction of
+where $\mathrm{TE}$ is the trapping efficiency of the reservoir (or the fraction of
 particles trapped), $\SIb{\omega_{s}}{m\ s^{-1}}$ is the particle velocity from Stokes,
 $\SIb{\subtext{u}{cr,res}}{m\ s^{-1}}$ is the reservoir's critical settling velocity which
 is equal to the reservoir's outflow $\SIb{\subtext{Q}{out,res}}{m^3\ s^{-1}}$ divided by the
@@ -436,32 +436,24 @@ the dam, all bed load particles are trapped
 (`reservoir_water_sediment~bedload__trapping_efficiency = 1.0`, for example for a gravity dam)
 or only partly (for example for run-of-the-river dams).
 
-Lake and reservoir modelling is enabled in the model section of the TOML and require the extra
+ Reservoir modelling is enabled in the model section of the TOML and require the extra
 following input arguments:
 
 ```toml
 [model]
 reservoir__flag = true
-lake__flag = true
 
 [input]
-# Reservoir
 reservoir_area__count = "wflow_reservoirareas"
 reservoir_location__count = "wflow_reservoirlocs"
-# Lake
-lake_area__count = "wflow_lakeareas"
-lake_location__count = "wflow_lakelocs" 
 
 [input.static]
-# Reservoir
 reservoir_surface__area = "ResSimpleArea"
 "reservoir_water_sediment~bedload__trapping_efficiency" = "ResTrapEff"
-# Lake
-lake_surface__area = "LakeArea"
 ```
 
-Note that in the inland part, lake and reservoir coverage are used to filter erosion and
-transport in overland flow.
+Note that in the inland part, reservoir coverage is used to filter erosion and transport in
+overland flow.
 
 ## References
 + K.C. Abbaspour, J. Yang, I. Maximov, R. Siber, K. Bogner, J. Mieleitner, J. Zobrist, and

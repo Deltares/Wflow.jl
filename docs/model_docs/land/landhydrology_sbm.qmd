@@ -993,8 +993,8 @@ soil_water_sat-zone_bottom__max_leakage_volume_flux = "maxleakage"
 ## Open water
 
 Part of the water available for infiltration is diverted to the open water, based on the
-fractions of river and lakes of each grid cell. The amount of evaporation from open water is
-assumed to be equal to potential evaporation (if sufficient water is available).
+fractions of river and reservoirs of each grid cell. The amount of evaporation from open
+water is assumed to be equal to potential evaporation (if sufficient water is available).
 
 ## Non-irrigation
 Non-irrigation water demand and allocation computations are supported for the sectors domestic,
@@ -1104,7 +1104,7 @@ the gross demand per sector (industry, domestic, livestock and irrigation). Wate
 abstracted from the following sources:
 
 - surface water from rivers (max $\SI{80}{\%}$ of total available water)
-- reservoirs and lakes (max $\SI{98}{\%}$ of total available water)
+- reservoirs (max $\SI{98}{\%}$ of total available water)
 - groundwater (max $\SI{75}{\%}$ of total available water)
 
 The model parameter fraction surface water used (default is $1.0$) determines how much water
@@ -1117,10 +1117,10 @@ land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
 ```
 
 ### Local
-First, surface water abstraction (excluding reservoir and lake locations) is computed to
-satisfy local (same grid cell) water demand. The available surface water volume is limited
-by a fixed scaling factor of $0.8$ to prevent rivers from completely drying out. It is
-assumed that the water demand cannot be satisfied completely from local surface water and
+First, surface water abstraction (excluding reservoir locations) is computed to satisfy
+local (same grid cell) water demand. The available surface water volume is limited by a
+fixed scaling factor of $0.8$ to prevent rivers from completely drying out. It is assumed
+that the water demand cannot be satisfied completely from local surface water and
 groundwater. The next step is to satisfy the remaining water demand for allocation areas
 $\SIb{}{-}$, described in the next sub-section.
 
@@ -1133,8 +1133,8 @@ land_water_allocation_area__count = "allocation_areas"
 ```
 
 For allocation areas the water demand $\SIb{\subtext{V}{sw, demand}}{m^3}$ and availability
-$\SIb{\subtext{V}{sw, availabilty}}{m^3}$ are summed (including reservoir and lake locations
-limited by a fixed scaling factor of $0.98$), and the total surface water abstraction is then:
+$\SIb{\subtext{V}{sw, availabilty}}{m^3}$ are summed (including reservoir locations limited
+by a fixed scaling factor of $0.98$), and the total surface water abstraction is then:
 
 $$
     \subtext{V}{sw, abstraction} = \min (\subtext{V}{sw, demand}, \subtext{V}{sw, availabilty}).
@@ -1145,9 +1145,9 @@ $\SIb{\subtext{f}{sw,abstraction}}{-}$ at the allocation area level is then:
 $$
     \subtext{f}{sw, abstraction} = \frac{\subtext{V}{sw, abstraction}}{\subtext{V}{sw, available}}.
 $$
-This fraction is applied to the remaining available surface water of each river cell (including
-lake and reservoir locations) to compute surface water abstraction at each river cell and to
-update the local surface water abstraction.
+This fraction is applied to the remaining available surface water of each river cell
+(including reservoir locations) to compute surface water abstraction at each river cell and
+to update the local surface water abstraction.
 
 The fraction of water demand that can be satisfied by available surface water
 $\SIb{\subtext{f}{sw, allocation}}{-}$ at the allocation area level is then:
@@ -1192,10 +1192,9 @@ the groundwater flow module. Surface water abstraction $\SIb{}{m^3\ s^{-1}}$ is 
 the flow length $\SIb{}{m}$ and subtracted from the lateral inflow of kinematic wave routing
 scheme for river flow. For the local inertial routing scheme (river and optional floodplain
 routing), the surface water abstraction $\SIb{}{m^3\ s^{-1}}$ is subtracted as part of the
-continuity equation of the local inertial model. For reservoir and lake locations surface
-water is abstracted $\SIb{}{m^3\ s^{-1}}$ from the reservoir storage $\SIb{}{m^3}$ and lake
-storage $\SIb{}{m^3}$ respectively, with a subsequent update of the lake water level
-$\SIb{}{m}$.
+continuity equation of the local inertial model. For reservoir locations surface water is
+abstracted $\SIb{}{m^3\ s^{-1}}$ from the reservoir storage $\SIb{}{m^3}$, with a subsequent
+update of the reservoir water level $\SIb{}{m}$.
 
 ## References
 + Bergström, S., 1992, The HBV model – its structure and applications, SMHI Reports

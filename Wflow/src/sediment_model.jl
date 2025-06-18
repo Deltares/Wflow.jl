@@ -17,11 +17,10 @@ function Model(config::Config, type::SedimentModel)
 
     modelsettings = (;
         reservoirs = get(config.model, "reservoir__flag", false)::Bool,
-        lakes = get(config.model, "lake__flag", false)::Bool,
         pits = get(config.model, "pit__flag", false)::Bool,
     )
 
-    @info "General model settings" modelsettings[keys(modelsettings)[1:2]]...
+    @info "General model settings" modelsettings[keys(modelsettings)[1]]...
 
     domain = Domain(dataset, config, modelsettings)
     soilloss = SoilLoss(dataset, config, domain.land.network.indices)

@@ -29,10 +29,10 @@ map stack.
 
 ## Data requirements
 The actual data requirements depend on the application of the Model and the Model type. Both
-forcing and static data should be provided in netCDF format, with the same grid definition for
-forcing and static data. The only exception is storage and rating curves for lakes, that should
-be provided in CSV format, see also [Additional settings for
-waterbodies](../model_docs/routing/waterbodies.qmd#additional-settings).
+forcing and static data should be provided in netCDF format, with the same grid definition
+for forcing and static data. The only exception is storage and rating curves for reservoir
+nodes, that should be provided in CSV format, see also [Storage and rating cuves from
+data](../model_docs/routing/reservoirs.qmdsStorage-and-rating-cuves-from-data).
 
 * Forcing data:
   - Precipitation
@@ -64,8 +64,8 @@ example
 [lddcreate](https://pcraster.geo.uu.nl/pcraster/4.3.1/documentation/pcraster_manual/sphinx/op_lddcreate.html).
 
 Optionally, but also not directly part of a model component are `gauge` locations, that are
-used to extract gridded data from certain locations, and `lake` and `reservoir` locations
-and areas (coverage).
+used to extract gridded data from certain locations, and `reservoir` locations and areas
+(coverage).
 
 The different supported model configurations are described in the section [Model
 configurations](../model_docs/model_configurations.qmd). Wflow\_sbm models have the [Land
@@ -113,10 +113,9 @@ inertial)](../model_docs/parameters_routing.qmd#local-inertial), including the o
 [Overland flow (local inertial)](../model_docs/parameters_routing.qmd#overland-flow)
 sections.
 
-Reservoirs or lakes can be part of the kinematic wave or local inertial model for river flow
-and input parameters are listed under the
-[Reservoirs](../model_docs/parameters_routing.qmd#reservoirs) and
-[Lakes](../model_docs/parameters_routing.qmd#lakes) sections.
+Reservoir nodes representing reservoirs, (natural) lakes or other water storage features can
+be part of the kinematic wave or local inertial model for river flow and input parameters
+are listed under the [Reservoirs](../model_docs/parameters_routing.qmd#reservoirs) section.
 
 The [wflow\_sediment](../model_docs/model_configurations.qmd#wflow_sediment) model
 configuration consists of the [Soil Erosion](../model_docs/land/sediment.qmd) concept and

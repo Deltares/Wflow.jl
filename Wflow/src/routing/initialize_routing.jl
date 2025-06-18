@@ -126,7 +126,7 @@ end
 
 """
 Initialize kinematic wave or local inertial overland flow routing, including optional
-reservoirs and lakes.
+reservoirs.
 """
 function initialize_river_flow(
     dataset::NCDataset,
@@ -136,22 +136,15 @@ function initialize_river_flow(
 )
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     if do_reservoirs
-        reservoir = SimpleReservoir(dataset, config, domain.reservoir.network)
+        reservoir = Reservoir(dataset, config, domain.reservoir.network)
     else
         reservoir = nothing
     end
 
-    do_lakes = get(config.model, "lake__flag", false)::Bool
-    if do_lakes
-        lake = Lake(dataset, config, domain.lake.network)
-    else
-        lake = nothing
-    end
-
     if routing_types.river == "kinematic-wave"
-        river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir, lake)
+        river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)
     elseif routing_types.river == "local-inertial"
-        river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir, lake)
+        river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir)
     else
         error(
             """An unknown "river_routing" method is specified in the TOML file
