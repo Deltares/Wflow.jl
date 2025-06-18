@@ -21,9 +21,9 @@ and [Command Line Interface](./running_wflow.qmd#using-the-command-line-interfac
 ```julia
 # urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_config.toml"
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.9/staticmaps-moselle.nc"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.3.1/staticmaps-moselle.nc"
 forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/forcing-moselle.nc"
-instates = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/instates-moselle.nc"
+instates = "https://github.com/visr/wflow-artifacts/releases/download/v0.3.1/instates-moselle.nc"
 
 # create a "data/input" directory in the current directory
 testdir = @__DIR__
