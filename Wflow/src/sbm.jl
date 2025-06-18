@@ -4,6 +4,7 @@
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
     snow::AbstractSnowModel
+    land_surface_temperature::AbstractLandSurfaceTemperatureModel
     glacier::AbstractGlacierModel
     runoff::AbstractRunoffModel
     soil::SbmSoilModel
@@ -34,9 +35,9 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     end
     do_lst = get(config.model, "lst__flag", false)::Bool
     if do_lst
-        lst = LSTModel(dataset, config, indices, dt)
+        land_surface_temperature = LandSurfaceTemperatureModel(dataset, config, indices, dt)
     else
-        lst = NoLSTModel()
+        land_surface_temperature = NoLandSurfaceTemperatureModel()
     end
     do_glacier = get(config.model, "glacier__flag", false)::Bool
     if do_snow && do_glacier
@@ -68,6 +69,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         vegetation_parameters,
         interception,
         snow,
+        land_surface_temperature,
         glacier,
         runoff,
         soil,
@@ -87,8 +89,17 @@ function update!(
 )
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (; parameters) = domain.land
-    (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
-        model
+    (;
+        glacier,
+        snow,
+        land_surface_temperature,
+        interception,
+        runoff,
+        soil,
+        demand,
+        allocation,
+        atmospheric_forcing,
+    ) = model
 
     update!(interception, atmospheric_forcing)
 
