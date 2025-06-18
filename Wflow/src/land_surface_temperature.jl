@@ -1,4 +1,6 @@
-module LandSurfaceTemperature
+# after Devi Purnamasari et al. 2025 
+# https://doi.org/10.5194/hess-29-1483-2025
+#TODO: review comments that are too instructional, retain during dev.
 
 using Wflow
 using Dates
@@ -7,23 +9,15 @@ using NCDatasets
 using Parameters
 
 #abstract should define a common interface
-abstract type AbstractLSTModel end
+abstract type AbstractLandSurfaceTemperatureModel end
 #concrete type helps determine if LSTmodel is active or not
-struct NoLSTModel <: AbstractLSTModel end
+struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
 
-# after Devi Purnamasari et al. 2025 
-# https://doi.org/10.5194/hess-29-1483-2025
-#TODO: review comments that are too instructional, retain during dev.
-#@kw from Parameters package 
-#a struct or "object" is a collection of fields
-#a field is a variable that belongs to a struct
-#@with_kw is a macro that creates a struct with fields and default values
+#TODO: move to domain jl landparameters or veg parameters
 const sigma = 5.67e-8  # Stefan-Boltzmann constant for blackbody radiation
-const cp = 1013.0      # Specific heat capacity of air in J/kg/K
-const rho_a = 1.29     # Density of air in kg/m3
+const cp = 1005.0      # Specific heat capacity of air in J/kg/K
+const rho_a = 1.225     # Density of air in kg/m3 @ 15 degrees C
 const rho_w = 1000.0     # Density of water in kg/m3
-#TODO: make crop height a distributed parameter
-const hc = 2.0        # crop height in m
 const k = 0.41        # von Kármán constant
 #HYRAS input is 10m we correct to 2m in calculation for aerodynamic resistance
 const zm = 2.0        # height of wind speed measurement = zh
