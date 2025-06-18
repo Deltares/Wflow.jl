@@ -17,49 +17,8 @@ routing an internal time step is optional (and recommended), with a time step eq
 model simulation time step the standard name nonetheless contains `instantaneous`) and thus
 considered instantaneous compared to the model simulation time step Δt $\SIb{}{s}$.
 
-## Water bodies
-### Lakes
+## Reservoirs
 
-#### Generic input {#input-generic-lake}
-| Standard Name | Description | Unit | Default |
-| ------ | ----- | -- | -- |
-| `lake_location__count` | Outlet of the lakes in which each lake has a unique id | - | - |
-| `lake_area__count` | Lake coverage | - | - |
-: {.striped .hover}
-
-#### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ----- | -- | -- |
-| `lake_surface__area` | Area of the lake | m² | - |
-| `lake_water__rating_curve_coefficient` | Rating curve coefficient | - | - |
-| `lake_water__rating_curve_exponent` | Rating curve exponent | - | - |
-| `lake_water_flow_threshold-level__elevation` | Water level threshold, below this level outflow is zero | m | - |
-| `lake~lower_location__count` | Index of lower lake (linked lakes) | - | 0 |
-| `lake_water__storage_curve_type_count` | Type of lake storage curve | - | - |
-| `lake_water__rating_curve_type_count` | Type of lake rating curve | - | - |
-| `lake_water_surface__initial_elevation` | Water level of lake (used for initialization) | m | - |
-: {.striped .hover}
-
-#### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `lake_water_surface__instantaneous_elevation` | Lake water level | m |
-: {.striped .hover}
-
-#### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `lake_water__volume` | Lake volume | m³ |
-| `lake_water__instantaneous_volume` | Lake volume | m³ |
-| `lake_water_surface__elevation` | Lake water level | m |
-| `lake_water~outgoing__volume_flow_rate` | Outflow of the lake | m³ s⁻¹ |
-| `lake_water~incoming__volume_flow_rate` | Inflow into the lake | m³ s⁻¹ |
-| `lake_water__evaporation_volume_flux` | Average actual evaporation over the lake area | mm Δt⁻¹ |
-| `lake_water__precipitation_volume_flux` | Average precipitation over the lake area | mm Δt⁻¹ |
-| `lake_water__potential_evaporation_volume_flux` | Average potential evaporation over the lake area | mm Δt⁻¹ |
-: {.striped .hover}
-
-### Reservoirs
 #### Generic input {#input-generic-reservoir}
 | Standard Name | Description | Unit | Default |
 | ------ | ----- | -- | -- |
@@ -76,18 +35,27 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `reservoir_water__max_volume` | Maximum volume (above which water is spilled) | m³ | - |
 | `reservoir_water~full-target__volume_fraction` | Target fraction full (of max storage) | - | - |
 | `reservoir_water~min-target__volume_fraction` | Target minimum full fraction (of max storage)	| - | - |
+| `reservoir_water__rating_curve_coefficient` | Rating curve coefficient | - | - |
+| `reservoir_water__rating_curve_exponent` | Rating curve exponent | - | - |
+| `reservoir_water_flow_threshold-level__elevation` | Water level threshold, below this level outflow is zero | m | - |
+| `reservoir~lower_location__count` | Index of lower reservoir (linked reservoir) | - | 0 |
+| `reservoir_water__storage_curve_type_count` | Type of reservoir storage curve | - | - |
+| `reservoir_water__rating_curve_type_count` | Type of reservoir rating curve | - | - |
+| `reservoir_water_surface__initial_elevation` | Water level of reservoir (used for initialization) | m | - |
 : {.striped .hover}
 
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `reservoir_water__instantaneous_volume` | Reservoir volume | m³ |
+| `reservoir_water_surface__instantaneous_elevation` | Reservoir water level | m |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `reservoir_water__volume` | Reservoir volume | m³ |
+| `reservoir_water__instantaneous_volume` | Reservoir volume | m³ |
+| `reservoir_water_surface__elevation` | Reservoir water level | m |
 | `reservoir_water~outgoing__volume_flow_rate` | Outflow of the reservoir | m³ s⁻¹ |
 | `reservoir_water~incoming__volume_flow_rate` | Inflow into the reservoir | m³ s⁻¹ |
 | `reservoir_water__evaporation_volume_flux` | Average actual evaporation over the reservoir area | mm Δt⁻¹ |
@@ -369,7 +337,6 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `reservoir_surface__area` | Reservoir surface area | m² | - |
-| `lake_surface__area` | Lake surface area | m² | - |
 | `reservoir_water_sediment~bedload__trapping_efficiency` | Reservoir sediment bedload trapping efficiency | - | 1.0 |
 | `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
 | `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |

@@ -40,37 +40,22 @@ reservoir_location__count = "wflow_reservoirlocs"
 
 [input.static]
 reservoir_surface__area = "ResSimpleArea"
+# specific for rating curve type 2 and 3 (weir flow)
+reservoir_water__rating_curve_coefficient = "reservoir_b"
+reservoir_water__rating_curve_exponent = "reservoir_e"
+reservoir_water_flow_threshold-level__elevation = "reservoir_threshold"
+# specific for rating curve type 4 (simple reservoir operational parameters)
 "reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
 reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
 "reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
 "reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+reservoir_water__rating_curve_type_count = "outflowfunc" # rating curve type 
+reservoir_water__storage_curve_type_count  = "storfunc"
+reservoir_water_surface__initial_elevation = "resevoir_waterlevel"
 
 [state.variables]
-reservoir_water__instantaneous_volume = "volume_reservoir"
-```
-
-## Enabling lakes
-
-```toml
-[model]
-lake__flag = true
-
-[input]
-lake_area__count = "wflow_lakeareas"
-lake_location__count = "wflow_lakelocs"
-
-[input.static]
-lake_surface__area = "lake_area"
-lake_water__rating_curve_coefficient = "lake_b"
-lake_water__rating_curve_exponent = "lake_e"
-lake_water__rating_curve_type_count = "lake_outflowfunc"
-lake_water__storage_curve_type_count  = "lake_storfunc"
-lake_water_flow_threshold-level__elevation  = "lake_threshold"
-lake_water_surface__initial_elevation = "lake_waterlevel"
-
-[state.variables]
-lake_water_surface__instantaneous_elevation = "waterlevel_lake"
+reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
 ```
 
 ## Enabling floodplain routing

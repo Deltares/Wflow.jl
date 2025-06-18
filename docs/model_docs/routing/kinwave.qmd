@@ -73,8 +73,8 @@ the model:
 kinematic_wave__adaptive_time_step_flag = true    # optional, default is false
 ```
 
-[Reservoir and lake](./waterbodies.qmd) models can be included as part of the river
-kinematic wave network.
+[Reservoir](./reservoirs.qmd) models representing reservoirs, (natural) lakes or other water
+storage features can be included as part of the river kinematic wave network.
 
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can be added

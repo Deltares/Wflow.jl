@@ -150,7 +150,7 @@ td, th {
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_surface__evapotranspiration_volume_flux` | Total actual evapotranspiration | mm |
-| `land_water~storage~total__depth` | Total water storage (excluding floodplains, lakes and reservoirs) | mm |
+| `land_water~storage~total__depth` | Total water storage (excluding floodplains and reservoirs) | mm |
 | `soil_water__infiltration_volume_flux` | Actual infiltration into the unsaturated zone | mm Δt⁻¹ |
 | `soil_water__transpiration_volume_flux` | Transpiration from vegetation | mm Δt⁻¹ |
 | `soil_surface_water__runoff_volume_flux` | Total surface runoff from infiltration and saturation excess | mm Δt⁻¹ |

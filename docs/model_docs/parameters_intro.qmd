@@ -58,6 +58,4 @@ required to run wflow.
 | `river_location__mask` | River mask (0-1) | - | - |
 : {.striped .hover}
 
-For lake and reservoir generic input see
-[lake-input](./parameters_routing.qmd#input-generic-lake) and
-[reservoir-input](./parameters_routing.qmd#input-generic-reservoir), respectively.
+For reservoir generic input see [reservoir-input](./parameters_routing.qmd#input-generic-reservoir).
