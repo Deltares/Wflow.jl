@@ -98,6 +98,18 @@ function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     update!(land, routing, domain, config, dt)
+
+    do_lst = get(config.model, "lst__flag", false)::Bool
+    if do_lst
+        update!(
+            land.land_surface_temperature,
+            land.soil,
+            land.atmospheric_forcing,
+            clock.time,
+            dt,
+        )
+    end
+
     return nothing
 end
 
