@@ -111,6 +111,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a reservoir or lake is updated as part of the river routing. Order of computations has
   been changed to: 1) overland flow routing, 2) reservoir or lake inflow and 3) river
   routing.
+- Refactor `SimpleReservoir` and `Lake` structs by introducing a `Reservoir` struct that
+  combines data and functionality of both structs. For the simple reservoir a rating curve
+  type (4) has been added. To represent reservoirs, (natural) lakes or other water storage
+  features that can be represented by the available functionality the common name
+  `reservoir` is used, also for the standard names of associated model variables and
+  parameters.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
