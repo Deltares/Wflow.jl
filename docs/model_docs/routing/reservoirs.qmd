@@ -121,7 +121,7 @@ Including reservoir rating and storage curves from data (rating curve type 1 and
 curve type 2) is described [here](#storage-and-rating-cuves-from-data).
 
 For reservoir rating curve types 2 and 3 the following rating curve parameters need to be
-included om the TOML file, with below an example:
+included in the TOML file, with below an example:
 
 ```toml
 [input.static]
