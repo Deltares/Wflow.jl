@@ -24,64 +24,114 @@ const zm = 2.0        # height of wind speed measurement = zh
 const zh = 2.0        # height of air temperature measurement = zm
 const dt = 86400.0     # timestep in seconds
 
-@with_kw struct LSTModel <: AbstractLandModel
-    # Input forcing from atmospheric module
-    atmospheric_forcing::AtmosphericForcing
+"Struct for storing LST model variables"
+@with_kw struct LandSurfaceTemperatureVariables
+    # Input forcing (updated each timestep)
+    RS_in::Vector{Float64}   # Downward shortwave radiation (W/m2)
+    Ta::Vector{Float64}      # Air temperature (K)
+    u2m::Vector{Float64}     # Wind speed at 2m height (m/s)
+    albedo::Vector{Float64}  # Surface albedo
+    #TODO: emissivity is a constant, not a variable
+    # emissivity::Vector{Float64} # Surface emissivity
 
-    # Input radiation
-    RS_in::Vector{Float64}    # Downward shortwave radiation (W/m2)
-
-    # Static parameters (from netCDF or defaults)
-    albedo::Vector{Float64}   # Surface albedo
-    crop_height::Vector{Float64} # Crop height in m
-    emissivity::Vector{Float64} # Surface emissivity
-    latitude::Vector{Float64}  # Latitude of each grid cell (degrees)
-
-    # Time information
-    doy::Vector{Int}          # Day of year for each timestep
+    #From LandHydrologySBM
+    ET_a::Vector{Float64}    # Actual evapotranspiration from SBM (mm/Δt)
 
     # Calculated variables
     ra::Vector{Float64}      # Aerodynamic resistance (s/m)
-    u2m::Vector{Float64}     # Wind speed at 2m height (m/s)
-
-    # Energy balance components
     RSN::Vector{Float64}     # Net shortwave radiation (W/m2)
-    RLN::Vector{Float64}     # Net longwave radiation (W/m2)
-    Rnet::Vector{Float64}    # Net radiation (W/m2)
-    lambda::Vector{Float64}  # Latent heat of vaporization (J/kg)
     LE::Vector{Float64}      # Latent heat flux (W/m2)
     H::Vector{Float64}       # Sensible heat flux (W/m2)
-
-    # Output
+    RLN::Vector{Float64}     # Net longwave radiation (W/m2)
+    lambda::Vector{Float64}  # Latent heat of vaporization (J/kg)
+    Rnet::Vector{Float64}    # Net radiation (W/m2)
     LST::Vector{Float64}     # Land surface temperature (K)
-    ET_a::Vector{Float64}    # Actual evapotranspiration from SBM (mm/Δt)
 end
 
-function ShortwaveRadiation(n::Int; RS_in::Vector{Float64} = fill(MISSING_VALUE, n))
-    return ShortwaveRadiation(; RS_in)
+"Initialize Land Surface Temperature model variables"
+function LandSurfaceTemperatureVariables(n::Int)
+    return LandSurfaceTemperatureVariables(;
+        RS_in = fill(MISSING_VALUE, n),
+        Ta = fill(MISSING_VALUE, n),
+        u2m = fill(MISSING_VALUE, n),
+        albedo = fill(MISSING_VALUE, n),
+        #TODO: emissivity is a constant, not a variable
+        # emissivity = fill(MISSING_VALUE, n),
+        ET_a = fill(MISSING_VALUE, n),
+        ra = fill(MISSING_VALUE, n),
+        RSN = fill(MISSING_VALUE, n),
+        LE = fill(MISSING_VALUE, n),
+        H = fill(MISSING_VALUE, n),
+        RLN = fill(MISSING_VALUE, n),
+        lambda = fill(MISSING_VALUE, n),
+        Rnet = fill(MISSING_VALUE, n),
+        LST = fill(MISSING_VALUE, n),
+    )
+end
+
+"Struct for storing LST model parameters"
+@with_kw struct LandSurfaceTemperatureParameters
+    # Static parameters (from netCDF or defaults)
+    crop_height::Vector{Float64} # Crop height in m
+    latitude::Vector{Float64}  # Latitude of each grid cell (degrees)
+end
+
+"Initialize LST model parameters"
+function LandSurfaceTemperatureParameters(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
+    lens = lens_input_parameter(config, "crop_height")
+    crop_height =
+        ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
+
+    latitude = ncread(dataset, "lat"; sel = indices, type = Float64)
+
+    return LandSurfaceTemperatureParameters(;
+        crop_height = crop_height,
+        latitude = latitude,
+    )
+end
+
+@with_kw struct LandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel
+    parameters::LandSurfaceTemperatureParameters
+    variables::LandSurfaceTemperatureVariables
 end
 
 """
 Update actual evapotranspiration from SBM model
 """
-function update_ET_a!(lst_model::LSTModel, soil_model::SbmSoilModel)
-    lst_model.ET_a .= soil_model.variables.actevap
+function update_ET_a!(
+    land_surface_temperature_model::LandSurfaceTemperatureModel,
+    soil_model::SbmSoilModel,
+)
+    land_surface_temperature_model.variables.ET_a .= soil_model.variables.actevap
     return nothing
 end
 
 """
-Update day of year based on current timestep
+Update forcing inputs for LST model
 """
-function update_doy!(lst_model::LSTModel, current_time::DateTime)
-    doy = dayofyear(current_time)
-    fill!(lst_model.doy, doy)
+function update_forcing!(
+    land_surface_temperature_model::LandSurfaceTemperatureModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
+    land_surface_temperature_model.variables.Ta .= atmospheric_forcing.temperature
+
+    land_surface_temperature_model.variables.RS_in .= atmospheric_forcing.RS_in
+
+    land_surface_temperature_model.variables.albedo .= atmospheric_forcing.albedo
+
+    land_surface_temperature_model.variables.u2m .= atmospheric_forcing.u2m
+
     return nothing
 end
 
 """
-Initialize LSTModel with parameters from Gridded parameters file
+Initialize LandSurfaceTemperatureModel with parameters from Gridded parameters file
 """
-function LSTModel(
+function LandSurfaceTemperatureModel(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
@@ -89,113 +139,113 @@ function LSTModel(
 )
     n = length(indices)
 
-    # Initialize atmospheric forcing
-    atmospheric_forcing = AtmosphericForcing(n)
+    params = LandSurfaceTemperatureParameters(dataset, config, indices)
+    vars = LandSurfaceTemperatureVariables(n)
 
-    # Read static parameters
-    lens = lens_input_parameter(config, "albedo")
-    albedo = ncread(dataset, config, lens; sel = indices, defaults = 0.23, type = Float64)
-
-    lens = lens_input_parameter(config, "crop_height")
-    crop_height =
-        ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
-
-    lens = lens_input_parameter(config, "emissivity")
-    emissivity =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.95, type = Float64)
-
-    latitude = ncread(dataset, "lat"; sel = indices, type = Float64)
-
-    # calculated vars
-    ra = fill(MISSING_VALUE, n)
-    u2m = fill(MISSING_VALUE, n)
-
-    # Initialize energy balance components
-    RSN = fill(MISSING_VALUE, n)
-    RLN = fill(MISSING_VALUE, n)
-    Rnet = fill(MISSING_VALUE, n)
-    lambda = fill(MISSING_VALUE, n)
-    LE = fill(MISSING_VALUE, n)
-    H = fill(MISSING_VALUE, n)
-
-    # Initialize output variables
-    LST = fill(MISSING_VALUE, n)
-    ET_a = fill(MISSING_VALUE, n)
-
-    # Initialize doy (will be updated each timestep)
-    doy = fill(0, n)
-
-    return LSTModel(;
-        atmospheric_forcing = atmospheric_forcing,
-        RS_in = fill(MISSING_VALUE, n),
-        albedo = albedo,
-        crop_height = crop_height,
-        emissivity = emissivity,
-        latitude = latitude,
-        doy = doy,
-        ra = ra,
-        u2m = u2m,
-        RSN = RSN,
-        RLN = RLN,
-        Rnet = Rnet,
-        lambda = lambda,
-        LE = LE,
-        H = H,
-        LST = LST,
-        ET_a = ET_a,
-    )
+    return LandSurfaceTemperatureModel(; parameters = params, variables = vars)
 end
+
 """
 Update LST model for a single timestep
 """
-function update_timestep_LST(
-    lst_model::LSTModel,
+function update_timestep_land_surface_temperature(
+    land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
-    Ta::Float64,
+    current_time::DateTime,
     dt::Float64,
 )
-    n = length(lst_model.LST)
+    n = length(land_surface_temperature_model.variables.LST)
 
     # Update ET_a from SBM model
-    update_ET_a!(lst_model, soil_model)
+    update_ET_a!(land_surface_temperature_model, soil_model)
+
+    # Calculate day of year
+    doy = dayofyear(current_time)
 
     # Calculate components for each grid cell
     for i in 1:n
         # Calculate net radiation
-        lst_model.RSN[i] = calculate_RSN(lst_model.albedo[i], lst_model.RS_in[i])
-        lst_model.RLN[i] =
-            calculate_RLN(Ta, lst_model.RS_in[i], lst_model.latitude[i], lst_model.doy[i])
-        lst_model.Rnet[i] = lst_model.RSN[i] - lst_model.RLN[i]
+        land_surface_temperature_model.variables.RSN[i] = calculate_RSN(
+            land_surface_temperature_model.variables.albedo[i],
+            land_surface_temperature_model.variables.RS_in[i],
+        )
+
+        land_surface_temperature_model.variables.RLN[i] = calculate_RLN(
+            land_surface_temperature_model.variables.Ta[i],
+            land_surface_temperature_model.variables.RS_in[i],
+            land_surface_temperature_model.parameters.latitude[i],
+            doy,
+        )
+        land_surface_temperature_model.variables.Rnet[i] =
+            land_surface_temperature_model.variables.RSN[i] -
+            land_surface_temperature_model.variables.RLN[i]
 
         # Calculate latent heat flux using ET_a from SBM
-        lst_model.lambda[i] = calculate_lambda(Ta)
-        lst_model.LE[i] = calculate_LE(Ta, rho_w, lst_model.ET_a[i], dt)
+        land_surface_temperature_model.variables.lambda[i] =
+            calculate_lambda(land_surface_temperature_model.variables.Ta[i])
+        land_surface_temperature_model.variables.LE[i] = calculate_LE(
+            land_surface_temperature_model.variables.Ta[i],
+            rho_w,
+            land_surface_temperature_model.variables.ET_a[i],
+            dt,
+        )
 
         # Calculate sensible heat flux
-        lst_model.H[i] = calculate_H(lst_model.Rnet[i], lst_model.LE[i])
+        land_surface_temperature_model.variables.H[i] = calculate_H(
+            land_surface_temperature_model.variables.Rnet[i],
+            land_surface_temperature_model.variables.LE[i],
+        )
 
         # Calculate LST
-        lst_model.LST[i] = calculate_LST(lst_model.H[i], lst_model.ra[i], rho_a, cp, Ta)
+        land_surface_temperature_model.variables.LST[i] = calculate_LST(
+            land_surface_temperature_model.variables.H[i],
+            land_surface_temperature_model.variables.ra[i],
+            rho_a,
+            cp,
+            land_surface_temperature_model.variables.Ta[i],
+        )
     end
 
     return nothing
 end
+
 """
 Update LST model for a single timestep
 """
 function update!(
-    lst_model::LSTModel,
+    land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
+    atmospheric_forcing::AtmosphericForcing,
     current_time::DateTime,
-    Ta::Float64,
     dt::Float64,
 )
-    update_doy!(lst_model, current_time)
+    # Update forcing inputs
+    update_forcing!(land_surface_temperature_model, atmospheric_forcing)
 
-    update_timestep_LST(lst_model, soil_model, Ta, dt)
+    update_timestep_land_surface_temperature(
+        land_surface_temperature_model,
+        soil_model,
+        current_time,
+        dt,
+    )
 
     return nothing
 end
+
+function update!(
+    model::NoLandSurfaceTemperatureModel,
+    soil_model::SbmSoilModel,
+    atmospheric_forcing::AtmosphericForcing,
+    current_time::DateTime,
+    dt::Float64,
+)
+    return nothing
+end
+
+# wrapper methods
+get_LandSurfaceTemperature(model::NoLandSurfaceTemperatureModel) = 0.0
+get_LandSurfaceTemperature(model::AbstractLandSurfaceTemperatureModel) = model.variables.LST
+
 """ 'net shortwave radiation' :: RSNet=(1−α)Rins(A4) """
 #EQN: A4
 function calculate_RSN(albedo::Float64, RS_in::Float64)
@@ -229,7 +279,6 @@ function extraterrestrial_radiation(lat::Float64, doy::Int)
     return Ra
 end
 """ 'net longwave radiation' :: RLN=(σTa^4)(0.34−0.14−√ea)(1.35 (Rins/Rso) − 0.35) """
-#TODO: A5 ... What unit for sigma?? 
 function calculate_RLN(Ta::Float64, RS_in::Float64, lat::Float64, doy::Int)
     sigma = 4.903e-9 # MJK-4m-2day-1 Steffan Boltzmann constant 
     a = sigma * (Ta + 273.15)^4
@@ -296,4 +345,3 @@ function calculate_LST(H::Float64, Ra::Float64, rho_a::Float64, cp::Float64, Ta:
     LST = (H * Ra) / (rho_a * cp) + Ta
     return LST
 end
-end # module LandSurfaceTemperature
