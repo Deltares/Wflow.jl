@@ -468,8 +468,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Reservoirs and Lakes</span></a>
+  <a href="../../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -598,7 +598,7 @@ h^{t+\Delta t} = h^t + \Delta t \frac{\subtext{Q^{t+\Delta t}}{src} - \subtext{Q
   \mathrm{Fr} = \frac{u}{\sqrt{gh_f}}
 \]</span></p>
 <p>where <span class="math inline">\(\sqrt{gh_f}\)</span> is the wave celerity on a link and <span class="math inline">\(u\)</span> is the water velocity on a link. If the water velocity from the local inertial model is causing the Froude number to be greater than <span class="math inline">\(1.0\)</span> , the water velocity (and flow) is reduced in order to maintain a Froude number of <span class="math inline">\(1.0\)</span>.</p>
-<p><a href="../../model_docs/routing/waterbodies.html">Reservoir and lake</a> models can be included as part of the local inertial model for river flow (1D) and river and overland flow combined (see next section). Reservoir and lake models are included as a boundary point with zero water depth for both river and overland flow. For river flow the reservoir or lake model replaces the local inertial model at the reservoir or lake location, and river flow <span class="math inline">\(Q\)</span> is set by the outflow from the reservoir or lake. Overland flow at a reservoir or lake location is not allowed to or from the downstream river grid cell.</p>
+<p><a href="../../model_docs/routing/reservoirs.html">Reservoir</a> models representing reservoirs, (natural) lakes or other water storage features can be included as part of the local inertial model for river flow (1D) and river and overland flow combined (see next section). Reservoir models are included as a boundary point with zero water depth for both river and overland flow. For river flow the reservoir model replaces the local inertial model at the reservoir location, and river flow <span class="math inline">\(Q\)</span> is set by the outflow from the reservoir. Overland flow at a reservoir location is not allowed to or from the downstream river grid cell.</p>
 </section>
 <section id="overland-flow-2d" class="level2">
 <h2 class="anchored" data-anchor-id="overland-flow-2d">Overland flow (2D)</h2>

@@ -468,8 +468,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Reservoirs and Lakes</span></a>
+  <a href="../../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -541,7 +541,7 @@ window.Quarto = {
   <li><a href="#river-transport-and-erosion" id="toc-river-transport-and-erosion" class="nav-link" data-scroll-target="#river-transport-and-erosion">River transport and erosion</a></li>
   <li><a href="#river-deposition" id="toc-river-deposition" class="nav-link" data-scroll-target="#river-deposition">River deposition</a></li>
   <li><a href="#mass-balance-and-sediment-concentration" id="toc-mass-balance-and-sediment-concentration" class="nav-link" data-scroll-target="#mass-balance-and-sediment-concentration">Mass balance and sediment concentration</a></li>
-  <li><a href="#lake-and-reservoir-modelling" id="toc-lake-and-reservoir-modelling" class="nav-link" data-scroll-target="#lake-and-reservoir-modelling">Lake and reservoir modelling</a></li>
+  <li><a href="#reservoir-modelling" id="toc-reservoir-modelling" class="nav-link" data-scroll-target="#reservoir-modelling">Reservoir modelling</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -906,34 +906,26 @@ s^{-1}}\)</span> is the mean flow velocity. The calculated percentage is then su
    (\subtext{\mathrm{sed}}{riv})_t = (\subtext{\mathrm{sed}}{riv})_{t-1} + (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\mathrm{sed}}{out})_{t-1}\right] + (\subtext{\mathrm{sed}}{erod})_t - (\subtext{\mathrm{sed}}{dep})_t - (\subtext{\mathrm{sed}}{out})_t
 \]</span></p>
 </section>
-<section id="lake-and-reservoir-modelling" class="level3">
-<h3 class="anchored" data-anchor-id="lake-and-reservoir-modelling">Lake and reservoir modelling</h3>
-<p>Apart from land and river, the hydrological <code>wflow_sbm</code> model also handles lakes and reservoirs modelling. In <code>wflow_sbm</code>, lakes and large reservoirs are modelled using a 1D bucket model at the cell corresponding to the outlet. For the other cells belonging to the lake/reservoir which are not the outlet, processes such as precipitation and evaporation are filtered out and shifted to the outlet cell. <code>wflow_sediment</code> handles the lakes and reservoirs in the same way. If a cell belongs to a lake/reservoir and is not the outlet then the model assumes that no erosion/deposition of sediments is happening and the sediments are only all transported to the lake/reservoir outlet. Once the sediments reach the outlet, then sediments are deposited in the lake/reservoir according to Camp’s model (1945) (Verstraeten et al, 2000):</p>
+<section id="reservoir-modelling" class="level3">
+<h3 class="anchored" data-anchor-id="reservoir-modelling">Reservoir modelling</h3>
+<p>Apart from land and river, the hydrological <code>wflow_sbm</code> model also handles reservoir modelling. In <code>wflow_sbm</code>, <code>reservoir</code> nodes representing reservoirs, (natural) lakes or other water storage features are modelled using a 1D bucket model at the cell corresponding to the outlet. For the other cells belonging to the reservoir which are not the outlet, processes such as precipitation and evaporation are filtered out and shifted to the outlet cell. <code>wflow_sediment</code> handles the reservoirs in the same way. If a cell belongs to a reservoir and is not the outlet then the model assumes that no erosion/deposition of sediments is happening and the sediments are transported to the reservoir outlet. Once the sediments reach the outlet, then sediments are deposited in the reservoir according to Camp’s model (1945) (Verstraeten et al, 2000):</p>
 <p><span class="math display">\[
    \mathrm{TE} = \dfrac{\omega_s}{u_{cr,\mathrm{res}}} = \dfrac{\subtext{A}{res}}{\subtext{Q}{out,res}} \omega_s
 \]</span></p>
-<p>where <span class="math inline">\(\mathrm{TE}\)</span> is the trapping efficiency of the lake/reservoir (or the fraction of particles trapped), <span class="math inline">\(\SIb{\omega_{s}}{m\ s^{-1}}\)</span> is the particle velocity from Stokes, <span class="math inline">\(\SIb{\subtext{u}{cr,res}}{m\ s^{-1}}\)</span> is the reservoir’s critical settling velocity which is equal to the reservoir’s outflow <span class="math inline">\(\SIb{\subtext{Q}{out,res}}{m^3\ s^{-1}}\)</span> divided by the reservoir’s surface area <span class="math inline">\(\SIb{\subtext{A}{res}}{m^2}\)</span>.</p>
+<p>where <span class="math inline">\(\mathrm{TE}\)</span> is the trapping efficiency of the reservoir (or the fraction of particles trapped), <span class="math inline">\(\SIb{\omega_{s}}{m\ s^{-1}}\)</span> is the particle velocity from Stokes, <span class="math inline">\(\SIb{\subtext{u}{cr,res}}{m\ s^{-1}}\)</span> is the reservoir’s critical settling velocity which is equal to the reservoir’s outflow <span class="math inline">\(\SIb{\subtext{Q}{out,res}}{m^3\ s^{-1}}\)</span> divided by the reservoir’s surface area <span class="math inline">\(\SIb{\subtext{A}{res}}{m^2}\)</span>.</p>
 <p>For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the dam structure. This adding trapping is taken into account with a reservoir trapping efficiency coefficient for large particles (between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>). Depending on the type of the dam, all bed load particles are trapped (<code>reservoir_water_sediment~bedload__trapping_efficiency = 1.0</code>, for example for a gravity dam) or only partly (for example for run-of-the-river dams).</p>
-<p>Lake and reservoir modelling is enabled in the model section of the TOML and require the extra following input arguments:</p>
+<p>Reservoir modelling is enabled in the model section of the TOML and require the extra following input arguments:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lake__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Reservoir</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Lake</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_location__count</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span> </span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Reservoir</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_sediment~bedload__trapping_efficiency"</span> <span class="op">=</span> <span class="st">"ResTrapEff"</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Lake</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_surface__area</span> <span class="op">=</span> <span class="st">"LakeArea"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Note that in the inland part, lake and reservoir coverage are used to filter erosion and transport in overland flow.</p>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_sediment~bedload__trapping_efficiency"</span> <span class="op">=</span> <span class="st">"ResTrapEff"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note that in the inland part, reservoir coverage is used to filter erosion and transport in overland flow.</p>
 </section>
 </section>
 <section id="references" class="level2">

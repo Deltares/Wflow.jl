@@ -469,7 +469,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#enabling-snow-and-glacier-processes" id="toc-enabling-snow-and-glacier-processes" class="nav-link active" data-scroll-target="#enabling-snow-and-glacier-processes">Enabling snow and glacier processes</a></li>
   <li><a href="#enabling-reservoirs" id="toc-enabling-reservoirs" class="nav-link" data-scroll-target="#enabling-reservoirs">Enabling reservoirs</a></li>
-  <li><a href="#enabling-lakes" id="toc-enabling-lakes" class="nav-link" data-scroll-target="#enabling-lakes">Enabling lakes</a></li>
   <li><a href="#enabling-floodplain-routing" id="toc-enabling-floodplain-routing" class="nav-link" data-scroll-target="#enabling-floodplain-routing">Enabling floodplain routing</a>
   <ul class="collapse">
   <li><a href="#d-floodplains" id="toc-d-floodplains" class="nav-link" data-scroll-target="#d-floodplains">1D floodplains</a></li>
@@ -537,99 +536,86 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__instantaneous_volume</span> <span class="op">=</span> <span class="st">"volume_reservoir"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="enabling-lakes" class="level2">
-<h2 class="anchored" data-anchor-id="enabling-lakes">Enabling lakes</h2>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lake__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_location__count</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_surface__area</span> <span class="op">=</span> <span class="st">"lake_area"</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_coefficient</span> <span class="op">=</span> <span class="st">"lake_b"</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_exponent</span> <span class="op">=</span> <span class="st">"lake_e"</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_type_count</span> <span class="op">=</span> <span class="st">"lake_outflowfunc"</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__storage_curve_type_count</span>  <span class="op">=</span> <span class="st">"lake_storfunc"</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_flow_threshold-level__elevation</span>  <span class="op">=</span> <span class="st">"lake_threshold"</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_surface__initial_elevation</span> <span class="op">=</span> <span class="st">"lake_waterlevel"</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_surface__instantaneous_elevation</span> <span class="op">=</span> <span class="st">"waterlevel_lake"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># specific for rating curve type 2 and 3 (weir flow)</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__rating_curve_coefficient</span> <span class="op">=</span> <span class="st">"reservoir_b"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__rating_curve_exponent</span> <span class="op">=</span> <span class="st">"reservoir_e"</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_flow_threshold-level__elevation</span> <span class="op">=</span> <span class="st">"reservoir_threshold"</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># specific for rating curve type 4 (simple reservoir operational parameters)</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__rating_curve_type_count</span> <span class="op">=</span> <span class="st">"outflowfunc"</span> <span class="co"># rating curve type </span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__storage_curve_type_count</span>  <span class="op">=</span> <span class="st">"storfunc"</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_surface__initial_elevation</span> <span class="op">=</span> <span class="st">"resevoir_waterlevel"</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_surface__instantaneous_elevation</span> <span class="op">=</span> <span class="st">"waterlevel_reservoir"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="enabling-floodplain-routing" class="level2">
 <h2 class="anchored" data-anchor-id="enabling-floodplain-routing">Enabling floodplain routing</h2>
 <p>As part of the local inertial model for river flow.</p>
 <section id="d-floodplains" class="level3">
 <h3 class="anchored" data-anchor-id="d-floodplains">1D floodplains</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__sum_of_volume-per-depth</span> <span class="op">=</span> <span class="st">"floodplain_volume"</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water_flow__manning_n_parameter</span> <span class="op">=</span> <span class="st">"floodplain_n"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"q_floodplain"</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_floodplain"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__sum_of_volume-per-depth</span> <span class="op">=</span> <span class="st">"floodplain_volume"</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water_flow__manning_n_parameter</span> <span class="op">=</span> <span class="st">"floodplain_n"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"q_floodplain"</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_floodplain"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="d-floodplains-1" class="level3">
 <h3 class="anchored" data-anchor-id="d-floodplains-1">2D floodplains</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">river_bank_water__elevation</span> <span class="op">=</span> <span class="st">"RiverZ"</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__ground_elevation</span> <span class="op">=</span> <span class="st">"FloodplainZ"</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_land"</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__x_component_of_instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"qx_land"</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__y_component_of_instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"qy_land"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">river_bank_water__elevation</span> <span class="op">=</span> <span class="st">"RiverZ"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__ground_elevation</span> <span class="op">=</span> <span class="st">"FloodplainZ"</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_land"</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__x_component_of_instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"qx_land"</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__y_component_of_instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"qy_land"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="enabling-water-demand-and-allocation" class="level2">
 <h2 class="anchored" data-anchor-id="enabling-water-demand-and-allocation">Enabling water demand and allocation</h2>
 <p>The model types <code>sbm</code> and <code>sbm_gwf</code> support water demand and allocation computations, in combination with the kinematic wave and local inertial runoff routing scheme for river and overland flow.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># example of water demand and allocation input parameters as cyclic data</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">industry__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock__flag</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy__flag</span> <span class="op">=</span> <span class="cn">true</span>        <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_gross"</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_net"</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_gross"</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_net"</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_gross"</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_net"</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__count</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy_area__count"</span> <span class="op">=</span> <span class="st">"paddy_irrigation_areas"</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy_area__count"</span> <span class="op">=</span> <span class="st">"nonpaddy_irrigation_areas"</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="co"># required if paddy is set to "true"</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water~paddy__depth"</span> <span class="op">=</span> <span class="st">"h_paddy"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># example of water demand and allocation input parameters as cyclic data</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">[model.water_demand]</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">domestic__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">industry__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">livestock__flag</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is "false"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">paddy__flag</span> <span class="op">=</span> <span class="cn">true</span>        <span class="co"># optional, default is "false"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="dt">nonpaddy__flag</span> <span class="op">=</span> <span class="cn">true</span>     <span class="co"># optional, default is "false"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_gross"</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~domestic__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"dom_net"</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_gross"</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~industry__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"ind_net"</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__gross_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_gross"</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~livestock__net_water_demand_volume_flux"</span> <span class="op">=</span> <span class="st">"lsk_net"</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy__irrigation_trigger_flag"</span> <span class="op">=</span> <span class="st">"irrigation_trigger"</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="dt">land_water_allocation_area__count</span> <span class="op">=</span> <span class="st">"allocation_areas"</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__withdrawal_fraction</span> <span class="op">=</span> <span class="st">"SurfaceWaterFrac"</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-paddy_area__count"</span> <span class="op">=</span> <span class="st">"paddy_irrigation_areas"</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~irrigated-non-paddy_area__count"</span> <span class="op">=</span> <span class="st">"nonpaddy_irrigation_areas"</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="co"># required if paddy is set to "true"</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water~paddy__depth"</span> <span class="op">=</span> <span class="st">"h_paddy"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
