@@ -87,7 +87,7 @@ function update_land_surface_temperature(
 
         land_surface_temperature_model.variables.net_longwave_radiation[i] =
             calculate_net_longwave_radiation(
-                atmospheric_forcing.air_temperature[i],
+                atmospheric_forcing.temperature[i],
                 atmospheric_forcing.shortwave_radiation_in[i],
                 network.latitude[i],
             )
@@ -96,11 +96,11 @@ function update_land_surface_temperature(
             land_surface_temperature_model.variables.net_longwave_radiation[i]
 
         land_surface_temperature_model.variables.latent_heat_of_vaporization[i] =
-            calculate_latent_heat_of_vaporization(atmospheric_forcing.air_temperature[i])
+            calculate_latent_heat_of_vaporization(atmospheric_forcing.temperature[i])
 
         land_surface_temperature_model.variables.latent_heat_flux[i] =
             calculate_latent_heat_flux(
-                atmospheric_forcing.air_temperature[i],
+                atmospheric_forcing.temperature[i],
                 soil_model.variables.actevap[i],
             )
 
@@ -126,7 +126,7 @@ function update_land_surface_temperature(
             calculate_land_surface_temperature(
                 land_surface_temperature_model.variables.sensible_heat_flux[i],
                 land_surface_temperature_model.variables.aerodynamic_resistance[i],
-                atmospheric_forcing.air_temperature[i],
+                atmospheric_forcing.temperature[i],
             )
     end
 

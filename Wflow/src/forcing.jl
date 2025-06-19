@@ -11,7 +11,7 @@
     # Surface albedo [-]
     albedo::Vector{Float64}
     # Wind speed at 2m height [m s-1]
-    u2m::Vector{Float64}
+    wind_speed_2m::Vector{Float64}
 end
 
 "Initialize atmospheric forcing"
@@ -22,7 +22,7 @@ function AtmosphericForcing(
     temperature::Vector{Float64} = fill(MISSING_VALUE, n),
     shortwave_radiation_in::Vector{Float64} = fill(MISSING_VALUE, n),
     albedo::Vector{Float64} = fill(MISSING_VALUE, n),
-    u2m::Vector{Float64} = fill(MISSING_VALUE, n),
+    wind_speed_2m::Vector{Float64} = fill(MISSING_VALUE, n),
 )
     return AtmosphericForcing(;
         precipitation,
@@ -30,7 +30,7 @@ function AtmosphericForcing(
         temperature,
         shortwave_radiation_in,
         albedo,
-        u2m,
+        wind_speed_2m,
     )
 end
 
