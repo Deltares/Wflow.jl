@@ -16,6 +16,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.total_storage), unit = "mm"),
     "atmosphere_air__temperature" =>
         (lens = @optic(_.land.atmospheric_forcing.temperature), unit = "°C"),
+    "atmosphere_air__wind_speed" =>
+        (lens = @optic(_.land.atmospheric_forcing.wind_speed_2m), unit = "m s-1"),
     "vegetation__leaf-area_index" =>
         (lens = @optic(_.land.vegetation_parameters.leaf_area_index), unit = "m2 m-2"),
     "vegetation_canopy_water__depth" =>
