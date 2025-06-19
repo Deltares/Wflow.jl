@@ -6,6 +6,12 @@
     potential_evaporation::Vector{Float64}
     # Temperature [ᵒC]
     temperature::Vector{Float64}
+    # Downward shortwave radiation [W m-2]
+    shortwave_radiation_in::Vector{Float64}
+    # Surface albedo [-]
+    albedo::Vector{Float64}
+    # Wind speed at 2m height [m s-1]
+    wind_speed_2m::Vector{Float64}
 end
 
 "Initialize atmospheric forcing"
@@ -14,8 +20,18 @@ function AtmosphericForcing(
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
     potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n),
     temperature::Vector{Float64} = fill(MISSING_VALUE, n),
+    shortwave_radiation_in::Vector{Float64} = fill(MISSING_VALUE, n),
+    albedo::Vector{Float64} = fill(MISSING_VALUE, n),
+    wind_speed_2m::Vector{Float64} = fill(MISSING_VALUE, n),
 )
-    return AtmosphericForcing(; precipitation, potential_evaporation, temperature)
+    return AtmosphericForcing(;
+        precipitation,
+        potential_evaporation,
+        temperature,
+        shortwave_radiation_in,
+        albedo,
+        wind_speed_2m,
+    )
 end
 
 "Struct to store hydrological forcing variables"

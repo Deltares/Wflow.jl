@@ -73,6 +73,8 @@ end
     subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
     # upstream nodes (directed graph)
     upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
+    # latitude of each grid cell (degrees)
+    latitude::Vector{Float64} = Float64[]
 end
 
 """
@@ -89,6 +91,9 @@ function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTup
     order = topological_sort_by_dfs(graph)
     streamorder = stream_order(graph, order)
 
+    # Read latitude for each grid cell
+    latitude = ncread(dataset, "lat"; sel = indices, type = Float64)
+
     network = NetworkLand(;
         modelsize,
         indices,
@@ -97,6 +102,7 @@ function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTup
         graph,
         order,
         streamorder,
+        latitude,
     )
     return network
 end

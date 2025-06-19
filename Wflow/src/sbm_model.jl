@@ -98,6 +98,7 @@ function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     update!(land, routing, domain, config, dt)
+
     return nothing
 end
 

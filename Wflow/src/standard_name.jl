@@ -16,6 +16,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.total_storage), unit = "mm"),
     "atmosphere_air__temperature" =>
         (lens = @optic(_.land.atmospheric_forcing.temperature), unit = "°C"),
+    "atmosphere_air__wind_speed" =>
+        (lens = @optic(_.land.atmospheric_forcing.wind_speed_2m), unit = "m s-1"),
     "vegetation__leaf-area_index" =>
         (lens = @optic(_.land.vegetation_parameters.leaf_area_index), unit = "m2 m-2"),
     "vegetation_canopy_water__depth" =>
@@ -203,6 +205,34 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.zi), unit = "mm"),
     "soil_surface__temperature" =>
         (lens = @optic(_.land.soil.variables.tsoil), unit = "ᵒC"),
+    "land_surface__temperature" => (
+        lens = @optic(_.land.land_surface_temperature.variables.land_surface_temperature),
+        unit = "ᵒC",
+    ),
+    "land_surface__net_shortwave_radiation" => (
+        lens = @optic(_.land.land_surface_temperature.variables.net_shortwave_radiation),
+        unit = "W m-2",
+    ),
+    "land_surface__net_longwave_radiation" => (
+        lens = @optic(_.land.land_surface_temperature.variables.net_longwave_radiation),
+        unit = "W m-2",
+    ),
+    "land_surface__net_radiation" => (
+        lens = @optic(_.land.land_surface_temperature.variables.net_radiation),
+        unit = "W m-2",
+    ),
+    "land_surface__latent_heat_flux" => (
+        lens = @optic(_.land.land_surface_temperature.variables.latent_heat_flux),
+        unit = "W m-2",
+    ),
+    "land_surface__sensible_heat_flux" => (
+        lens = @optic(_.land.land_surface_temperature.variables.sensible_heat_flux),
+        unit = "W m-2",
+    ),
+    "land_surface__aerodynamic_resistance" => (
+        lens = @optic(_.land.land_surface_temperature.variables.aerodynamic_resistance),
+        unit = "s m-1",
+    ),
     "subsurface_water_sat-zone_top__depth" =>
         (lens = @optic(_.routing.subsurface_flow.variables.zi), unit = "m"),
     "subsurface_water__exfiltration_volume_flux" => (

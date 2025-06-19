@@ -4,6 +4,7 @@
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
     snow::AbstractSnowModel
+    land_surface_temperature::AbstractLandSurfaceTemperatureModel
     glacier::AbstractGlacierModel
     runoff::AbstractRunoffModel
     soil::SbmSoilModel
@@ -31,6 +32,13 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         snow = SnowHbvModel(dataset, config, indices, dt)
     else
         snow = NoSnowModel()
+    end
+    do_land_surface_temperature =
+        get(config.model, "land_surface_temperature__flag", false)::Bool
+    if do_land_surface_temperature
+        land_surface_temperature = LandSurfaceTemperatureModel(dataset, config, indices, dt)
+    else
+        land_surface_temperature = NoLandSurfaceTemperatureModel()
     end
     do_glacier = get(config.model, "glacier__flag", false)::Bool
     if do_snow && do_glacier
@@ -62,6 +70,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         vegetation_parameters,
         interception,
         snow,
+        land_surface_temperature,
         glacier,
         runoff,
         soil,
@@ -81,8 +90,17 @@ function update!(
 )
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (; parameters) = domain.land
-    (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
-        model
+    (;
+        glacier,
+        snow,
+        land_surface_temperature,
+        interception,
+        runoff,
+        soil,
+        demand,
+        allocation,
+        atmospheric_forcing,
+    ) = model
 
     update!(interception, atmospheric_forcing)
 
@@ -126,6 +144,21 @@ function update!(
     )
 
     update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+
+    # Update land surface temperature if enabled
+    do_land_surface_temperature =
+        get(config.model, "land_surface_temperature__flag", false)::Bool
+    if do_land_surface_temperature
+        update!(
+            land_surface_temperature,
+            soil,
+            atmospheric_forcing,
+            domain.land.network,
+            vegetation_parameters,
+            domain.land.parameters,
+        )
+    end
+
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end
