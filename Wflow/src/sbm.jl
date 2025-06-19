@@ -33,8 +33,9 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     else
         snow = NoSnowModel()
     end
-    do_lst = get(config.model, "lst__flag", false)::Bool
-    if do_lst
+    do_land_surface_temperature =
+        get(config.model, "land_surface_temperature__flag", false)::Bool
+    if do_land_surface_temperature
         land_surface_temperature = LandSurfaceTemperatureModel(dataset, config, indices, dt)
     else
         land_surface_temperature = NoLandSurfaceTemperatureModel()
