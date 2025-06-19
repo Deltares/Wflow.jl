@@ -61,7 +61,7 @@ end
 """
 Update LST model for a single timestep
 """
-function update_timestep_land_surface_temperature(
+function update_land_surface_temperature(
     land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
@@ -135,7 +135,7 @@ function update!(
     network::NetworkLand,
     vegetation_parameters::VegetationParameters,
 )
-    update_timestep_land_surface_temperature(
+    update_land_surface_temperature(
         land_surface_temperature_model,
         soil_model,
         atmospheric_forcing,
