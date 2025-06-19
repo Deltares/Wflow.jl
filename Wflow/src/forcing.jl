@@ -7,7 +7,7 @@
     # Temperature [ᵒC]
     temperature::Vector{Float64}
     # Downward shortwave radiation [W m-2]
-    RS_in::Vector{Float64}
+    shortwave_radiation_in::Vector{Float64}
     # Surface albedo [-]
     albedo::Vector{Float64}
     # Wind speed at 2m height [m s-1]
@@ -20,7 +20,7 @@ function AtmosphericForcing(
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
     potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n),
     temperature::Vector{Float64} = fill(MISSING_VALUE, n),
-    RS_in::Vector{Float64} = fill(MISSING_VALUE, n),
+    shortwave_radiation_in::Vector{Float64} = fill(MISSING_VALUE, n),
     albedo::Vector{Float64} = fill(MISSING_VALUE, n),
     u2m::Vector{Float64} = fill(MISSING_VALUE, n),
 )
@@ -28,7 +28,7 @@ function AtmosphericForcing(
         precipitation,
         potential_evaporation,
         temperature,
-        RS_in,
+        shortwave_radiation_in,
         albedo,
         u2m,
     )
