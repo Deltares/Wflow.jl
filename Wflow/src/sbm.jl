@@ -155,6 +155,7 @@ function update!(
             atmospheric_forcing,
             domain.land.network,
             vegetation_parameters,
+            domain.land.parameters,
         )
     end
 

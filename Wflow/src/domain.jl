@@ -26,6 +26,8 @@
     river_fraction = Float64[]
     # fraction of open water (excluding rivers) [-]
     water_fraction = Float64[]
+    # Surface albedo [-] (static land parameter for fallback if not provided to forcing)
+    albedo::Vector{Float64} = Float64[]
 end
 
 "Struct to store (shared) river parameters"
@@ -210,6 +212,10 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
     waterbody_coverage = waterbody_mask(dataset, config, network; region = "area")
     river_location = river_mask(dataset, config, network)
 
+    lens = lens_input_parameter(config, "land_surface__albedo")
+    albedo =
+        ncread(dataset, config, lens; sel = network.indices, defaults = 0.2, type = Float64)
+
     land_parameters = LandParameters(;
         area,
         flow_width,
@@ -217,6 +223,7 @@ function LandParameters(dataset::NCDataset, config::Config, network::NetworkLand
         waterbody_outlet,
         waterbody_coverage,
         river_location,
+        albedo,
     )
     return land_parameters
 end
@@ -249,6 +256,10 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
     waterbody_outlet = waterbody_mask(dataset, config, network)
     waterbody_coverage = waterbody_mask(dataset, config, network; region = "area")
 
+    lens = lens_input_parameter(config, "land_surface__albedo")
+    albedo =
+        ncread(dataset, config, lens; sel = network.indices, defaults = 0.2, type = Float64)
+
     land_parameters = LandParameters(;
         x_length,
         y_length,
@@ -263,6 +274,7 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
         waterbody_coverage,
         river_fraction,
         water_fraction,
+        albedo,
     )
     return land_parameters
 end
