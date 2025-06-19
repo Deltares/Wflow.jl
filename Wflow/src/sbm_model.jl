@@ -105,8 +105,8 @@ function update_until_recharge!(model::AbstractModel{<:SbmModel})
             land.land_surface_temperature,
             land.soil,
             land.atmospheric_forcing,
-            clock.time,
-            dt,
+            domain.land.network,
+            land.vegetation_parameters,
         )
     end
 

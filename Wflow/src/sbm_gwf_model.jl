@@ -78,8 +78,8 @@ function update!(model::AbstractModel{<:SbmGwfModel})
             land.land_surface_temperature,
             land.soil,
             land.atmospheric_forcing,
-            clock.time,
-            dt,
+            domain.land.network,
+            land.vegetation_parameters,
         )
     end
 
