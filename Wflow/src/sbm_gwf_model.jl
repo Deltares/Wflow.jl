@@ -72,17 +72,6 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     update!(land, routing, domain, config, dt)
 
-    do_lst = get(config.model, "lst__flag", false)::Bool
-    if do_lst
-        update!(
-            land.land_surface_temperature,
-            land.soil,
-            land.atmospheric_forcing,
-            domain.land.network,
-            land.vegetation_parameters,
-        )
-    end
-
     # set river stage and storage (groundwater boundary) based on river flow routing
     # variables
     for i in eachindex(boundaries.river.variables.stage)

@@ -144,6 +144,20 @@ function update!(
     )
 
     update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+
+    # Update land surface temperature if enabled
+    do_land_surface_temperature =
+        get(config.model, "land_surface_temperature__flag", false)::Bool
+    if do_land_surface_temperature
+        update!(
+            land_surface_temperature,
+            soil,
+            atmospheric_forcing,
+            domain.land.network,
+            vegetation_parameters,
+        )
+    end
+
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end
