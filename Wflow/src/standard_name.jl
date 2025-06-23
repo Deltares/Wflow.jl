@@ -77,6 +77,28 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.floodplain.variables.q_av),
         unit = "m3 s-1",
     ),
+    "reservoir_water~min-target__volume_fraction" => (
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetminfrac
+        ),
+        unit = "-",
+    ),
+    "reservoir_water~full-target__volume_fraction" => (
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetfullfrac
+        ),
+        unit = "-",
+    ),
+    "reservoir_water_demand~required~downstream__volume_flow_rate" => (
+        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.demand),
+        unit = "m3 s-1",
+    ),
+    "reservoir_water_release-below-spillway__max_volume_flow_rate" => (
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.maxrelease
+        ),
+        unit = "m3 s-1",
+    ),
     "reservoir_water__instantaneous_volume" => (
         lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.storage),
         unit = "m3",

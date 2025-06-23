@@ -84,7 +84,7 @@ td, th {
 | `vegetation_water__storage_capacity` | Maximum canopy storage | mm | 1.0 |
 : {.striped .hover}
 
-### Input static and cyclic {#input-cyclic-lai}
+### Static or cyclic/forcing input {#input-cyclic-lai}
 | Standard Name | Description | Unit | Default |
 | ----- | ---- | -- | -- |
 | `vegetation__leaf-area_index` | Leaf area index | m² m⁻² | - |
@@ -175,7 +175,7 @@ td, th {
 ## Water demand
 
 ### Non-irrigation
-#### Input static and cyclic
+#### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land~domestic__gross_water_demand_volume_flux` | Gross domestic water demand | mm Δt⁻¹ | 0.0 |
@@ -195,7 +195,7 @@ td, th {
 | `land~irrigated-non-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
-#### Input static and cyclic
+#### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land~irrigated-non-paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
@@ -219,7 +219,7 @@ td, th {
 | `land~irrigated-paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
-#### Input static and cyclic
+#### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land~irrigated-paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
