@@ -59,8 +59,6 @@ function surface_routing!(
         domain,
         dt,
     )
-    # _river = adapt(BackendArray, river_flow)
     update!(overland_flow, river_flow, domain, julian_day(clock.time - clock.dt), dt)
-    # model.routing.river_flow = adapt(Array, _river)
     return nothing
 end

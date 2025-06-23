@@ -485,39 +485,51 @@ function local_inertial_river_update!(
     (; reservoir, inflow_waterbody) = model.boundary_conditions
     # inds_reservoir = domain.reservoir.network.river_indices
 
-    AK.foreachindex(
-        inds_reservoir;
-        scheduler = :polyester,  # Use Polyester.jl on cpu
-        min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-    ) do v
-        i = inds_reservoir[v]
-        q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
-        update!(reservoir, Int(v), q_in_reservoir + inflow_waterbody[i], dt, dt_forcing)
-        river_v.q[i] = reservoir.variables.outflow[v]
-        # average river discharge (here accumulated for model timestep Δt)
-        river_v.q_av[i] += river_v.q[i] * dt
-    end
+    # AK.foreachindex(
+    #     inds_reservoir;
+    #     scheduler = :polyester,  # Use Polyester.jl on cpu
+    #     min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
+    # ) do v
+    #     i = inds_reservoir[v]
+    #     q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
+    #     update!(reservoir, Int(v), q_in_reservoir + inflow_waterbody[i], dt, dt_forcing)
+    #     river_v.q[i] = reservoir.variables.outflow[v]
+    #     # average river discharge (here accumulated for model timestep Δt)
+    #     river_v.q_av[i] += river_v.q[i] * dt
+    # end
 
     (; lake) = model.boundary_conditions
     # inds_lake = domain.lake.network.river_indices
-    AK.foreachindex(
-        inds_lake;
-        scheduler = :polyester,  # Use Polyester.jl on cpu
-        min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-    ) do v
-        i = inds_lake[v]
+    # AK.foreachindex(
+    #     inds_lake;
+    #     scheduler = :polyester,  # Use Polyester.jl on cpu
+    #     min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
+    # ) do v
+    #     i = inds_lake[v]
 
-        q_in_lake = get_inflow_waterbody(model, edges_at_node.src[i, :])
-        update!(lake, v, q_in_lake + inflow_waterbody[i], doy, dt, dt_forcing)
-        river_v.q[i] = max(lake.variables.outflow[v], 0.0)
-        # average river discharge (here accumulated for model timestep Δt)
-        river_v.q_av[i] += river_v.q[i] * dt
-    end
+    #     q_in_lake = get_inflow_waterbody(model, edges_at_node.src[i, :])
+    #     update!(lake, v, q_in_lake + inflow_waterbody[i], doy, dt, dt_forcing)
+    #     river_v.q[i] = max(lake.variables.outflow[v], 0.0)
+    #     # average river discharge (here accumulated for model timestep Δt)
+    #     river_v.q_av[i] += river_v.q[i] * dt
+    # end
 
     if update_h
         AK.foreachindex(river_p.active_n; scheduler = :polyester, min_elems = 1000) do i
-            q_src = sum_at(river_v.q, edges_at_node.src[i, :])
-            q_dst = sum_at(river_v.q, edges_at_node.dst[i, :])
+            q_src = 0.0f0
+            for j in axes(edges_at_node.src, 2)
+                n = edges_at_node.src[i, j]
+                if n ≠ Int(0)
+                    q_src += river_v.q[n]
+                end
+            end
+            m = edges_at_node.dst[i]
+            if m ≠ Int(0)
+                q_dst = river_v.q[m]
+            else
+                q_dst = 0.0f0
+            end
+
             # internal abstraction (water demand) is limited by river storage and negative
             # external inflow as part of water allocation computations.
             river_v.storage[i] =
@@ -537,37 +549,51 @@ function local_inertial_river_update!(
             river_v.storage[i] += _inflow * dt # add external inflow
             river_v.h[i] = river_v.storage[i] / (flow_length[i] * flow_width[i])
 
-            if !isnothing(model.floodplain)
-                floodplain_v = model.floodplain.variables
-                floodplain_p = model.floodplain.parameters
-                q_src = sum_at(floodplain_v.q, edges_at_node.src[i, :])
-                q_dst = sum_at(floodplain_v.q, edges_at_node.dst[i, :])
-                floodplain_v.storage[i] = floodplain_v.storage[i] + (q_src - q_dst) * dt
-                if floodplain_v.storage[i] < Float(0.0)
-                    floodplain_v.error[i] =
-                        floodplain_v.error[i] + abs(floodplain_v.storage[i])
-                    floodplain_v.storage[i] = Float(0.0)
-                end
-                storage_total = river_v.storage[i] + floodplain_v.storage[i]
-                if storage_total > river_p.bankfull_storage[i]
-                    flood_storage = storage_total - river_p.bankfull_storage[i]
-                    h = flood_depth(floodplain_p.profile, flood_storage, flow_length[i], i)
-                    river_v.h[i] = river_p.bankfull_depth[i] + h
-                    river_v.storage[i] = river_v.h[i] * flow_width[i] * flow_length[i]
-                    floodplain_v.storage[i] =
-                        max(storage_total - river_v.storage[i], Float(0.0))
-                    floodplain_v.h[i] =
-                        floodplain_v.storage[i] > Float(0.0) ? h : Float(0.0)
-                else
-                    river_v.h[i] = storage_total / (flow_length[i] * flow_width[i])
-                    river_v.storage[i] = storage_total
-                    floodplain_v.h[i] = Float(0.0)
-                    floodplain_v.storage[i] = Float(0.0)
-                end
-                # average variables (here accumulated for model timestep Δt)
-                floodplain_v.storage_av[i] += floodplain_v.storage[i] * dt
-                floodplain_v.h_av[i] += floodplain_v.h_av[i] * dt
-            end
+            ## TODO: make compilation for GPU work if floodplain is not defined.
+            # if !isnothing(model.floodplain)
+            #     floodplain_v = model.floodplain.variables
+            #     floodplain_p = model.floodplain.parameters
+            #     q_src = 0.0f0
+            #     for j in axes(edges_at_node.src, 2)
+            #         n = edges_at_node.src[i, j]
+            #         if n ≠ Int(0)
+            #             q_src += floodplain_v.q[n]
+            #         end
+            #     end
+            #     m = edges_at_node.dst[i]
+            #     if m ≠ Int(0)
+            #         q_dst = floodplain_v.q[m]
+            #     else
+            #         q_dst = 0.0f0
+            #     end
+
+            #     floodplain_v.storage[i] = floodplain_v.storage[i] + (q_src - q_dst) * dt
+            #     if floodplain_v.storage[i] < Float(0.0)
+            #         floodplain_v.error[i] =
+            #             floodplain_v.error[i] + abs(floodplain_v.storage[i])
+            #         floodplain_v.storage[i] = Float(0.0)
+            #     end
+            #     storage_total = river_v.storage[i] + floodplain_v.storage[i]
+            #     if storage_total > river_p.bankfull_storage[i]
+            #         flood_storage = storage_total - river_p.bankfull_storage[i]
+            #         h = flood_depth(floodplain_p.profile, flood_storage, flow_length[i], i)
+            #         river_v.h[i] = river_p.bankfull_depth[i] + h
+            #         river_v.storage[i] = river_v.h[i] * flow_width[i] * flow_length[i]
+            #         floodplain_v.storage[i] =
+            #             max(storage_total - river_v.storage[i], Float(0.0))
+            #         floodplain_v.h[i] =
+            #             floodplain_v.storage[i] > Float(0.0) ? h : Float(0.0)
+            #     else
+            #         river_v.h[i] = storage_total / (flow_length[i] * flow_width[i])
+            #         river_v.storage[i] = storage_total
+            #         floodplain_v.h[i] = Float(0.0)
+            #         floodplain_v.storage[i] = Float(0.0)
+            #     end
+            #     # average variables (here accumulated for model timestep Δt)
+            #     floodplain_v.storage_av[i] += floodplain_v.storage[i] * dt
+            #     floodplain_v.h_av[i] += floodplain_v.h_av[i] * dt
+            # end
+
             # average variables (here accumulated for model timestep Δt)
             river_v.storage_av[i] += river_v.storage[i] * dt
             river_v.h_av[i] += river_v.h[i] * dt
@@ -590,12 +616,12 @@ function update!(
     (; reservoir, lake) = model.boundary_conditions
     (; flow_length) = domain.river.parameters
 
-    flow_length = domain.river.parameters.flow_length
-    flow_width = domain.river.parameters.flow_width
-    nodes_at_edge = domain.river.network.nodes_at_edge
-    edges_at_node = domain.river.network.edges_at_node
-    inds_reservoir = domain.reservoir.network.river_indices
-    inds_lake = domain.lake.network.river_indices
+    flow_length = adapt(BackendArray, domain.river.parameters.flow_length)
+    flow_width = adapt(BackendArray, domain.river.parameters.flow_width)
+    nodes_at_edge = adapt(BackendArray, domain.river.network.nodes_at_edge)
+    edges_at_node = adapt(BackendArray, domain.river.network.edges_at_node)
+    inds_reservoir = adapt(BackendArray, domain.reservoir.network.river_indices)
+    inds_lake = adapt(BackendArray, domain.lake.network.river_indices)
 
     set_waterbody_vars!(reservoir)
     set_waterbody_vars!(lake)
@@ -607,17 +633,18 @@ function update!(
 
     t = Float(0.0)
     steps = 100
+    river = adapt(BackendArray, model)  # adapt to GPU
 
     while t < dt
-        dt_s = stable_timestep(model, flow_length)
+        dt_s = stable_timestep(river, flow_length)
         dt_s *= Float(0.9)  # safety margin
         if t + steps * dt_s > dt
             dt_s = (dt - t) / steps
         end
         t = t + steps * dt_s
         for i in 1:steps
-            local_inertial_river_update!(
-                model,
+            @inbounds local_inertial_river_update!(
+                river,
                 # domain,
                 Float(dt_s),
                 dt,
@@ -632,6 +659,38 @@ function update!(
             )
         end
     end
+
+    river_cpu = adapt(Array, river)
+    copy!(model.variables.q_av, river_cpu.variables.q_av)
+    copy!(model.variables.q, river_cpu.variables.q)
+    copy!(model.variables.q0, river_cpu.variables.q0)
+    copy!(model.variables.q_channel_av, river_cpu.variables.q_channel_av)
+    copy!(model.variables.h, river_cpu.variables.h)
+    copy!(model.variables.zs_max, river_cpu.variables.zs_max)
+    copy!(model.variables.zs_src, river_cpu.variables.zs_src)
+    copy!(model.variables.zs_dst, river_cpu.variables.zs_dst)
+    copy!(model.variables.hf, river_cpu.variables.hf)
+    copy!(model.variables.h_av, river_cpu.variables.h_av)
+    copy!(model.variables.a, river_cpu.variables.a)
+    copy!(model.variables.r, river_cpu.variables.r)
+    copy!(model.variables.storage, river_cpu.variables.storage)
+    copy!(model.variables.storage_av, river_cpu.variables.storage_av)
+    copy!(model.variables.error, river_cpu.variables.error)
+
+    # first copy! doesn't work for q_av, so we try again
+    while !all(model.variables.q_av .=== river_cpu.variables.q_av)
+        copy!(model.variables.q_av, river_cpu.variables.q_av)
+    end
+
+    # Set vars to nothing so gc can clean up. Wasn't happening automatically...
+    river = nothing
+    river_cpu = nothing
+    flow_length = nothing
+    flow_width = nothing
+    nodes_at_edge = nothing
+    edges_at_node = nothing
+    inds_reservoir = nothing
+    inds_lake = nothing
 
     average_flow_vars!(model.variables, dt)
     average_waterbody_vars!(reservoir, dt)
@@ -926,7 +985,7 @@ function update!(
     edges_at_node = domain.river.network.edges_at_node
     inds_reservoir = domain.reservoir.network.river_indices
     inds_lake = domain.lake.network.river_indices
-    # @infiltrate
+
     set_waterbody_vars!(reservoir)
     set_waterbody_vars!(lake)
     set_flow_vars!(river.variables)

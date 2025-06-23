@@ -72,10 +72,10 @@ const cpu_backend = KernelAbstractions.CPU()
 using AMDGPU
 
 const gpu_backend = AMDGPU.ROCBackend()
-# const backend = gpu_backend
-# const BackendArray = ROCArray
-const backend = cpu_backend
-const BackendArray = Array
+const backend = gpu_backend
+const BackendArray = ROCArray
+# const backend = cpu_backend
+# const BackendArray = Array
 
 # AMDGPU.device!(AMDGPU.devices()[2])
 
