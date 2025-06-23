@@ -45,16 +45,10 @@ end
 end
 
 """
-Initialize LandSurfaceTemperatureModel with parameters from Gridded parameters file
+Initialize LandSurfaceTemperatureModel
 """
-function LandSurfaceTemperatureModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
-    n = length(indices)
+function LandSurfaceTemperatureModel(n::Int)
     vars = LandSurfaceTemperatureVariables(n)
-
     return LandSurfaceTemperatureModel(; variables = vars)
 end
 

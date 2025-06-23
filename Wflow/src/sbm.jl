@@ -36,7 +36,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     do_land_surface_temperature =
         get(config.model, "land_surface_temperature__flag", false)::Bool
     if do_land_surface_temperature
-        land_surface_temperature = LandSurfaceTemperatureModel(dataset, config, indices, dt)
+        land_surface_temperature = LandSurfaceTemperatureModel(n)
     else
         land_surface_temperature = NoLandSurfaceTemperatureModel()
     end
