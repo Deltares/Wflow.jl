@@ -18,7 +18,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     dt = Second(config.time.timestepsecs)
     n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(n)
+    atmospheric_forcing = AtmosphericForcing(config, n)
     vegetation_parameters = VegetationParameters(dataset, config, indices)
     if dt >= Hour(23)
         interception =

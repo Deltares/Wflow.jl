@@ -12,6 +12,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     ),
     "land_surface__evapotranspiration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actevap), unit = "mm dt-1"),
+    "land_surface__albedo" =>
+        (lens = @optic(_.domain.land.parameters.albedo), unit = "-"),
     "land_water~storage~total__depth" =>
         (lens = @optic(_.land.soil.variables.total_storage), unit = "mm"),
     "atmosphere_air__temperature" =>

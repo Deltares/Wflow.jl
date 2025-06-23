@@ -72,16 +72,9 @@ function update_land_surface_temperature(
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
 
     for i in 1:n
-        # Use atmospheric forcing albedo if available, otherwise fallback to static land albedo
-        albedo = if atmospheric_forcing.albedo[i] != MISSING_VALUE
-            atmospheric_forcing.albedo[i]
-        else
-            land_parameters.albedo[i]
-        end
-
         land_surface_temperature_model.variables.net_shortwave_radiation[i] =
             calculate_net_shortwave_radiation(
-                albedo,
+                land_parameters.albedo[i],
                 atmospheric_forcing.shortwave_radiation_in[i],
             )
 

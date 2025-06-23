@@ -26,7 +26,7 @@
     river_fraction = Float64[]
     # fraction of open water (excluding rivers) [-]
     water_fraction = Float64[]
-    # Surface albedo [-] (static land parameter for fallback if not provided to forcing)
+    # Surface albedo [-]
     albedo::Vector{Float64} = Float64[]
 end
 

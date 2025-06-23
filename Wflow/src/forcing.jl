@@ -1,37 +1,34 @@
 "Struct to store atmospheric forcing variables"
 @with_kw struct AtmosphericForcing
     # Precipitation [mm Δt⁻¹]
-    precipitation::Vector{Float64}
+    precipitation::Vector{Float64} = Float64[]
     # Potential reference evapotranspiration [mm Δt⁻¹]
-    potential_evaporation::Vector{Float64}
+    potential_evaporation::Vector{Float64} = Float64[]
     # Temperature [ᵒC]
-    temperature::Vector{Float64}
+    temperature::Vector{Float64} = Float64[]
     # Downward shortwave radiation [W m-2]
-    shortwave_radiation_in::Vector{Float64}
-    # Surface albedo [-]
-    albedo::Vector{Float64}
+    shortwave_radiation_in::Vector{Float64} = Float64[]
     # Wind speed at 2m height [m s-1]
-    wind_speed_2m::Vector{Float64}
+    wind_speed_2m::Vector{Float64} = Float64[]
 end
 
 "Initialize atmospheric forcing"
-function AtmosphericForcing(
-    n::Int;
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
-    potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n),
-    temperature::Vector{Float64} = fill(MISSING_VALUE, n),
-    shortwave_radiation_in::Vector{Float64} = fill(MISSING_VALUE, n),
-    albedo::Vector{Float64} = fill(MISSING_VALUE, n),
-    wind_speed_2m::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return AtmosphericForcing(;
-        precipitation,
-        potential_evaporation,
-        temperature,
-        shortwave_radiation_in,
-        albedo,
-        wind_speed_2m,
+function AtmosphericForcing(config::Config, n::Int)
+    do_land_surface_temperature =
+        get(config.model, "land_surface_temperature__flag", false)::Bool
+
+    atmos_forcing = AtmosphericForcing(;
+        precipitation = fill(MISSING_VALUE, n),
+        potential_evaporation = fill(MISSING_VALUE, n),
+        temperature = fill(MISSING_VALUE, n),
     )
+
+    if do_land_surface_temperature
+        @reset atmos_forcing.shortwave_radiation_in = fill(MISSING_VALUE, n)
+        @reset atmos_forcing.wind_speed_2m = fill(MISSING_VALUE, n)
+    end
+
+    return atmos_forcing
 end
 
 "Struct to store hydrological forcing variables"
