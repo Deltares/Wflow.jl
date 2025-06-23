@@ -23,9 +23,9 @@
     # river location [-]
     river_location::Vector{Bool} = Bool[]
     # fraction of river [-]
-    river_fraction = Float64[]
+    river_fraction::Vector{Float64} = Float64[]
     # fraction of open water (excluding rivers) [-]
-    water_fraction = Float64[]
+    water_fraction::Vector{Float64} = Float64[]
 end
 
 "Struct to store (shared) river parameters"
