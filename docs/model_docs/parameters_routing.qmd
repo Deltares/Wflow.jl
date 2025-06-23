@@ -71,9 +71,14 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | Default |
 | ------ | ----- | -- | -- |
 | `reservoir_surface__area` | Area of the reservoir | m² | - |
+| `reservoir_water__max_volume` | Maximum volume (above which water is spilled) | m³ | - |
+: {.striped .hover}
+
+#### Input static and cyclic
+| Standard Name | Description | Unit | Default |
+| ------ | ----- | -- | -- |
 | `reservoir_water_demand~required~downstream__volume_flow_rate` | Minimum (environmental) flow released from reservoir | m³ s⁻¹ | - |
 | `reservoir_water_release-below-spillway__max_volume_flow_rate` | Maximum amount that can be released if below spillway | m³ s⁻¹ | - |
-| `reservoir_water__max_volume` | Maximum volume (above which water is spilled) | m³ | - |
 | `reservoir_water~full-target__volume_fraction` | Target fraction full (of max storage) | - | - |
 | `reservoir_water~min-target__volume_fraction` | Target minimum full fraction (of max storage)	| - | - |
 : {.striped .hover}
