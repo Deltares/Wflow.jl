@@ -24,7 +24,7 @@ in the TOML configuration file and mapped to internal model parameters, states a
 variables. Model output of model parameters (`[output]` section of TOML file) is not
 possible by providing standard names as these are only used for setting model parameters
 during model initialization, except for parameters that can also have cyclic input. These
-parameters are listed in tables below "Input static and cyclic" subsections (for
+parameters are listed in tables below "Static or cyclic/forcing input" subsections (for
 [example](./parameters_landhydrology_sbm.qmd#input-cyclic-lai)). To output model parameters
 and variables without a standard name one to one mapping (dot notation) can be used in the
 TOML configuration file, but this is not considered as part of the public API, e.g.:
