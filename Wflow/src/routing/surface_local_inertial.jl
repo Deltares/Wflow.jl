@@ -485,34 +485,39 @@ function local_inertial_river_update!(
     (; reservoir, inflow_waterbody) = model.boundary_conditions
     # inds_reservoir = domain.reservoir.network.river_indices
 
-    # AK.foreachindex(
-    #     inds_reservoir;
-    #     scheduler = :polyester,  # Use Polyester.jl on cpu
-    #     min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-    # ) do v
-    #     i = inds_reservoir[v]
-    #     q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
-    #     update!(reservoir, Int(v), q_in_reservoir + inflow_waterbody[i], dt, dt_forcing)
-    #     river_v.q[i] = reservoir.variables.outflow[v]
-    #     # average river discharge (here accumulated for model timestep Δt)
-    #     river_v.q_av[i] += river_v.q[i] * dt
-    # end
+    if !isnothing(reservoir)  # should be declared before GPU kernel, otherwise it can't compile.
+        AK.foreachindex(
+            inds_reservoir;
+            scheduler = :polyester,  # Use Polyester.jl on cpu
+            min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
+        ) do v
+            i = inds_reservoir[v]
+            # q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
+            q_in_reservoir = 0.0f0 # get_inflow_waterbody depends on !isnothing(floodplain). Not GPU compat.
+            update!(reservoir, Int(v), q_in_reservoir + inflow_waterbody[i], dt, dt_forcing)
+            river_v.q[i] = reservoir.variables.outflow[v]
+            # average river discharge (here accumulated for model timestep Δt)
+            river_v.q_av[i] += river_v.q[i] * dt
+        end
+    end
 
     (; lake) = model.boundary_conditions
     # inds_lake = domain.lake.network.river_indices
-    # AK.foreachindex(
-    #     inds_lake;
-    #     scheduler = :polyester,  # Use Polyester.jl on cpu
-    #     min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-    # ) do v
-    #     i = inds_lake[v]
-
-    #     q_in_lake = get_inflow_waterbody(model, edges_at_node.src[i, :])
-    #     update!(lake, v, q_in_lake + inflow_waterbody[i], doy, dt, dt_forcing)
-    #     river_v.q[i] = max(lake.variables.outflow[v], 0.0)
-    #     # average river discharge (here accumulated for model timestep Δt)
-    #     river_v.q_av[i] += river_v.q[i] * dt
-    # end
+    if !isnothing(lake)  # should be declared before GPU kernel, otherwise it can't compile.
+        AK.foreachindex(
+            inds_lake;
+            scheduler = :polyester,  # Use Polyester.jl on cpu
+            min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
+        ) do v
+            i = inds_lake[v]
+            # q_in_lake = get_inflow_waterbody(model, edges_at_node.src[i, :])
+            q_in_lake = 0.0f0 # get_inflow_waterbody depends on !isnothing(floodplain). Not GPU compat.
+            update!(lake, v, q_in_lake + inflow_waterbody[i], doy, dt, dt_forcing)
+            river_v.q[i] = max(lake.variables.outflow[v], 0.0f0)
+            # average river discharge (here accumulated for model timestep Δt)
+            river_v.q_av[i] += river_v.q[i] * dt
+        end
+    end
 
     if update_h
         AK.foreachindex(river_p.active_n; scheduler = :polyester, min_elems = 1000) do i
@@ -634,7 +639,6 @@ function update!(
     t = Float(0.0)
     steps = 100
     river = adapt(BackendArray, model)  # adapt to GPU
-
     while t < dt
         dt_s = stable_timestep(river, flow_length)
         dt_s *= Float(0.9)  # safety margin

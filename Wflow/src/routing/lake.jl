@@ -315,7 +315,7 @@ function update!(model::Lake, i::Int, inflow::Float, doy::Int, dt::Float, dt_for
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
     # outflowfunc = 3
     # Calculate lake factor and SI parameter
-    if lake_p.outflowfunc[i] == 3
+    if lake_p.outflowfunc[i] == Int(3)
         lakefactor = lake_p.area[i] / (dt * (lake_p.b[i]^(1.0f0 / 2.0f0)))
         si_factor = (lake_v.storage[i] + precipitation - actevap) / dt + inflow
         # Adjust SIFactor for ResThreshold != 0
@@ -323,8 +323,8 @@ function update!(model::Lake, i::Int, inflow::Float, doy::Int, dt::Float, dt_for
         # Calculate the new lake outflow/waterlevel/storage
         if si_factor_adj > 0.0f0
             quadratic_sol_term =
-                -lakefactor + (((lakefactor^2.0f0) + 4.0 * si_factor_adj)^(1.0f0 / 2.0f0))
-            if quadratic_sol_term > 0.0
+                -lakefactor + (((lakefactor^2.0f0) + 4.0f0 * si_factor_adj)^(1.0f0 / 2.0f0))
+            if quadratic_sol_term > 0.0f0
                 outflow = (0.5f0 * quadratic_sol_term)^2.0f0
             else
                 outflow = 0.0f0
@@ -342,7 +342,7 @@ function update!(model::Lake, i::Int, inflow::Float, doy::Int, dt::Float, dt_for
         diff_wl = has_lowerlake ? lake_v.waterlevel[i] - lake_v.waterlevel[lo] : 0.0f0
 
         storage_input = (lake_v.storage[i] + precipitation - actevap) / dt + inflow
-        if lake_p.outflowfunc[i] == 1
+        if lake_p.outflowfunc[i] == Int(1)
             outflow = interpolate_linear(
                 lake_v.waterlevel[i],
                 lake_p.hq[i].H,
@@ -373,13 +373,13 @@ function update!(model::Lake, i::Int, inflow::Float, doy::Int, dt::Float, dt_for
         storage = (storage_input - outflow) * dt
 
         # update storage and outflow for lake with rating curve of type 1.
-        if lake_p.outflowfunc[i] == 1
+        if lake_p.outflowfunc[i] == Int(1)
             overflow = max(0.0f0, (storage - lake_p.maxstorage[i]) / dt)
             storage = min(storage, lake_p.maxstorage[i])
             outflow = outflow + overflow
         end
 
-        waterlevel = if lake_p.storfunc[i] == 1
+        waterlevel = if lake_p.storfunc[i] == Int(1)
             lake_v.waterlevel[i] + (storage - lake_v.storage[i]) / lake_p.area[i]
         else
             interpolate_linear(storage, lake_p.sh[i].S, lake_p.sh[i].H)

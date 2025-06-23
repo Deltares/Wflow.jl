@@ -178,23 +178,23 @@ function update!(
     res_v = model.variables
 
     # limit lake evaporation based on total available volume [m³]
-    precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
+    precipitation = 0.001f0 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
     available_storage = res_v.storage[i] + inflow * dt + precipitation
-    evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
+    evap = 0.001f0 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
     actevap = min(available_storage, evap) # [m³/dt]
 
     storage = res_v.storage[i] + (inflow * dt) + precipitation - actevap
-    storage = max(storage, 0.0)
+    storage = max(storage, 0.0f0)
 
     percfull = storage / res_p.maxstorage[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = scurve(percfull, res_p.targetminfrac[i], 1.0, 30.0)
+    fac = scurve(percfull, res_p.targetminfrac[i], 1.0f0, 30.0f0)
     demandrelease = min(fac * res_p.demand[i] * dt, storage)
     storage = storage - demandrelease
 
-    wantrel = max(0.0, storage - (res_p.maxstorage[i] * res_p.targetfullfrac[i]))
+    wantrel = max(0.0f0, storage - (res_p.maxstorage[i] * res_p.targetfullfrac[i]))
     # Assume extra maximum Q if spilling
-    overflow_q = max((storage - res_p.maxstorage[i]), 0.0)
+    overflow_q = max((storage - res_p.maxstorage[i]), 0.0f0)
     torelease = min(wantrel, overflow_q + res_p.maxrelease[i] * dt - demandrelease)
     storage = storage - torelease
     outflow = torelease + demandrelease
@@ -210,7 +210,7 @@ function update!(
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow
     res_v.storage_av[i] += storage * dt
-    res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
+    res_v.actevap[i] += 1000.0f0 * (actevap / res_p.area[i])
 
     return nothing
 end
