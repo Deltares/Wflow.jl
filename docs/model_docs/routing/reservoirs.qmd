@@ -185,9 +185,10 @@ H
 ```
 
 ::: {.callout-note}
-In every file, level units are meters [m] above reservoir bottom and not meters above sea
-level [m asl]. Especially with storage/rating curves coming from data, please be careful and
-convert units if needed.
+Please note that `H` in these two examples is defined as meters above sea level. When using
+option (1) for the storage curve, the level is defined as meters above reservoir bottom.
+Therefore, please be careful to ensure consistent units when using/combining storage and
+rating curves from data.
 :::
 
 ## References
