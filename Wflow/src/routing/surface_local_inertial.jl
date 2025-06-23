@@ -691,6 +691,7 @@ function update!(
     edges_at_node = nothing
     inds_reservoir = nothing
     inds_lake = nothing
+    GC.gc()  # force garbage collection
 
     average_flow_vars!(model.variables, dt)
     average_waterbody_vars!(reservoir, dt)
