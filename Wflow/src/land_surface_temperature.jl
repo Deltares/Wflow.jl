@@ -45,7 +45,7 @@ end
 end
 
 """
-Initialize LandSurfaceTemperatureModel
+Initialize LandSurfaceTemperatureModel with parameters from Gridded parameters file
 """
 function LandSurfaceTemperatureModel(n::Int)
     vars = LandSurfaceTemperatureVariables(n)
@@ -67,13 +67,13 @@ function update_land_surface_temperature(
 
     for i in 1:n
         land_surface_temperature_model.variables.net_shortwave_radiation[i] =
-            calculate_net_shortwave_radiation(
+            compute_net_shortwave_radiation(
                 land_parameters.albedo[i],
                 atmospheric_forcing.shortwave_radiation_in[i],
             )
 
         land_surface_temperature_model.variables.net_longwave_radiation[i] =
-            calculate_net_longwave_radiation(
+            compute_net_longwave_radiation(
                 atmospheric_forcing.temperature[i],
                 atmospheric_forcing.shortwave_radiation_in[i],
                 network.latitude[i],
@@ -83,24 +83,24 @@ function update_land_surface_temperature(
             land_surface_temperature_model.variables.net_longwave_radiation[i]
 
         land_surface_temperature_model.variables.latent_heat_of_vaporization[i] =
-            calculate_latent_heat_of_vaporization(atmospheric_forcing.temperature[i])
+            compute_latent_heat_of_vaporization(atmospheric_forcing.temperature[i])
 
         land_surface_temperature_model.variables.latent_heat_flux[i] =
-            calculate_latent_heat_flux(
+            compute_latent_heat_flux(
                 atmospheric_forcing.temperature[i],
                 soil_model.variables.actevap[i],
             )
 
         # Calculate sensible heat flux
         land_surface_temperature_model.variables.sensible_heat_flux[i] =
-            calculate_sensible_heat_flux(
+            compute_sensible_heat_flux(
                 land_surface_temperature_model.variables.net_radiation[i],
                 land_surface_temperature_model.variables.latent_heat_flux[i],
             )
 
         # Calculate aerodynamic resistance
         land_surface_temperature_model.variables.aerodynamic_resistance[i] =
-            calculate_aerodynamic_resistance(
+            compute_aerodynamic_resistance(
                 zm,
                 zh,
                 vegetation_parameters.canopy_height[i],
@@ -110,7 +110,7 @@ function update_land_surface_temperature(
 
         # Calculate LST
         land_surface_temperature_model.variables.land_surface_temperature[i] =
-            calculate_land_surface_temperature(
+            compute_land_surface_temperature(
                 land_surface_temperature_model.variables.sensible_heat_flux[i],
                 land_surface_temperature_model.variables.aerodynamic_resistance[i],
                 atmospheric_forcing.temperature[i],
@@ -161,7 +161,7 @@ get_LandSurfaceTemperature(model::AbstractLandSurfaceTemperatureModel) =
 
 """ 'net shortwave radiation' :: RSNet=(1−α)Rins(A4) """
 #EQN: A4
-function calculate_net_shortwave_radiation(albedo::Float64, shortwave_radiation_in::Float64)
+function compute_net_shortwave_radiation(albedo::Float64, shortwave_radiation_in::Float64)
     net_shortwave_radiation = (1 - albedo) * shortwave_radiation_in
     return net_shortwave_radiation
 end
@@ -193,7 +193,7 @@ function extraterrestrial_radiation(lat::Float64)
     return Ra
 end
 """ 'net longwave radiation' :: RLN=(σTa^4)(0.34−0.14−√ea)(1.35 (Rins/Rso) − 0.35) """
-function calculate_net_longwave_radiation(
+function compute_net_longwave_radiation(
     air_temperature::Float64,
     shortwave_radiation_in::Float64,
     lat::Float64,
@@ -208,29 +208,29 @@ function calculate_net_longwave_radiation(
     return RLN
 end
 """ 'net radiation' :: Rn=Rins−Routs+Rinl+Rins, """
-function calculate_Rnet(
+function compute_net_radiation(
     albedo::Float64,
     shortwave_radiation_in::Float64,
     lat::Float64,
     air_temperature::Float64,
 )
     net_shortwave_radiation =
-        calculate_net_shortwave_radiation(albedo, shortwave_radiation_in)
+        compute_net_shortwave_radiation(albedo, shortwave_radiation_in)
     net_longwave_radiation =
-        calculate_net_longwave_radiation(air_temperature, shortwave_radiation_in, lat)
+        compute_net_longwave_radiation(air_temperature, shortwave_radiation_in, lat)
     net_radiation = net_shortwave_radiation - net_longwave_radiation
     return net_radiation
 end
 """ 'latent heat of vaporization' :: λ=2501−2.375Ta.(A1) """
-function calculate_latent_heat_of_vaporization(air_temperature::Float64)
+function compute_latent_heat_of_vaporization(air_temperature::Float64)
     return 2501.0 - 2.375 * air_temperature
 end
 """ 'latent heat flux' :: LE=λ×ρwater×ET,(3)"""
-function calculate_latent_heat_flux(
+function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
 )
-    latent_heat_of_vaporization = calculate_latent_heat_of_vaporization(air_temperature)
+    latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     # Convert actual_evapotranspiration from mm/Δt to m/s
     actual_evapotranspiration_ms = (actual_evapotranspiration / 1000.0) / clock.dt
     latent_heat_flux =
@@ -238,13 +238,13 @@ function calculate_latent_heat_flux(
     return latent_heat_flux
 end
 """ 'sensible heat flux' :: H  ≈ RNet - LE """
-function calculate_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
+function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
     sensible_heat_flux = net_radiation - latent_heat_flux
     return sensible_heat_flux
 end
 """ 'aerodynamic resistance' :: ra = (ln(z/z0m) - psi_m) / (k^2 * u) """
 #EQN: A10-13
-function calculate_aerodynamic_resistance(
+function compute_aerodynamic_resistance(
     zm::Float64,
     zh::Float64,
     crop_height::Float64,
@@ -261,7 +261,7 @@ function calculate_aerodynamic_resistance(
     return ra
 end
 """ 'land surface temperature' :: Ts=(H ra) /(ρacp)+Ta,(4)"""
-function calculate_land_surface_temperature(
+function compute_land_surface_temperature(
     sensible_heat_flux::Float64,
     aerodynamic_resistance::Float64,
     air_temperature::Float64,
