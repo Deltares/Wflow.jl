@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Reservoirs and Lakes – Wflow.jl</title>
+<title>Reservoirs – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -392,7 +392,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/reservoirs.html">Reservoirs</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -468,8 +468,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Reservoirs and Lakes</span></a>
+  <a href="../../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Reservoirs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -531,12 +531,12 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link active" data-scroll-target="#reservoirs">Reservoirs</a>
+  <li><a href="#general-settings" id="toc-general-settings" class="nav-link active" data-scroll-target="#general-settings">General settings</a></li>
+  <li><a href="#reservoir-modelling" id="toc-reservoir-modelling" class="nav-link" data-scroll-target="#reservoir-modelling">Reservoir modelling</a>
   <ul class="collapse">
-  <li><a href="#lakes-unregulated-and-regulated" id="toc-lakes-unregulated-and-regulated" class="nav-link" data-scroll-target="#lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</a></li>
-  <li><a href="#modified-puls-approach" id="toc-modified-puls-approach" class="nav-link" data-scroll-target="#modified-puls-approach">Modified Puls Approach</a></li>
-  <li><a href="#lake-parameters" id="toc-lake-parameters" class="nav-link" data-scroll-target="#lake-parameters">Lake parameters</a></li>
-  <li><a href="#additional-settings" id="toc-additional-settings" class="nav-link" data-scroll-target="#additional-settings">Additional settings</a></li>
+  <li><a href="#modified-puls-approach" id="toc-modified-puls-approach" class="nav-link" data-scroll-target="#modified-puls-approach">Modified Puls approach</a></li>
+  <li><a href="#reservoir-parameters" id="toc-reservoir-parameters" class="nav-link" data-scroll-target="#reservoir-parameters">Reservoir parameters</a></li>
+  <li><a href="#storage-and-rating-cuves-from-data" id="toc-storage-and-rating-cuves-from-data" class="nav-link" data-scroll-target="#storage-and-rating-cuves-from-data">Storage and rating cuves from data</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -546,9 +546,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/waterbodies.html">Reservoirs and Lakes</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/reservoirs.html">Reservoirs</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Reservoirs and Lakes</h1>
+<h1 class="title">Reservoirs</h1>
 </div>
 
 
@@ -565,52 +565,44 @@ window.Quarto = {
 </header>
 
 
-<p>Reservoirs and lakes models can be included as part of the river network.</p>
-<section id="reservoirs" class="level2">
-<h2 class="anchored" data-anchor-id="reservoirs">Reservoirs</h2>
+<p>For modelling reservoirs, (natural) lakes or other water storage features that can be represented by the available functionality, a <code>reservoir</code> node is used that can be included as part of the river network.</p>
+<section id="general-settings" class="level2">
+<h2 class="anchored" data-anchor-id="general-settings">General settings</h2>
 <p>By default the reservoirs are not included in the model. To include them put the following lines in the TOML file of the model:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Finally there is a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
+<p>Reservoir areas (coverage) and locations (outlet) are required and mapped between external and internal parameter names in the TOML file, with below an example:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The list of reservoir input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#reservoirs">here</a>.</p>
-<section id="lakes-unregulated-and-regulated" class="level3">
-<h3 class="anchored" data-anchor-id="lakes-unregulated-and-regulated">Lakes (unregulated and regulated)</h3>
-<p>Lakes are modelled using a mass balance approach:</p>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="reservoir-modelling" class="level2">
+<h2 class="anchored" data-anchor-id="reservoir-modelling">Reservoir modelling</h2>
+<p>Reservoirs are modelled using a mass balance approach:</p>
 <p><span class="math display">\[
     \dfrac{S(t + \Delta t)}{\Delta t} = \dfrac{S(t)}{\Delta t} + \subtext{Q}{in} + \dfrac{(P-E) A}{\Delta t} - \subtext{Q}{out}
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{S}{m^3}\)</span> is lake storage, <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep, <span class="math inline">\(\SIb{\subtext{Q}{in}}{m^3\ s^{-1}}\)</span> is the sum of inflows (river, overland and lateral subsurface flow), <span class="math inline">\(\SIb{\subtext{Q}{out}}{m^3\ s^{-1}}\)</span> is the lake outflow at the outlet, <span class="math inline">\(\SIb{P}{m}\)</span> is precipitation, <span class="math inline">\(\SIb{E}{m}\)</span> is lake evaporation and <span class="math inline">\(\SIb{A}{m^2}\)</span> is the lake surface area.</p>
+<p>where <span class="math inline">\(\SIb{S}{m^3}\)</span> is reservoir storage, <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep, <span class="math inline">\(\SIb{\subtext{Q}{in}}{m^3\ s^{-1}}\)</span> is the sum of inflows (river, overland and lateral subsurface flow), <span class="math inline">\(\SIb{\subtext{Q}{out}}{m^3\ s^{-1}}\)</span> is the reservoir outflow at the outlet, <span class="math inline">\(\SIb{P}{m}\)</span> is precipitation, <span class="math inline">\(\SIb{E}{m}\)</span> is reservoir evaporation and <span class="math inline">\(\SIb{A}{m^2}\)</span> is the reservoir surface area.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../../images/lake.png" class="img-fluid figure-img"></p>
-<figcaption>Lake schematization.</figcaption>
+<figcaption>A schematic overview of a reservoir with outflow over a weir or spillway crest.</figcaption>
 </figure>
 </div>
-<p>Most of the variables in this equation are known at the current or previous timestep, apart from <span class="math inline">\(S(t+ \Delta t)\)</span> and <span class="math inline">\(\subtext{Q}{out}\)</span> which can both be linked to the water level <span class="math inline">\(H\)</span> in the lake using a storage curve <span class="math inline">\(S = f(H)\)</span> and a rating curve <span class="math inline">\(Q = f(H)\)</span>. In wflow, several options are available to select storage and rating curves, and in most cases, the mass balance is then solved by linearization and iteration or using the Modified Puls Approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:</p>
+<p>Most of the variables in this equation are known at the current or previous timestep, apart from <span class="math inline">\(S(t+ \Delta t)\)</span> and <span class="math inline">\(\subtext{Q}{out}\)</span> which can both be linked to the water level <span class="math inline">\(H\)</span> in the reservoir using a storage curve <span class="math inline">\(S = f(H)\)</span> and a rating curve <span class="math inline">\(Q = f(H)\)</span>. In wflow, several options are available to select storage and rating curves, and in most cases, the mass balance is then solved explicitly or by using the Modified Puls approach from Maniak (Burek et al., 2013). Storage curves in wflow can either:</p>
 <ul>
-<li>Come from the interpolation of field data linking volume and lake height,</li>
+<li>Come from the interpolation of field data linking volume and reservoir water level,</li>
 <li>Be computed from the simple relationship <span class="math inline">\(S = A H\)</span>.</li>
 </ul>
 <p>Rating curves in wflow can either:</p>
 <ul>
-<li>Come from the interpolation of field data linking lake outflow and water height, also appropriate for regulated lakes/ dams,</li>
+<li>Come from the interpolation of field data linking reservoir outflow and water level</li>
 <li>Be computed from a rating curve of the form <span class="math inline">\(\subtext{Q}{out} = \alpha (H-H_0)^\beta\)</span>, where <span class="math inline">\(H_{0}\)</span> is the minimum water level under which the outflow is zero. Usual values for <span class="math inline">\(\beta\)</span> are <span class="math inline">\(\frac{3}{2}\)</span> for a rectangular weir or <span class="math inline">\(2\)</span> for a parabolic weir (Bos, 1989).</li>
+<li>Be defined by simple reservoir operational parameters.</li>
 </ul>
-</section>
 <section id="modified-puls-approach" class="level3">
-<h3 class="anchored" data-anchor-id="modified-puls-approach">Modified Puls Approach</h3>
-<p>The Modified Puls Approach is a resolution method of the lake balance that uses an explicit relationship between storage and outflow. Storage is assumed to be equal to <span class="math inline">\(A H\)</span> and the rating curve for a parabolic weir (<span class="math inline">\(\beta = 2\)</span>):</p>
+<h3 class="anchored" data-anchor-id="modified-puls-approach">Modified Puls approach</h3>
+<p>The Modified Puls approach is solving the reservoir balance using an explicit relationship between storage and outflow. Storage is assumed to be equal to <span class="math inline">\(A H\)</span> and the rating curve for a parabolic weir (<span class="math inline">\(\beta = 2\)</span>) is used:</p>
 <p><span class="math display">\[
     S = A H = A  (h + H_{0}) = A \sqrt{\frac{Q}{\alpha}} + A H_0
 \]</span></p>
@@ -635,54 +627,58 @@ window.Quarto = {
 \mathrm{LF} = \dfrac{A}{\Delta t \sqrt{\alpha}}.
 \]</span></p>
 </section>
-<section id="lake-parameters" class="level3">
-<h3 class="anchored" data-anchor-id="lake-parameters">Lake parameters</h3>
-<p>By default, the lakes are not included in the model. To include them, put the following line in the TOML file of the model:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lake__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>There is also a mapping required between external and internal parameter names in the TOML file, with below an example:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_location__count</span> <span class="op">=</span> <span class="st">"wflow_lakelocs"</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_area__count</span> <span class="op">=</span> <span class="st">"wflow_lakeareas"</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_surface__area</span> <span class="op">=</span> <span class="st">"lake_area"</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_coefficient</span> <span class="op">=</span> <span class="st">"lake_b"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_exponent</span> <span class="op">=</span> <span class="st">"lake_e"</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__rating_curve_type_count</span> <span class="op">=</span> <span class="st">"lake_outflowfunc"</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water__storage_curve_type_count</span>  <span class="op">=</span> <span class="st">"lake_storfunc"</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_flow_threshold-level__elevation</span>  <span class="op">=</span> <span class="st">"lake_threshold"</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">lake_water_level__initial_elevation</span> <span class="op">=</span> <span class="st">"lake_waterlevel"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The list of lake input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#lakes">here</a>. The following lake storage curve types <code>lake_water__storage_curve_type_count</code> are available:</p>
+<section id="reservoir-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="reservoir-parameters">Reservoir parameters</h3>
+<p>The following reservoir rating curve types <code>reservoir_water__rating_curve_type_count</code> are available:</p>
+<ul>
+<li>1 for <span class="math inline">\(Q = f(H)\)</span> from reservoir data and interpolation</li>
+<li>2 for general <span class="math inline">\(Q = b(H - H_{0})^{e}\)</span></li>
+<li>3 in the case of Modified Puls approach <span class="math inline">\(Q = b(H - H_{0})^{2}\)</span></li>
+<li>4 simple reservoir operational parameters</li>
+</ul>
+<p>And following reservoir storage curve types <code>reservoir_water__storage_curve_type_count</code> are available:</p>
 <ul>
 <li>1 for <span class="math inline">\(S = AH\)</span></li>
-<li>2 for <span class="math inline">\(S = f(H)\)</span> from lake data and interpolation</li>
+<li>2 for <span class="math inline">\(S = f(H)\)</span> from reservoir data and interpolation</li>
 </ul>
-<p>And the following lake rating curve types <code>lake_water__rating_curve_type_count</code> are available:</p>
-<ul>
-<li>1 for <span class="math inline">\(Q = f(H)\)</span> from lake data and interpolation</li>
-<li>2 for general <span class="math inline">\(Q = b(H - H_{0})^{e}\)</span></li>
-<li>3 in the case of Puls Approach <span class="math inline">\(Q = b(H - H_{0})^{2}\)</span></li>
-</ul>
+<p>Below an example of how the reservoir area, rating curve and storage curve types, required data for all reservoir types, are mapped between external and internal parameter names in the TOML file:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"reservoir_area"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__rating_curve_type_count</span> <span class="op">=</span> <span class="st">"outflowfunc"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__storage_curve_type_count</span> <span class="op">=</span> <span class="st">"storfunc"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Including reservoir rating and storage curves from data (rating curve type 1 and storage curve type 2) is described <a href="#storage-and-rating-cuves-from-data">here</a>.</p>
+<p>For reservoir rating curve types 2 and 3 the following rating curve parameters need to be included in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__rating_curve_coefficient</span> <span class="op">=</span> <span class="st">"reservoir_b"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__rating_curve_exponent</span> <span class="op">=</span> <span class="st">"reservoir_e"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_flow_threshold-level__elevation</span> <span class="op">=</span> <span class="st">"reservoir_threshold"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A reservoir with rating curve type 2 can be linked to a downstream reservoir and return flow can be allowed from the downstream to the upstream reservoir. The input parameter <code>reservoir~lower_location__count</code> (standard name) represents the downstream reservoir location ID of the upstream lake location.</p>
+<p>For reservoir rating curve type 4, simple reservoir operational parameters need to included in the TOML file, with below an example:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_demand~required~downstream__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"ResDemand"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_release-below-spillway__max_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ResMaxRelease"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__max_volume</span> <span class="op">=</span> <span class="st">"ResMaxVolume"</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~full-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetFullFrac"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~min-target__volume_fraction"</span> <span class="op">=</span> <span class="st">"ResTargetMinFrac"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The complete list of reservoir input parameters that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#reservoirs">here</a>.</p>
 </section>
-<section id="additional-settings" class="level3">
-<h3 class="anchored" data-anchor-id="additional-settings">Additional settings</h3>
-<p>Storage and rating curves from field measurement can be supplied to wflow via CSV files supplied in the same folder of the TOML file. Naming of the files uses the ID of the lakes where data are available and is of the form <code>lake_sh_1.csv</code> and <code>lake_hq_1.csv</code> for respectively the storage and rating curves of lake with ID 1.</p>
-<p>The storage curve is stored in a CSV file with lake level <span class="math inline">\(\SIb{}{m}\)</span> in the first column <code>H</code> and corresponding lake storage <span class="math inline">\(\SIb{}{m^3}\)</span> in the second column <code>S</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H,</span>  S</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">392.21,</span> 0</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">393.21,</span> 430202000</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">393.71,</span> 649959000</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.21,</span> 869719000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The rating curve uses level and discharge data depending on the Julian day of the year (JDOY), and can be also used for regulated lakes/ dams. The first line contains <code>H</code> for the first column. The other lines contain the water level and the corresponding discharges for the different JDOY (1-365), see also the example below, that shows part of a CSV file (first 4 Julian days). The volume above the maximum water level of the rating curve is assumed to flow instantaneously out of the lake (overflow).</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">394,</span>    43,     43,     43,     43</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">394.01,</span> 44.838, 44.838, 44.838, 44.838</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">394.02,</span> 46.671, 46.671, 46.671, 46.671</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.03,</span> 48.509, 48.509, 48.509, 48.509</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">394.04,</span> 50.347, 50.347, 50.347, 50.347</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">394.05,</span> 52.179, 52.179, 52.179, 52.179</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Linked lakes: In some cases, lakes can be linked and return flow can be allowed from the downstream to the upstream lake. The linked lakes are defined in the <code>lake~lower_location__count</code> (standard name) input parameter that represent the downstream lake location ID, at the grid cell of the upstream lake location.</p>
+<section id="storage-and-rating-cuves-from-data" class="level3">
+<h3 class="anchored" data-anchor-id="storage-and-rating-cuves-from-data">Storage and rating cuves from data</h3>
+<p>Storage and rating curves from field measurement can be supplied to wflow via CSV files supplied in the same folder of the TOML file. Naming of the files uses the ID of the reservoirs where data are available and is of the form <code>reservoir_sh_1.csv</code> and <code>reservoir_hq_1.csv</code> for respectively the storage and rating curves of reservoir with ID 1.</p>
+<p>The storage curve is stored in a CSV file with reservoir level <span class="math inline">\(\SIb{}{m}\)</span> in the first column <code>H</code> and corresponding reservoir storage <span class="math inline">\(\SIb{}{m^3}\)</span> in the second column <code>S</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H,</span>  S</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">392.21,</span> 0</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">393.21,</span> 430202000</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">393.71,</span> 649959000</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.21,</span> 869719000</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The rating curve uses level and discharge data depending on the Julian day of the year (JDOY). The first line contains <code>H</code> for the first column. The other lines contain the water level and the corresponding discharges for the different JDOY (1-365), see also the example below, that shows part of a CSV file (first 4 Julian days). The volume above the maximum water level of the rating curve is assumed to flow instantaneously out of the reservoir (overflow).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">394,</span>    43,     43,     43,     43</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">394.01,</span> 44.838, 44.838, 44.838, 44.838</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">394.02,</span> 46.671, 46.671, 46.671, 46.671</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">394.03,</span> 48.509, 48.509, 48.509, 48.509</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">394.04,</span> 50.347, 50.347, 50.347, 50.347</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ex">394.05,</span> 52.179, 52.179, 52.179, 52.179</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -693,7 +689,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In every file, level units are meters [m] above lake bottom and not meters above sea level [m asl]. Especially with storage/rating curves coming from data, please be careful and convert units if needed.</p>
+<p>Please note that <code>H</code> in these two examples is defined as meters above sea level. When using option (1) for the storage curve, the level is defined as meters above reservoir bottom. Therefore, please be careful to ensure consistent units when using/combining storage and rating curves from data.</p>
 </div>
 </div>
 </section>
