@@ -63,12 +63,15 @@ river__width = "wflow_riverwidth"
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
-reservoir_surface__area = "ResSimpleArea"
+reservoir_surface__area = "reservoir_area"
 "reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
 reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
 "reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
 "reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
+reservoir_water__rating_curve_type_count = "outflowfunc"
+reservoir_water__storage_curve_type_count = "storfunc"
 
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 

@@ -1,26 +1,27 @@
 """
     mask_transport_capacity(
         transport_capacity,
-        waterbodies,
+        reservoirs,
         rivers,
     )
 
-Mask transport capacity values for waterbodies and rivers.
+Mask transport capacity values for         reservoirs,
+ and rivers.
 
 # Arguments
 - `transport_capacity` (total sediment transport capacity [t dt-1])
-- `waterbodies` (waterbodies mask [-])
+- `reservoirs` (reservoirs mask [-])
 - `rivers` (rivers mask [-])
 
 # Output
 - `transport_capacity` (masked total sediment transport capacity [t dt-1])
 """
-function mask_transport_capacity(transport_capacity, waterbodies, rivers)
+function mask_transport_capacity(transport_capacity, reservoirs, rivers)
     # Full deposition in rivers to switch to river concept
     if rivers
         tc = 0.0
-        # Sediment flux in waterbodies will all reach the river
-    elseif waterbodies
+        # Sediment flux in reservoirs will all reach the river
+    elseif reservoirs
         tc = 1e9
     else
         tc = transport_capacity
@@ -77,7 +78,7 @@ end
         density,
         slope,
         width,
-        waterbodies,
+        reservoirs,
         rivers,
         dt,
     )
@@ -92,7 +93,7 @@ Total sediment transport capacity based on Govers.
 - `density` (sediment density [kg m-3])
 - `slope` (slope [-])
 - `width` (drain width [m])
-- `waterbodies` (waterbodies mask [-])
+- `reservoirs` (reservoirs mask [-])
 - `rivers` (rivers mask [-])
 - `dt` (time step [s])
 
@@ -107,7 +108,7 @@ function transport_capacity_govers(
     density,
     slope,
     width,
-    waterbodies,
+    reservoirs,
     rivers,
     dt,
 )
@@ -127,8 +128,8 @@ function transport_capacity_govers(
     end
     transport_capacity = TCf * q * dt * 1e-3 #[ton/cell]
 
-    # Mask transport capacity values for waterbodies and rivers
-    transport_capacity = mask_transport_capacity(transport_capacity, waterbodies, rivers)
+    # Mask transport capacity values for reservoirs and rivers
+    transport_capacity = mask_transport_capacity(transport_capacity, reservoirs, rivers)
 
     return transport_capacity
 end
@@ -141,7 +142,7 @@ end
         d50,
         slope,
         width,
-        waterbodies,
+        reservoirs,
         rivers,
         dt,
     )
@@ -155,7 +156,7 @@ Total sediment transport capacity based on Yalin.
 - `d50` (median grain size [m])
 - `slope` (slope [-])
 - `width` (drain width [m])
-- `waterbodies` (waterbodies mask [-])
+- `reservoirs` (reservoirs mask [-])
 - `rivers` (rivers mask [-])
 - `dt` (time step [s])
 
@@ -169,7 +170,7 @@ function transport_capacity_yalin(
     d50,
     slope,
     width,
-    waterbodies,
+    reservoirs,
     rivers,
     dt,
 )
@@ -194,8 +195,8 @@ function transport_capacity_yalin(
         transport_capacity = 0.0
     end
 
-    # Mask transport capacity values for waterbodies and rivers
-    transport_capacity = mask_transport_capacity(transport_capacity, waterbodies, rivers)
+    # Mask transport capacity values for reservoirs and rivers
+    transport_capacity = mask_transport_capacity(transport_capacity, reservoirs, rivers)
 
     return transport_capacity
 end
@@ -259,7 +260,7 @@ end
         dm,
         slope,
         width,
-        waterbodies,
+        reservoirs,
         rivers,
         dtot,
         dt,
@@ -274,7 +275,7 @@ Transport capacity for a specific grain size based on Yalin with particle differ
 - `dm` (median grain size [m])
 - `slope` (slope [-])
 - `width` (drain width [m])
-- `waterbodies` (waterbodies mask [-])
+- `reservoirs` (reservoirs mask [-])
 - `rivers` (rivers mask [-])
 - `dtot` (total flow transportability [t dt-1])
 - `dt` (time step [s])
@@ -289,7 +290,7 @@ function transport_capacity_yalin_differentiation(
     dm,
     slope,
     width,
-    waterbodies,
+    reservoirs,
     rivers,
     dtot,
     dt,
@@ -319,8 +320,8 @@ function transport_capacity_yalin_differentiation(
         transport_capacity = 0.0
     end
 
-    # Mask transport capacity values for waterbodies and rivers
-    transport_capacity = mask_transport_capacity(transport_capacity, waterbodies, rivers)
+    # Mask transport capacity values for reservoirs and rivers
+    transport_capacity = mask_transport_capacity(transport_capacity, reservoirs, rivers)
 
     return transport_capacity
 end

@@ -72,7 +72,7 @@ abstract type AbstractSoilModel end
     recharge::Vector{Float64}
     # Actual leakage from saturated store [mm Δt⁻¹]
     actleakage::Vector{Float64}
-    # Total water storage (excluding floodplain volume, lakes and reservoirs) [mm]
+    # Total water storage (excluding floodplain volume and reservoirs) [mm]
     total_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
     tsoil::Vector{Float64}

@@ -50,8 +50,6 @@ river_location__mask = "wflow_river"
 subbasin_location__count = "wflow_subcatch"
 reservoir_location__count = "wflow_reservoirlocs"
 reservoir_area__count = "wflow_reservoirareas"
-lake_location__count = "wflow_lakelocs"
-lake_area__count = "wflow_lakeareas"
 
 [input.forcing]
 atmosphere_water__precipitation_volume_flux = "P"
@@ -68,7 +66,6 @@ river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 
 reservoir_surface__area = "ResSimpleArea"
-lake_surface__area = "LakeArea"
 "reservoir_water_sediment~bedload__trapping_efficiency" = "ResTrapEff"
 
 vegetation_canopy__height = "CanopyHeight"
@@ -114,8 +111,7 @@ gravel__mean_diameter = "dm_gravel"
 [model]
 cold_start__flag = true
 run_river_model__flag = true
-lake__flag = false
-reservoir__flag = true # cannot use reservoirs as in sbm because then states/volume need to be added
+reservoir__flag = true
 rainfall_erosion = "eurosem" # Rainfall erosion equation: ["answers", "eurosem"]
 overland_flow_erosion = "answers" # Overland flow erosion equation: ["answers"]
 land_transport = "yalinpart" # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]

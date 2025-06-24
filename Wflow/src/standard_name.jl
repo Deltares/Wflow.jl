@@ -137,49 +137,17 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         ),
         unit = "mm dt-1",
     ),
-    "lake_water__volume" => (
-        lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage_av),
-        unit = "m3",
-    ),
-    "lake_water__instantaneous_volume" => (
-        lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.storage),
-        unit = "m3",
-    ),
-    "lake_water_surface__instantaneous_elevation" => (
-        lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.waterlevel),
-        unit = "m",
-    ),
-    "lake_water_surface__elevation" => (
+    "reservoir_water_surface__instantaneous_elevation" => (
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.lake.variables.waterlevel_av
+            _.routing.river_flow.boundary_conditions.reservoir.variables.waterlevel
         ),
         unit = "m",
     ),
-    "lake_water~outgoing__volume_flow_rate" => (
-        lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.outflow_av),
-        unit = "m3 s-1",
-    ),
-    "lake_water~incoming__volume_flow_rate" => (
+    "reservoir_water_surface__elevation" => (
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.lake.boundary_conditions.inflow
+            _.routing.river_flow.boundary_conditions.reservoir.variables.waterlevel_av
         ),
-        unit = "m3 s-1",
-    ),
-    "lake_water__evaporation_volume_flux" => (
-        lens = @optic(_.routing.river_flow.boundary_conditions.lake.variables.actevap),
-        unit = "mm dt-1",
-    ),
-    "lake_water__precipitation_volume_flux" => (
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.lake.boundary_conditions.precipitation
-        ),
-        unit = "mm dt-1",
-    ),
-    "lake_water__potential_evaporation_volume_flux" => (
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.lake.boundary_conditions.evaporation
-        ),
-        unit = "mm dt-1",
+        unit = "m",
     ),
     "soil_water__infiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actinfilt), unit = "mm dt-1"),

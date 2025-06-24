@@ -113,7 +113,6 @@ function extract_required_states(config::Config)
     # Extract model settings
     do_snow = get(config.model, "snow__flag", false)::Bool
     do_glaciers = get(config.model, "glacier__flag", false)::Bool
-    do_lakes = get(config.model, "lake__flag", false)::Bool
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     do_floodplains = get(config.model, "floodplain_1d__flag", false)::Bool
     do_paddy = false
@@ -187,13 +186,10 @@ function extract_required_states(config::Config)
             "floodplain_water__instantaneous_depth",
         ) : ()
 
-    # Lake and reservoir states
-    lake_states =
-        do_lakes && model_type !== "sediment" ?
-        ("lake_water_surface__instantaneous_elevation",) : ()
+    # Reservoir states
     reservoir_states =
         do_reservoirs && model_type !== "sediment" ?
-        ("reservoir_water__instantaneous_volume",) : ()
+        ("reservoir_water_surface__instantaneous_elevation",) : ()
 
     # Paddy states
     paddy_states = do_paddy ? ("land_surface_water~paddy__depth",) : ()
@@ -208,7 +204,6 @@ function extract_required_states(config::Config)
     land_states...,
     river_states...,
     floodplain_states...,
-    lake_states...,
     reservoir_states...,
     paddy_states...
 

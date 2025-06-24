@@ -176,7 +176,7 @@ end
     params_river = Wflow.RiverParameters(;
         flow_width = width,
         flow_length = dl,
-        waterbody_outlet = zeros(n),
+        reservoir_outlet = zeros(n),
     )
     domain_river = Wflow.DomainRiver(; network = river_network, parameters = params_river)
     domain = Wflow.Domain(; river = domain_river)
@@ -227,10 +227,9 @@ end
         inflow = zeros(n),
         actual_external_abstraction_av = zeros(n),
         abstraction = zeros(n),
-        inflow_waterbody = zeros(n),
+        inflow_reservoir = zeros(n),
         inwater = zeros(n),
         reservoir = nothing,
-        lake = nothing,
     )
 
     sw_river = Wflow.LocalInertialRiverFlow(;
@@ -249,7 +248,7 @@ end
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
         dt = Wflow.stable_timestep(sw_river, flow_length)
-        Wflow.local_inertial_river_update!(sw_river, domain, dt, 86400.0, 0, true)
+        Wflow.local_inertial_river_update!(sw_river, domain, dt, 86400.0, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break

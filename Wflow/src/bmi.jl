@@ -5,12 +5,11 @@
 # See also function active_indices(network, key::AbstractString).
 const GRIDS = Dict{Int, String}(
     0 => "reservoir",
-    1 => "lake",
-    2 => "drain",
-    3 => "river",
+    1 => "drain",
+    2 => "river",
+    3 => "land",
     4 => "land",
     5 => "land",
-    6 => "land",
 )
 
 """
@@ -137,18 +136,16 @@ end
 function BMI.get_var_grid(model::Model, name::String)
     return if occursin("reservoir", name)
         0
-    elseif occursin("lake", name)
-        1
     elseif occursin("drain", name)
-        2
+        1
     elseif occursin("river", name) || occursin("floodplain", name)
-        3
+        2
     elseif occursin("land_surface_water__x_component", name) # LocalInertialOverlandFlow
-        4
+        3
     elseif occursin("land_surface_water__y_component", name) # LocalInertialOverlandFlow
-        5
+        4
     else
-        6
+        5
     end
 end
 
