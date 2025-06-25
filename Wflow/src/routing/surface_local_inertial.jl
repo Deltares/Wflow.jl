@@ -301,7 +301,7 @@ get_inflow_waterbody(::LocalInertialRiverFlow, model::LateralSSF) =
     (model.variables.ssf .+ model.variables.to_river) ./ Float(tosecond(BASETIMESTEP))
 
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
-function local_inertial_river_update!(
+@kernel function local_inertial_river_update!(
     model::LocalInertialRiverFlow,
     # domain::Domain,
     dt::Float,
@@ -314,6 +314,9 @@ function local_inertial_river_update!(
     flow_width::DenseArray{Float},
     inds_lake::DenseArray{Int},
     inds_reservoir::DenseArray{Int},
+    len_res::Int,
+    len_edges::Int,
+    len_nodes::Int,
 )
     # (; nodes_at_edge, edges_at_node) = domain.river.network
     # (; flow_length, flow_width) = domain.river.parameters
@@ -322,134 +325,45 @@ function local_inertial_river_update!(
     river_v = model.variables
     river_p = model.parameters
 
-    river_v.q0 .= river_v.q
-    if !isnothing(model.floodplain)
-        model.floodplain.variables.q0 .= model.floodplain.variables.q
-    end
-    @inbounds AK.foreachindex(
-        river_p.active_e;
-        scheduler = :polyester,  # Use Polyester.jl on cpu
-        min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-    ) do j
-        i = river_p.active_e[j]
-        i_src = nodes_at_edge.src[i]
-        i_dst = nodes_at_edge.dst[i]
-        river_v.zs_src[i] = river_p.zb[i_src] + river_v.h[i_src]
-        river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
+    len_river_v = length(river_v.q)
 
-        river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
-        river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
+    I = @index(Global)
+    J = @index(Global)
+    V = @index(Global)
+    K = @index(Global)
 
-        river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] =
-            river_v.a[i] / (river_p.flow_width_at_edge[i] + Float(2.0) * river_v.hf[i]) # hydraulic radius (rectangular channel)
+    @unroll for _ in 1:100
+        @inbounds begin
+            if I < len_river_v
+                river_v.q0[I] = river_v.q[I]
+            end
+            @synchronize
 
-        river_v.q[i] = ifelse(
-            river_v.hf[i] > river_p.h_thresh,
-            local_inertial_flow(
-                river_v.q0[i],
-                river_v.zs_src[i],
-                river_v.zs_dst[i],
-                river_v.hf[i],
-                river_v.a[i],
-                river_v.r[i],
-                river_p.flow_length_at_edge[i],
-                river_p.mannings_n_sq[i],
-                river_p.g,
-                river_p.froude_limit,
-                dt,
-            ),
-            Float(0.0),
-        )
-
-        # limit q in case water is not available
-        river_v.q[i] = ifelse(
-            river_v.h[i_src] <= Float(0.0),
-            min(river_v.q[i], Float(0.0)),
-            river_v.q[i],
-        )
-        river_v.q[i] = ifelse(
-            river_v.h[i_dst] <= Float(0.0),
-            max(river_v.q[i], Float(0.0)),
-            river_v.q[i],
-        )
-        # average river discharge (here accumulated for model timestep Δt)
-        river_v.q_av[i] += river_v.q[i] * dt
-    end
-
-    if !isnothing(model.floodplain)
-        floodplain_p = model.floodplain.parameters
-        floodplain_v = model.floodplain.variables
-
-        @inbounds AK.foreachindex(
-            floodplain_v.hf;
-            scheduler = :polyester,
-            min_elems = 1000,
-        ) do i
-            floodplain_v.hf[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0f0)
-        end
-
-        @inbounds AK.foreachindex(
-            river_p.active_e;
-            scheduler = :polyester,
-            min_elems = 1000,
-        ) do i
-            if river_v.hf[i] <= river_p.h_thresh
-                floodplain_v.q[i] = 0.0f0
-            else
+            if J < len_edges
+                i = river_p.active_e[J]
                 i_src = nodes_at_edge.src[i]
                 i_dst = nodes_at_edge.dst[i]
+                river_v.zs_src[i] = river_p.zb[i_src] + river_v.h[i_src]
+                river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
-                i0 = Int(0)
-                for k in eachindex(floodplain_p.profile.depth)
-                    i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.hf[i])
-                end
-                i1 = max(i0, Int(1))
-                i2 = ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
+                river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
+                river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-                a_src = flow_area(
-                    floodplain_p.profile.width[i2, i_src],
-                    floodplain_p.profile.a[i1, i_src],
-                    floodplain_p.profile.depth[i1],
-                    floodplain_v.hf[i],
-                )
-                a_src = max(a_src - (floodplain_v.hf[i] * flow_width[i_src]), 0.0f0)
+                river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
+                river_v.r[i] =
+                    river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0f0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
-                a_dst = flow_area(
-                    floodplain_p.profile.width[i2, i_dst],
-                    floodplain_p.profile.a[i1, i_dst],
-                    floodplain_p.profile.depth[i1],
-                    floodplain_v.hf[i],
-                )
-                a_dst = max(a_dst - (floodplain_v.hf[i] * flow_width[i_dst]), 0.0f0)
-
-                floodplain_v.a[i] = min(a_src, a_dst)
-
-                floodplain_v.r[i] = ifelse(
-                    a_src < a_dst,
-                    a_src / wetted_perimeter(
-                        floodplain_p.profile.p[i1, i_src],
-                        floodplain_p.profile.depth[i1],
-                        floodplain_v.hf[i],
-                    ),
-                    a_dst / wetted_perimeter(
-                        floodplain_p.profile.p[i1, i_dst],
-                        floodplain_p.profile.depth[i1],
-                        floodplain_v.hf[i],
-                    ),
-                )
-
-                floodplain_v.q[i] = ifelse(
-                    floodplain_v.a[i] > Float(1.0e-05),
+                river_v.q[i] = ifelse(
+                    river_v.hf[i] > river_p.h_thresh,
                     local_inertial_flow(
-                        floodplain_v.q0[i],
+                        river_v.q0[i],
                         river_v.zs_src[i],
                         river_v.zs_dst[i],
-                        floodplain_v.hf[i],
-                        floodplain_v.a[i],
-                        floodplain_v.r[i],
+                        river_v.hf[i],
+                        river_v.a[i],
+                        river_v.r[i],
                         river_p.flow_length_at_edge[i],
-                        floodplain_p.mannings_n_sq[i],
+                        river_p.mannings_n_sq[i],
                         river_p.g,
                         river_p.froude_limit,
                         dt,
@@ -457,154 +371,119 @@ function local_inertial_river_update!(
                     0.0f0,
                 )
 
-                # limit floodplain q in case water is not available
-                floodplain_v.q[i] = ifelse(
-                    floodplain_v.h[i_src] <= 0.0f0,
-                    min(floodplain_v.q[i], 0.0f0),
-                    floodplain_v.q[i],
+                # limit q in case water is not available
+                river_v.q[i] = ifelse(
+                    river_v.h[i_src] <= 0.0f0,
+                    min(river_v.q[i], 0.0f0),
+                    river_v.q[i],
                 )
-                floodplain_v.q[i] = ifelse(
-                    floodplain_v.h[i_dst] <= 0.0f0,
-                    max(floodplain_v.q[i], 0.0f0),
-                    floodplain_v.q[i],
+                river_v.q[i] = ifelse(
+                    river_v.h[i_dst] <= 0.0f0,
+                    max(river_v.q[i], 0.0f0),
+                    river_v.q[i],
                 )
-
-                floodplain_v.q[i] = ifelse(
-                    floodplain_v.q[i] * river_v.q[i] < 0.0f0,
-                    0.0f0,
-                    floodplain_v.q[i],
-                )
-                # average floodplain discharge (here accumulated for model timestep Δt)
-                floodplain_v.q_av[i] += floodplain_v.q[i] * dt
+                # average river discharge (here accumulated for model timestep Δt)
+                river_v.q_av[i] += river_v.q[i] * dt
             end
-        end
-    end
-    # For reservoir and lake locations the local inertial solution is replaced by the
-    # reservoir or lake model. These locations are handled as boundary conditions in the
-    # local inertial model (fixed h).
-    (; reservoir, inflow_waterbody) = model.boundary_conditions
-    # inds_reservoir = domain.reservoir.network.river_indices
+            @synchronize
 
-    if !isnothing(reservoir)  # should be declared before GPU kernel, otherwise it can't compile.
-        AK.foreachindex(
-            inds_reservoir;
-            scheduler = :polyester,  # Use Polyester.jl on cpu
-            min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-        ) do v
-            i = inds_reservoir[v]
-            # q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
-            q_in_reservoir = 0.0f0 # get_inflow_waterbody depends on !isnothing(floodplain). Not GPU compat.
-            update!(reservoir, Int(v), q_in_reservoir + inflow_waterbody[i], dt, dt_forcing)
-            river_v.q[i] = reservoir.variables.outflow[v]
-            # average river discharge (here accumulated for model timestep Δt)
-            river_v.q_av[i] += river_v.q[i] * dt
-        end
-    end
+            # if !isnothing(reservoir)  # should be declared before GPU kernel, otherwise it can't compile.
+            if V < len_res
+                i_res = inds_reservoir[V]
+                # q_in_reservoir = get_inflow_waterbody(model, edges_at_node.src[i, :])
+                q_in_reservoir = 0.0f0 # get_inflow_waterbody depends on !isnothing(floodplain). Not GPU compat.
+                inflow = q_in_reservoir + model.boundary_conditions.inflow_waterbody[i_res]
 
-    (; lake) = model.boundary_conditions
-    # inds_lake = domain.lake.network.river_indices
-    if !isnothing(lake)  # should be declared before GPU kernel, otherwise it can't compile.
-        AK.foreachindex(
-            inds_lake;
-            scheduler = :polyester,  # Use Polyester.jl on cpu
-            min_elems = 1000,  # Same arg as `minbatch = 1000` in original Wflow.jl code
-        ) do v
-            i = inds_lake[v]
-            # q_in_lake = get_inflow_waterbody(model, edges_at_node.src[i, :])
-            q_in_lake = 0.0f0 # get_inflow_waterbody depends on !isnothing(floodplain). Not GPU compat.
-            update!(lake, v, q_in_lake + inflow_waterbody[i], doy, dt, dt_forcing)
-            river_v.q[i] = max(lake.variables.outflow[v], 0.0f0)
-            # average river discharge (here accumulated for model timestep Δt)
-            river_v.q_av[i] += river_v.q[i] * dt
-        end
-    end
+                res_bc = model.boundary_conditions.reservoir.boundary_conditions
+                res_p = model.boundary_conditions.reservoir.parameters
+                res_v = model.boundary_conditions.reservoir.variables
 
-    if update_h
-        AK.foreachindex(river_p.active_n; scheduler = :polyester, min_elems = 1000) do i
-            q_src = 0.0f0
-            for j in axes(edges_at_node.src, 2)
-                n = edges_at_node.src[i, j]
-                if n ≠ Int(0)
-                    q_src += river_v.q[n]
-                end
+                # limit lake evaporation based on total available volume [m³]
+                precipitation =
+                    0.001f0 * res_bc.precipitation[V] * (dt / dt_forcing) * res_p.area[V]
+                available_storage = res_v.storage[V] + inflow * dt + precipitation
+                evap = 0.001f0 * res_bc.evaporation[V] * (dt / dt_forcing) * res_p.area[V]
+                actevap = min(available_storage, evap) # [m³/dt]
+
+                storage = res_v.storage[V] + (inflow * dt) + precipitation - actevap
+                storage = max(storage, 0.0f0)
+
+                percfull = storage / res_p.maxstorage[V]
+                # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+                fac = scurve(percfull, res_p.targetminfrac[V], 1.0f0, 30.0f0)
+                demandrelease = min(fac * res_p.demand[V] * dt, storage)
+                storage = storage - demandrelease
+
+                wantrel =
+                    max(0.0f0, storage - (res_p.maxstorage[V] * res_p.targetfullfrac[V]))
+                # Assume extra maximum Q if spilling
+                overflow_q = max((storage - res_p.maxstorage[V]), 0.0f0)
+                torelease =
+                    min(wantrel, overflow_q + res_p.maxrelease[V] * dt - demandrelease)
+                storage = storage - torelease
+                outflow = torelease + demandrelease
+                percfull = storage / res_p.maxstorage[V]
+
+                # update values in place
+                # instantaneous variables
+                res_v.demandrelease[V] = demandrelease / dt
+                res_v.percfull[V] = percfull
+                res_v.storage[V] = storage
+                res_v.outflow[V] = outflow / dt
+                # average variables (here accumulated for model timestep Δt)
+                res_bc.inflow[V] += inflow * dt
+                res_v.outflow_av[V] += outflow
+                res_v.storage_av[V] += storage * dt
+                res_v.actevap[V] += 1000.0f0 * (actevap / res_p.area[V])
+
+                river_v.q[i_res] = model.boundary_conditions.reservoir.variables.outflow[V]
+                # average river discharge (here accumulated for model timestep Δt)
+                river_v.q_av[i_res] += river_v.q[i_res] * dt
             end
-            m = edges_at_node.dst[i]
-            if m ≠ Int(0)
-                q_dst = river_v.q[m]
-            else
-                q_dst = 0.0f0
-            end
-
-            # internal abstraction (water demand) is limited by river storage and negative
-            # external inflow as part of water allocation computations.
-            river_v.storage[i] =
-                river_v.storage[i] + (q_src - q_dst + inwater[i] - abstraction[i]) * dt
-
-            if river_v.storage[i] < Float(0.0)
-                river_v.error[i] = river_v.error[i] + abs(river_v.storage[i])
-                river_v.storage[i] = Float(0.0) # set storage to zero
-            end
-            # limit negative external inflow
-            if inflow[i] < Float(0.0)
-                _inflow = max(-(Float(0.80) * river_v.storage[i] / dt), inflow[i])
-            else
-                _inflow = inflow[i]
-            end
-
-            river_v.storage[i] += _inflow * dt # add external inflow
-            river_v.h[i] = river_v.storage[i] / (flow_length[i] * flow_width[i])
-
-            ## TODO: make compilation for GPU work if floodplain is not defined.
-            # if !isnothing(model.floodplain)
-            #     floodplain_v = model.floodplain.variables
-            #     floodplain_p = model.floodplain.parameters
-            #     q_src = 0.0f0
-            #     for j in axes(edges_at_node.src, 2)
-            #         n = edges_at_node.src[i, j]
-            #         if n ≠ Int(0)
-            #             q_src += floodplain_v.q[n]
-            #         end
-            #     end
-            #     m = edges_at_node.dst[i]
-            #     if m ≠ Int(0)
-            #         q_dst = floodplain_v.q[m]
-            #     else
-            #         q_dst = 0.0f0
-            #     end
-
-            #     floodplain_v.storage[i] = floodplain_v.storage[i] + (q_src - q_dst) * dt
-            #     if floodplain_v.storage[i] < Float(0.0)
-            #         floodplain_v.error[i] =
-            #             floodplain_v.error[i] + abs(floodplain_v.storage[i])
-            #         floodplain_v.storage[i] = Float(0.0)
-            #     end
-            #     storage_total = river_v.storage[i] + floodplain_v.storage[i]
-            #     if storage_total > river_p.bankfull_storage[i]
-            #         flood_storage = storage_total - river_p.bankfull_storage[i]
-            #         h = flood_depth(floodplain_p.profile, flood_storage, flow_length[i], i)
-            #         river_v.h[i] = river_p.bankfull_depth[i] + h
-            #         river_v.storage[i] = river_v.h[i] * flow_width[i] * flow_length[i]
-            #         floodplain_v.storage[i] =
-            #             max(storage_total - river_v.storage[i], Float(0.0))
-            #         floodplain_v.h[i] =
-            #             floodplain_v.storage[i] > Float(0.0) ? h : Float(0.0)
-            #     else
-            #         river_v.h[i] = storage_total / (flow_length[i] * flow_width[i])
-            #         river_v.storage[i] = storage_total
-            #         floodplain_v.h[i] = Float(0.0)
-            #         floodplain_v.storage[i] = Float(0.0)
-            #     end
-            #     # average variables (here accumulated for model timestep Δt)
-            #     floodplain_v.storage_av[i] += floodplain_v.storage[i] * dt
-            #     floodplain_v.h_av[i] += floodplain_v.h_av[i] * dt
+            @synchronize
             # end
 
-            # average variables (here accumulated for model timestep Δt)
-            river_v.storage_av[i] += river_v.storage[i] * dt
-            river_v.h_av[i] += river_v.h[i] * dt
+            if K < len_nodes
+                q_src = 0.0f0
+                for j in axes(edges_at_node.src, 2)
+                    n = edges_at_node.src[K, j]
+                    if n ≠ 0
+                        q_src += river_v.q[n]
+                    end
+                end
+                m = edges_at_node.dst[K]
+                if m ≠ 0
+                    q_dst = river_v.q[m]
+                else
+                    q_dst = 0.0f0
+                end
+
+                # internal abstraction (water demand) is limited by river storage and negative
+                # external inflow as part of water allocation computations.
+                river_v.storage[K] =
+                    river_v.storage[K] + (q_src - q_dst + inwater[K] - abstraction[K]) * dt
+
+                if river_v.storage[K] < 0.0f0
+                    river_v.error[K] = river_v.error[K] + abs(river_v.storage[K])
+                    river_v.storage[K] = 0.0f0 # set storage to zero
+                end
+                # limit negative external inflow
+                if inflow[K] < 0.0f0
+                    _inflow = max(-(0.8f0 * river_v.storage[K] / dt), inflow[K])
+                else
+                    _inflow = inflow[K]
+                end
+
+                river_v.storage[K] += _inflow * dt # add external inflow
+                river_v.h[K] = river_v.storage[K] / (flow_length[K] * flow_width[K])
+
+                # average variables (here accumulated for model timestep Δt)
+                river_v.storage_av[K] += river_v.storage[K] * dt
+                river_v.h_av[K] += river_v.h[K] * dt
+            end
+            @synchronize
         end
     end
-    return nothing
 end
 
 """
@@ -637,7 +516,7 @@ function update!(
     set_flow_vars!(model.variables)
 
     t = Float(0.0)
-    steps = 100
+    steps = Int(100)
     river = adapt(BackendArray, model)  # adapt to GPU
     while t < dt
         dt_s = stable_timestep(river, flow_length)
@@ -646,22 +525,26 @@ function update!(
             dt_s = (dt - t) / steps
         end
         t = t + steps * dt_s
-        for i in 1:steps
-            @inbounds local_inertial_river_update!(
-                river,
-                # domain,
-                Float(dt_s),
-                dt,
-                doy,
-                update_h,
-                nodes_at_edge,
-                edges_at_node,
-                flow_length,
-                flow_width,
-                inds_lake,
-                inds_reservoir,
-            )
-        end
+        kern = local_inertial_river_update!(backend, 256)
+        kern(
+            river,
+            # domain,
+            Float(dt_s),
+            dt,
+            doy,
+            update_h,
+            nodes_at_edge,
+            edges_at_node,
+            flow_length,
+            flow_width,
+            inds_lake,
+            inds_reservoir,
+            Int(length(inds_reservoir)),
+            Int(length(river.parameters.active_e)),
+            Int(length(edges_at_node.dst));
+            ndrange = size(flow_length),
+        )
+        synchronize(backend)
     end
 
     river_cpu = adapt(Array, river)
@@ -685,7 +568,8 @@ function update!(
     while !all(model.variables.q_av .=== river_cpu.variables.q_av)
         copy!(model.variables.q_av, river_cpu.variables.q_av)
     end
-
+    print("Max river flow; ")
+    println(maximum(river_cpu.variables.q_av))
     # Set vars to nothing so gc can clean up. Wasn't happening automatically...
     river = nothing
     river_cpu = nothing

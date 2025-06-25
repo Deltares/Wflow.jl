@@ -54,7 +54,9 @@ using TerminalLoggers
 using TOML: TOML
 using Adapt
 using KernelAbstractions
+using KernelAbstractions.Extras
 import AcceleratedKernels as AK
+# using Infiltrator
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
