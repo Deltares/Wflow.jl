@@ -228,10 +228,14 @@ end
 
 # For local inertial river routing, `to_river` is included, as reservoir cells are excluded
 # (boundary condition).
-get_inflow_reservoir(::LocalInertialRiverFlow, model::KinWaveOverlandFlow) =
-    model.variables.q_av .+ model.variables.to_river
-get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF) =
-    (model.variables.ssf .+ model.variables.to_river) ./ tosecond(BASETIMESTEP)
+get_inflow_reservoir(
+    ::LocalInertialRiverFlow,
+    model::KinWaveOverlandFlow,
+    inds::Vector{Int},
+) = model.variables.q_av[inds] .+ model.variables.to_river[inds]
+
+get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF, inds::Vector{Int}) =
+    (model.variables.ssf[inds] .+ model.variables.to_river[inds]) ./ tosecond(BASETIMESTEP)
 
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
@@ -391,13 +395,16 @@ function local_inertial_river_update!(
     # For reservoir locations the local inertial solution is replaced by the reservoir
     # model. These locations are handled as boundary conditions in the local inertial model
     # (fixed h).
-    (; reservoir, inflow_reservoir) = model.boundary_conditions
+    (; reservoir) = model.boundary_conditions
     inds_reservoir = domain.reservoir.network.river_indices
     for v in eachindex(inds_reservoir)
         i = inds_reservoir[v]
 
         q_in = get_inflow_reservoir(model, edges_at_node.src[i])
-        update!(reservoir, v, q_in + inflow_reservoir[i], dt, dt_forcing)
+        inflow_land =
+            reservoir.boundary_conditions.inflow_overland[v] +
+            reservoir.boundary_conditions.inflow_subsurface[v]
+        update!(reservoir, v, q_in + inflow_land, dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
@@ -616,12 +623,11 @@ end
 "Struct to store local inertial overland flow model boundary conditions"
 @with_kw struct LocalInertialOverlandFlowBC
     runoff::Vector{Float64}           # runoff from hydrological model [m³ s⁻¹]
-    inflow_reservoir::Vector{Float64} # inflow to reservoir from hydrological model [m³ s⁻¹]
 end
 
 "Struct to store shallow water overland flow model boundary conditions"
 function LocalInertialOverlandFlowBC(n::Int)
-    bc = LocalInertialOverlandFlowBC(; runoff = zeros(n), inflow_reservoir = zeros(n))
+    bc = LocalInertialOverlandFlowBC(; runoff = zeros(n))
     return bc
 end
 
@@ -693,8 +699,8 @@ function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParam
 end
 
 """
-Update boundary conditions `runoff` and inflow to a reservoir from land `inflow_reservoir`
-for overland flow model `LocalInertialOverlandFlow` for a single timestep.
+Update boundary condition `runoff` overland flow model `LocalInertialOverlandFlow` for a
+single timestep.
 """
 function update_boundary_conditions!(
     model::LocalInertialOverlandFlow,
@@ -702,23 +708,32 @@ function update_boundary_conditions!(
     domain::Domain,
     dt::Float64,
 )
-    (; river_flow, soil, subsurface_flow, runoff) = external_models
-    (; inflow_reservoir) = model.boundary_conditions
-    (; reservoir) = river_flow.boundary_conditions
+    (; soil, runoff, subsurface_flow) = external_models
     (; net_runoff) = soil.variables
     (; net_runoff_river) = runoff.variables
-
     (; area) = domain.land.parameters
-    (; network) = domain.river
+    river_indices = domain.river.network.land_indices
 
-    model.boundary_conditions.runoff .=
-        net_runoff ./ 1000.0 .* area ./ dt .+ get_flux_to_river(subsurface_flow) .+
-        net_runoff_river .* area .* 0.001 ./ dt
+    @. model.boundary_conditions.runoff =
+        net_runoff / 1000.0 * area / dt + net_runoff_river * area * 0.001 / dt
+    model.boundary_conditions.runoff[river_indices] .+=
+        get_flux_to_river(subsurface_flow, river_indices)
+    return nothing
+end
 
-    if !isnothing(reservoir)
-        inflow_subsurface = get_inflow_reservoir(river_flow, subsurface_flow)
-
-        @. inflow_reservoir[network.land_indices] = inflow_subsurface[network.land_indices]
+"""
+Update boundary condition subsurface flow contribution to inflow of a reservoir model for a
+river flow model `LocalInertialRiverFlow` for a single timestep.
+"""
+function update_inflow!(
+    model::Union{Reservoir, Nothing},
+    river_flow::LocalInertialRiverFlow,
+    subsurface_flow::AbstractSubsurfaceFlowModel,
+    reservoir_indices::Vector{Int},
+)
+    if !isnothing(model)
+        model.boundary_conditions.inflow_subsurface .=
+            get_inflow_reservoir(river_flow, subsurface_flow, reservoir_indices)
     end
     return nothing
 end
@@ -774,7 +789,7 @@ function update!(
         dt_s = check_timestepsize(dt_s, t, dt)
 
         local_inertial_update_fluxes!(land, domain, dt_s)
-        update_inflow_reservoir!(land, river, domain)
+        update_inflow_reservoir!(land, reservoir, domain)
         local_inertial_river_update!(river, domain, dt_s, dt, update_h)
         local_inertial_update_water_depth!(land, river, domain, dt_s)
 
@@ -897,27 +912,20 @@ single timestep.
 """
 function update_inflow_reservoir!(
     land::LocalInertialOverlandFlow,
-    river::LocalInertialRiverFlow,
+    reservoir::Union{Reservoir, Nothing},
     domain::Domain,
 )
     indices = domain.land.network.edge_indices
-    inds_river = domain.land.network.river_indices
-    (; river_location, reservoir_outlet) = domain.land.parameters
-
-    river_bc = river.boundary_conditions
+    reservoir_indices = domain.reservoir.network.land_indices
     land_bc = land.boundary_conditions
     land_v = land.variables
-    land_p = land.parameters
 
-    @batch per = thread minbatch = 6000 for i in 1:(land_p.n)
-        yd = indices.yd[i]
-        xd = indices.xd[i]
-        if river_location[i] && reservoir_outlet[i]
-            river_bc.inflow_reservoir[inds_river[i]] =
-                land_bc.inflow_reservoir[i] +
-                land_bc.runoff[i] +
-                (land_v.qx[xd] - land_v.qx[i] + land_v.qy[yd] - land_v.qy[i])
-        end
+    for (i, j) in enumerate(reservoir_indices)
+        yd = indices.yd[j]
+        xd = indices.xd[j]
+        reservoir.boundary_conditions.inflow_overland[i] =
+            land_bc.runoff[j] +
+            (land_v.qx[xd] - land_v.qx[j] + land_v.qy[yd] - land_v.qy[j])
     end
     return nothing
 end

@@ -109,7 +109,6 @@ end
     inwater::Vector{Float64}                # Lateral inflow [m³ s⁻¹]
     inflow::Vector{Float64}                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64}  # Actual abstraction from external negative inflow [m³ s⁻¹]
-    inflow_reservoir::Vector{Float64}       # inflow reservoir from land part [m³ s⁻¹]
     abstraction::Vector{Float64}            # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     reservoir::R                            # Reservoir model struct of arrays
 end
@@ -120,7 +119,6 @@ function RiverFlowBC(n::Int, reservoir::Union{Reservoir, Nothing})
         inwater = zeros(Float64, n),
         inflow = zeros(Float64, n),
         actual_external_abstraction_av = zeros(Float64, n),
-        inflow_reservoir = zeros(Float64, n),
         abstraction = zeros(Float64, n),
         reservoir = reservoir,
     )
@@ -407,14 +405,8 @@ function kinwave_river_update!(
         reservoir_indices,
     ) = domain.network
 
-    (;
-        reservoir,
-        inwater,
-        inflow,
-        actual_external_abstraction_av,
-        abstraction,
-        inflow_reservoir,
-    ) = model.boundary_conditions
+    (; reservoir, inwater, inflow, actual_external_abstraction_av, abstraction) =
+        model.boundary_conditions
 
     (; beta, alpha) = model.parameters
     (; flow_width, flow_length) = domain.parameters
@@ -456,7 +448,10 @@ function kinwave_river_update!(
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
                     i = reservoir_indices[v]
-                    update!(reservoir, i, q[v] + inflow_reservoir[v], dt, dt_forcing)
+                    inflow_land =
+                        reservoir.boundary_conditions.inflow_overland[i] +
+                        reservoir.boundary_conditions.inflow_subsurface[i]
+                    update!(reservoir, i, q[v] + inflow_land, dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -582,7 +577,7 @@ function update_lateral_inflow!(
     (; area) = domain.land.parameters
 
     inwater .= (
-        get_flux_to_river(subsurface_flow)[land_indices] .+
+        get_flux_to_river(subsurface_flow, land_indices) .+
         overland_flow.variables.to_river[land_indices] .+
         (net_runoff_river[land_indices] .* area[land_indices] .* 0.001) ./ dt .+
         (get_nonirrigation_returnflow(allocation) .* 0.001 .* cell_area) ./ dt
@@ -621,32 +616,33 @@ function update_lateral_inflow!(
 end
 
 """
-Update boundary condition inflow to a reservoir from land `inflow_reservoir` of a model
-`AbstractRiverFlowModel` for a single timestep.
+Update boundary condition overland and subsurface flow contribution to inflow of a reservoir
+model for a river flow model `AbstractRiverFlowModel` for a single timestep.
 """
-function update_inflow_reservoir!(
-    model::AbstractRiverFlowModel,
+function update_inflow!(
+    model::Union{Reservoir, Nothing},
+    river_flow::AbstractRiverFlowModel,
     external_models::NamedTuple,
-    river_indices::Vector{Int},
+    reservoir_indices::Vector{Int},
 )
     (; overland_flow, subsurface_flow) = external_models
-    (; reservoir, inflow_reservoir) = model.boundary_conditions
-
-    if !isnothing(reservoir)
-        inflow_land = get_inflow_reservoir(model, overland_flow)
-        inflow_subsurface = get_inflow_reservoir(model, subsurface_flow)
-
-        @. inflow_reservoir = inflow_land[river_indices] + inflow_subsurface[river_indices]
+    if !isnothing(model)
+        (; inflow_overland, inflow_subsurface) = model.boundary_conditions
+        inflow_overland .=
+            get_inflow_reservoir(river_flow, overland_flow, reservoir_indices)
+        inflow_subsurface .=
+            get_inflow_reservoir(river_flow, subsurface_flow, reservoir_indices)
     end
     return nothing
 end
 
 # For the river kinematic wave, the variable `to_river` can be excluded, because this part
 # is added to the river kinematic wave.
-get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow) = model.variables.q_av
-get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF) =
-    model.variables.ssf ./ tosecond(BASETIMESTEP)
+get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow, inds::Vector{Int}) =
+    model.variables.q_av[inds]
+get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF, inds::Vector{Int}) =
+    model.variables.ssf[inds] ./ tosecond(BASETIMESTEP)
 
 # Exclude subsurface flow from `GroundwaterFlow`.
-get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow) =
-    zeros(model.connectivity.ncell)
+get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow, inds::Vector{Int}) =
+    zeros(length(inds))

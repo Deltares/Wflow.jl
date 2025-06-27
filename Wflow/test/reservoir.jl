@@ -1,5 +1,11 @@
 # Simple reservoir (outflowfunc = 4)  
-res_bc = Wflow.ReservoirBC(; inflow = [0.0], precipitation = [4.2], evaporation = [1.5])
+res_bc = Wflow.ReservoirBC(;
+    inflow = [0.0],
+    inflow_overland = [0.0],
+    inflow_subsurface = [0.0],
+    precipitation = [4.2],
+    evaporation = [1.5],
+)
 res_params = Wflow.ReservoirParameters(;
     demand = [52.523],
     maxrelease = [420.184],
@@ -34,7 +40,13 @@ res = Wflow.Reservoir(;
 end
 
 # Reservoir Modified Puls approach (outflowfunc = 3)  
-res_bc = Wflow.ReservoirBC(; inflow = [0.0], precipitation = [20.0], evaporation = [3.2])
+res_bc = Wflow.ReservoirBC(;
+    inflow = [0.0],
+    inflow_overland = [0.0],
+    inflow_subsurface = [0.0],
+    precipitation = [20.0],
+    evaporation = [3.2],
+)
 res_params = Wflow.ReservoirParameters(;
     area = [180510409.0],
     threshold = [0.0],
@@ -116,6 +128,8 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
     )
     res_bc = Wflow.ReservoirBC(;
         inflow = [0.0, 0.0],
+        inflow_subsurface = [0.0, 0.0],
+        inflow_overland = [0.0, 0.0],
         precipitation = [10.0, 10.0],
         evaporation = [2.0, 2.0],
     )
@@ -150,8 +164,13 @@ end
 
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
 @testset "Overflowing reservoir with SH and HQ" begin
-    res_bc =
-        Wflow.ReservoirBC(; inflow = [0.0], precipitation = [10.0], evaporation = [2.0])
+    res_bc = Wflow.ReservoirBC(;
+        inflow = [0.0],
+        inflow_overland = [0.0],
+        inflow_subsurface = [0.0],
+        precipitation = [10.0],
+        evaporation = [2.0],
+    )
     sh = Vector{Union{Wflow.SH, Missing}}([
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
     ])

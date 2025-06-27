@@ -227,7 +227,6 @@ end
         inflow = zeros(n),
         actual_external_abstraction_av = zeros(n),
         abstraction = zeros(n),
-        inflow_reservoir = zeros(n),
         inwater = zeros(n),
         reservoir = nothing,
     )

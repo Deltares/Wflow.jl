@@ -504,11 +504,9 @@ end
 
 function get_flux_to_river(
     subsurface_flow::GroundwaterFlow{A},
+    inds::Vector{Int},
 ) where {A <: UnconfinedAquifer}
     (; river) = subsurface_flow.boundaries
-    ncell = subsurface_flow.connectivity.ncell
-    flux = zeros(ncell)
-    index = river.index
-    flux[index] = -river.variables.flux ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+    flux = -river.variables.flux ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end

@@ -214,7 +214,9 @@ end
 
 "Struct for storing reservoir model boundary conditions"
 @with_kw struct ReservoirBC
-    inflow::Vector{Float64}               # inflow into reservoir [m³ s⁻¹] for model timestep Δt
+    inflow_subsurface::Vector{Float64}    # inflow from subsurface flow into reservoir [m³ s⁻¹]
+    inflow_overland::Vector{Float64}      # inflow from overland flow into reservoir [m³ s⁻¹]
+    inflow::Vector{Float64}               # total inflow into reservoir [m³ s⁻¹] for model timestep Δt
     precipitation::Vector{Float64}        # average precipitation for reservoir area [mm Δt⁻¹]
     evaporation::Vector{Float64}          # average potential evaporation for reservoir area [mm Δt⁻¹]
 end
@@ -222,6 +224,8 @@ end
 "Initialize reservoir model boundary conditions"
 function ReservoirBC(n::Int)
     bc = ReservoirBC(;
+        inflow_subsurface = fill(MISSING_VALUE, n),
+        inflow_overland = fill(MISSING_VALUE, n),
         inflow = fill(MISSING_VALUE, n),
         precipitation = fill(MISSING_VALUE, n),
         evaporation = fill(MISSING_VALUE, n),
