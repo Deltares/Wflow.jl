@@ -62,6 +62,7 @@ function update_land_surface_temperature(
     network::NetworkLand,
     vegetation_parameters::VegetationParameters,
     land_parameters::LandParameters,
+    clock,
 )
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
 
@@ -77,6 +78,7 @@ function update_land_surface_temperature(
                 atmospheric_forcing.temperature[i],
                 atmospheric_forcing.shortwave_radiation_in[i],
                 network.latitude[i],
+                clock,
             )
         land_surface_temperature_model.variables.net_radiation[i] =
             land_surface_temperature_model.variables.net_shortwave_radiation[i] -
@@ -89,6 +91,7 @@ function update_land_surface_temperature(
             compute_latent_heat_flux(
                 atmospheric_forcing.temperature[i],
                 soil_model.variables.actevap[i],
+                clock,
             )
 
         # Calculate sensible heat flux
@@ -130,6 +133,7 @@ function update!(
     network::NetworkLand,
     vegetation_parameters::VegetationParameters,
     land_parameters::LandParameters,
+    clock,
 )
     update_land_surface_temperature(
         land_surface_temperature_model,
@@ -138,6 +142,7 @@ function update!(
         network,
         vegetation_parameters,
         land_parameters,
+        clock,
     )
 
     return nothing
@@ -150,6 +155,7 @@ function update!(
     network::NetworkLand,
     vegetation_parameters::VegetationParameters,
     land_parameters::LandParameters,
+    clock,
 )
     return nothing
 end
@@ -180,10 +186,10 @@ function relative_distance(doy::Int)
     return dist
 end
 #EQN: A8
-function extraterrestrial_radiation(lat::Float64)
+function extraterrestrial_radiation(lat::Float64, clock)
     gsc = 118.08  # MJ/m²/day
     lat_rad = deg2rad(lat)
-    doy = dayofyear(clock.current_time)
+    doy = dayofyear(clock.time)
     decl = solar_declination(doy)
     dist = relative_distance(doy)
     sha = acos(-tan(lat_rad) * tan(decl))
@@ -197,12 +203,13 @@ function compute_net_longwave_radiation(
     air_temperature::Float64,
     shortwave_radiation_in::Float64,
     lat::Float64,
+    clock,
 )
     sigma = 4.903e-9 # MJK-4m-2day-1 Steffan Boltzmann constant 
     a = sigma * (air_temperature + 273.15)^4
     ea = 0.611 * exp(17.27 * air_temperature / (237.3 + air_temperature)^2)
     b = 0.34 - 0.14 * sqrt(ea)
-    Rso = extraterrestrial_radiation(lat) * 0.75
+    Rso = extraterrestrial_radiation(lat, clock) * 0.75
     c = (1.35 * shortwave_radiation_in / Rso) - 0.35
     RLN = a * b * c
     return RLN
@@ -213,11 +220,12 @@ function compute_net_radiation(
     shortwave_radiation_in::Float64,
     lat::Float64,
     air_temperature::Float64,
+    clock,
 )
     net_shortwave_radiation =
         compute_net_shortwave_radiation(albedo, shortwave_radiation_in)
     net_longwave_radiation =
-        compute_net_longwave_radiation(air_temperature, shortwave_radiation_in, lat)
+        compute_net_longwave_radiation(air_temperature, shortwave_radiation_in, lat, clock)
     net_radiation = net_shortwave_radiation - net_longwave_radiation
     return net_radiation
 end
@@ -229,10 +237,11 @@ end
 function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
+    clock,
 )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     # Convert actual_evapotranspiration from mm/Δt to m/s
-    actual_evapotranspiration_ms = (actual_evapotranspiration / 1000.0) / clock.dt
+    actual_evapotranspiration_ms = (actual_evapotranspiration / 1000.0) / tosecond(clock.dt)
     latent_heat_flux =
         latent_heat_of_vaporization * density_water * actual_evapotranspiration_ms
     return latent_heat_flux
@@ -251,11 +260,23 @@ function compute_aerodynamic_resistance(
     von_karman_constant::Float64,
     wind_speed_2m::Float64,
 )
-    d = (2 / 3) * crop_height      #zero-plane displacement height
-    zom = 0.123 * crop_height     #roughness length for momentum
-    zoh = 0.1 * zom      #roughness length for heat
-    a = log((zm - d) / zom) * log((zh - d) / zoh)
-    uz = max(wind_speed_2m, 0.5) # must ensure some mixing in low wind scenarios, set a floor of 0.5 m/s
+    d = (2 / 3) * crop_height
+    zom = 0.123 * crop_height
+    zoh = 0.1 * zom
+
+    # zm_eff = max(zm, d + 0.1)
+    # zh_eff = max(zh, d + 0.1)
+
+    numerator1 = (zm - d) / zom
+    numerator2 = (zh - d) / zoh
+
+    if numerator1 <= 0 || numerator2 <= 0
+        @warn "Invalid log argument in aerodynamic resistance calc: crop_height=$crop_height, zm_eff=$zm, d=$d, zom=$zom, zoh=$zoh, numerator1=$numerator1, numerator2=$numerator2"
+        return 1e6  # return a large resistance, essentially no mixing
+    end
+
+    a = log(numerator1) * log(numerator2)
+    uz = max(wind_speed_2m, 0.5)
     b = von_karman_constant^2 * uz
     ra = a / b
     return ra
