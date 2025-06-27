@@ -1,0 +1,9 @@
+[deps]
+PkgToSoftwareBOM = "6254a0f9-6143-4104-aa2e-fd339a2830a6"
+Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
+
+[compat]
+PkgToSoftwareBOM = "0.1.13"
+
+[sources]
+Wflow = { path = "../../Wflow" }
