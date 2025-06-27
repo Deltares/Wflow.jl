@@ -154,7 +154,7 @@ function update!(
             soil,
             atmospheric_forcing,
             domain.land.network,
-            vegetation_parameters,
+            model.vegetation_parameters,
             domain.land.parameters,
         )
     end
