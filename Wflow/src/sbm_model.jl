@@ -97,7 +97,7 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
-    update!(land, routing, domain, config, dt)
+    update!(land, routing, domain, config, dt, clock)
 
     return nothing
 end
