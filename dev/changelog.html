@@ -471,6 +471,9 @@ window.Quarto = {
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<ul>
+<li>Refactor <code>SimpleReservoir</code> and <code>Lake</code> structs by introducing a <code>Reservoir</code> struct that combines data and functionality of both structs. For the simple reservoir a rating curve type (4) has been added. To represent reservoirs, (natural) lakes or other water storage features that can be represented by the available functionality the common name <code>reservoir</code> is used, also for the standard names of associated model variables and parameters.</li>
+</ul>
 </section>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
@@ -513,7 +516,6 @@ window.Quarto = {
 <li>Removed support for one layer models, and therefore also removed the <code>topog_sbm_transfer__flag</code> option. With this removal, the default soil layer thickness is set to <code>[100, 300, 800]</code>.</li>
 <li>The root length density fraction in unsaturated soil layers is scaled by using the total root length density fraction of the unsaturated zone. Plant transpiration can then be fully satisfied from the unsaturated zone when the water table intersects the root zone. For the transpiration from the saturated store the remaining potential transpiration is used in combination with the wet root fraction (root length density fraction in the saturated soil layers is not used).</li>
 <li>Changed order of computations for 1D-2D local inertial model that improves the accuracy of reservoir or lake state after initialization with a warm state. The inflow from land to a reservoir or lake was updated during the overland flow routing (final computation during each internal time step). This results in small inflow deviations when starting with a warm state as the inflow from land to a reservoir or lake has not been updated yet, while a reservoir or lake is updated as part of the river routing. Order of computations has been changed to: 1) overland flow routing, 2) reservoir or lake inflow and 3) river routing.</li>
-<li>Refactor <code>SimpleReservoir</code> and <code>Lake</code> structs by introducing a <code>Reservoir</code> struct that combines data and functionality of both structs. For the simple reservoir a rating curve type (4) has been added. To represent reservoirs, (natural) lakes or other water storage features that can be represented by the available functionality the common name <code>reservoir</code> is used, also for the standard names of associated model variables and parameters.</li>
 </ul>
 </section>
 <section id="added-1" class="level3">
