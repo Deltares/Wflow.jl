@@ -107,7 +107,7 @@ end
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R}
     inwater::Vector{Float64}                # Lateral inflow [m³ s⁻¹]
-    inflow::Vector{Float64}                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    external_inflow::Vector{Float64}                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64}  # Actual abstraction from external negative inflow [m³ s⁻¹]
     abstraction::Vector{Float64}            # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     reservoir::R                            # Reservoir model struct of arrays
@@ -117,7 +117,7 @@ end
 function RiverFlowBC(n::Int, reservoir::Union{Reservoir, Nothing})
     bc = RiverFlowBC(;
         inwater = zeros(Float64, n),
-        inflow = zeros(Float64, n),
+        external_inflow = zeros(Float64, n),
         actual_external_abstraction_av = zeros(Float64, n),
         abstraction = zeros(Float64, n),
         reservoir = reservoir,
@@ -405,7 +405,7 @@ function kinwave_river_update!(
         reservoir_indices,
     ) = domain.network
 
-    (; reservoir, inwater, inflow, actual_external_abstraction_av, abstraction) =
+    (; reservoir, inwater, external_inflow, actual_external_abstraction_av, abstraction) =
         model.boundary_conditions
 
     (; beta, alpha) = model.parameters
@@ -421,14 +421,16 @@ function kinwave_river_update!(
                 # qin by outflow from upstream reservoir location is added
                 qin[v] += sum_at(q, upstream_nodes[n])
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
-                # If inflow < 0, abstraction is limited
-                if inflow[v] < 0.0
-                    _inflow =
-                        max(-((inwater[v] + qin[v] + storage[v] / dt) * 0.80), inflow[v])
+                # If external_inflow < 0, abstraction is limited
+                if external_inflow[v] < 0.0
+                    _inflow = max(
+                        -((inwater[v] + qin[v] + storage[v] / dt) * 0.80),
+                        external_inflow[v],
+                    )
                     actual_external_abstraction_av[v] += _inflow * dt
                     _inflow = _inflow / flow_length[v]
                 else
-                    _inflow = inflow[v] / flow_length[v]
+                    _inflow = external_inflow[v] / flow_length[v]
                 end
                 # internal abstraction (water demand) is limited by river storage and
                 # negative external inflow as part of water allocation computations.

@@ -247,7 +247,7 @@ function local_inertial_river_update!(
 )
     (; nodes_at_edge, edges_at_node) = domain.river.network
     (; flow_length, flow_width) = domain.river.parameters
-    (; inwater, abstraction, inflow, actual_external_abstraction_av) =
+    (; inwater, abstraction, external_inflow, actual_external_abstraction_av) =
         model.boundary_conditions
 
     river_v = model.variables
@@ -423,11 +423,11 @@ function local_inertial_river_update!(
                 river_v.storage[i] = 0.0 # set storage to zero
             end
             # limit negative external inflow
-            if inflow[i] < 0.0
-                _inflow = max(-(0.80 * river_v.storage[i] / dt), inflow[i])
+            if external_inflow[i] < 0.0
+                _inflow = max(-(0.80 * river_v.storage[i] / dt), external_inflow[i])
                 actual_external_abstraction_av[i] += _inflow * dt
             else
-                _inflow = inflow[i]
+                _inflow = external_inflow[i]
             end
             river_v.storage[i] += _inflow * dt # add external inflow
             river_v.h[i] = river_v.storage[i] / (flow_length[i] * flow_width[i])
@@ -975,18 +975,20 @@ function local_inertial_update_water_depth!(
                 land_v.storage[i] = 0.0 # set storage to zero
             end
             # limit negative external inflow
-            if river_bc.inflow[inds_river[i]] < 0.0
+            if river_bc.external_inflow[inds_river[i]] < 0.0
                 available_volume =
                     if land_v.storage[i] >= river_p.bankfull_storage[inds_river[i]]
                         river_p.bankfull_depth[inds_river[i]]
                     else
                         river_v.storage[inds_river[i]]
                     end
-                _inflow =
-                    max(-(0.80 * available_volume / dt), river_bc.inflow[inds_river[i]])
+                _inflow = max(
+                    -(0.80 * available_volume / dt),
+                    river_bc.external_inflow[inds_river[i]],
+                )
                 river_bc.actual_external_abstraction_av[inds_river[i]] += _inflow * dt
             else
-                _inflow = river_bc.inflow[inds_river[i]]
+                _inflow = river_bc.external_inflow[inds_river[i]]
             end
             land_v.storage[i] += _inflow * dt
             if land_v.storage[i] >= river_p.bankfull_storage[inds_river[i]]

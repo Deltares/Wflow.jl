@@ -573,7 +573,7 @@ function surface_water_allocation_local!(
     (; surfacewater_demand) = demand.variables
     (; act_surfacewater_abst_vol, act_surfacewater_abst, available_surfacewater) =
         river.allocation.variables
-    (; inflow) = river.boundary_conditions
+    (; external_inflow) = river.boundary_conditions
     (; storage) = river.variables
 
     (; area) = domain.parameters
@@ -583,12 +583,12 @@ function surface_water_allocation_local!(
     for i in eachindex(surfacewater_demand)
         if indices_river[i] > 0.0
             # the available volume is limited by a fixed scaling factor of 0.8 to prevent
-            # rivers completely drying out. check for abstraction through inflow (external
-            # negative inflow) first and adjust available volume.
-            if inflow[indices_river[i]] < 0.0
+            # rivers completely drying out. check for abstraction through negative external
+            # inflow first and adjust available volume.
+            if external_inflow[indices_river[i]] < 0.0
                 available_volume = storage[indices_river[i]] * 0.80
                 max_river_abstraction =
-                    min(-inflow[indices_river[i]] * dt, available_volume)
+                    min(-external_inflow[indices_river[i]] * dt, available_volume)
                 available_volume = max(available_volume - max_river_abstraction, 0.0)
             else
                 available_volume = storage[indices_river[i]] * 0.80

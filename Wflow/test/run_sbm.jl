@@ -206,7 +206,7 @@ Wflow.run_timestep!(model)
     @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000006747697516
 end
 
-# test cyclic river inflow
+# test cyclic river external inflow
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
@@ -216,21 +216,22 @@ model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
-@testset "river inflow (cyclic)" begin
-    @test model.routing.river_flow.boundary_conditions.inflow[44] ≈ 0.75
+@testset "river external inflow (cyclic)" begin
+    @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
     @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
           0.0
     @test model.routing.river_flow.variables.q_av[44] ≈ 10.545108098407255
 end
 
-# test negative inflow
+# test external negative inflow
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.Model(config)
-model.routing.river_flow.boundary_conditions.inflow[44] = -10.0
-(; actual_external_abstraction_av, inflow) = model.routing.river_flow.boundary_conditions
+model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
+(; actual_external_abstraction_av, external_inflow) =
+    model.routing.river_flow.boundary_conditions
 (; q_av) = model.routing.river_flow.variables
-@testset "river negative inflow" begin
+@testset "river external negative inflow" begin
     Wflow.run_timestep!(model)
     @test actual_external_abstraction_av[44] ≈ -2.8679304138607975
     @test q_av[44] ≈ 0.1843871721222499
@@ -239,7 +240,7 @@ model.routing.river_flow.boundary_conditions.inflow[44] = -10.0
     @test q_av[44] ≈ 0.47418709955920835
     Wflow.run_timestep!(model)
     @test actual_external_abstraction_av[44] ≈ -10.0
-    @test inflow[44] == -10.0
+    @test external_inflow[44] == -10.0
     @test q_av[44] ≈ 7.971510806300895
 end
 
@@ -301,10 +302,11 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 model = Wflow.Model(config)
-model.routing.river_flow.boundary_conditions.inflow[44] = -10.0
-(; actual_external_abstraction_av, inflow) = model.routing.river_flow.boundary_conditions
+model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
+(; actual_external_abstraction_av, external_inflow) =
+    model.routing.river_flow.boundary_conditions
 (; q_av) = model.routing.river_flow.variables
-@testset "river negative inflow (local inertial)" begin
+@testset "river external negative inflow (local inertial)" begin
     Wflow.run_timestep!(model)
     @test actual_external_abstraction_av[44] ≈ -3.0125200444690616
     @test q_av[44] ≈ 0.0007487510598495983
@@ -313,7 +315,7 @@ model.routing.river_flow.boundary_conditions.inflow[44] = -10.0
     @test q_av[44] ≈ 0.07687497983468243
     Wflow.run_timestep!(model)
     @test actual_external_abstraction_av[44] ≈ -10.0
-    @test inflow[44] == -10.0
+    @test external_inflow[44] == -10.0
     @test q_av[44] ≈ 7.904126692597465
 end
 model = Wflow.Model(config)

@@ -224,7 +224,7 @@ end
     )
 
     boundary_conditions = Wflow.RiverFlowBC(;
-        inflow = zeros(n),
+        external_inflow = zeros(n),
         actual_external_abstraction_av = zeros(n),
         abstraction = zeros(n),
         inwater = zeros(n),
