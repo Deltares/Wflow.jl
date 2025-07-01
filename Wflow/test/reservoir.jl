@@ -1,6 +1,8 @@
 # Simple reservoir (outflowfunc = 4)  
 res_bc = Wflow.ReservoirBC(;
     inflow = [0.0],
+    external_inflow = [0.0],
+    actual_external_abstraction_av = [0.0],
     inflow_overland = [0.0],
     inflow_subsurface = [0.0],
     precipitation = [4.2],
@@ -42,6 +44,8 @@ end
 # Reservoir Modified Puls approach (outflowfunc = 3)  
 res_bc = Wflow.ReservoirBC(;
     inflow = [0.0],
+    external_inflow = [0.0],
+    actual_external_abstraction_av = [0.0],
     inflow_overland = [0.0],
     inflow_subsurface = [0.0],
     precipitation = [20.0],
@@ -128,6 +132,8 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
     )
     res_bc = Wflow.ReservoirBC(;
         inflow = [0.0, 0.0],
+        external_inflow = [0.0, 0.0],
+        actual_external_abstraction_av = [0.0, 0.0],
         inflow_subsurface = [0.0, 0.0],
         inflow_overland = [0.0, 0.0],
         precipitation = [10.0, 10.0],
@@ -166,6 +172,8 @@ end
 @testset "Overflowing reservoir with SH and HQ" begin
     res_bc = Wflow.ReservoirBC(;
         inflow = [0.0],
+        external_inflow = [0.0],
+        actual_external_abstraction_av = [0.0],
         inflow_overland = [0.0],
         inflow_subsurface = [0.0],
         precipitation = [10.0],
