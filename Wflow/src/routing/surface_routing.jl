@@ -65,8 +65,8 @@ function surface_routing!(
         domain,
         dt,
     )
-    # update reservoir boundary conditions external inflow and subsurface flow, inflow
-    # from river flow is added within the river routing scheme
+    # update reservoir boundary conditions external inflow and subsurface flow, inflow from
+    # river and overland flow is added within the river and overland routing schemes
     update_boundary_conditions!(
         reservoir,
         river_flow,
