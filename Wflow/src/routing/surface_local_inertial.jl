@@ -722,18 +722,22 @@ function update_boundary_conditions!(
 end
 
 """
-Update boundary condition subsurface flow contribution to inflow of a reservoir model for a
-river flow model `LocalInertialRiverFlow` for a single timestep.
+Update boundary condition external inflow and subsurface flow contribution to inflow of a
+reservoir model for a river flow model `LocalInertialRiverFlow` for a single timestep.
 """
-function update_inflow!(
+function update_boundary_conditions!(
     model::Union{Reservoir, Nothing},
     river_flow::LocalInertialRiverFlow,
     subsurface_flow::AbstractSubsurfaceFlowModel,
-    reservoir_indices::Vector{Int},
+    network::NetworkReservoir,
 )
+    (; land_indices, river_indices) = network
     if !isnothing(model)
-        model.boundary_conditions.inflow_subsurface .=
-            get_inflow_reservoir(river_flow, subsurface_flow, reservoir_indices)
+        (; inflow_subsurface, external_inflow) = model.boundary_conditions
+        inflow_subsurface .= get_inflow_reservoir(river_flow, subsurface_flow, land_indices)
+        # move river external inflow to reservoir model
+        external_inflow .= river_flow.boundary_conditions.external_inflow[river_indices]
+        river_flow.boundary_conditions.external_inflow[river_indices] .= 0.0
     end
     return nothing
 end
