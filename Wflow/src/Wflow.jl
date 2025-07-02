@@ -3,6 +3,7 @@ module Wflow
 import BasicModelInterface as BMI
 
 using Accessors: @optic, @reset, PropertyLens
+import Adapt: adapt, @adapt_structure, adapt_structure
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using CompositionsBase: decompose

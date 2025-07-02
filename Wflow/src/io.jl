@@ -1426,8 +1426,14 @@ function read_hq_csv(path)
 end
 
 # these represent the type of the rating curve and specific storage data
-const SH = NamedTuple{(:H, :S), Tuple{Vector{Float64}, Vector{Float64}}}
-const HQ = NamedTuple{(:H, :Q), Tuple{Vector{Float64}, Matrix{Float64}}}
+const SH = NamedTuple{
+    (:H, :S),
+    Tuple{<:AbstractArray{<:AbstractFloat}, <:AbstractArray{<:AbstractFloat}},
+}
+const HQ = NamedTuple{
+    (:H, :Q),
+    Tuple{<:AbstractArray{<:AbstractFloat}, <:AbstractArray{<:AbstractFloat, 2}},
+}
 
 is_increasing(v) = last(v) > first(v)
 

@@ -1,38 +1,61 @@
 "Struct for storing reservoir model parameters"
-@with_kw struct ReservoirParameters
+@with_kw struct ReservoirParameters{
+    T <: AbstractArray{<:AbstractFloat},
+    I <: AbstractArray{Int},
+}
     # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and
     # interpolation
-    storfunc::Vector{Int}
+    storfunc::I
     # type of reservoir rating curve, 1: Q = f(H) from reservoir data and interpolation, 2:
     # General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)², 4: Simple reservoir
-    outflowfunc::Vector{Int}
+    outflowfunc::I
     # reservoir area [m²]
-    area::Vector{Float64}
+    area::T
     # index of lower reservoir (linked reservoirs) [-]
-    lower_reservoir_ind::Vector{Int} = fill(0, length(area))
+    lower_reservoir_ind::I = fill(0, length(area))
     # reservoir maximum storage for rating curve types 1 and 4 [m³]
-    maxstorage::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    maxstorage::T = fill(MISSING_VALUE, length(area))
     # water level threshold H₀ [m] below that level outflow is zero
-    threshold::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    threshold::T = fill(MISSING_VALUE, length(area))
     # rating curve coefficient [m3/2 s-1] (if e=3/2)
-    b::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    b::T = fill(MISSING_VALUE, length(area))
     # rating curve exponent [-]
-    e::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    e::T = fill(MISSING_VALUE, length(area))
     # data for storage curve
     sh::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
     # data for rating curve
     hq::Vector{Union{HQ, Missing}} = Vector{Union{HQ, Missing}}(missing, length(area))
     # column index of rating curve data hq
-    col_index_hq::Vector{Int} = [1]
+    col_index_hq::I = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
-    maxrelease::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    maxrelease::T = fill(MISSING_VALUE, length(area))
     # minimum (environmental) flow requirement downstream of the reservoir for rating curve
     # type 4 [m³ s⁻¹]
-    demand::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    demand::T = fill(MISSING_VALUE, length(area))
     # target minimum full fraction (of max storage) for rating curve type 4 [-]
-    targetminfrac::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    targetminfrac::T = fill(MISSING_VALUE, length(area))
     # target fraction full (of max storage) for rating curve type 4 [-]
-    targetfullfrac::Vector{Float64} = fill(MISSING_VALUE, length(area))
+    targetfullfrac::T = fill(MISSING_VALUE, length(area))
+end
+
+function adapt_structure(to, from::ReservoirParameters)
+    return ReservoirParameters(
+        adapt(to, from.storfunc),
+        adapt(to, from.outflowfunc),
+        adapt(to, from.area),
+        adapt(to, from.lower_reservoir_ind),
+        adapt(to, from.maxstorage),
+        adapt(to, from.threshold),
+        adapt(to, from.b),
+        adapt(to, from.e),
+        [adapt(to, sh) for sh in from.sh],  # TODO: might not be compatible with GPU computations
+        [adapt(to, hq) for hq in from.hq],
+        adapt(to, from.col_index_hq),
+        adapt(to, from.maxrelease),
+        adapt(to, from.demand),
+        adapt(to, from.targetminfrac),
+        adapt(to, from.targetfullfrac),
+    )
 end
 
 "Initialize reservoir model parameters"
@@ -181,26 +204,27 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 end
 
 "Struct for storing reservoir model variables"
-@with_kw struct ReservoirVariables
+@with_kw struct ReservoirVariables{T <: AbstractArray{<:AbstractFloat}}
     # waterlevel H [m] of reservoir
-    waterlevel::Vector{Float64}
+    waterlevel::T
     # average waterlevel H [m] of reservoir for model timestep Δt
-    waterlevel_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    waterlevel_av::T = fill(MISSING_VALUE, length(waterlevel))
     # reservoir storage [m³]
-    storage::Vector{Float64}
+    storage::T
     # average reservoir storage [m³] for model timestep Δt
-    storage_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    storage_av::T = fill(MISSING_VALUE, length(waterlevel))
     # outflow from reservoir [m³ s⁻¹]
-    outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    outflow::T = fill(MISSING_VALUE, length(waterlevel))
     # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
-    outflow_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    outflow_av::T = fill(MISSING_VALUE, length(waterlevel))
     # average actual evaporation for reservoir area [mm Δt⁻¹]
-    actevap::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    actevap::T = fill(MISSING_VALUE, length(waterlevel))
     # fraction full (of max storage) for rating curve type 4 [-]
-    percfull::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    percfull::T = fill(MISSING_VALUE, length(waterlevel))
     # minimum (environmental) flow released from reservoir for rating curve type 4 [m³ s⁻¹]
-    demandrelease::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    demandrelease::T = fill(MISSING_VALUE, length(waterlevel))
 end
+@adapt_structure ReservoirVariables
 
 "Initialize reservoir model variables"
 function ReservoirVariables(parameters::ReservoirParameters, waterlevel::Vector{Float64})
@@ -213,11 +237,12 @@ function ReservoirVariables(parameters::ReservoirParameters, waterlevel::Vector{
 end
 
 "Struct for storing reservoir model boundary conditions"
-@with_kw struct ReservoirBC
-    inflow::Vector{Float64}               # inflow into reservoir [m³ s⁻¹] for model timestep Δt
-    precipitation::Vector{Float64}        # average precipitation for reservoir area [mm Δt⁻¹]
-    evaporation::Vector{Float64}          # average potential evaporation for reservoir area [mm Δt⁻¹]
+@with_kw struct ReservoirBC{T <: AbstractArray{<:AbstractFloat}}
+    inflow::T               # inflow into reservoir [m³ s⁻¹] for model timestep Δt
+    precipitation::T        # average precipitation for reservoir area [mm Δt⁻¹]
+    evaporation::T          # average potential evaporation for reservoir area [mm Δt⁻¹]
 end
+@adapt_structure ReservoirBC
 
 "Initialize reservoir model boundary conditions"
 function ReservoirBC(n::Int)
@@ -235,6 +260,7 @@ end
     parameters::ReservoirParameters
     variables::ReservoirVariables
 end
+@adapt_structure Reservoir
 
 "Initialize reservoir model `SimpleReservoir`"
 function Reservoir(dataset::NCDataset, config::Config, network::NetworkReservoir)
