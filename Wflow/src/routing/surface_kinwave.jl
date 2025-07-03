@@ -225,6 +225,7 @@ each internal timestep.
 """
 function set_reservoir_vars!(reservoir::Reservoir)
     reservoir.boundary_conditions.inflow .= 0.0
+    reservoir.boundary_conditions.actual_external_abstraction_av .= 0.0
     reservoir.variables.outflow_av .= 0.0
     reservoir.variables.storage_av .= 0.0
     reservoir.variables.actevap .= 0.0
@@ -243,6 +244,7 @@ function average_reservoir_vars!(reservoir::Reservoir, dt::Float64)
     reservoir.variables.storage_av ./= dt
     reservoir.boundary_conditions.inflow ./= dt
     reservoir.variables.waterlevel_av ./= dt
+    reservoir.boundary_conditions.actual_external_abstraction_av ./= dt
 
     return nothing
 end
@@ -412,6 +414,10 @@ function kinwave_river_update!(
     (; flow_width, flow_length) = domain.parameters
     (; h, h_av, q, q_av, storage, storage_av, qin, qlat) = model.variables
 
+    if !isnothing(reservoir)
+        res_bc = reservoir.boundary_conditions
+    end
+
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns
@@ -423,12 +429,12 @@ function kinwave_river_update!(
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If external_inflow < 0, abstraction is limited
                 if external_inflow[v] < 0.0
-                    _inflow = max(
-                        -((inwater[v] + qin[v] + storage[v] / dt) * 0.80),
-                        external_inflow[v],
+                    _abstraction = min(
+                        -external_inflow[v],
+                        (storage[v] / dt + inwater[v] + qin[v]) * 0.80,
                     )
-                    actual_external_abstraction_av[v] += _inflow * dt
-                    _inflow = _inflow / flow_length[v]
+                    actual_external_abstraction_av[v] += _abstraction * dt
+                    _inflow = -_abstraction / flow_length[v]
                 else
                     _inflow = external_inflow[v] / flow_length[v]
                 end
@@ -450,10 +456,20 @@ function kinwave_river_update!(
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
                     i = reservoir_indices[v]
-                    inflow_land =
-                        reservoir.boundary_conditions.inflow_overland[i] +
-                        reservoir.boundary_conditions.inflow_subsurface[i]
-                    update!(reservoir, i, q[v] + inflow_land, dt, dt_forcing)
+                    total_inflow =
+                        q[v] + res_bc.inflow_overland[i] + res_bc.inflow_subsurface[i]
+                    # If external_inflow < 0, abstraction is limited
+                    if res_bc.external_inflow[i] < 0.0
+                        _abstraction = min(
+                            -res_bc.external_inflow[i],
+                            (reservoir.variables.storage[i] / dt + total_inflow) * 0.98,
+                        )
+                        res_bc.actual_external_abstraction_av[i] += _abstraction * dt
+                        _inflow = -_abstraction
+                    else
+                        _inflow = res_bc.external_inflow[i]
+                    end
+                    update!(reservoir, i, total_inflow + _inflow, dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)

@@ -233,13 +233,13 @@ model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
 (; q_av) = model.routing.river_flow.variables
 @testset "river external negative inflow" begin
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ -2.8679304138607975
+    @test actual_external_abstraction_av[44] ≈ 2.8679304138607975
     @test q_av[44] ≈ 0.1843871721222499
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ -9.365470220567532
+    @test actual_external_abstraction_av[44] ≈ 9.365470220567532
     @test q_av[44] ≈ 0.47418709955920835
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ -10.0
+    @test actual_external_abstraction_av[44] ≈ 10.0
     @test external_inflow[44] == -10.0
     @test q_av[44] ≈ 7.971510806300895
 end
@@ -308,13 +308,13 @@ model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
 (; q_av) = model.routing.river_flow.variables
 @testset "river external negative inflow (local inertial)" begin
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ -3.0125200444690616
+    @test actual_external_abstraction_av[44] ≈ 3.0125200444690616
     @test q_av[44] ≈ 0.0007487510598495983
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ -9.73523034718189
+    @test actual_external_abstraction_av[44] ≈ 9.73523034718189
     @test q_av[44] ≈ 0.07687497983468243
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ -10.0
+    @test actual_external_abstraction_av[44] ≈ 10.0
     @test external_inflow[44] == -10.0
     @test q_av[44] ≈ 7.904126692597465
 end

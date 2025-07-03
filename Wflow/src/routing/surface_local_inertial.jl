@@ -397,14 +397,26 @@ function local_inertial_river_update!(
     # (fixed h).
     (; reservoir) = model.boundary_conditions
     inds_reservoir = domain.reservoir.network.river_indices
+    if !isnothing(reservoir)
+        res_bc = reservoir.boundary_conditions
+    end
     for v in eachindex(inds_reservoir)
         i = inds_reservoir[v]
 
         q_in = get_inflow_reservoir(model, edges_at_node.src[i])
-        inflow_land =
-            reservoir.boundary_conditions.inflow_overland[v] +
-            reservoir.boundary_conditions.inflow_subsurface[v]
-        update!(reservoir, v, q_in + inflow_land, dt, dt_forcing)
+        total_inflow = q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v]
+        # If external_inflow < 0, abstraction is limited
+        if res_bc.external_inflow[v] < 0.0
+            _abstraction = min(
+                -res_bc.external_inflow[v],
+                (reservoir.variables.storage[v] / dt + total_inflow) * 0.98,
+            )
+            res_bc.actual_external_abstraction_av[v] += _abstraction * dt
+            _inflow = -_abstraction
+        else
+            _inflow = res_bc.external_inflow[v]
+        end
+        update!(reservoir, v, total_inflow + _inflow, dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
@@ -424,8 +436,9 @@ function local_inertial_river_update!(
             end
             # limit negative external inflow
             if external_inflow[i] < 0.0
-                _inflow = max(-(0.80 * river_v.storage[i] / dt), external_inflow[i])
-                actual_external_abstraction_av[i] += _inflow * dt
+                _abstraction = min(-external_inflow[i], river_v.storage[i] / dt * 0.80)
+                actual_external_abstraction_av[i] += _abstraction * dt
+                _inflow = -_abstraction
             else
                 _inflow = external_inflow[i]
             end
@@ -986,11 +999,12 @@ function local_inertial_update_water_depth!(
                     else
                         river_v.storage[inds_river[i]]
                     end
-                _inflow = max(
-                    -(0.80 * available_volume / dt),
-                    river_bc.external_inflow[inds_river[i]],
+                _abstraction = min(
+                    -river_bc.external_inflow[inds_river[i]],
+                    available_volume / dt * 0.80,
                 )
-                river_bc.actual_external_abstraction_av[inds_river[i]] += _inflow * dt
+                river_bc.actual_external_abstraction_av[inds_river[i]] += _abstraction * dt
+                _inflow = -_abstraction
             else
                 _inflow = river_bc.external_inflow[inds_river[i]]
             end
