@@ -642,10 +642,19 @@ function surface_water_allocation_area!(
         sw_available = 0.0
         for j in inds_river[i]
             if inds_reservoir[j] > 0
-                # for reservoir locations use reservoir storage
+                # for reservoir locations use reservoir storage, check for abstraction
+                # through external negative inflow first and adjust available volume.
                 k = inds_reservoir[j]
-                available_surfacewater[j] = reservoir.variables.storage[k] * 0.98 # limit available reservoir storage
-                sw_available += available_surfacewater[j]
+                external_inflow = reservoir.boundary_conditions.external_inflow[k]
+                if external_inflow < 0.0
+                    available_volume = reservoir.variables.storage[k] * 0.98
+                    max_res_abstraction = min(external_inflow * dt, available_volume)
+                    available_volume = max(available_volume - max_res_abstraction, 0.0)
+                else
+                    available_volume = reservoir.variables.storage[k] * 0.98
+                end
+                available_surfacewater[j] = available_volume
+                sw_available += available_volume
             else
                 # river volume
                 sw_available += available_surfacewater[j]
