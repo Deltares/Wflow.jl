@@ -429,10 +429,7 @@ function kinwave_river_update!(
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If external_inflow < 0, abstraction is limited
                 if external_inflow[v] < 0.0
-                    _abstraction = min(
-                        -external_inflow[v],
-                        (storage[v] / dt + inwater[v] + qin[v]) * 0.80,
-                    )
+                    _abstraction = min(-external_inflow[v], (storage[v] / dt) * 0.80)
                     actual_external_abstraction_av[v] += _abstraction * dt
                     _inflow = -_abstraction / flow_length[v]
                 else
@@ -456,20 +453,23 @@ function kinwave_river_update!(
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
                     i = reservoir_indices[v]
-                    total_inflow =
-                        q[v] + res_bc.inflow_overland[i] + res_bc.inflow_subsurface[i]
                     # If external_inflow < 0, abstraction is limited
                     if res_bc.external_inflow[i] < 0.0
                         _abstraction = min(
                             -res_bc.external_inflow[i],
-                            (reservoir.variables.storage[i] / dt + total_inflow) * 0.98,
+                            (reservoir.variables.storage[i] / dt) * 0.98,
                         )
                         res_bc.actual_external_abstraction_av[i] += _abstraction * dt
                         _inflow = -_abstraction
                     else
                         _inflow = res_bc.external_inflow[i]
                     end
-                    update!(reservoir, i, total_inflow + _inflow, dt, dt_forcing)
+                    net_inflow =
+                        q[v] +
+                        res_bc.inflow_overland[i] +
+                        res_bc.inflow_subsurface[i] +
+                        _inflow
+                    update!(reservoir, i, net_inflow, dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)

@@ -404,19 +404,20 @@ function local_inertial_river_update!(
         i = inds_reservoir[v]
 
         q_in = get_inflow_reservoir(model, edges_at_node.src[i])
-        total_inflow = q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v]
         # If external_inflow < 0, abstraction is limited
         if res_bc.external_inflow[v] < 0.0
             _abstraction = min(
                 -res_bc.external_inflow[v],
-                (reservoir.variables.storage[v] / dt + total_inflow) * 0.98,
+                (reservoir.variables.storage[v] / dt) * 0.98,
             )
             res_bc.actual_external_abstraction_av[v] += _abstraction * dt
             _inflow = -_abstraction
         else
             _inflow = res_bc.external_inflow[v]
         end
-        update!(reservoir, v, total_inflow + _inflow, dt, dt_forcing)
+        net_inflow =
+            q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v] + _inflow
+        update!(reservoir, v, net_inflow, dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
