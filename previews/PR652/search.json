@@ -1326,7 +1326,7 @@
     "href": "model_docs/routing/kinwave.html#external-inflows",
     "title": "Kinematic wave",
     "section": "External inflows",
-    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can be added to the kinematic wave for river flow routing, as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted from the upstream inflow before running the kinematic wave to solve the impact on resulting river flow \\(\\SIb{Q}{m^3\\ s^{-1}}\\). In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of \\(0.80\\) applied to sum of upstream inflow, lateral inflow and river storage, all terms expresssed in unit \\(\\SI{}{m^3\\ s^{-1}}\\).",
+    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can be added to the kinematic wave for river flow routing, as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted from the lateral inflow before running the kinematic wave to solve the impact on resulting river flow \\(\\SIb{Q}{m^3\\ s^{-1}}\\). In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of \\(0.80\\) applied to river storage.",
     "crumbs": [
       "Model documentation",
       "Routing concepts",
