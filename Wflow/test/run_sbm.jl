@@ -206,7 +206,7 @@ Wflow.run_timestep!(model)
     @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000006747697516
 end
 
-# test cyclic river external inflow
+# test cyclic river and reservoir external inflow
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
@@ -216,11 +216,17 @@ model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
 
-@testset "river external inflow (cyclic)" begin
+@testset "river and reservoir external inflow (cyclic)" begin
+    (; reservoir) = model.routing.river_flow.boundary_conditions
     @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
     @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
           0.0
     @test model.routing.river_flow.variables.q_av[44] ≈ 10.545108098407255
+    @test reservoir.boundary_conditions.external_inflow[2] == -1.0
+    @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
+    @test reservoir.boundary_conditions.inflow[2] ≈ -0.9034940832803586
+    @test reservoir.variables.storage_av[2] ≈ 4.621644103995512e7
+    @test reservoir.variables.outflow_av[2] ≈ 3.000999922024245
 end
 
 # test external negative inflow
