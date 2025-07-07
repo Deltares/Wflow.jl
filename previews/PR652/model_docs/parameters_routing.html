@@ -626,6 +626,48 @@ td, th {
 <td>m³</td>
 <td>-</td>
 </tr>
+<tr class="odd">
+<td><code>reservoir_water__rating_curve_coefficient</code></td>
+<td>Rating curve coefficient</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>reservoir_water__rating_curve_exponent</code></td>
+<td>Rating curve exponent</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>reservoir_water_flow_threshold-level__elevation</code></td>
+<td>Water level threshold, below this level outflow is zero</td>
+<td>m</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>reservoir~lower_location__count</code></td>
+<td>Index of lower reservoir (linked reservoir)</td>
+<td>-</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td><code>reservoir_water__storage_curve_type_count</code></td>
+<td>Type of reservoir storage curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><code>reservoir_water__rating_curve_type_count</code></td>
+<td>Type of reservoir rating curve</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><code>reservoir_water_surface__initial_elevation</code></td>
+<td>Water level of reservoir (used for initialization)</td>
+<td>m</td>
+<td>-</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -672,45 +714,9 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>reservoir_water__rating_curve_coefficient</code></td>
-<td>Rating curve coefficient</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>reservoir_water__rating_curve_exponent</code></td>
-<td>Rating curve exponent</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td><code>reservoir_water_flow_threshold-level__elevation</code></td>
-<td>Water level threshold, below this level outflow is zero</td>
-<td>m</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>reservoir~lower_location__count</code></td>
-<td>Index of lower reservoir (linked reservoir)</td>
-<td>-</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td><code>reservoir_water__storage_curve_type_count</code></td>
-<td>Type of reservoir storage curve</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>reservoir_water__rating_curve_type_count</code></td>
-<td>Type of reservoir rating curve</td>
-<td>-</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td><code>reservoir_water_surface__initial_elevation</code></td>
-<td>Water level of reservoir (used for initialization)</td>
-<td>m</td>
+<td><code>reservoir_water_inflow~external__volume_flow_rate</code></td>
+<td>External inflow reservoir (negative for abstractions)</td>
+<td>m³ s⁻¹</td>
 <td>-</td>
 </tr>
 </tbody>
@@ -840,7 +846,28 @@ td, th {
 <td>m m⁻¹</td>
 <td>-</td>
 </tr>
-<tr class="even">
+</tbody>
+</table>
+</section>
+<section id="static-or-cyclicforcing-input-1" class="level4">
+<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-1">Static or cyclic/forcing input</h4>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 28%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
 <td><code>river_water_inflow~external__volume_flow_rate</code></td>
 <td>External inflow into the river (negative for abstractions)</td>
 <td>m³ s⁻¹</td>
