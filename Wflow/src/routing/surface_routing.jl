@@ -29,9 +29,9 @@ function surface_routing!(model)
         domain,
         dt,
     )
-    # update reservoir boundary conditions external inflow and inflow (overland and
-    # subsurface flow), inflow from river flow is added within the river routing scheme
-    update_boundary_conditions!(
+    # update reservoir inflow (overland and subsurface flow), inflow from river flow is
+    # added within the river routing scheme
+    update_inflow!(
         reservoir,
         river_flow,
         (; overland_flow, subsurface_flow),
@@ -65,14 +65,9 @@ function surface_routing!(
         domain,
         dt,
     )
-    # update reservoir boundary conditions external inflow and subsurface flow, inflow from
-    # river and overland flow is added within the river and overland routing schemes
-    update_boundary_conditions!(
-        reservoir,
-        river_flow,
-        subsurface_flow,
-        domain.reservoir.network,
-    )
+    # update reservoir inflow (subsurface flow), inflow from river and overland flow is
+    # added within the river and overland routing schemes
+    update_inflow!(reservoir, river_flow, subsurface_flow, domain.reservoir.network)
     # update overland and river flow
     update!(overland_flow, river_flow, domain, clock)
 

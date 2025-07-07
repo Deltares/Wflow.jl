@@ -211,6 +211,7 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
 config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
+config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
@@ -234,6 +235,7 @@ tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 
 config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
+config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)

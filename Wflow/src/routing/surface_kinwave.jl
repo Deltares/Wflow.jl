@@ -634,25 +634,21 @@ function update_lateral_inflow!(
 end
 
 """
-Update boundary condition external inflow and overland and subsurface flow contribution to
-inflow of a reservoir model for a river flow model `AbstractRiverFlowModel` for a single
-timestep.
+Update overland and subsurface flow contribution to inflow of a reservoir model for a river
+flow model `AbstractRiverFlowModel` for a single timestep.
 """
-function update_boundary_conditions!(
+function update_inflow!(
     model::Union{Reservoir, Nothing},
     river_flow::AbstractRiverFlowModel,
     external_models::NamedTuple,
     network::NetworkReservoir,
 )
     (; overland_flow, subsurface_flow) = external_models
-    (; land_indices, river_indices) = network
+    (; land_indices) = network
     if !isnothing(model)
-        (; inflow_overland, inflow_subsurface, external_inflow) = model.boundary_conditions
+        (; inflow_overland, inflow_subsurface) = model.boundary_conditions
         inflow_overland .= get_inflow_reservoir(river_flow, overland_flow, land_indices)
         inflow_subsurface .= get_inflow_reservoir(river_flow, subsurface_flow, land_indices)
-        # move river external inflow to reservoir model
-        external_inflow .= river_flow.boundary_conditions.external_inflow[river_indices]
-        river_flow.boundary_conditions.external_inflow[river_indices] .= 0.0
     end
     return nothing
 end

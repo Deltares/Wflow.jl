@@ -149,6 +149,12 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         ),
         unit = "m",
     ),
+    "reservoir_water_inflow~external__volume_flow_rate" => (
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.external_inflow
+        ),
+        unit = "m3 s-1",
+    ),
     "soil_water__infiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actinfilt), unit = "mm dt-1"),
     "soil_water__transpiration_volume_flux" =>

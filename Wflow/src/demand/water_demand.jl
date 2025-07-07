@@ -619,6 +619,7 @@ function surface_water_allocation_area!(
     demand::Demand,
     river::AbstractRiverFlowModel,
     domain::Domain,
+    dt::Float64,
 )
     inds_river = domain.river.network.allocation_area_indices
     inds_land = domain.land.network.allocation_area_indices
@@ -854,7 +855,7 @@ function update_water_allocation!(
     # local surface water demand and allocation (river, excluding reservoirs)
     surface_water_allocation_local!(model, demand, river, domain.land, dt)
     # surface water demand and allocation for areas
-    surface_water_allocation_area!(model, demand, river, domain)
+    surface_water_allocation_area!(model, demand, river, domain, dt)
 
     @. abstraction = act_surfacewater_abst_vol / dt
 
