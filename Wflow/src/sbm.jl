@@ -154,10 +154,8 @@ function update!(
             land_surface_temperature,
             soil,
             atmospheric_forcing,
-            domain.land.network,
             model.vegetation_parameters,
-            domain.land.parameters,
-            clock,
+            config,
         )
     end
 

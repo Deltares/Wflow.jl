@@ -1,6 +1,5 @@
 # after Devi Purnamasari et al. 2025 
 # https://doi.org/10.5194/hess-29-1483-2025
-#TODO: review comments that are too instructional, retain during dev.
 
 abstract type AbstractLandSurfaceTemperatureModel end
 struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
@@ -8,26 +7,26 @@ struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
 "Struct for storing LST model variables"
 @with_kw struct LandSurfaceTemperatureVariables
     aerodynamic_resistance::Vector{Float64} = Float64[]      # Aerodynamic resistance (s/m)
-    net_shortwave_radiation::Vector{Float64} = Float64[]     # Net shortwave radiation (W/m2)
     latent_heat_flux::Vector{Float64} = Float64[]      # Latent heat flux (W/m2)
     sensible_heat_flux::Vector{Float64} = Float64[]       # Sensible heat flux (W/m2)
-    net_longwave_radiation::Vector{Float64} = Float64[]     # Net longwave radiation (W/m2)
     latent_heat_of_vaporization::Vector{Float64} = Float64[]  # Latent heat of vaporization (J/kg)
-    net_radiation::Vector{Float64} = Float64[]    # Net radiation (W/m2)
     land_surface_temperature::Vector{Float64} = Float64[]     # Land surface temperature (K)
+    net_radiation::Vector{Float64} = Float64[]               # Net radiation (W/m2)
+    net_shortwave_radiation::Vector{Float64} = Float64[]     # Net shortwave radiation (W/m2)
+    net_longwave_radiation::Vector{Float64} = Float64[]      # Net longwave radiation (W/m2)
 end
 
 "Initialize Land Surface Temperature model variables"
 function LandSurfaceTemperatureVariables(n::Int)
     return LandSurfaceTemperatureVariables(;
         aerodynamic_resistance = fill(MISSING_VALUE, n),
-        net_shortwave_radiation = fill(MISSING_VALUE, n),
         latent_heat_flux = fill(MISSING_VALUE, n),
         sensible_heat_flux = fill(MISSING_VALUE, n),
-        net_longwave_radiation = fill(MISSING_VALUE, n),
         latent_heat_of_vaporization = fill(MISSING_VALUE, n),
-        net_radiation = fill(MISSING_VALUE, n),
         land_surface_temperature = fill(MISSING_VALUE, n),
+        net_radiation = fill(MISSING_VALUE, n),
+        net_shortwave_radiation = fill(MISSING_VALUE, n),
+        net_longwave_radiation = fill(MISSING_VALUE, n),
     )
 end
 
@@ -50,30 +49,18 @@ function update_land_surface_temperature(
     land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
-    network::NetworkLand,
     vegetation_parameters::VegetationParameters,
-    land_parameters::LandParameters,
-    clock,
+    config::Config,
 )
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
 
-    for i in 1:n
-        land_surface_temperature_model.variables.net_shortwave_radiation[i] =
-            compute_net_shortwave_radiation(
-                land_parameters.albedo[i],
-                atmospheric_forcing.shortwave_radiation_in[i],
-            )
+    # Get wind measurement height from config (default to 10m if not specified)
+    wind_measurement_height = Float64(get(config.input, "wind_altitude", 10.0))
 
-        land_surface_temperature_model.variables.net_longwave_radiation[i] =
-            compute_net_longwave_radiation(
-                atmospheric_forcing.temperature[i],
-                atmospheric_forcing.shortwave_radiation_in[i],
-                network.latitude[i],
-                clock,
-            )
-        land_surface_temperature_model.variables.net_radiation[i] =
-            land_surface_temperature_model.variables.net_shortwave_radiation[i] -
-            land_surface_temperature_model.variables.net_longwave_radiation[i]
+    for i in 1:n
+        # Use pre-calculated net radiation from forcing (calculated in hydromt_wflow preprocessing)
+        # net_radiation is now provided directly in atmospheric_forcing
+        net_radiation = atmospheric_forcing.net_radiation[i]
 
         land_surface_temperature_model.variables.latent_heat_of_vaporization[i] =
             compute_latent_heat_of_vaporization(atmospheric_forcing.temperature[i])
@@ -82,13 +69,13 @@ function update_land_surface_temperature(
             compute_latent_heat_flux(
                 atmospheric_forcing.temperature[i],
                 soil_model.variables.actevap[i],
-                clock,
+                config,
             )
 
         # Calculate sensible heat flux
         land_surface_temperature_model.variables.sensible_heat_flux[i] =
             compute_sensible_heat_flux(
-                land_surface_temperature_model.variables.net_radiation[i],
+                net_radiation,
                 land_surface_temperature_model.variables.latent_heat_flux[i],
             )
 
@@ -121,21 +108,16 @@ function update!(
     land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
-    network::NetworkLand,
     vegetation_parameters::VegetationParameters,
-    land_parameters::LandParameters,
-    clock,
+    config::Config,
 )
     update_land_surface_temperature(
         land_surface_temperature_model,
         soil_model,
         atmospheric_forcing,
-        network,
         vegetation_parameters,
-        land_parameters,
-        clock,
+        config,
     )
-
     return nothing
 end
 
@@ -143,10 +125,8 @@ function update!(
     model::NoLandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
-    network::NetworkLand,
     vegetation_parameters::VegetationParameters,
-    land_parameters::LandParameters,
-    clock,
+    config::Config,
 )
     return nothing
 end
@@ -156,70 +136,6 @@ get_LandSurfaceTemperature(model::NoLandSurfaceTemperatureModel) = 0.0
 get_LandSurfaceTemperature(model::AbstractLandSurfaceTemperatureModel) =
     model.variables.land_surface_temperature
 
-""" 'net shortwave radiation' :: RSNet=(1−α)Rins(A4) """
-#EQN: A4
-function compute_net_shortwave_radiation(albedo::Float64, shortwave_radiation_in::Float64)
-    net_shortwave_radiation = (1 - albedo) * shortwave_radiation_in
-    return net_shortwave_radiation
-end
-#EQN: A8
-function solar_declination(doy::Int)
-    days_in_year = 365
-    radians = sin((2π * doy / days_in_year) - 1.39)
-    decl = 0.409 * radians
-    return decl
-end
-#EQN: A8
-function relative_distance(doy::Int)
-    days_in_year = 365
-    radians = cos(2π * doy / days_in_year)
-    dist = radians * 0.033 + 1  # distance in AU
-    return dist
-end
-#EQN: A8
-function extraterrestrial_radiation(lat::Float64, clock)
-    gsc = 118.08  # MJ/m²/day
-    lat_rad = deg2rad(lat)
-    doy = dayofyear(clock.time)
-    decl = solar_declination(doy)
-    dist = relative_distance(doy)
-    sha = acos(-tan(lat_rad) * tan(decl))
-    Ra =
-        dist * gsc / π *
-        (cos(lat_rad) * cos(decl) * sin(sha) + sha * sin(lat_rad) * sin(decl))
-    return Ra
-end
-""" 'net longwave radiation' :: RLN=(σTa^4)(0.34−0.14−√ea)(1.35 (Rins/Rso) − 0.35) """
-function compute_net_longwave_radiation(
-    air_temperature::Float64,
-    shortwave_radiation_in::Float64,
-    lat::Float64,
-    clock,
-)
-    sigma = 4.903e-9 # MJK-4m-2day-1 Steffan Boltzmann constant 
-    a = sigma * (air_temperature + 273.15)^4
-    ea = 0.611 * exp(17.27 * air_temperature / (237.3 + air_temperature)^2)
-    b = 0.34 - 0.14 * sqrt(ea)
-    Rso = extraterrestrial_radiation(lat, clock) * 0.75
-    c = (1.35 * shortwave_radiation_in / Rso) - 0.35
-    RLN = a * b * c
-    return RLN
-end
-""" 'net radiation' :: Rn=Rins−Routs+Rinl+Rins, """
-function compute_net_radiation(
-    albedo::Float64,
-    shortwave_radiation_in::Float64,
-    lat::Float64,
-    air_temperature::Float64,
-    clock,
-)
-    net_shortwave_radiation =
-        compute_net_shortwave_radiation(albedo, shortwave_radiation_in)
-    net_longwave_radiation =
-        compute_net_longwave_radiation(air_temperature, shortwave_radiation_in, lat, clock)
-    net_radiation = net_shortwave_radiation - net_longwave_radiation
-    return net_radiation
-end
 """ 'latent heat of vaporization' :: λ=2501−2.375Ta.(A1) """
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
     return 2501.0 - 2.375 * air_temperature
@@ -228,11 +144,12 @@ end
 function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
-    clock,
+    config::Config,
 )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     # Convert actual_evapotranspiration from mm/Δt to m/s
-    actual_evapotranspiration_ms = (actual_evapotranspiration / 1000.0) / tosecond(clock.dt)
+    actual_evapotranspiration_ms =
+        (actual_evapotranspiration / 1000.0) / config.time.timestepsecs
     latent_heat_flux =
         latent_heat_of_vaporization * density_water * actual_evapotranspiration_ms
     return latent_heat_flux
