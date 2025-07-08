@@ -22,8 +22,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.atmospheric_forcing.shortwave_radiation_in),
         unit = "W m-2",
     ),
-    "land_surface~2m-above_air_flow__speed" =>
-        (lens = @optic(_.land.atmospheric_forcing.wind_speed_2m), unit = "m s-1"),
+    "land_surface__net_radiation" =>
+        (lens = @optic(_.land.atmospheric_forcing.net_radiation), unit = "W m-2"),
+    "land_surface_air_flow__speed" =>
+        (lens = @optic(_.land.atmospheric_forcing.wind_speed), unit = "m s-1"),
     "vegetation__leaf-area_index" =>
         (lens = @optic(_.land.vegetation_parameters.leaf_area_index), unit = "m2 m-2"),
     "vegetation_canopy_water__depth" =>
