@@ -5,15 +5,6 @@
 abstract type AbstractLandSurfaceTemperatureModel end
 struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
 
-#TODO: move to domain jl landparameters or veg parameters
-const sigma = 5.67e-8  # Stefan-Boltzmann constant for blackbody radiation
-const cp = 1005.0      # Specific heat capacity of air in J/kg/K
-const density_air = 1.225     # Density of air in kg/m3 @ 15 degrees C
-const density_water = 1000.0     # Density of water in kg/m3
-const k = 0.41        # von Kármán constant
-const zm = 2.0        # height of wind speed measurement = zh
-const zh = 2.0        # height of air temperature measurement = zm
-
 "Struct for storing LST model variables"
 @with_kw struct LandSurfaceTemperatureVariables
     aerodynamic_resistance::Vector{Float64} = Float64[]      # Aerodynamic resistance (s/m)
