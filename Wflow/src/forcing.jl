@@ -8,8 +8,10 @@
     temperature::Vector{Float64} = Float64[]
     # Downward shortwave radiation [W m-2]
     shortwave_radiation_in::Vector{Float64} = Float64[]
-    # Wind speed at 2m height [m s-1]
-    wind_speed_2m::Vector{Float64} = Float64[]
+    # Wind speed [m s-1]
+    wind_speed::Vector{Float64} = Float64[]
+    # Net radiation [W m-2] (pre-calculated in hydromt_wflow preprocessing)
+    net_radiation::Vector{Float64} = Float64[]
 end
 
 "Initialize atmospheric forcing"
@@ -25,7 +27,8 @@ function AtmosphericForcing(config::Config, n::Int)
 
     if do_land_surface_temperature
         @reset atmos_forcing.shortwave_radiation_in = fill(MISSING_VALUE, n)
-        @reset atmos_forcing.wind_speed_2m = fill(MISSING_VALUE, n)
+        @reset atmos_forcing.wind_speed = fill(MISSING_VALUE, n)
+        @reset atmos_forcing.net_radiation = fill(MISSING_VALUE, n)
     end
 
     return atmos_forcing
