@@ -189,6 +189,7 @@ function compute_aerodynamic_resistance(
     ra = a / b
     return ra
 end
+
 """ 'land surface temperature' :: Ts=(H ra) /(ρacp)+Ta,(4)"""
 function compute_land_surface_temperature(
     sensible_heat_flux::Float64,
@@ -196,6 +197,7 @@ function compute_land_surface_temperature(
     air_temperature::Float64,
 )
     land_surface_temperature =
-        (sensible_heat_flux * aerodynamic_resistance) / (density_air * cp) + air_temperature
+        (sensible_heat_flux * aerodynamic_resistance) /
+        (density_air * specific_heat_capacity_air) + air_temperature
     return land_surface_temperature
 end
