@@ -43,7 +43,7 @@ function LandSurfaceTemperatureModel(n::Int)
 end
 
 """
-Update LST model for a single timestep
+Update LST model for a single timestep using pre-calculated net radiation from forcing
 """
 function update_land_surface_temperature(
     land_surface_temperature_model::LandSurfaceTemperatureModel,
@@ -79,14 +79,12 @@ function update_land_surface_temperature(
                 land_surface_temperature_model.variables.latent_heat_flux[i],
             )
 
-        # Calculate aerodynamic resistance
+        # Calculate aerodynamic resistance using wind speed at canopy height
         land_surface_temperature_model.variables.aerodynamic_resistance[i] =
-            compute_aerodynamic_resistance(
-                zm,
-                zh,
+            wind_and_aero_resistance(
+                atmospheric_forcing.wind_speed[i],
+                wind_measurement_height,
                 vegetation_parameters.canopy_height[i],
-                k,
-                atmospheric_forcing.wind_speed_2m[i],
             )
 
         # Calculate LST
@@ -159,34 +157,66 @@ function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Fl
     sensible_heat_flux = net_radiation - latent_heat_flux
     return sensible_heat_flux
 end
-""" 'aerodynamic resistance' :: ra = (ln(z/z0m) - psi_m) / (k^2 * u) """
-#EQN: A10-13
-function compute_aerodynamic_resistance(
-    zm::Float64,
-    zh::Float64,
-    crop_height::Float64,
-    von_karman_constant::Float64,
-    wind_speed_2m::Float64,
+""" 
+'aerodynamic resistance' :: ra = (ln(z/z0m) - psi_m) / (k^2 * u) 
+no clean way yet to deal with variable canopy height empirically
+
+| Cover type        | Typical d/h   | Reference                                    |
+| ----------------- | ------------- | -------------------------------------------- |
+| Short grass       | 0.67          | Allen et al. (1998), Brutsaert (1982)        |
+| Wheat, shrubs     | 0.65          | Brutsaert (1982); Thom (1975); Shuttleworth  |
+| Tall crops (corn) | 0.6           | Monteith & Unsworth (1990)                   |
+| Forest            | 0.5 (capped)  | Garratt (1992); Shuttleworth & Gurney (1990) |
+
+Empirical averages; real sites vary
+
+Sensitive to canopy density & LAI
+
+Seasonal and structural variability
+
+Forest cap avoids z - d < 0 issues
+"""
+#EQN: A10-13 adapted with dh ratio to ensure stability
+function wind_and_aero_resistance(
+    wind_speed_measured::Float64,
+    z_measured::Float64,
+    canopy_height::Float64;
+    z_target::Float64 = 2.0,
+    k::Float64 = 0.41,
 )
-    d = (2 / 3) * crop_height
-    zom = 0.123 * crop_height
-    zoh = 0.1 * zom
-
-    # zm_eff = max(zm, d + 0.1)
-    # zh_eff = max(zh, d + 0.1)
-
-    numerator1 = (zm - d) / zom
-    numerator2 = (zh - d) / zoh
-
-    if numerator1 <= 0 || numerator2 <= 0
-        @warn "Invalid log argument in aerodynamic resistance calc: crop_height=$crop_height, zm_eff=$zm, d=$d, zom=$zom, zoh=$zoh, numerator1=$numerator1, numerator2=$numerator2"
-        return 1e6  # return a large resistance, essentially no mixing
+    # Empirical d/h ratios
+    if canopy_height < 0.2
+        dh_ratio = 0.67  # grass
+    elseif canopy_height < 2.0
+        dh_ratio = 0.65  # wheat/shrubs
+    elseif canopy_height < 5.0
+        dh_ratio = 0.6   # corn, tall crops
+    else
+        dh_ratio = 0.5   # forest, capped
     end
 
-    a = log(numerator1) * log(numerator2)
-    uz = max(wind_speed_2m, 0.5)
-    b = von_karman_constant^2 * uz
-    ra = a / b
+    d = dh_ratio * canopy_height
+    # Cap d to 0.9 * z_measured for tall canopies
+    if d > 0.9 * z_measured
+        d = 0.9 * z_measured
+    end
+
+    z0m = max(0.005, 0.123 * canopy_height) # in case the canopy height is too small
+    z0h = 0.1 * z0m
+    zm = canopy_height + z_target
+    zh = zm
+
+    # Only use log-profile if both heights are above d
+    if (z_measured > d + 0.1) && (zm > d + 0.1) && (zh > d + 0.1)
+        wind_speed_canopy =
+            wind_speed_measured * (log((zm - d) / z0m) / log((z_measured - d) / z0m))
+        ra = (log((zm - d) / z0m) * log((zh - d) / z0h)) / (k^2 * wind_speed_canopy)
+        return ra
+    end
+
+    # Fallback: use measured wind, empirical ra
+    @warn "Aerodynamic resistance: log-profile not valid for canopy_height=$canopy_height, z_measured=$z_measured, d=$d. Using measured wind and empirical ra."
+    ra = 208 / max(wind_speed_measured, 0.5)  # FAO56 reference value
     return ra
 end
 
