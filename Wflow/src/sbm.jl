@@ -87,7 +87,6 @@ function update!(
     domain::Domain,
     config::Config,
     dt::Float64,
-    clock,
 )
     do_water_demand = haskey(config.model, "water_demand")::Bool
     (; parameters) = domain.land
