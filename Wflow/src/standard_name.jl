@@ -225,10 +225,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.land_surface_temperature.variables.net_longwave_radiation),
         unit = "W m-2",
     ),
-    "land_surface__net_radiation" => (
-        lens = @optic(_.land.land_surface_temperature.variables.net_radiation),
-        unit = "W m-2",
-    ),
+    # Removed duplicate entry - using the one that points to atmospheric_forcing.net_radiation
     "land_surface__latent_heat_flux" => (
         lens = @optic(_.land.land_surface_temperature.variables.latent_heat_flux),
         unit = "W m-2",

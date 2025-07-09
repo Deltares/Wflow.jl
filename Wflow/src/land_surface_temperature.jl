@@ -59,9 +59,6 @@ function update_land_surface_temperature(
 
     for i in 1:n
         # Use pre-calculated net radiation from forcing (calculated in hydromt_wflow preprocessing)
-        # net_radiation is now provided directly in atmospheric_forcing
-        net_radiation = atmospheric_forcing.net_radiation[i]
-
         land_surface_temperature_model.variables.latent_heat_of_vaporization[i] =
             compute_latent_heat_of_vaporization(atmospheric_forcing.temperature[i])
 
@@ -75,7 +72,7 @@ function update_land_surface_temperature(
         # Calculate sensible heat flux
         land_surface_temperature_model.variables.sensible_heat_flux[i] =
             compute_sensible_heat_flux(
-                net_radiation,
+                atmospheric_forcing.net_radiation[i],
                 land_surface_temperature_model.variables.latent_heat_flux[i],
             )
 
@@ -154,6 +151,11 @@ function compute_latent_heat_flux(
 end
 """ 'sensible heat flux' :: H  ≈ RNet - LE """
 function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
+    # Handle NaN values in net radiation
+    if isnan(net_radiation)
+        @warn "Net radiation is NaN, setting sensible heat flux to 0"
+        return 0.0
+    end
     sensible_heat_flux = net_radiation - latent_heat_flux
     return sensible_heat_flux
 end
@@ -184,6 +186,11 @@ function wind_and_aero_resistance(
     z_target::Float64 = 2.0,
     k::Float64 = 0.41,
 )
+    # Handle zero or negative wind speed
+    if wind_speed_measured <= 0
+        @warn "Wind speed is zero or negative: $wind_speed_measured, using minimum value"
+        wind_speed_measured = 0.5  # Minimum wind speed for stability
+    end
     # Empirical d/h ratios
     if canopy_height < 0.2
         dh_ratio = 0.67  # grass
@@ -211,6 +218,12 @@ function wind_and_aero_resistance(
         wind_speed_canopy =
             wind_speed_measured * (log((zm - d) / z0m) / log((z_measured - d) / z0m))
         ra = (log((zm - d) / z0m) * log((zh - d) / z0h)) / (k^2 * wind_speed_canopy)
+
+        # Check for invalid results
+        if isnan(ra) || isinf(ra) || ra <= 0
+            @warn "Invalid aerodynamic resistance from log-profile: $ra, using fallback"
+            ra = 208 / max(wind_speed_measured, 0.5)  # FAO56 reference value
+        end
         return ra
     end
 
@@ -226,6 +239,14 @@ function compute_land_surface_temperature(
     aerodynamic_resistance::Float64,
     air_temperature::Float64,
 )
+    # Handle invalid aerodynamic resistance values
+    if isnan(aerodynamic_resistance) ||
+       isinf(aerodynamic_resistance) ||
+       aerodynamic_resistance <= 0
+        @warn "Invalid aerodynamic resistance: $aerodynamic_resistance, using air temperature as land surface temperature"
+        return air_temperature
+    end
+
     land_surface_temperature =
         (sensible_heat_flux * aerodynamic_resistance) /
         (density_air * specific_heat_capacity_air) + air_temperature

@@ -128,7 +128,7 @@ function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTup
         graph,
         order,
         streamorder,
-        latitude,
+        latitude, #TODO: remove this
     )
     return network
 end
