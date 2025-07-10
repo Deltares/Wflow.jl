@@ -470,7 +470,7 @@ function update!(
     Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
-        flux!(Q, boundary, gwf.aquifer; dt)
+        flux!(Q, boundary, gwf.aquifer)
     end
     gwf.aquifer.variables.head .+=
         (Q ./ gwf.aquifer.parameters.area .* dt ./ storativity(gwf.aquifer))
