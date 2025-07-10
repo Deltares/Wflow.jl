@@ -159,7 +159,7 @@ end
         Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
     res_params = Wflow.ReservoirParameters(;
-        area = [200_000_000],
+        area = [2.0e8],
         storfunc = [2],
         outflowfunc = [1],
         sh,
@@ -167,7 +167,7 @@ end
         col_index_hq = [15],
     )
     @reset res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
-    res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
+    res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000.0])
     res = Wflow.Reservoir(;
         boundary_conditions = res_bc,
         parameters = res_params,

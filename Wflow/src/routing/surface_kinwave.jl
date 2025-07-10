@@ -105,14 +105,16 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
 end
 
 "Struct for storing river flow model boundary conditions"
-@with_kw struct RiverFlowBC{R}
-    inwater::Vector{Float64}                # Lateral inflow [m³ s⁻¹]
-    inflow::Vector{Float64}                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
-    actual_external_abstraction_av::Vector{Float64}  # Actual abstraction from external negative inflow [m³ s⁻¹]
-    inflow_reservoir::Vector{Float64}       # inflow reservoir from land part [m³ s⁻¹]
-    abstraction::Vector{Float64}            # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
+@with_kw struct RiverFlowBC{T <: AbstractArray{<:AbstractFloat}, R}
+    inwater::T                              # Lateral inflow [m³ s⁻¹]
+    inflow::T                               # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    actual_external_abstraction_av::T       # Actual abstraction from external negative inflow [m³ s⁻¹]
+    inflow_reservoir::T                     # inflow reservoir from land part [m³ s⁻¹]
+    abstraction::T                          # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     reservoir::R                            # Reservoir model struct of arrays
 end
+
+@adapt_structure RiverFlowBC
 
 "Initialize river flow model boundary conditions"
 function RiverFlowBC(n::Int, reservoir::Union{Reservoir, Nothing})
