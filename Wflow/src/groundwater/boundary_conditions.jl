@@ -20,14 +20,18 @@ end
 @with_kw struct GwfRiverVariables
     stage::Vector{Float64} # [m]
     storage::Vector{Float64} # [m³]
+    max_infiltration::Vector{Float64} # [m³ d⁻¹]
     flux::Vector{Float64}  # [m³ d⁻¹]
+    flux_av::Vector{Float64}  # [m³ d⁻¹]
 end
 
 function GwfRiverVariables(n::Int)
     variables = GwfRiverVariables(;
         stage = fill(MISSING_VALUE, n),
         storage = fill(MISSING_VALUE, n),
+        max_infiltration = fill(MISSING_VALUE, n),
         flux = fill(MISSING_VALUE, n),
+        flux_av = fill(MISSING_VALUE, n),
     )
     return variables
 end
@@ -68,7 +72,7 @@ function flux!(Q::Vector{Float64}, river::GwfRiver, aquifer::Aquifer)
         if stage > head
             cond = river.parameters.infiltration_conductance[i]
             delta_head = min(stage - river.parameters.bottom[i], stage - head)
-            flux = min(cond * delta_head, river.variables.storage[i])
+            flux = min(cond * delta_head, river.variables.max_infiltration[i])
         else
             cond = river.parameters.exfiltration_conductance[i]
             delta_head = stage - head
@@ -79,6 +83,18 @@ function flux!(Q::Vector{Float64}, river::GwfRiver, aquifer::Aquifer)
     end
     return Q
 end
+
+compute_max_infiltration!(river::GwfRiver, dt::Float64) =
+    @. river.variables.max_infiltration = river.variables.storage / dt
+compute_max_infiltration!(river, dt::Float64) = nothing
+
+update_storage!(river::GwfRiver, dt::Float64) =
+    @. river.variables.storage -= dt * river.variables.flux
+update_storage!(river, dt::Float64) = nothing
+
+compute_average_flux!(river::GwfRiver, dt_s::Float64, dt::Float64) =
+    @. river.variables.flux_av += (dt_s * river.variables.flux) / dt
+compute_average_flux!(river, dt_s::Float64, dt::Float64) = nothing
 
 @with_kw struct DrainageParameters
     elevation::Vector{Float64} # [m]

@@ -413,7 +413,7 @@ function ConstantHead(
 end
 
 """
-    stable_timestep(aquifer)
+    stable_timestep(aquifer::Aquifer, conductivity_profile::String)
 
 Compute a stable timestep size given the forward-in-time, central in space scheme.
 The following criterion can be found in Chu & Willis (1984)
@@ -461,17 +461,23 @@ Base.@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
     end
 end
 
-function update!(
+function update_fluxes!(
     gwf::GroundwaterFlow{A},
     Q::Vector{Float64},
-    dt::Float64,
     conductivity_profile::String,
 ) where {A <: Aquifer}
-    Q .= 0.0  # TODO: Probably remove this when linking with other components
     flux!(Q, gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
         flux!(Q, boundary, gwf.aquifer)
     end
+    return nothing
+end
+
+function update_head!(
+    gwf::GroundwaterFlow{A},
+    Q::Vector{Float64},
+    dt::Float64,
+) where {A <: Aquifer}
     gwf.aquifer.variables.head .+=
         (Q ./ gwf.aquifer.parameters.area .* dt ./ storativity(gwf.aquifer))
     # Set constant head (dirichlet) boundaries
@@ -481,6 +487,31 @@ function update!(
     gwf.aquifer.variables.storage .=
         saturated_thickness(gwf.aquifer) .* gwf.aquifer.parameters.area .*
         storativity(gwf.aquifer)
+    return nothing
+end
+
+function update!(
+    gwf::GroundwaterFlow{A},
+    Q::Vector{Float64},
+    dt::Float64,
+    conductivity_profile::String,
+) where {A <: Aquifer}
+    river_boundary = haskey(gwf.boundaries, :river)
+    river = river_boundary ? gwf.boundaries.river : nothing
+
+    t = 0.0
+    while t < dt
+        dt_s = stable_timestep(gwf.aquifer, conductivity_profile)
+        dt_s = check_timestepsize(dt_s, t, dt)
+
+        compute_max_infiltration!(river, dt_s)
+        update_fluxes!(gwf, Q, conductivity_profile)
+        update_storage!(river, dt_s)
+        compute_average_flux!(river, dt_s, dt)
+        update_head!(gwf, Q, dt_s)
+
+        t = t + dt_s
+    end
     return nothing
 end
 
@@ -509,6 +540,6 @@ function get_flux_to_river(
     ncell = subsurface_flow.connectivity.ncell
     flux = zeros(ncell)
     index = river.index
-    flux[index] = -river.variables.flux ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+    flux[index] = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end

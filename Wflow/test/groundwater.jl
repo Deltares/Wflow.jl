@@ -303,7 +303,9 @@ end
             variables = Wflow.GwfRiverVariables(;
                 stage = [2.0, 2.0],
                 storage = [20.0, 20.0],
+                max_infiltration = [20.0, 20.0],
                 flux = [0.0, 0.0],
+                flux_av = [0.0, 0.0],
             )
             river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
             Q = zeros(3)
@@ -374,10 +376,11 @@ end
         gwf.aquifer.variables.head[gwf.constanthead.index] .=
             gwf.constanthead.variables.head
 
-        Q = zeros(3)
         dt = 0.25 # days
         for _ in 1:50
-            Wflow.update!(gwf, Q, dt, conductivity_profile)
+            Q = zeros(3)
+            Wflow.update_fluxes!(gwf, Q, conductivity_profile)
+            Wflow.update_head!(gwf, Q, dt)
         end
 
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
@@ -398,10 +401,11 @@ end
         gwf.aquifer.variables.head[gwf.constanthead.index] .=
             gwf.constanthead.variables.head
 
-        Q = zeros(3)
         dt = 0.25 # days
         for _ in 1:50
-            Wflow.update!(gwf, Q, dt, conductivity_profile)
+            Q = zeros(3)
+            Wflow.update_fluxes!(gwf, Q, conductivity_profile)
+            Wflow.update_head!(gwf, Q, dt)
         end
 
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
@@ -456,13 +460,14 @@ end
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
-        Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / dt))
         time = nstep * dt
 
         for i in 1:nstep
-            Wflow.update!(gwf, Q, dt, conductivity_profile)
+            Q = zeros(ncell)
+            Wflow.update_fluxes!(gwf, Q, conductivity_profile)
+            Wflow.update_head!(gwf, Q, dt)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -530,13 +535,14 @@ end
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
-        Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / dt))
         time = nstep * dt
 
         for i in 1:nstep
-            Wflow.update!(gwf, Q, dt, conductivity_profile)
+            Q = zeros(ncell)
+            Wflow.update_fluxes!(gwf, Q, conductivity_profile)
+            Wflow.update_head!(gwf, Q, dt)
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -611,13 +617,14 @@ end
         )
 
         dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
-        Q = zeros(ncell)
         time = 20.0
         nstep = Int(ceil(time / dt))
         time = nstep * dt
 
         for i in 1:nstep
-            Wflow.update!(gwf, Q, dt, conductivity_profile)
+            Q = zeros(ncell)
+            Wflow.update_fluxes!(gwf, Q, conductivity_profile)
+            Wflow.update_head!(gwf, Q, dt)
         end
 
         # test for symmetry on x and y axes
