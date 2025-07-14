@@ -268,7 +268,8 @@ end
 
         @testset "stable_timestep" begin
             conductivity_profile = "uniform"
-            @test Wflow.stable_timestep(conf_aqf, conductivity_profile) == 0.25
+            cfl = 0.25
+            @test Wflow.stable_timestep(conf_aqf, conductivity_profile, cfl) == 0.25
         end
 
         # Parametrization in setup is as follows:
@@ -366,10 +367,12 @@ end
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
         conductivity_profile = "uniform"
+        timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
-            aquifer = aquifer,
-            connectivity = connectivity,
-            constanthead = constanthead,
+            timestepping,
+            aquifer,
+            connectivity,
+            constanthead,
             boundaries = NamedTuple(),
         )
         # Set constant head (dirichlet) boundaries
@@ -391,10 +394,12 @@ end
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
         conductivity_profile = "exponential"
+        timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
-            aquifer = aquifer,
-            connectivity = connectivity,
-            constanthead = constanthead,
+            timestepping,
+            aquifer,
+            connectivity,
+            constanthead,
             boundaries = NamedTuple(),
         )
         # Set constant head (dirichlet) boundaries
@@ -452,14 +457,16 @@ end
         # constant head on left boundary, 0 at 0
         variables = Wflow.ConstantHeadVariables(; head = [0.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1])
+        timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
-            aquifer = aquifer,
-            connectivity = connectivity,
-            constanthead = constanthead,
+            timestepping,
+            aquifer,
+            connectivity,
+            constanthead,
             boundaries = NamedTuple(),
         )
 
-        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, timestepping.cfl)
         time = 20.0
         nstep = Int(ceil(time / dt))
         time = nstep * dt
@@ -527,14 +534,16 @@ end
         # constant head on left boundary, 0 at 0
         variables = Wflow.ConstantHeadVariables(; head = [0.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1])
+        timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
-            aquifer = aquifer,
-            connectivity = connectivity,
-            constanthead = constanthead,
+            timestepping,
+            aquifer,
+            connectivity,
+            constanthead,
             boundaries = NamedTuple(),
         )
 
-        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, timestepping.cfl)
         time = 20.0
         nstep = Int(ceil(time / dt))
         time = nstep * dt
@@ -609,14 +618,16 @@ end
         # Place a well in the middle of the domain
         variables = Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0])
         well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
+        timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
-            aquifer = aquifer,
-            connectivity = connectivity,
-            constanthead = constanthead,
+            timestepping,
+            aquifer,
+            connectivity,
+            constanthead,
             boundaries = (; well,),
         )
 
-        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile)
+        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, timestepping.cfl)
         time = 20.0
         nstep = Int(ceil(time / dt))
         time = nstep * dt

@@ -416,11 +416,12 @@ end
     stable_timestep(aquifer::Aquifer, conductivity_profile::String)
 
 Compute a stable timestep size given the forward-in-time, central in space scheme.
-The following criterion can be found in Chu & Willis (1984)
+The following criterion can be found in Chu & Willis (1984):
 
-Δt * k * H / (Δx * Δy * S) <= 1/4
+Δt * k * H / (Δx * Δy * S) <= cfl,
+where cfl = 1/4.
 """
-function stable_timestep(aquifer::Aquifer, conductivity_profile::String)
+function stable_timestep(aquifer::Aquifer, conductivity_profile::String, cfl::Float64)
     dt_min = Inf
     for i in eachindex(aquifer.variables.head)
         if conductivity_profile == "exponential"
@@ -438,7 +439,8 @@ function stable_timestep(aquifer::Aquifer, conductivity_profile::String)
         dt = aquifer.parameters.area[i] * storativity(aquifer)[i] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
-    return 0.25 * dt_min
+    dt_min = cfl * dt_min
+    return dt_min
 end
 
 minimum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
@@ -446,18 +448,20 @@ minimum_head(aquifer::UnconfinedAquifer) =
     max.(aquifer.variables.head, aquifer.parameters.bottom)
 
 Base.@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
+    timestepping::TimeStepping
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
     boundaries::NamedTuple
     function GroundwaterFlow(
+        timestepping::TimeStepping,
         aquifer::A,
         connectivity::Connectivity,
         constanthead::ConstantHead,
         boundaries::NamedTuple,
     ) where {A <: Aquifer}
         initialize_conductance!(aquifer, connectivity)
-        new{A}(aquifer, connectivity, constanthead, boundaries)
+        new{A}(timestepping, aquifer, connectivity, constanthead, boundaries)
     end
 end
 
@@ -498,10 +502,11 @@ function update!(
 ) where {A <: Aquifer}
     river_boundary = haskey(gwf.boundaries, :river)
     river = river_boundary ? gwf.boundaries.river : nothing
+    (; cfl) = gwf.timestepping
 
     t = 0.0
     while t < dt
-        dt_s = stable_timestep(gwf.aquifer, conductivity_profile)
+        dt_s = stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
 
         compute_max_infiltration!(river, dt_s)
