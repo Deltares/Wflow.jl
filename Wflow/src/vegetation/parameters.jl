@@ -35,7 +35,7 @@ function VegetationParameters(
     # Read canopy height
     lens = lens_input_parameter(config, "vegetation__canopy_height")
     canopy_height =
-        ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
+        ncread(dataset, config, lens; sel = indices, defaults = 0.12, type = Float64)
 
     do_cyclic = haskey(config.input, "cyclic")
     if do_cyclic && haskey(config.input.cyclic, "vegetation__leaf-area_index")

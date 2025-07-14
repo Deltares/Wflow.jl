@@ -144,7 +144,7 @@ function compute_latent_heat_flux(
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     # Convert actual_evapotranspiration from mm/Δt to m/s
     actual_evapotranspiration_ms =
-        (actual_evapotranspiration / 1000.0) / config.time.timestepsecs
+        (actual_evapotranspiration / 1000.0) / Float64(config.time.timestepsecs)
     latent_heat_flux =
         latent_heat_of_vaporization * density_water * actual_evapotranspiration_ms
     return latent_heat_flux
@@ -170,67 +170,73 @@ no clean way yet to deal with variable canopy height empirically
 | Tall crops (corn) | 0.6           | Monteith & Unsworth (1990)                   |
 | Forest            | 0.5 (capped)  | Garratt (1992); Shuttleworth & Gurney (1990) |
 
-Empirical averages; real sites vary
-
 Sensitive to canopy density & LAI
 
 Seasonal and structural variability
 
 Forest cap avoids z - d < 0 issues
+Alternative aerodynamic conductance calculation from AWRA05
+https://www.researchgate.net/publication/233757155_AWRA_Technical_Report_3_Landscape_Model_version_05_Technical_Description
+    
 """
-#EQN: A10-13 adapted with dh ratio to ensure stability
+
 function wind_and_aero_resistance(
     wind_speed_measured::Float64,
     z_measured::Float64,
     canopy_height::Float64;
-    z_target::Float64 = 2.0,
+    zm_ref::Float64 = 2.0,
     k::Float64 = 0.41,
 )
-    # Handle zero or negative wind speed
-    if wind_speed_measured <= 0
-        @warn "Wind speed is zero or negative: $wind_speed_measured, using minimum value"
-        wind_speed_measured = 0.5  # Minimum wind speed for stability
+    # Handle measurement height below canopy
+    if z_measured < canopy_height
+        z_measured = canopy_height
     end
-    # Empirical d/h ratios
-    if canopy_height < 0.2
-        dh_ratio = 0.67  # grass
-    elseif canopy_height < 2.0
-        dh_ratio = 0.65  # wheat/shrubs
-    elseif canopy_height < 5.0
-        dh_ratio = 0.6   # corn, tall crops
+
+    # Ensure minimum canopy height using Allen FAO reference
+    canopy_height = max(canopy_height, 0.12)
+
+    # Simplified empirical d/h ratios and roughness height adjustments
+    if canopy_height < 1
+        ref_h = 0.12
+        dh_ratio = 2.0 / 3.0
+        z0m_ratio = 1.23e-1
+        z0h_ratio = 0.1
+
+    elseif canopy_height >= 1
+        z0m_ratio = 1.23e-1 * (canopy_height / 2.0) #z0m increases with canopy height
+        ref_h = 0.12
+        dh_ratio = 2.0 / 3.0
+        z0h_ratio = 0.2
     else
-        dh_ratio = 0.5   # forest, capped
+        error("Canopy height $canopy_height is not supported")
     end
 
-    d = dh_ratio * canopy_height
-    # Cap d to 0.9 * z_measured for tall canopies
-    if d > 0.9 * z_measured
-        d = 0.9 * z_measured
+    d = dh_ratio * ref_h
+    z0m = z0m_ratio * ref_h
+    z0h = z0h_ratio * z0m  # Canopy sublayer roughness
+
+    # Wind speed conversion to reference height (2m) for consistency with FAO-56
+    wind_speed_ref =
+        max(wind_speed_measured * (log(zm_ref / z0m) / log(z_measured / z0m)), 0.5)
+
+    if canopy_height < 1
+        # Aerodynamic resistance using reference height
+        # ra = (log((zm_ref - d) / z0m)) * (log((zm_ref - d) / z0h)) / (k^2 * wind_speed_ref)
+        ra = log((zm_ref - d) / z0m) / (k^2 * wind_speed_ref)
+    elseif canopy_height >= 1
+        #AWRA05
+        f_h = log((813 / canopy_height) - 5.45)
+        ku = 0.305 / (f_h * (f_h + 2.3))
+        ga = ku * wind_speed_ref
+        ra = (1 / ga) / 10.0
     end
 
-    z0m = max(0.005, 0.123 * canopy_height) # in case the canopy height is too small
-    z0h = 0.1 * z0m
-    zm = canopy_height + z_target
-    zh = zm
-
-    # Only use log-profile if both heights are above d
-    if (z_measured > d + 0.1) && (zm > d + 0.1) && (zh > d + 0.1)
-        wind_speed_canopy =
-            wind_speed_measured * (log((zm - d) / z0m) / log((z_measured - d) / z0m))
-        ra = (log((zm - d) / z0m) * log((zh - d) / z0h)) / (k^2 * wind_speed_canopy)
-
-        # Check for invalid results
-        if isnan(ra) || isinf(ra) || ra <= 0
-            @warn "Invalid aerodynamic resistance from log-profile: $ra, using fallback"
-            ra = 208 / max(wind_speed_measured, 0.5)  # FAO56 reference value
-        end
-        return ra
+    # Ensure positive aerodynamic resistance
+    if ra <= 0
+        error("Aerodynamic resistance is negative: $ra")
     end
 
-    # Fallback: use measured wind, empirical ra
-    @warn "Aerodynamic resistance: log-profile not valid for canopy_height=$canopy_height, z_measured=$z_measured, d=$d. Using measured wind and empirical ra."
-    ra = 208 / max(wind_speed_measured, 0.5)  # FAO56 reference value
-    return ra
+    return ra, wind_speed_ref
 end
 
 """ 'land surface temperature' :: Ts=(H ra) /(ρacp)+Ta,(4)"""
