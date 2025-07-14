@@ -18,7 +18,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.total_storage), unit = "mm"),
     "atmosphere_air__temperature" =>
         (lens = @optic(_.land.atmospheric_forcing.temperature), unit = "°C"),
-    "atmosphere_air__shortwave_radiation_in" => (
+    "land_surface_radiation~incoming~shortwave__energy_flux" => (
         lens = @optic(_.land.atmospheric_forcing.shortwave_radiation_in),
         unit = "W m-2",
     ),
