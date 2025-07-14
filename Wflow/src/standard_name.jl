@@ -22,10 +22,6 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.atmospheric_forcing.shortwave_radiation_in),
         unit = "W m-2",
     ),
-    "land_surface__net_radiation" =>
-        (lens = @optic(_.land.atmospheric_forcing.net_radiation), unit = "W m-2"),
-    "land_surface_air_flow__speed" =>
-        (lens = @optic(_.land.atmospheric_forcing.wind_speed), unit = "m s-1"),
     "vegetation__leaf-area_index" =>
         (lens = @optic(_.land.vegetation_parameters.leaf_area_index), unit = "m2 m-2"),
     "vegetation_canopy_water__depth" =>
@@ -217,24 +213,27 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.land_surface_temperature.variables.land_surface_temperature),
         unit = "ᵒC",
     ),
-    "land_surface__net_shortwave_radiation" => (
+    "land_surface_radiation~net~shortwave__energy_flux" => (
         lens = @optic(_.land.land_surface_temperature.variables.net_shortwave_radiation),
         unit = "W m-2",
     ),
-    "land_surface__net_longwave_radiation" => (
+    "land_surface_radiation~net~longwave__energy_flux" => (
         lens = @optic(_.land.land_surface_temperature.variables.net_longwave_radiation),
         unit = "W m-2",
     ),
-    # Removed duplicate entry - using the one that points to atmospheric_forcing.net_radiation
-    "land_surface__latent_heat_flux" => (
+    "land_surface_air_heat~latent~evaporation__energy_flux" => (
         lens = @optic(_.land.land_surface_temperature.variables.latent_heat_flux),
         unit = "W m-2",
     ),
-    "land_surface__sensible_heat_flux" => (
+    "land_surface_air_heat~net~sensible__energy_flux" => (
         lens = @optic(_.land.land_surface_temperature.variables.sensible_heat_flux),
         unit = "W m-2",
     ),
-    "land_surface__aerodynamic_resistance" => (
+    "land_surface_radiation~net~total__energy_flux" =>
+        (lens = @optic(_.land.atmospheric_forcing.net_radiation), unit = "W m-2"),
+    "land_surface_air_flow__speed" =>
+        (lens = @optic(_.land.atmospheric_forcing.wind_speed), unit = "m s-1"),
+    "atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance" => (
         lens = @optic(_.land.land_surface_temperature.variables.aerodynamic_resistance),
         unit = "s m-1",
     ),
