@@ -94,7 +94,7 @@ function initialize_subsurface_flow(
         aquifer_boundaries = (; recharge = gwf_recharge, river = gwf_river)
     end
 
-    cfl = get(config.model, "groundwater_flow__alpha_coefficient", 0.25)::Float64
+    cfl = get(config.model, "subsurface_water_flow__alpha_coefficient", 0.25)::Float64
     timestepping = TimeStepping(; cfl)
 
     subsurface_flow = GroundwaterFlow(;
