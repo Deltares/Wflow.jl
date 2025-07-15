@@ -92,17 +92,22 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
     return nothing
 end
 
+"Struct for storing Rutter interception model parameters"
+@with_kw struct RutterParameters
+    vegetation_parameter_set::VegetationParameters
+end
+
 "Rutter interception model"
 @with_kw struct RutterInterceptionModel <: AbstractInterceptionModel
-    parameters::VegetationParameters
+    parameters::RutterParameters
     variables::InterceptionVariables
 end
 
 "Initialize Rutter interception model"
 function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
     vars = InterceptionVariables(n)
-    model =
-        RutterInterceptionModel(; parameters = vegetation_parameter_set, variables = vars)
+    params = RutterParameters(vegetation_parameter_set = vegetation_parameter_set)
+    model = RutterInterceptionModel(; parameters = params, variables = vars)
     return model
 end
 
