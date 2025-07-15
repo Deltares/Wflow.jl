@@ -94,18 +94,33 @@ Finally, a stable time step size can be computed given the forward-in-time, cent
 scheme, based on the following criterion from Chu and Willis (1984):
 
 $$
-  \frac{\Delta t k H}{\Delta x  \Delta y S}  \le \frac{1}{4}
+  \frac{\Delta t k H}{\Delta x  \Delta y S}  \le \alpha
 $$
 
 where $\SIb{\Delta t}{d}$ is the stable time step size, $\SIb{\Delta x}{m}$ is the cell
 length in the $x$ direction and $\SIb{\Delta y}{m}$ is the cell length in the $y$ direction,
-$\SIb{k}{m^2\ d^{-1}}$ is the horizontal hydraulic conductivity and $\SIb{H}{m}$ is the
-saturated thickness of the aquifer. For each cell $\frac{\Delta x  \Delta y S}{k H}$ is
-calculated, the minimum of these values is determined, and multiplied by $\frac{1}{4}$, to
-get the stable time step size.
+$\SIb{k}{m^2\ d^{-1}}$ is the horizontal hydraulic conductivity, $\SIb{H}{m}$ is the
+saturated thickness of the aquifer and $\alpha$ is a coefficient to enhance the stability of
+the simulation. For each cell $\frac{\Delta x  \Delta y S}{k H}$ is calculated, the minimum
+of these values is determined, and multiplied by $\alpha$, to get the stable time step size.
+The stability coefficient $\alpha$ (default = 0.25 as recommended by Chu and Willis (1984))
+can be set as follows in the TOML file:
+
+```toml
+[model]
+subsurface_water_flow__alpha_coefficient = 0.2 # coefficient for model stability (default = 0.25)
+```
 
 For more details about the finite difference formulation and the stable time step size
 criterion we refer to the paper of Chu and Willis (1984).
+
+::: {.callout-note}
+Using the default value for the stability criterion from Chu and Willis (1984) can cause in
+some cases numerical instabilities, for example source and sink flux terms are not included.
+We recommend to check for possible numerical instabilities, especially when fluxes from
+aquifer boundaries (e.g. river) can be large. 
+:::
+
 
 Boundary conditions can be classified into three categories:
 
