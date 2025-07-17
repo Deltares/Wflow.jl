@@ -278,7 +278,7 @@
     "href": "model_docs/routing/local-inertial.html#external-inflows",
     "title": "Local inertial",
     "section": "External inflows",
-    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can to added the local inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted as part of the continuity equation of the local inertial model. Abstractions are limited to a maximum of \\(\\SI{80}{\\%}\\) of the river volume.",
+    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can to added the local inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted as part of the continuity equation of the local inertial model. Abstractions are limited to a maximum of \\(\\SI{80}{\\%}\\) of the river storage. Negative external inflows are satisfied first, and the remaining river storage is available for internal abstractions as part of water demand and allocation computations.",
     "crumbs": [
       "Model documentation",
       "Routing concepts",
@@ -1326,7 +1326,7 @@
     "href": "model_docs/routing/kinwave.html#external-inflows",
     "title": "Kinematic wave",
     "section": "External inflows",
-    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can be added to the kinematic wave for river flow routing, as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted from the lateral inflow before running the kinematic wave to solve the impact on resulting river flow \\(\\SIb{Q}{m^3\\ s^{-1}}\\). In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of \\(0.80\\) applied to river storage.",
+    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example water supply or abstractions can be added to the kinematic wave for river flow routing, as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"river_water_inflow~external__volume_flow_rate\" = \"river_inflow\"\nThese inflows are added or subtracted from the lateral inflow before running the kinematic wave to solve the impact on resulting river flow \\(\\SIb{Q}{m^3\\ s^{-1}}\\). In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of \\(0.80\\) applied to river storage. Negative external inflows are satisfied first, and the remaining river storage is available for internal abstractions as part of water demand and allocation computations.",
     "crumbs": [
       "Model documentation",
       "Routing concepts",
@@ -1446,7 +1446,7 @@
     "href": "model_docs/routing/reservoirs.html#external-inflows",
     "title": "Reservoirs",
     "section": "External inflows",
-    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example inflows that are not explicitly simulated by wflow or abstractions can be added to reservoirs, as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"reservoir_water_inflow~external__volume_flow_rate\" = \"reservoir_inflow\"\nThese inflows are added or subtracted from the reservoir inflow. In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of \\(0.98\\) applied to reservoir storage.",
+    "text": "External inflows\nExternal inflows \\(\\SIb{}{m^3\\ s^{-1}}\\) for example inflows that are not explicitly simulated by wflow or abstractions can be added to reservoirs, as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"reservoir_water_inflow~external__volume_flow_rate\" = \"reservoir_inflow\"\nThese inflows are added or subtracted from the reservoir inflow. In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of \\(0.98\\) applied to reservoir storage. Negative external inflows are satisfied first, and the remaining reservoir storage is available for internal abstractions as part of water demand and allocation computations.",
     "crumbs": [
       "Model documentation",
       "Routing concepts",
