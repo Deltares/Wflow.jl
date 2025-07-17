@@ -306,13 +306,12 @@ end
             variables = Wflow.GwfRiverVariables(;
                 stage = [2.0, 2.0],
                 storage = [20.0, 20.0],
-                max_infiltration = [20.0, 20.0],
                 flux = [0.0, 0.0],
                 flux_av = [0.0, 0.0],
             )
             river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(river, conf_aqf)
+            Wflow.flux!(river, conf_aqf, 1.0)
             # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
             # river storage (20.0)
             @test conf_aqf.variables.q_net[1] == 20.0
@@ -325,21 +324,25 @@ end
                 elevation = [2.0, 2.0],
                 conductance = [100.0, 100.0],
             )
-            variables = Wflow.DrainageVariables(; flux = [0.0, 0.0])
+            variables = Wflow.DrainageVariables(; flux = [0.0, 0.0], flux_av = [0.0, 0.0])
             drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(drainage, conf_aqf)
+            Wflow.flux!(drainage, conf_aqf, 1.0)
             @test conf_aqf.variables.q_net[1] == 0.0
             @test conf_aqf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
         end
 
         @testset "headboundary" begin
             parameters = Wflow.HeadBoundaryParameters(; conductance = [100.0, 100.0])
-            variables = Wflow.HeadBoundaryVariables(; head = [2.0, 2.0], flux = [0.0, 0.0])
+            variables = Wflow.HeadBoundaryVariables(;
+                head = [2.0, 2.0],
+                flux = [0.0, 0.0],
+                flux_av = [0.0, 0.0],
+            )
 
             headboundary = Wflow.HeadBoundary(; parameters, variables, index = [1, 2])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(headboundary, conf_aqf)
+            Wflow.flux!(headboundary, conf_aqf, 1.0)
             @test conf_aqf.variables.q_net[1] == 100.0 * (2.0 - 0.0)
             @test conf_aqf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
         end
@@ -348,18 +351,23 @@ end
             variables = Wflow.RechargeVariables(;
                 rate = [1.0e-3, 1.0e-3, 1.0e-3],
                 flux = [0.0, 0.0, 0.0],
+                flux_av = [0.0, 0.0, 0.0],
             )
             recharge = Wflow.Recharge(; variables, index = [1, 2, 3])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(recharge, conf_aqf)
+            Wflow.flux!(recharge, conf_aqf, 1.0)
             @test all(conf_aqf.variables.q_net .== 1.0e-3 * 100.0)
         end
 
         @testset "well" begin
-            variables = Wflow.WellVariables(; volumetric_rate = [-1000.0], flux = [0.0])
+            variables = Wflow.WellVariables(;
+                volumetric_rate = [-1000.0],
+                flux = [0.0],
+                flux_av = [0.0],
+            )
             well = Wflow.Well(; variables, index = [1])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(well, conf_aqf)
+            Wflow.flux!(well, conf_aqf, 1.0)
             @test conf_aqf.variables.q_net[1] == -1000.0
         end
     end
@@ -381,13 +389,15 @@ end
         gwf.aquifer.variables.head[gwf.constanthead.index] .=
             gwf.constanthead.variables.head
 
-        dt = 0.25 # days
-        for _ in 1:50
+        dt = 12.5 # days
+        t = 0.0
+        while t < dt
+            dt_s = 0.25
             gwf.aquifer.variables.q_net .= 0.0
-            Wflow.update_fluxes!(gwf, conductivity_profile)
-            Wflow.update_head!(gwf, dt)
+            Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
+            Wflow.update_head!(gwf, dt_s)
+            t = t + dt_s
         end
-
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
     end
 
@@ -408,13 +418,15 @@ end
         gwf.aquifer.variables.head[gwf.constanthead.index] .=
             gwf.constanthead.variables.head
 
-        dt = 0.25 # days
-        for _ in 1:50
+        dt = 12.5 # days
+        t = 0.0
+        while t < dt
+            dt_s = 0.25
             gwf.aquifer.variables.q_net .= 0.0
-            Wflow.update_fluxes!(gwf, conductivity_profile)
-            Wflow.update_head!(gwf, dt)
+            Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
+            Wflow.update_head!(gwf, dt_s)
+            t = t + dt_s
         end
-
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
     end
 
@@ -469,15 +481,16 @@ end
             boundaries = NamedTuple(),
         )
 
-        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, timestepping.cfl)
         time = 20.0
-        nstep = Int(ceil(time / dt))
-        time = nstep * dt
-
-        for i in 1:nstep
+        t = 0.0
+        (; cfl) = gwf.timestepping
+        while t < time
             gwf.aquifer.variables.q_net .= 0.0
-            Wflow.update_fluxes!(gwf, conductivity_profile)
-            Wflow.update_head!(gwf, dt)
+            dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
+            dt_s = Wflow.check_timestepsize(dt_s, t, time)
+            Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
+            Wflow.update_head!(gwf, dt_s)
+            t = t + dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -547,15 +560,16 @@ end
             boundaries = NamedTuple(),
         )
 
-        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, timestepping.cfl)
         time = 20.0
-        nstep = Int(ceil(time / dt))
-        time = nstep * dt
-
-        for i in 1:nstep
+        t = 0.0
+        (; cfl) = gwf.timestepping
+        while t < time
             gwf.aquifer.variables.q_net .= 0.0
-            Wflow.update_fluxes!(gwf, conductivity_profile)
-            Wflow.update_head!(gwf, dt)
+            dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
+            dt_s = Wflow.check_timestepsize(dt_s, t, time)
+            Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
+            Wflow.update_head!(gwf, dt_s)
+            t = t + dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -621,7 +635,11 @@ end
         variables = Wflow.ConstantHeadVariables(; head = fill(10.0, size(indices)))
         constanthead = Wflow.ConstantHead(; variables, index = indices)
         # Place a well in the middle of the domain
-        variables = Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0])
+        variables = Wflow.WellVariables(;
+            volumetric_rate = [discharge],
+            flux = [0.0],
+            flux_av = [0.0],
+        )
         well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
         timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
@@ -632,15 +650,16 @@ end
             boundaries = (; well,),
         )
 
-        dt = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, timestepping.cfl)
         time = 20.0
-        nstep = Int(ceil(time / dt))
-        time = nstep * dt
-
-        for i in 1:nstep
+        t = 0.0
+        (; cfl) = gwf.timestepping
+        while t < time
             gwf.aquifer.variables.q_net .= 0.0
-            Wflow.update_fluxes!(gwf, conductivity_profile)
-            Wflow.update_head!(gwf, dt)
+            dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
+            dt_s = Wflow.check_timestepsize(dt_s, t, time)
+            Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
+            Wflow.update_head!(gwf, dt_s)
+            t = t + dt_s
         end
 
         # test for symmetry on x and y axes

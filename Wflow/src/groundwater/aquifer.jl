@@ -459,10 +459,11 @@ end
 function update_fluxes!(
     gwf::GroundwaterFlow{A},
     conductivity_profile::String,
+    dt::Float64,
 ) where {A <: Aquifer}
     flux!(gwf.aquifer, gwf.connectivity, conductivity_profile)
     for boundary in gwf.boundaries
-        flux!(boundary, gwf.aquifer)
+        flux!(boundary, gwf.aquifer, dt)
     end
     return nothing
 end
@@ -487,23 +488,23 @@ function update!(
     dt::Float64,
     conductivity_profile::String,
 ) where {A <: Aquifer}
-    river_boundary = haskey(gwf.boundaries, :river)
-    river = river_boundary ? gwf.boundaries.river : nothing
     (; cfl) = gwf.timestepping
-
+    for boundary in gwf.boundaries
+        boundary.variables.flux_av .= 0.0
+    end
     t = 0.0
     while t < dt
         gwf.aquifer.variables.q_net .= 0.0
         dt_s = stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
 
-        compute_max_infiltration!(river, dt_s)
-        update_fluxes!(gwf, conductivity_profile)
-        update_storage!(river, dt_s)
-        compute_average_flux!(river, dt_s, dt)
+        update_fluxes!(gwf, conductivity_profile, dt_s)
         update_head!(gwf, dt_s)
 
         t = t + dt_s
+    end
+    for boundary in gwf.boundaries
+        boundary.variables.flux_av ./= dt
     end
     return nothing
 end

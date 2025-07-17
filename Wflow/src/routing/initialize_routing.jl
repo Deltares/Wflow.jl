@@ -82,8 +82,12 @@ function initialize_subsurface_flow(
     gwf_river = GwfRiver(dataset, config, river.network.indices, river.network.land_indices)
 
     # recharge boundary of unconfined aquifer
-    gwf_recharge =
-        Recharge(fill(MISSING_VALUE, n_cells), zeros(n_cells), collect(1:n_cells))
+    gwf_recharge = Recharge(
+        fill(MISSING_VALUE, n_cells),
+        zeros(n_cells),
+        zeros(n_cells),
+        collect(1:n_cells),
+    )
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains

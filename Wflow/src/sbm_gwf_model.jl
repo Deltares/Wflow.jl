@@ -93,7 +93,6 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     end
 
     # update groundwater domain
-    boundaries.river.variables.flux_av .= 0.0
     update!(routing.subsurface_flow, dt_gwf, conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
