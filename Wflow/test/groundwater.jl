@@ -45,6 +45,7 @@ function homogenous_aquifer(nrow, ncol)
     )
     variables = Wflow.AquiferVariables(;
         head = [0.0, 7.5, 20.0],
+        head_av = fill(0.0, ncell),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
@@ -61,6 +62,7 @@ function homogenous_aquifer(nrow, ncol)
     )
     variables = Wflow.AquiferVariables(;
         head = [0.0, 7.5, 20.0],
+        head_av = fill(0.0, ncell),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
@@ -455,6 +457,7 @@ end
 
         variables = Wflow.AquiferVariables(;
             head = initial_head.(xc),
+            head_av = fill(0.0, ncell),
             conductance = fill(0.0, connectivity.nconnection),
             storage = fill(0.0, ncell),
             q_net = fill(0.0, ncell),
@@ -534,6 +537,7 @@ end
 
         variables = Wflow.AquiferVariables(;
             head = initial_head.(xc),
+            head_av = fill(0.0, ncell),
             conductance = fill(0.0, connectivity.nconnection),
             storage = fill(0.0, ncell),
             q_net = fill(0.0, ncell),
@@ -624,6 +628,7 @@ end
         )
         variables = Wflow.AquiferVariables(;
             head = fill(startinghead, ncell),
+            head_av = fill(0.0, ncell),
             conductance = fill(0.0, connectivity.nconnection),
             storage = fill(0.0, ncell),
             q_net = fill(0.0, ncell),
