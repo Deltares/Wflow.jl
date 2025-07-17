@@ -92,29 +92,23 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
     return nothing
 end
 
-"Struct for storing Rutter interception model parameters"
-@with_kw struct RutterParameters
-    vegetation_parameter_set::VegetationParameters
-end
-
 "Rutter interception model"
 @with_kw struct RutterInterceptionModel <: AbstractInterceptionModel
-    parameters::RutterParameters
+    parameters::VegetationParameters
     variables::InterceptionVariables
 end
 
 "Initialize Rutter interception model"
 function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
     vars = InterceptionVariables(n)
-    params = RutterParameters(vegetation_parameter_set = vegetation_parameter_set)
-    model = RutterInterceptionModel(; parameters = params, variables = vars)
+    model =
+        RutterInterceptionModel(; parameters = vegetation_parameter_set, variables = vars)
     return model
 end
 
 "Update Rutter interception model for a single timestep"
 function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameter_set
+    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
@@ -136,8 +130,11 @@ function update!(model::RutterInterceptionModel, atmospheric_forcing::Atmospheri
     return nothing
 end
 
-"Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
-function update_canopy_parameters!(model::AbstractInterceptionModel)
+function get_canopy_parameters(parameters::GashParameters)
+    return get_canopy_parameters(parameters.vegetation_parameter_set)
+end
+
+function get_canopy_parameters(parameters::VegetationParameters)
     (;
         leaf_area_index,
         storage_wood,
@@ -145,7 +142,21 @@ function update_canopy_parameters!(model::AbstractInterceptionModel)
         storage_specific_leaf,
         canopygapfraction,
         cmax,
-    ) = model.parameters.vegetation_parameter_set
+    ) = parameters
+    return (
+        leaf_area_index,
+        storage_wood,
+        kext,
+        storage_specific_leaf,
+        canopygapfraction,
+        cmax,
+    )
+end
+
+"Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
+function update_canopy_parameters!(model::AbstractInterceptionModel)
+    (leaf_area_index, storage_wood, kext, storage_specific_leaf, canopygapfraction, cmax) =
+        get_canopy_parameters(model.parameters)
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
