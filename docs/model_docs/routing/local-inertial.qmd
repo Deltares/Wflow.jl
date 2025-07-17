@@ -156,7 +156,9 @@ the TOML file as follows:
 "river_water_inflow~external__volume_flow_rate" = "river_inflow"
 ```
 These inflows are added or subtracted as part of the continuity equation of the local
-inertial model. Abstractions are limited to a maximum of $\SI{80}{\%}$ of the river volume.
+inertial model. Abstractions are limited to a maximum of $\SI{80}{\%}$ of the river storage.
+Negative external inflows are satisfied first, and the remaining river storage is available
+for internal abstractions as part of water demand and allocation computations. 
 
 ## Abstractions
 Internal abstractions $\SIb{}{m^3\ s^{-1}}$ from the river are possible when water demand and

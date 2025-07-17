@@ -202,7 +202,9 @@ forcing. For example, cyclic inflow can be provided in the TOML file as follows:
 ```
 These inflows are added or subtracted from the reservoir inflow. In case of an abstraction
 (negative inflow), the abstraction is limited by a fixed scaling factor of $0.98$ applied to
-reservoir storage.
+reservoir storage. Negative external inflows are satisfied first, and the remaining
+reservoir storage is available for internal abstractions as part of water demand and
+allocation computations.
 
 ## References
 + Bos M.G., 1989. Discharge measurement structures. Third revised edition, International

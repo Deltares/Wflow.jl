@@ -88,7 +88,9 @@ For example, cyclic inflow can be provided in the TOML file as follows:
 These inflows are added or subtracted from the lateral inflow before running the kinematic
 wave to solve the impact on resulting river flow $\SIb{Q}{m^3\ s^{-1}}$. In case of an
 abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of
-$0.80$ applied to river storage.
+$0.80$ applied to river storage. Negative external inflows are satisfied first, and the
+remaining river storage is available for internal abstractions as part of water demand and
+allocation computations. 
 
 ## Abstractions
 Internal abstractions $\SIb{}{m^3\ s^{-1}}$ from the river are possible when water demand and
