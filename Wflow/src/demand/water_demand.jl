@@ -649,7 +649,7 @@ function surface_water_allocation_area!(
                 external_inflow = reservoir.boundary_conditions.external_inflow[k]
                 if external_inflow < 0.0
                     available_volume = reservoir.variables.storage[k] * 0.98
-                    max_res_abstraction = min(external_inflow * dt, available_volume)
+                    max_res_abstraction = min(-external_inflow * dt, available_volume)
                     available_volume = max(available_volume - max_res_abstraction, 0.0)
                 else
                     available_volume = reservoir.variables.storage[k] * 0.98

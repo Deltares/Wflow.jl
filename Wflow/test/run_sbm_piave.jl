@@ -195,8 +195,8 @@ Wflow.run_timestep!(model)
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == -3.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 3.0
-    @test reservoir.boundary_conditions.inflow[1] ≈ 2.738423460573747
-    @test reservoir.variables.storage_av[1] ≈ 1.8914267225878534e8
-    @test reservoir.variables.outflow_av[1] ≈ 4.82161419787224
+    @test reservoir.boundary_conditions.inflow[1] ≈ 2.7384228457941124
+    @test reservoir.variables.storage_av[1] ≈ 1.891429435839712e8
+    @test reservoir.variables.outflow_av[1] ≈ 4.82162803109911
 end
 Wflow.close_files(model; delete_output = false)
