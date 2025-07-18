@@ -11,7 +11,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - Introduced in v1.0.0-rc1, fixed unit conversion model parameter `kv_0` to `kh_0` for
-  sub-daily model timestep. 
+  sub-daily model timestep.
+- Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation
+  parameters.
 
 ### Changed
 - Refactor `SimpleReservoir` and `Lake` structs by introducing a `Reservoir` struct that

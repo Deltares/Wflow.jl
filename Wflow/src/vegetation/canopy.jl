@@ -68,7 +68,7 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
     e_r = model.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model)
+        update_canopy_parameters!(model.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
@@ -108,13 +108,12 @@ end
 
 "Update Rutter interception model for a single timestep"
 function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameter_set
+    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model)
+        update_canopy_parameters!(model.parameters)
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -132,7 +131,7 @@ function update!(model::RutterInterceptionModel, atmospheric_forcing::Atmospheri
 end
 
 "Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
-function update_canopy_parameters!(model::AbstractInterceptionModel)
+function update_canopy_parameters!(parameters::VegetationParameters)
     (;
         leaf_area_index,
         storage_wood,
@@ -140,7 +139,7 @@ function update_canopy_parameters!(model::AbstractInterceptionModel)
         storage_specific_leaf,
         canopygapfraction,
         cmax,
-    ) = model.parameters.vegetation_parameter_set
+    ) = parameters
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
