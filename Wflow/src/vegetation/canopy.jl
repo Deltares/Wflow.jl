@@ -68,7 +68,7 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
     e_r = model.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model)
+        update_canopy_parameters!(model.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
@@ -113,7 +113,7 @@ function update!(model::RutterInterceptionModel, atmospheric_forcing::Atmospheri
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model)
+        update_canopy_parameters!(model.parameters)
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -130,11 +130,8 @@ function update!(model::RutterInterceptionModel, atmospheric_forcing::Atmospheri
     return nothing
 end
 
-function get_canopy_parameters(parameters::GashParameters)
-    return get_canopy_parameters(parameters.vegetation_parameter_set)
-end
-
-function get_canopy_parameters(parameters::VegetationParameters)
+"Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
+function update_canopy_parameters!(parameters::VegetationParameters)
     (;
         leaf_area_index,
         storage_wood,
@@ -143,20 +140,6 @@ function get_canopy_parameters(parameters::VegetationParameters)
         canopygapfraction,
         cmax,
     ) = parameters
-    return (
-        leaf_area_index,
-        storage_wood,
-        kext,
-        storage_specific_leaf,
-        canopygapfraction,
-        cmax,
-    )
-end
-
-"Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
-function update_canopy_parameters!(model::AbstractInterceptionModel)
-    (leaf_area_index, storage_wood, kext, storage_specific_leaf, canopygapfraction, cmax) =
-        get_canopy_parameters(model.parameters)
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
