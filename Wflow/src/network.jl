@@ -73,8 +73,6 @@ end
     subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
     # upstream nodes (directed graph)
     upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
-    # latitude of each grid cell (degrees)
-    latitude::Vector{Float64} = Float64[]
 end
 
 """
