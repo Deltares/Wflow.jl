@@ -16,12 +16,6 @@ const MISSING_VALUE = Float64(NaN)
 # timestep that the parameter units are defined in
 const BASETIMESTEP = Second(Day(1))
 
-# Atmospheric constants for land surface temperature calculations
-const specific_heat_capacity_air = 1005.0      # Specific heat capacity of air in J/kg/K
-const density_air = 1.225     # Density of air in kg/m3 @ 15 degrees C
-const density_water = 1000.0     # Density of water in kg/m3
-const von_karman_constant = 0.41        # von Kármán constant
-
 """
     scurve(x, a, b, c)
 
