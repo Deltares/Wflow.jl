@@ -33,7 +33,7 @@ function VegetationParameters(
     kc = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
     # Read canopy height
-    lens = lens_input_parameter(config, "vegetation__canopy_height")
+    lens = lens_input_parameter(config, "vegetation_canopy__height")
     canopy_height =
         ncread(dataset, config, lens; sel = indices, defaults = 0.12, type = Float64)
 
