@@ -99,7 +99,7 @@ function Domain(
     nriv = length(network_river.indices)
     if modelsettings.reservoirs
         network_reservoir, inds_reservoir_map2river =
-            NetworkReservoir(dataset, config, network_river.indices)
+            NetworkReservoir(dataset, config, network_river)
         pits[network_reservoir.indices_outlet] .= true
     else
         network_reservoir = NetworkReservoir()
