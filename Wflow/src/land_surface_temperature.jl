@@ -131,11 +131,11 @@ get_LandSurfaceTemperature(model::NoLandSurfaceTemperatureModel) = 0.0
 get_LandSurfaceTemperature(model::AbstractLandSurfaceTemperatureModel) =
     model.variables.land_surface_temperature
 
-""" 'latent heat of vaporization' :: λ=2501−2.375Ta.(A1) """
+""" 'latent heat of vaporization' :: λ=2501 - 2.375 Ta (A1) """
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
     return 2501.0 - 2.375 * air_temperature
 end
-""" 'latent heat flux' :: LE=λ×ρwater×ET,(3)"""
+""" 'latent heat flux' :: LE=λ x ρwater x ET (3)"""
 function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
@@ -184,8 +184,8 @@ function wind_and_aero_resistance(
     wind_speed_measured::Float64,
     z_measured::Float64,
     canopy_height::Float64;
-    zm_ref::Float64 = 2.0,
-    k::Float64 = 0.41,
+    zm_ref::Float64 = 2.0, # reference height for wind speed (m)
+    k::Float64 = 0.41, # von Kármán constant
 )
     # Handle measurement height below canopy
     if z_measured < canopy_height
