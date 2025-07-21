@@ -91,35 +91,6 @@ function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTup
     order = topological_sort_by_dfs(graph)
     streamorder = stream_order(graph, order)
 
-    # Read latitude for each grid cell
-    lat_1d = dataset["latitude"][:]
-    lon_1d = dataset["longitude"][:]
-    # Create 2D latitude grid with proper dimensions
-    latitude_2d = repeat(lat_1d, 1, length(lon_1d))
-    # Ensure the grid matches the expected size
-    if size(latitude_2d) != modelsize
-        # If dimensions don't match, create a grid with the correct size
-        latitude_2d = repeat(lat_1d, 1, modelsize[2])
-    end
-    # Ensure the grid is large enough for all indices
-    max_row = maximum(i[1] for i in indices)
-    max_col = maximum(i[2] for i in indices)
-    if max_row > size(latitude_2d, 1) || max_col > size(latitude_2d, 2)
-        # Extend the grid if needed
-        new_rows = max(size(latitude_2d, 1), max_row)
-        new_cols = max(size(latitude_2d, 2), max_col)
-        extended_lat = repeat(lat_1d, 1, new_cols)
-        if length(lat_1d) < new_rows
-            # Pad with the last latitude value if needed
-            extended_lat = vcat(
-                extended_lat,
-                repeat([lat_1d[end]], new_rows - length(lat_1d), new_cols),
-            )
-        end
-        latitude_2d = extended_lat
-    end
-    latitude = latitude_2d[indices]
-
     network = NetworkLand(;
         modelsize,
         indices,
@@ -128,7 +99,6 @@ function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTup
         graph,
         order,
         streamorder,
-        latitude,
     )
     return network
 end
