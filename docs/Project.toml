@@ -5,6 +5,7 @@ IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
 MakieExtra = "54e234d5-9986-40d8-815f-a5e42de435f6"
 MarkdownTables = "1862ce21-31c7-451e-824c-f20fa3f90fa2"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
+PkgToSoftwareBOM = "6254a0f9-6143-4104-aa2e-fd339a2830a6"
 
 [sources]
 Wflow = {path = "../Wflow"}
