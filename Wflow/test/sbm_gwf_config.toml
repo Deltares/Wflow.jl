@@ -32,7 +32,7 @@ river_water__instantaneous_volume_flow_rate = "q_river"
 land_surface_water__instantaneous_volume_flow_rate = "q_land"
 land_surface_water__instantaneous_depth = "h_land"
 
-subsurface_water__hydraulic_head = "head"
+subsurface_water__instantaneous_hydraulic_head = "head"
 
 [input]
 path_forcing = "forcing-sbm-groundwater-part*.nc"
