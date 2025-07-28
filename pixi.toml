@@ -49,6 +49,12 @@ quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 
+[tasks.generate-sbom]
+cmd = "julia --project --check-bounds=yes -- Wflow/src/sbom-generation.jl"
+depends-on = ["initialize-julia"]
+inputs = ["Wflow/Project.toml"]
+outputs = ["Wflow.spdx.json"]
+
 [dependencies]
 juliaup = "*"
 python = ">=3.10"
