@@ -279,16 +279,15 @@ end
     indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     # maps from the 2D model (external) domain to a list of reservoirs
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
-    # maps from the 1D river domain to a list of reservoirs (zero value represents no reservoir)
+    # maps from the 1D land domain to a list of reservoirs
+    land_indices::Vector{Int} = Int[]
+    # maps from the 1D river domain to a list of reservoirs
     river_indices::Vector{Int} = Int[]
 end
 
 "Initialize `NetworkReservoir`"
-function NetworkReservoir(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRiver)
+    (; indices) = network
     logging = false
     # allow reservoir only in river cells
     # note that these locations are only the reservoir outlet pixels
@@ -322,11 +321,14 @@ function NetworkReservoir(
             push!(inds_coverage, cov)
         end
     end
+    river_indices = findall(x -> x ≠ 0, inds_map2river)
+    land_indices = network.land_indices[river_indices]
     network = NetworkReservoir(;
         indices_outlet = inds,
         indices_coverage = inds_coverage,
         reverse_indices = rev_inds,
-        river_indices = findall(x -> x ≠ 0, inds_map2river),
+        river_indices,
+        land_indices,
     )
     return network, inds_map2river
 end
