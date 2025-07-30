@@ -24,6 +24,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   parameters.
 
 ### Added
+- include an SBOM in built distributions (#669)
 
 ## v1.0.0-rc1 - 2025-06-23
 

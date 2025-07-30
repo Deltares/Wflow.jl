@@ -28,6 +28,7 @@ download-test-data = { cmd = "julia --project download_test_data.jl", cwd = "bui
     "instantiate-create-binaries",
 ] }
 build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
+    "generate-sbom",
     "download-test-data",
     "instantiate-wflow-cli",
 ], env = { SSL_CERT_DIR = "", JULIA_SSL_CA_ROOTS_PATH = "" } }
@@ -48,6 +49,12 @@ install-ci = { depends-on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
 quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
+
+[tasks.generate-sbom]
+cmd = "julia --project --check-bounds=yes -- Wflow/src/sbom-generation.jl"
+depends-on = ["initialize-julia"]
+inputs = ["Wflow/Project.toml"]
+outputs = ["Wflow.spdx.json"]
 
 [dependencies]
 juliaup = "*"
