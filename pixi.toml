@@ -28,6 +28,7 @@ download-test-data = { cmd = "julia --project download_test_data.jl", cwd = "bui
     "instantiate-create-binaries",
 ] }
 build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
+    "generate-sbom",
     "download-test-data",
     "instantiate-wflow-cli",
 ], env = { SSL_CERT_DIR = "", JULIA_SSL_CA_ROOTS_PATH = "" } }
