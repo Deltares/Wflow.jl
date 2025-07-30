@@ -9,9 +9,7 @@ Add the following metadata files to the newly created build:
 - dep_licenses/
 """
 
-
-
-function add_metadata(project_dir, license_file, output_dir, git_repo)
+function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file)
     # save some environment variables in a Build.toml file for debugging purposes
     vars = ["BUILD_NUMBER", "BUILD_VCS_NUMBER"]
     dict = Dict(var => ENV[var] for var in vars if haskey(ENV, var))
@@ -77,6 +75,8 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         println(io, version_info)
     end
 
+    cp(sbom_file, normpath(output_dir, "Wflow.spdx.json"); force = true)
+
     # collect lisences of all dependencies
     ctx = PackageCompiler.create_pkg_context(project_dir)
     license_dir = joinpath(output_dir, "dep_licenses") 
@@ -96,4 +96,5 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
 	    cp(license_file_path , joinpath(license_dir,pkg_entry.name), force=true)
 	end
     end
+
 end
