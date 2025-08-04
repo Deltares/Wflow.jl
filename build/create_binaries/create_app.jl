@@ -2,6 +2,7 @@ using PackageCompiler
 using TOML
 using LibGit2
 using Pkg
+using LicenseCheck
 
 # change directory to this script's location
 cd(@__DIR__)

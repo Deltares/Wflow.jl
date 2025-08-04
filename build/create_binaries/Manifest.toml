@@ -2,7 +2,7 @@
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "ea2528725d34650b23f042d15e2cf1ec29a55822"
+project_hash = "3d9fa91f1a60d4d39e72c3ce91d0447242ed5033"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -345,6 +345,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "be484f5c92fad0bd8acfef35fe017900b0b73809"
 uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531"
 version = "1.18.0+0"
+
+[[deps.LicenseCheck]]
+deps = ["licensecheck_jll"]
+git-tree-sha1 = "e98bc9e1f773123cfdb1fa3d7a4c898e1f030341"
+uuid = "726dbf0d-6eb6-41af-b36c-cd770e0f00cc"
+version = "0.2.2"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
@@ -718,6 +724,12 @@ deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "OpenSSL_jll", "XZ_jll
 git-tree-sha1 = "86addc139bca85fdf9e7741e10977c45785727b7"
 uuid = "337d8026-41b4-5cde-a456-74a10e5b31d1"
 version = "1.11.3+0"
+
+[[deps.licensecheck_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "b790ad21ac235c39c0eb34214ccf3d5f5ea60efa"
+uuid = "4ecb348a-8b88-51ea-b912-4c460483ee91"
+version = "0.3.101+0"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
