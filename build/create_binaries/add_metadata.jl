@@ -89,7 +89,7 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
 	end
 	install_path = Pkg.Operations.find_installed(pkg_entry.name, uuid, pkg_entry.tree_hash)
 	files = readdir(install_path, join=true)
-	license_file_index =findfirst(x-> isfile(x) && !isnothing(match(r"(?i).*/license.*\b$",x)), readdir(install_path, join=true)) 
+	license_file_index =findfirst(x-> isfile(x) && !isnothing(match(r"(?i).*/license.*\b$",x)), files) 
 	if !isnothing(license_file_index)
 	    license_file_path = files[license_file_index] 
 	    cp(license_file_path, joinpath(license_dir,pkg_entry.name), force=true)
