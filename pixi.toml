@@ -1,73 +1,70 @@
 [project]
 name = "Wflow.jl"
 authors = [
-  "Joost Buitink <joost.buitink@deltares.nl>",
-  "Willem van Verseveld <willem.vanVerseveld@deltares.nl>",
-  "Hofer-Julian <julian.hofer@deltares.nl>",
-  "Bart de Koning <bart.dekoning@deltares.nl>",
+	"Joost Buitink <joost.buitink@deltares.nl>",
+	"Willem van Verseveld <willem.vanVerseveld@deltares.nl>",
+	"Hofer-Julian <julian.hofer@deltares.nl>",
+	"Bart de Koning <bart.dekoning@deltares.nl>",
 ]
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64"]
 
 [tasks]
-
 # Installation
 install-julia = "juliaup add 1.11.3 && juliaup override set 1.11.3"
 # Julia
 # Clear SSL_CERT_DIR to avoid Julia warnings, see https://github.com/JuliaLang/Downloads.jl/issues/244
 update-registry-julia = { cmd = "julia --eval='using Pkg; Registry.update()'", env = { SSL_CERT_DIR = "" } }
-test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", allow_reresolve=false, coverage=true)'", depends-on = [
-  "instantiate-wflow-server",
-  { "task" = "instantiate-julia", "args" = [
-    "server",
-  ] },
+initialize-julia = { depends-on = [
+	"update-registry-julia",
+	{ "task" = "instantiate-julia", "args" = [
+		"Wflow",
+	] },
 ] }
 # Build
-build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
-  "generate-sbom",
-  "download-test-data",
-  "instantiate-wflow-cli",
-], env = { SSL_CERT_DIR = "", JULIA_SSL_CA_ROOTS_PATH = "" } }
-instantiate-create-binaries = { cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'", cwd = "build/create_binaries" }
-instantiate-wflow-cli = { cmd = "julia --project --eval='using Pkg; Pkg.instantiate()'", cwd = "build/wflow_cli" }
 download-test-data = { cmd = "julia --project download_test_data.jl", cwd = "build/create_binaries", depends-on = [
-  "initialize-julia",
-  "instantiate-create-binaries",
+	"initialize-julia",
+] }
+build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
+	"download-test-data",
+], env = { SSL_CERT_DIR = "", JULIA_SSL_CA_ROOTS_PATH = "" } }
+# Test
+test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false)'", cwd = "build/wflow_cli", depends-on = [
+	"download-test-data",
+] }
+test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
+	"initialize-julia",
 ] }
 # Server
-instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instantiate()'"
+test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", allow_reresolve=false, coverage=true)'", depends-on = [
+	{ "task" = "instantiate-julia", "args" = [
+		"server",
+	] },
+] }
 # Docs
 install-ci     = { depends-on = ["install-julia", "update-registry-julia"] }
 quarto-check   = { cmd = "quarto check all" }
 quarto-render  = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 
-generate-sbom = { depends-on = [
-  { "task" = "instantiate-julia", args = [
-    "utils/sbom",
-  ] },
-  { "task" = "instantiate-julia", args = [
-    "Wflow",
-  ] },
-], cmd = "julia --project -- sbom-generation.jl", cwd = "utils/sbom", inputs = [
-  "Wflow/Project.toml",
-], outputs = [
-  "../../Wflow.spdx.json",
-] }
-
-test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false)'", cwd = "build/wflow_cli", depends-on = [
-  "download-test-data",
-] }
-# Test
-test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
-  "initialize-julia",
-] }
-
 [tasks.instantiate-julia]
 args = [{ "arg" = "cwd" }]
 cmd  = "julia --project={{cwd}} --eval='using Pkg; Pkg.instantiate()'"
 env  = { SSL_CERT_DIR = "" }
 
+[tasks.generate-sbom]
+depends-on = [
+	{ "task" = "instantiate-julia", "args" = [
+		"utils/sbom",
+	] },
+	{ "task" = "instantiate-julia", args = [
+		"Wflow",
+	] },
+]
+cmd = "julia --project -- sbom-generation.jl"
+cwd = "utils/sbom"
+inputs = ["Wflow/Project.toml"]
+outputs = ["Wflow.spdx.json"]
 
 [dependencies]
 juliaup = "*"
