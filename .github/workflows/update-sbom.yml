@@ -4,8 +4,6 @@ on:
       branches:
         - 'master'
       paths:
-        - 'docs/Manifest.toml'
-        - 'server/Manifest.toml'
         - 'Wflow/Manifest.toml'
   # on demand
   workflow_dispatch:
