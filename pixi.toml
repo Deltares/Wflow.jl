@@ -61,8 +61,7 @@ depends-on = [
 		"Wflow",
 	] },
 ]
-cmd = "julia --project -- sbom-generation.jl"
-cwd = "utils/sbom"
+cmd = "julia --project=utils/sbom utils/sbom/sbom-generation.jl"
 inputs = ["Wflow/Project.toml"]
 outputs = ["Wflow.spdx.json"]
 
