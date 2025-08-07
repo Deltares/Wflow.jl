@@ -22,6 +22,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   features that can be represented by the available functionality the common name
   `reservoir` is used, also for the standard names of associated model variables and
   parameters.
+- The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25
+  as recommended by Chu and Willis (1984. This has been changed to a configurable model
+  setting (`subsurface_water_flow__alpha_coefficient`), so this can be lowered easily in
+  case of numerical instabilities. Additionally, internal timestepping for groundwater flow
+  is now supported.
 
 ### Added
 - include an SBOM in built distributions (#669)

@@ -501,7 +501,7 @@ end
     @test "soil_water_sat-zone__depth" in required_states
     @test "soil_layer_water_unsat-zone__depth" in required_states
     @test "vegetation_canopy_water__depth" in required_states
-    @test "subsurface_water__hydraulic_head" in required_states
+    @test "subsurface_water__instantaneous_hydraulic_head" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "river_water__instantaneous_depth" in required_states
     @test "land_surface_water__instantaneous_depth" in required_states
