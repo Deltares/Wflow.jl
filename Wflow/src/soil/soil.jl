@@ -40,6 +40,12 @@ abstract type AbstractSoilModel end
     infiltsoilpath::Vector{Float64}
     # Infiltration excess water [mm Δt⁻¹]
     infiltexcess::Vector{Float64}
+    # Infiltration from surface water [mm Δt⁻¹]
+    infilt_surfacewater::Vector{Float64}
+    # Contribution from surface water [mm Δt⁻¹]
+    infilt_available_surfacewater::Vector{Float64}
+    # Total water available for infiltration [mm Δt⁻¹]
+    infilt_total_available::Vector{Float64}
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
     excesswater::Vector{Float64}
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
@@ -184,6 +190,9 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         actinfiltpath = fill(MISSING_VALUE, n),
         infiltsoilpath = fill(MISSING_VALUE, n),
         infiltexcess = fill(MISSING_VALUE, n),
+        infilt_surfacewater = fill(0.0, n),
+        infilt_available_surfacewater = fill(0.0, n),
+        infilt_total_available = fill(0.0, n),
         excesswater = fill(MISSING_VALUE, n),
         exfiltsatwater = fill(MISSING_VALUE, n),
         exfiltustore = fill(MISSING_VALUE, n),
@@ -680,6 +689,83 @@ function infiltration_reduction_factor!(
     return nothing
 end
 
+function update_available_for_infiltration!(
+    model::SbmSoilModel,
+    domain::Domain,
+    runoff::AbstractRunoffModel,
+    do_surface_water_infiltration::Bool,
+)
+    v = model.variables
+    (; water_flux_surface) = model.boundary_conditions
+    (; waterdepth_land) = runoff.boundary_conditions
+    (; river_fraction) = domain.land.parameters
+
+    n = length(v.infilt_total_available)
+    threaded_foreach(1:n; basesize = 1000) do i
+        v.infilt_available_surfacewater[i] = 0.0
+        if do_surface_water_infiltration
+            v.infilt_available_surfacewater[i] =
+                waterdepth_land[i] * (1.0 - river_fraction[i]) * 0.95
+            water_flux_surface[i] += v.infilt_available_surfacewater[i]
+        end
+        v.infilt_total_available[i] = water_flux_surface[i]
+    end
+
+    return nothing
+end
+
+function correct_infiltration!(model::SbmSoilModel)
+    v = model.variables
+    (; water_flux_surface) = model.boundary_conditions
+
+    n = length(v.actinfilt)
+    threaded_foreach(1:n; basesize = 1000) do i
+        v.infilt_surfacewater[i],
+        v.actinfilt[i],
+        v.infiltexcess[i],
+        v.excesswater[i],
+        water_flux_surface[i] = correct_infiltration(
+            v.infilt_total_available[i],
+            v.infilt_available_surfacewater[i],
+            water_flux_surface[i],
+            v.actinfilt[i],
+            v.infiltexcess[i],
+        )
+    end
+end
+
+function correct_overland_flow_level!(
+    model::SbmSoilModel,
+    # overland_flow::Union{KinWaveOverlandFlow, LocalInertialOverlandFlow},
+    overland_flow,
+    domain::Domain,
+    config::Config,
+)
+    v = model.variables
+
+    do_surface_water_infiltration =
+        get(config.model, "reinfiltration_surfacewater", false)::Bool
+
+    if do_surface_water_infiltration
+        (; surface_flow_width) = domain.land.parameters
+        n = length(surface_flow_width)
+        threaded_foreach(1:n; basesize = 1000) do i
+            q, h = correct_overland_flow_level(
+                overland_flow.variables.h[i],
+                v.infilt_surfacewater[i],
+                domain.land.parameters.river_fraction[i],
+                surface_flow_width[i],
+                overland_flow.parameters.alpha[i],
+                overland_flow.parameters.beta,
+            )
+            if !isnothing(q)
+                overland_flow.variables.flow.q[i] = q
+                overland_flow.variables.h[i] = h
+            end
+        end
+    end
+end
+
 """
     infiltration!(model::SbmSoilModel)
 
@@ -1054,6 +1140,7 @@ transpiration, capillary flux and leakage) for a single timestep.
 """
 function update!(
     model::SbmSoilModel,
+    domain::Domain,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
     config::Config,
@@ -1062,6 +1149,8 @@ function update!(
     soil_infiltration_reduction =
         get(config.model, "soil_infiltration_reduction__flag", false)::Bool
     modelsnow = get(config.model, "snow__flag", false)::Bool
+    do_surface_water_infiltration =
+        get(config.model, "reinfiltration_surfacewater", false)::Bool
 
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
@@ -1077,6 +1166,10 @@ function update!(
     # infiltration
     soil_temperature!(model, snow, temperature)
     infiltration_reduction_factor!(model; modelsnow, soil_infiltration_reduction)
+
+    # update available for infiltration in case surface water infiltration is enabled
+    update_available_for_infiltration!(model, domain, runoff, do_surface_water_infiltration)
+
     infiltration!(model)
     # unsaturated zone flow
     unsaturated_zone_flow!(model)
@@ -1085,7 +1178,11 @@ function update!(
     transpiration!(model, dt)
     # actual infiltration and excess water
     actual_infiltration!(model)
-    @. v.excesswater = water_flux_surface - v.actinfilt - v.infiltexcess
+
+    # Correct fluxes in case of reinfiltration, also to ensure correct soil and path
+    # infiltration, and excesswater
+    correct_infiltration!(model)
+
     actual_infiltration_soil_path!(model)
     @. v.excesswatersoil =
         max(water_flux_surface * (1.0 - p.pathfrac) - v.actinfiltsoil, 0.0)
@@ -1118,8 +1215,13 @@ the unsaturated store `exfiltustore`, land `runoff` and `net_runoff`, the satura
 `exfiltsatwater` are updated. Addionally, volumetric water content per soil layer and for
 the root zone are updated.
 """
-function update!(model::SbmSoilModel, external_models::NamedTuple)
-    (; runoff, demand, subsurface_flow) = external_models
+function update!(
+    model::SbmSoilModel,
+    external_models::NamedTuple,
+    domain::Domain,
+    config::Config,
+)
+    (; runoff, demand, subsurface_flow, overland_flow) = external_models
     (; runoff_land, ae_openw_l) = runoff.variables
     p = model.parameters
     v = model.variables
@@ -1223,6 +1325,10 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     # and the h_max parameter of a paddy field)
     update_runoff!(demand.paddy, v.runoff)
     @. v.net_runoff = v.runoff - ae_openw_l
+
+    # correct overland flow water levels in case of reinfiltration
+    correct_overland_flow_level!(model, overland_flow, domain, config)
+
     return nothing
 end
 

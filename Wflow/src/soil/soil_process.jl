@@ -293,3 +293,70 @@ function actual_infiltration_soil_path(
 
     return actinfiltsoil, actinfiltpath
 end
+
+function correct_infiltration(
+    infilt_total_available,
+    infilt_available_surfacewater,
+    water_flux_surface,
+    actinfilt,
+    infiltexcess,
+)
+    # Determine ratio of water that has infiltrated
+    infilt_ratio = infilt_total_available == 0.0 ? 0.0 : actinfilt / infilt_total_available
+    # Use this ratio to determine the contribution from overland flow
+    infilt_surfacewater = max(0.0, infilt_available_surfacewater * infilt_ratio)
+    # Determine the correction factor to apply to the relevant fluxes
+    correction_surfacewater =
+        infilt_total_available == 0.0 ? 1.0 :
+        1.0 - (infilt_available_surfacewater / infilt_total_available)
+
+    # Correct fluxes
+    actinfilt *= correction_surfacewater
+    infiltexcess *= correction_surfacewater
+
+    # subtract contribution from overland flow to ensure correct fluxes
+    water_flux_surface -= infilt_available_surfacewater
+    excesswater = water_flux_surface - actinfilt - infiltexcess
+
+    return infilt_surfacewater, actinfilt, infiltexcess, excesswater, water_flux_surface
+end
+
+function correct_overland_flow_level(
+    overlandflow_depth,
+    infilt_surfacewater,
+    river_fraction,
+    surface_flow_width,
+    alpha,
+    beta,
+)
+    if infilt_surfacewater > 0.0
+        # Get original h_land in mm
+        original_h_land = overlandflow_depth * 1000.0
+
+        # Correct values for river fraction to ensure correct water accounting
+        infiltrated_surfacewater = (infilt_surfacewater / (1.0 - river_fraction))
+        # Calculate new h_land in m
+        h = (original_h_land - infiltrated_surfacewater) / 1000.0
+
+        diff = overlandflow_depth - h
+        if diff < 0.0 && infilt_surfacewater > 0.0
+            println(
+                "Corrected h_land: ",
+                overlandflow_depth - h,
+                " ",
+                infiltrated_surfacewater,
+            )
+        end
+
+        q = ifelse(
+            surface_flow_width > 0.0 && h > 0.0 && alpha > 0.0 && beta != 0.0,
+            # Compute cross-sectional area from h
+            pow.(max.((h * surface_flow_width) / alpha, 1e-10), 1.0 / beta),
+            0.0,  # Set q to 0.0 if conditions are not met
+        )
+    else
+        q = nothing
+        h = overlandflow_depth
+    end
+    return q, h
+end
