@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.7.33">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -36,14 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-bc185b5c5bdbcb35c2eb49d8a876ef70.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-84b4a227266c8c675035bd6093feae16.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-33bb12655ed36d11b6f9ec34396b3e8c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-84b4a227266c8c675035bd6093feae16.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-00f2717a5a5cac2b5a5ee824cfb10320.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-67de5405eb3852df93bcc6e2ccbe6df3.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-00f2717a5a5cac2b5a5ee824cfb10320.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -470,18 +470,21 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
 <li>Introduced in v1.0.0-rc1, fixed unit conversion model parameter <code>kv_0</code> to <code>kh_0</code> for sub-daily model timestep.</li>
+<li>Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation parameters.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
 <li>Refactor <code>SimpleReservoir</code> and <code>Lake</code> structs by introducing a <code>Reservoir</code> struct that combines data and functionality of both structs. For the simple reservoir a rating curve type (4) has been added. To represent reservoirs, (natural) lakes or other water storage features that can be represented by the available functionality the common name <code>reservoir</code> is used, also for the standard names of associated model variables and parameters.</li>
+<li>The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25 as recommended by Chu and Willis (1984. This has been changed to a configurable model setting (<code>subsurface_water_flow__alpha_coefficient</code>), so this can be lowered easily in case of numerical instabilities. Additionally, internal timestepping for groundwater flow is now supported.</li>
 </ul>
 </section>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
 <ul>
 <li>Support external inflow at reservoir locations.</li>
+<li>Include a SBOM in build distributions (#669).</li>
 </ul>
 </section>
 </section>
