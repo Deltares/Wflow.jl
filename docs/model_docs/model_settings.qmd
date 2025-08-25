@@ -68,6 +68,7 @@ The Tables in this subsection show the available models settings for the model t
 | `conductivity_profile` | Hydraulic conductivity depth profile: ["uniform", "exponential"] | - | "uniform" |
 | `drain__flag` | Include drainage boundary condition  | - | `false` |
 | `constanthead__flag` | Include constant head boundary condition  | - | `false` |
+| `subsurface_water_flow__alpha_coefficient` | Stability coefficient for internal model time step groundwater flow | - | 0.25 |
 : {.striped .hover}
 
 ## Model type `sediment`
