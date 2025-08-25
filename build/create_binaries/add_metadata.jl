@@ -6,8 +6,10 @@ Add the following metadata files to the newly created build:
 - Manifest.toml
 - README.md
 - LICENSE
+- dep_licenses/
 """
-function add_metadata(project_dir, license_file, output_dir, git_repo)
+
+function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file)
     # save some environment variables in a Build.toml file for debugging purposes
     vars = ["BUILD_NUMBER", "BUILD_VCS_NUMBER"]
     dict = Dict(var => ENV[var] for var in vars if haskey(ENV, var))
@@ -72,4 +74,27 @@ function add_metadata(project_dir, license_file, output_dir, git_repo)
         ```"""
         println(io, version_info)
     end
+
+    cp(sbom_file, normpath(output_dir, "Wflow.spdx.json"); force = true)
+
+    # collect lisences of all dependencies
+    ctx = PackageCompiler.create_pkg_context(project_dir)
+    license_dir = joinpath(output_dir, "dep_licenses") 
+    mkpath(license_dir)
+
+    for (uuid,pkg_entry) in ctx.env.manifest.deps
+	if isnothing(pkg_entry.tree_hash)
+	    # seems as though stdlib packages don't have a tree_sha. as there doesn't seem to be 
+	    # a different way of detecting those, I'm going to assume that is characteristic 
+	    continue 
+	end
+	install_path = Pkg.Operations.find_installed(pkg_entry.name, uuid, pkg_entry.tree_hash)
+
+	license = LicenseCheck.find_license(install_path)
+	if !isnothing(license) 
+	    license_file_path = joinpath(install_path,license.license_filename)
+	    cp(license_file_path , joinpath(license_dir,pkg_entry.name), force=true)
+	end
+    end
+
 end

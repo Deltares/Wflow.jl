@@ -29,7 +29,7 @@ river_water__instantaneous_depth = "h_river"
 reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
 glacier_ice__leq-depth = "glacierstore"
 "land_surface_water~paddy__depth" = "h_paddy"
-subsurface_water__hydraulic_head = "head"
+subsurface_water__instantaneous_hydraulic_head = "head"
 
 [input]
 path_forcing = "forcing-piave.nc"

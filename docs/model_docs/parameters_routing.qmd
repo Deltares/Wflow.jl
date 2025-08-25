@@ -241,7 +241,13 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter` | Factor controlling the reduction of horizontal conductivity with depth | - | - |
 : {.striped .hover}
 
-#### States {#output-gwf-unconfined}
+#### States{#state-gwf-unconfined}
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `subsurface_water__instantaneous_hydraulic_head` | Groundwater head | m |
+: {.striped .hover}
+
+#### Output{#output-gwf-unconfined}
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water__hydraulic_head` | Groundwater head | m |

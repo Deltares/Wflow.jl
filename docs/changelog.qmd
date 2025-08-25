@@ -10,6 +10,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Unreleased
 
 ### Fixed
+- Introduced in v1.0.0-rc1, fixed unit conversion model parameter `kv_0` to `kh_0` for
+  sub-daily model timestep.
+- Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation
+  parameters.
 
 ### Changed
 - Refactor `SimpleReservoir` and `Lake` structs by introducing a `Reservoir` struct that
@@ -18,9 +22,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   features that can be represented by the available functionality the common name
   `reservoir` is used, also for the standard names of associated model variables and
   parameters.
+- The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25
+  as recommended by Chu and Willis (1984. This has been changed to a configurable model
+  setting (`subsurface_water_flow__alpha_coefficient`), so this can be lowered easily in
+  case of numerical instabilities. Additionally, internal timestepping for groundwater flow
+  is now supported.
 
 ### Added
 - Support external inflow at reservoir locations.
+- Include a SBOM in build distributions (#669).
 
 ## v1.0.0-rc1 - 2025-06-23
 
