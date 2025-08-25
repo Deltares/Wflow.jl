@@ -34,7 +34,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     "snowpack_water__runoff_volume_flux" =>
         (lens = @optic(_.land.snow.variables.runoff), unit = "mm dt-1"),
     "river_water_inflow~external__volume_flow_rate" => (
-        lens = @optic(_.routing.river_flow.boundary_conditions.inflow),
+        lens = @optic(_.routing.river_flow.boundary_conditions.external_inflow),
         unit = "m3 s-1",
     ),
     "river_water_abstraction~external__volume_flow_rate" => (
@@ -148,6 +148,12 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
             _.routing.river_flow.boundary_conditions.reservoir.variables.waterlevel_av
         ),
         unit = "m",
+    ),
+    "reservoir_water_inflow~external__volume_flow_rate" => (
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.external_inflow
+        ),
+        unit = "m3 s-1",
     ),
     "soil_water__infiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actinfilt), unit = "mm dt-1"),

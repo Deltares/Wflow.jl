@@ -573,7 +573,7 @@ function surface_water_allocation_local!(
     (; surfacewater_demand) = demand.variables
     (; act_surfacewater_abst_vol, act_surfacewater_abst, available_surfacewater) =
         river.allocation.variables
-    (; inflow) = river.boundary_conditions
+    (; external_inflow) = river.boundary_conditions
     (; storage) = river.variables
 
     (; area) = domain.parameters
@@ -583,12 +583,12 @@ function surface_water_allocation_local!(
     for i in eachindex(surfacewater_demand)
         if indices_river[i] > 0.0
             # the available volume is limited by a fixed scaling factor of 0.8 to prevent
-            # rivers completely drying out. check for abstraction through inflow (external
-            # negative inflow) first and adjust available volume.
-            if inflow[indices_river[i]] < 0.0
+            # rivers completely drying out. check for abstraction through negative external
+            # inflow first and adjust available volume.
+            if external_inflow[indices_river[i]] < 0.0
                 available_volume = storage[indices_river[i]] * 0.80
                 max_river_abstraction =
-                    min(-inflow[indices_river[i]] * dt, available_volume)
+                    min(-external_inflow[indices_river[i]] * dt, available_volume)
                 available_volume = max(available_volume - max_river_abstraction, 0.0)
             else
                 available_volume = storage[indices_river[i]] * 0.80
@@ -619,6 +619,7 @@ function surface_water_allocation_area!(
     demand::Demand,
     river::AbstractRiverFlowModel,
     domain::Domain,
+    dt::Float64,
 )
     inds_river = domain.river.network.allocation_area_indices
     inds_land = domain.land.network.allocation_area_indices
@@ -642,10 +643,19 @@ function surface_water_allocation_area!(
         sw_available = 0.0
         for j in inds_river[i]
             if inds_reservoir[j] > 0
-                # for reservoir locations use reservoir storage
+                # for reservoir locations use reservoir storage, check for abstraction
+                # through external negative inflow first and adjust available volume.
                 k = inds_reservoir[j]
-                available_surfacewater[j] = reservoir.variables.storage[k] * 0.98 # limit available reservoir storage
-                sw_available += available_surfacewater[j]
+                external_inflow = reservoir.boundary_conditions.external_inflow[k]
+                if external_inflow < 0.0
+                    available_volume = reservoir.variables.storage[k] * 0.98
+                    max_res_abstraction = min(-external_inflow * dt, available_volume)
+                    available_volume = max(available_volume - max_res_abstraction, 0.0)
+                else
+                    available_volume = reservoir.variables.storage[k] * 0.98
+                end
+                available_surfacewater[j] = available_volume
+                sw_available += available_volume
             else
                 # river volume
                 sw_available += available_surfacewater[j]
@@ -845,7 +855,7 @@ function update_water_allocation!(
     # local surface water demand and allocation (river, excluding reservoirs)
     surface_water_allocation_local!(model, demand, river, domain.land, dt)
     # surface water demand and allocation for areas
-    surface_water_allocation_area!(model, demand, river, domain)
+    surface_water_allocation_area!(model, demand, river, domain, dt)
 
     @. abstraction = act_surfacewater_abst_vol / dt
 
