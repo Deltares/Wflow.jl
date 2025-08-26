@@ -194,6 +194,8 @@ end
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
     outflow_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    # observed outflow from reservoir [m³ s⁻¹]
+    outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average actual evaporation for reservoir area [mm Δt⁻¹]
     actevap::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # fraction full (of max storage) for rating curve type 4 [-]
