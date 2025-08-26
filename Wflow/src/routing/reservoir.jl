@@ -476,6 +476,22 @@ function update_reservoir_free_weir(
     return outflow, storage
 end
 
+"Update reservoir using observed outflow for a single timestep."
+function update_reservoir_outflow_obs(
+    model::Reservoir,
+    i::Int,
+    boundary_vars::NamedTuple,
+    dt::Float64,
+)
+    res_v = model.variables
+    (; precipitation, actevap, inflow) = boundary_vars
+
+    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    outflow = min(res_v.outflow_obs[i], storage_input)
+    storage = (storage_input - outflow) * dt
+    return outflow, storage
+end
+
 """
 Update a single reservoir at position `i`.
 
@@ -501,7 +517,9 @@ function update!(
 
     boundary_vars = (; precipitation, actevap, inflow)
 
-    if res_p.outflowfunc[i] == 1
+    if !isnan(res_v.outflow_obs[i])
+        outflow, storage = update_reservoir_outflow_obs(model, i, boundary_vars, dt)
+    elseif res_p.outflowfunc[i] == 1
         outflow, storage = update_reservoir_hq(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 2
         outflow, storage = update_reservoir_free_weir(model, i, boundary_vars, dt)
