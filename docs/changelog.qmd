@@ -103,10 +103,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Removed `LoopVectorization` dependency because of compilation issues and the risk of
   deprecation for newer Julia versions. The `tturbo` macro has been replaced by the `batch`
   macro of `Polyester`, performance loss is acceptable.
-- Use for the infiltration capacity of soil, represented by parameter `infiltcapsoil`,
-  the actual saturated hydraulic conductivity at the soil surface based on parameters
-  `kv_0` and `kvfrac`. This parameter is now better linked to soil properties and setting
-  this parameter directly by an external netCDF variable is not supported anymore.
+- The infiltration capacity of soil, represented by parameter `infiltcapsoil`, is now
+  determined from the actual saturated hydraulic conductivity at the soil surface using
+  parameters `kv_0` and `kvfrac`, better linking it to soil properties. Setting `infiltcapsoil`
+  directly by an external netCDF variable is not supported anymore.
 - Removed the `GroundwaterExchange` component that can be used to replace the kinematic wave
   lateral subsurface flow routing with an external groundwater model (e.g. Modflow). This
   feature has been added as part of the following [MSc
