@@ -198,10 +198,6 @@ end
     outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average actual evaporation for reservoir area [mm Δt⁻¹]
     actevap::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # fraction full (of max storage) for rating curve type 4 [-]
-    percfull::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # minimum (environmental) flow released from reservoir for rating curve type 4 [m³ s⁻¹]
-    demandrelease::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
 end
 
 "Initialize reservoir model variables"
@@ -348,12 +344,9 @@ function update_reservoir_simple(
     torelease = min(wantrel, overflow_q + res_p.maxrelease[i] * dt - demandrelease)
     storage = storage - torelease
     outflow = torelease + demandrelease
-    percfull = storage / res_p.maxstorage[i]
-
     outflow /= dt
-    demandrelease /= dt
 
-    return outflow, storage, demandrelease, percfull
+    return outflow, storage
 end
 
 """
@@ -526,8 +519,7 @@ function update!(
     elseif res_p.outflowfunc[i] == 3
         outflow, storage = update_reservoir_modified_puls(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 4
-        outflow, storage, demandrelease, percfull =
-            update_reservoir_simple(model, i, boundary_vars, dt)
+        outflow, storage = update_reservoir_simple(model, i, boundary_vars, dt)
     end
 
     waterlevel = if res_p.storfunc[i] == 1
@@ -541,10 +533,7 @@ function update!(
     res_v.storage[i] = storage
     res_v.waterlevel[i] = waterlevel
     res_v.outflow[i] = outflow
-    if res_p.outflowfunc[i] == 4
-        res_v.demandrelease[i] = demandrelease
-        res_v.percfull[i] = percfull
-    end
+
     # average variables (here accumulated for model timestep Δt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt

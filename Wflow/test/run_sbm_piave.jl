@@ -140,7 +140,6 @@ Wflow.run_timestep!(model)
           [1.8948850499097648e8, 4.279957853085982e7, 7.159979181269434e7]
     @test reservoir.variables.outflow_av ≈
           [4.839262369375678, 9.7190485747002, 58.12081274927687]
-    @test reservoir.variables.demandrelease[[2, 3]] ≈ [1.182999968528626, 7.902500152587073]
 end
 
 Wflow.run_timestep!(model)
@@ -163,7 +162,6 @@ Wflow.run_timestep!(model)
           [1.8953043195283672e8, 4.279951562880186e7, 7.159979105537169e7]
     @test reservoir.variables.outflow_av ≈
           [4.84140356355074, 9.32858384747847, 54.86508305737946]
-    @test reservoir.variables.demandrelease[[2, 3]] ≈ [1.182999968528626, 7.902500152587073]
 end
 
 Wflow.close_files(model; delete_output = false)

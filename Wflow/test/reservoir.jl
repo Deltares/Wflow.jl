@@ -34,8 +34,6 @@ res = Wflow.Reservoir(;
     @test res.variables.outflow_av[1] == res.variables.outflow[1]
     @test res.variables.storage[1] ≈ 2.0e7
     @test res.variables.storage[1] == res.variables.storage_av[1]
-    @test res.variables.percfull[1] ≈ 0.80
-    @test res.variables.demandrelease[1] ≈ 52.5229994727611
     @test res.boundary_conditions.precipitation[1] ≈ 4.2
     @test res.boundary_conditions.evaporation[1] ≈ 1.5
     @test res.variables.actevap[1] ≈ 1.5
