@@ -115,6 +115,12 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         ),
         unit = "m3 s-1",
     ),
+    "reservoir_water~outgoing~observed__volume_flow_rate" => (
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_obs
+        ),
+        unit = "m3 s-1",
+    ),
     "reservoir_water~incoming__volume_flow_rate" => (
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow

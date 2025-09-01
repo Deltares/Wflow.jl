@@ -302,9 +302,13 @@ function update_forcing!(model)
         lens = standard_name_map(land)[par].lens
         param_vector = lens(model)
         sel = active_indices(domain, par)
-        data_sel = data[sel]
+        # missing data for observed reservoir outflow is allowed at reservoir location(s)
+        if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+            data_sel = nomissing(data[sel], MISSING_VALUE)
+        else
+            data_sel = data[sel]
+        end
         if any(ismissing, data_sel)
-            print(par)
             msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
         end
@@ -333,7 +337,6 @@ function update_forcing!(model::AbstractModel{<:SedimentModel})
         sel = active_indices(domain, par)
         data_sel = data[sel]
         if any(ismissing, data_sel)
-            print(par)
             msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
         end
@@ -388,7 +391,14 @@ function update_cyclic!(model)
             lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
             sel = active_indices(domain, par)
-            param_vector .= data[sel]
+            # missing data for observed reservoir outflow is allowed at reservoir
+            # location(s)
+            if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+                data_sel = nomissing(data[sel], MISSING_VALUE)
+            else
+                data_sel = data[sel]
+            end
+            param_vector .= data_sel
             if ncvar.scale != 1.0 || ncvar.offset != 0.0
                 param_vector .= param_vector .* ncvar.scale .+ ncvar.offset
             end
