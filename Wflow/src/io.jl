@@ -302,8 +302,9 @@ function update_forcing!(model)
         lens = standard_name_map(land)[par].lens
         param_vector = lens(model)
         sel = active_indices(domain, par)
+        # missing data for observed reservoir outflow is allowed at reservoir location(s)
         if par == "reservoir_water~outgoing~observed__volume_flow_rate"
-            data_sel = nomissing(data[sel], NaN)
+            data_sel = nomissing(data[sel], MISSING_VALUE)
         else
             data_sel = data[sel]
         end
@@ -392,8 +393,10 @@ function update_cyclic!(model)
             lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
             sel = active_indices(domain, par)
+            # missing data for observed reservoir outflow is allowed at reservoir
+            # location(s)
             if par == "reservoir_water~outgoing~observed__volume_flow_rate"
-                data_sel = nomissing(data[sel], NaN)
+                data_sel = nomissing(data[sel], MISSING_VALUE)
             else
                 data_sel = data[sel]
             end
