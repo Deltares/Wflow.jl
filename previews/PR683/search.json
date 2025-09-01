@@ -1454,6 +1454,18 @@
     ]
   },
   {
+    "objectID": "model_docs/routing/reservoirs.html#using-observed-outflow",
+    "href": "model_docs/routing/reservoirs.html#using-observed-outflow",
+    "title": "Reservoirs",
+    "section": "Using observed outflow",
+    "text": "Using observed outflow\nWhen reservoir observed outflow data is available, it is possble to use this data directly for computing the reservoir water balance rather than using a rating curve. This data can be provided as a cyclic parameter or as part of forcing. For example, cyclic observed outflow can be provided in the TOML file as follows:\n[input.cyclic]\n\"reservoir_water~outgoing~observed__volume_flow_rate\" = \"reservoir_outflow\"\nThe reservoir outflow is not equal to the user-defined observed reservoir outflow in case not enough reservoir water storage is available. When missing data in the input netCDF file for observed reservoir outflow at a reservoir location is provided the rating curve of that reservoir location is used.",
+    "crumbs": [
+      "Model documentation",
+      "Routing concepts",
+      "Reservoirs"
+    ]
+  },
+  {
     "objectID": "model_docs/routing/reservoirs.html#references",
     "href": "model_docs/routing/reservoirs.html#references",
     "title": "Reservoirs",

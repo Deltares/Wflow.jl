@@ -539,6 +539,7 @@ window.Quarto = {
   <li><a href="#storage-and-rating-cuves-from-data" id="toc-storage-and-rating-cuves-from-data" class="nav-link" data-scroll-target="#storage-and-rating-cuves-from-data">Storage and rating cuves from data</a></li>
   </ul></li>
   <li><a href="#external-inflows" id="toc-external-inflows" class="nav-link" data-scroll-target="#external-inflows">External inflows</a></li>
+  <li><a href="#using-observed-outflow" id="toc-using-observed-outflow" class="nav-link" data-scroll-target="#using-observed-outflow">Using observed outflow</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -701,6 +702,13 @@ Note
 <div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water_inflow~external__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"reservoir_inflow"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>These inflows are added or subtracted from the reservoir inflow. In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of <span class="math inline">\(0.98\)</span> applied to reservoir storage. Negative external inflows are satisfied first, and the remaining reservoir storage is available for internal abstractions as part of water demand and allocation computations.</p>
+</section>
+<section id="using-observed-outflow" class="level2">
+<h2 class="anchored" data-anchor-id="using-observed-outflow">Using observed outflow</h2>
+<p>When reservoir observed outflow data is available, it is possble to use this data directly for computing the reservoir water balance rather than using a rating curve. This data can be provided as a cyclic parameter or as part of forcing. For example, cyclic observed outflow can be provided in the TOML file as follows:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"reservoir_water~outgoing~observed__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"reservoir_outflow"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The reservoir outflow is not equal to the user-defined observed reservoir outflow in case not enough reservoir water storage is available. When missing data in the input netCDF file for observed reservoir outflow at a reservoir location is provided the rating curve of that reservoir location is used.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
