@@ -338,16 +338,6 @@ function correct_overland_flow_level(
         # Calculate new h_land in m
         h = (original_h_land - infiltrated_surfacewater) / 1000.0
 
-        diff = overlandflow_depth - h
-        if diff < 0.0 && infilt_surfacewater > 0.0
-            println(
-                "Corrected h_land: ",
-                overlandflow_depth - h,
-                " ",
-                infiltrated_surfacewater,
-            )
-        end
-
         q = ifelse(
             surface_flow_width > 0.0 && h > 0.0 && alpha > 0.0 && beta != 0.0,
             # Compute cross-sectional area from h

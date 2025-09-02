@@ -64,9 +64,10 @@ end
 function update!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
+    (; subsurface_flow, overland_flow) = routing
 
     do_water_demand = haskey(config.model, "water_demand")
-    (; aquifer, boundaries) = routing.subsurface_flow
+    (; aquifer, boundaries) = subsurface_flow
     dt = tosecond(clock.dt)
 
     update!(land, routing, domain, config, dt)
@@ -89,7 +90,7 @@ function update!(model::AbstractModel{<:SbmGwfModel})
         )
     end
 
-    Q = zeros(routing.subsurface_flow.connectivity.ncell)
+    Q = zeros(subsurface_flow.connectivity.ncell)
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
     @. boundaries.recharge.variables.rate =
@@ -99,10 +100,10 @@ function update!(model::AbstractModel{<:SbmGwfModel})
             land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
     end
     # update groundwater domain
-    update!(routing.subsurface_flow, Q, dt_sbm, conductivity_profile)
+    update!(subsurface_flow, Q, dt_sbm, conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
+    update!(soil, (; runoff, demand, subsurface_flow, overland_flow), domain, config)
 
     surface_routing!(model)
 
