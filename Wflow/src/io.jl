@@ -386,7 +386,12 @@ function update_cyclic!(model)
             lens = standard_name_map(land)[par].lens
             param_vector = lens(model)
             sel = active_indices(domain, par)
-            param_vector .= data[sel]
+            data_sel = data[sel]
+            if any(ismissing, data_sel)
+                msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(ncvar.name)"
+                throw(ArgumentError(msg))
+            end
+            param_vector .= data_sel
             if ncvar.scale != 1.0 || ncvar.offset != 0.0
                 param_vector .= param_vector .* ncvar.scale .+ ncvar.offset
             end
