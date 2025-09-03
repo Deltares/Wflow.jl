@@ -304,8 +304,7 @@ function update_forcing!(model)
         sel = active_indices(domain, par)
         data_sel = data[sel]
         if any(ismissing, data_sel)
-            print(par)
-            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+            msg = "Forcing data at $time has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
         end
         param_vector .= data_sel
@@ -333,8 +332,7 @@ function update_forcing!(model::AbstractModel{<:SedimentModel})
         sel = active_indices(domain, par)
         data_sel = data[sel]
         if any(ismissing, data_sel)
-            print(par)
-            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+            msg = "Forcing data at $time has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
         end
         param_vector .= data_sel
