@@ -300,7 +300,7 @@ function update_forcing!(model)
         sel = active_indices(domain, par)
         data_sel = data[sel]
         if any(ismissing, data_sel)
-            msg = "Forcing data at $time has missing values on active model cells for $(ncvar_name)"
+            msg = "Forcing data at $time has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
         end
         param = get_param(model, par)
@@ -354,7 +354,7 @@ function update_cyclic!(model)
             sel = active_indices(domain, par)
             data_sel = data[sel]
             if any(ismissing, data_sel)
-                msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $ncvar_name"
+                msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(ncvar.name)"
                 throw(ArgumentError(msg))
             end
             param = get_param(model, par)
