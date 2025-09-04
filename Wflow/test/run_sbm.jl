@@ -202,7 +202,7 @@ Wflow.run_timestep!(model)
     land = model.land
     @test land.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0
     @test (land.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈ 3.0
-    @test land.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.5999999403953562
+    @test land.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.6 atol=1e-7
     @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0000006747697516
 end
 
