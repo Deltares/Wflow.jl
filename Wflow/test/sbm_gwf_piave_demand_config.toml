@@ -117,13 +117,13 @@ vegetation__leaf-area_index = "LAI"
 [model]
 type = "sbm_gwf"
 constanthead__flag = true
-gravitational_snow_transport = true
+snow_gravitational_transport__flag = true
 snow__flag = true
 cold_start__flag = false
 reservoir__flag = true
 glacier__flag = true
 kinematic_wave__adaptive_time_step_flag = true
-soil_layer__thickness = [ 50, 100, 50, 200, 800,]
+soil_layer__thickness = [50, 100, 50, 200, 800]
 river_routing = "kinematic-wave"
 conductivity_profile = "exponential"
 

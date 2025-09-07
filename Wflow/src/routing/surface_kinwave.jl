@@ -17,14 +17,15 @@ function init_kinematic_wave_timestepping(
     domain::String,
     dt_fixed::Float64,
 )
-    adaptive = get(config.model, "kinematic_wave__adaptive_time_step_flag", false)::Bool
+    adaptive = config.model.kinematic_wave__adaptive_time_step_flag
     @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
 
     if adaptive
         stable_timesteps = zeros(n)
         timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
-        dt_fixed = get(config.model, "$(domain)_kinematic_wave__time_step", dt_fixed)
+        dt_config = getfield(config.model, Symbol("$(domain)_kinematic_wave__time_step"))
+        dt_fixed = isnothing(dt_config) ? dt_fixed : dt_config
         @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
         timestepping = TimeStepping(; dt_fixed, adaptive)
     end
@@ -120,7 +121,7 @@ function RiverFlowBC(n::Int, reservoir::Union{Reservoir, Nothing})
         external_inflow = zeros(Float64, n),
         actual_external_abstraction_av = zeros(Float64, n),
         abstraction = zeros(Float64, n),
-        reservoir = reservoir,
+        reservoir,
     )
     return bc
 end
@@ -147,8 +148,8 @@ function KinWaveRiverFlow(
     timestepping =
         init_kinematic_wave_timestepping(config, n; domain = "river", dt_fixed = 900.0)
 
-    do_water_demand = haskey(config.model, "water_demand")
-    allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver()
+    allocation =
+        config.has_section.model_water_demand ? AllocationRiver(n) : NoAllocationRiver()
 
     variables = FlowVariables(n)
     parameters = RiverFlowParameters(dataset, config, domain)
@@ -384,7 +385,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
             model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_land_update!(model, domain, dt_s)
-        t = t + dt_s
+        t += dt_s
     end
     average_flow_vars!(model.variables, dt)
     to_river ./= dt
@@ -528,7 +529,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
             model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_river_update!(model, domain.river, dt_s, dt)
-        t = t + dt_s
+        t += dt_s
     end
 
     average_reservoir_vars!(reservoir, dt)
@@ -618,8 +619,7 @@ function update_lateral_inflow!(
     (; net_runoff) = soil.variables
     (; inwater) = model.boundary_conditions
 
-    do_drains = get(config.model, "drain__flag", false)::Bool
-    if do_drains
+    if config.model.drain__flag
         drain = subsurface_flow.boundaries.drain
         drainflux = zeros(length(net_runoff))
         drainflux[drain.index] = -drain.variables.flux ./ tosecond(BASETIMESTEP)

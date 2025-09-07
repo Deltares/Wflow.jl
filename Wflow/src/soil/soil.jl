@@ -208,26 +208,13 @@ end
 
 "Struct for storing SBM soil model boundary conditions"
 @with_kw struct SbmSoilBC
+    n::Int
     # Water flux at the soil surface [mm Δt⁻¹]
-    water_flux_surface::Vector{Float64}
+    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential transpiration rate [mm Δt⁻¹]
-    potential_transpiration::Vector{Float64}
+    potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential soil evaporation rate [mm Δt⁻¹]
-    potential_soilevaporation::Vector{Float64}
-end
-
-"Initialize SBM soil model boundary conditions"
-function SbmSoilBC(
-    n::Int;
-    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n),
-    potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n),
-    potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return SbmSoilBC(;
-        water_flux_surface = water_flux_surface,
-        potential_transpiration = potential_transpiration,
-        potential_soilevaporation = potential_soilevaporation,
-    )
+    potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
@@ -275,8 +262,7 @@ function sbm_kv_profiles(
     sumlayers::Vector,
     dt::Second,
 )
-    kv_profile_type =
-        get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
+    kv_profile_type = config.model.saturated_hydraulic_conductivity_profile
     n = length(indices)
     if kv_profile_type == "exponential"
         kv_profile = KvExponential(kv_0, f)
@@ -348,8 +334,7 @@ function SbmSoilParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    config_soil_layer_thickness =
-        get(config.model, "soil_layer__thickness", [100, 300, 800])::Vector{Int64}
+    config_soil_layer_thickness = config.model.soil_layer__thickness
 
     soil_layer_thickness =
         SVector(Tuple(push!(Float64.(config_soil_layer_thickness), MISSING_VALUE)))
@@ -491,7 +476,7 @@ function SbmSoilParameters(
     # root fraction read from dataset file, in case of multiple soil layers and TOML file
     # includes "soil_root__length_density_fraction"
     par_name = "soil_root__length_density_fraction"
-    do_cyclic = haskey(config.input, "cyclic")
+    do_cyclic = config.has_section.input_cyclic
     do_root_fraction =
         do_cyclic ? haskey(config.input.cyclic, par_name) :
         haskey(config.input.static, par_name)
@@ -586,7 +571,7 @@ function SbmSoilModel(
     n = length(indices)
     params = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     vars = SbmSoilVariables(n, params)
-    bc = SbmSoilBC(n)
+    bc = SbmSoilBC(; n)
     model = SbmSoilModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
 end
@@ -772,7 +757,7 @@ function soil_evaporation!(model::SbmSoilModel)
         # available unsaturated moisture
         soilevapunsat = min(soilevapunsat, v.ustorelayerdepth[i][1])
         # Update the additional atmospheric demand
-        potsoilevap = potsoilevap - soilevapunsat
+        potsoilevap -= soilevapunsat
         v.ustorelayerdepth[i] =
             setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][1] - soilevapunsat, 1)
 
@@ -868,7 +853,7 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
             actevapustore_layer =
                 min(alpha * rootfraction_unsat_scaled * potential_transpiration[i], maxextr)
             ustorelayerdepth = v.ustorelayerdepth[i][k] - actevapustore_layer
-            actevapustore = actevapustore + actevapustore_layer
+            actevapustore += actevapustore_layer
             v.ustorelayerdepth[i] = setindex(v.ustorelayerdepth[i], ustorelayerdepth, k)
         end
 
@@ -1005,8 +990,8 @@ function capillary_flux!(model::SbmSoilModel)
                 )
                 v.ustorelayerdepth[i] =
                     setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][k] + toadd, k)
-                netcapflux = netcapflux - toadd
-                actcapflux = actcapflux + toadd
+                netcapflux -= toadd
+                actcapflux += toadd
             end
             v.actcapflux[i] = actcapflux
         else
@@ -1059,10 +1044,6 @@ function update!(
     config::Config,
     dt::Float64,
 )
-    soil_infiltration_reduction =
-        get(config.model, "soil_infiltration_reduction__flag", false)::Bool
-    modelsnow = get(config.model, "snow__flag", false)::Bool
-
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
     (; water_flux_surface) = model.boundary_conditions
@@ -1076,7 +1057,11 @@ function update!(
 
     # infiltration
     soil_temperature!(model, snow, temperature)
-    infiltration_reduction_factor!(model; modelsnow, soil_infiltration_reduction)
+    infiltration_reduction_factor!(
+        model;
+        modelsnow = config.model.snow__flag,
+        soil_infiltration_reduction = config.model.soil_infiltration_reduction__flag,
+    )
     infiltration!(model)
     # unsaturated zone flow
     unsaturated_zone_flow!(model)

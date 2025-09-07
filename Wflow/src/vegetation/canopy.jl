@@ -51,8 +51,7 @@ function GashInterceptionModel(
     )
     e_r = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     n = length(indices)
-    params =
-        GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
+    params = GashParameters(; e_r, vegetation_parameter_set)
     vars = InterceptionVariables(n)
     model = GashInterceptionModel(; parameters = params, variables = vars)
     return model

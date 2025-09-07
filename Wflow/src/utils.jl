@@ -30,7 +30,7 @@ Sigmoid "S"-shaped curve.
              The higher c the sharper the function. A negative c reverses the function.
 """
 function scurve(x, a, b, c)
-    s = one(x) / (b + exp(-c * (x - a)))
+    s = inv(b + exp(-c * (x - a)))
     return s
 end
 
@@ -241,12 +241,11 @@ function ncread(
         else
             return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
         end
-    else
-        # get var (netCDF variable or type Config) from TOML file.
-        # if var has type Config, input parameters can be changed.
-        var = parameter.lens(config)
-        var = var isa AbstractDict ? Config(var, pathof(config)) : var
     end
+
+    # get var (netCDF variable or type Config) from TOML file.
+    # if var has type PropertyDict, input parameters can be changed.
+    var = parameter.lens(config)
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
@@ -260,10 +259,10 @@ function ncread(
         error("Unrecognized dimension name $dimname")
     end
 
-    # If var has type Config, input parameters can be changed (through scale, offset and
+    # If var has type PropertyDict, input parameters can be changed (through scale, offset and
     # input netCDF var) or set to a uniform value (providing a value). Otherwise, input
     # NetCDF var is read directly.
-    var, mod = ncvar_name_modifier(var; config = config)
+    var, mod = ncvar_name_modifier(var; config)
 
     if !isnothing(mod.value)
         @info "Set `$(parameter.name)` using uniform value `$(mod.value)` from TOML file."
@@ -340,10 +339,9 @@ or cyclic input model parameter name in the nested `config` object (parsed TOML 
 default specifying a model parameter is `optional` in the TOML file.
 """
 function lens_input_parameter(config::Config, p::AbstractString; optional = true)
-    do_cyclic = haskey(config.input, "cyclic")
     if haskey(config.input.static, p)
         return (name = p, lens = @optic(_.input.static[p]))
-    elseif do_cyclic && haskey(config.input.cyclic, p)
+    elseif config.has_section.input_cyclic && haskey(config.input.cyclic, p)
         return (name = p, lens = @optic(_.input.cyclic[p]))
     elseif optional
         return (name = p, lens = nothing)
@@ -355,22 +353,18 @@ function lens_input_parameter(config::Config, p::AbstractString; optional = true
     end
 end
 
-"""
-Return `NamedTuple` with internal standard `name` and a `lens` to access the external input
-(not directly part of a model) parameter name in the nested `config` object (parsed TOML
-file). By default specifying a model parameter is `optional` in the TOML file.
-"""
-function lens_input(config::Config, p::AbstractString; optional = true)
-    if haskey(config.input, p)
-        return (name = p, lens = @optic(_.input[p]))
-    elseif optional
-        return (name = p, lens = nothing)
-    else
-        error(
-            """Required input model parameter with standard name $p not set in TOML file 
-            (below `[input]` section)""",
-        )
+function lens_input(p::Symbol; config::Union{Nothing, Config} = nothing)
+    if config isa Config
+        # If the config was passed, check whether the requested parameter
+        # was specified in the config
+        if isnothing(getfield(config.input, p))
+            error(
+                """Required input model parameter with standard name $p not set in TOML file 
+                (below `[input]` section)""",
+            )
+        end
     end
+    return (; name = p, lens = @optic(getfield(_.input, p)))
 end
 
 """
@@ -931,7 +925,7 @@ function initialize_lateral_ssf!(
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
-        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+        kh_max *= khfrac[i] * 0.001 * 0.001
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing

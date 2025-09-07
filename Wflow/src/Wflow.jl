@@ -52,6 +52,8 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+using Configurations: @option, from_dict
+using PropertyDicts: PropertyDict
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
@@ -68,8 +70,7 @@ end
 function Clock(config)
     # this constructor is used by reset_clock!, since if the Clock has already
     # been constructed before, the config is complete
-    calendar = get(config.time, "calendar", "standard")::String
-    starttime = cftime(config.time.starttime, calendar)
+    starttime = cftime(config.time.starttime, config.time.calendar)
     dt = Second(config.time.timestepsecs)
     return Clock(starttime, 0, dt)
 end
@@ -78,32 +79,27 @@ function Clock(config, reader)
     nctimes = reader.dataset["time"][:]
 
     # if the timestep is not given, use the difference between netCDF time 1 and 2
-    timestepsecs = get(config.time, "timestepsecs", nothing)
-    if timestepsecs === nothing
+    if isnothing(config.time.timestepsecs)
         timestepsecs = Dates.value(Second(nctimes[2] - nctimes[1]))
         config.time.timestepsecs = timestepsecs
     end
-    dt = Second(timestepsecs)
+    dt = Second(config.time.timestepsecs)
 
     # if the config file does not have a start or endtime, follow the netCDF times
     # and add them to the config
-    starttime = get(config.time, "starttime", nothing)
-    if starttime === nothing
+    if isnothing(config.time.starttime)
         starttime = first(nctimes) - dt
         config.time.starttime = starttime
     end
-    endtime = get(config.time, "endtime", nothing)
-    if endtime === nothing
+    if isnothing(config.time.endtime)
         endtime = last(nctimes)
         config.time.endtime = endtime
     end
 
-    calendar = get(config.time, "calendar", "standard")::String
-    fews_run = get(config, "fews_run__flag", false)::Bool
-    if fews_run
-        config.time.starttime = starttime + dt
+    if config.fews_run__flag
+        config.time.starttime += dt
     end
-    starttime = cftime(config.time.starttime, calendar)
+    starttime = cftime(config.time.starttime, config.time.calendar)
 
     return Clock(starttime, 0, dt)
 end
@@ -117,6 +113,7 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+include("config.jl")
 include("io.jl")
 include("network.jl")
 include("routing/routing.jl")
@@ -235,10 +232,9 @@ This makes it easier to start a run from the command line without having to esca
 function run(tomlpath::AbstractString; silent = nothing)
     config = Config(tomlpath)
     # if the silent kwarg is not set, check if it is set in the TOML
-    if silent === nothing
-        silent = get(config.logging, "silent", false)::Bool
+    if isnothing(silent)
+        silent = config.logging.silent
     end
-    fews_run = get(config, "fews_run", false)::Bool
     logger, logfile = init_logger(config; silent)
     with_logger(logger) do
         @info "Wflow version `v$VERSION`"
@@ -248,7 +244,7 @@ function run(tomlpath::AbstractString; silent = nothing)
         catch e
             # avoid logging backtrace for the single line FEWS log format
             # that logger also uses SimpleLogger which doesn't result in a good backtrace
-            if fews_run
+            if config.fews_run__flag
                 @error "Wflow simulation failed" exception = e _id = :wflow_run
             else
                 @error "Wflow simulation failed" exception = (e, catch_backtrace()) _id =
@@ -282,13 +278,12 @@ end
 function run!(model::Model; close_files = true)
     (; config, writer, clock) = model
 
-    model_type = config.model.type::String
+    model_type = config.model.type
 
     # determine timesteps to run
-    calendar = get(config.time, "calendar", "standard")::String
     starttime = clock.time
     dt = clock.dt
-    endtime = cftime(config.time.endtime, calendar)
+    endtime = cftime(config.time.endtime, config.time.calendar)
     times = range(starttime + dt, endtime; step = dt)
 
     @info "Run information" model_type starttime dt endtime nthreads()
@@ -314,8 +309,8 @@ function run!(model::Model; close_files = true)
     end
 
     # copy TOML to dir_output, to archive what settings were used
-    if haskey(config, "dir_output")
-        src = normpath(pathof(config))
+    if !isnothing(config.dir_input)
+        src = normpath(config.path)
         dst = output_path(config, basename(src))
         if src != dst
             @debug "Copying TOML file." src dst

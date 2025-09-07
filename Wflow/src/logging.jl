@@ -47,12 +47,12 @@ end
 
 "Initialize a logger, which is different if `fews_run` is set in the Config."
 function init_logger(config::Config; silent = false)::Tuple{TeeLogger, IOStream}
-    loglevel = parse_loglevel(get(config.logging, "loglevel", "info"))
-    path_log = output_path(config, get(config.logging, "path_log", "log.txt"))
+    loglevel = parse_loglevel(config.logging.loglevel)
+    path_log = output_path(config, config.logging.path_log)
     mkpath(dirname(path_log))
     log_handle = open(path_log, "w")
-    fews_run = get(config, "fews_run", false)::Bool
 
+    fews_run = config.fews_run__flag
     file_logger = if fews_run
         # Format the log message to be printed on a single line.
         MinLevelLogger(FormatLogger(format_message, log_handle), loglevel)

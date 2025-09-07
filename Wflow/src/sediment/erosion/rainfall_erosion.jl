@@ -11,31 +11,18 @@ function RainfallErosionModelVariables(
     n::Int;
     amount::Vector{Float64} = fill(MISSING_VALUE, n),
 )
-    return RainfallErosionModelVariables(; amount = amount)
+    return RainfallErosionModelVariables(; amount)
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionEurosemBC
+    n::Int
     # precipitation [mm dt-1]
-    precipitation::Vector{Float64}
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Interception [mm dt-1]
-    interception::Vector{Float64}
+    interception::Vector{Float64} = fill(MISSING_VALUE, n)
     # Waterlevel on land [m]
-    waterlevel::Vector{Float64}
-end
-
-"Initialize EUROSEM rainfall erosion model boundary conditions"
-function RainfallErosionEurosemBC(
-    n::Int;
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
-    interception::Vector{Float64} = fill(MISSING_VALUE, n),
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return RainfallErosionEurosemBC(;
-        precipitation = precipitation,
-        interception = interception,
-        waterlevel = waterlevel,
-    )
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
@@ -75,11 +62,11 @@ function RainfallErosionEurosemParameters(
         ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
 
     eurosem_parameters = RainfallErosionEurosemParameters(;
-        soil_detachability = soil_detachability,
-        eurosem_exponent = eurosem_exponent,
-        canopyheight = canopyheight,
-        canopygapfraction = canopygapfraction,
-        soilcover_fraction = soilcover_fraction,
+        soil_detachability,
+        eurosem_exponent,
+        canopyheight,
+        canopygapfraction,
+        soilcover_fraction,
     )
     return eurosem_parameters
 end
@@ -100,7 +87,7 @@ function RainfallErosionEurosemModel(
     n = length(indices)
     vars = RainfallErosionModelVariables(n)
     params = RainfallErosionEurosemParameters(dataset, config, indices)
-    bc = RainfallErosionEurosemBC(n)
+    bc = RainfallErosionEurosemBC(; n)
     model = RainfallErosionEurosemModel(;
         boundary_conditions = bc,
         parameters = params,
@@ -165,7 +152,7 @@ function RainfallErosionAnswersBC(
     n::Int;
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
 )
-    return RainfallErosionAnswersBC(; precipitation = precipitation)
+    return RainfallErosionAnswersBC(; precipitation)
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
@@ -189,10 +176,11 @@ function RainfallErosionAnswersParameters(
     lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
     usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
     lens = lens_input_parameter(config, "soil_erosion__answers_rainfall_factor")
-    answers_rainfall_factor = ncread(dataset, config, lens; sel = indices, defaults = 0.108, type = Float64)
-    
+    answers_rainfall_factor =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.108, type = Float64)
+
     answers_parameters =
-        RainfallErosionAnswersParameters(; usle_k = usle_k, usle_c = usle_c, answers_rainfall_factor = answers_rainfall_factor)
+        RainfallErosionAnswersParameters(; usle_k, usle_c, answers_rainfall_factor)
     return answers_parameters
 end
 

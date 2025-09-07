@@ -4,6 +4,7 @@ using TOML
 using CFTime
 using Random
 using LoggingExtras
+using Configurations
 
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 parsed_toml = TOML.parsefile(tomlpath)
@@ -12,8 +13,6 @@ config = Wflow.Config(tomlpath)
 @testset "configuration file" begin
     @test parsed_toml isa Dict{String, Any}
     @test config isa Wflow.Config
-    @test Dict(config) == parsed_toml
-    @test pathof(config) == tomlpath
     @test dirname(config) == dirname(tomlpath)
 
     # test if the values are parsed as expected
@@ -22,7 +21,7 @@ config = Wflow.Config(tomlpath)
     @test config.output.netcdf_grid.path == "output_moselle.nc"
     @test config.output.netcdf_scalar.path == "output_scalar_moselle.nc"
     @test config.output.csv.path == "output_moselle.csv"
-    @test config.output isa Wflow.Config
+    @test config.output isa Wflow.PropertyDict
     @test collect(keys(config.output)) == ["netcdf_grid", "csv", "netcdf_scalar"]
 
     # modifiers can also be applied
@@ -30,10 +29,8 @@ config = Wflow.Config(tomlpath)
         config,
         "soil_surface_water__vertical_saturated_hydraulic_conductivity",
     )
-    kvconf = parameter.lens(config)
-    kvconf = kvconf isa AbstractDict ? Wflow.Config(kvconf, pathof(config)) : kvconf
-    @test kvconf isa Wflow.Config
-    ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config = config)
+    kvconf = Wflow.nested_property_dict(parameter.lens(config))
+    ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config)
     @test ncname === "KsatVer"
     @test modifier.scale == 1.0
     @test modifier.offset == 0.0
@@ -41,8 +38,8 @@ config = Wflow.Config(tomlpath)
     @test modifier.index === nothing
 
     # test the optional "dir_input" and "dir_output" keys
-    @test haskey(config, "dir_input")
-    @test haskey(config, "dir_output")
+    @test config.dir_input != "."
+    @test config.dir_output != "."
     @test Wflow.input_path(config, config.state.path_input) ==
           joinpath(@__DIR__, "data", "input", "instates-moselle.nc")
     @test Wflow.output_path(config, config.state.path_output) ==
@@ -55,25 +52,22 @@ config = Wflow.Config(tomlpath)
         "not_set_in_TOML";
         optional = false,
     )
-    @test_throws ErrorException Wflow.lens_input(
-        config,
-        "not_set_in_TOML";
-        optional = false,
-    )
 end
 
 @testset "Clock constructor" begin
-    config = Wflow.Config(tomlpath)
+    # if these keys are missing, they are derived from the netCDF
+    config = Wflow.Config(
+        tomlpath;
+        time_starttime = nothing,
+        time_endtime = nothing,
+        time_timestepsecs = nothing,
+    )
 
     # mock a NCReader object
     ncpath = Wflow.input_path(config, config.input.path_forcing)
     ds = NCDataset(ncpath)
     reader = (; dataset = ds)
 
-    # if these keys are missing, they are derived from the netCDF
-    pop!(Dict(config.time), "starttime")
-    pop!(Dict(config.time), "endtime")
-    pop!(Dict(config.time), "timestepsecs")
     clock = Wflow.Clock(config, reader)
 
     @test clock.time == DateTimeProlepticGregorian(2000, 1, 1)
@@ -85,18 +79,18 @@ end
     @test config.time.timestepsecs == 86400
 
     # replace the keys with different values
-    config.time.starttime = "2003-04-05"
-    config.time.endtime = "2003-04-06"
-    config.time.timestepsecs = 3600
-    config.time.calendar = "standard"
+    config = Wflow.Config(
+        tomlpath;
+        time_starttime = DateTime("2003-04-05"),
+        time_endtime = DateTime("2003-04-06"),
+        time_timestepsecs = 3600,
+        time_calendar = "standard",
+    )
 
     clock = Wflow.Clock(config, reader)
     @test clock.time == DateTimeStandard(2003, 4, 5)
     @test clock.iteration == 0
     @test clock.dt == Second(Hour(1))
-
-    close(ds)
-    config = Wflow.Config(tomlpath)  # restore the config
 end
 
 @testset "Clock{DateTimeStandard}" begin
@@ -117,13 +111,11 @@ end
     @test clock.dt == dt
 
     config = Wflow.Config(
-        Dict(
-            "time" => Dict(
-                "starttime" => starttime,
-                "timestepsecs" => Dates.value(Second(dt)),
-            ),
-        ),
+        tomlpath;
+        time_starttime = starttime,
+        time_timestepsecs = Dates.value(Second(dt)),
     )
+
     Wflow.reset_clock!(clock, config)
     @test clock.time == starttime
     @test clock.iteration == 0
@@ -148,13 +140,10 @@ end
     @test clock.dt == dt
 
     config = Wflow.Config(
-        Dict(
-            "time" => Dict(
-                "starttime" => "2020-02-29",
-                "calendar" => "360_day",
-                "timestepsecs" => Dates.value(Second(dt)),
-            ),
-        ),
+        tomlpath;
+        time_starttime = DateTime("2020-02-29"),
+        time_calendar = "360_day",
+        time_timestepsecs = Dates.value(Second(dt)),
     )
     Wflow.reset_clock!(clock, config)
     @test clock.time isa DateTime360Day
@@ -193,15 +182,19 @@ end
 end
 
 # test reading and setting of warm states (cold_start=false)
-# modify existing config and initialize model with warm states
+# initialize model with warm states
 @test config.model.cold_start__flag
-config.model["cold_start__flag"] = false
+config = Wflow.Config(tomlpath; model_cold_start__flag = false)
 @test !config.model.cold_start__flag
 
 # test using an absolute path for the forcing
 @test !isabspath(config.input.path_forcing)
 abs_path_forcing = Wflow.input_path(config, config.input.path_forcing)
-config.input["path_forcing"] = abs_path_forcing
+config = Wflow.Config(
+    tomlpath;
+    input_path_forcing = abs_path_forcing,
+    model_cold_start__flag = false,
+)
 @test isabspath(config.input.path_forcing)
 
 model = Wflow.Model(config)
@@ -283,19 +276,25 @@ end
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
-config.input.static["snowpack__degree-day_coefficient"] = Dict("value" => 2.0)
-config.input.static.soil__thickness = Dict(
-    "scale" => 3.0,
-    "offset" => 100.0,
-    "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
+config.input.static["snowpack__degree-day_coefficient"] = Wflow.PropertyDict("value" => 2.0)
+config.input.static.soil__thickness = Wflow.nested_property_dict(
+    Dict(
+        "scale" => 3.0,
+        "offset" => 100.0,
+        "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
+    ),
 )
-config.input.forcing.atmosphere_water__precipitation_volume_flux =
-    Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.static["soil_layer_water__brooks-corey_exponent"] = Dict(
-    "scale" => [2.0, 3.0],
-    "offset" => [0.0, 0.0],
-    "layer" => [1, 3],
-    "netcdf" => Dict("variable" => Dict("name" => "c")),
+config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
+    Wflow.nested_property_dict(
+        Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
+    )
+config.input.static["soil_layer_water__brooks-corey_exponent"] = Wflow.nested_property_dict(
+    Dict(
+        "scale" => [2.0, 3.0],
+        "offset" => [0.0, 0.0],
+        "layer" => [1, 3],
+        "netcdf" => Dict("variable" => Dict("name" => "c")),
+    ),
 )
 
 model = Wflow.Model(config)
@@ -389,7 +388,7 @@ end
     Wflow.run(tomlpath; silent = true)
 
     config = Wflow.Config(tomlpath)
-    output = normpath(abspath(Wflow.get(config, "dir_output", ".")))
+    output = normpath(abspath(config.dir_output))
     toml_archive = Wflow.output_path(config, "sbm_simple.toml")
     path_log = Wflow.output_path(config, "log.txt")
     @test isfile(toml_archive)
@@ -403,13 +402,15 @@ end
     # applies only to the `Wflow.run(tomlpath)` method.
     # This also add an error to the config.
     tomlpath_debug = joinpath(@__DIR__, "sbm_simple-debug.toml")
-    config.logging.loglevel = "debug"
-    config.logging.path_log = "log-debug.txt"
-    config.fews_run = true
-    config.logging.silent = true
-    config.input.path_forcing = "doesnt-exist.nc"
+    config = Wflow.Config(
+        tomlpath;
+        logging_loglevel = "debug",
+        logging_path_log = "log-debug.txt",
+        fews_run__flag = true,
+        input_path_forcing = "doesnt-exist.nc",
+    )
     open(tomlpath_debug, "w") do io
-        TOML.print(io, Dict(config))
+        print(io, to_toml(config))
     end
     @test_throws ErrorException Wflow.run(tomlpath_debug)
     rm(tomlpath_debug)
@@ -423,13 +424,15 @@ end
 
     # Final run to test error handling during simulation
     tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
-    config.input.static.river__width = Dict(
-        "scale" => 0.0,
-        "offset" => 0.0,
-        "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),
+    config.input.static.river__width = Wflow.nested_property_dict(
+        Dict(
+            "scale" => 0.0,
+            "offset" => 0.0,
+            "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),
+        ),
     )
     open(tomlpath_error, "w") do io
-        TOML.print(io, Dict(config))
+        print(io, to_toml(config))
     end
     @test_throws ErrorException Wflow.run(tomlpath_error)
     rm(tomlpath_error)
@@ -438,9 +441,11 @@ end
 # test calendar setting `noleap` in forcing netCDF file (including `_FillValue` in time
 # dimension) and in TOML file (Clock{DateTimeNoLeap}).
 @testset "Calendar noleap (DateTimeNoLeap) for time and clock" begin
-    config = Wflow.Config(tomlpath)
-    config.input.path_forcing = "forcing-calendar-noleap.nc"
-    config.time.calendar = "noleap"
+    config = Wflow.Config(
+        tomlpath;
+        input_path_forcing = "forcing-calendar-noleap.nc",
+        time_calendar = "noleap",
+    )
 
     # with `_FillValue` in time dimension Wflow throws a warning
     reader = @test_logs (
@@ -448,7 +453,7 @@ end
         "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions.",
     ) match_mode = :any Wflow.prepare_reader(config)
     @test eltype(reader.dataset_times) == DateTimeNoLeap
-    @test ismissing(reader.dataset_times) == false # missing in time dimension is not allowed
+    @test !ismissing(reader.dataset_times) # missing in time dimension is not allowed
     @test reader.dataset_times ==
           collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
 
@@ -480,7 +485,7 @@ end
     @test !("reservoir_water_level__elevation" in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
-    config.state.variables.additional_state = "additional_state"
+    config.state.variables["additional_state"] = "additional_state"
     @test_logs (
         :warn,
         string(
@@ -490,8 +495,8 @@ end
     ) Wflow.check_states(config)
 
     # Removing the unused and required state, to test the exception being thrown
-    delete!(config.state["variables"], "additional_state")
-    delete!(config.state["variables"], "snowpack~dry__leq-depth")
+    delete!(config.state.variables, "additional_state")
+    delete!(config.state.variables, "snowpack~dry__leq-depth")
     @test_throws ArgumentError Wflow.check_states(config)
 
     # Extracting required states for model type sbm_gwf and test if some are covered

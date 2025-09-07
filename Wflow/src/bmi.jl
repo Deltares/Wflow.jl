@@ -20,8 +20,8 @@ generated from the configuration file `config_file`. Will return a Model that is
 run.
 """
 
-function BMI.initialize(::Type{<:Model}, config_file)
-    config = Config(config_file)
+function BMI.initialize(::Type{<:Model}, config_file; config_override...)
+    config = Config(config_file; config_override...)
     model_type = config.model.type
 
     if model_type ∉ ("sbm", "sbm_gwf", "sediment")
@@ -104,7 +104,7 @@ exchanged.
 """
 function BMI.get_input_var_names(model::Model)
     (; config, land) = model
-    if haskey(config, "API") && haskey(config.API, "variables")
+    if config.has_section.API
         var_names = config.API.variables
         idx = []
         for (i, var) in enumerate(var_names)
@@ -177,10 +177,10 @@ function BMI.get_var_location(model::Model, name::String)
 end
 
 function BMI.get_current_time(model::Model)
-    (; config) = model
-    calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.time.starttime, calendar)
-    return 0.001 * Dates.value(model.clock.time - starttime)
+    (; config, clock) = model
+    (; starttime, calendar) = config.time
+    starttime = cftime(starttime, calendar)
+    return 0.001 * Dates.value(clock.time - starttime)
 end
 
 function BMI.get_start_time(model::Model)
@@ -188,11 +188,10 @@ function BMI.get_start_time(model::Model)
 end
 
 function BMI.get_end_time(model::Model)
-    (; config) = model
-    calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.time.starttime, calendar)
-    endtime = cftime(config.time.endtime, calendar)
-    return 0.001 * Dates.value(endtime - starttime)
+    (; starttime, endtime, calendar) = model.config.time
+    starttime_ = cftime(starttime, calendar)
+    endtime_ = cftime(endtime, calendar)
+    return 0.001 * Dates.value(endtime_ - starttime_)
 end
 
 function BMI.get_time_units(model::Model)
@@ -200,7 +199,7 @@ function BMI.get_time_units(model::Model)
 end
 
 function BMI.get_time_step(model::Model)
-    return Float64(model.config.time.timestepsecs)
+    return model.config.time.timestepsecs
 end
 
 function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
@@ -369,7 +368,7 @@ function save_state(model::Model)
 end
 
 function get_start_unix_time(model::Model)
-    return datetime2unix(DateTime(model.config.time.starttime))
+    return datetime2unix(model.config.time.starttime)
 end
 
 # BMI helper functions.

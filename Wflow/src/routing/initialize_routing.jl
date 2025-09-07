@@ -10,8 +10,7 @@ function initialize_subsurface_flow(
     (; parameters) = domain.land
     subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
 
-    kh_profile_type =
-        get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
+    kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
     if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
         initialize_lateral_ssf!(
@@ -35,9 +34,6 @@ function initialize_subsurface_flow(
     soil::SbmSoilModel,
     type::SbmGwfModel,
 )
-    do_drains = get(config.model, "drain__flag", false)::Bool
-    do_constanthead = get(config.model, "constanthead__flag", false)::Bool
-
     (; land, river, drain) = domain
 
     (; indices, reverse_indices) = land.network
@@ -49,7 +45,7 @@ function initialize_subsurface_flow(
     elevation = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # unconfined aquifer
-    if do_constanthead
+    if config.model.constanthead__flag
         constant_head = ConstantHead(dataset, config, indices)
     else
         variables = ConstantHeadVariables(; head = Float64[])
@@ -61,7 +57,7 @@ function initialize_subsurface_flow(
     # cold state for groundwater head based on water table depth zi
     initial_head = elevation .- soil.variables.zi / 1000.0
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
-    if do_constanthead
+    if config.model.constanthead__flag
         initial_head[constant_head.index] = constant_head.variables.head
     end
 
@@ -90,7 +86,7 @@ function initialize_subsurface_flow(
     )
 
     # drain boundary of unconfined aquifer (optional)
-    if do_drains
+    if config.model.drain__flag
         gwf_drain = Drainage(dataset, config, indices, drain.network.land_indices)
         aquifer_boundaries =
             (; recharge = gwf_recharge, river = gwf_river, drain = gwf_drain)
@@ -98,7 +94,7 @@ function initialize_subsurface_flow(
         aquifer_boundaries = (; recharge = gwf_recharge, river = gwf_river)
     end
 
-    cfl = get(config.model, "subsurface_water_flow__alpha_coefficient", 0.25)::Float64
+    cfl = config.model.subsurface_water_flow__alpha_coefficient
     @info "Numerical stability coefficient for groundwater flow `alpha`: `$cfl`."
     timestepping = TimeStepping(; cfl)
 
@@ -143,12 +139,9 @@ function initialize_river_flow(
     domain::Domain,
     routing_types::NamedTuple,
 )
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    if do_reservoirs
-        reservoir = Reservoir(dataset, config, domain.reservoir.network)
-    else
-        reservoir = nothing
-    end
+    reservoir =
+        config.model.reservoir__flag ?
+        Reservoir(dataset, config, domain.reservoir.network) : nothing
 
     if routing_types.river == "kinematic-wave"
         river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)

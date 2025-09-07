@@ -10,14 +10,12 @@ using Test
 using Wflow
 using Base.MathConstants: eulergamma
 using Base.Threads
-using BasicModelInterface
+import BasicModelInterface as BMI
 using Polynomials: Polynomials
 using DelimitedFiles
 using LoggingExtras
 using QuadGK
 using Aqua: Aqua
-
-const BMI = BasicModelInterface
 
 # ensure test data is present
 testdir = @__DIR__

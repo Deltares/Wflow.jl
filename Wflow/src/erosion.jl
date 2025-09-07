@@ -9,27 +9,26 @@ end
 
 "Initialize soil loss model"
 function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
+    (; rainfall_erosion, overland_flow_erosion) = config.model
     n = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(n)
     hydrological_forcing = HydrologicalForcing(n)
 
     # Rainfall erosion
-    rainfallerosionmodel = get(config.model, "rainfall_erosion", "answers")::String
-    if rainfallerosionmodel == "answers"
+    if rainfall_erosion == "answers"
         rainfall_erosion = RainfallErosionAnswersModel(dataset, config, indices)
-    elseif rainfallerosionmodel == "eurosem"
+    elseif rainfall_erosion == "eurosem"
         rainfall_erosion = RainfallErosionEurosemModel(dataset, config, indices)
     else
-        error("Unknown rainfall erosion model: $rainfallerosionmodel")
+        error("Unknown rainfall erosion model: $rainfall_erosion")
     end
 
     # Overland flow erosion
-    overlandflowerosionmodel = get(config.model, "overland_flow_erosion", "answers")::String
-    if overlandflowerosionmodel == "answers"
+    if overland_flow_erosion == "answers"
         overland_flow_erosion = OverlandFlowErosionAnswersModel(dataset, config, indices)
     else
-        error("Unknown overland flow erosion model: $overlandflowerosionmodel")
+        error("Unknown overland flow erosion model: $overland_flow_erosion")
     end
 
     # Total soil erosion and particle differentiation

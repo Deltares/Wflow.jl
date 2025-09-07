@@ -70,9 +70,9 @@ end
 end
 
 @testset "no drains" begin
-    config.model.drain__flag = false
+    config = Wflow.Config(tomlpath; model_drain__flag = false)
     delete!(
-        Dict(config.output.netcdf_grid.variables),
+        config.output.netcdf_grid.variables,
         "land_drain_water~to-subsurface__volume_flow_rate",
     )
     model = Wflow.Model(config)
@@ -86,8 +86,7 @@ Wflow.run(tomlpath; silent = true)
 
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
-config = Wflow.Config(tomlpath)
-config.model.river_routing = "local-inertial"
+config = Wflow.Config(tomlpath; model_river_routing = "local-inertial")
 
 config.input.static.river_bank_water__elevation = "bankfull_elevation"
 config.input.static.river_bank_water__depth = "bankfull_depth"
@@ -110,15 +109,17 @@ Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
-config = Wflow.Config(tomlpath)
-config.model.river_routing = "local-inertial"
-config.model.land_routing = "local-inertial"
+config = Wflow.Config(
+    tomlpath;
+    model_river_routing = "local-inertial",
+    model_land_routing = "local-inertial",
+)
 
 config.input.static.river_bank_water__elevation = "bankfull_elevation"
 config.input.static.river_bank_water__depth = "bankfull_depth"
 config.input.static.land_surface_water_flow__ground_elevation = "wflow_dem"
 
-pop!(Dict(config.state.variables), "land_surface_water__instantaneous_volume_flow_rate")
+pop!(config.state.variables, "land_surface_water__instantaneous_volume_flow_rate")
 config.state.variables.land_surface_water__depth = "h_av_land"
 config.state.variables.land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
 config.state.variables.land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
@@ -146,8 +147,7 @@ Wflow.close_files(model; delete_output = false)
 
 # test with warm start
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
-config = Wflow.Config(tomlpath)
-config.model.cold_start__flag = false
+config = Wflow.Config(tomlpath; model_cold_start__flag = false)
 
 model = Wflow.Model(config)
 (; domain) = model

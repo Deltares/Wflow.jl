@@ -111,14 +111,11 @@ function extract_required_states(config::Config)
     model_type = config.model.type::String
 
     # Extract model settings
-    do_snow = get(config.model, "snow__flag", false)::Bool
-    do_glaciers = get(config.model, "glacier__flag", false)::Bool
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    do_floodplains = get(config.model, "floodplain_1d__flag", false)::Bool
-    do_paddy = false
-    if haskey(config.model, "water_demand")
-        do_paddy = get(config.model.water_demand, "paddy__flag", false)::Bool
-    end
+    do_snow = config.model.snow__flag
+    do_glaciers = config.model.glacier__flag
+    do_reservoirs = config.model.reservoir__flag
+    do_floodplains = config.model.floodplain_1d__flag
+    do_paddy = config.model.water_demand.paddy__flag
 
     # Extract required stated based on model configuration file
     if do_snow
@@ -147,14 +144,7 @@ function extract_required_states(config::Config)
     if model_type == "sediment"
         land_states = ()
     else
-        routing_options = ("kinematic-wave", "local-inertial")
-        land_routing = get_options(
-            config.model,
-            "land_routing",
-            routing_options,
-            "kinematic-wave",
-        )::String
-        if land_routing == "local-inertial"
+        if config.model.land_routing == "local-inertial"
             land_states = (
                 "land_surface_water__x_component_of_instantaneous_volume_flow_rate",
                 "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
