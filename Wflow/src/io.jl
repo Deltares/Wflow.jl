@@ -111,7 +111,7 @@ end
 
 function routing_with_reservoirs(model)
     (; config) = model
-    return get(config.model, "reservoir__flag", false)::Bool
+    return config.model.reservoir__flag
 end
 
 function routing_with_reservoirs(model::AbstractModel{<:SedimentModel})
@@ -164,7 +164,9 @@ function update_forcing!(model)
     (; clock, reader, domain, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
-    if config.model.reservoir__flag
+    do_reservoirs = routing_with_reservoirs(model)
+
+    if do_reservoirs
         sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
     end
@@ -181,7 +183,7 @@ function update_forcing!(model)
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
         # land model
         if par in mover_params
-            if config.model.reservoir__flag
+            if do_reservoirs
                 for (i, sel_reservoir) in enumerate(sel_reservoirs)
                     avg = mean(data[sel_reservoir])
                     data[sel_reservoir] .= 0
