@@ -123,7 +123,7 @@ end
 Get fixed netCDF forcing input."
 """
 function load_fixed_forcing!(model)
-    (; reader, domain) = model
+    (; reader, domain, config) = model
     (; forcing_parameters) = reader
 
     reverse_indices = domain.land.network.reverse_indices
@@ -161,7 +161,7 @@ time interval, e.g. daily precipitation at 01-02-2000 00:00:00 is the accumulate
 precipitation between 01-01-2000 00:00:00 and 01-02-2000 00:00:00.
 """
 function update_forcing!(model)
-    (; clock, reader, domain) = model
+    (; clock, reader, domain, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     if config.model.reservoir__flag
