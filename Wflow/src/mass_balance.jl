@@ -30,34 +30,32 @@ function mass_storage_prev!(model, ::NoMassBalance)
     return nothing
 end
 
+function get_vertical_flux_in(soil::SbmSoilModel, i::Int)
+    (; actinfilt) = soil.variables
+    flux_in = actinfilt[i]
+    return flux_in
+end
+
+function get_vertical_flux_out(soil::SbmSoilModel, i::Int)
+    (; exfiltsatwater, exfiltustore, transpiration, soilevap, actleakage) = soil.variables
+    flux_out =
+        exfiltsatwater[i] + exfiltustore[i] + transpiration[i] + soilevap[i] + actleakage[i]
+    return flux_out
+end
+
 function compute_soil_water_balance!(model::AbstractModel{<:SbmModel})
     (; storage_prev, error, relative_error) = model.mass_balance.soil_water
-    (;
-        actinfilt,
-        exfiltsatwater,
-        exfiltustore,
-        transpiration,
-        soilevap,
-        actleakage,
-        total_soilwater_storage,
-    ) = model.land.soil.variables
+    (; soil) = model.land
     (; area) = model.domain.land.parameters
-
     (; ssf, ssfin) = model.routing.subsurface_flow.variables
 
     for i in eachindex(storage_prev)
         ssf_flux_in = 1000.0 * ssfin[i] / area[i] * (model.clock.dt / BASETIMESTEP)
-        total_input = ssf_flux_in + actinfilt[i]
+        total_input = ssf_flux_in + get_vertical_flux_in(soil, i)
 
         ssf_flux_out = 1000.0 * ssf[i] / area[i] * (model.clock.dt / BASETIMESTEP)
-        total_output =
-            ssf_flux_out +
-            exfiltsatwater[i] +
-            exfiltustore[i] +
-            soilevap[i] +
-            actleakage[i] +
-            transpiration[i]
-        storage = total_soilwater_storage[i]
+        total_output = ssf_flux_out + get_vertical_flux_out(soil, i)
+        storage = soil.variables.total_soilwater_storage[i]
         error[i] = (total_input - total_output - (storage - storage_prev[i]))
         relative_error[i] = error[i] / ((total_input + total_output) / 2)
     end

@@ -174,7 +174,6 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
-include("mass_balance.jl")
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -221,6 +220,7 @@ include("bmi.jl")
 include("subdomains.jl")
 include("logging.jl")
 include("states.jl")
+include("mass_balance.jl")
 
 """
     run(tomlpath::AbstractString; silent=false)
