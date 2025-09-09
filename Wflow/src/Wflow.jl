@@ -110,6 +110,7 @@ end
 
 abstract type AbstractModel{T} end
 abstract type AbstractLandModel end
+abstract type AbstractMassBalance end
 
 # different model types (used for dispatch)
 abstract type AbstractModelType end
@@ -123,17 +124,22 @@ include("routing/routing.jl")
 include("domain.jl")
 
 """
-    Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:AbstractModel{T}
+    Model{R <: Routing, L <: AbstractLandModel, W <: AbstractWaterBalance, T <: AbstractModelType} <:AbstractModel{T}
 
 Composite type that represents all different aspects of a Wflow Model, such as the network,
 parameters, clock, configuration and input and output.
 """
-struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
-       AbstractModel{T}
+struct Model{
+    R <: Routing,
+    L <: AbstractLandModel,
+    M <: AbstractMassBalance,
+    T <: AbstractModelType,
+} <: AbstractModel{T}
     config::Config                  # all configuration options
     domain::Domain                  # domain connectivity (network) and shared parameters 
     routing::R                      # routing model (horizontal fluxes), moves along network
     land::L                         # land model simulating vertical fluxes, independent of each other
+    mass_balance::M                 # mass balance error
     clock::Clock                    # to keep track of simulation time
     reader::NCReader                # provides the model with dynamic input
     writer::Writer                  # writes model output
@@ -168,6 +174,7 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+include("mass_balance.jl")
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -270,9 +277,12 @@ function run(config::Config)
 end
 
 function run_timestep!(model::Model; update_func = update!, write_model_output = true)
+    (; mass_balance) = model
     advance!(model.clock)
     load_dynamic_input!(model)
+    mass_storage_prev!(model, mass_balance)
     update_func(model)
+    compute_mass_balance!(model, mass_balance)
     if write_model_output
         write_output(model)
     end

@@ -30,7 +30,17 @@ function Model(config::Config, type::SedimentModel)
     writer = prepare_writer(config, modelmap, domain, dataset)
     close(dataset)
 
-    model = Model(config, domain, routing, soilloss, clock, reader, writer, SedimentModel())
+    model = Model(
+        config,
+        domain,
+        routing,
+        soilloss,
+        NoMassBalance(),
+        clock,
+        reader,
+        writer,
+        SedimentModel(),
+    )
 
     set_states!(model)
     @info "Initialized model"

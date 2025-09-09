@@ -28,12 +28,13 @@ function Model(config::Config, type::SbmGwfModel)
         drains = get(config.model, "drain__flag", false)::Bool,
         constanthead = get(config.model, "constanthead__flag", false)::Bool,
         water_demand = haskey(config.model, "water_demand"),
+        water_mass_balance = get(config.model, "water_mass_balance", false)::Bool,
         pits = false,
         min_streamorder_river = get(config.model, "river_streamorder__min_count", 6),
         min_streamorder_land = get(config.model, "land_streamorder__min_count", 5),
     )
 
-    @info "General model settings" modelsettings[keys(modelsettings)[1:7]]...
+    @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...
 
     routing_types = get_routing_types(config)
     domain = Domain(dataset, config, modelsettings, routing_types)
@@ -52,8 +53,20 @@ function Model(config::Config, type::SbmGwfModel)
     )
     close(dataset)
 
-    model =
-        Model(config, domain, routing, land_hydrology, clock, reader, writer, SbmGwfModel())
+    n = length(domain.land.parameters.area)
+    mass_balance = HydrologicalMassBalance(n, modelsettings)
+
+    model = Model(
+        config,
+        domain,
+        routing,
+        land_hydrology,
+        mass_balance,
+        clock,
+        reader,
+        writer,
+        SbmGwfModel(),
+    )
 
     set_states!(model)
 

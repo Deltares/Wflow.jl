@@ -74,6 +74,8 @@ abstract type AbstractSoilModel end
     actleakage::Vector{Float64}
     # Total water storage (excluding floodplain volume and reservoirs) [mm]
     total_storage::Vector{Float64}
+    # Total soil water storage [mm]
+    total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
     tsoil::Vector{Float64}
     # Soil infiltration reduction factor (when soil is frozen) [-]
@@ -156,12 +158,14 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         theta_r,
     ) = parameters
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
+    ustoredepth = zeros(Float64, n)
     zi = @. max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
 
     vwc = fill(MISSING_VALUE, maxlayers, n)
     vwc_perc = fill(MISSING_VALUE, maxlayers, n)
+    total_soilwater_storage = satwaterdepth .+ ustoredepth
 
     vars = SbmSoilVariables(;
         ustorelayerdepth = zero(act_thickl),
@@ -196,12 +200,13 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         rootstore = fill(MISSING_VALUE, n),
         vwc_root = fill(MISSING_VALUE, n),
         vwc_percroot = fill(MISSING_VALUE, n),
-        ustoredepth = fill(MISSING_VALUE, n),
+        ustoredepth,
         transfer = fill(MISSING_VALUE, n),
         recharge = fill(MISSING_VALUE, n),
         actleakage = fill(MISSING_VALUE, n),
         tsoil = fill(10.0, n),
         total_storage = zeros(Float64, n),
+        total_soilwater_storage,
     )
     return vars
 end
@@ -1218,6 +1223,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         v.vwc_root[i] = vwc_root
         v.vwc_percroot[i] = vwc_percroot
         v.zi[i] = zi[i]
+        v.total_soilwater_storage[i] = satwaterdepth + ustoredepth
     end
     # update runoff and net_runoff (the runoff rate depends on the presence of paddy fields
     # and the h_max parameter of a paddy field)
