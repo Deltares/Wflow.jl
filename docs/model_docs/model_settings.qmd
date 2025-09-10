@@ -44,8 +44,8 @@ The Tables in this subsection show the available models settings for the model t
 | `river_streamorder__min_count` | Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)  | - | 6 |
 | `land_streamorder__min_count` | Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)  | - | 5 |
 | `kinematic_wave__adaptive_time_step_flag` | Enable kinematic wave adaptive (internal) time stepping  | - | `false` |
-| `river_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for river domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | Δt |
-| `land_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for land domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | Δt |
+| `river_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for river domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | 900.0 |
+| `land_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for land domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | 3600.0 |
 : {.striped .hover}
 
 ### Local inertial routing

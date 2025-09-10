@@ -11,12 +11,7 @@
 end
 
 "Initialize timestepping for kinematic wave (river and overland flow models)"
-function init_kinematic_wave_timestepping(
-    config::Config,
-    n::Int;
-    domain::String,
-    dt_fixed::Float64,
-)
+function init_kinematic_wave_timestepping(config::Config, n::Int; domain::String)
     adaptive = config.model.kinematic_wave__adaptive_time_step_flag
     @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
 
@@ -24,8 +19,7 @@ function init_kinematic_wave_timestepping(
         stable_timesteps = zeros(n)
         timestepping = TimeStepping(; stable_timesteps, adaptive)
     else
-        dt_config = getfield(config.model, Symbol("$(domain)_kinematic_wave__time_step"))
-        dt_fixed = isnothing(dt_config) ? dt_fixed : dt_config
+        dt_fixed = getfield(config.model, Symbol("$(domain)_kinematic_wave__time_step"))
         @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
         timestepping = TimeStepping(; dt_fixed, adaptive)
     end
@@ -145,8 +139,7 @@ function KinWaveRiverFlow(
     (; indices) = domain.network
     n = length(indices)
 
-    timestepping =
-        init_kinematic_wave_timestepping(config, n; domain = "river", dt_fixed = 900.0)
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
     allocation =
         config.has_section.model_water_demand ? AllocationRiver(n) : NoAllocationRiver()
@@ -205,8 +198,7 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
         ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float64)
 
     n = length(indices)
-    timestepping =
-        init_kinematic_wave_timestepping(config, n; domain = "land", dt_fixed = 3600.0)
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
 
     variables =
         OverLandFlowVariables(; flow = FlowVariables(n), to_river = zeros(Float64, n))

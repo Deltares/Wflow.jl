@@ -71,9 +71,9 @@ end
     pit__flag::Bool = false
     river_streamorder__min_count::Int = 6
     land_streamorder__min_count::Int = 5
-    kinematic_wave__adaptive_time_step_flag::Bool = true
-    river_kinematic_wave__time_step::Union{Nothing, Float64} = nothing # Δt
-    land_kinematic_wave__time_step::Union{Nothing, Float64} = nothing # Δt
+    kinematic_wave__adaptive_time_step_flag::Bool = false
+    river_kinematic_wave__time_step::Float64 = 900.0
+    land_kinematic_wave__time_step::Float64 = 3600.0
     # Local inertial routing
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
@@ -178,14 +178,30 @@ function nested_property_dict(dict::AbstractDict)
     return PropertyDict(new_dict)
 end
 
+"""
+    Config(path::AbstractString; override...)
+    Config(dict::AbstractDict; path::Union{Nothing, String} = nothing, override...)
+
+Struct that contains the parsed TOML configurations, as well as a reference to the TOML path
+if it exists. The object behaves largely like an immutable nested struct, apart from the flexible
+sections (see the fields with `MaybePropertyDict` type in `config.jl`) which are nested property
+dicts (see PropertyDicts.jl) and thus mutable.
+Values from the TOML (or dict) kan be overridden by passing keyword arguments of the form
+`path_to_value_with_underscores = value`, for example `Config(path; logging_silent = true)`.
+"""
 function Config(path::AbstractString; override...)
     dict = TOML.parsefile(path)
     Config(dict; path, override...)
 end
 
 function Config(dict::AbstractDict; path::Union{Nothing, String} = nothing, override...)
+    # These sections are particularly checked here because they are mandatory and
+    # required to initialize the has_section section
     @assert haskey(dict, "model") "The TOML is missing the mandatory [model] section."
     @assert haskey(dict, "input") "The TOML is missing the mandatory [input] section."
+    # When optional values are omitted they obtain the default value, and it cannot be derived
+    # whether this value was obtained from the TOML or not. Therefore this information is gathered
+    # here.
     dict["has_section"] = Dict(
         "API" => haskey(dict, "API"),
         "model_water_demand" => haskey(dict["model"], "water_demand"),
