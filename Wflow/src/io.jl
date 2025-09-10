@@ -647,7 +647,7 @@ end
 
 "Get a Vector of all unique location ids from a 2D map"
 function locations_map(ds, mapname, config)
-    lens = lens_input(Symbol(mapname))
+    lens = lens_input(mapname)
     map_2d = ncread(ds, config, lens; type = Union{Int, Missing}, allow_missing = true)
     ids = unique(skipmissing(map_2d))
     return ids
@@ -1126,7 +1126,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         # and makes sense in the case of a gauge map
         reducer_name = get(col, "reducer", "only")
         f = reducerfunction(reducer_name)
-        lens = lens_input(Symbol(mapname))
+        lens = lens_input(mapname)
         map_2d = ncread(
             dataset,
             config,

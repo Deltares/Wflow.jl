@@ -353,18 +353,36 @@ function lens_input_parameter(config::Config, p::AbstractString; optional = true
     end
 end
 
-function lens_input(p::Symbol; config::Union{Nothing, Config} = nothing)
+function lens_input(
+    p::String;
+    config::Union{Nothing, Config} = nothing,
+    optional::Bool = false,
+)
+    from_flexible = !hasfield(InputSection, Symbol(p))
+    was_set = true
     if config isa Config
         # If the config was passed, check whether the requested parameter
         # was specified in the config
-        if isnothing(getfield(config.input, p))
+        was_set = if from_flexible
+            haskey(config.input.flexible, p)
+        else
+            !isnothing(getfield(config.input, Symbol(p)))
+        end
+        if !optional && !was_set
             error(
                 """Required input model parameter with standard name $p not set in TOML file 
                 (below `[input]` section)""",
             )
         end
     end
-    return (; name = p, lens = @optic(getfield(_.input, p)))
+    lens = if !was_set
+        nothing
+    elseif from_flexible
+        @optic(_.input.flexible[p])
+    else
+        @optic(getfield(_.input, Symbol(p)))
+    end
+    return (; name = p, lens)
 end
 
 """

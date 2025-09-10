@@ -61,8 +61,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     )
     outflowfunc = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
 
-    # TODO: I don't understand what this is supposed to read
-    lens = (; name = "reservoir~lower_location__count", lens = nothing)
+    lens = lens_input("reservoir~lower_location__count"; config, optional = true)
     linked_reslocs = ncread(
         dataset,
         config,
@@ -74,7 +73,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     )
 
     n_reservoirs = length(area)
-    lens = lens_input(:reservoir_location__count)
+    lens = lens_input("reservoir_location__count")
     reslocs = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     @info "Read `$n_reservoirs` reservoir locations."
 

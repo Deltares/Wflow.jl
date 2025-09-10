@@ -121,7 +121,7 @@ function SedimentRiverTransportParameters(
 
     # Reservoirs
     if config.model.reservoir__flag
-        lens = lens_input(:reservoir_location__count)
+        lens = lens_input("reservoir_location__count")
         reservoir_outlet =
             ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0)
         lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)

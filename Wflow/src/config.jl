@@ -117,17 +117,17 @@ end
     basin__local_drain_direction::String
     basin_pit_location__mask::Union{Nothing, String} = nothing
     river_location__mask::String
-    reservoir_area__count::String = ""
-    reservoir_location__count::String = ""
+    reservoir_area__count::Union{Nothing, String} = nothing
+    reservoir_location__count::Union{Nothing, String} = nothing
     subbasin_location__count::String
-    # Ouput locations: these are not directly part of the model
-    river_gauge__count::String = ""
-    river_gauge_grdc__count::String = ""
     # Variable name mappings
     forcing::MaybePropertyDict
     static::MaybePropertyDict
     cyclic::MaybePropertyDict = Dict{String, Any}()
+    flexible::MaybePropertyDict
 end
+
+const input_field_names = String.(fieldnames(Wflow.InputSection))
 
 # API variable configuration
 @option struct APISection <: AbstractConfigSection
@@ -211,6 +211,10 @@ function Config(dict::AbstractDict; path::Union{Nothing, String} = nothing, over
         "input_cyclic" => haskey(dict["input"], "cyclic"),
     )
     dict["path"] = path
+
+    # Move flexible part of the input section into input.flexible
+    dict["input"]["flexible"] = filter(kv -> kv[1] ∉ input_field_names, dict["input"])
+
     config = from_dict(Config, dict; override...)
 
     # Flexible input
@@ -218,6 +222,7 @@ function Config(dict::AbstractDict; path::Union{Nothing, String} = nothing, over
     @reset input.forcing = nested_property_dict(input.forcing)
     @reset input.static = nested_property_dict(input.static)
     @reset input.cyclic = nested_property_dict(input.cyclic)
+    @reset input.flexible = nested_property_dict(input.flexible)
     @reset config.input = input
 
     # Flexible output

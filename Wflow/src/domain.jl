@@ -349,7 +349,7 @@ end
 
 "Return river mask"
 function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
-    lens = lens_input(:river_location__mask)
+    lens = lens_input("river_location__mask")
     river_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     river_location = river_2d[network.indices]
     return river_location
@@ -364,7 +364,7 @@ function reservoir_mask(
 )
     reservoirs = fill(0, length(network.indices))
     if config.model.reservoir__flag
-        lens = lens_input(Symbol("reservoir_$(region)__count"))
+        lens = lens_input("reservoir_$(region)__count")
         reservoirs =
             ncread(dataset, config, lens; sel = network.indices, type = Float64, fill = 0)
     end

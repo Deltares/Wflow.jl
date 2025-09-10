@@ -80,7 +80,7 @@ Initialize `NetworkLand` fields related to catchment (active indices model domai
 drainage network.
 """
 function NetworkLand(dataset::NCDataset, config::Config)
-    lens = lens_input(:subbasin_location__count)
+    lens = lens_input("subbasin_location__count")
     subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
@@ -152,11 +152,11 @@ function get_drainage_network(
     do_pits = false,
     logging = true,
 )
-    lens = lens_input(:basin__local_drain_direction)
+    lens = lens_input("basin__local_drain_direction")
     ldd_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        lens = lens_input(:basin_pit_location__mask; config)
+        lens = lens_input("basin_pit_location__mask"; config)
         pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
@@ -211,7 +211,7 @@ function NetworkRiver(
     do_pits = false,
 )
     logging = false
-    lens = lens_input(:river_location__mask)
+    lens = lens_input("river_location__mask")
     river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false, logging)
     indices, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction =
@@ -289,11 +289,11 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     logging = false
     # allow reservoir only in river cells
     # note that these locations are only the reservoir outlet pixels
-    lens = lens_input(:reservoir_location__count)
+    lens = lens_input("reservoir_location__count")
     locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0, logging)
 
     # this holds the same ids as locs, but covers the entire reservoir
-    lens = lens_input(:reservoir_area__count)
+    lens = lens_input("reservoir_area__count")
     coverage_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]
