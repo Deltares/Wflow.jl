@@ -7,6 +7,9 @@ For configuration files we use TOML.
 
 abstract type AbstractConfigSection end
 
+# Don't error on extra fields that aren't hardcoded below
+Configurations.ignore_extra(::AbstractConfigSection) = true
+
 # Configurations.jl reads fields of this type as Dict{String, Any}.
 # These are subsequently converted to (nested) PropertyDict objects
 # for easy accessing of the data.
@@ -117,9 +120,6 @@ end
     reservoir_area__count::String = ""
     reservoir_location__count::String = ""
     subbasin_location__count::String
-    # Ouput locations: these are not directly part of the model
-    river_gauge__count::String = ""
-    river_gauge_grdc__count::String = ""
     # Variable name mappings
     forcing::MaybePropertyDict
     static::MaybePropertyDict

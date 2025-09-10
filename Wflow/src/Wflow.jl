@@ -53,6 +53,7 @@ using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 using Configurations: @option, from_dict
+import Configurations
 using PropertyDicts: PropertyDict
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
