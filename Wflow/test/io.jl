@@ -23,6 +23,7 @@ config = Wflow.Config(tomlpath)
     @test config.output.csv.path == "output_moselle.csv"
     @test config.output isa Wflow.PropertyDict
     @test collect(keys(config.output)) == ["netcdf_grid", "csv", "netcdf_scalar"]
+    @test string(config) isa String
 
     # modifiers can also be applied
     parameter = Wflow.lens_input_parameter(

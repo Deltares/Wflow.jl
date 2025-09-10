@@ -1535,15 +1535,6 @@ function get_index_dimension(var, config::Config, dim_value)::Int
     return index
 end
 
-"Check if state TOML keys are set in `config` object (parsed TOML file)"
-function check_config_states(config::Config, path::AbstractString)
-    state_settings =
-        haskey(config, "state") &&
-        haskey(config.state, path) &&
-        haskey(config.state, "variables")
-    return state_settings
-end
-
 """
 Check if required state settings in `config` object (parsed TOML file) are set for reading
 or writing states.
