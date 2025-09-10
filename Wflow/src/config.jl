@@ -120,6 +120,9 @@ end
     reservoir_area__count::String = ""
     reservoir_location__count::String = ""
     subbasin_location__count::String
+    # Ouput locations: these are not directly part of the model
+    river_gauge__count::String = ""
+    river_gauge_grdc__count::String = ""
     # Variable name mappings
     forcing::MaybePropertyDict
     static::MaybePropertyDict
