@@ -176,7 +176,8 @@ end
     model = BMI.initialize(Wflow.Model, tomlpath)
     @test Wflow.get_start_unix_time(model) == 9.466848e8
     satwaterdepth = mean(model.land.soil.variables.satwaterdepth)
-    model = BMI.initialize(Wflow.Model, tomlpath; model_cold_start__flag = false)
+    model.config.model.cold_start__flag = false
+    Wflow.load_state(model)
     @test satwaterdepth ≠ mean(model.land.soil.variables.satwaterdepth)
     @test_logs (
         :info,

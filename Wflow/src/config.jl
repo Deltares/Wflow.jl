@@ -54,51 +54,51 @@ end
 end
 
 # Model configurations
-@option struct ModelSection <: AbstractConfigSection
+@option mutable struct ModelSection <: AbstractConfigSection
     # General
-    type::String
+    const type::String
     cold_start__flag::Bool = true
-    cell_length_in_meter__flag::Bool = false
-    reservoir__flag::Bool = false
+    const cell_length_in_meter__flag::Bool = false
+    const reservoir__flag::Bool = false
     # Model types sbm and sbm_gwf
-    snow__flag::Bool = false
-    snow_gravitational_transport__flag::Bool = false
-    glacier__flag::Bool = false
-    soil_infiltration_reduction__flag::Bool = false
-    soil_layer__thickness::Vector{Int} = [100, 300, 800]
-    saturated_hydraulic_conductivity_profile::String = "exponential"
+    const snow__flag::Bool = false
+    const snow_gravitational_transport__flag::Bool = false
+    const glacier__flag::Bool = false
+    const soil_infiltration_reduction__flag::Bool = false
+    const soil_layer__thickness::Vector{Int} = [100, 300, 800]
+    const saturated_hydraulic_conductivity_profile::String = "exponential"
     # Routing method
-    land_routing::String = "kinematic-wave"
-    river_routing::String = "kinematic-wave"
+    const land_routing::String = "kinematic-wave"
+    const river_routing::String = "kinematic-wave"
     # Kinematic wave routing
-    pit__flag::Bool = false
-    river_streamorder__min_count::Int = 6
-    land_streamorder__min_count::Int = 5
-    kinematic_wave__adaptive_time_step_flag::Bool = false
-    river_kinematic_wave__time_step::Float64 = 900.0
-    land_kinematic_wave__time_step::Float64 = 3600.0
+    const pit__flag::Bool = false
+    const river_streamorder__min_count::Int = 6
+    const land_streamorder__min_count::Int = 5
+    const kinematic_wave__adaptive_time_step_flag::Bool = false
+    const river_kinematic_wave__time_step::Float64 = 900.0
+    const land_kinematic_wave__time_step::Float64 = 3600.0
     # Local inertial routing
-    river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
-    land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
-    land_local_inertial_flow__theta_coefficient::Float64 = 0.8
-    river_water_flow_threshold__depth = 1e-3
-    land_surface_water_flow_threshold__depth = 1e-3
-    river_water_flow__froude_limit_flag = true
-    land_surface_water_flow__froude_limit_flag = true
-    floodplain_1d__flag::Bool = false
+    const river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
+    const land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
+    const land_local_inertial_flow__theta_coefficient::Float64 = 0.8
+    const river_water_flow_threshold__depth = 1e-3
+    const land_surface_water_flow_threshold__depth = 1e-3
+    const river_water_flow__froude_limit_flag = true
+    const land_surface_water_flow__froude_limit_flag = true
+    const floodplain_1d__flag::Bool = false
     # Groundwater flow
-    conductivity_profile::String = "uniform"
-    drain__flag::Bool = false
-    constanthead__flag::Bool = false
+    const conductivity_profile::String = "uniform"
+    const drain__flag::Bool = false
+    const constanthead__flag::Bool = false
     subsurface_water_flow__alpha_coefficient::Float64 = 0.25
     # Model type sediment
-    rainfall_erosion::String = "answers"
-    overland_flow_erosion::String = "answers"
-    run_river_model__flag::Bool = false
-    land_transport::String = "yalin"
-    river_transport::String = "bagnold"
+    const rainfall_erosion::String = "answers"
+    const overland_flow_erosion::String = "answers"
+    const run_river_model__flag::Bool = false
+    const land_transport::String = "yalin"
+    const river_transport::String = "bagnold"
     # Water demand
-    water_demand::WaterDemandSubSection = WaterDemandSubSection()
+    const water_demand::WaterDemandSubSection = WaterDemandSubSection()
 end
 
 # State configurations
