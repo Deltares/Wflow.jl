@@ -8,7 +8,7 @@ For configuration files we use TOML.
 abstract type AbstractConfigSection end
 
 # Don't error on extra fields that aren't hardcoded below
-Configurations.ignore_extra(::AbstractConfigSection) = true
+Configurations.ignore_extra(::Type{<:AbstractConfigSection}) = true
 
 # Configurations.jl reads fields of this type as Dict{String, Any}.
 # These are subsequently converted to (nested) PropertyDict objects
