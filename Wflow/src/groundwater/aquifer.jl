@@ -568,3 +568,8 @@ function get_flux_to_river(
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end
+
+get_inflow(gwf::GroundwaterFlow{A}, i::Int) where {A <: UnconfinedAquifer} =
+    gwf.aquifer.variables.q_in[i]
+get_outflow(gwf::GroundwaterFlow{A}, i::Int) where {A <: UnconfinedAquifer} =
+    gwf.aquifer.variables.q_out[i]
