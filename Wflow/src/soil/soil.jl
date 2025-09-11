@@ -1232,19 +1232,6 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     return nothing
 end
 
-function get_vertical_flux_in(soil::SbmSoilModel, i::Int)
-    (; actinfilt) = soil.variables
-    flux_in = actinfilt[i]
-    return flux_in
-end
-
-function get_vertical_flux_out(soil::SbmSoilModel, i::Int)
-    (; exfiltsatwater, exfiltustore, transpiration, soilevap, actleakage) = soil.variables
-    flux_out =
-        exfiltsatwater[i] + exfiltustore[i] + transpiration[i] + soilevap[i] + actleakage[i]
-    return flux_out
-end
-
 # wrapper method
 get_rootingdepth(model::SbmSoilModel) =
     model.parameters.vegetation_parameter_set.rootingdepth

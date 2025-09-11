@@ -34,22 +34,36 @@ end
 
 function compute_soil_water_balance!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; storage_prev, error, relative_error) = model.mass_balance.soil
-    (; soil) = model.land
+    (;
+        exfiltsatwater,
+        exfiltustore,
+        transpiration,
+        soilevap,
+        actleakage,
+        actinfilt,
+        total_soilwater_storage,
+    ) = model.land.soil.variables
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
 
     for i in eachindex(storage_prev)
-        subsurface_flow_in = get_inflow(subsurface_flow, i)
+        subsurface_flow_in = get_inflow(subsurface_flow)[i]
         subsurface_flux_in =
             1000.0 * subsurface_flow_in / area[i] * (model.clock.dt / BASETIMESTEP)
-        total_input = subsurface_flux_in + get_vertical_flux_in(soil, i)
+        total_input = subsurface_flux_in + actinfilt[i]
 
-        subsurface_flow_out = get_outflow(subsurface_flow, i)
+        subsurface_flow_out = get_outflow(subsurface_flow)[i]
         subsurface_flux_out =
             1000.0 * subsurface_flow_out / area[i] * (model.clock.dt / BASETIMESTEP)
-        total_output = subsurface_flux_out + get_vertical_flux_out(soil, i)
+        soil_flux_out =
+            exfiltsatwater[i] +
+            exfiltustore[i] +
+            transpiration[i] +
+            soilevap[i] +
+            actleakage[i]
+        total_output = subsurface_flux_out + soil_flux_out
 
-        storage = soil.variables.total_soilwater_storage[i]
+        storage = total_soilwater_storage[i]
 
         error[i] = (total_input - total_output - (storage - storage_prev[i]))
         relative_error[i] = error[i] / ((total_input + total_output) / 2)

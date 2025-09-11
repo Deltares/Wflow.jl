@@ -569,7 +569,7 @@ function get_flux_to_river(
     return flux
 end
 
-get_inflow(gwf::GroundwaterFlow{A}, i::Int) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.q_in[i]
-get_outflow(gwf::GroundwaterFlow{A}, i::Int) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.q_out[i]
+get_inflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf.aquifer.variables.q_in
+get_outflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf.aquifer.variables.q_out
