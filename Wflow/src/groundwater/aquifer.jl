@@ -94,11 +94,15 @@ transmissivity).
 end
 
 @with_kw struct AquiferVariables
-    head::Vector{Float64}         # hydraulic head [m]
-    head_av::Vector{Float64}      # average hydraulic head [m] for model timestep Δt
-    conductance::Vector{Float64}  # conductance [m² d⁻¹]
-    storage::Vector{Float64}      # total storage of water that can be released [m³]
-    q_net::Vector{Float64}        # net flow [m³ d⁻¹]
+    head::Vector{Float64}               # hydraulic head [m]
+    head_av::Vector{Float64}            # average hydraulic head [m] for model timestep Δt
+    conductance::Vector{Float64}        # conductance [m² d⁻¹]
+    storage::Vector{Float64}            # total storage of water that can be released [m³]
+    q_net::Vector{Float64}              # net flow (groundwater and boundaries) [m³ d⁻¹]
+    q_in::Vector{Float64}               # groundwater (lateral) inflow [m³ d⁻¹]
+    q_out::Vector{Float64}              # groundwater (lateral) outflow [m³ d⁻¹]
+    q_in_av::Vector{Float64}            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
+    q_out_av::Vector{Float64}           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
 end
 
 @with_kw struct ConfinedAquifer <: Aquifer
@@ -178,8 +182,22 @@ function UnconfinedAquifer(
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
     n = length(storage)
     q_net = zeros(n)
+    q_in = zeros(n)
+    q_out = zeros(n)
+    q_in_av = zeros(n)
+    q_out_av = zeros(n)
     head_av = zeros(n)
-    variables = AquiferVariables(head, head_av, conductance, storage, q_net)
+    variables = AquiferVariables(
+        head,
+        head_av,
+        conductance,
+        storage,
+        q_net,
+        q_in,
+        q_out,
+        q_in_av,
+        q_out_av,
+    )
     aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end
@@ -373,7 +391,13 @@ function flux!(aquifer::Aquifer, connectivity::Connectivity, conductivity_profil
             j = connectivity.rowval[nzi]
             delta_head = aquifer.variables.head[i] - aquifer.variables.head[j]
             cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
-            aquifer.variables.q_net[i] -= cond * delta_head
+            flow = cond * delta_head
+            aquifer.variables.q_net[i] -= flow
+            if flow > 0.0
+                aquifer.variables.q_out[i] += flow
+            else
+                aquifer.variables.q_in[i] -= flow
+            end
         end
     end
     return nothing
@@ -496,8 +520,12 @@ function update!(
         boundary.variables.flux_av .= 0.0
     end
     gwf.aquifer.variables.head_av .= 0.0
+    gwf.aquifer.variables.q_in_av .= 0.0
+    gwf.aquifer.variables.q_out_av .= 0.0
     t = 0.0
     while t < dt
+        gwf.aquifer.variables.q_in .= 0.0
+        gwf.aquifer.variables.q_out .= 0.0
         gwf.aquifer.variables.q_net .= 0.0
         dt_s = stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
@@ -509,6 +537,8 @@ function update!(
         boundary.variables.flux_av ./= dt
     end
     gwf.aquifer.variables.head_av ./= dt
+    gwf.aquifer.variables.q_in_av ./= dt
+    gwf.aquifer.variables.q_out_av ./= dt
     return nothing
 end
 
