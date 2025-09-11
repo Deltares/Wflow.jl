@@ -9,21 +9,23 @@ struct NoMassBalance <: AbstractMassBalance end
 end
 
 struct HydrologicalMassBalance <: AbstractMassBalance
-    soil_water::MassBalance
+    soil::MassBalance
+    canopy::MassBalance
 end
 
 function HydrologicalMassBalance(n::Int, modelsettings::NamedTuple)
     do_water_mass_balance = modelsettings.water_mass_balance
     if do_water_mass_balance
-        HydrologicalMassBalance(MassBalance(; n))
+        HydrologicalMassBalance(MassBalance(; n), MassBalance(; n))
     else
         NoMassBalance()
     end
 end
 
 function mass_storage_prev!(model, ::HydrologicalMassBalance)
-    (; soil_water) = model.mass_balance
-    soil_water.storage_prev .= model.land.soil.variables.total_soilwater_storage
+    (; soil, canopy) = model.mass_balance
+    soil.storage_prev .= model.land.soil.variables.total_soilwater_storage
+    canopy.storage_prev .= model.land.interception.variables.canopy_storage
 end
 
 function mass_storage_prev!(model, ::NoMassBalance)
@@ -31,7 +33,7 @@ function mass_storage_prev!(model, ::NoMassBalance)
 end
 
 function compute_soil_water_balance!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
-    (; storage_prev, error, relative_error) = model.mass_balance.soil_water
+    (; storage_prev, error, relative_error) = model.mass_balance.soil
     (; soil) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
@@ -55,8 +57,24 @@ function compute_soil_water_balance!(model::AbstractModel{<:Union{SbmModel, SbmG
     return nothing
 end
 
+function compute_canopy_water_balance!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; storage_prev, error, relative_error) = model.mass_balance.canopy
+    (; interception_rate, stemflow, throughfall, canopy_storage) =
+        model.land.interception.variables
+    (; precipitation) = model.land.atmospheric_forcing
+
+    for i in eachindex(storage_prev)
+        total_input = precipitation[i]
+        total_output = interception_rate[i] + stemflow[i] + throughfall[i]
+        storage = canopy_storage[i]
+        error[i] = (total_input - total_output - (storage - storage_prev[i]))
+        relative_error[i] = error[i] / ((total_input + total_output) / 2)
+    end
+end
+
 function compute_mass_balance!(model, ::HydrologicalMassBalance)
     compute_soil_water_balance!(model)
+    compute_canopy_water_balance!(model)
     return nothing
 end
 
