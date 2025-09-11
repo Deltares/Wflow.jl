@@ -459,5 +459,5 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
 )
 
 # wrapper methods for standard name mapping
-standard_name_map(model::LandHydrologySBM) = sbm_standard_name_map
-standard_name_map(model::SoilLoss) = sediment_standard_name_map
+standard_name_map(::LandHydrologySBM) = sbm_standard_name_map
+standard_name_map(::SoilLoss) = sediment_standard_name_map

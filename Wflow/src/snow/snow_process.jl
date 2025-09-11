@@ -41,12 +41,12 @@ function snowpack_hbv(
 
     # no landuse correction here
     snowmelt = min(potsnowmelt, snow)  # actual snow melt
-    snow = snow + snow_precip + refreezing - snowmelt  # dry snow content
-    snowwater = snowwater - refreezing  # free water content in snow
+    snow += snow_precip + refreezing - snowmelt  # dry snow content
+    snowwater -= refreezing  # free water content in snow
     maxsnowwater = snow * whc  # max water in the snow
-    snowwater = snowwater + snowmelt + liquid_precip  # add all water and potentially supersaturate the snowpack
+    snowwater += snowmelt + liquid_precip  # add all water and potentially supersaturate the snowpack
     runoff = max(snowwater - maxsnowwater, 0.0)  # rain + surpluss snowwater
-    snowwater = snowwater - runoff
+    snowwater -= runoff
     swe = snowwater + snow # snow water equivalent
 
     return snow, snowwater, swe, snowmelt, runoff

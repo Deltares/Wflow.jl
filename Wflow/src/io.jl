@@ -1,10 +1,3 @@
-#=
-Code to support input and output of data and configuration.
-Input data can be loaded from netCDF files.
-Output data can be written to netCDF or CSV files.
-For configuration files we use TOML.
-=#
-
 """Turn "a.aa.aaa" into (:a, :aa, :aaa)"""
 symbols(s) = Tuple(Symbol(x) for x in split(s, '.'))
 
@@ -25,100 +18,6 @@ function param(obj, fields, default)
 end
 
 """
-    Config(path::AbstractString)
-    Config(dict::AbstractDict)
-
-Struct that contains the parsed TOML configuration, as well as a reference to the TOML path,
-if it exists. It behaves largely like a dictionary, but it overloads `getproperty` and
-`setproperty` to support syntax like `config.model.cold_start__flag = false`.
-"""
-struct Config
-    dict::Dict{String, Any}  # nested key value mapping of all settings
-    path::Union{String, Nothing}  # path to the TOML file, or nothing
-end
-
-function Config(path::AbstractString)
-    config = Config(TOML.parsefile(path), path)
-    config = optional_keys(config)
-    check_config_states(config)
-    return config
-end
-Config(dict::AbstractDict) = Config(dict, nothing)
-
-"Add optional TOML keys `logging` and `time` to `config` (if not present in TOML file)"
-function optional_keys(config::Config)
-    if !haskey(config, "logging")
-        config.logging = Dict{String, Any}()
-    elseif !haskey(config, "time")
-        config.time = Dict{String, Any}()
-    end
-    return config
-end
-
-# allows using getproperty, e.g. config.input.time instead of config["input"]["time"]
-function Base.getproperty(config::Config, f::Symbol)
-    dict = Dict(config)
-    path = pathof(config)
-    a = dict[String(f)]
-    # if it is a Dict, wrap the result in Config to keep the getproperty behavior
-    return a isa AbstractDict ? Config(a, path) : a
-end
-
-function Base.setproperty!(config::Config, f::Symbol, x)
-    dict = Dict(config)
-    dict[String(f)] = x
-    return nothing
-end
-
-"Get a value from the Config with a key, throwing an error if it is not one of the options."
-function get_options(config::Config, key, options, default)
-    dict = Dict(config)
-    a = get(dict, key, default)
-    if !(a in options)
-        error("TOML key `$key` is set to $(repr(a)). Valid options are: $options.")
-    end
-    return a
-end
-
-# also used in autocomplete
-Base.propertynames(config::Config) = collect(keys(Dict(config)))
-Base.haskey(config::Config, key) = haskey(Dict(config), key)
-Base.keys(config::Config) = keys(Dict(config))
-Base.values(config::Config) = values(Dict(config))
-Base.pairs(config::Config) = pairs(Dict(config))
-Base.get(config::Config, key, default) = get(Dict(config), key, default)
-Base.getindex(config::Config, key) = getindex(Dict(config), key)
-Base.setindex!(config::Config, val, key) = setindex!(Dict(config), val, key)
-Base.pop!(config::Config, key) = pop!(Dict(config), key)
-Base.pop!(config::Config, key, default) = pop!(Dict(config), key, default)
-Base.Dict(config::Config) = getfield(config, :dict)
-Base.pathof(config::Config) = getfield(config, :path)
-Base.iterate(config::Config) = iterate(Dict(config))
-Base.iterate(config::Config, state) = iterate(Dict(config), state)
-
-function Base.dirname(config::Config)
-    path = pathof(config)
-    return path === nothing ? nothing : dirname(path)
-end
-
-function combined_path(config::Config, dir::AbstractString, path::AbstractString)
-    tomldir = dirname(config)
-    return normpath(tomldir, dir, path)
-end
-
-"Construct a path relative to both the TOML directory and the optional `dir_input`"
-function input_path(config::Config, path::AbstractString)
-    dir = get(config, "dir_input", ".")
-    return combined_path(config, dir, path)
-end
-
-"Construct a path relative to both the TOML directory and the optional `dir_output`"
-function output_path(config::Config, path::AbstractString)
-    dir = get(config, "dir_output", ".")
-    return combined_path(config, dir, path)
-end
-
-"""
 Extract netCDF variable name `ncname` from `var` (type `String` or `Config`). If `var` has
 type `Config`, either `scale`, `offset` and an optional `index` are expected (with `ncname`)
 or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier`.
@@ -126,7 +25,7 @@ or a `value` (uniform value), these are stored as part of `NamedTuple` `modifier
 function ncvar_name_modifier(var; config = nothing)
     ncname = nothing
     modifier = (scale = 1.0, offset = 0.0, value = nothing, index = nothing)
-    if isa(var, Config)
+    if isa(var, PropertyDict)
         if haskey(var, "netcdf") &&
            haskey(var.netcdf, "variable") &&
            haskey(var.netcdf.variable, "name")
@@ -143,17 +42,14 @@ function ncvar_name_modifier(var; config = nothing)
                         @info "NetCDF parameter `$ncname` is modified with scale `$(scale[i])` and offset `$(offset[i])` at index `$index`."
                         push!(indices, index)
                     end
-                    modifier =
-                        (scale = scale, offset = offset, value = nothing, index = indices)
+                    modifier = (scale, offset, value = nothing, index = indices)
                 else
                     index = get_index_dimension(var, config, var[dim_name])
-                    modifier =
-                        (scale = scale, offset = offset, value = nothing, index = index)
+                    modifier = (scale, offset, value = nothing, index = index)
                     @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset` at index `$index`."
                 end
             else
-                modifier =
-                    (scale = scale, offset = offset, value = nothing, index = nothing)
+                modifier = (scale, offset, value = nothing, index = nothing)
                 @info "NetCDF parameter `$ncname` is modified with scale `$scale` and offset `$offset`."
             end
         elseif haskey(var, "value")
@@ -201,7 +97,7 @@ function get_param_res(model)
     )
 end
 
-mover_params = (
+const mover_params = (
     "atmosphere_water__precipitation_volume_flux",
     "land_surface_water__potential_evaporation_volume_flux",
 )
@@ -215,7 +111,7 @@ end
 
 function routing_with_reservoirs(model)
     (; config) = model
-    return get(config.model, "reservoir__flag", false)::Bool
+    return config.model.reservoir__flag
 end
 
 function routing_with_reservoirs(model::AbstractModel{<:SedimentModel})
@@ -227,13 +123,11 @@ end
 Get fixed netCDF forcing input."
 """
 function load_fixed_forcing!(model)
-    (; reader, domain) = model
+    (; reader, domain, config) = model
     (; forcing_parameters) = reader
 
-    do_reservoirs = routing_with_reservoirs(model)
-
     reverse_indices = domain.land.network.reverse_indices
-    if do_reservoirs
+    if config.model.reservoir__flag
         sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
     end
@@ -247,7 +141,7 @@ function load_fixed_forcing!(model)
             # the reservoir structs and set the precipitation and evaporation to 0 in the
             # land model
             if par in mover_params
-                if do_reservoirs
+                if config.model.reservoir__flag
                     for (i, sel_reservoir) in enumerate(sel_reservoirs)
                         param[reverse_indices[sel_reservoir]] .= 0
                         param_res[par][i] = val
@@ -267,7 +161,7 @@ time interval, e.g. daily precipitation at 01-02-2000 00:00:00 is the accumulate
 precipitation between 01-01-2000 00:00:00 and 01-02-2000 00:00:00.
 """
 function update_forcing!(model)
-    (; clock, reader, domain) = model
+    (; clock, reader, domain, config) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = routing_with_reservoirs(model)
@@ -327,7 +221,7 @@ monthday_passed(curr, avail) = (curr[1] >= avail[1]) && (curr[2] >= avail[2])
 "Get dynamic and cyclic netCDF input"
 function load_dynamic_input!(model)
     update_forcing!(model)
-    if haskey(model.config.input, "cyclic")
+    if model.config.has_section.input_cyclic
         update_cyclic!(model)
     end
     return nothing
@@ -511,7 +405,7 @@ function setup_grid_netcdf(
                 "axis" => "X",
                 "units" => "m",
             ],
-            deflatelevel = deflatelevel,
+            deflatelevel,
         )
         defVar(
             ds,
@@ -524,7 +418,7 @@ function setup_grid_netcdf(
                 "axis" => "Y",
                 "units" => "m",
             ],
-            deflatelevel = deflatelevel,
+            deflatelevel,
         )
 
     else
@@ -551,7 +445,7 @@ function setup_grid_netcdf(
                 "axis" => "Y",
                 "units" => "degrees_north",
             ],
-            deflatelevel = deflatelevel,
+            deflatelevel,
         )
     end
     set_extradim_netcdf(ds, extra_dim)
@@ -561,7 +455,7 @@ function setup_grid_netcdf(
         Float64,
         ("time",);
         attrib = ["units" => time_units, "calendar" => calendar],
-        deflatelevel = deflatelevel,
+        deflatelevel,
     )
     if cell_length_in_meter
         for (key, val) in pairs(parameters)
@@ -573,7 +467,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("x", "y", "time");
                     attrib = ["_FillValue" => float_type(NaN)],
-                    deflatelevel = deflatelevel,
+                    deflatelevel,
                 )
             elseif eltype(val.vector) <: SVector
                 # for SVectors an additional dimension (`extra_dim`) is required
@@ -583,7 +477,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("x", "y", extra_dim.name, "time");
                     attrib = ["_FillValue" => float_type(NaN)],
-                    deflatelevel = deflatelevel,
+                    deflatelevel,
                 )
             else
                 error("Unsupported output type: ", typeof(val.vector))
@@ -599,7 +493,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("lon", "lat", "time");
                     attrib = ["_FillValue" => float_type(NaN)],
-                    deflatelevel = deflatelevel,
+                    deflatelevel,
                 )
             elseif eltype(val.vector) <: SVector
                 # for SVectors an additional dimension (`extra_dim`) is required
@@ -609,7 +503,7 @@ function setup_grid_netcdf(
                     float_type,
                     ("lon", "lat", extra_dim.name, "time");
                     attrib = ["_FillValue" => float_type(NaN)],
-                    deflatelevel = deflatelevel,
+                    deflatelevel,
                 )
             else
                 error("Unsupported output type: ", typeof(val.vector))
@@ -668,8 +562,7 @@ function prepare_reader(config)
         glob_path = join(parts[2:end], '/')
     else
         tomldir = dirname(config)
-        dir_input = get(config, "dir_input", ".")
-        glob_dir = normpath(tomldir, dir_input)
+        glob_dir = normpath(tomldir, config.dir_input)
         glob_path = replace(path_forcing, '\\' => '/')
     end
     @info "Forcing parameters are provided by `$abspath_forcing`."
@@ -697,9 +590,6 @@ function prepare_reader(config)
         nctimes_type = eltype(nctimes)
     end
 
-    # check for cyclic parameters
-    do_cyclic = haskey(config.input, "cyclic")
-
     # create map from internal location to netCDF variable name for forcing parameters
     forcing_parameters = Dict{String, NamedTuple}()
     for par in keys(config.input.forcing)
@@ -714,7 +604,7 @@ function prepare_reader(config)
     # store cyclic times for each internal location (duplicate cyclic times are possible
     # this way, however it seems not worth to keep track of unique cyclic times for now
     # (memory usage))
-    if do_cyclic == true
+    if config.has_section.input_cyclic
         cyclic_dataset = NCDataset(cyclic_path)
         cyclic_parameters = Dict{String, NamedTuple}()
         cyclic_times = Dict{String, Vector{Tuple{Int, Int}}}()
@@ -735,7 +625,7 @@ function prepare_reader(config)
     end
 
     # check if there is overlap
-    if do_cyclic == true
+    if config.has_section.input_cyclic
         forcing_keys = keys(forcing_parameters)
         cyclic_keys = keys(cyclic_parameters)
         for forcing_key in forcing_keys
@@ -757,7 +647,7 @@ end
 
 "Get a Vector of all unique location ids from a 2D map"
 function locations_map(ds, mapname, config)
-    lens = lens_input(config, mapname; optional = false)
+    lens = lens_input(mapname)
     map_2d = ncread(ds, config, lens; type = Union{Int, Missing}, allow_missing = true)
     ids = unique(skipmissing(map_2d))
     return ids
@@ -773,16 +663,13 @@ function nc_variables_dims(nc_variables, dataset, config)
             mapname = nc_var["map"]
             ids = string.(locations_map(dataset, mapname, config))
             location_dim = string(var, '_', nc_var["map"])
-            push!(
-                ncvars_dims,
-                (par = par, var = var, location_dim = location_dim, locations = ids),
-            )
+            push!(ncvars_dims, (par, var, location_dim, locations = ids))
         else
             push!(
                 ncvars_dims,
                 (
-                    par = par,
-                    var = var,
+                    par,
+                    var,
                     location_dim = nc_var["location"],
                     locations = [nc_var["location"]],
                 ),
@@ -827,7 +714,7 @@ Dict(
     symbols"a.d.c.field_of_c" => "other_name_in_output,
 )
 """
-function flat!(d, path, el::Dict)
+function flat!(d, path, el::AbstractDict)
     for (k, v) in pairs(el)
         flat!(d, string(path, '.', k), v)
     end
@@ -912,10 +799,6 @@ end
 function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing)
     x_coords = read_x_axis(nc_static)
     y_coords = read_y_axis(nc_static)
-    cell_length_in_meter = get(config.model, "cell_length_in_meter__flag", false)::Bool
-
-    calendar = get(config.time, "calendar", "standard")::String
-    time_units = get(config.time, "time_units", CFTime.DEFAULT_TIME_UNITS)
 
     # create an output netCDF that will hold all timesteps of selected parameters for grid
     # data
@@ -932,11 +815,11 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             x_coords,
             y_coords,
             output_map,
-            calendar,
-            time_units,
+            config.time.calendar,
+            config.time.time_units,
             extra_dim,
-            cell_length_in_meter;
-            deflatelevel = deflatelevel,
+            config.model.cell_length_in_meter__flag;
+            deflatelevel,
         )
     else
         nc_path = nothing
@@ -946,7 +829,7 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
 
     # create a separate state output netCDF that will hold the last timestep of all states
     # but only if config.state.path_output has been set
-    if haskey(config, "state") && haskey(config.state, "path_output")
+    if !isnothing(config.state.path_output)
         state_ncnames = check_states(config)
         state_map = out_map(state_ncnames, modelmap)
         nc_state_path = output_path(config, config.state.path_output)
@@ -956,10 +839,10 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             x_coords,
             y_coords,
             state_map,
-            calendar,
-            time_units,
+            config.time.calendar,
+            config.time.time_units,
             extra_dim,
-            cell_length_in_meter;
+            config.model.cell_length_in_meter__flag;
             float_type = Float64,
         )
     else
@@ -981,8 +864,8 @@ function prepare_writer(config, modelmap, domain, nc_static; extra_dim = nothing
             nc_scalar_path,
             ncvars_dims,
             modelmap,
-            calendar,
-            time_units,
+            config.time.calendar,
+            config.time.time_units,
             extra_dim,
             config,
         )
@@ -1190,7 +1073,7 @@ function close_files(model; delete_output::Bool = false)
     (; reader, writer, config) = model
 
     close(reader.dataset)
-    if haskey(config.input, "cyclic")
+    if config.has_section.input_cyclic
         close(reader.cyclic_dataset)
     end
     writer.dataset === nothing || close(writer.dataset)
@@ -1243,7 +1126,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset, fileformat)
         # and makes sense in the case of a gauge map
         reducer_name = get(col, "reducer", "only")
         f = reducerfunction(reducer_name)
-        lens = lens_input(config, mapname; optional = false)
+        lens = lens_input(mapname)
         map_2d = ncread(
             dataset,
             config,
@@ -1644,8 +1527,7 @@ end
 "Get `index` for dimension name `layer` based on `config` (TOML file)"
 function get_index_dimension(var, config::Config, dim_value)::Int
     if haskey(var, "layer")
-        v = get(config.model, "soil_layer__thickness", [100, 300, 800])::Vector{Int64}
-        inds = collect(1:(length(v) + 1))
+        inds = collect(1:(length(config.model.soil_layer__thickness) + 1))
         index = inds[dim_value]
     else
         error("Unrecognized or missing dimension name to index $(var)")
@@ -1653,22 +1535,12 @@ function get_index_dimension(var, config::Config, dim_value)::Int
     return index
 end
 
-"Check if state TOML keys are set in `config` object (parsed TOML file)"
-function check_config_states(config::Config, path::AbstractString)
-    state_settings =
-        haskey(config, "state") &&
-        haskey(config.state, path) &&
-        haskey(config.state, "variables")
-    return state_settings
-end
-
 """
 Check if required state settings in `config` object (parsed TOML file) are set for reading
 or writing states.
 """
 function check_config_states(config::Config)
-    cold_start = get(config.model, "cold_start__flag", true)::Bool
-    if !cold_start
+    if !config.model.cold_start__flag
         state_settings = check_config_states(config, "path_input")
         state_settings ||
             error("The state section for reading states in the TOML file is incomplete")
@@ -1690,7 +1562,6 @@ function check_config_output(
     key::AbstractString,
 )
     output_settings =
-        haskey(config, "output") &&
         haskey(config.output, file_description) &&
         haskey(config.output[file_description], "path") &&
         haskey(config.output[file_description], key)
@@ -1699,15 +1570,11 @@ end
 
 "Return routing types for the river, land and subsurface domains"
 function get_routing_types(config::Config)
-    land =
-        get_options(config.model, "land_routing", ROUTING_OPTIONS, "kinematic-wave")::String
+    land = config.model.land_routing
+    @assert land ∈ ROUTING_OPTIONS  # Already validated in `validate_config`
 
-    river = get_options(
-        config.model,
-        "river_routing",
-        ROUTING_OPTIONS,
-        "kinematic-wave",
-    )::String
+    river = config.model.river_routing
+    @assert river ∈ ROUTING_OPTIONS  # Already validated in `validate_config`
 
     subsurface = config.model.type == "sbm" ? "kinematic-wave" : "groundwaterflow"
 

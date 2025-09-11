@@ -1,0 +1,314 @@
+#=
+Code to support input and output of data and configuration.
+Input data can be loaded from netCDF files.
+Output data can be written to netCDF or CSV files.
+For configuration files we use TOML.
+=#
+
+abstract type AbstractConfigSection end
+
+# Don't error on extra fields that aren't hardcoded below
+Configurations.ignore_extra(::Type{<:AbstractConfigSection}) = true
+
+get_option_dict(::AbstractConfigSection) = Dict{Symbol, Tuple}()
+
+# Configurations.jl reads fields of this type as Dict{String, Any}.
+# These are subsequently converted to (nested) PropertyDict objects
+# for easy accessing of the data.
+const MaybePropertyDict =
+    Union{Dict{String, Any}, PropertyDict{String, Any, Dict{String, Any}}}
+
+# Pretty printing AbstractConfigurationSection instances
+function Base.show(io::IO, c::AbstractConfigSection)
+    first = true
+    for field in fieldnames(typeof(c))
+        f = getfield(c, field)
+        if f !== nothing
+            first && (first = false; println(io))
+            println(io, "\t\t$field\t= $f")
+        end
+    end
+end
+
+# Time related configurations
+@option mutable struct TimeSection <: AbstractConfigSection
+    const calendar::String = "standard"
+    starttime::Union{Nothing, DateTime} = nothing # default from forcing netCDF
+    endtime::Union{Nothing, DateTime} = nothing   # default from forcing netCDF
+    const time_units::String = CFTime.DEFAULT_TIME_UNITS
+    timestepsecs::Union{Nothing, Float64} = nothing # default from forcing netCDF
+end
+
+const time_section_options::Dict{Symbol, Tuple} = Dict(
+    :calendar => (
+        "standard",
+        "gregorian",
+        "proleptic_gregorian",
+        "julian",
+        "noleap",
+        "365_day",
+        "all_leap",
+        "366_day",
+        "360_day",
+    ),
+)
+get_option_dict(::TimeSection) = time_section_options
+
+# Logging related configurations
+@option struct LoggingSection <: AbstractConfigSection
+    silent::Bool = false
+    loglevel::String = "info"
+    path_log::String = "log.txt"
+end
+
+const config_section_options::Dict{Symbol, Tuple} = Dict(:loglevel => LOG_LEVELS)
+get_option_dict(::LoggingSection) = config_section_options
+
+# Water demand configurations
+@option struct WaterDemandSubSection <: AbstractConfigSection
+    domestic__flag::Bool = false
+    industry__flag::Bool = false
+    livestock__flag::Bool = false
+    paddy__flag::Bool = false
+    nonpaddy__flag::Bool = false
+end
+
+# Model configurations
+@option mutable struct ModelSection <: AbstractConfigSection
+    # General
+    const type::String
+    cold_start__flag::Bool = true
+    const cell_length_in_meter__flag::Bool = false
+    const reservoir__flag::Bool = false
+    # Model types sbm and sbm_gwf
+    const snow__flag::Bool = false
+    const snow_gravitational_transport__flag::Bool = false
+    const glacier__flag::Bool = false
+    const soil_infiltration_reduction__flag::Bool = false
+    const soil_layer__thickness::Vector{Int} = [100, 300, 800]
+    const saturated_hydraulic_conductivity_profile::String = "exponential"
+    # Routing method
+    const land_routing::String = "kinematic-wave"
+    const river_routing::String = "kinematic-wave"
+    # Kinematic wave routing
+    const pit__flag::Bool = false
+    const river_streamorder__min_count::Int = 6
+    const land_streamorder__min_count::Int = 5
+    const kinematic_wave__adaptive_time_step_flag::Bool = false
+    const river_kinematic_wave__time_step::Float64 = 900.0
+    const land_kinematic_wave__time_step::Float64 = 3600.0
+    # Local inertial routing
+    const river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
+    const land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
+    const land_local_inertial_flow__theta_coefficient::Float64 = 0.8
+    const river_water_flow_threshold__depth = 1e-3
+    const land_surface_water_flow_threshold__depth = 1e-3
+    const river_water_flow__froude_limit_flag = true
+    const land_surface_water_flow__froude_limit_flag = true
+    const floodplain_1d__flag::Bool = false
+    # Groundwater flow
+    const conductivity_profile::String = "uniform"
+    const drain__flag::Bool = false
+    const constanthead__flag::Bool = false
+    subsurface_water_flow__alpha_coefficient::Float64 = 0.25
+    # Model type sediment
+    const rainfall_erosion::String = "answers"
+    const overland_flow_erosion::String = "answers"
+    const run_river_model__flag::Bool = false
+    const land_transport::String = "yalin"
+    const river_transport::String = "bagnold"
+    # Water demand
+    const water_demand::WaterDemandSubSection = WaterDemandSubSection()
+end
+
+const model_section_options::Dict{Symbol, Tuple} = Dict(
+    :type => MODEL_OPTIONS,
+    :rainfall_erosion => ("answers", "erosion"),
+    :overland_flow_erosion => ("answers",),
+    :land_routing => ROUTING_OPTIONS,
+    :river_routing => ROUTING_OPTIONS,
+    :saturated_hydraulic_conductivity_profile =>
+        ("exponential", "exponential_constant", "layered", "layered_exponential"),
+    :river_transport => ("bagnold", "engelund", "yang", "kodatie", "molinas"),
+)
+get_option_dict(::ModelSection) = model_section_options
+
+# State configurations
+@option struct StateSection <: AbstractConfigSection
+    path_input::Union{Nothing, String} = nothing
+    path_output::Union{Nothing, String} = nothing
+    # Variable name mapping
+    variables::MaybePropertyDict = Dict{String, Any}()
+end
+
+# Input configurations
+@option struct InputSection <: AbstractConfigSection
+    # Flow direction and modelling domains
+    path_forcing::String
+    path_static::String
+    basin__local_drain_direction::String
+    basin_pit_location__mask::Union{Nothing, String} = nothing
+    river_location__mask::String
+    reservoir_area__count::Union{Nothing, String} = nothing
+    reservoir_location__count::Union{Nothing, String} = nothing
+    subbasin_location__count::String
+    # Variable name mappings
+    forcing::MaybePropertyDict
+    static::MaybePropertyDict
+    cyclic::MaybePropertyDict = Dict{String, Any}()
+    flexible::MaybePropertyDict
+end
+
+const input_field_names = String.(fieldnames(Wflow.InputSection))
+
+# API variable configuration
+@option struct APISection <: AbstractConfigSection
+    variables::Vector{String} = []
+end
+
+# Whether certain relevant sections exist in the TOML
+@option struct HasSection <: AbstractConfigSection
+    API::Bool
+    model_water_demand::Bool
+    input_cyclic::Bool
+end
+
+# Fields with a default value are optional
+@option struct Config
+    dir_input::Union{Nothing, String} = nothing
+    dir_output::Union{Nothing, String} = nothing
+    fews_run__flag::Bool = false
+    time::TimeSection = TimeSection()
+    logging::LoggingSection = LoggingSection()
+    model::ModelSection
+    state::StateSection = StateSection()
+    input::InputSection
+    output::MaybePropertyDict = Dict{String, Any}()
+    API::APISection = APISection()
+    has_section::HasSection
+    path::Union{Nothing, String}  # path to the TOML file, or nothing
+end
+
+# Pretty printing the config
+function Base.show(io::IO, c::Config)
+    println(io, "Wflow Config")
+    for field in fieldnames(typeof(c))
+        f = getfield(c, field)
+        f === nothing || println(io, "\t$field\t= $f")
+    end
+end
+
+# Create a nested PropertyDict to retrieve data from a nested dict as
+# if it were a nested struct
+function nested_property_dict(dict::AbstractDict)
+    new_dict = Dict{String, Any}()
+    for (key, value) in dict
+        if value isa AbstractDict
+            new_dict[key] = nested_property_dict(value)
+        else
+            new_dict[key] = value
+        end
+    end
+
+    return PropertyDict(new_dict)
+end
+
+"""
+    Config(path::AbstractString; override...)
+    Config(dict::AbstractDict; path::Union{Nothing, String} = nothing, override...)
+
+Struct that contains the parsed TOML configurations, as well as a reference to the TOML path
+if it exists. The object behaves largely like an immutable nested struct, apart from the flexible
+sections (see the fields with `MaybePropertyDict` type in `config.jl`) which are nested property
+dicts (see PropertyDicts.jl) and thus mutable.
+Values from the TOML (or dict) kan be overridden by passing keyword arguments of the form
+`path_to_value_with_underscores = value`, for example `Config(path; logging_silent = true)`.
+"""
+function Config(path::AbstractString; override...)
+    dict = TOML.parsefile(path)
+    Config(dict; path, override...)
+end
+
+function Config(dict::AbstractDict; path::Union{Nothing, String} = nothing, override...)
+    # These sections are particularly checked here because they are mandatory and
+    # required to initialize the has_section section
+    @assert haskey(dict, "model") "The TOML is missing the mandatory [model] section."
+    @assert haskey(dict, "input") "The TOML is missing the mandatory [input] section."
+    # When optional values are omitted they obtain the default value, and it cannot be derived
+    # whether this value was obtained from the TOML or not. Therefore this information is gathered
+    # here.
+    dict["has_section"] = Dict(
+        "API" => haskey(dict, "API"),
+        "model_water_demand" => haskey(dict["model"], "water_demand"),
+        "input_cyclic" => haskey(dict["input"], "cyclic"),
+    )
+    dict["path"] = path
+
+    # Move flexible part of the input section into input.flexible
+    dict["input"]["flexible"] = filter(kv -> kv[1] ∉ input_field_names, dict["input"])
+
+    config = from_dict(Config, dict; override...)
+
+    # Flexible input
+    input = config.input
+    @reset input.forcing = nested_property_dict(input.forcing)
+    @reset input.static = nested_property_dict(input.static)
+    @reset input.cyclic = nested_property_dict(input.cyclic)
+    @reset input.flexible = nested_property_dict(input.flexible)
+    @reset config.input = input
+
+    # Flexible output
+    @reset config.output = nested_property_dict(config.output)
+
+    # Flexible state
+    state = config.state
+    @reset state.variables = nested_property_dict(state.variables)
+    @reset config.state = state
+
+    validate_config(config)
+    return config
+end
+
+Base.dirname(config::Config) = isnothing(config.path) ? nothing : dirname(config.path)
+
+"Construct a path relative to both the TOML directory and the optional `dir_input`"
+input_path(config::Config, path::Union{Nothing, AbstractString}) =
+    normpath(dirname(config), config.dir_input, path)
+
+"Construct a path relative to both the TOML directory and the optional `dir_output`"
+output_path(config::Config, path::Union{Nothing, AbstractString}) =
+    normpath(dirname(config), config.dir_output, path)
+
+function invalid_config_option(source::AbstractConfigSection, field_name::Symbol)::Bool
+    option_dict = get_option_dict(source)
+
+    return if field_name in keys(option_dict)
+        value = getfield(source, field_name)
+        options = option_dict[field_name]
+        invalid = (value ∉ options)
+        invalid &&
+            @error "Invalid TOML value $field_name = $value in $(typeof(source)), must be one of $options."
+        invalid
+    else
+        false
+    end
+end
+
+invalid_config_option(::Any, ::Any) = false
+
+function validate_config(config::Config)
+    (; model, time) = config
+
+    errors = false
+
+    # Validate fields that must be one of a set of options
+    # as defined the *_section_options dicts
+    for config_section_name in fieldnames(Config)
+        config_section = getfield(config, config_section_name)
+        for field_name in propertynames(config_section)
+            errors |= invalid_config_option(config_section, field_name)
+        end
+    end
+
+    errors && error("Errors encountered when validating the TOML.")
+end

@@ -30,7 +30,8 @@ Wflow.run_timestep!(model)
     @test eros.hydrological_forcing.q_land[1] ≈ 0.0
     @test eros.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934
     @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
-    @test eros.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈ 0.8999999761581421
+    @test eros.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈
+          0.8999999761581421
     @test eros.overland_flow_erosion.variables.amount[1] ≈ 0.0
     @test eros.rainfall_erosion.variables.amount[1] ≈ 0.00027245577922893746
     @test model.clock.iteration == 1
@@ -93,7 +94,7 @@ end
 end
 
 # test reading warm states
-config.model["cold_start__flag"] = false
+config = Wflow.Config(tomlpath; model_cold_start__flag = false)
 model = Wflow.Model(config)
 @testset "initial warm states" begin
     river = model.routing.river_flow
@@ -156,11 +157,13 @@ Wflow.close_files(model)
 ### Test land only model configuration and transport capacity ###
 
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
-config = Wflow.Config(tomlpath)
-# Update config to run only the land model
-config.model.run_river_model__flag = false
-# Use govers equation for land transport capacity
-config.model.land_transport = "govers"
+config = Wflow.Config(
+    tomlpath;
+    # Update config to run only the land model
+    model_run_river_model__flag = false,
+    # Use govers equation for land transport capacity
+    model_land_transport = "govers",
+)
 
 model = Wflow.Model(config)
 
@@ -181,11 +184,13 @@ end
 Wflow.close_files(model)
 
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
-config = Wflow.Config(tomlpath)
-# Update config to run only the land model
-config.model.run_river_model__flag = false
-# Use yalin equation for land transport capacity
-config.model.land_transport = "yalin"
+config = Wflow.Config(
+    tomlpath;
+    # Update config to run only the land model
+    model_run_river_model__flag = false,
+    # Use yalin equation for land transport capacity
+    model_land_transport = "yalin",
+)
 
 model = Wflow.Model(config)
 
@@ -208,9 +213,11 @@ Wflow.close_files(model)
 ### Test all river transport capacity ###
 
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
-config = Wflow.Config(tomlpath)
-# Use yang equation for river transport capacity
-config.model.river_transport = "yang"
+config = Wflow.Config(
+    tomlpath;
+    # Use yang equation for river transport capacity
+    model_river_transport = "yang",
+)
 
 model = Wflow.Model(config)
 
@@ -231,9 +238,11 @@ end
 Wflow.close_files(model)
 
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
-config = Wflow.Config(tomlpath)
-# Use kodatie equation for river transport capacity
-config.model.river_transport = "kodatie"
+config = Wflow.Config(
+    tomlpath;
+    # Use kodatie equation for river transport capacity
+    model_river_transport = "kodatie",
+)
 
 model = Wflow.Model(config)
 
@@ -255,9 +264,11 @@ end
 Wflow.close_files(model)
 
 tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
-config = Wflow.Config(tomlpath)
-# Use molinas equation for river transport capacity
-config.model.river_transport = "molinas"
+config = Wflow.Config(
+    tomlpath;
+    # Use molinas equation for river transport capacity
+    model_river_transport = "molinas",
+)
 
 model = Wflow.Model(config)
 

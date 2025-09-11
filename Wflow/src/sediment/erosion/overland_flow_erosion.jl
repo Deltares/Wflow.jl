@@ -11,7 +11,7 @@ function OverlandFlowErosionVariables(
     n::Int;
     amount::Vector{Float64} = fill(MISSING_VALUE, n),
 )
-    return OverlandFlowErosionVariables(; amount = amount)
+    return OverlandFlowErosionVariables(; amount)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
@@ -22,7 +22,7 @@ end
 
 "Initialize overland flow erosion model boundary conditions"
 function OverlandFlowErosionBC(n::Int; q::Vector{Float64} = fill(MISSING_VALUE, n))
-    return OverlandFlowErosionBC(; q = q)
+    return OverlandFlowErosionBC(; q)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
@@ -46,13 +46,11 @@ function OverlandFlowErosionAnswersParameters(
     lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
     usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
     lens = lens_input_parameter(config, "soil_erosion__answers_overland_flow_factor")
-    answers_overland_flow_factor = ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float64)
+    answers_overland_flow_factor =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float64)
 
-    answers_parameters = OverlandFlowErosionAnswersParameters(;
-        usle_k = usle_k,
-        usle_c = usle_c,
-        answers_overland_flow_factor = answers_overland_flow_factor,
-    )
+    answers_parameters =
+        OverlandFlowErosionAnswersParameters(; usle_k, usle_c, answers_overland_flow_factor)
     return answers_parameters
 end
 

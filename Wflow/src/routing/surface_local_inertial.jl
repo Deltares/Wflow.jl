@@ -23,11 +23,10 @@ function LocalInertialRiverFlowParameters(
     config::Config,
     domain::DomainRiver,
 )
-    alpha = get(config.model, "river_local_inertial_flow__alpha_coefficient", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
-    waterdepth_threshold =
-        get(config.model, "river_water_flow_threshold__depth", 1.0e-03)::Float64 # depth threshold for flow at edge
-    froude_limit = get(config.model, "river_water_flow__froude_limit_flag", true)::Bool # limit flow to subcritical according to Froude number
-    floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
+    alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
+    froude_limit = config.model.river_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
+    floodplain_1d = config.model.floodplain_1d__flag
 
     @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
 
@@ -126,7 +125,6 @@ function LocalInertialRiverFlowVariables(
     network::NetworkRiver,
 )
     (; pit_indices, indices, graph) = network
-    floodplain_1d = get(config.model, "floodplain_1d", false)::Bool
 
     lens = lens_input_parameter(config, "model_boundary_condition~river_bank_water__depth")
     riverdepth_bc =
@@ -142,9 +140,9 @@ function LocalInertialRiverFlowVariables(
     variables = LocalInertialRiverFlowVariables(;
         q = zeros(n_edges),
         q0 = zeros(n_edges),
-        q_av = q_av,
-        q_channel_av = floodplain_1d ? zeros(n_edges) : q_av,
-        h = h,
+        q_av,
+        q_channel_av = config.model.floodplain_1d__flag ? zeros(n_edges) : q_av,
+        h,
         zs_max = zeros(n_edges),
         zs_src = zeros(n_edges),
         zs_dst = zeros(n_edges),
@@ -188,7 +186,7 @@ function LocalInertialRiverFlow(
 
     # The following boundary conditions can be set at ghost nodes, downstream of river
     # outlets (pits): river length and river depth
-    cfl = get(config.model, "river_local_inertial_flow__alpha_coefficient", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    cfl = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
     parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
@@ -197,15 +195,14 @@ function LocalInertialRiverFlow(
     n = length(domain.network.indices)
     boundary_conditions = RiverFlowBC(n, reservoir)
 
-    floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
-    if floodplain_1d
+    if config.model.floodplain_1d__flag
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
         floodplain = FloodPlain(dataset, config, domain, zb_floodplain)
     else
         floodplain = nothing
     end
 
-    do_water_demand = haskey(config.model, "water_demand")
+    do_water_demand = config.has_section.model_water_demand
     river_flow = LocalInertialRiverFlow(;
         timestepping,
         boundary_conditions,
@@ -221,7 +218,7 @@ end
 function get_inflow_reservoir(model::LocalInertialRiverFlow, src_edge::Vector{Int})
     q_in = sum_at(model.variables.q, src_edge)
     if !isnothing(model.floodplain)
-        q_in = q_in + sum_at(model.floodplain.variables.q, src_edge)
+        q_in += sum_at(model.floodplain.variables.q, src_edge)
     end
     return q_in
 end
@@ -510,7 +507,7 @@ function update!(
         dt_s = stable_timestep(model, flow_length)
         dt_s = check_timestepsize(dt_s, t, dt)
         local_inertial_river_update!(model, domain, dt_s, dt, update_h)
-        t = t + dt_s
+        t += dt_s
     end
     average_flow_vars!(model.variables, actual_external_abstraction_av, dt)
     average_reservoir_vars!(reservoir, dt)
@@ -575,12 +572,10 @@ function LocalInertialOverlandFlowParameters(
     config::Config,
     domain::Domain,
 )
-    froude_limit =
-        get(config.model, "land_surface_water_flow__froude_limit_flag", true)::Bool # limit flow to subcritical according to Froude number
-    alpha = get(config.model, "land_local_inertial_flow__alpha_coefficient", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
-    theta = get(config.model, "land_local_inertial_flow__theta_coefficient", 0.8)::Float64 # weighting factor
-    waterdepth_threshold =
-        get(config.model, "land_surface_water_flow_threshold__depth", 1.0e-03)::Float64 # depth threshold for flow at edge
+    froude_limit = config.model.land_surface_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
+    alpha = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    theta = config.model.land_local_inertial_flow__theta_coefficient # weighting factor
+    waterdepth_threshold = config.model.land_surface_water_flow_threshold__depth # depth threshold for flow at edge
 
     (; edge_indices, indices) = domain.land.network
     (; x_length, y_length) = domain.land.parameters
@@ -655,7 +650,7 @@ end
 
 "Initialize local inertial overland flow model"
 function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::Domain)
-    cfl = get(config.model, "land_local_inertial_flow__alpha_coefficient", 0.7)::Float64 # stability coefficient for model time step (0.2-0.7)
+    cfl = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
     n = length(domain.land.network.indices)
@@ -808,7 +803,7 @@ function update!(
         local_inertial_river_update!(river, domain, dt_s, dt, update_h)
         local_inertial_update_water_depth!(land, river, domain, dt_s)
 
-        t = t + dt_s
+        t += dt_s
     end
     average_flow_vars!(river.variables, actual_external_abstraction_av, dt)
     average_flow_vars!(land.variables, dt)
@@ -1291,7 +1286,7 @@ wetted perimeter `p` of a floodplain profile.
 """
 function wetted_perimeter(p, depth, h)
     dh = h - depth # depth at i1
-    p = p + (2.0 * dh) # p at i1
+    p += 2.0 * dh # p at i1
     return p
 end
 

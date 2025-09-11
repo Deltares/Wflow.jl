@@ -188,21 +188,21 @@ end
 
     timestepping = Wflow.TimeStepping(; cfl = 0.7)
     parameters = Wflow.LocalInertialRiverFlowParameters(;
-        n = n,
+        n,
         ne = _ne,
         active_n = collect(1:(n - 1)),
         active_e = collect(1:_ne),
         g = 9.80665,
-        h_thresh = h_thresh,
-        zb_max = zb_max,
-        mannings_n_sq = mannings_n_sq,
+        h_thresh,
+        zb_max,
+        mannings_n_sq,
         mannings_n = n_river,
         flow_width_at_edge = width_at_edge,
         flow_length_at_edge = length_at_edge,
         bankfull_storage = fill(Wflow.MISSING_VALUE, n),
         bankfull_depth = fill(Wflow.MISSING_VALUE, n),
-        zb = zb,
-        froude_limit = froude_limit,
+        zb,
+        froude_limit,
     )
 
     variables = Wflow.LocalInertialRiverFlowVariables(;

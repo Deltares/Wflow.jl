@@ -71,7 +71,7 @@ Model-specific settings can be included in the model section of the TOML file.
 ```toml
 [model]
 type = "sbm"                                    # one of ("sbm" or "sbm_gwf")
-snow_gravitional_transport__flag = true         # include lateral snow transport in the model, default is false
+snow_gravitational_transport__flag = true         # include lateral snow transport in the model, default is false
 snow__flag = true                               # include snow modelling, default is false
 cold_start__flag = true                         # cold (cold_start__flag = true) or warm state (cold_start__flag = false), default is true
 reservoir__flag = true                          # include reservoir modelling, default is false

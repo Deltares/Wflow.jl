@@ -398,7 +398,7 @@ end
             gwf.aquifer.variables.q_net .= 0.0
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
         end
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
     end
@@ -427,7 +427,7 @@ end
             gwf.aquifer.variables.q_net .= 0.0
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
         end
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
     end
@@ -493,7 +493,7 @@ end
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -573,7 +573,7 @@ end
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -664,7 +664,7 @@ end
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
         end
 
         # test for symmetry on x and y axes
@@ -675,7 +675,7 @@ end
         # compare with analytical solution
         start = -0.5 * aquifer_length + 0.5 * cellsize
         stop = 0.5 * aquifer_length - 0.5 * cellsize
-        X = collect(range(start; stop = stop, step = cellsize))
+        X = collect(range(start; stop, step = cellsize))
         head_analytical =
             [drawdown_theis(x, time, discharge, transmissivity, storativity) for x in X] .+ 10.0
         # compare left-side, since it's symmetric anyway. Skip the well cell, and its first neighbor

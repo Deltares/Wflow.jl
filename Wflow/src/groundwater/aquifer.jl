@@ -136,7 +136,6 @@ function UnconfinedAquiferParameters(
     bottom::Vector{Float64},
     area::Vector{Float64},
 )
-    conductivity_profile = get(config.model, "conductivity_profile", "uniform")
     lens = lens_input_parameter(
         config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
@@ -146,7 +145,7 @@ function UnconfinedAquiferParameters(
     lens = lens_input_parameter(config, "subsurface_water__specific_yield")
     specific_yield = ncread(dataset, config, lens; sel = indices, type = Float64)
 
-    if conductivity_profile == "exponential"
+    if config.model.conductivity_profile == "exponential"
         lens = lens_input_parameter(
             config,
             "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
@@ -440,7 +439,7 @@ minimum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
 minimum_head(aquifer::UnconfinedAquifer) =
     max.(aquifer.variables.head, aquifer.parameters.bottom)
 
-Base.@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
+@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     aquifer::A
     connectivity::Connectivity
@@ -503,7 +502,7 @@ function update!(
         dt_s = check_timestepsize(dt_s, t, dt)
         update_fluxes!(gwf, conductivity_profile, dt_s)
         update_head!(gwf, dt_s)
-        t = t + dt_s
+        t += dt_s
     end
     for boundary in gwf.boundaries
         boundary.variables.flux_av ./= dt

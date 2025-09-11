@@ -31,7 +31,7 @@ river_water__instantaneous_volume_flow_rate = "q_river"
 
 reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
 
-subsurface_water__volume_flow_rate  = "ssf"
+subsurface_water__volume_flow_rate = "ssf"
 
 land_surface_water__instantaneous_depth = "h_land"
 land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
@@ -109,7 +109,7 @@ vegetation__leaf-area_index = "LAI"
 
 [model]
 kinematic_wave__adaptive_time_step_flag = true
-snow_gravitional_transport__flag = true
+snow_gravitational_transport__flag = true
 cold_start__flag = true
 reservoir__flag = true
 snow__flag = true
@@ -124,13 +124,13 @@ path = "output_moselle_swf.nc"
 [output.netcdf_grid.variables]
 soil_water_sat-zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
-soil_layer_water_unsat-zone__depth= "ustorelayerdepth"
+soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
 "snowpack~dry__leq-depth" = "snow"
 "snowpack~liquid__depth" = "snowwater"
 river_water__depth = "hav_river"
 river_water__volume_flow_rate = "qav_river"
 reservoir_water__volume = "volume_reservoir"
-subsurface_water__volume_flow_rate  = "ssf"
+subsurface_water__volume_flow_rate = "ssf"
 land_surface_water__depth = "h_land"
 land.interception.variables.canopy_storage = "canopystorage"
 
@@ -141,4 +141,3 @@ path = "output_moselle_swf.csv"
 header = "Q"
 map = "river_gauge__count"
 parameter = "river_water__volume_flow_rate"
-
