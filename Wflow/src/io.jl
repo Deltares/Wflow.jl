@@ -1571,12 +1571,10 @@ end
 "Return routing types for the river, land and subsurface domains"
 function get_routing_types(config::Config)
     land = config.model.land_routing
-    !(land in ROUTING_OPTIONS) &&
-        error("land_routing was set to $land, must be one of $ROUTING_OPTIONS.")
+    @assert land ∈ ROUTING_OPTIONS  # Already validated in `validate_config`
 
     river = config.model.river_routing
-    !(river in ROUTING_OPTIONS) &&
-        error("river_routing was set to $river, must be one of $ROUTING_OPTIONS.")
+    @assert river ∈ ROUTING_OPTIONS  # Already validated in `validate_config`
 
     subsurface = config.model.type == "sbm" ? "kinematic-wave" : "groundwaterflow"
 

@@ -108,7 +108,7 @@ Returns as list of required states, in the same formats as the keys that are ret
 """
 function extract_required_states(config::Config)
     # Extract model type
-    model_type = config.model.type::String
+    model_type = config.model.type
 
     # Extract model settings
     do_snow = config.model.snow__flag

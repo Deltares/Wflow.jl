@@ -10,6 +10,8 @@ abstract type AbstractConfigSection end
 # Don't error on extra fields that aren't hardcoded below
 Configurations.ignore_extra(::Type{<:AbstractConfigSection}) = true
 
+get_option_dict(::AbstractConfigSection) = Dict{Symbol, Tuple}()
+
 # Configurations.jl reads fields of this type as Dict{String, Any}.
 # These are subsequently converted to (nested) PropertyDict objects
 # for easy accessing of the data.
@@ -37,12 +39,30 @@ end
     timestepsecs::Union{Nothing, Float64} = nothing # default from forcing netCDF
 end
 
+const time_section_options::Dict{Symbol, Tuple} = Dict(
+    :calendar => (
+        "standard",
+        "gregorian",
+        "proleptic_gregorian",
+        "julian",
+        "noleap",
+        "365_day",
+        "all_leap",
+        "366_day",
+        "360_day",
+    ),
+)
+get_option_dict(::TimeSection) = time_section_options
+
 # Logging related configurations
 @option struct LoggingSection <: AbstractConfigSection
     silent::Bool = false
     loglevel::String = "info"
     path_log::String = "log.txt"
 end
+
+const config_section_options::Dict{Symbol, Tuple} = Dict(:loglevel => LOG_LEVELS)
+get_option_dict(::LoggingSection) = config_section_options
 
 # Water demand configurations
 @option struct WaterDemandSubSection <: AbstractConfigSection
@@ -100,6 +120,18 @@ end
     # Water demand
     const water_demand::WaterDemandSubSection = WaterDemandSubSection()
 end
+
+const model_section_options::Dict{Symbol, Tuple} = Dict(
+    :type => MODEL_OPTIONS,
+    :rainfall_erosion => ("answers", "erosion"),
+    :overland_flow_erosion => ("answers",),
+    :land_routing => ROUTING_OPTIONS,
+    :river_routing => ROUTING_OPTIONS,
+    :saturated_hydraulic_conductivity_profile =>
+        ("exponential", "exponential_constant", "layered", "layered_exponential"),
+    :river_transport => ("bagnold", "engelund", "yang", "kodatie", "molinas"),
+)
+get_option_dict(::ModelSection) = model_section_options
 
 # State configurations
 @option struct StateSection <: AbstractConfigSection
@@ -232,6 +264,9 @@ function Config(dict::AbstractDict; path::Union{Nothing, String} = nothing, over
     state = config.state
     @reset state.variables = nested_property_dict(state.variables)
     @reset config.state = state
+
+    validate_config(config)
+    return config
 end
 
 Base.dirname(config::Config) = isnothing(config.path) ? nothing : dirname(config.path)
@@ -243,3 +278,37 @@ input_path(config::Config, path::Union{Nothing, AbstractString}) =
 "Construct a path relative to both the TOML directory and the optional `dir_output`"
 output_path(config::Config, path::Union{Nothing, AbstractString}) =
     normpath(dirname(config), config.dir_output, path)
+
+function invalid_config_option(source::AbstractConfigSection, field_name::Symbol)::Bool
+    option_dict = get_option_dict(source)
+
+    return if field_name in keys(option_dict)
+        value = getfield(source, field_name)
+        options = option_dict[field_name]
+        invalid = (value ∉ options)
+        invalid &&
+            @error "Invalid TOML value $field_name = $value in $(typeof(source)), must be one of $options."
+        invalid
+    else
+        false
+    end
+end
+
+invalid_config_option(::Any, ::Any) = false
+
+function validate_config(config::Config)
+    (; model, time) = config
+
+    errors = false
+
+    # Validate fields that must be one of a set of options
+    # as defined the *_section_options dicts
+    for config_section_name in fieldnames(Config)
+        config_section = getfield(config, config_section_name)
+        for field_name in propertynames(config_section)
+            errors |= invalid_config_option(config_section, field_name)
+        end
+    end
+
+    errors && error("Errors encountered when validating the TOML.")
+end

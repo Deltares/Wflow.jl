@@ -18,18 +18,14 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     # Rainfall erosion
     if rainfall_erosion == "answers"
         rainfall_erosion = RainfallErosionAnswersModel(dataset, config, indices)
-    elseif rainfall_erosion == "eurosem"
-        rainfall_erosion = RainfallErosionEurosemModel(dataset, config, indices)
     else
-        error("Unknown rainfall erosion model: $rainfall_erosion")
+        @assert rainfall_erosion == "eurosem"
+        rainfall_erosion = RainfallErosionEurosemModel(dataset, config, indices)
     end
 
     # Overland flow erosion
-    if overland_flow_erosion == "answers"
-        overland_flow_erosion = OverlandFlowErosionAnswersModel(dataset, config, indices)
-    else
-        error("Unknown overland flow erosion model: $overland_flow_erosion")
-    end
+    @assert overland_flow_erosion == "answers"  # Already validated in `validate_config`
+    overland_flow_erosion = OverlandFlowErosionAnswersModel(dataset, config, indices)
 
     # Total soil erosion and particle differentiation
     soil_erosion = SoilErosionModel(dataset, config, indices)

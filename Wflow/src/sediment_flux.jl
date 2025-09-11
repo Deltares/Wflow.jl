@@ -12,11 +12,9 @@ function get_transport_capacity(
     dataset::NCDataset,
     config::Config,
     indices,
-    type::String, # river or land
 )::AbstractTransportCapacityModel
     transport_capacity_constr = get(transport_methods, transport_method, nothing)
-    isnothing(transport_capacity_constr) &&
-        error("Unknown $type transport method: $transport_method")
+    @assert !isnothing(transport_capacity_constr)  # Already validated in `validate_config`
     return transport_capacity_constr(dataset, config, indices)
 end
 
@@ -48,7 +46,6 @@ function OverlandFlowSediment(
         dataset,
         config,
         indices,
-        "land",
     )
 
     if do_river || land_transport == "yalinpart"
@@ -131,7 +128,6 @@ function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
         dataset,
         config,
         indices,
-        "river",
     )
 
     # Potential river erosion

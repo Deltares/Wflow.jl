@@ -20,13 +20,11 @@ generated from the configuration file `config_file`. Will return a Model that is
 run.
 """
 
-function BMI.initialize(::Type{<:Model}, config_file; config_override...)
-    config = Config(config_file; config_override...)
+function BMI.initialize(::Type{<:Model}, config_file)
+    config = Config(config_file)
     model_type = config.model.type
+    @assert model_type ∈ MODEL_OPTIONS # Already validated in `validate_config`
 
-    if model_type ∉ ("sbm", "sbm_gwf", "sediment")
-        error("Unknown model type $model_type.")
-    end
     @info "Initialize model variables for model type `$model_type`."
 
     type = if model_type == "sbm"

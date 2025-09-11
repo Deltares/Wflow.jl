@@ -60,7 +60,9 @@ const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
-const ROUTING_OPTIONS = (("kinematic-wave", "local-inertial"))
+const ROUTING_OPTIONS = ("kinematic-wave", "local-inertial")
+const MODEL_OPTIONS = ("sbm", "sbm_gwf", "sediment")
+const LOG_LEVELS = ("debug", "info", "warn", "error")
 
 mutable struct Clock{T}
     time::T
@@ -146,10 +148,8 @@ with input, model and output settings).
 """
 function Model(config::Config)::Model
     model_type = config.model.type
+    @assert model_type in MODEL_OPTIONS
 
-    if model_type ∉ ("sbm", "sbm_gwf", "sediment")
-        error("Unknown model type $model_type.")
-    end
     @info "Initialize model variables for model type `$model_type`."
 
     type = if model_type == "sbm"

@@ -10,6 +10,8 @@ Parse a log level from either an integer or string.
 """
 function parse_loglevel(input_level::AbstractString)::LogLevel
     level = lowercase(input_level)
+    @assert level in LOG_LEVELS # Already validated in `validate_config`
+
     if level == "debug"
         return Logging.Debug
     elseif level == "info"
@@ -18,8 +20,6 @@ function parse_loglevel(input_level::AbstractString)::LogLevel
         return Logging.Warn
     elseif level == "error"
         return Logging.Error
-    else
-        error("loglevel $input_level not recognized")
     end
 end
 
