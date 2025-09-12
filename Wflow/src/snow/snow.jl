@@ -65,7 +65,10 @@ end
     variables::SnowVariables
 end
 
-struct NoSnowModel <: AbstractSnowModel end
+@with_kw struct NoSnowModel <: AbstractSnowModel
+    n::Int
+    defaults::Zeros = Zeros(n)
+end
 
 "Initialize snow HBV model parameters"
 function SnowHbvParameters(
