@@ -212,7 +212,7 @@ function LocalInertialRiverFlow(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver(; n),
+        allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver(n),
     )
     return river_flow
 end

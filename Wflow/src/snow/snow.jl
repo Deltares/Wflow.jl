@@ -65,9 +65,8 @@ end
     variables::SnowVariables
 end
 
-@with_kw struct NoSnowModel <: AbstractSnowModel
+struct NoSnowModel <: AbstractSnowModel
     n::Int
-    defaults::Zeros = Zeros(n)
 end
 
 "Initialize snow HBV model parameters"
@@ -157,9 +156,9 @@ function update!(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
 end
 
 # wrapper methods
-get_runoff(model::NoSnowModel) = 0.0
+get_runoff(model::NoSnowModel) = Zeros(model.n)
 get_runoff(model::AbstractSnowModel) = model.variables.runoff
-get_snow_storage(model::NoSnowModel) = 0.0
+get_snow_storage(model::NoSnowModel) = Zeros(model.n)
 get_snow_storage(model::AbstractSnowModel) = model.variables.snow_storage
-get_snow_water(model::NoSnowModel) = 0.0
+get_snow_water(model::NoSnowModel) = Zeros(model.n)
 get_snow_water(model::AbstractSnowModel) = model.variables.snow_water
