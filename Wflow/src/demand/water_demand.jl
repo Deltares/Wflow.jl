@@ -547,6 +547,9 @@ get_irrigation_allocated(model::AllocationLand) = model.variables.irri_alloc
 get_irrigation_allocated(model::NoAllocationLand) = Zeros(model.n)
 get_nonirrigation_returnflow(model::AllocationLand) = model.variables.nonirri_returnflow
 get_nonirrigation_returnflow(model::NoAllocationLand) = Zeros(model.n)
+get_groundwater_abstraction_flux(model::AllocationLand) =
+    model.variables.act_groundwater_abst
+get_groundwater_abstraction_flux(model::NoAllocationLand) = Zeros(model.n)
 
 """
 Return return flow fraction based on gross water demand `demand_gross` and net water demand
