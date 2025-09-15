@@ -81,7 +81,7 @@ function compute_land_hydrology_balance!(
             net_runoff_river[i] +
             actleakage[i] +
             get_groundwater_abstraction_flux(allocation)[i]
-        total_output = subsurface_flux_out + vertical_flux_out + get_snow_in(snow)[i]
+        total_output = subsurface_flux_out + vertical_flux_out + get_snow_out(snow)[i]
 
         storage = total_storage(model.land, i)
 
