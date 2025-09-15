@@ -84,18 +84,22 @@ end
     # example 1, accucapacityflux
     material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
     capacity = fill(1.5, 6)
-    flux, new_material = Wflow.accucapacityflux(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
     @test new_material != material
     @test new_material == [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
     @test flux == Float64[0.5, 1.5, 1.5, 1, 1.5, 1.5]
+    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    @test flux == flux_
 
     # example 2, accucapacityflux
     material = fill(10.0, 6)
     capacity = Float64[2, 30, 30, 2, 30, 2]
-    flux, new_material = Wflow.accucapacityflux(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
     @test new_material != material
     @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
     @test flux == Float64[2, 10, 10, 2, 30, 2]
+    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    @test flux == flux_
 
     # example 1, accucapacitystate
     material = Float64[0.5, 2, 2, 0.5, 2, 0.5]

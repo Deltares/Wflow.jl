@@ -12,6 +12,8 @@ abstract type AbstractSnowModel end
     snow_melt::Vector{Float64}
     # Runoff from snowpack [mm Δt⁻¹]
     runoff::Vector{Float64}
+    # Lateral snow (SWE) transport out of a cell [mm Δt⁻¹]
+    snow_out::Vector{Float64}
 end
 
 "Initialize snow model variables"
@@ -22,6 +24,7 @@ function SnowVariables(n::Int)
         swe = fill(MISSING_VALUE, n),
         runoff = fill(MISSING_VALUE, n),
         snow_melt = fill(MISSING_VALUE, n),
+        snow_out = fill(MISSING_VALUE, n),
     )
 end
 
