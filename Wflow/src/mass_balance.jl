@@ -55,7 +55,7 @@ function compute_land_hydrology_balance!(
     model::AbstractModel{<:Union{SbmModel, SbmGwfModel}},
 )
     (; storage_prev, error, relative_error) = model.mass_balance.land
-    (; allocation) = model.land
+    (; allocation, snow) = model.land
     (; net_runoff, actevap, actleakage) = model.land.soil.variables
     (; net_runoff_river) = model.land.runoff.variables
     (; precipitation) = model.land.atmospheric_forcing
@@ -67,7 +67,10 @@ function compute_land_hydrology_balance!(
         subsurface_flux_in =
             1000.0 * subsurface_flow_in / area[i] * (model.clock.dt / BASETIMESTEP)
         total_input =
-            subsurface_flux_in + precipitation[i] + get_irrigation_allocated(allocation)[i]
+            subsurface_flux_in +
+            precipitation[i] +
+            get_irrigation_allocated(allocation)[i] +
+            get_snow_in(snow)[i]
 
         subsurface_flow_out = get_outflow(subsurface_flow)[i]
         subsurface_flux_out =
@@ -78,7 +81,7 @@ function compute_land_hydrology_balance!(
             net_runoff_river[i] +
             actleakage[i] +
             get_groundwater_abstraction_flux(allocation)[i]
-        total_output = subsurface_flux_out + vertical_flux_out
+        total_output = subsurface_flux_out + vertical_flux_out + get_snow_in(snow)[i]
 
         storage = total_storage(model.land, i)
 
