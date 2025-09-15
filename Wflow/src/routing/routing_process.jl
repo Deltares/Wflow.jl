@@ -375,6 +375,14 @@ function accucapacityflux_state(material, network, capacity)
     return flux, material
 end
 
+function flux_in!(flux_in, flux, network)
+    (; upstream_nodes, order) = network
+    for (i, v) in enumerate(order)
+        flux_in[v] = sum_at(flux, upstream_nodes[i])
+    end
+    return nothing
+end
+
 """
     lateral_snow_transport!(snow, slope, network)
 
@@ -382,13 +390,13 @@ Lateral snow transport. Transports snow downhill. Mutates `snow_storage` and `sn
 a `snow` model.
 """
 function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
-    (; snow_storage, snow_water, snow_out) = snow.variables
+    (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
     snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow_storage ./ 10000.0)
     maxflux = snowflux_frac .* snow_storage
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
     snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)
-    return nothing
+    flux_in!(snow_in, snow_out, domain.network)
 end
 
 lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
