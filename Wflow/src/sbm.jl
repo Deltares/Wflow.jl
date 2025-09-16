@@ -90,7 +90,7 @@ function update!(
 
     update_boundary_conditions!(snow, (; interception))
     update!(snow, atmospheric_forcing)
-    if get(config.model, "snow_gravitional_transport__flag", false)::Bool
+    if config.model.snow_gravitational_transport__flag
         lateral_snow_transport!(snow, domain.land)
     end
 
