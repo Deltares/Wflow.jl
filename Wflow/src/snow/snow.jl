@@ -26,8 +26,8 @@ function SnowVariables(n::Int)
         swe = fill(MISSING_VALUE, n),
         runoff = fill(MISSING_VALUE, n),
         snow_melt = fill(MISSING_VALUE, n),
-        snow_in = fill(MISSING_VALUE, n),
-        snow_out = fill(MISSING_VALUE, n),
+        snow_in = fill(0.0, n),
+        snow_out = fill(0.0, n),
     )
 end
 
