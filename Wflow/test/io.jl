@@ -407,11 +407,12 @@ end
         logging_loglevel = "debug",
         logging_path_log = "log-debug.txt",
         fews_run__flag = true,
+        logging_silent = true,
         input_path_forcing = "doesnt-exist.nc",
     )
 
     to_toml(Wflow.custom_convert, tomlpath_debug, config)
-    @test_throws ArgumentError Wflow.run(tomlpath_debug)
+    @test_throws ErrorException Wflow.run(tomlpath_debug)
     rm(tomlpath_debug)
     path_log = Wflow.output_path(config, "log-debug.txt")
     @test isfile(path_log)
@@ -432,7 +433,7 @@ end
         ),
     )
     to_toml(Wflow.custom_convert, tomlpath_error, config)
-    @test_throws ArgumentError Wflow.run(tomlpath_error)
+    @test_throws ErrorException Wflow.run(tomlpath_error)
     rm(tomlpath_error)
 end
 

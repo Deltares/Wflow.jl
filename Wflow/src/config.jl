@@ -554,3 +554,28 @@ custom_convert(x::RoutingType.T) =
 custom_convert(x::LogLevel) = lowercase(string(x))
 custom_convert(var::InputEntry) = to_dict(var)
 custom_convert(::Nothing) = ""
+
+function Configurations.to_dict(::Type{Config}, input_section::InputSection, ::ToDictOption)
+    # Invoke default method
+    dict = invoke(to_dict, Tuple{Any}, input_section)
+    # Move flexible part from input.flexible to input
+    for (key, val) in dict["flexible"]
+        dict[key] = val
+    end
+    pop!(dict, "flexible")
+    return dict
+end
+
+function Configurations.to_dict(
+    ::Type{InputSection},
+    input_entries::InputEntries,
+    ::ToDictOption,
+)
+    dict = Dict{String, Any}()
+
+    for (key, value) in input_entries.dict
+        dict[key] = to_dict(value)
+    end
+
+    return dict
+end

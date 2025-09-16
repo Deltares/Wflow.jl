@@ -6,7 +6,7 @@ using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using CompositionsBase: decompose
-using Configurations: @option, OptionField, from_dict, to_dict, Configurations
+using Configurations: @option, OptionField, ToDictOption, from_dict, to_dict, Configurations
 using Dates:
     Dates,
     Second,
