@@ -693,7 +693,7 @@
     "href": "index.html#attribution",
     "title": "Wflow.jl",
     "section": "Attribution",
-    "text": "Attribution\n\nCode\nusing TOML\n\n# Load the Project.toml file from Wflow.jl to extract dependencies\nproject = TOML.parsefile(\"../Wflow/Project.toml\")\n\n# Extract and print dependencies (sorted by name)\nprintln(\"This project relies on the following (direct) Julia dependencies:\\n\")\nfor name in sort(collect(keys(project[\"deps\"])))\n    println(\"- $name\")\nend\n\nThis project relies on the following (direct) Julia dependencies:\n\nAccessors\nBasicModelInterface\nCFTime\nCompositionsBase\nConfigurations\nDates\nDelimitedFiles\nGlob\nGraphs\nLoggingExtras\nNCDatasets\nParameters\nPolyester\nProgressLogging\nPropertyDicts\nStaticArrays\nStatistics\nTOML\nTerminalLoggers",
+    "text": "Attribution\n\nCode\nusing TOML\n\n# Load the Project.toml file from Wflow.jl to extract dependencies\nproject = TOML.parsefile(\"../Wflow/Project.toml\")\n\n# Extract and print dependencies (sorted by name)\nprintln(\"This project relies on the following (direct) Julia dependencies:\\n\")\nfor name in sort(collect(keys(project[\"deps\"])))\n    println(\"- $name\")\nend\n\nThis project relies on the following (direct) Julia dependencies:\n\nAccessors\nBasicModelInterface\nCFTime\nCompositionsBase\nConfigurations\nDates\nDelimitedFiles\nEnumX\nGlob\nGraphs\nLoggingExtras\nNCDatasets\nParameters\nPolyester\nProgressLogging\nPropertyDicts\nStaticArrays\nStatistics\nTOML\nTerminalLoggers",
     "crumbs": [
       "Home",
       "Wflow.jl"
