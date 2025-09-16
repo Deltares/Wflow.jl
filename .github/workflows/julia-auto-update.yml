@@ -1,0 +1,32 @@
+name: Julia auto update
+on:
+  schedule:
+    # At 03:00 on day 2 of the month
+    - cron: "0 3 2 * *"
+  # on demand
+  workflow_dispatch:
+jobs:
+  auto-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - uses: prefix-dev/setup-pixi@v0.9.0
+        with:
+          pixi-version: "latest"
+      - name: Update Julia manifest and SBOM file
+        run: |
+          pixi run install-julia
+          pixi run update-registry-julia
+          pixi run generate-sbom
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: "0"
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.CI_PR_PAT }}
+          branch: update/julia-manifest
+          title: Update Julia manifest
+          commit-message: "Update Julia manifest"
+          body-path: .pixi/update-manifest-julia.md
+          author: "GitHub <noreply@github.com>"

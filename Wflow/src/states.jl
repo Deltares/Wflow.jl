@@ -136,7 +136,7 @@ function extract_required_states(config::Config)
 
     # Subsurface states
     if model_type == "sbm_gwf"
-        ssf_states = ("subsurface_water__hydraulic_head",)
+        ssf_states = ("subsurface_water__instantaneous_hydraulic_head",)
     elseif model_type == "sbm"
         ssf_states = ("subsurface_water__volume_flow_rate",)
     else

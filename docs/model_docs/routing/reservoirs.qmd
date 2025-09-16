@@ -191,6 +191,21 @@ Therefore, please be careful to ensure consistent units when using/combining sto
 rating curves from data.
 :::
 
+## External inflows
+External inflows $\SIb{}{m^3\ s^{-1}}$ for example inflows that are not explicitly simulated
+by wflow or abstractions can be added to reservoirs, as a cyclic parameter or as part of
+forcing. For example, cyclic inflow can be provided in the TOML file as follows:
+
+```toml
+[input.cyclic]
+"reservoir_water_inflow~external__volume_flow_rate" = "reservoir_inflow"
+```
+These inflows are added or subtracted from the reservoir inflow. In case of an abstraction
+(negative inflow), the abstraction is limited by a fixed scaling factor of $0.98$ applied to
+reservoir storage. Negative external inflows are satisfied first, and the remaining
+reservoir storage is available for internal abstractions as part of water demand and
+allocation computations.
+
 ## References
 + Bos M.G., 1989. Discharge measurement structures. Third revised edition, International
   Institute for Land Reclamation and Improvement ILRI, Wageningen, The Netherlands.

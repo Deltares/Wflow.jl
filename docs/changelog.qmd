@@ -11,7 +11,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 - Introduced in v1.0.0-rc1, fixed unit conversion model parameter `kv_0` to `kh_0` for
-  sub-daily model timestep. 
+  sub-daily model timestep.
+- Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation
+  parameters.
 
 ### Changed
 - Refactor `SimpleReservoir` and `Lake` structs by introducing a `Reservoir` struct that
@@ -20,8 +22,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   features that can be represented by the available functionality the common name
   `reservoir` is used, also for the standard names of associated model variables and
   parameters.
+- The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25
+  as recommended by Chu and Willis (1984. This has been changed to a configurable model
+  setting (`subsurface_water_flow__alpha_coefficient`), so this can be lowered easily in
+  case of numerical instabilities. Additionally, internal timestepping for groundwater flow
+  is now supported.
 
 ### Added
+- Support external inflow at reservoir locations.
+- Include a SBOM in build distributions (#669).
 
 ## v1.0.0-rc1 - 2025-06-23
 
@@ -94,10 +103,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Removed `LoopVectorization` dependency because of compilation issues and the risk of
   deprecation for newer Julia versions. The `tturbo` macro has been replaced by the `batch`
   macro of `Polyester`, performance loss is acceptable.
-- Use for the infiltration capacity of soil, represented by parameter `infiltcapsoil`,
-  the actual saturated hydraulic conductivity at the soil surface based on parameters
-  `kv_0` and `kvfrac`. This parameter is now better linked to soil properties and setting
-  this parameter directly by an external netCDF variable is not supported anymore.
+- The infiltration capacity of soil, represented by parameter `infiltcapsoil`, is now
+  determined from the actual saturated hydraulic conductivity at the soil surface using
+  parameters `kv_0` and `kvfrac`, better linking it to soil properties. Setting `infiltcapsoil`
+  directly by an external netCDF variable is not supported anymore.
 - Removed the `GroundwaterExchange` component that can be used to replace the kinematic wave
   lateral subsurface flow routing with an external groundwater model (e.g. Modflow). This
   feature has been added as part of the following [MSc

@@ -107,9 +107,8 @@ end
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R}
     inwater::Vector{Float64}                # Lateral inflow [m³ s⁻¹]
-    inflow::Vector{Float64}                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    external_inflow::Vector{Float64}                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64}  # Actual abstraction from external negative inflow [m³ s⁻¹]
-    inflow_reservoir::Vector{Float64}       # inflow reservoir from land part [m³ s⁻¹]
     abstraction::Vector{Float64}            # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     reservoir::R                            # Reservoir model struct of arrays
 end
@@ -118,9 +117,8 @@ end
 function RiverFlowBC(n::Int, reservoir::Union{Reservoir, Nothing})
     bc = RiverFlowBC(;
         inwater = zeros(Float64, n),
-        inflow = zeros(Float64, n),
+        external_inflow = zeros(Float64, n),
         actual_external_abstraction_av = zeros(Float64, n),
-        inflow_reservoir = zeros(Float64, n),
         abstraction = zeros(Float64, n),
         reservoir = reservoir,
     )
@@ -227,6 +225,7 @@ each internal timestep.
 """
 function set_reservoir_vars!(reservoir::Reservoir)
     reservoir.boundary_conditions.inflow .= 0.0
+    reservoir.boundary_conditions.actual_external_abstraction_av .= 0.0
     reservoir.variables.outflow_av .= 0.0
     reservoir.variables.storage_av .= 0.0
     reservoir.variables.actevap .= 0.0
@@ -245,6 +244,7 @@ function average_reservoir_vars!(reservoir::Reservoir, dt::Float64)
     reservoir.variables.storage_av ./= dt
     reservoir.boundary_conditions.inflow ./= dt
     reservoir.variables.waterlevel_av ./= dt
+    reservoir.boundary_conditions.actual_external_abstraction_av ./= dt
 
     return nothing
 end
@@ -407,18 +407,16 @@ function kinwave_river_update!(
         reservoir_indices,
     ) = domain.network
 
-    (;
-        reservoir,
-        inwater,
-        inflow,
-        actual_external_abstraction_av,
-        abstraction,
-        inflow_reservoir,
-    ) = model.boundary_conditions
+    (; reservoir, inwater, external_inflow, actual_external_abstraction_av, abstraction) =
+        model.boundary_conditions
 
     (; beta, alpha) = model.parameters
     (; flow_width, flow_length) = domain.parameters
     (; h, h_av, q, q_av, storage, storage_av, qin, qlat) = model.variables
+
+    if !isnothing(reservoir)
+        res_bc = reservoir.boundary_conditions
+    end
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -429,14 +427,13 @@ function kinwave_river_update!(
                 # qin by outflow from upstream reservoir location is added
                 qin[v] += sum_at(q, upstream_nodes[n])
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
-                # If inflow < 0, abstraction is limited
-                if inflow[v] < 0.0
-                    _inflow =
-                        max(-((inwater[v] + qin[v] + storage[v] / dt) * 0.80), inflow[v])
-                    actual_external_abstraction_av[v] += _inflow * dt
-                    _inflow = _inflow / flow_length[v]
+                # If external_inflow < 0, abstraction is limited
+                if external_inflow[v] < 0.0
+                    _abstraction = min(-external_inflow[v], (storage[v] / dt) * 0.80)
+                    actual_external_abstraction_av[v] += _abstraction * dt
+                    _inflow = -_abstraction / flow_length[v]
                 else
-                    _inflow = inflow[v] / flow_length[v]
+                    _inflow = external_inflow[v] / flow_length[v]
                 end
                 # internal abstraction (water demand) is limited by river storage and
                 # negative external inflow as part of water allocation computations.
@@ -456,7 +453,23 @@ function kinwave_river_update!(
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
                     i = reservoir_indices[v]
-                    update!(reservoir, i, q[v] + inflow_reservoir[v], dt, dt_forcing)
+                    # If external_inflow < 0, abstraction is limited
+                    if res_bc.external_inflow[i] < 0.0
+                        _abstraction = min(
+                            -res_bc.external_inflow[i],
+                            (reservoir.variables.storage[i] / dt) * 0.98,
+                        )
+                        res_bc.actual_external_abstraction_av[i] += _abstraction * dt
+                        _inflow = -_abstraction
+                    else
+                        _inflow = res_bc.external_inflow[i]
+                    end
+                    net_inflow =
+                        q[v] +
+                        res_bc.inflow_overland[i] +
+                        res_bc.inflow_subsurface[i] +
+                        _inflow
+                    update!(reservoir, i, net_inflow, dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -582,7 +595,7 @@ function update_lateral_inflow!(
     (; area) = domain.land.parameters
 
     inwater .= (
-        get_flux_to_river(subsurface_flow)[land_indices] .+
+        get_flux_to_river(subsurface_flow, land_indices) .+
         overland_flow.variables.to_river[land_indices] .+
         (net_runoff_river[land_indices] .* area[land_indices] .* 0.001) ./ dt .+
         (get_nonirrigation_returnflow(allocation) .* 0.001 .* cell_area) ./ dt
@@ -621,35 +634,35 @@ function update_lateral_inflow!(
 end
 
 """
-Update boundary condition inflow to a reservoir from land `inflow_reservoir` of a model
-`AbstractRiverFlowModel` for a single timestep.
+Update overland and subsurface flow contribution to inflow of a reservoir model for a river
+flow model `AbstractRiverFlowModel` for a single timestep.
 """
-function update_inflow_reservoir!(
-    model::AbstractRiverFlowModel,
+function update_inflow!(
+    model::Union{Reservoir, Nothing},
+    river_flow::AbstractRiverFlowModel,
     external_models::NamedTuple,
-    river_indices::Vector{Int},
+    network::NetworkReservoir,
 )
     (; overland_flow, subsurface_flow) = external_models
-    (; reservoir, inflow_reservoir) = model.boundary_conditions
-
-    if !isnothing(reservoir)
-        inflow_land = get_inflow_reservoir(model, overland_flow)
-        inflow_subsurface = get_inflow_reservoir(model, subsurface_flow)
-
-        @. inflow_reservoir = inflow_land[river_indices] + inflow_subsurface[river_indices]
+    (; land_indices) = network
+    if !isnothing(model)
+        (; inflow_overland, inflow_subsurface) = model.boundary_conditions
+        inflow_overland .= get_inflow_reservoir(river_flow, overland_flow, land_indices)
+        inflow_subsurface .= get_inflow_reservoir(river_flow, subsurface_flow, land_indices)
     end
     return nothing
 end
 
 # For the river kinematic wave, the variable `to_river` can be excluded, because this part
 # is added to the river kinematic wave.
-get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow) = model.variables.q_av
-get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF) =
-    model.variables.ssf ./ tosecond(BASETIMESTEP)
+get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow, inds::Vector{Int}) =
+    model.variables.q_av[inds]
+get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF, inds::Vector{Int}) =
+    model.variables.ssf[inds] ./ tosecond(BASETIMESTEP)
 
 # Exclude subsurface flow from `GroundwaterFlow`.
-get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow) =
-    zeros(model.connectivity.ncell)
+get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow, inds::Vector{Int}) =
+    zeros(length(inds))
 
 """
 Update overland flow water level and discharge for KinWaveOverlandFlow model based on

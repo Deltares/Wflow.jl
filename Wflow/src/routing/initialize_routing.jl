@@ -82,8 +82,12 @@ function initialize_subsurface_flow(
     gwf_river = GwfRiver(dataset, config, river.network.indices, river.network.land_indices)
 
     # recharge boundary of unconfined aquifer
-    gwf_recharge =
-        Recharge(fill(MISSING_VALUE, n_cells), zeros(n_cells), collect(1:n_cells))
+    gwf_recharge = Recharge(
+        fill(MISSING_VALUE, n_cells),
+        zeros(n_cells),
+        zeros(n_cells),
+        collect(1:n_cells),
+    )
 
     # drain boundary of unconfined aquifer (optional)
     if do_drains
@@ -94,7 +98,12 @@ function initialize_subsurface_flow(
         aquifer_boundaries = (; recharge = gwf_recharge, river = gwf_river)
     end
 
+    cfl = get(config.model, "subsurface_water_flow__alpha_coefficient", 0.25)::Float64
+    @info "Numerical stability coefficient for groundwater flow `alpha`: `$cfl`."
+    timestepping = TimeStepping(; cfl)
+
     subsurface_flow = GroundwaterFlow(;
+        timestepping,
         aquifer,
         connectivity,
         constanthead = constant_head,

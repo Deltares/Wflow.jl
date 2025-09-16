@@ -88,7 +88,9 @@ function update!(
 
     update_boundary_conditions!(snow, (; interception))
     update!(snow, atmospheric_forcing)
-    lateral_snow_transport!(snow, domain.land)
+    if get(config.model, "snow_gravitional_transport__flag", false)::Bool
+        lateral_snow_transport!(snow, domain.land)
+    end
 
     update!(glacier, atmospheric_forcing)
 

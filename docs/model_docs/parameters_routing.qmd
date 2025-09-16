@@ -31,6 +31,13 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | ------ | ----- | -- | -- |
 | `reservoir_surface__area` | Area of the reservoir | m² | - |
 | `reservoir_water__max_volume` | Maximum volume (above which water is spilled) | m³ | - |
+| `reservoir_water__rating_curve_coefficient` | Rating curve coefficient | - | - |
+| `reservoir_water__rating_curve_exponent` | Rating curve exponent | - | - |
+| `reservoir_water_flow_threshold-level__elevation` | Water level threshold, below this level outflow is zero | m | - |
+| `reservoir~lower_location__count` | Index of lower reservoir (linked reservoir) | - | 0 |
+| `reservoir_water__storage_curve_type_count` | Type of reservoir storage curve | - | - |
+| `reservoir_water__rating_curve_type_count` | Type of reservoir rating curve | - | - |
+| `reservoir_water_surface__initial_elevation` | Water level of reservoir (used for initialization) | m | - |
 : {.striped .hover}
 
 #### Static or cyclic/forcing input
@@ -40,13 +47,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `reservoir_water_release-below-spillway__max_volume_flow_rate` | Maximum amount that can be released if below spillway | m³ s⁻¹ | - |
 | `reservoir_water~full-target__volume_fraction` | Target fraction full (of max storage) | - | - |
 | `reservoir_water~min-target__volume_fraction` | Target minimum full fraction (of max storage)	| - | - |
-| `reservoir_water__rating_curve_coefficient` | Rating curve coefficient | - | - |
-| `reservoir_water__rating_curve_exponent` | Rating curve exponent | - | - |
-| `reservoir_water_flow_threshold-level__elevation` | Water level threshold, below this level outflow is zero | m | - |
-| `reservoir~lower_location__count` | Index of lower reservoir (linked reservoir) | - | 0 |
-| `reservoir_water__storage_curve_type_count` | Type of reservoir storage curve | - | - |
-| `reservoir_water__rating_curve_type_count` | Type of reservoir rating curve | - | - |
-| `reservoir_water_surface__initial_elevation` | Water level of reservoir (used for initialization) | m | - |
+| `reservoir_water_inflow~external__volume_flow_rate` | External inflow reservoir (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### States
@@ -76,6 +77,11 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.036 |
 | `river_bank_water__depth` | Bankfull river depth | m | 1.0 |
 | `river__slope` | River slope | m m⁻¹ | - |
+: {.striped .hover}
+
+#### Static or cyclic/forcing input
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
 | `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
@@ -235,7 +241,13 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter` | Factor controlling the reduction of horizontal conductivity with depth | - | - |
 : {.striped .hover}
 
-#### States {#output-gwf-unconfined}
+#### States{#state-gwf-unconfined}
+| Standard Name | Description | Unit |
+| --- | --- | - |
+| `subsurface_water__instantaneous_hydraulic_head` | Groundwater head | m |
+: {.striped .hover}
+
+#### Output{#output-gwf-unconfined}
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water__hydraulic_head` | Groundwater head | m |

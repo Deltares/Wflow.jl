@@ -67,7 +67,9 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     (; subsurface_flow, overland_flow) = routing
 
     do_water_demand = haskey(config.model, "water_demand")
-    (; aquifer, boundaries) = subsurface_flow
+
+    (; boundaries) = subsurface_flow
+
     dt = tosecond(clock.dt)
 
     update!(land, routing, domain, config, dt)
@@ -82,25 +84,19 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     # determine stable time step for groundwater flow
     conductivity_profile = get(config.model, "conductivity_profile", "uniform")
-    dt_gw = stable_timestep(aquifer, conductivity_profile) # time step in day (Float64)
-    dt_sbm = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
-    if dt_gw < dt_sbm
-        @warn(
-            "stable time step dt $dt_gw for groundwater flow is smaller than `LandHydrologySBM` model dt $dt_sbm"
-        )
-    end
+    dt_gwf = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
 
-    Q = zeros(subsurface_flow.connectivity.ncell)
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
     @. boundaries.recharge.variables.rate =
-        soil.variables.recharge / 1000.0 * (1.0 / dt_sbm)
+        soil.variables.recharge / 1000.0 * (1.0 / dt_gwf)
     if do_water_demand
         @. boundaries.recharge.variables.rate -=
-            land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_sbm)
+            land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_gwf)
     end
+
     # update groundwater domain
-    update!(subsurface_flow, Q, dt_sbm, conductivity_profile)
+    update!(subsurface_flow, dt_gwf, conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface_flow, overland_flow), domain, config)

@@ -34,7 +34,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     "snowpack_water__runoff_volume_flux" =>
         (lens = @optic(_.land.snow.variables.runoff), unit = "mm dt-1"),
     "river_water_inflow~external__volume_flow_rate" => (
-        lens = @optic(_.routing.river_flow.boundary_conditions.inflow),
+        lens = @optic(_.routing.river_flow.boundary_conditions.external_inflow),
         unit = "m3 s-1",
     ),
     "river_water_abstraction~external__volume_flow_rate" => (
@@ -148,6 +148,12 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
             _.routing.river_flow.boundary_conditions.reservoir.variables.waterlevel_av
         ),
         unit = "m",
+    ),
+    "reservoir_water_inflow~external__volume_flow_rate" => (
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.external_inflow
+        ),
+        unit = "m3 s-1",
     ),
     "soil_water__infiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actinfilt), unit = "mm dt-1"),
@@ -269,18 +275,22 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.allocation.variables.nonirri_returnflow),
         unit = "mm dt-1",
     ),
-    "subsurface_water__hydraulic_head" =>
+    "subsurface_water__instantaneous_hydraulic_head" =>
         (lens = @optic(_.routing.subsurface_flow.aquifer.variables.head), unit = "m"),
+    "subsurface_water__hydraulic_head" => (
+        lens = @optic(_.routing.subsurface_flow.aquifer.variables.head_av),
+        unit = "m",
+    ),
     "subsurface_water_sat-zone_top__net_recharge_volume_flow_rate" => (
-        lens = @optic(_.routing.subsurface_flow.boundaries.recharge.variables.flux),
+        lens = @optic(_.routing.subsurface_flow.boundaries.recharge.variables.flux_av),
         unit = "m3 d-1",
     ),
     "land_drain_water~to-subsurface__volume_flow_rate" => (
-        lens = @optic(_.routing.subsurface_flow.boundaries.drain.variables.flux),
-        unit = "mm dt-1",
+        lens = @optic(_.routing.subsurface_flow.boundaries.drain.variables.flux_av),
+        unit = "m3 d-1",
     ),
     "river_water~to-subsurface__volume_flow_rate" => (
-        lens = @optic(_.routing.subsurface_flow.boundaries.river.variables.flux),
+        lens = @optic(_.routing.subsurface_flow.boundaries.river.variables.flux_av),
         unit = "m3 d-1",
     ),
 )
