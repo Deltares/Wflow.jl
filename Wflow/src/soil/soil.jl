@@ -264,9 +264,9 @@ function sbm_kv_profiles(
 )
     kv_profile_type = config.model.saturated_hydraulic_conductivity_profile
     n = length(indices)
-    if kv_profile_type == "exponential"
+    if kv_profile_type == SHCPType.exponential
         kv_profile = KvExponential(kv_0, f)
-    elseif kv_profile_type == "exponential_constant"
+    elseif kv_profile_type == SHCPType.exponential_constant
         lens = lens_input_parameter(
             config,
             "soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth";
@@ -275,7 +275,8 @@ function sbm_kv_profiles(
         z_exp = ncread(dataset, config, lens; sel = indices, type = Float64)
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
-    elseif kv_profile_type == "layered" || kv_profile_type == "layered_exponential"
+    elseif kv_profile_type == SHCPType.layered ||
+           kv_profile_type == SHCPType.layered_exponential
         lens = lens_input_parameter(
             config,
             "soil_layer_water__vertical_saturated_hydraulic_conductivity",
@@ -294,7 +295,7 @@ function sbm_kv_profiles(
             size1 = size(kv, 1)
             error("$parname needs a layer dimension of size $maxlayers, but is $size1")
         end
-        if kv_profile_type == "layered"
+        if kv_profile_type == SHCPType.layered
             kv_profile = KvLayered(svectorscopy(kv, Val{maxlayers}()))
         else
             lens = lens_input_parameter(
@@ -317,11 +318,6 @@ function sbm_kv_profiles(
                 z_layered,
             )
         end
-    else
-        error("""An unknown "saturated_hydraulic_conductivity_profile" is specified in the
-              TOML file ($ksat_profile). This should be "exponential",
-              "exponential_constant", "layered" or "layered_exponential".
-              """)
     end
     return kv_profile
 end
@@ -476,9 +472,8 @@ function SbmSoilParameters(
     # root fraction read from dataset file, in case of multiple soil layers and TOML file
     # includes "soil_root__length_density_fraction"
     par_name = "soil_root__length_density_fraction"
-    do_cyclic = config.has_section.input_cyclic
     do_root_fraction =
-        do_cyclic ? haskey(config.input.cyclic, par_name) :
+        do_cyclic(config) ? haskey(config.input.cyclic, par_name) :
         haskey(config.input.static, par_name)
     if do_root_fraction
         lens = lens_input_parameter(config, par_name; optional = false)

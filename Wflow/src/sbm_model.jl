@@ -9,27 +9,26 @@ function Model(config::Config, type::SbmModel)
     static_path = input_path(config, config.input.path_static)
     dataset = NCDataset(static_path)
 
-    reader = prepare_reader(config)
+    reader = NCReader(config)
     clock = Clock(config, reader)
 
     @info "General model settings" (;
         snow = config.model.snow__flag,
-        gravitational_snowl_transport = config.model.snow_gravitational_transport__flag,
+        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
         glacier = config.model.glacier__flag,
         reservoirs = config.model.reservoir__flag,
         pits = config.model.pit__flag,
-        water_demand = config.has_section.model_water_demand,
+        water_demand = do_water_demand(config),
     )...
 
-    routing_types = get_routing_types(config)
-    domain = Domain(dataset, config, routing_types)
+    domain = Domain(dataset, config, type)
 
     land_hydrology = LandHydrologySBM(dataset, config, domain.land)
-    routing = Routing(dataset, config, domain, land_hydrology.soil, routing_types, type)
+    routing = Routing(dataset, config, domain, land_hydrology.soil, type)
 
     (; maxlayers) = land_hydrology.soil.parameters
     modelmap = (land = land_hydrology, routing)
-    writer = prepare_writer(
+    writer = Writer(
         config,
         modelmap,
         domain,
@@ -57,7 +56,7 @@ function update!(model::AbstractModel{<:SbmModel})
     # exchange of recharge between SBM soil model and subsurface flow domain
     routing.subsurface_flow.boundary_conditions.recharge .=
         land.soil.variables.recharge ./ 1000.0
-    if config.has_section.model_water_demand
+    if do_water_demand(config)
         @. routing.subsurface_flow.boundary_conditions.recharge -=
             land.allocation.variables.act_groundwater_abst / 1000.0
     end
@@ -136,7 +135,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                 (land.soil.parameters.theta_s .- land.soil.parameters.theta_r),
             )
         land.soil.variables.zi .= zi
-        if land_routing == "kinematic-wave"
+        if land_routing == RoutingType.kinematic_wave
             (; surface_flow_width, flow_length) = domain.land.parameters
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(surface_flow_width)
@@ -146,7 +145,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                 end
             end
             land_v.storage .= land_v.h .* surface_flow_width .* flow_length
-        elseif land_routing == "local-inertial"
+        elseif land_routing == RoutingType.local_inertial
             (; river_location, x_length, y_length) = domain.land.parameters
             (; flow_width, flow_length) = domain.river.parameters
             (; bankfull_storage) = routing.river_flow.parameters

@@ -7,22 +7,23 @@
 end
 
 function get_transport_capacity(
-    transport_methods::Dict{String, Type{<:AbstractTransportCapacityModel}},
-    transport_method::String,
+    transport_methods::Dict{<:EnumX.Enum, Type{<:AbstractTransportCapacityModel}},
+    transport_method::Union{LandTransportType.T, RiverTransportType.T},
     dataset::NCDataset,
     config::Config,
     indices,
 )::AbstractTransportCapacityModel
     transport_capacity_constr = get(transport_methods, transport_method, nothing)
-    @assert !isnothing(transport_capacity_constr)  # Already validated in `validate_config`
+    @assert !isnothing(transport_capacity_constr)
     return transport_capacity_constr(dataset, config, indices)
 end
 
-const land_transport_method = Dict{String, Type{<:AbstractTransportCapacityModel}}(
-    "yalinpart" => TransportCapacityYalinDifferentiationModel,
-    "govers" => TransportCapacityGoversModel,
-    "yalin" => TransportCapacityYalinModel,
-)
+const land_transport_method =
+    Dict{LandTransportType.T, Type{<:AbstractTransportCapacityModel}}(
+        LandTransportType.yalinpart => TransportCapacityYalinDifferentiationModel,
+        LandTransportType.govers => TransportCapacityGoversModel,
+        LandTransportType.yalin => TransportCapacityYalinModel,
+    )
 
 "Initialize the overland flow sediment transport model"
 function OverlandFlowSediment(
@@ -39,7 +40,7 @@ function OverlandFlowSediment(
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
     (; land_transport) = config.model
 
-    do_river && (land_transport = "yalinpart")
+    do_river && (land_transport = LandTransportType.yalinpart)
     transport_capacity = get_transport_capacity(
         land_transport_method,
         land_transport,
@@ -48,7 +49,7 @@ function OverlandFlowSediment(
         indices,
     )
 
-    if do_river || land_transport == "yalinpart"
+    if do_river || land_transport == LandTransportType.yalinpart
         sediment_flux = SedimentLandTransportDifferentiationModel(indices)
         to_river = SedimentToRiverDifferentiationModel(indices)
     else
@@ -105,19 +106,20 @@ end
     concentrations::CR
 end
 
-const river_transport_method = Dict{String, Type{<:AbstractTransportCapacityModel}}(
-    "bagnold" => TransportCapacityBagnoldModel,
-    "engelund" => TransportCapacityEngelundModel,
-    "yang" => TransportCapacityYangModel,
-    "kodatie" => TransportCapacityKodatieModel,
-    "molinas" => TransportCapacityMolinasModel,
-)
+const river_transport_method =
+    Dict{RiverTransportType.T, Type{<:AbstractTransportCapacityModel}}(
+        RiverTransportType.bagnold => TransportCapacityBagnoldModel,
+        RiverTransportType.engelund => TransportCapacityEngelundModel,
+        RiverTransportType.yang => TransportCapacityYangModel,
+        RiverTransportType.kodatie => TransportCapacityKodatieModel,
+        RiverTransportType.molinas => TransportCapacityMolinasModel,
+    )
 
 "Initialize the river sediment transport model"
 function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     n = length(indices)
-    hydrological_forcing = HydrologicalForcing(n)
+    hydrological_forcing = HydrologicalForcing(; n)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]

@@ -202,14 +202,13 @@ function LocalInertialRiverFlow(
         floodplain = nothing
     end
 
-    do_water_demand = config.has_section.model_water_demand
     river_flow = LocalInertialRiverFlow(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand ? AllocationRiver(n) : NoAllocationRiver(),
+        allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(),
     )
     return river_flow
 end

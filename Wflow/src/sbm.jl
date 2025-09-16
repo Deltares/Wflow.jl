@@ -17,7 +17,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     dt = Second(config.time.timestepsecs)
     n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(n)
+    atmospheric_forcing = AtmosphericForcing(; n)
     vegetation_parameters = VegetationParameters(dataset, config, indices)
     if dt >= Hour(23)
         interception =
@@ -51,10 +51,13 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     @. vegetation_parameters.rootingdepth =
         min(soil.parameters.soilthickness * 0.99, vegetation_parameters.rootingdepth)
 
-    do_water_demand = config.has_section.model_water_demand
-    allocation =
-        do_water_demand ? AllocationLand(dataset, config, indices) : NoAllocationLand()
-    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand()
+    if do_water_demand(config)
+        allocation = AllocationLand(dataset, config, indices)
+        demand = Demand(dataset, config, indices, dt)
+    else
+        allocation = NoAllocationLand()
+        demand = NoDemand()
+    end
 
     args = (demand, allocation)
     land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
@@ -99,7 +102,7 @@ function update!(
     )
     update!(runoff, atmospheric_forcing, parameters)
 
-    if config.has_section.model_water_demand
+    if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)

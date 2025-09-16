@@ -1,51 +1,25 @@
 "Struct to store atmospheric forcing variables"
 @with_kw struct AtmosphericForcing
+    n::Int
     # Precipitation [mm Δt⁻¹]
-    precipitation::Vector{Float64}
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential reference evapotranspiration [mm Δt⁻¹]
-    potential_evaporation::Vector{Float64}
+    potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Temperature [ᵒC]
-    temperature::Vector{Float64}
-end
-
-"Initialize atmospheric forcing"
-function AtmosphericForcing(
-    n::Int;
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
-    potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n),
-    temperature::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return AtmosphericForcing(; precipitation, potential_evaporation, temperature)
+    temperature::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store hydrological forcing variables"
 @with_kw struct HydrologicalForcing
+    n::Int
     # Rainfall interception by the vegetation [mm]
-    interception::Vector{Float64}
+    interception::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow depth [m]
-    waterlevel_land::Vector{Float64}
+    waterlevel_land::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow discharge [m3 s-1]
-    q_land::Vector{Float64}
+    q_land::Vector{Float64} = fill(MISSING_VALUE, n)
     # River depth [m]
-    waterlevel_river::Vector{Float64}
+    waterlevel_river::Vector{Float64} = fill(MISSING_VALUE, n)
     # River discharge [m3 s-1]
-    q_river::Vector{Float64}
-end
-
-"Initialize hydrological forcing"
-function HydrologicalForcing(
-    n::Int;
-    interception::Vector{Float64} = fill(MISSING_VALUE, n),
-    waterlevel_land::Vector{Float64} = fill(MISSING_VALUE, n),
-    q_land::Vector{Float64} = fill(MISSING_VALUE, n),
-    waterlevel_river::Vector{Float64} = fill(MISSING_VALUE, n),
-    q_river::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return HydrologicalForcing(;
-        interception,
-        waterlevel_land,
-        q_land,
-        waterlevel_river,
-        q_river,
-    )
+    q_river::Vector{Float64} = fill(MISSING_VALUE, n)
 end

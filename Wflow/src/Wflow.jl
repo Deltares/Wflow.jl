@@ -6,6 +6,7 @@ using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using CompositionsBase: decompose
+using Configurations: @option, OptionField, from_dict, to_dict, Configurations
 using Dates:
     Dates,
     Second,
@@ -19,11 +20,13 @@ using Dates:
     TimePeriod,
     Date,
     DateTime,
+    AbstractDateTime,
     now,
     isleapyear,
     datetime2unix,
     canonicalize
 using DelimitedFiles: readdlm
+using EnumX: @enumx, EnumX
 using Glob: glob
 using Graphs:
     add_edge!,
@@ -43,26 +46,33 @@ using Graphs:
     src,
     topological_sort_by_dfs,
     vertices
-using LoggingExtras
+using LoggingExtras:
+    ConsoleLogger,
+    Debug,
+    EarlyFilteredLogger,
+    Error,
+    FormatLogger,
+    Info,
+    LogLevel,
+    MinLevelLogger,
+    NullLogger,
+    TeeLogger,
+    Warn,
+    with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
 using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
+using PropertyDicts: PropertyDict
 using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
-using Configurations: @option, from_dict
-import Configurations
-using PropertyDicts: PropertyDict
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
-const ROUTING_OPTIONS = ("kinematic-wave", "local-inertial")
-const MODEL_OPTIONS = ("sbm", "sbm_gwf", "sediment")
-const LOG_LEVELS = ("debug", "info", "warn", "error")
 
 mutable struct Clock{T}
     time::T
@@ -148,15 +158,14 @@ with input, model and output settings).
 """
 function Model(config::Config)::Model
     model_type = config.model.type
-    @assert model_type in MODEL_OPTIONS
 
     @info "Initialize model variables for model type `$model_type`."
 
-    type = if model_type == "sbm"
+    type = if model_type == ModelType.sbm
         SbmModel()
-    elseif model_type == "sbm_gwf"
+    elseif model_type == ModelType.sbm_gwf
         SbmGwfModel()
-    elseif model_type == "sediment"
+    elseif model_type == ModelType.sediment
         SedimentModel()
     end
 
@@ -287,7 +296,7 @@ function run!(model::Model; close_files = true)
     endtime = cftime(config.time.endtime, config.time.calendar)
     times = range(starttime + dt, endtime; step = dt)
 
-    @info "Run information" model_type starttime dt endtime nthreads()
+    @info "Run information" model_type = String(Symbol(model_type)) starttime dt endtime nthreads()
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()

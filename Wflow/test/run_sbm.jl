@@ -184,19 +184,21 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.forcing.atmosphere_water__precipitation_volume_flux =
-    Wflow.nested_property_dict(
-        Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
-    )
-config.input.forcing.land_surface_water__potential_evaporation_volume_flux =
-    Wflow.nested_property_dict(
+config.input.forcing.dict["atmosphere_water__precipitation_volume_flux"] = Wflow.from_dict(
+    Wflow.InputEntry,
+    Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
+)
+config.input.forcing.dict["land_surface_water__potential_evaporation_volume_flux"] =
+    Wflow.from_dict(
+        Wflow.InputEntry,
         Dict(
             "scale" => 3.0,
             "offset" => 1.50,
             "netcdf" => Dict("variable" => Dict("name" => "pet")),
         ),
     )
-config.input.cyclic["vegetation__leaf-area_index"] = Wflow.nested_property_dict(
+config.input.cyclic.dict["vegetation__leaf-area_index"] = Wflow.from_dict(
+    Wflow.InputEntry,
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI"))),
 )
 
@@ -217,8 +219,10 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
-config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
+config.input.cyclic.dict["river_water_inflow~external__volume_flow_rate"] =
+    Wflow.InputEntry(; standard_name = "inflow")
+config.input.cyclic.dict["reservoir_water_inflow~external__volume_flow_rate"] =
+    Wflow.InputEntry(; standard_name = "reservoir_inflow")
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
@@ -241,8 +245,10 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
-config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
+config.input.cyclic.dict["river_water_inflow~external__volume_flow_rate"] =
+    Wflow.InputEntry(; standard_name = "inflow")
+config.input.cyclic.dict["reservoir_water_inflow~external__volume_flow_rate"] =
+    Wflow.InputEntry(; standard_name = "reservoir_inflow")
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
@@ -284,8 +290,8 @@ end
 
 # test fixed forcing (precipitation = 2.5)
 config = Wflow.Config(tomlpath)
-config.input.forcing.atmosphere_water__precipitation_volume_flux =
-    Wflow.PropertyDict(Dict("value" => 2.5))
+config.input.forcing.dict["atmosphere_water__precipitation_volume_flux"] =
+    Wflow.InputEntry(; value = [2.5])
 model = Wflow.Model(config)
 Wflow.load_fixed_forcing!(model)
 
@@ -503,8 +509,10 @@ Wflow.run_timestep!(model)
 end
 
 # set boundary condition local inertial routing from netCDF file
-config.input.static["model_boundary_condition~river__length"] = "riverlength_bc"
-config.input.static["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
+config.input.static.dict["model_boundary_condition~river__length"] =
+    Wflow.InputEntry(; standard_name = "riverlength_bc")
+config.input.static.dict["model_boundary_condition~river_bank_water__depth"] =
+    Wflow.InputEntry(; standard_name = "riverdepth_bc")
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -531,11 +539,12 @@ Wflow.close_files(model; delete_output = false)
     function get_config(profile)
         config =
             Wflow.Config(tomlpath; model_saturated_hydraulic_conductivity_profile = profile)
-        config.input.static["soil_layer_water__vertical_saturated_hydraulic_conductivity"] = "kv"
-        config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] =
-            Wflow.PropertyDict(Dict("value" => 400.0))
-        config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] =
-            Wflow.PropertyDict(Dict("value" => 400.0))
+        config.input.static.dict["soil_layer_water__vertical_saturated_hydraulic_conductivity"] =
+            Wflow.InputEntry(; standard_name = "kv")
+        config.input.static.dict["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] =
+            Wflow.InputEntry(; value = 400.0)
+        config.input.static.dict["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] =
+            Wflow.InputEntry(; value = 400.0)
         config
     end
 

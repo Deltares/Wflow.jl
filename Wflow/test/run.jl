@@ -18,9 +18,6 @@ config = Wflow.Config(
         "data/state-test/outstates-moselle-january.nc",
     ),
 )
-config.output["path"] =
-    joinpath(dirname(tomlpath), "data/state-test/output-moselle-january.nc")
-
 model = Wflow.Model(config)
 Wflow.run!(model)
 
@@ -36,9 +33,6 @@ config = Wflow.Config(
         "data/state-test/outstates-moselle-january-1of2.nc",
     ),
 )
-config.output["path"] =
-    joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-1of2.nc")
-
 model = Wflow.Model(config)
 Wflow.run!(model)
 
@@ -57,8 +51,6 @@ config = Wflow.Config(
         "data/state-test/outstates-moselle-january-2of2.nc",
     ),
 )
-config.output["path"] =
-    joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-2of2.nc")
 model = Wflow.Model(config)
 Wflow.run!(model)
 
@@ -79,8 +71,6 @@ config = Wflow.Config(
         "data/state-test/outstates-moselle-january-2of2-fews_run.nc",
     ),
 )
-config.output["path"] =
-    joinpath(dirname(tomlpath), "data/state-test/output-moselle-january-2of2-fews_run.nc")
 model = Wflow.Model(config)
 Wflow.run!(model)
 

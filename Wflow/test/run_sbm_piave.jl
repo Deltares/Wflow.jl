@@ -186,7 +186,8 @@ end
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
-config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
+config.input.cyclic.dict["reservoir_water_inflow~external__volume_flow_rate"] =
+    Wflow.InputEntry(; standard_name = "reservoir_inflow")
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)

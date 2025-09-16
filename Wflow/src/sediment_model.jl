@@ -5,24 +5,24 @@ Initial part of the sediment model concept. Reads the input settings and data as
 the Config object. Will return a Model that is ready to run.
 """
 function Model(config::Config, type::SedimentModel)
-    model_type = config.model.type::String
+    model_type = config.model.type
     @info "Initialize model variables for model type `$model_type`."
 
     # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
     dataset = NCDataset(static_path)
 
-    reader = prepare_reader(config)
+    reader = NCReader(config)
     clock = Clock(config, reader)
 
     @info "General model settings" reservoirs = config.model.reservoir__flag
 
-    domain = Domain(dataset, config)
+    domain = Domain(dataset, config, type)
     soilloss = SoilLoss(dataset, config, domain.land.network.indices)
     routing = Routing(dataset, config, domain, soilloss)
 
     modelmap = (land = soilloss, routing)
-    writer = prepare_writer(config, modelmap, domain, dataset)
+    writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 
     model = Model(config, domain, routing, soilloss, clock, reader, writer, SedimentModel())

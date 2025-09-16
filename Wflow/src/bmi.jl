@@ -19,19 +19,17 @@ Initialize the model. Reads the input settings and data as defined in the Config
 generated from the configuration file `config_file`. Will return a Model that is ready to
 run.
 """
-
-function BMI.initialize(::Type{<:Model}, config_file)
+function BMI.initialize(::Type{<:Model}, config_file::AbstractString)
     config = Config(config_file)
     model_type = config.model.type
-    @assert model_type ∈ MODEL_OPTIONS # Already validated in `validate_config`
 
     @info "Initialize model variables for model type `$model_type`."
 
-    type = if model_type == "sbm"
+    type = if model_type == ModelType.sbm
         SbmModel()
-    elseif model_type == "sbm_gwf"
+    elseif model_type == ModelType.sbm_gwf
         SbmGwfModel()
-    elseif model_type == "sediment"
+    elseif model_type == ModelType.sediment
         SedimentModel()
     end
     model = Model(config, type)
@@ -82,7 +80,7 @@ function BMI.finalize(model::Model)
 end
 
 function BMI.get_component_name(model::Model)
-    return model.config.model.type
+    return string(model.config.model.type)
 end
 
 function BMI.get_input_item_count(model::Model)
@@ -102,7 +100,7 @@ exchanged.
 """
 function BMI.get_input_var_names(model::Model)
     (; config, land) = model
-    if config.has_section.API
+    if do_api(config)
         var_names = config.API.variables
         idx = []
         for (i, var) in enumerate(var_names)
@@ -131,7 +129,7 @@ function BMI.get_output_var_names(model::Model)
     return BMI.get_input_var_names(model)
 end
 
-function BMI.get_var_grid(model::Model, name::String)
+function BMI.get_var_grid(::Model, name::String)
     return if occursin("reservoir", name)
         0
     elseif occursin("drain", name)
@@ -181,7 +179,7 @@ function BMI.get_current_time(model::Model)
     return 0.001 * Dates.value(clock.time - starttime)
 end
 
-function BMI.get_start_time(model::Model)
+function BMI.get_start_time(::Model)
     return 0.0
 end
 
@@ -406,7 +404,7 @@ end
 
 grid_element_type(model, var::PropertyLens) = "node"
 
-function grid_element_type(model, lens::ComposedFunction)
+function grid_element_type(model::Model, lens::ComposedFunction)
     lens_components = decompose(lens)
     var = lens_components[1]
     element_type = if PropertyLens(:river_flow) in lens_components

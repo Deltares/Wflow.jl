@@ -21,8 +21,6 @@ config = Wflow.Config(tomlpath)
     @test config.output.netcdf_grid.path == "output_moselle.nc"
     @test config.output.netcdf_scalar.path == "output_scalar_moselle.nc"
     @test config.output.csv.path == "output_moselle.csv"
-    @test config.output isa Wflow.PropertyDict
-    @test collect(keys(config.output)) == ["netcdf_grid", "csv", "netcdf_scalar"]
     @test string(config) isa String
 
     # modifiers can also be applied
@@ -30,13 +28,12 @@ config = Wflow.Config(tomlpath)
         config,
         "soil_surface_water__vertical_saturated_hydraulic_conductivity",
     )
-    kvconf = Wflow.nested_property_dict(parameter.lens(config))
-    ncname, modifier = Wflow.ncvar_name_modifier(kvconf; config)
-    @test ncname === "KsatVer"
-    @test modifier.scale == 1.0
-    @test modifier.offset == 0.0
-    @test modifier.value === nothing
-    @test modifier.index === nothing
+    var = parameter.lens(config)
+    @test var.netcdf_variable_name === "KsatVer"
+    @test var.scale == [1.0]
+    @test var.offset == [0.0]
+    @test var.value === nothing
+    @test var.layer === nothing
 
     # test the optional "dir_input" and "dir_output" keys
     @test config.dir_input != "."
@@ -239,14 +236,13 @@ end
 
 @testset "reducer" begin
     V = [6, 5, 4, 1]
-    @test Wflow.reducerfunction("maximum")(V) == 6
-    @test Wflow.reducerfunction("minimum")(V) == 1
-    @test Wflow.reducerfunction("mean")(V) == 4
-    @test Wflow.reducerfunction("median")(V) == 4.5
-    @test Wflow.reducerfunction("first")(V) == 6
-    @test Wflow.reducerfunction("last")(V) == 1
-    @test Wflow.reducerfunction("sum")(V) == 16
-    @test_throws ErrorException Wflow.reducerfunction("other")
+    @test Wflow.function_map[Wflow.ReducerType.maximum](V) == 6
+    @test Wflow.function_map[Wflow.ReducerType.minimum](V) == 1
+    @test Wflow.function_map[Wflow.ReducerType.mean](V) == 4
+    @test Wflow.function_map[Wflow.ReducerType.median](V) == 4.5
+    @test Wflow.function_map[Wflow.ReducerType.first](V) == 6
+    @test Wflow.function_map[Wflow.ReducerType.last](V) == 1
+    @test Wflow.function_map[Wflow.ReducerType.sum](V) == 16
 end
 
 @testset "domain" begin
@@ -277,19 +273,22 @@ end
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
-config.input.static["snowpack__degree-day_coefficient"] = Wflow.PropertyDict("value" => 2.0)
-config.input.static.soil__thickness = Wflow.nested_property_dict(
+config.input.static.dict["snowpack__degree-day_coefficient"] =
+    Wflow.InputEntry(; value = 2.0)
+config.input.static.dict["soil__thickness"] = from_dict(
+    Wflow.InputEntry,
     Dict(
         "scale" => 3.0,
         "offset" => 100.0,
         "netcdf" => Dict("variable" => Dict("name" => "SoilThickness")),
     ),
 )
-config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
-    Wflow.nested_property_dict(
-        Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
-    )
-config.input.static["soil_layer_water__brooks-corey_exponent"] = Wflow.nested_property_dict(
+config.input.forcing.dict["atmosphere_water__precipitation_volume_flux"] = from_dict(
+    Wflow.InputEntry,
+    Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
+)
+config.input.static.dict["soil_layer_water__brooks-corey_exponent"] = from_dict(
+    Wflow.InputEntry,
     Dict(
         "scale" => [2.0, 3.0],
         "offset" => [0.0, 0.0],
@@ -395,7 +394,7 @@ end
     @test isfile(toml_archive)
     @test isfile(path_log)
     lines = readlines(path_log)
-    @test count(startswith(line, "[ Info: ") for line in lines) > 50
+    @test count(startswith(line, "[ Info: ") for line in lines) == 30
     @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
     # Another run with debug log level and a non-default path_log.
@@ -410,10 +409,9 @@ end
         fews_run__flag = true,
         input_path_forcing = "doesnt-exist.nc",
     )
-    open(tomlpath_debug, "w") do io
-        print(io, to_toml(config))
-    end
-    @test_throws ErrorException Wflow.run(tomlpath_debug)
+
+    to_toml(Wflow.custom_convert, tomlpath_debug, config)
+    @test_throws ArgumentError Wflow.run(tomlpath_debug)
     rm(tomlpath_debug)
     path_log = Wflow.output_path(config, "log-debug.txt")
     @test isfile(path_log)
@@ -425,17 +423,16 @@ end
 
     # Final run to test error handling during simulation
     tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
-    config.input.static.river__width = Wflow.nested_property_dict(
+    config.input.static.dict["river__width"] = Wflow.from_dict(
+        Wflow.InputEntry,
         Dict(
             "scale" => 0.0,
             "offset" => 0.0,
             "netcdf" => Dict("variable" => Dict("name" => "wflow_riverwidth")),
         ),
     )
-    open(tomlpath_error, "w") do io
-        print(io, to_toml(config))
-    end
-    @test_throws ErrorException Wflow.run(tomlpath_error)
+    to_toml(Wflow.custom_convert, tomlpath_error, config)
+    @test_throws ArgumentError Wflow.run(tomlpath_error)
     rm(tomlpath_error)
 end
 
@@ -452,7 +449,7 @@ end
     reader = @test_logs (
         :warn,
         "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions.",
-    ) match_mode = :any Wflow.prepare_reader(config)
+    ) match_mode = :any Wflow.NCReader(config)
     @test eltype(reader.dataset_times) == DateTimeNoLeap
     @test !ismissing(reader.dataset_times) # missing in time dimension is not allowed
     @test reader.dataset_times ==

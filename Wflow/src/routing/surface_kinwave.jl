@@ -141,8 +141,7 @@ function KinWaveRiverFlow(
 
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
-    allocation =
-        config.has_section.model_water_demand ? AllocationRiver(n) : NoAllocationRiver()
+    allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver()
 
     variables = FlowVariables(n)
     parameters = RiverFlowParameters(dataset, config, domain)

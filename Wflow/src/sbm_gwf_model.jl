@@ -13,7 +13,7 @@ function Model(config::Config, type::SbmGwfModel)
     static_path = input_path(config, config.input.path_static)
     dataset = NCDataset(static_path)
 
-    reader = prepare_reader(config)
+    reader = NCReader(config)
     clock = Clock(config, reader)
 
     @info "General model settings" (;
@@ -23,18 +23,17 @@ function Model(config::Config, type::SbmGwfModel)
         reservoirs = config.model.reservoir__flag,
         drains = config.model.drain__flag,
         constanthead = config.model.constanthead__flag,
-        water_demand = config.has_section.water_demand,
+        water_demand = do_water_demand(config),
     )...
 
-    routing_types = get_routing_types(config)
-    domain = Domain(dataset, config, routing_types)
+    domain = Domain(dataset, config, type)
 
     land_hydrology = LandHydrologySBM(dataset, config, domain.land)
-    routing = Routing(dataset, config, domain, land_hydrology.soil, routing_types, type)
+    routing = Routing(dataset, config, domain, land_hydrology.soil, type)
 
     modelmap = (land = land_hydrology, routing)
     (; maxlayers) = land_hydrology.soil.parameters
-    writer = prepare_writer(
+    writer = Writer(
         config,
         modelmap,
         domain,
@@ -76,7 +75,7 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     # recharge rate groundwater is required in units [m d⁻¹]
     @. boundaries.recharge.variables.rate =
         soil.variables.recharge / 1000.0 * (1.0 / dt_gwf)
-    if config.has_section.model_water_demand
+    if do_water_demand(config)
         @. boundaries.recharge.variables.rate -=
             land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_gwf)
     end

@@ -149,8 +149,8 @@ function get_drainage_network(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}};
-    do_pits = false,
-    logging = true,
+    do_pits::Bool = false,
+    logging::Bool = true,
 )
     lens = lens_input("basin__local_drain_direction")
     ldd_2d = ncread(dataset, config, lens; allow_missing = true, logging)

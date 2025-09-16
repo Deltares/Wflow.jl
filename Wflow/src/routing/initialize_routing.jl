@@ -5,20 +5,22 @@ function initialize_subsurface_flow(
     config::Config,
     domain::Domain,
     soil::SbmSoilModel,
-    type::SbmModel,
+    ::SbmModel,
 )
     (; parameters) = domain.land
     subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
-    if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
+    if kh_profile_type == SHCPType.exponential ||
+       kh_profile_type == SHCPType.exponential_constant
         initialize_lateral_ssf!(
             subsurface_flow,
             parameters,
             subsurface_flow.parameters.kh_profile,
         )
-    elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+    elseif kh_profile_type == SHCPType.layered ||
+           kh_profile_type == SHCPType.layered_exponential
         (; kv_profile) = soil.parameters
         dt = Second(config.time.timestepsecs)
         initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))
@@ -32,7 +34,7 @@ function initialize_subsurface_flow(
     config::Config,
     domain::Domain,
     soil::SbmSoilModel,
-    type::SbmGwfModel,
+    ::SbmGwfModel,
 )
     (; land, river, drain) = domain
 
@@ -109,22 +111,13 @@ function initialize_subsurface_flow(
 end
 
 "Initialize kinematic wave or local inertial overland flow routing"
-function initialize_overland_flow(
-    dataset::NCDataset,
-    config::Config,
-    domain::Domain,
-    routing_types::NamedTuple,
-)
-    if routing_types.land == "kinematic-wave"
+function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Domain)
+    (; land_routing) = config.model
+
+    if land_routing == RoutingType.kinematic_wave
         overland_flow = KinWaveOverlandFlow(dataset, config, domain.land)
-    elseif routing_types.land == "local-inertial"
+    elseif land_routing == RoutingType.local_inertial
         overland_flow = LocalInertialOverlandFlow(dataset, config, domain)
-    else
-        error(
-            """An unknown "land_routing" method is specified in the TOML file
-            ($(routing_types.land)). This should be "kinematic-wave" or "local-inertial".
-            """,
-        )
     end
     return overland_flow
 end
@@ -133,26 +126,17 @@ end
 Initialize kinematic wave or local inertial overland flow routing, including optional
 reservoirs.
 """
-function initialize_river_flow(
-    dataset::NCDataset,
-    config::Config,
-    domain::Domain,
-    routing_types::NamedTuple,
-)
+function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domain)
+    (; river_routing) = config.model
+
     reservoir =
         config.model.reservoir__flag ?
         Reservoir(dataset, config, domain.reservoir.network) : nothing
 
-    if routing_types.river == "kinematic-wave"
+    if river_routing == RoutingType.kinematic_wave
         river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)
-    elseif routing_types.river == "local-inertial"
+    elseif river_routing == RoutingType.local_inertial
         river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir)
-    else
-        error(
-            """An unknown "river_routing" method is specified in the TOML file
-             ($(routing_types.river)). This should be "kinematic-wave" or "local-inertial".
-            """,
-        )
     end
 end
 
@@ -162,12 +146,11 @@ function Routing(
     config::Config,
     domain::Domain,
     soil::SbmSoilModel,
-    routing_types::NamedTuple,
     type,
 )
     subsurface_flow = initialize_subsurface_flow(dataset, config, domain, soil, type)
-    overland_flow = initialize_overland_flow(dataset, config, domain, routing_types)
-    river_flow = initialize_river_flow(dataset, config, domain, routing_types)
+    overland_flow = initialize_overland_flow(dataset, config, domain)
+    river_flow = initialize_river_flow(dataset, config, domain)
 
     routing = Routing(; subsurface_flow, overland_flow, river_flow)
     return routing
