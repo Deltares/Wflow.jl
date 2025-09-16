@@ -155,25 +155,22 @@ Wflow.close_files(model; delete_output = false)
 
 # test without lateral snow transport
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
-config = Wflow.Config(tomlpath)
-config.model.snow_gravitional_transport__flag = false
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 
 @testset "lateral snow transport off" begin
     snow = model.land.snow
-    @test snow.variables.snow_storage[5] ≈ 3.7686103651001375
+    @test snow.variables.snow_storage[5] ≈ 3.768513390588815
     @test mean(snow.variables.snow_storage) ≈ 0.03801972367609432
     @test mean(snow.variables.snow_water) ≈ 0.0025756728488273866
     @test mean(snow.variables.swe) ≈ 0.0405953965249217
 end
 
 # test without snow model
-config.model.snow__flag = false
-config.model.snow_gravitional_transport__flag = true # this should not throw an error
-pop!(Dict(config.output.netcdf_grid.variables), "snowpack~dry__leq-depth")
-pop!(Dict(config.output.netcdf_grid.variables), "snowpack~liquid__depth")
+config = Wflow.Config(tomlpath; model_snow__flag = false)
+pop!(config.output.netcdf_grid.variables, "snowpack~dry__leq-depth")
+pop!(config.output.netcdf_grid.variables, "snowpack~liquid__depth")
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 

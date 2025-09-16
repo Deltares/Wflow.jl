@@ -282,14 +282,8 @@ function sbm_kv_profiles(
             "soil_layer_water__vertical_saturated_hydraulic_conductivity",
         )
         kv =
-            ncread(
-                dataset,
-                config,
-                lens;
-                sel = indices,
-                type = Float64,
-                dimname = :layer,
-            ) .* (dt / BASETIMESTEP)
+            ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :layer) .*
+            (dt / BASETIMESTEP)
         if size(kv, 1) != maxlayers
             parname = lens(config)
             size1 = size(kv, 1)
@@ -604,13 +598,12 @@ function update_boundary_conditions!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .=
-        max.(
-            runoff.boundary_conditions.water_flux_surface .+
-            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-            0.0,
-        )
+    water_flux_surface .= max.(
+        runoff.boundary_conditions.water_flux_surface .+
+        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+        0.0,
+    )
     return nothing
 end
 

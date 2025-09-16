@@ -127,13 +127,12 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float64, dimname = :layer)
         # update zi for SBM soil model
-        zi =
-            max.(
-                0.0,
-                land.soil.parameters.soilthickness .-
-                land.soil.variables.satwaterdepth ./
-                (land.soil.parameters.theta_s .- land.soil.parameters.theta_r),
-            )
+        zi = max.(
+            0.0,
+            land.soil.parameters.soilthickness .-
+            land.soil.variables.satwaterdepth ./
+            (land.soil.parameters.theta_s .- land.soil.parameters.theta_r),
+        )
         land.soil.variables.zi .= zi
         if land_routing == RoutingType.kinematic_wave
             (; surface_flow_width, flow_length) = domain.land.parameters
