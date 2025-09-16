@@ -171,6 +171,7 @@ end
 
 # test without snow model
 config.model.snow__flag = false
+config.model.snow_gravitional_transport__flag = true # this should not throw an error
 pop!(Dict(config.output.netcdf_grid.variables), "snowpack~dry__leq-depth")
 pop!(Dict(config.output.netcdf_grid.variables), "snowpack~liquid__depth")
 model = Wflow.Model(config)
