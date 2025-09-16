@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,18 +67,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-befe23ebd2f54d8af2c8a89d1a1611f1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b651517ce65839d647a86e2780455cfb.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-7e4bbda7a13bf2211cbadeaec95b0a7a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-445b938ca1db2ba79b54b41741bab8a8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-7e4bbda7a13bf2211cbadeaec95b0a7a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-97294a9af8ce176bb4c6ae3f3739bf4a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -132,7 +133,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -321,7 +322,8 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Wflow.jl</span>
@@ -334,7 +336,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../index.html"> 
+    <a class="nav-link active" href="../../index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -346,7 +348,7 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
@@ -402,6 +404,10 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -581,16 +587,16 @@ h^{t+\Delta t} = h^t + \Delta t \frac{\subtext{Q^{t+\Delta t}}{src} - \subtext{Q
 \]</span></p>
 <p>where <span class="math inline">\(\sqrt{gh_i}\)</span> is the wave celerity for river cell <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{\Delta x_i}{m}\)</span> is the river length for river cell <span class="math inline">\(i\)</span> and <span class="math inline">\(\alpha\)</span> is a coefficient (typically between <span class="math inline">\(0.2\)</span> and <span class="math inline">\(0.7\)</span>) to enhance the stability of the simulation.</p>
 <p>In the TOML file the following properties related to the local inertial model can be provided for the <code>sbm</code> and <code>sbm_gwf</code> model types:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span>                    <span class="co"># default is "kinematic-wave"</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">river_local_inertial_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.5</span>  <span class="co"># alpha coefficient for model stability (default = 0.7)</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_flow__froude_limit_flag</span> <span class="op">=</span> <span class="cn">true</span>          <span class="co"># default is true, limit flow to subcritical-critical according to Froude number</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_flow_threshold__depth</span> <span class="op">=</span> <span class="fl">0.1</span>             <span class="co"># water depth [m] threshold for calculating flow between cells (default = 1e-03)</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span>                          <span class="co"># include 1D floodplain schematization (default = false)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span>                          <span class="co"># include 1D floodplain schematization (default = false)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Two optional constant model boundary conditions for the river length <span class="math inline">\(\SIb{}{m}\)</span> (default value of <span class="math inline">\(\SI{10,000}{m}\)</span>) and depth <span class="math inline">\(\SIb{}{m}\)</span> (default <span class="math inline">\(\SI{0}{m}\)</span>) can be provided at a river outlet node (or multiple river outlet nodes) through the model parameter netCDF file, as follows:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~river__length"</span> <span class="op">=</span> <span class="st">"riverlength_bc"</span>           <span class="co"># optional river length [m], default = 1e04</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~river_bank_water__depth"</span> <span class="op">=</span> <span class="st">"riverdepth_bc"</span>  <span class="co"># optional river depth [m], default = 0.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~river_bank_water__depth"</span> <span class="op">=</span> <span class="st">"riverdepth_bc"</span>  <span class="co"># optional river depth [m], default = 0.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>These boundary conditions and river bed elevation and Manning’s roughness coefficient are copied to a ghost node (downstream of the river outlet node) in the code.</p>
 <p>The optional 1D floodplain schematization is based on provided flood volumes as a function of flood depth (per flood depth interval) for each river cell. Wflow calculates from these flood volumes a rectangular floodplain profile for each flood depth interval. Routing is done separately for the river channel and floodplain.</p>
 <p>The momentum equation is most stable for low slope environments, and to keep the simulation stable for (partly) steep environments the <code>river_water_flow__froude_limit_flag</code> option is set to true by default. This setting limits flow conditions to subcritical-critical conditions based on the Froude number (<span class="math inline">\(\le 1\)</span>), similar to Coulthard et al.&nbsp;(2013) in the CAESAR-LISFLOOD model and Adams et al.&nbsp;(2017) in the Landlab v1.0 OverlandFlow component. The froude number <span class="math inline">\(\mathrm{Fr}\)</span> on a link is calculated as follows:</p>
@@ -613,20 +619,20 @@ Q_{(i+1/2)}^{n})\right]- g h_f \frac{\Delta t}{\Delta x} (\eta^n_i - \eta^n_{i-1
 <p><img src="../../images/numerical_scheme_almeida.png" class="img-fluid"></p>
 <p>The overland flow local inertial approach is used in combination with the local inertial river routing. This is a similar to the modelling approach of Neal et al.&nbsp;(2012), where the hydraulic model LISFLOOD-FP was extended with a subgrid channel model. For the subgrid channel, Neal et al.&nbsp;(2012) make use of a D4 (four direction) scheme, while here a D8 (eight direction) scheme is used, in combination with the D4 scheme for 2D overland flow.</p>
 <p>In the TOML file the following properties related to the local inertial model with 1D river routing and 2D overland flow can be provided for the <code>sbm</code> and <code>sbm_gwf</code> model types:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span>                     <span class="co"># default is kinematic-wave</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span>                    <span class="co"># default is kinematic-wave</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">land_local_inertial_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.5</span>   <span class="co"># alpha coefficient for model stability (default = 0.7)</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_local_inertial_flow__theta_coefficient</span> <span class="op">=</span> <span class="fl">0.9</span>   <span class="co"># weighting factor that adjusts the amount of artificial numerical diffusion (default = 0.8)</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__froude_limit_flag</span> <span class="op">=</span> <span class="cn">true</span>   <span class="co"># default is true, limit flow to subcritical-critical according to Froude number</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow_threshold__depth</span> <span class="op">=</span> <span class="fl">0.1</span>      <span class="co"># water depth [m] threshold for calculating flow between cells (default = 1e-03)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow_threshold__depth</span> <span class="op">=</span> <span class="fl">0.1</span>      <span class="co"># water depth [m] threshold for calculating flow between cells (default = 1e-03)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The alpha coefficient, flow limitation according to the Froude number, and the adaptive model time step <span class="math inline">\(\Delta t\)</span> are explained in more detail in the <a href="#river-and-floodplain-routing">River and floodplain routing</a> section of the local inertial model.</p>
 </section>
 <section id="external-inflows" class="level2">
 <h2 class="anchored" data-anchor-id="external-inflows">External inflows</h2>
 <p>External inflows <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> for example water supply or abstractions can to added the local inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_inflow~external__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"river_inflow"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_inflow~external__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"river_inflow"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>These inflows are added or subtracted as part of the continuity equation of the local inertial model. Abstractions are limited to a maximum of <span class="math inline">\(\SI{80}{\%}\)</span> of the river storage. Negative external inflows are satisfied first, and the remaining river storage is available for internal abstractions as part of water demand and allocation computations.</p>
 </section>
 <section id="abstractions" class="level2">
@@ -715,13 +721,14 @@ Q_{(i+1/2)}^{n})\right]- g h_f \frac{\Delta t}{\Delta x} (\eta^n_i - \eta^n_{i-1
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

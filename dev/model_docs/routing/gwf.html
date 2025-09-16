@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,18 +67,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-befe23ebd2f54d8af2c8a89d1a1611f1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b651517ce65839d647a86e2780455cfb.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-7e4bbda7a13bf2211cbadeaec95b0a7a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-445b938ca1db2ba79b54b41741bab8a8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-7e4bbda7a13bf2211cbadeaec95b0a7a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-97294a9af8ce176bb4c6ae3f3739bf4a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -132,7 +133,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -321,7 +322,8 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Wflow.jl</span>
@@ -334,7 +336,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../index.html"> 
+    <a class="nav-link active" href="../../index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -346,7 +348,7 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../model_docs/index.html"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
@@ -402,6 +404,10 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -608,8 +614,8 @@ C = \frac{kH w}{l}
   \frac{\Delta t k H}{\Delta x  \Delta y S}  \le \alpha
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{\Delta t}{d}\)</span> is the stable time step size, <span class="math inline">\(\SIb{\Delta x}{m}\)</span> is the cell length in the <span class="math inline">\(x\)</span> direction and <span class="math inline">\(\SIb{\Delta y}{m}\)</span> is the cell length in the <span class="math inline">\(y\)</span> direction, <span class="math inline">\(\SIb{k}{m^2\ d^{-1}}\)</span> is the horizontal hydraulic conductivity, <span class="math inline">\(\SIb{H}{m}\)</span> is the saturated thickness of the aquifer and <span class="math inline">\(\alpha\)</span> is a coefficient to enhance the stability of the simulation. For each cell <span class="math inline">\(\frac{\Delta x  \Delta y S}{k H}\)</span> is calculated, the minimum of these values is determined, and multiplied by <span class="math inline">\(\alpha\)</span>, to get the stable time step size. The stability coefficient <span class="math inline">\(\alpha\)</span> (default = 0.25 as recommended by Chu and Willis (1984)) can be set as follows in the TOML file:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.2</span> <span class="co"># coefficient for model stability (default = 0.25)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.2</span> <span class="co"># coefficient for model stability (default = 0.25)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For more details about the finite difference formulation and the stable time step size criterion we refer to the paper of Chu and Willis (1984).</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -633,23 +639,23 @@ Note
 <p>Neumann and Robin conditions are implemented by adding to or subtracting from a net (lumped) cell flux. Dirichlet conditions are special cased, since they cannot (easily) be implemented via the flux, but the head is set directly instead.</p>
 <p>The groundwater flow component of model type <code>sbm_gwf</code> consists of a single layer unconfined aquifer. The list of input parameters for an unconfined aquifer can be found <a href="../../model_docs/parameters_routing.html#input-gwf-unconfined">here</a>. Hydraulic head <span class="math inline">\(\SIb{\phi}{m}\)</span> is a <a href="../../model_docs/parameters_routing.html#state-gwf-unconfined">state variable</a> and <a href="../../model_docs/parameters_routing.html#output-gwf-unconfined">output variable</a>.</p>
 <p>Below an example of setting the <code>conductivity_profile</code> and input parameters in the TOML configuration file for an unconfined aquifer:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential"</span>  <span class="co"># saturated hydraulic conductivity depth profile, default is "uniform"</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface__elevation</span> <span class="op">=</span> <span class="st">"wflow_dem"</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_surface_water__horizontal_saturated_hydraulic_conductivity</span> <span class="op">=</span> <span class="st">"kh_surface"</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__specific_yield</span> <span class="op">=</span> <span class="st">"specific_yield"</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter</span> <span class="op">=</span> <span class="st">"gwf_f"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter</span> <span class="op">=</span> <span class="st">"gwf_f"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="constant-head" class="level2">
 <h2 class="anchored" data-anchor-id="constant-head">Constant head</h2>
 <p>For model type <code>sbm_gwf</code> Dirichlet boundary conditions can be specified (optional) in the TOML file as follows:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">constanthead__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~constant_hydraulic_head"</span> <span class="op">=</span> <span class="st">"constant_head"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"model_boundary_condition~constant_hydraulic_head"</span> <span class="op">=</span> <span class="st">"constant_head"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="aquifer-boundary-conditions" class="level2">
 <h2 class="anchored" data-anchor-id="aquifer-boundary-conditions">Aquifer boundary conditions</h2>
@@ -678,13 +684,13 @@ Note
 <p>where <span class="math inline">\(\SIb{\subtext{Q}{drain}}{L^3\ T^{-1}}\)</span> is the exchange flux from drains to aquifer, <span class="math inline">\(\SIb{\subtext{C}{drain}}{L^2\ T^{-1}}\)</span> is the drain conductance, <span class="math inline">\(\SIb{\subtext{h}{drain}}{L}\)</span> is the drain elevation and <span class="math inline">\(\SIb{\phi}{L}\)</span> is the hydraulic head in the cell with drainage.</p>
 <p>The list of input parameters for the drainage boundary of groundwater flow that can be provided through the TOML file can be found <a href="../../model_docs/parameters_routing.html#input-gwf-drainage">here</a>.</p>
 <p>The exchange flux (drains to aquifer) <span class="math inline">\(\subtext{Q}{drain}\)</span> is an <a href="../../model_docs/parameters_routing.html#output-gwf-drainage">output variable</a>, and is used to update the total flux in a cell with drains. For model type <code>sbm_gwf</code> this boundary condition is optional, and can be specified in the TOML file as follows:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">drain__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional, default is "false"</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain_location__mask</span> <span class="op">=</span> <span class="st">"drain"</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__conductance</span> <span class="op">=</span> <span class="st">"cond_drain"</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__elevation</span> <span class="op">=</span> <span class="st">"elev_drain"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_drain__elevation</span> <span class="op">=</span> <span class="st">"elev_drain"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="recharge" class="level3">
 <h3 class="anchored" data-anchor-id="recharge">Recharge</h3>
@@ -828,13 +834,14 @@ Note
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

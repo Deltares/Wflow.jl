@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,18 +67,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../_static/logo.png" rel="icon" type="image/png">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-befe23ebd2f54d8af2c8a89d1a1611f1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b651517ce65839d647a86e2780455cfb.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7e4bbda7a13bf2211cbadeaec95b0a7a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-445b938ca1db2ba79b54b41741bab8a8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-7e4bbda7a13bf2211cbadeaec95b0a7a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-97294a9af8ce176bb4c6ae3f3739bf4a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -132,7 +133,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -321,7 +322,8 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
@@ -334,7 +336,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -342,7 +344,7 @@ window.Quarto = {
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../user_guide/index.html" aria-current="page"> 
+    <a class="nav-link" href="../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
@@ -402,6 +404,10 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -540,33 +546,33 @@ window.Quarto = {
 <section id="general" class="level2">
 <h2 class="anchored" data-anchor-id="general">General</h2>
 <p>The file paths provided in this file are relative to the location of the TOML file, or to <code>dir_input</code> and <code>dir_output</code> if they are specified. To indicate that a wflow model <a href="../user_guide/fews.html">runs from Delft-FEWS</a>, the <code>fews_run__flag</code> setting needs to be set at <code>true</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">dir_input</span> <span class="op">=</span> <span class="st">"data/input"</span>      <span class="co"># optional, default is the path of the TOML</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">dir_input</span> <span class="op">=</span> <span class="st">"data/input"</span>      <span class="co"># optional, default is the path of the TOML</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">dir_output</span> <span class="op">=</span> <span class="st">"data/output"</span>    <span class="co"># optional, default is the path of the TOML</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">fews_run__flag</span> <span class="op">=</span> <span class="cn">false</span>              <span class="co"># optional, default value is false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">fews_run__flag</span> <span class="op">=</span> <span class="cn">false</span>              <span class="co"># optional, default value is false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="time-info" class="level2">
 <h2 class="anchored" data-anchor-id="time-info">Time info</h2>
 <p>Time information is optional. When omitted, wflow will perform computations for each timestamp in the forcing netCDF file, except for the first forcing timestamp, which is considered equal to the initial conditions of the wflow model (state time). If you wish to calculate a subset of this time range, or a different timestep, you can specify a <code>starttime</code>, <code>endtime</code> and <code>timestepsecs</code>. The <code>starttime</code> is defined as the model state time. In the TOML file settings below, the <code>starttime</code> is 2000-01-01T00:00:00 (state time) and the first update (and output) of the wflow model is at 2000-01-02T00:00:00. The <code>time_units</code> optional information is used by the <code>writer</code> of the model, for model output in netCDF format. The <code>calendar</code> option allows you to calculate in one of the different <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#calendar">CF conventions calendars</a> provided by the <a href="https://juliageo.org/CFTime.jl/latest/">CFTime.jl package</a>, such as <code>"360_day"</code>. This is useful if you want to calculate climate scenarios which are sometimes provided in these alternative calendars.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[time]</span>                                          <span class="co"># optional entry</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[time]</span>                                          <span class="co"># optional entry</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">calendar</span> <span class="op">=</span> <span class="st">"standard"</span>                           <span class="co"># optional, this is the default value</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">starttime</span> <span class="op">=</span> <span class="bn">2000-01-01T00:00:00</span>                 <span class="co"># optional, default from forcing netCDF</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">endtime</span> <span class="op">=</span> <span class="bn">2000-02-01T00:00:00</span>                   <span class="co"># optional, default from forcing netCDF</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">time_units</span> <span class="op">=</span> <span class="st">"days since 1900-01-01 00:00:00"</span>   <span class="co"># optional, this is the default value</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">timestepsecs</span> <span class="op">=</span> <span class="dv">86400</span>                            <span class="co"># optional, default from forcing netCDF</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">timestepsecs</span> <span class="op">=</span> <span class="dv">86400</span>                            <span class="co"># optional, default from forcing netCDF</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="logging" class="level2">
 <h2 class="anchored" data-anchor-id="logging">Logging</h2>
 <p>Wflow prints logging messages at various levels such as debug, info, and error. These messages are sent to both the terminal and a log file. Note that logging to a file is only part of the <code>Wflow.run(tomlpath::AbstractString)</code> method. If you want to debug an issue, it can be helpful to set <code>loglevel = "debug"</code> in the TOML. To avoid flooding the screen, debug messages are only sent to the log file. The following settings will affect the logging:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[logging]</span>               <span class="co"># optional entry</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[logging]</span>               <span class="co"># optional entry</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">silent</span> <span class="op">=</span> <span class="cn">false</span>          <span class="co"># optional, default is "false"</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">loglevel</span> <span class="op">=</span> <span class="st">"debug"</span>      <span class="co"># optional, default is "info"</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path_log</span> <span class="op">=</span> <span class="st">"log.txt"</span>    <span class="co"># optional, default is "log.txt"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path_log</span> <span class="op">=</span> <span class="st">"log.txt"</span>    <span class="co"># optional, default is "log.txt"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>silent</code> avoids logging to the terminal, and only writes to the log file. <code>loglevel</code> controls which levels are filtered out; for instance, the default setting <code>"info"</code> does not print any debug-level messages. Note that for finer control, you can also pass an integer log level. For details, see Julia’s <a href="https://docs.julialang.org/en/v1/stdlib/Logging/#Log-event-structure">Logging</a> documentation. <code>path_log</code> sets the desired output path for the log file. For information on <code>fews_run__flag</code>, see <a href="../user_guide/fews.html">Run from Delft-FEWS</a>.</p>
 </section>
 <section id="model-section" class="level2">
 <h2 class="anchored" data-anchor-id="model-section">Model section</h2>
 <p>Model-specific settings can be included in the model section of the TOML file.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"sbm"</span>                                    <span class="co"># one of ("sbm" or "sbm_gwf")</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snow_gravitional_transport__flag</span> <span class="op">=</span> <span class="cn">true</span>         <span class="co"># include lateral snow transport in the model, default is false</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">snow__flag</span> <span class="op">=</span> <span class="cn">true</span>                               <span class="co"># include snow modelling, default is false</span></span>
@@ -575,13 +581,13 @@ window.Quarto = {
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">true</span>  <span class="co"># enable kinematic wave adaptive (internal) timestepping in the model, default is false</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_layer__thickness</span> <span class="op">=</span> <span class="op">[</span><span class="dv">100</span><span class="op">,</span> <span class="dv">300</span><span class="op">,</span> <span class="dv">800</span><span class="op">]</span>         <span class="co"># specific SBM soil model setting: for each soil layer, a thickness [mm] is specified</span></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">river_streamorder__min_count</span> <span class="op">=</span> <span class="dv">5</span>                <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">land_streamorder__min_count</span> <span class="op">=</span> <span class="dv">4</span>                 <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">land_streamorder__min_count</span> <span class="op">=</span> <span class="dv">4</span>                 <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>A complete overview of the model settings for the different model types is available <a href="../model_docs/model_settings.html">here</a>.</p>
 </section>
 <section id="state-options" class="level2">
 <h2 class="anchored" data-anchor-id="state-options">State options</h2>
 <p>The <code>state</code> section in the TOML file provides information about the location of input and output states of the model. This section is mostly relevant if the model needs to start with a “warm” state (i.e.&nbsp;based on the results of a previous simulation). The example below shows how to save the output states of the current simulation, so it can be used to initialize another model in the future. Details on the settings required to start a model with a warm state can be found in the <a href="../user_guide/warm_states.html">additional model options</a>. If it is not required to store the outstates of the current simulation, the entire <code>state</code> section can be removed.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[state]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[state]</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">path_input</span> <span class="op">=</span> <span class="st">"instates-moselle.nc"</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">path_output</span> <span class="op">=</span> <span class="st">"outstates-moselle.nc"</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -603,13 +609,13 @@ window.Quarto = {
 <span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__volume_flow_rate</span>  <span class="op">=</span> <span class="st">"ssf"</span></span>
 <span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"q_land"</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_land"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__instantaneous_depth</span> <span class="op">=</span> <span class="st">"h_land"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="input-section" class="level2">
 <h2 class="anchored" data-anchor-id="input-section">Input section</h2>
 <p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (in netCDF format). <code>input.forcing</code> lists the mapping of forcing parameter standard names to the external netCDF variable names. <code>input.static</code> lists the mapping of static parameter standard names to the external netCDF variable names. In <code>input.cyclic</code>, it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In the example below, the model parameter standard name <code>vegetation__leaf-area_index</code> is mapped to the external netCDF variable “LAI”. Cyclic time inputs of parameters can be different (e.g., daily or monthly). The <code>time</code> dimension name of these cylic input parameters in the model parameter netCDF file should start with “time”. If a model parameter is not mapped, a default value will be used, if available.</p>
 <p>Forcing parameters should be available in <code>input.path_forcing</code> file and both static and cyclic parameters in <code>input.path_static</code> netcdf file. The main <code>input</code> section also lists variables describing the different modelling domains or masks (for example subbasin, river or reservoir) as well as the flow directions. Additional locations to save outputs for should also be listed here (e.g.&nbsp;gauges).</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Use "forcing-year-*.nc" if forcing files are split in time</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">path_forcing</span> <span class="op">=</span> <span class="st">"forcing-moselle.nc"</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path_static</span> <span class="op">=</span> <span class="st">"staticmaps-moselle.nc"</span></span>
@@ -684,7 +690,7 @@ window.Quarto = {
 <span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a><span class="co"># Map cyclic parameter standard names to variable names in the static netCDF file</span></span>
 <span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
-<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation__leaf-area_index</span> <span class="op">=</span> <span class="st">"LAI"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a><span class="dt">vegetation__leaf-area_index</span> <span class="op">=</span> <span class="st">"LAI"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="output-netcdf-section" class="level2">
 <h2 class="anchored" data-anchor-id="output-netcdf-section">Output netCDF section</h2>
@@ -692,7 +698,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="grid-data">Grid data</h3>
 <p>This optional section of the TOML file specifies the output netCDF file for writing gridded model output. It includes a mapping between model variable standard names and external netCDF variables.</p>
 <p>To limit the size of the resulting netCDF file, file compression can be enabled. Compression increases computational time but can significantly reduce the size of the netCDF file. Set the <code>compressionlevel</code> variable to a value between <code>0</code> and <code>9</code>. A setting of <code>0</code> means no compression, while values between 1 and 9 indicate increasing levels of compression (1: least compression, minimal run-time impact, 9: highest compression, maximum run-time impact). If file size is a concern, we recommend using a value of <code>1</code>, as higher compression levels generally have a limited effect on file size.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid]</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output_moselle.nc"</span>          <span class="co"># Location of the output file</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">compressionlevel</span> <span class="op">=</span> <span class="dv">1</span>                <span class="co"># Compression level (default 0)</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -708,12 +714,12 @@ window.Quarto = {
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water__volume</span> <span class="op">=</span> <span class="st">"storage_reservoir"</span></span>
 <span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__volume_flow_rate</span>  <span class="op">=</span> <span class="st">"ssf"</span></span>
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__volume_flow_rate</span> <span class="op">=</span> <span class="st">"q_av_land"</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__depth</span> <span class="op">=</span> <span class="st">"h_av_land"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__depth</span> <span class="op">=</span> <span class="st">"h_av_land"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="scalar-data" class="level3">
 <h3 class="anchored" data-anchor-id="scalar-data">Scalar data</h3>
 <p>In addition to gridded data, scalar data can also be written to a netCDF file. Below is an example that shows how to write scalar data to the file “output_scalar_moselle.nc”. For each netCDF variable, a <code>name</code> (external variable name) and a <code>parameter</code> (model parameter standard name) are required. A <code>reducer</code> can be specified to apply to the model output. See more details in the <a href="#output-csv-section">Output CSV section</a> section. If a <code>map</code> (from the <code>input</code> section) is provided to extract data for specific locations (e.g. <code>river_gauge__count</code>) or areas (e.g.&nbsp;<code>subbasin_location__count</code>), the netCDF location names are extracted from these maps. For a specific location (grid cell) a <code>location</code> is required. For layered model parameters and variables that have an extra <code>layer</code> dimension and are part of the <code>SBM</code> <code>soil</code> model, an internal layer index can be specified (an example is provided below). If multiple layers are desired, this can be specified in separate <code>[[output.netcdf_scalar.variable]]</code> entries. Note that the additional dimension should be specified when wflow is integrated with Delft-FEWS, for netCDF scalar data an extra dimension is not allowed by the <code>importNetcdfActivity</code> of the Delft-FEWS General Adapter. In the section <a href="#output-csv-section">Output CSV section</a>, similar functionality is available for CSV. For integration with Delft-FEWS, it is recommended to write scalar data to netCDF format, as the General Adapter of Delft-FEWS can directly ingest data from netCDF files. For more information, see <a href="../user_guide/fews.html">Run from Delft-FEWS</a>.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_gauge__count</span> <span class="op">=</span> <span class="st">"wflow_gauges_grdc"</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_scalar]</span></span>
@@ -749,7 +755,7 @@ window.Quarto = {
 <span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"vwc_layer2_bycoord"</span></span>
 <span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="dt">location</span> <span class="op">=</span> <span class="st">"vwc_bycoord"</span></span>
 <span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"soil_layer_water__volume_fraction"</span></span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="dt">layer</span> <span class="op">=</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="dt">layer</span> <span class="op">=</span> <span class="dv">2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="output-csv-section" class="level2">
@@ -767,7 +773,7 @@ window.Quarto = {
 </ul>
 <p>with <code>only</code> as the default. To extract data for a specific location (grid cell), the <code>index</code> of the vector, the coordinates <code>coordinate.x</code> and <code>coordinate.y</code>, or the x and y indices of the 2D array (<code>index.x</code> and <code>index.y</code>) can be provided. Additionally, a <code>map</code> (from the <code>input</code> section) can be provided to extract data for certain locations (e.g. <code>river_gauge__count</code>) or areas (e.g.&nbsp;<code>subbasin_location__count</code>). In this case, a single entry can lead to multiple columns in the CSV file, which will be of the form <code>header_id</code>, e.g.&nbsp;<code>Q_20</code>, for a gauge with integer ID <span class="math inline">\(20\)</span>. For layered model parameters and variables that have an extra dimension <code>layer</code> and are part of the <code>SBM</code> <code>soil</code> model an internal layer index (see also example below) should be specified.</p>
 <p>The double brackets in <code>[[output.csv.column]]</code> follow TOML syntax, indicating that it is part of a list. You can specify as many entries as you want.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Modelling domains</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">subbasin_location__count</span> <span class="op">=</span> <span class="st">"wflow_subcatch"</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Ouput locations: these are not directly part of the model</span></span>
@@ -814,7 +820,7 @@ window.Quarto = {
 <span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="dt">header</span> <span class="op">=</span> <span class="st">"recharge"</span></span>
 <span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="dt">map</span> <span class="op">=</span> <span class="st">"subbasin_location__count"</span></span>
 <span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="dt">parameter</span> <span class="op">=</span> <span class="st">"soil_water_sat-zone_top__net_recharge_volume_flux"</span></span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="dt">reducer</span> <span class="op">=</span> <span class="st">"mean"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="dt">reducer</span> <span class="op">=</span> <span class="st">"mean"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="modify-parameters" class="level2">
 <h2 class="anchored" data-anchor-id="modify-parameters">Modify parameters</h2>
@@ -824,33 +830,33 @@ window.Quarto = {
 <li>Modify an input parameter (cyclic and static) or forcing variable using a <code>scale</code> factor and <code>offset</code>.</li>
 </ul>
 <p>For example, to set the input parameter <code>snowpack__degree-day_coefficient</code> to an uniform value of <span class="math inline">\(2.5\)</span>:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">snowpack__liquid_water_holding_capacity</span> <span class="op">=</span>  <span class="st">"WHC"</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snowpack__degree-day_coefficient.value</span> <span class="op">=</span> <span class="fl">2.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">snowpack__degree-day_coefficient.value</span> <span class="op">=</span> <span class="fl">2.5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For input parameters with an extra dimension (e.g.&nbsp;<code>layer</code>), one uniform value can be provided or a list of values that matches the length of the additional dimension. For example, a list of values can be provided for input parameter <code>soil_layer_water__brooks-corey_epsilon_parameter</code> as follows:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">snowpack__liquid_water_holding_capacity</span> <span class="op">=</span>  <span class="st">"WHC"</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"land~water-covered__area_fraction"</span> <span class="op">=</span> <span class="st">"WaterFrac"</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_layer_water__brooks-corey_epsilon_parameter.value</span> <span class="op">=</span> <span class="op">[</span><span class="fl">10.5</span><span class="op">,</span> <span class="fl">11.25</span><span class="op">,</span> <span class="fl">9.5</span><span class="op">,</span> <span class="fl">7.0</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_layer_water__brooks-corey_epsilon_parameter.value</span> <span class="op">=</span> <span class="op">[</span><span class="fl">10.5</span><span class="op">,</span> <span class="fl">11.25</span><span class="op">,</span> <span class="fl">9.5</span><span class="op">,</span> <span class="fl">7.0</span><span class="op">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>To change the forcing variable <code>atmosphere_water__precipitation_volume_flux</code> with a <code>scale</code> factor of <span class="math inline">\(1.5\)</span> and an <code>offset</code> of <span class="math inline">\(0.5\)</span>:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.forcing.atmosphere_water__precipitation_volume_flux]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.forcing.atmosphere_water__precipitation_volume_flux]</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="dt">netcdf.variable.name</span> <span class="op">=</span> <span class="st">"P"</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="dt">scale</span> <span class="op">=</span> <span class="fl">1.5</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="dt">offset</span> <span class="op">=</span> <span class="fl">0.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="dt">offset</span> <span class="op">=</span> <span class="fl">0.5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For input parameters with an extra dimension, it is also possible to modify multiple indices simultaneously with different <code>scale</code> and <code>offset</code> values. In the example below, the external netCDF variable <code>c</code> is modified at <code>layer</code> index <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span>, with a <code>scale</code> factor of <span class="math inline">\(2.0\)</span> and <span class="math inline">\(1.5\)</span> respectively, and an <code>offset</code> of <span class="math inline">\(0.0\)</span> for both indices:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static.soil_layer_water__brooks-corey_epsilon_parameter]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static.soil_layer_water__brooks-corey_epsilon_parameter]</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">netcdf.variable.name</span> <span class="op">=</span> <span class="st">"c"</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">scale</span> <span class="op">=</span> <span class="op">[</span><span class="fl">2.0</span><span class="op">,</span> <span class="fl">1.5</span><span class="op">]</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="dt">offset</span> <span class="op">=</span> <span class="op">[</span><span class="fl">0.0</span><span class="op">,</span> <span class="fl">0.0</span><span class="op">]</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="dt">layer</span> <span class="op">=</span> <span class="op">[</span><span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="dt">layer</span> <span class="op">=</span> <span class="op">[</span><span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="fixed-forcing-values" class="level2">
 <h2 class="anchored" data-anchor-id="fixed-forcing-values">Fixed forcing values</h2>
 <p>It is possible to set fixed values for forcing parameters through the TOML file. For example, to set <code>atmosphere_air__temperature</code> to a fixed value of <span class="math inline">\(\SI{10}{\degree C}\)</span>:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.forcing]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.forcing]</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">atmosphere_water__precipitation_volume_flux</span> <span class="op">=</span> <span class="st">"precip"</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water__potential_evaporation_volume_flux</span> <span class="op">=</span> <span class="st">"pet"</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="dt">atmosphere_air__temperature.value</span> <span class="op">=</span> <span class="dv">10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="dt">atmosphere_air__temperature.value</span> <span class="op">=</span> <span class="dv">10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>
@@ -920,13 +926,14 @@ window.Quarto = {
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
