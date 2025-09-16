@@ -734,38 +734,6 @@ function correct_infiltration!(model::SbmSoilModel)
     end
 end
 
-function correct_overland_flow_level!(
-    model::SbmSoilModel,
-    # overland_flow::Union{KinWaveOverlandFlow, LocalInertialOverlandFlow},
-    overland_flow,
-    domain::Domain,
-    config::Config,
-)
-    v = model.variables
-
-    do_surface_water_infiltration =
-        get(config.model, "reinfiltration_surfacewater", false)::Bool
-
-    if do_surface_water_infiltration
-        (; surface_flow_width) = domain.land.parameters
-        n = length(surface_flow_width)
-        threaded_foreach(1:n; basesize = 1000) do i
-            q, h = correct_overland_flow_level(
-                overland_flow.variables.h[i],
-                v.infilt_surfacewater[i],
-                domain.land.parameters.river_fraction[i],
-                surface_flow_width[i],
-                overland_flow.parameters.alpha[i],
-                overland_flow.parameters.beta,
-            )
-            if !isnothing(q)
-                overland_flow.variables.flow.q[i] = q
-                overland_flow.variables.h[i] = h
-            end
-        end
-    end
-end
-
 """
     infiltration!(model::SbmSoilModel)
 
