@@ -114,7 +114,7 @@ function compute_land_hydrology_balance!(
     return nothing
 end
 
-function compute_river_flow_balance!(
+function compute_flow_balance!(
     river_flow::KinWaveRiverFlow,
     water_balance::MassBalance,
     dt::Float64,
@@ -134,11 +134,31 @@ function compute_river_flow_balance!(
     return nothing
 end
 
+function compute_flow_balance!(
+    overland_flow::KinWaveOverlandFlow,
+    water_balance::MassBalance,
+    dt::Float64,
+)
+    (; storage_prev, error, relative_error) = water_balance
+    (; inwater) = overland_flow.boundary_conditions
+    (; qin_av, q_av, storage) = overland_flow.variables
+
+    for i in eachindex(storage_prev)
+        total_input = inwater[i] + qin_av[i]
+        total_output = q_av[i]
+
+        error[i] = (total_input - total_output - (storage[i] - storage_prev[i]) / dt)
+        relative_error[i] = error[i] / ((total_input + total_output) / 2)
+    end
+    return nothing
+end
+
 function compute_flow_routing_balance!(model)
-    (; river_flow) = model.routing
-    (; river) = model.mass_balance.routing
+    (; river_flow, overland_flow) = model.routing
+    (; river, land) = model.mass_balance.routing
     dt = tosecond(model.clock.dt)
-    compute_river_flow_balance!(river_flow, river, dt)
+    compute_flow_balance!(river_flow, river, dt)
+    compute_flow_balance!(overland_flow, land, dt)
 end
 
 function compute_mass_balance!(model, ::HydrologicalMassBalance)
