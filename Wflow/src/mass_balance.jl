@@ -8,20 +8,32 @@ struct NoMassBalance <: AbstractMassBalance end
     relative_error::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
-struct HydrologicalMassBalance <: AbstractMassBalance
+@with_kw struct FlowRoutingMassBalance
+    river::MassBalance
     land::MassBalance
+    subsurface::MassBalance
 end
 
-function HydrologicalMassBalance(n::Int, modelsettings::NamedTuple)
+@with_kw struct HydrologicalMassBalance <: AbstractMassBalance
+    land::MassBalance
+    routing::FlowRoutingMassBalance
+end
+
+function HydrologicalMassBalance(n_land::Int, n_river::Int, modelsettings::NamedTuple)
     do_water_mass_balance = modelsettings.water_mass_balance
     if do_water_mass_balance
-        HydrologicalMassBalance(MassBalance(; n))
+        routing = FlowRoutingMassBalance(;
+            river = MassBalance(; n = n_river),
+            land = MassBalance(; n = n_land),
+            subsurface = MassBalance(; n = n_land),
+        )
+        HydrologicalMassBalance(; land = MassBalance(; n = n_land), routing)
     else
         NoMassBalance()
     end
 end
 
-function total_storage(model::LandHydrologySBM, i::Int)
+function compute_total_storage(model::LandHydrologySBM, i::Int)
     (; total_soilwater_storage) = model.soil.variables
     (; canopy_storage) = model.interception.variables
     (; snow, glacier, demand) = model
@@ -40,14 +52,25 @@ function total_storage(model::LandHydrologySBM, i::Int)
     return total_storage
 end
 
-function mass_storage_prev!(model, ::HydrologicalMassBalance)
-    (; storage_prev) = model.mass_balance.land
+function compute_total_storage!(model::LandHydrologySBM, water_balance::MassBalance)
+    (; storage_prev) = water_balance
     for i in eachindex(storage_prev)
-        storage_prev[i] = total_storage(model.land, i)
+        storage_prev[i] = compute_total_storage(model, i)
     end
+    return nothing
 end
 
-function mass_storage_prev!(model, ::NoMassBalance)
+function storage_prev!(model, ::HydrologicalMassBalance)
+    (; river, land, subsurface) = model.mass_balance.routing
+
+    compute_total_storage!(model.land, model.mass_balance.land)
+    river.storage_prev .= model.routing.river_flow.variables.h[1:(river.n)]
+    land.storage_prev .= model.routing.overland_flow.variables.storage
+    subsurface.storage_prev .= get_storage(model.routing.subsurface_flow)
+    return nothing
+end
+
+function storage_prev!(model, ::NoMassBalance)
     return nothing
 end
 
@@ -83,7 +106,7 @@ function compute_land_hydrology_balance!(
             get_groundwater_abstraction_flux(allocation)[i]
         total_output = subsurface_flux_out + vertical_flux_out + get_snow_out(snow)[i]
 
-        storage = total_storage(model.land, i)
+        storage = compute_total_storage(model.land, i)
 
         error[i] = (total_input - total_output - (storage - storage_prev[i]))
         relative_error[i] = error[i] / ((total_input + total_output) / 2)
@@ -91,8 +114,36 @@ function compute_land_hydrology_balance!(
     return nothing
 end
 
+function compute_river_flow_balance!(
+    river_flow::KinWaveRiverFlow,
+    water_balance::MassBalance,
+    dt::Float64,
+)
+    (; storage_prev, error, relative_error) = water_balance
+    (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
+        river_flow.boundary_conditions
+    (; qin_av, q_av, storage) = river_flow.variables
+
+    for i in eachindex(storage_prev)
+        total_input = inwater[i] + qin_av[i] + max(0.0, external_inflow[i])
+        total_output = q_av[i] + actual_external_abstraction_av[i] + abstraction[i]
+
+        error[i] = (total_input - total_output - (storage[i] - storage_prev[i]) / dt)
+        relative_error[i] = error[i] / ((total_input + total_output) / 2)
+    end
+    return nothing
+end
+
+function compute_flow_routing_balance!(model)
+    (; river_flow) = model.routing
+    (; river) = model.mass_balance.routing
+    dt = tosecond(model.clock.dt)
+    compute_river_flow_balance!(river_flow, river, dt)
+end
+
 function compute_mass_balance!(model, ::HydrologicalMassBalance)
     compute_land_hydrology_balance!(model)
+    compute_flow_routing_balance!(model)
     return nothing
 end
 

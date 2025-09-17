@@ -281,7 +281,7 @@ function run_timestep!(model::Model; update_func = update!, write_model_output =
     (; mass_balance) = model
     advance!(model.clock)
     load_dynamic_input!(model)
-    mass_storage_prev!(model, mass_balance)
+    storage_prev!(model, mass_balance)
     update_func(model)
     compute_mass_balance!(model, mass_balance)
     if write_model_output

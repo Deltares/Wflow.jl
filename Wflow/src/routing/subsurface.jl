@@ -190,3 +190,4 @@ get_flux_to_river(model::LateralSSF, inds::Vector{Int}) =
 
 get_inflow(model::LateralSSF) = model.variables.ssfin
 get_outflow(model::LateralSSF) = model.variables.ssf
+get_storage(model::LateralSSF) = model.variables.storage
