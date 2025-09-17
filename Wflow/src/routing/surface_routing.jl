@@ -37,8 +37,7 @@ function surface_routing!(model)
         (; overland_flow, subsurface_flow),
         domain.reservoir.network,
     )
-    # 
-    if !isnothing(reservoir)
+    if using_observed_outflow(reservoir, config)
         @debug log_message_observed_outflow(reservoir)
     end
     # update river flow
@@ -57,7 +56,7 @@ Run surface routing (land and river) for a model type that contains the routing 
 function surface_routing!(
     model::Model{R},
 ) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
-    (; routing, land, domain, clock) = model
+    (; routing, land, domain, clock, config) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
     (; reservoir) = river_flow.boundary_conditions
@@ -72,7 +71,7 @@ function surface_routing!(
     # update reservoir inflow (subsurface flow), inflow from river and overland flow is
     # added within the river and overland routing schemes
     update_inflow!(reservoir, river_flow, subsurface_flow, domain.reservoir.network)
-    if !isnothing(reservoir)
+    if using_observed_outflow(reservoir, config)
         @debug log_message_observed_outflow(reservoir)
     end
     # update overland and river flow

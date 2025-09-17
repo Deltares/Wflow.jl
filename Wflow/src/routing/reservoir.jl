@@ -557,3 +557,12 @@ function log_message_observed_outflow(reservoir::Reservoir)
     end
     return msg
 end
+
+"Check if observed outflow is used for reservoirs"
+function using_observed_outflow(reservoir::Union{Reservoir, Nothing}, config::Config)
+    par = "reservoir_water~outgoing~observed__volume_flow_rate"
+    check =
+        !isnothing(reservoir) &&
+        (haskey(config.input.forcing, par) || haskey(config.input.cyclic, par))
+    return check
+end
