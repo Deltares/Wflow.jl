@@ -64,7 +64,7 @@ function storage_prev!(model, ::HydrologicalMassBalance)
     (; river, land, subsurface) = model.mass_balance.routing
 
     compute_total_storage!(model.land, model.mass_balance.land)
-    river.storage_prev .= model.routing.river_flow.variables.h[1:(river.n)]
+    river.storage_prev .= model.routing.river_flow.variables.storage[1:(river.n)]
     land.storage_prev .= model.routing.overland_flow.variables.storage
     subsurface.storage_prev .= get_storage(model.routing.subsurface_flow)
     return nothing
