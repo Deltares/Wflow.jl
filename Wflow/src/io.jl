@@ -298,7 +298,12 @@ function update_forcing!(model)
             end
         end
         sel = active_indices(domain, par)
-        data_sel = data[sel]
+        # missing data for observed reservoir outflow is allowed at reservoir location(s)
+        if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+            data_sel = nomissing(data[sel], MISSING_VALUE)
+        else
+            data_sel = data[sel]
+        end
         if any(ismissing, data_sel)
             msg = "Forcing data at $time has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
@@ -352,7 +357,13 @@ function update_cyclic!(model)
             # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar, i)
             sel = active_indices(domain, par)
-            data_sel = data[sel]
+            # missing data for observed reservoir outflow is allowed at reservoir
+            # location(s)
+            if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+                data_sel = nomissing(data[sel], MISSING_VALUE)
+            else
+                data_sel = data[sel]
+            end
             if any(ismissing, data_sel)
                 msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(ncvar.name)"
                 throw(ArgumentError(msg))

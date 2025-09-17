@@ -1,5 +1,7 @@
 "Struct for storing reservoir model parameters"
 @with_kw struct ReservoirParameters
+    # reservoir location id
+    id::Vector{Int}
     # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and
     # interpolation
     storfunc::Vector{Int}
@@ -77,7 +79,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     reslocs = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     @info "Read `$n_reservoirs` reservoir locations."
 
-    parameters = ReservoirParameters(; area, outflowfunc, storfunc)
+    parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
 
     if 2 in outflowfunc || 3 in outflowfunc
         lens = lens_input_parameter(
@@ -194,12 +196,10 @@ end
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
     outflow_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    # observed outflow from reservoir [m³ s⁻¹]
+    outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average actual evaporation for reservoir area [mm Δt⁻¹]
     actevap::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # fraction full (of max storage) for rating curve type 4 [-]
-    percfull::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # minimum (environmental) flow released from reservoir for rating curve type 4 [m³ s⁻¹]
-    demandrelease::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
 end
 
 "Initialize reservoir model variables"
@@ -346,12 +346,9 @@ function update_reservoir_simple(
     torelease = min(wantrel, overflow_q + res_p.maxrelease[i] * dt - demandrelease)
     storage = storage - torelease
     outflow = torelease + demandrelease
-    percfull = storage / res_p.maxstorage[i]
-
     outflow /= dt
-    demandrelease /= dt
 
-    return outflow, storage, demandrelease, percfull
+    return outflow, storage
 end
 
 """
@@ -474,6 +471,22 @@ function update_reservoir_free_weir(
     return outflow, storage
 end
 
+"Update reservoir using observed outflow for a single timestep."
+function update_reservoir_outflow_obs(
+    model::Reservoir,
+    i::Int,
+    boundary_vars::NamedTuple,
+    dt::Float64,
+)
+    res_v = model.variables
+    (; precipitation, actevap, inflow) = boundary_vars
+
+    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    outflow = min(res_v.outflow_obs[i], storage_input)
+    storage = (storage_input - outflow) * dt
+    return outflow, storage
+end
+
 """
 Update a single reservoir at position `i`.
 
@@ -499,15 +512,16 @@ function update!(
 
     boundary_vars = (; precipitation, actevap, inflow)
 
-    if res_p.outflowfunc[i] == 1
+    if !isnan(res_v.outflow_obs[i])
+        outflow, storage = update_reservoir_outflow_obs(model, i, boundary_vars, dt)
+    elseif res_p.outflowfunc[i] == 1
         outflow, storage = update_reservoir_hq(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 2
         outflow, storage = update_reservoir_free_weir(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 3
         outflow, storage = update_reservoir_modified_puls(model, i, boundary_vars, dt)
     elseif res_p.outflowfunc[i] == 4
-        outflow, storage, demandrelease, percfull =
-            update_reservoir_simple(model, i, boundary_vars, dt)
+        outflow, storage = update_reservoir_simple(model, i, boundary_vars, dt)
     end
 
     waterlevel = if res_p.storfunc[i] == 1
@@ -521,10 +535,7 @@ function update!(
     res_v.storage[i] = storage
     res_v.waterlevel[i] = waterlevel
     res_v.outflow[i] = outflow
-    if res_p.outflowfunc[i] == 4
-        res_v.demandrelease[i] = demandrelease
-        res_v.percfull[i] = percfull
-    end
+
     # average variables (here accumulated for model timestep Δt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt
@@ -533,4 +544,25 @@ function update!(
     res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
 
     return nothing
+end
+
+"Generate log message for using observed outflow at reservoir locations"
+function log_message_observed_outflow(reservoir::Reservoir)
+    not_nan = findall(x -> !isnan(x), reservoir.variables.outflow_obs)
+    if isempty(not_nan)
+        msg = "Observed outflow is not used for any reservoir location"
+    else
+        ids = reservoir.parameters.id[not_nan]
+        msg = "Observed outflow is used for reservoir location ids $ids"
+    end
+    return msg
+end
+
+"Check if observed outflow is used for reservoirs"
+function using_observed_outflow(reservoir::Union{Reservoir, Nothing}, config::Config)
+    par = "reservoir_water~outgoing~observed__volume_flow_rate"
+    check =
+        !isnothing(reservoir) &&
+        (haskey(config.input.forcing, par) || haskey(config.input.cyclic, par))
+    return check
 end
