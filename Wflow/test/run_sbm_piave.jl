@@ -198,13 +198,17 @@ Wflow.run_timestep!(model)
     @test reservoir.variables.outflow_av[1] ≈ 4.82162803109911
 end
 
-# test use of observed reservoir outflow (cyclic)
+# test use of observed reservoir outflow (cyclic) 
 tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
 config = Wflow.Config(tomlpath)
 config.input.cyclic["reservoir_water~outgoing~observed__volume_flow_rate"] = "reservoir_outflow"
+config.logging.loglevel = "debug"
+config.logging.path_log = "log_sbm_piave_debug.txt"
+config.time.endtime = DateTime(2010, 7, 3)
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
+Wflow.close_files(model; delete_output = false)
 
 @testset "piave: reservoir with observed outflow (cyclic)" begin
     (; reservoir) = model.routing.river_flow.boundary_conditions
@@ -215,4 +219,17 @@ Wflow.run_timestep!(model)
     @test reservoir.variables.outflow_av[1] ≈ 3.0
     @test reservoir.variables.outflow[1] ≈ 3.0
 end
-Wflow.close_files(model; delete_output = false)
+
+# test debug message using observed outflow for two timesteps
+@testset "piave: log debug message using observed reservoir outflow" begin
+    tomlpath_debug = joinpath(@__DIR__, "sbm_piave_config-debug.toml")
+    open(tomlpath_debug, "w") do io
+        TOML.print(io, Dict(config))
+    end
+    Wflow.run(tomlpath_debug; silent = true)
+    rm(tomlpath_debug)
+    path_log = Wflow.output_path(config, "log_sbm_piave_debug.txt")
+    lines = readlines(path_log)
+    msg = "┌ Debug: Observed outflow is used for reservoir location ids [169986]"
+    @test count(contains(line, msg) for line in lines) == 2
+end
