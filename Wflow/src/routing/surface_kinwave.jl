@@ -377,7 +377,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     @. alpha = alpha_term * pow(surface_flow_width, alpha_pow)
     @. qlat = inwater / flow_length
 
-    set_flow_vars!(model.variables.flow)
+    set_flow_vars!(model.variables)
     to_river .= 0.0
     qin_av .= 0.0
 
@@ -390,7 +390,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
         kinwave_land_update!(model, domain, dt_s)
         t = t + dt_s
     end
-    average_flow_vars!(model.variables.flow, dt)
+    average_flow_vars!(model.variables, dt)
     to_river ./= dt
     qin_av ./= dt
     return nothing
