@@ -545,3 +545,15 @@ function update!(
 
     return nothing
 end
+
+"Generate log message for using observed outflow at reservoir locations"
+function log_message_observed_outflow(reservoir::Reservoir)
+    not_nan = findall(x -> !isnan(x), reservoir.variables.outflow_obs)
+    if isempty(not_nan)
+        msg = "Observed outflow is not used for any reservoir location"
+    else
+        ids = reservoir.parameters.id[not_nan]
+        msg = "Observed outflow is used for reservoir location ids $ids"
+    end
+    return msg
+end

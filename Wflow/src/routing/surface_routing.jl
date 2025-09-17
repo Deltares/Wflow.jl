@@ -37,6 +37,10 @@ function surface_routing!(model)
         (; overland_flow, subsurface_flow),
         domain.reservoir.network,
     )
+    # 
+    if !isnothing(reservoir)
+        @debug log_message_observed_outflow(reservoir)
+    end
     # update river flow
     update!(river_flow, domain, clock)
     return nothing
@@ -68,6 +72,9 @@ function surface_routing!(
     # update reservoir inflow (subsurface flow), inflow from river and overland flow is
     # added within the river and overland routing schemes
     update_inflow!(reservoir, river_flow, subsurface_flow, domain.reservoir.network)
+    if !isnothing(reservoir)
+        @debug log_message_observed_outflow(reservoir)
+    end
     # update overland and river flow
     update!(overland_flow, river_flow, domain, clock)
 
