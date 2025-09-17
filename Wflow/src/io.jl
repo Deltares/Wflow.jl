@@ -173,7 +173,7 @@ end
 "Extract a netCDF variable at a given time"
 function get_at(
     ds::CFDataset,
-    varname::AbstractString,
+    var::NamedTuple,
     times::AbstractVector{<:TimeType},
     t::TimeType,
 )
@@ -181,11 +181,15 @@ function get_at(
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at(ds, varname, i)
+    return get_at(ds, var, i)
 end
 
-function get_at(ds::CFDataset, varname::AbstractString, i)
-    return read_standardized(ds, varname, (x = :, y = :, time = i))
+function get_at(ds::CFDataset, var::NamedTuple, i)
+    data = read_standardized(ds, var.name, (x = :, y = :, time = i))
+    if var.scale != 1.0 || var.offset != 0.0
+        data .= data .* var.scale .+ var.offset
+    end
+    return data
 end
 
 function get_param_res(model)
@@ -202,17 +206,31 @@ mover_params = (
     "land_surface_water__potential_evaporation_volume_flux",
 )
 
+function get_param(model, parameter::AbstractString)
+    (; land) = model
+    lens = standard_name_map(land)[parameter].lens
+    param = lens(model)
+    return param
+end
+
+function routing_with_reservoirs(model)
+    (; config) = model
+    return get(config.model, "reservoir__flag", false)::Bool
+end
+
+function routing_with_reservoirs(model::AbstractModel{<:SedimentModel})
+    return false
+end
+
 """
     load_fixed_forcing!(model)
-    load_fixed_forcing!(model::AbstractModel{<:SedimentModel})
-
 Get fixed netCDF forcing input."
 """
 function load_fixed_forcing!(model)
-    (; reader, land, domain, config) = model
+    (; reader, domain) = model
     (; forcing_parameters) = reader
 
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_reservoirs = routing_with_reservoirs(model)
 
     reverse_indices = domain.land.network.reverse_indices
     if do_reservoirs
@@ -223,16 +241,15 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if ncvar.name === nothing
             val = ncvar.value * ncvar.scale + ncvar.offset
-            lens = standard_name_map(land)[par].lens
-            param_vector = lens(model)
-            param_vector .= val
+            param = get_param(model, par)
+            param .= val
             # set fixed precipitation and evaporation over the reservoirs and put these into
             # the reservoir structs and set the precipitation and evaporation to 0 in the
             # land model
             if par in mover_params
                 if do_reservoirs
                     for (i, sel_reservoir) in enumerate(sel_reservoirs)
-                        param_vector[reverse_indices[sel_reservoir]] .= 0
+                        param[reverse_indices[sel_reservoir]] .= 0
                         param_res[par][i] = val
                     end
                 end
@@ -242,33 +259,18 @@ function load_fixed_forcing!(model)
     return nothing
 end
 
-function load_fixed_forcing!(model::AbstractModel{<:SedimentModel})
-    (; reader, land) = model
-    (; forcing_parameters) = reader
-    for (par, ncvar) in forcing_parameters
-        if ncvar.name === nothing
-            val = ncvar.value * ncvar.scale + ncvar.offset
-            lens = standard_name_map(land)[par].lens
-            param_vector = lens(model)
-            param_vector .= val
-        end
-    end
-    return nothing
-end
-
 """
     update_forcing!(model)
-    update_forcing!(model::AbstractModel{<:SedimentModel})
 
 Get dynamic netCDF input for the given time. Wflow expects `right` labeling of the forcing
 time interval, e.g. daily precipitation at 01-02-2000 00:00:00 is the accumulated total
 precipitation between 01-01-2000 00:00:00 and 01-02-2000 00:00:00.
 """
 function update_forcing!(model)
-    (; clock, reader, land, domain, config) = model
+    (; clock, reader, domain) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
+    do_reservoirs = routing_with_reservoirs(model)
 
     if do_reservoirs
         sel_reservoirs = domain.reservoir.network.indices_coverage
@@ -281,11 +283,7 @@ function update_forcing!(model)
         ncvar.name === nothing && continue
 
         time = convert(eltype(dataset_times), clock.time)
-        data = get_at(dataset, ncvar.name, dataset_times, time)
-
-        if ncvar.scale != 1.0 || ncvar.offset != 0.0
-            data .= data .* ncvar.scale .+ ncvar.offset
-        end
+        data = get_at(dataset, ncvar, dataset_times, time)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -299,8 +297,6 @@ function update_forcing!(model)
                 end
             end
         end
-        lens = standard_name_map(land)[par].lens
-        param_vector = lens(model)
         sel = active_indices(domain, par)
         # missing data for observed reservoir outflow is allowed at reservoir location(s)
         if par == "reservoir_water~outgoing~observed__volume_flow_rate"
@@ -309,40 +305,12 @@ function update_forcing!(model)
             data_sel = data[sel]
         end
         if any(ismissing, data_sel)
-            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
+            msg = "Forcing data at $time has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
         end
-        param_vector .= data_sel
+        param = get_param(model, par)
+        param .= data_sel
     end
-
-    return nothing
-end
-
-function update_forcing!(model::AbstractModel{<:SedimentModel})
-    (; clock, reader, land, domain) = model
-    (; dataset, dataset_times, forcing_parameters) = reader
-
-    for (par, ncvar) in forcing_parameters
-        ncvar.name === nothing && continue
-
-        time = convert(eltype(dataset_times), clock.time)
-        data = get_at(dataset, ncvar.name, dataset_times, time)
-
-        if ncvar.scale != 1.0 || ncvar.offset != 0.0
-            data .= data .* ncvar.scale .+ ncvar.offset
-        end
-
-        lens = standard_name_map(land)[par].lens
-        param_vector = lens(model)
-        sel = active_indices(domain, par)
-        data_sel = data[sel]
-        if any(ismissing, data_sel)
-            msg = "Forcing data has missing values on active model cells for $(ncvar.name)"
-            throw(ArgumentError(msg))
-        end
-        param_vector .= data_sel
-    end
-
     return nothing
 end
 
@@ -372,7 +340,7 @@ end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    (; clock, reader, land, domain) = model
+    (; clock, reader, domain) = model
     (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     # pick up the data that is valid for the past model time step
@@ -387,9 +355,7 @@ function update_cyclic!(model)
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar.name, i)
-            lens = standard_name_map(land)[par].lens
-            param_vector = lens(model)
+            data = get_at(cyclic_dataset, ncvar, i)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -398,10 +364,12 @@ function update_cyclic!(model)
             else
                 data_sel = data[sel]
             end
-            param_vector .= data_sel
-            if ncvar.scale != 1.0 || ncvar.offset != 0.0
-                param_vector .= param_vector .* ncvar.scale .+ ncvar.offset
+            if any(ismissing, data_sel)
+                msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(ncvar.name)"
+                throw(ArgumentError(msg))
             end
+            param = get_param(model, par)
+            param .= data_sel
         end
     end
     return nothing
