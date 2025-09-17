@@ -1,5 +1,7 @@
 "Struct for storing reservoir model parameters"
 @with_kw struct ReservoirParameters
+    # reservoir location id
+    id::Vector{Int}
     # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and
     # interpolation
     storfunc::Vector{Int}
@@ -77,7 +79,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     reslocs = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     @info "Read `$n_reservoirs` reservoir locations."
 
-    parameters = ReservoirParameters(; area, outflowfunc, storfunc)
+    parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
 
     if 2 in outflowfunc || 3 in outflowfunc
         lens = lens_input_parameter(

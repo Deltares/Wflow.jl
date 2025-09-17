@@ -9,6 +9,7 @@ res_bc = Wflow.ReservoirBC(;
     evaporation = [1.5],
 )
 res_params = Wflow.ReservoirParameters(;
+    id = [1],
     demand = [52.523],
     maxrelease = [420.184],
     maxstorage = [25_000_000.0],
@@ -64,6 +65,7 @@ res_bc = Wflow.ReservoirBC(;
     evaporation = [3.2],
 )
 res_params = Wflow.ReservoirParameters(;
+    id = [1],
     area = [180510409.0],
     threshold = [0.0],
     storfunc = [1],
@@ -120,6 +122,7 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
     @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
 
     res_params = Wflow.ReservoirParameters(;
+        id = [1, 2],
         lower_reservoir_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, NaN],
@@ -198,6 +201,7 @@ end
         Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
     res_params = Wflow.ReservoirParameters(;
+        id = [1],
         area = [200_000_000],
         storfunc = [2],
         outflowfunc = [1],
