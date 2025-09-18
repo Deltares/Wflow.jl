@@ -71,18 +71,18 @@ function LateralSsfParameters(
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
     factor_dt = BASETIMESTEP / Second(config.time.timestepsecs)
-    if kh_profile_type == SHCPType.exponential
+    if kh_profile_type == VerticalConductivityProfile.exponential
         (; kv_0, f) = soil.kv_profile
         kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
         kh_profile = KhExponential(kh_0, f .* 1000.0)
-    elseif kh_profile_type == SHCPType.exponential_constant
+    elseif kh_profile_type == VerticalConductivityProfile.exponential_constant
         (; z_exp) = soil.kv_profile
         (; kv_0, f) = soil.kv_profile.exponential
         kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
         exp_profile = KhExponential(kh_0, f .* 1000.0)
         kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
-    elseif kh_profile_type == SHCPType.layered ||
-           kh_profile_type == SHCPType.layered_exponential
+    elseif kh_profile_type == VerticalConductivityProfile.layered ||
+           kh_profile_type == VerticalConductivityProfile.layered_exponential
         n_cells = length(khfrac)
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end

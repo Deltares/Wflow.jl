@@ -33,26 +33,7 @@ option_names(::Type{T}) where {T <: EnumX.Enum} =
 # Account for the dashes in the routing type names, which cannot be present in the enum
 option_names(::Type{RoutingType.T}) = ("kinematic-wave", "local-inertial")
 
-get_something_type(::Type{Union{Nothing, T}}) where {T} = T
-get_something_type(T::Type) = T
-
-# Automatically convert strings into enumerator instances
-function Base.convert(
-    ::Type{T},
-    option_string::String,
-) where {T <: Union{Nothing, EnumX.Enum}}
-    option = Symbol(add_leading_underscore(replace(option_string, "-" => "_")))
-    for instance in instances(get_something_type(T))
-        if option == Symbol(instance)
-            return instance
-        end
-    end
-    throw(
-        ArgumentError(
-            "Invalid value $option_string in the TOML, must be one of $(option_names(T)).",
-        ),
-    )
-end
+get_something_type(::Type{T}) where {T} = last(Base.uniontypes(T))
 
 # Pretty printing AbstractConfigurationSection instances
 function Base.show(io::IO, c::AbstractConfigSection)

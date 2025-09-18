@@ -12,15 +12,15 @@ function initialize_subsurface_flow(
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
-    if kh_profile_type == SHCPType.exponential ||
-       kh_profile_type == SHCPType.exponential_constant
+    if kh_profile_type == VerticalConductivityProfile.exponential ||
+       kh_profile_type == VerticalConductivityProfile.exponential_constant
         initialize_lateral_ssf!(
             subsurface_flow,
             parameters,
             subsurface_flow.parameters.kh_profile,
         )
-    elseif kh_profile_type == SHCPType.layered ||
-           kh_profile_type == SHCPType.layered_exponential
+    elseif kh_profile_type == VerticalConductivityProfile.layered ||
+           kh_profile_type == VerticalConductivityProfile.layered_exponential
         (; kv_profile) = soil.parameters
         dt = Second(config.time.timestepsecs)
         initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))

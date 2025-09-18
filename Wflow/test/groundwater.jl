@@ -227,7 +227,7 @@ end
         end
 
         @testset "conductance" begin
-            conductivity_profile = Wflow.ConductivityProfileType.uniform
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             @test Wflow.conductance(
                 conf_aqf,
                 2,
@@ -271,7 +271,7 @@ end
         end
 
         @testset "stable_timestep" begin
-            conductivity_profile = Wflow.ConductivityProfileType.uniform
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             cfl = 0.25
             @test Wflow.stable_timestep(conf_aqf, conductivity_profile, cfl) == 0.25
         end
@@ -284,7 +284,7 @@ end
 
         @testset "flux-confined" begin
             conf_aqf.variables.q_net .= 0.0
-            conductivity_profile = Wflow.ConductivityProfileType.uniform
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             Wflow.flux!(conf_aqf, connectivity, conductivity_profile)
             # kD = 10 * 10 = 100
             # dH = 7.5, 12.5
@@ -293,7 +293,7 @@ end
 
         @testset "flux-unconfined" begin
             unconf_aqf.variables.q_net .= 0.0
-            conductivity_profile = Wflow.ConductivityProfileType.uniform
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             Wflow.flux!(unconf_aqf, connectivity, conductivity_profile)
             # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
             @test unconf_aqf.variables.q_net == [562.5, 687.5, -1250.0]
@@ -378,7 +378,7 @@ end
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
-        conductivity_profile = Wflow.ConductivityProfileType.uniform
+        conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
             timestepping,
@@ -407,7 +407,7 @@ end
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
-        conductivity_profile = Wflow.ConductivityProfileType.exponential
+        conductivity_profile = Wflow.GwfConductivityProfileType.exponential
         timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
             timestepping,
@@ -444,7 +444,7 @@ end
         beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
-        conductivity_profile = Wflow.ConductivityProfileType.uniform
+        conductivity_profile = Wflow.GwfConductivityProfileType.uniform
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -524,7 +524,7 @@ end
         beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
-        conductivity_profile = Wflow.ConductivityProfileType.exponential
+        conductivity_profile = Wflow.GwfConductivityProfileType.exponential
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -608,7 +608,7 @@ end
         storativity = 0.15
         aquifer_length = cellsize * ncol
         discharge = -50.0
-        conductivity_profile = Wflow.ConductivityProfileType.uniform
+        conductivity_profile = Wflow.GwfConductivityProfileType.uniform
 
         # Domain, geometry
         domain = ones(Bool, shape)

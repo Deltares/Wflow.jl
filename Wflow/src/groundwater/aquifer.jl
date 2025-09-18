@@ -145,7 +145,7 @@ function UnconfinedAquiferParameters(
     lens = lens_input_parameter(config, "subsurface_water__specific_yield")
     specific_yield = ncread(dataset, config, lens; sel = indices, type = Float64)
 
-    if config.model.conductivity_profile == ConductivityProfileType.exponential
+    if config.model.conductivity_profile == GwfConductivityProfileType.exponential
         lens = lens_input_parameter(
             config,
             "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
@@ -278,7 +278,7 @@ function conductance(
     i,
     j,
     nzi,
-    conductivity_profile::ConductivityProfileType.T,
+    conductivity_profile::GwfConductivityProfileType.T,
     connectivity::Connectivity,
 )
     return aquifer.variables.conductance[nzi]
@@ -315,10 +315,10 @@ function conductance(
     i,
     j,
     nzi,
-    conductivity_profile::ConductivityProfileType.T,
+    conductivity_profile::GwfConductivityProfileType.T,
     connectivity::Connectivity,
 )
-    if conductivity_profile == ConductivityProfileType.exponential
+    if conductivity_profile == GwfConductivityProfileType.exponential
         # Extract required variables
         zi1 = aquifer.parameters.top[i] - aquifer.variables.head[i]
         zi2 = aquifer.parameters.top[j] - aquifer.variables.head[j]
@@ -342,7 +342,7 @@ function conductance(
             connectivity.length2[nzi],
             connectivity.width[nzi],
         )
-    elseif conductivity_profile == ConductivityProfileType.uniform
+    elseif conductivity_profile == GwfConductivityProfileType.uniform
         head_i = aquifer.variables.head[i]
         head_j = aquifer.variables.head[j]
         if head_i >= head_j
@@ -361,7 +361,7 @@ end
 function flux!(
     aquifer::Aquifer,
     connectivity::Connectivity,
-    conductivity_profile::ConductivityProfileType.T,
+    conductivity_profile::GwfConductivityProfileType.T,
 )
     for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
@@ -403,7 +403,7 @@ function ConstantHead(
 end
 
 """
-    stable_timestep(aquifer::Aquifer, conductivity_profile::ConductivityProfileType.T)
+    stable_timestep(aquifer::Aquifer, conductivity_profile::GwfConductivityProfileType.T)
 
 Compute a stable timestep size given the forward-in-time, central in space scheme.
 The following criterion can be found in Chu & Willis (1984):
@@ -413,12 +413,12 @@ where cfl = 1/4.
 """
 function stable_timestep(
     aquifer::Aquifer,
-    conductivity_profile::ConductivityProfileType.T,
+    conductivity_profile::GwfConductivityProfileType.T,
     cfl::Float64,
 )
     dt_min = Inf
     for i in eachindex(aquifer.variables.head)
-        if conductivity_profile == ConductivityProfileType.exponential
+        if conductivity_profile == GwfConductivityProfileType.exponential
             zi = aquifer.parameters.top[i] - aquifer.variables.head[i]
             thickness = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
             value =
@@ -426,7 +426,7 @@ function stable_timestep(
                     exp(-aquifer.parameters.f[i] * zi) -
                     exp(-aquifer.parameters.f[i] * thickness)
                 )
-        elseif conductivity_profile == ConductivityProfileType.uniform
+        elseif conductivity_profile == GwfConductivityProfileType.uniform
             value = aquifer.parameters.k[i] * saturated_thickness(aquifer, i)
         end
 
@@ -461,7 +461,7 @@ end
 
 function update_fluxes!(
     gwf::GroundwaterFlow{A},
-    conductivity_profile::ConductivityProfileType.T,
+    conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
 ) where {A <: Aquifer}
     flux!(gwf.aquifer, gwf.connectivity, conductivity_profile)
@@ -490,7 +490,7 @@ end
 function update!(
     gwf::GroundwaterFlow{A},
     dt::Float64,
-    conductivity_profile::ConductivityProfileType.T,
+    conductivity_profile::GwfConductivityProfileType.T,
 ) where {A <: Aquifer}
     (; cfl) = gwf.timestepping
     for boundary in gwf.boundaries

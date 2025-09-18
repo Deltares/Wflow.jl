@@ -17,7 +17,7 @@ function Model(config::Config, type::SbmGwfModel)
     clock = Clock(config, reader)
 
     @info "General model settings" (;
-        model = config.model.snow__flag,
+        snow = config.model.snow__flag,
         gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
         glacier = config.model.glacier__flag,
         reservoirs = config.model.reservoir__flag,

@@ -31,7 +31,23 @@ function convert_value(::Type{LogLevel}, level::String)
     return level
 end
 
-const no_override = Dict{String, Any}()
+# Automatically convert strings into enumerator instances
+function convert_value(
+    ::Type{T},
+    option_string::String,
+) where {T <: Union{Nothing, EnumX.Enum}}
+    option = Symbol(add_leading_underscore(replace(option_string, "-" => "_")))
+    for instance in instances(get_something_type(T))
+        if option == Symbol(instance)
+            return instance
+        end
+    end
+    throw(
+        ArgumentError(
+            "Invalid value $option_string in the TOML, must be one of $(option_names(T)).",
+        ),
+    )
+end
 
 """
 Initialize the configuration section of type T<:AbstractConfigSection. If T itself contains fields of 
@@ -40,17 +56,9 @@ type <:AbstractConfigSection, this function works recursively.
 function init_config_section(
     ::Type{T},
     dict::AbstractDict{String};
-    override::AbstractDict{String} = no_override,
 )::T where {T <: AbstractConfigSection}
     args = Dict{Symbol, Any}()
     all_target_fields = fieldnames(T)
-
-    # Check validity of override
-    for key in keys(override)
-        if Symbol(key) ∉ all_target_fields
-            error("Found invalid override key $key for section of type $T.")
-        end
-    end
 
     for (option_string, value) in dict
         option = Symbol(option_string)
@@ -58,14 +66,8 @@ function init_config_section(
             target_arg_type = fieldtype(T, option)
             # Recursively call this function if the target type is a AbstractConfigSection
             args[option] = if target_arg_type <: AbstractConfigSection
-                init_config_section(
-                    target_arg_type,
-                    value;
-                    override = get(override, option_string, no_override),
-                )
+                init_config_section(target_arg_type, value)
             else
-                # Take override value if available
-                value = get(override, option_string, value)
                 try
                     convert_value(target_arg_type, value)
                 catch
@@ -93,29 +95,20 @@ end
 init_config_section_default(
     type::Type{<:AbstractConfigSection},
     dict::AbstractDict{String};
-    override::AbstractDict{String} = no_override,
 ) = invoke(
     init_config_section,
     Tuple{Type{<:AbstractConfigSection}, AbstractDict{String}},
     type,
-    dict;
-    override,
+    dict,
 )
 
-init_config_section(
-    ::Type{T},
-    data::Any;
-    override::AbstractDict{String} = no_override,
-) where {T <: AbstractConfigSection} = argument_error(
-    "Couldn't parse the $(section_name(T)) section in the TOML with data $data, must be a section.",
-)
+init_config_section(::Type{T}, data::Any) where {T <: AbstractConfigSection} =
+    argument_error(
+        "Couldn't parse the $(section_name(T)) section in the TOML with data $data, must be a section.",
+    )
 
 # Option 1 and 2 (see struct InputEntry)
-function init_config_section(
-    ::Type{InputEntry},
-    dict::AbstractDict{String};
-    override::AbstractDict{String} = no_override,
-)
+function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
     netcdf_variable_name = get_nested(dict, ["netcdf", "variable", "name"])
     value = get(dict, "value", nothing)
 
@@ -158,7 +151,7 @@ function init_config_section(
         end
 
         # Invoke default method
-        return init_config_section_default(InputEntry, dict; override)
+        return init_config_section_default(InputEntry, dict)
     elseif !isnothing(value)
         # Option 2
         return InputEntry(; value)
@@ -167,64 +160,46 @@ function init_config_section(
 end
 
 # Option 3 (see struct InputEntry)
-init_config_section(
-    ::Type{InputEntry},
-    standard_name::String;
-    override::AbstractDict{String} = no_override,
-) = InputEntry(; standard_name)
-Base.convert(::Type{InputEntry}, standard_name::String) = InputEntry(; standard_name)
+init_config_section(::Type{InputEntry}, external_name::String) = InputEntry(; external_name)
+Base.convert(::Type{InputEntry}, external_name::String) = InputEntry(; external_name)
+Base.convert(::Type{InputEntry}, value::Number) = InputEntry(; value)
 
 convert_value(::Type{IndexSection}, i::Int) = IndexSection(; i)
 convert_value(::Type{IndexSection}, dict::AbstractDict{String}) =
     init_config_section_default(IndexSection, dict)
-init_config_section(::Type{IndexSection}, i::Int; override = no_override) =
-    IndexSection(; i)
+init_config_section(::Type{IndexSection}, i::Int) = IndexSection(; i)
 
-function init_config_section(
-    ::Type{InputEntries},
-    dict::AbstractDict{String};
-    override::AbstractDict{String} = no_override,
-)
+function init_config_section(::Type{InputEntries}, dict::AbstractDict{String})
     InputEntries(
         Dict(key => init_config_section(InputEntry, value) for (key, value) in dict),
     )
 end
 
-function init_config_section(
-    ::Type{InputSection},
-    dict::AbstractDict{String};
-    override::AbstractDict{String} = no_override,
-)
-    # Move flexible part of the input section into input.flexible
-    flexible = Dict{String, Any}()
+function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
+    # Move flexible part of the input section into input.location_maps
+    location_maps = Dict{String, Any}()
     for key in collect(keys(dict))
         if key ∉ input_field_names
-            flexible[key] = pop!(dict, key)
+            location_maps[key] = pop!(dict, key)
         end
     end
-    dict["flexible"] = flexible
+    dict["location_maps"] = location_maps
     # Invoke default method
-    input = init_config_section_default(InputSection, dict; override)
+    input = init_config_section_default(InputSection, dict)
 
-    # check if there is overlap in forcing and cyclic parameters
-    if !haskey(input.cyclic, "_was_not_specified") # do_cyclic
-        overlap = intersect(keys(input.forcing), keys(input.cyclic))
-        if !isempty(overlap)
-            argument_error(
-                "These parameters were specified in both the forcing and cyclic" *
-                "sections of the [input] in the TOML: $overlap.",
-            )
-        end
+    # check if there is overlap in specified parameters
+    overlap = intersect(keys(input.static), keys(input.forcing), keys(input.cyclic))
+    if !isempty(overlap)
+        argument_error(
+            "These parameters were specified in more than one of the static, forcing and cyclic" *
+            "sections of the [input] in the TOML: $overlap.",
+        )
     end
 
     return input
 end
 
-function init_config_section(
-    ::Type{NetCDFScalarVariable},
-    dict::AbstractDict{String};
-    override::AbstractDict{String} = no_override,
-)
+function init_config_section(::Type{NetCDFScalarVariable}, dict::AbstractDict{String})
     for key in ("name", "parameter")
         !haskey(dict, key) && throw(
             ArgumentError(
@@ -246,7 +221,7 @@ function init_config_section(
         )
     end
     # Invoke default method
-    return init_config_section_default(NetCDFScalarVariable, dict; override)
+    return init_config_section_default(NetCDFScalarVariable, dict)
 end
 
 """
@@ -254,26 +229,18 @@ end
     Config(dict::AbstractDict; path::Union{Nothing, String} = nothing)
 
 Struct that contains the parsed TOML configurations, as well as a reference to the TOML path
-if it exists. The object behaves largely like an immutable nested struct, apart from the flexible
-sections (see the fields with `PropertyDictType` type in `config.jl`) which are nested property
-dicts (see PropertyDicts.jl) and thus mutable.
-An override of the data in the TOML or dict can be passed as a dictionary,
-e.g. override = Dict("time" => Dict("timestepsecs" => 42))
+if it exists. The object behaves largely like an mutable nested struct.
 Fields whose name start with an underscore should not be specified in the TOML.
 """
-function Config(path::AbstractString; override::AbstractDict{String} = no_override)
+function Config(path::AbstractString)
     dict = TOML.parsefile(path)
-    Config(dict; path, override)
+    Config(dict; path)
 end
 
-function Config(
-    dict::AbstractDict;
-    path::Union{Nothing, String} = nothing,
-    override::AbstractDict{String} = no_override,
-)
+function Config(dict::AbstractDict; path::Union{Nothing, String} = nothing)
     # Add path to config
     dict["path"] = path
-    config = init_config_section(Config, dict; override)
+    config = init_config_section(Config, dict)
     return config
 end
 
@@ -284,7 +251,7 @@ function to_dict(
 ) where {T <: AbstractConfigSection}
     for field_name in fieldnames(T)
         value = getfield(config_section, field_name)
-        if (field_name ∈ (:flexible, :_was_specified)) || isnothing(value)
+        if (field_name ∈ (:location_maps, :_was_specified)) || isnothing(value)
             continue
         end
         dict[String(field_name)] = to_dict(value)
@@ -292,16 +259,20 @@ function to_dict(
     return dict
 end
 
-to_dict(input::InputSection) =
-    invoke(to_dict, Tuple{AbstractConfigSection}, input; dict = deepcopy(input.flexible))
+to_dict(input::InputSection) = invoke(
+    to_dict,
+    Tuple{AbstractConfigSection},
+    input;
+    dict = deepcopy(input.location_maps),
+)
 to_dict(input_entries::InputEntries) =
     Dict{String, Any}(name => to_dict(entry) for (name, entry) in input_entries.dict)
 
 function to_dict(input_entry::InputEntry)
-    (; netcdf_variable_name, standard_name) = input_entry
+    (; netcdf_variable_name, external_name) = input_entry
     dict = invoke(to_dict, Tuple{AbstractConfigSection}, input_entry)
-    if !isnothing(input_entry.standard_name)
-        return standard_name
+    if !isnothing(input_entry.external_name)
+        return external_name
     end
     if !isnothing(netcdf_variable_name)
         dict["netcdf"] = Dict{String, Any}(
@@ -319,3 +290,15 @@ to_dict(x::EnumX.Enum) = remove_leading_underscore(String(Symbol(x)))
 to_dict(x::RoutingType.T) =
     (x == RoutingType.kinematic_wave) ? "kinematic-wave" : "local-inertial"
 to_dict(x::LogLevel) = lowercase(string(x))
+
+Base.setproperty!(
+    config_section::T,
+    field::Symbol,
+    value,
+) where {T <: AbstractConfigSection} = invoke(
+    setfield!,
+    Tuple{Any, Symbol, Any},
+    config_section,
+    field,
+    convert_value(fieldtype(T, field), value),
+)

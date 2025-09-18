@@ -9,8 +9,8 @@ For configuration files we use TOML.
 @enumx RoutingType kinematic_wave local_inertial
 @enumx ModelType sbm sbm_gwf sediment
 @enumx CalendarType standard gregorian proleptic_gregorian julian noleap _365_day all_leap _366_day _360_day
-@enumx ConductivityProfileType uniform exponential
-@enumx SHCPType exponential exponential_constant layered layered_exponential
+@enumx GwfConductivityProfileType uniform exponential
+@enumx VerticalConductivityProfile exponential exponential_constant layered layered_exponential
 @enumx RainfallErosionType answers eurosem
 @enumx OverlandFlowErosionType answers
 @enumx LandTransportType yalinpart govers yalin
@@ -26,10 +26,10 @@ const PropertyDictType = PropertyDict{String, Any, Dict{String, Any}}
 
 # Time related configurations
 @kwdef mutable struct TimeSection <: AbstractConfigSection
-    const calendar::CalendarType.T = CalendarType.standard
+    calendar::CalendarType.T = CalendarType.standard
     starttime::Union{Nothing, DateTime} = nothing # default from forcing netCDF
     endtime::Union{Nothing, DateTime} = nothing   # default from forcing netCDF
-    const time_units::String = CFTime.DEFAULT_TIME_UNITS
+    time_units::String = CFTime.DEFAULT_TIME_UNITS
     timestepsecs::Union{Nothing, Float64} = nothing # default from forcing netCDF
 end
 
@@ -38,7 +38,7 @@ end
 ###
 
 # Logging related configurations
-@kwdef struct LoggingSection <: AbstractConfigSection
+@kwdef mutable struct LoggingSection <: AbstractConfigSection
     silent::Bool = false
     loglevel::LogLevel = Info
     path_log::String = "log.txt"
@@ -49,7 +49,7 @@ end
 ###
 
 # Water demand configurations
-@kwdef struct WaterDemandSubSection <: AbstractConfigSection
+@kwdef mutable struct WaterDemandSubSection <: AbstractConfigSection
     domestic__flag::Bool = false
     industry__flag::Bool = false
     livestock__flag::Bool = false
@@ -61,50 +61,50 @@ end
 # Model configurations
 @kwdef mutable struct ModelSection <: AbstractConfigSection
     # General
-    const type::ModelType.T
+    type::ModelType.T
     cold_start__flag::Bool = true
-    const cell_length_in_meter__flag::Bool = false
-    const reservoir__flag::Bool = false
+    cell_length_in_meter__flag::Bool = false
+    reservoir__flag::Bool = false
     # Model types sbm and sbm_gwf
-    const snow__flag::Bool = false
-    const snow_gravitational_transport__flag::Bool = false
-    const glacier__flag::Bool = false
-    const soil_infiltration_reduction__flag::Bool = false
-    const soil_layer__thickness::Vector{Int} = [100, 300, 800]
-    const saturated_hydraulic_conductivity_profile::SHCPType.T = SHCPType.exponential
+    snow__flag::Bool = false
+    snow_gravitational_transport__flag::Bool = false
+    glacier__flag::Bool = false
+    soil_infiltration_reduction__flag::Bool = false
+    soil_layer__thickness::Vector{Int} = [100, 300, 800]
+    saturated_hydraulic_conductivity_profile::VerticalConductivityProfile.T =
+        VerticalConductivityProfile.exponential
     # Routing method
-    const land_routing::RoutingType.T = RoutingType.kinematic_wave
-    const river_routing::RoutingType.T = RoutingType.kinematic_wave
+    land_routing::RoutingType.T = RoutingType.kinematic_wave
+    river_routing::RoutingType.T = RoutingType.kinematic_wave
     # Kinematic wave routing
-    const pit__flag::Bool = false
-    const river_streamorder__min_count::Int = 6
-    const land_streamorder__min_count::Int = 5
-    const kinematic_wave__adaptive_time_step_flag::Bool = false
-    const river_kinematic_wave__time_step::Float64 = 900.0
-    const land_kinematic_wave__time_step::Float64 = 3600.0
+    pit__flag::Bool = false
+    river_streamorder__min_count::Int = 6
+    land_streamorder__min_count::Int = 5
+    kinematic_wave__adaptive_time_step_flag::Bool = false
+    river_kinematic_wave__time_step::Float64 = 900.0
+    land_kinematic_wave__time_step::Float64 = 3600.0
     # Local inertial routing
-    const river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
-    const land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
-    const land_local_inertial_flow__theta_coefficient::Float64 = 0.8
-    const river_water_flow_threshold__depth = 1e-3
-    const land_surface_water_flow_threshold__depth = 1e-3
-    const river_water_flow__froude_limit_flag = true
-    const land_surface_water_flow__froude_limit_flag = true
-    const floodplain_1d__flag::Bool = false
+    river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
+    land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
+    land_local_inertial_flow__theta_coefficient::Float64 = 0.8
+    river_water_flow_threshold__depth = 1e-3
+    land_surface_water_flow_threshold__depth = 1e-3
+    river_water_flow__froude_limit_flag = true
+    land_surface_water_flow__froude_limit_flag = true
+    floodplain_1d__flag::Bool = false
     # Groundwater flow
-    const conductivity_profile::ConductivityProfileType.T = ConductivityProfileType.uniform
-    const drain__flag::Bool = false
-    const constanthead__flag::Bool = false
+    conductivity_profile::GwfConductivityProfileType.T = GwfConductivityProfileType.uniform
+    drain__flag::Bool = false
+    constanthead__flag::Bool = false
     subsurface_water_flow__alpha_coefficient::Float64 = 0.25
     # Model type sediment/
-    const rainfall_erosion::RainfallErosionType.T = RainfallErosionType.answers
-    const overland_flow_erosion::OverlandFlowErosionType.T = OverlandFlowErosionType.answers
-    const run_river_model__flag::Bool = false
-    const land_transport::LandTransportType.T = LandTransportType.yalin
-    const river_transport::RiverTransportType.T = RiverTransportType.bagnold
+    rainfall_erosion::RainfallErosionType.T = RainfallErosionType.answers
+    overland_flow_erosion::OverlandFlowErosionType.T = OverlandFlowErosionType.answers
+    run_river_model__flag::Bool = false
+    land_transport::LandTransportType.T = LandTransportType.yalin
+    river_transport::RiverTransportType.T = RiverTransportType.bagnold
     # Water demand
-    const water_demand::WaterDemandSubSection =
-        WaterDemandSubSection(; _was_specified = false)
+    water_demand::WaterDemandSubSection = WaterDemandSubSection(; _was_specified = false)
 end
 
 ###
@@ -112,7 +112,7 @@ end
 ###
 
 # State configurations
-@kwdef struct StateSection <: AbstractConfigSection
+@kwdef mutable struct StateSection <: AbstractConfigSection
     path_input::Union{Nothing, String} = nothing
     path_output::Union{Nothing, String} = nothing
     # Variable name mapping
@@ -123,7 +123,7 @@ end
 ### Input section
 ###
 
-@kwdef struct InputEntry <: AbstractConfigSection
+@kwdef mutable struct InputEntry <: AbstractConfigSection
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing # Comes from dict["netcdf"]["variable"]["name"]
     scale::Vector{Float64} = [1.0]
@@ -132,24 +132,25 @@ end
     # Option 2
     value::Any = nothing
     # Option 3
-    standard_name::Union{Nothing, String} = nothing
+    external_name::Union{Nothing, String} = nothing
 end
 
 variable_name(var::InputEntry) =
-    isnothing(var.netcdf_variable_name) ? var.standard_name : var.netcdf_variable_name
+    isnothing(var.netcdf_variable_name) ? var.external_name : var.netcdf_variable_name
 
-@kwdef struct InputEntries <: AbstractConfigSection
+@kwdef mutable struct InputEntries <: AbstractConfigSection
     dict::Dict{String, InputEntry} = Dict()
 end
 
 Base.haskey(input_entries::InputEntries, key) = haskey(input_entries.dict, key)
 Base.getindex(input_entries::InputEntries, key) = input_entries.dict[key]
+Base.setindex!(input_entries::InputEntries, value, key) = (input_entries.dict[key] = value)
 Base.keys(input_entries::InputEntries) = keys(input_entries.dict)
 Base.iterate(input_entries::InputEntries) = iterate(input_entries.dict)
 Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, state)
 
 # Input configurations
-@kwdef struct InputSection <: AbstractConfigSection
+@kwdef mutable struct InputSection <: AbstractConfigSection
     # Flow direction and modelling domains
     path_forcing::String
     path_static::String
@@ -163,7 +164,7 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     forcing::InputEntries
     static::InputEntries
     cyclic::InputEntries = InputEntries()
-    flexible::PropertyDictType
+    location_maps::PropertyDictType
 end
 
 const input_field_names = String.(fieldnames(Wflow.InputSection))
@@ -172,19 +173,19 @@ const input_field_names = String.(fieldnames(Wflow.InputSection))
 ### Output section
 ###
 
-@kwdef struct CoordinateSection <: AbstractConfigSection
+@kwdef mutable struct CoordinateSection <: AbstractConfigSection
     x::Float64
     y::Float64
 end
 
-@kwdef struct IndexSection <: AbstractConfigSection
+@kwdef mutable struct IndexSection <: AbstractConfigSection
     i::Union{Nothing, Int} = nothing
     x::Union{Nothing, Int} = nothing
     y::Union{Nothing, Int} = nothing
     _was_specified::Bool = true
 end
 
-@kwdef struct CSVColumn <: AbstractConfigSection
+@kwdef mutable struct CSVColumn <: AbstractConfigSection
     header::String
     parameter::String
     reducer::Union{Nothing, ReducerType.T} = nothing
@@ -194,13 +195,13 @@ end
     coordinate::Union{Nothing, CoordinateSection} = nothing
 end
 
-@kwdef struct CSVSection <: AbstractConfigSection
+@kwdef mutable struct CSVSection <: AbstractConfigSection
     path::String
     column::Vector{CSVColumn} = []
     _was_specified::Bool = true
 end
 
-@kwdef struct NetCDFScalarVariable <: AbstractConfigSection
+@kwdef mutable struct NetCDFScalarVariable <: AbstractConfigSection
     name::String
     parameter::String
     reducer::Union{Nothing, ReducerType.T} = nothing
@@ -212,20 +213,20 @@ end
     _location_dim::String
 end
 
-@kwdef struct NetCDFScalarSection <: AbstractConfigSection
+@kwdef mutable struct NetCDFScalarSection <: AbstractConfigSection
     path::String
     variable::Vector{NetCDFScalarVariable} = []
     _was_specified::Bool = true
 end
 
-@kwdef struct NetCDFGridSection <: AbstractConfigSection
+@kwdef mutable struct NetCDFGridSection <: AbstractConfigSection
     path::String
     compressionlevel::Int = 0
     variables::PropertyDictType = PropertyDict(Dict{String, Any}())
     _was_specified::Bool = true
 end
 
-@kwdef struct OutputSection <: AbstractConfigSection
+@kwdef mutable struct OutputSection <: AbstractConfigSection
     csv::CSVSection = CSVSection(; _was_specified = false, path = "")
     netcdf_scalar::NetCDFScalarSection =
         NetCDFScalarSection(; _was_specified = false, path = "")
@@ -237,7 +238,7 @@ end
 ###
 
 # API variable configuration
-@kwdef struct APISection <: AbstractConfigSection
+@kwdef mutable struct APISection <: AbstractConfigSection
     variables::Vector{String} = []
     _was_specified::Bool = true
 end
@@ -247,7 +248,7 @@ end
 ###
 
 # Fields with a default value are optional
-@kwdef struct Config <: AbstractConfigSection
+@kwdef mutable struct Config <: AbstractConfigSection
     dir_input::Union{Nothing, String} = nothing
     dir_output::Union{Nothing, String} = nothing
     fews_run__flag::Bool = false

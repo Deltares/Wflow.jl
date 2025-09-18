@@ -319,7 +319,7 @@ function run!(model::Model; close_files = true)
     end
 
     # copy TOML to dir_output, to archive what settings were used
-    if !isnothing(config.dir_input)
+    if !isnothing(config.dir_output)
         src = normpath(config.path)
         dst = output_path(config, basename(src))
         if src != dst

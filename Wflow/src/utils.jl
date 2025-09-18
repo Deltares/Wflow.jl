@@ -378,13 +378,13 @@ function lens_input(
     config::Union{Nothing, Config} = nothing,
     optional::Bool = false,
 )::LensWithName
-    from_flexible = !hasfield(InputSection, Symbol(p))
+    from_location_maps = !hasfield(InputSection, Symbol(p))
     was_set = true
     if config isa Config
         # If the config was passed, check whether the requested parameter
         # was specified in the config
-        was_set = if from_flexible
-            haskey(config.input.flexible, p)
+        was_set = if from_location_maps
+            haskey(config.input.location_maps, p)
         else
             !isnothing(getfield(config.input, Symbol(p)))
         end
@@ -397,8 +397,8 @@ function lens_input(
     end
     lens = if !was_set
         nothing
-    elseif from_flexible
-        @optic(_.input.flexible[p])
+    elseif from_location_maps
+        @optic(_.input.location_maps[p])
     else
         @optic(getfield(_.input, Symbol(p)))
     end
