@@ -35,6 +35,13 @@ function HydrologicalMassBalance(domain::Domain, modelsettings::NamedTuple)
     end
 end
 
+function compute_mass_balance_error(total_input, total_output, storage, storage_prev)
+    error = (total_input - total_output - (storage - storage_prev))
+    average_flow_rate = (total_input + total_output) / 2.0
+    relative_error = iszero(average_flow_rate) ? 0.0 : error / average_flow_rate
+    return error, relative_error
+end
+
 function compute_total_storage(model::LandHydrologySBM, i::Int)
     (; total_soilwater_storage) = model.soil.variables
     (; canopy_storage) = model.interception.variables
@@ -107,11 +114,12 @@ function compute_land_hydrology_balance!(
             actleakage[i] +
             get_groundwater_abstraction_flux(allocation)[i]
         total_output = subsurface_flux_out + vertical_flux_out + get_snow_out(snow)[i]
-
         storage = compute_total_storage(model.land, i)
 
-        error[i] = (total_input - total_output - (storage - storage_prev[i]))
-        relative_error[i] = error[i] / ((total_input + total_output) / 2)
+        _error, _relative_error =
+            compute_mass_balance_error(total_input, total_output, storage, storage_prev[i])
+        error[i] = _error
+        relative_error[i] = _relative_error
     end
     return nothing
 end
@@ -129,9 +137,14 @@ function compute_flow_balance!(
     for i in eachindex(storage_prev)
         total_input = inwater[i] + qin_av[i] + max(0.0, external_inflow[i])
         total_output = q_av[i] + actual_external_abstraction_av[i] + abstraction[i]
-
-        error[i] = (total_input - total_output - (storage[i] - storage_prev[i]) / dt)
-        relative_error[i] = error[i] / ((total_input + total_output) / 2)
+        _error, _relative_error = compute_mass_balance_error(
+            total_input,
+            total_output,
+            storage[i],
+            storage_prev[i],
+        )
+        error[i] = _error
+        relative_error[i] = _relative_error
     end
     return nothing
 end
@@ -148,9 +161,14 @@ function compute_flow_balance!(
     for i in eachindex(storage_prev)
         total_input = inwater[i] + qin_av[i]
         total_output = q_av[i]
-
-        error[i] = (total_input - total_output - (storage[i] - storage_prev[i]) / dt)
-        relative_error[i] = error[i] / ((total_input + total_output) / 2)
+        _error, _relative_error = compute_mass_balance_error(
+            total_input,
+            total_output,
+            storage[i],
+            storage_prev[i],
+        )
+        error[i] = _error
+        relative_error[i] = _relative_error
     end
     return nothing
 end
