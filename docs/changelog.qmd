@@ -27,6 +27,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   setting (`subsurface_water_flow__alpha_coefficient`), so this can be lowered easily in
   case of numerical instabilities. Additionally, internal timestepping for groundwater flow
   is now supported.
+- For scalar NetCDF output files, when using the same output map (gauge or subcatchment map)
+  multiple times, each variable that uses these IDs are now sharing the same dimension
+  (instead of creating a new dimension for each variable). The name of this dimension is
+  based on the name of the map defined in the .toml file.
 
 ### Added
 - Support external inflow at reservoir locations.
