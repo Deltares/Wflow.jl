@@ -19,8 +19,10 @@ end
     routing::FlowRoutingMassBalance
 end
 
-function HydrologicalMassBalance(n_land::Int, n_river::Int, modelsettings::NamedTuple)
+function HydrologicalMassBalance(domain::Domain, modelsettings::NamedTuple)
     do_water_mass_balance = modelsettings.water_mass_balance
+    n_land = length(domain.land.network.indices)
+    n_river = length(domain.river.network.indices)
     if do_water_mass_balance
         routing = FlowRoutingMassBalance(;
             river = MassBalance(; n = n_river),

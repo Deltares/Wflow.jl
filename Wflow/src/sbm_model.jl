@@ -53,9 +53,7 @@ function Model(config::Config, type::SbmModel)
     )
     close(dataset)
 
-    n_land = length(domain.land.network.indices)
-    n_river = length(domain.river.network.indices)
-    mass_balance = HydrologicalMassBalance(n_land, n_river, modelsettings)
+    mass_balance = HydrologicalMassBalance(domain, modelsettings)
 
     model = Model(
         config,
