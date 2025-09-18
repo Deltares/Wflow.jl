@@ -9,6 +9,7 @@ res_bc = Wflow.ReservoirBC(;
     evaporation = [1.5],
 )
 res_params = Wflow.ReservoirParameters(;
+    id = [1],
     demand = [52.523],
     maxrelease = [420.184],
     maxstorage = [25_000_000.0],
@@ -34,11 +35,23 @@ res = Wflow.Reservoir(;
     @test res.variables.outflow_av[1] == res.variables.outflow[1]
     @test res.variables.storage[1] ≈ 2.0e7
     @test res.variables.storage[1] == res.variables.storage_av[1]
-    @test res.variables.percfull[1] ≈ 0.80
-    @test res.variables.demandrelease[1] ≈ 52.5229994727611
     @test res.boundary_conditions.precipitation[1] ≈ 4.2
     @test res.boundary_conditions.evaporation[1] ≈ 1.5
     @test res.variables.actevap[1] ≈ 1.5
+end
+
+# reset storage and waterlevel and set observed outflow
+res.variables.outflow_obs[1] = 80.0
+res.variables.storage[1] = 1.925e7
+res.variables.waterlevel[1] = 10.208598234556407
+@testset "Update reservoir simple (outflowfunc = 4) with observed outflow" begin
+    Wflow.set_reservoir_vars!(res)
+    Wflow.update!(res, 1, 100.0, 86400.0, 86400.0)
+    Wflow.average_reservoir_vars!(res, 86400.0)
+    @test res.variables.outflow[1] ≈ 80.0
+    @test res.variables.outflow_av[1] == res.variables.outflow[1]
+    @test res.variables.storage[1] ≈ 2.0983091296454795e7
+    @test res.variables.storage[1] == res.variables.storage_av[1]
 end
 
 # Reservoir Modified Puls approach (outflowfunc = 3)  
@@ -52,6 +65,7 @@ res_bc = Wflow.ReservoirBC(;
     evaporation = [3.2],
 )
 res_params = Wflow.ReservoirParameters(;
+    id = [1],
     area = [180510409.0],
     threshold = [0.0],
     storfunc = [1],
@@ -108,6 +122,7 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
     @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
 
     res_params = Wflow.ReservoirParameters(;
+        id = [1, 2],
         lower_reservoir_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, NaN],
@@ -186,6 +201,7 @@ end
         Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
     res_params = Wflow.ReservoirParameters(;
+        id = [1],
         area = [200_000_000],
         storfunc = [2],
         outflowfunc = [1],

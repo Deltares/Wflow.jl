@@ -62,11 +62,11 @@ end
         8.601765,
         2.7730224,
     ]
-    @test ds["Q_river_gauge__count"].attrib["cf_role"] == "timeseries_id"
+    @test ds["river_gauge__count"].attrib["cf_role"] == "timeseries_id"
     @test ds["temp_index"][:] ≈ [2.39]
     @test ds["temp_coord"][:] ≈ [2.39]
     @test keys(ds.dim) ==
-          ["time", "layer", "Q_river_gauge__count", "temp_bycoord", "temp_byindex"]
+          ["time", "layer", "river_gauge__count", "temp_bycoord", "temp_byindex"]
 end
 
 @testset "first timestep" begin

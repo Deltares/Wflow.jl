@@ -209,7 +209,7 @@ function init_config_section(::Type{NetCDFScalarVariable}, dict::AbstractDict{St
     end
 
     if haskey(dict, "map")
-        dict["_location_dim"] = string(dict["name"], '_', dict["map"])
+        dict["_location_dim"] = dict["map"]
     elseif haskey(dict, "location")
         dict["_location_dim"] = dict["location"]
     else
@@ -251,10 +251,18 @@ function to_dict(
 ) where {T <: AbstractConfigSection}
     for field_name in fieldnames(T)
         value = getfield(config_section, field_name)
-        if (field_name ∈ (:location_maps, :_was_specified)) || isnothing(value)
+        if (field_name == :location_maps) || isnothing(value)
             continue
         end
-        dict[String(field_name)] = to_dict(value)
+        field_dict = to_dict(value)
+        add_entry = if (field_dict isa Dict) && haskey(field_dict, "_was_specified")
+            pop!(field_dict, "_was_specified")
+        else
+            true
+        end
+        if add_entry
+            dict[String(field_name)] = to_dict(value)
+        end
     end
     return dict
 end

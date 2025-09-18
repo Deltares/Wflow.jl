@@ -139,7 +139,12 @@ function update_forcing!(model)
             end
         end
         sel = active_indices(domain, par)
-        data_sel = data[sel]
+        # missing data for observed reservoir outflow is allowed at reservoir location(s)
+        if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+            data_sel = nomissing(data[sel], MISSING_VALUE)
+        else
+            data_sel = data[sel]
+        end
         if any(ismissing, data_sel)
             msg = "Forcing data at $time has missing values on active model cells for $(ncvar.name)"
             throw(ArgumentError(msg))
@@ -193,7 +198,13 @@ function update_cyclic!(model)
             # load from netCDF into the model according to the mapping
             data = get_at(cyclic_dataset, ncvar, i)
             sel = active_indices(domain, par)
-            data_sel = data[sel]
+            # missing data for observed reservoir outflow is allowed at reservoir
+            # location(s)
+            if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+                data_sel = nomissing(data[sel], MISSING_VALUE)
+            else
+                data_sel = data[sel]
+            end
             if any(ismissing, data_sel)
                 msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(ncvar.name)"
                 throw(ArgumentError(msg))
@@ -259,15 +270,17 @@ function setup_scalar_netcdf(
         (; map, _location_dim, location, parameter, name) = scalar_variable
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
         # contains more than one location list
-        locations =
-            isnothing(map) ? [location] : string.(locations_map(dataset, map, config))
-        defVar(
-            ds,
-            _location_dim,
-            locations,
-            (_location_dim,);
-            attrib = ["cf_role" => "timeseries_id"],
-        )
+        if _location_dim ∉ keys(ds.dim)
+            locations =
+                isnothing(map) ? [location] : string.(locations_map(dataset, map, config))
+            defVar(
+                ds,
+                _location_dim,
+                locations,
+                (_location_dim,);
+                attrib = ["cf_role" => "timeseries_id"],
+            )
+        end
         v = if haskey(standard_name_map(land), parameter)
             lens = standard_name_map(land)[parameter].lens
             lens(modelmap)

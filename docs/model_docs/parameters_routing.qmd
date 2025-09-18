@@ -48,6 +48,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `reservoir_water~full-target__volume_fraction` | Target fraction full (of max storage) | - | - |
 | `reservoir_water~min-target__volume_fraction` | Target minimum full fraction (of max storage)	| - | - |
 | `reservoir_water_inflow~external__volume_flow_rate` | External inflow reservoir (negative for abstractions) | m³ s⁻¹ | - |
+| `reservoir_water~outgoing~observed__volume_flow_rate` | Observed outflow reservoir | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### States

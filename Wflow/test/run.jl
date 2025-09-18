@@ -12,7 +12,8 @@ config.time.starttime = "2000-01-01T00:00:00"
 config.time.endtime = "2000-02-01T00:00:00"
 config.model.cold_start__flag = true # cold start
 # note that this needs to be relative to the tomlpath
-config.state.path_output = "data/state-test/outstates-moselle-january.nc"
+config.state.path_output =
+    joinpath(dirname(tomlpath), "data/state-test/outstates-moselle-january.nc")
 model = Wflow.Model(config)
 Wflow.run!(model)
 
