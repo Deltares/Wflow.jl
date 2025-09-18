@@ -484,6 +484,7 @@ window.Quarto = {
 <ul>
 <li>Refactor <code>SimpleReservoir</code> and <code>Lake</code> structs by introducing a <code>Reservoir</code> struct that combines data and functionality of both structs. For the simple reservoir a rating curve type (4) has been added. To represent reservoirs, (natural) lakes or other water storage features that can be represented by the available functionality the common name <code>reservoir</code> is used, also for the standard names of associated model variables and parameters.</li>
 <li>The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25 as recommended by Chu and Willis (1984. This has been changed to a configurable model setting (<code>subsurface_water_flow__alpha_coefficient</code>), so this can be lowered easily in case of numerical instabilities. Additionally, internal timestepping for groundwater flow is now supported.</li>
+<li>For scalar NetCDF output files, when using the same output map (gauge or subcatchment map) multiple times, each variable that uses these IDs are now sharing the same dimension (instead of creating a new dimension for each variable). The name of this dimension is based on the name of the map defined in the .toml file.</li>
 </ul>
 </section>
 <section id="added" class="level3">
@@ -491,6 +492,7 @@ window.Quarto = {
 <ul>
 <li>Support external inflow at reservoir locations.</li>
 <li>Include a SBOM in build distributions (#669).</li>
+<li>Support use of reservoir observed outflow data for the reservoir water balance computation.</li>
 </ul>
 </section>
 </section>
