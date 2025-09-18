@@ -164,7 +164,7 @@ end
 function compute_flow_balance!(
     river_flow::KinWaveRiverFlow,
     routing_balance::FlowRoutingMassBalance,
-    reservoir_indices::Vector{Int},
+    network::NetworkRiver,
     dt::Float64,
 )
     (; storage_prev, error, relative_error) = routing_balance.river
@@ -174,8 +174,8 @@ function compute_flow_balance!(
     (; qin_av, q_av, storage) = river_flow.variables
 
     for i in eachindex(storage_prev)
-        if !isnothing(reservoir) && reservoir_indices[i] != 0
-            res_index = reservoir_indices[i]
+        res_index = network.reservoir_indices[i]
+        if !isnothing(reservoir) && res_index != 0
             compute_flow_balance!(reservoir, routing_balance.reservoir, res_index, dt)
         end
         total_input = inwater[i] + qin_av[i] + max(0.0, external_inflow[i])
@@ -214,9 +214,9 @@ function compute_flow_routing_balance!(model)
     (; river_flow, overland_flow) = model.routing
     (; routing) = model.mass_balance
     (; land) = routing
-    (; reservoir_indices) = model.domain.river.network
+    (; network) = model.domain.river
     dt = tosecond(model.clock.dt)
-    compute_flow_balance!(river_flow, routing, reservoir_indices, dt)
+    compute_flow_balance!(river_flow, routing, network, dt)
     compute_flow_balance!(overland_flow, land, dt)
 end
 
