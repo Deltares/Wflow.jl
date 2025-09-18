@@ -10,6 +10,7 @@ end
 
 @with_kw struct FlowRoutingMassBalance
     river::MassBalance
+    reservoir::Union{MassBalance, NoMassBalance}
     land::MassBalance
     subsurface::MassBalance
 end
@@ -21,18 +22,27 @@ end
 
 function HydrologicalMassBalance(domain::Domain, modelsettings::NamedTuple)
     do_water_mass_balance = modelsettings.water_mass_balance
-    n_land = length(domain.land.network.indices)
-    n_river = length(domain.river.network.indices)
     if do_water_mass_balance
+        do_reservoirs = modelsettings.reservoirs
+        n_land = length(domain.land.network.indices)
+        n_river = length(domain.river.network.indices)
+        if do_reservoirs
+            n_reservoir = length(domain.reservoir.network.indices_outlet)
+            reservoir = MassBalance(; n = n_reservoir)
+        else
+            reservoir = NoMassBalance()
+        end
         routing = FlowRoutingMassBalance(;
             river = MassBalance(; n = n_river),
+            reservoir,
             land = MassBalance(; n = n_land),
             subsurface = MassBalance(; n = n_land),
         )
-        HydrologicalMassBalance(; land = MassBalance(; n = n_land), routing)
+        mass_balance = HydrologicalMassBalance(; land = MassBalance(; n = n_land), routing)
     else
-        NoMassBalance()
+        mass_balance = NoMassBalance()
     end
+    return mass_balance
 end
 
 function compute_mass_balance_error(total_input, total_output, storage_rate)
