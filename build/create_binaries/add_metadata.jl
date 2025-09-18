@@ -51,11 +51,13 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
 
         # get the release from the current tag, like `git describe --tags`
         # if it is a commit after a tag, it will be <tag>-g<short-commit>
-        options = LibGit2.DescribeOptions(; describe_strategy = LibGit2.Consts.DESCRIBE_TAGS)
+        options =
+            LibGit2.DescribeOptions(; describe_strategy = LibGit2.Consts.DESCRIBE_TAGS)
         result = LibGit2.GitDescribeResult(repo; options)
         suffix = "-dirty"
-        foptions =
-            LibGit2.DescribeFormatOptions(; dirty_suffix = Base.unsafe_convert(Cstring, suffix))
+        foptions = LibGit2.DescribeFormatOptions(;
+            dirty_suffix = Base.unsafe_convert(Cstring, suffix),
+        )
         GC.@preserve suffix tag = LibGit2.format(result; options = foptions)[2:end]  # skip v prefix
 
         url = "https://github.com/Deltares/Wflow.jl/tree"
@@ -79,22 +81,22 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
 
     # collect lisences of all dependencies
     ctx = PackageCompiler.create_pkg_context(project_dir)
-    license_dir = joinpath(output_dir, "dep_licenses") 
+    license_dir = joinpath(output_dir, "dep_licenses")
     mkpath(license_dir)
 
-    for (uuid,pkg_entry) in ctx.env.manifest.deps
-	if isnothing(pkg_entry.tree_hash)
-	    # seems as though stdlib packages don't have a tree_sha. as there doesn't seem to be 
-	    # a different way of detecting those, I'm going to assume that is characteristic 
-	    continue 
-	end
-	install_path = Pkg.Operations.find_installed(pkg_entry.name, uuid, pkg_entry.tree_hash)
+    for (uuid, pkg_entry) in ctx.env.manifest.deps
+        if isnothing(pkg_entry.tree_hash)
+            # seems as though stdlib packages don't have a tree_sha. as there doesn't seem to be 
+            # a different way of detecting those, I'm going to assume that is characteristic 
+            continue
+        end
+        install_path =
+            Pkg.Operations.find_installed(pkg_entry.name, uuid, pkg_entry.tree_hash)
 
-	license = LicenseCheck.find_license(install_path)
-	if !isnothing(license) 
-	    license_file_path = joinpath(install_path,license.license_filename)
-	    cp(license_file_path , joinpath(license_dir,pkg_entry.name), force=true)
-	end
+        license = LicenseCheck.find_license(install_path)
+        if !isnothing(license)
+            license_file_path = joinpath(install_path, license.license_filename)
+            cp(license_file_path, joinpath(license_dir, pkg_entry.name); force = true)
+        end
     end
-
 end

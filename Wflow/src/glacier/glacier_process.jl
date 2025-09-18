@@ -42,15 +42,15 @@ function glacier_hbv(
     # Restrict snow_to_glacier conversion
     snow_to_glacier = min(snow_to_glacier, max_snow_to_glacier)
 
-    snow = snow - (snow_to_glacier * glacierfrac)
-    glacierstore = glacierstore + snow_to_glacier
+    snow -= snow_to_glacier * glacierfrac
+    glacierstore += snow_to_glacier
 
     # Potential snow melt, based on temperature
     potmelt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
 
     # actual Glacier melt
     glaciermelt = snow < 10.0 ? min(potmelt, glacierstore) : 0.0
-    glacierstore = glacierstore - glaciermelt
+    glacierstore -= glaciermelt
 
     return snow, snow_to_glacier, glacierstore, glaciermelt
 end

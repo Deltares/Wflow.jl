@@ -64,7 +64,7 @@ function limit_and_convert_transport_capacity(
     # 1285 g/L: boundary between streamflow and debris flow (Costa, 1988)
     transport_capacity = min(transport_capacity, 1.285)
     # Transport capacity [ton]
-    transport_capacity = transport_capacity * (waterlevel * width * length + q * dt)
+    transport_capacity *= waterlevel * width * length + q * dt
 
     return transport_capacity
 end
@@ -486,7 +486,7 @@ function transport_capacity_kodatie(
             a_kodatie * velocity^b_kodatie * waterlevel^c_kodatie * slope^d_kodatie
 
         # Transport capacity [tons/m3]
-        transport_capacity = transport_capacity * width / (q * dt)
+        transport_capacity *= width / (q * dt)
         transport_capacity = limit_and_convert_transport_capacity(
             transport_capacity,
             q,
