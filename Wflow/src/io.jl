@@ -428,13 +428,17 @@ function setup_scalar_netcdf(
     for (nc, netcdfvars) in zip(ncvars, config.output.netcdf_scalar.variable)
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
         # contains more than one location list
-        defVar(
-            ds,
-            nc.location_dim,
-            nc.locations,
-            (nc.location_dim,);
-            attrib = ["cf_role" => "timeseries_id"],
-        )
+        # This only needs to happen once, if the dimension already exists, then skip this step
+        # otherwise it gives an error
+        if !(nc.location_dim in keys(ds.dim))
+            defVar(
+                ds,
+                nc.location_dim,
+                nc.locations,
+                (nc.location_dim,);
+                attrib = ["cf_role" => "timeseries_id"],
+            )
+        end
         v = if haskey(standard_name_map(land), nc.par)
             lens = standard_name_map(land)[nc.par].lens
             lens(modelmap)
@@ -783,10 +787,9 @@ function nc_variables_dims(nc_variables, dataset, config)
         if haskey(nc_var, "map")
             mapname = nc_var["map"]
             ids = string.(locations_map(dataset, mapname, config))
-            location_dim = string(var, '_', nc_var["map"])
             push!(
                 ncvars_dims,
-                (par = par, var = var, location_dim = location_dim, locations = ids),
+                (par = par, var = var, location_dim = mapname, locations = ids),
             )
         else
             push!(
