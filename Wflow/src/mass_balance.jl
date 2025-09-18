@@ -35,8 +35,8 @@ function HydrologicalMassBalance(domain::Domain, modelsettings::NamedTuple)
     end
 end
 
-function compute_mass_balance_error(total_input, total_output, storage, storage_prev)
-    error = (total_input - total_output - (storage - storage_prev))
+function compute_mass_balance_error(total_input, total_output, storage_rate)
+    error = total_input - total_output - storage_rate
     average_flow_rate = (total_input + total_output) / 2.0
     relative_error = iszero(average_flow_rate) ? 0.0 : error / average_flow_rate
     return error, relative_error
@@ -116,8 +116,9 @@ function compute_land_hydrology_balance!(
         total_output = subsurface_flux_out + vertical_flux_out + get_snow_out(snow)[i]
         storage = compute_total_storage(model.land, i)
 
+        storage_rate = storage - storage_prev[i]
         _error, _relative_error =
-            compute_mass_balance_error(total_input, total_output, storage, storage_prev[i])
+            compute_mass_balance_error(total_input, total_output, storage_rate)
         error[i] = _error
         relative_error[i] = _relative_error
     end
@@ -137,12 +138,9 @@ function compute_flow_balance!(
     for i in eachindex(storage_prev)
         total_input = inwater[i] + qin_av[i] + max(0.0, external_inflow[i])
         total_output = q_av[i] + actual_external_abstraction_av[i] + abstraction[i]
-        _error, _relative_error = compute_mass_balance_error(
-            total_input,
-            total_output,
-            storage[i],
-            storage_prev[i],
-        )
+        storage_rate = (storage[i] - storage_prev[i]) / dt
+        _error, _relative_error =
+            compute_mass_balance_error(total_input, total_output, storage_rate)
         error[i] = _error
         relative_error[i] = _relative_error
     end
@@ -161,12 +159,9 @@ function compute_flow_balance!(
     for i in eachindex(storage_prev)
         total_input = inwater[i] + qin_av[i]
         total_output = q_av[i]
-        _error, _relative_error = compute_mass_balance_error(
-            total_input,
-            total_output,
-            storage[i],
-            storage_prev[i],
-        )
+        storage_rate = (storage[i] - storage_prev[i]) / dt
+        _error, _relative_error =
+            compute_mass_balance_error(total_input, total_output, storage_rate)
         error[i] = _error
         relative_error[i] = _relative_error
     end
