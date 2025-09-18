@@ -288,10 +288,10 @@ function ncread(
         @info "Set `$(parameter.name)` using uniform value `$value` from TOML file."
         if isnothing(dimname)
             # set to one uniform value
-            return Base.fill(value, length(sel))
+            return Base.fill(only(value), length(sel))
         elseif length(value) == 1
             # set to one uniform value (parameter with third dimension of size 1)
-            return Base.fill(value, (nc.dim[String(dimname)], length(sel)))
+            return Base.fill(only(value), (nc.dim[String(dimname)], length(sel)))
         elseif length(value) > 1
             # set to multiple uniform values (parameter with third dimension of size > 1)
             @assert length(value) == nc.dim[String(dimname)]

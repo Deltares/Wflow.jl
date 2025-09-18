@@ -108,7 +108,7 @@ time interval, e.g. daily precipitation at 01-02-2000 00:00:00 is the accumulate
 precipitation between 01-01-2000 00:00:00 and 01-02-2000 00:00:00.
 """
 function update_forcing!(model)
-    (; clock, reader, domain, config) = model
+    (; clock, reader, domain) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     do_reservoirs = routing_with_reservoirs(model)
@@ -1040,13 +1040,13 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         @info "Adding scalar output of all active cells with reducer function." fileformat param =
             parameter reducer_name = Symbol(reducer)
         return function_map[reducer]
-    elseif !isnothing(index)
-        if index isa Int
+    elseif do_index(index)
+        if !isnothing(index.i)
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
             @info "Adding scalar output for linear index." fileformat param = parameter index
-            return x -> getindex(x, index)
-        elseif index isa IndexSection
+            return x -> getindex(x, index.i)
+        else
             # index into the 2D input/output arrays
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based

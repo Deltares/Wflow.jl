@@ -168,7 +168,7 @@ Wflow.run_timestep!(model)
 end
 
 # test without snow model
-config = Wflow.Config(tomlpath; model_snow__flag = false)
+config = Wflow.Config(tomlpath; override = Dict("model" => Dict("snow__flag" => false)))
 pop!(config.output.netcdf_grid.variables, "snowpack~dry__leq-depth")
 pop!(config.output.netcdf_grid.variables, "snowpack~liquid__depth")
 model = Wflow.Model(config)
@@ -185,10 +185,12 @@ Wflow.close_files(model; delete_output = false)
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(
     tomlpath;
-    model_pit__flag = true,
-    input_basin_pit_location__mask = "wflow_pits",
-    time_endtime = DateTime(2000, 1, 9),
-    logging_loglevel = "info",
+    override = Dict(
+        "model" => Dict("pit__flag" => true),
+        "input" => Dict("basin_pit_location__mask" => "wflow_pits"),
+        "time" => Dict("endtime" => DateTime(2000, 1, 9)),
+        "logging" => Dict("loglevel" => "info"),
+    ),
 )
 
 model = Wflow.run(config)
@@ -211,12 +213,13 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.forcing.dict["atmosphere_water__precipitation_volume_flux"] = Wflow.from_dict(
-    Wflow.InputEntry,
-    Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
-)
+config.input.forcing.dict["atmosphere_water__precipitation_volume_flux"] =
+    Wflow.init_config_section(
+        Wflow.InputEntry,
+        Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
+    )
 config.input.forcing.dict["land_surface_water__potential_evaporation_volume_flux"] =
-    Wflow.from_dict(
+    Wflow.init_config_section(
         Wflow.InputEntry,
         Dict(
             "scale" => 3.0,
@@ -224,7 +227,7 @@ config.input.forcing.dict["land_surface_water__potential_evaporation_volume_flux
             "netcdf" => Dict("variable" => Dict("name" => "pet")),
         ),
     )
-config.input.cyclic.dict["vegetation__leaf-area_index"] = Wflow.from_dict(
+config.input.cyclic.dict["vegetation__leaf-area_index"] = Wflow.init_config_section(
     Wflow.InputEntry,
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI"))),
 )

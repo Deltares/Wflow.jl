@@ -94,7 +94,8 @@ end
 end
 
 # test reading warm states
-config = Wflow.Config(tomlpath; model_cold_start__flag = false)
+config =
+    Wflow.Config(tomlpath; override = Dict("model" => Dict("cold_start__flag" => false)))
 model = Wflow.Model(config)
 @testset "initial warm states" begin
     river = model.routing.river_flow
@@ -160,9 +161,10 @@ tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(
     tomlpath;
     # Update config to run only the land model
-    model_run_river_model__flag = false,
     # Use govers equation for land transport capacity
-    model_land_transport = "govers",
+    override = Dict(
+        "model" => Dict("run_river_model__flag" => false, "land_transport" => "govers"),
+    ),
 )
 
 model = Wflow.Model(config)
@@ -187,9 +189,10 @@ tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(
     tomlpath;
     # Update config to run only the land model
-    model_run_river_model__flag = false,
-    # Use yalin equation for land transport capacity
-    model_land_transport = "yalin",
+    # Use govers equation for land transport capacity
+    override = Dict(
+        "model" => Dict("run_river_model__flag" => false, "land_transport" => "yalin"),
+    ),
 )
 
 model = Wflow.Model(config)
@@ -216,7 +219,7 @@ tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(
     tomlpath;
     # Use yang equation for river transport capacity
-    model_river_transport = "yang",
+    override = Dict("model" => Dict("river_transport" => "yang")),
 )
 
 model = Wflow.Model(config)
@@ -241,7 +244,7 @@ tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(
     tomlpath;
     # Use kodatie equation for river transport capacity
-    model_river_transport = "kodatie",
+    override = Dict("model" => Dict("river_transport" => "kodatie")),
 )
 
 model = Wflow.Model(config)
@@ -267,7 +270,7 @@ tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(
     tomlpath;
     # Use molinas equation for river transport capacity
-    model_river_transport = "molinas",
+    override = Dict("model" => Dict("river_transport" => "molinas")),
 )
 
 model = Wflow.Model(config)

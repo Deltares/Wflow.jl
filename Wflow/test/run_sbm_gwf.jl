@@ -70,7 +70,8 @@ end
 end
 
 @testset "no drains" begin
-    config = Wflow.Config(tomlpath; model_drain__flag = false)
+    config =
+        Wflow.Config(tomlpath; override = Dict("model" => Dict("drain__flag" => false)))
     delete!(
         config.output.netcdf_grid.variables,
         "land_drain_water~to-subsurface__volume_flow_rate",
@@ -86,7 +87,10 @@ Wflow.run(tomlpath; silent = true)
 
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
-config = Wflow.Config(tomlpath; model_river_routing = "local-inertial")
+config = Wflow.Config(
+    tomlpath;
+    override = Dict("model" => Dict("river_routing" => "local-inertial")),
+)
 
 config.input.static.dict["river_bank_water__elevation"] =
     Wflow.InputEntry(; standard_name = "bankfull_elevation")
