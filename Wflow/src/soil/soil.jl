@@ -283,7 +283,7 @@ function sbm_kv_profiles(
     elseif kv_profile_type == "exponential_constant"
         lens = lens_input_parameter(
             config,
-            "soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth";
+            "soil_vertical_saturated_hydraulic_conductivity_profile_exponential_below_surface__depth";
             optional = false,
         )
         z_exp = ncread(dataset, config, lens; sel = indices, type = Float64)
@@ -313,7 +313,7 @@ function sbm_kv_profiles(
         else
             lens = lens_input_parameter(
                 config,
-                "soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth";
+                "soil_vertical_saturated_hydraulic_conductivity_profile_layered_below_surface__depth";
                 optional = false,
             )
             z_layered = ncread(dataset, config, lens; sel = indices, type = Float64)
@@ -390,32 +390,32 @@ function SbmSoilParameters(
     lens = lens_input_parameter(config, "soil_water__air_entry_pressure_head")
     hb = ncread(dataset, config, lens; sel = indices, defaults = -10.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~1")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h_1")
     h1 = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~2")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h_2")
     h2 = ncread(dataset, config, lens; sel = indices, defaults = -100.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "vegetation_root__feddes_critial_pressure_head_h~3~high",
+        "vegetation_root__feddes_critial_pressure_head_h_3_high",
     )
     h3_high =
         ncread(dataset, config, lens; sel = indices, defaults = -400.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "vegetation_root__feddes_critial_pressure_head_h~3~low",
+        "vegetation_root__feddes_critial_pressure_head_h_3_low",
     )
     h3_low =
         ncread(dataset, config, lens; sel = indices, defaults = -1000.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~4")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h_4")
     h4 = ncread(dataset, config, lens; sel = indices, defaults = -16000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient",
+        "vegetation_root__feddes_critial_pressure_head_h_1_reduction_coefficient",
     )
     alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
@@ -423,12 +423,12 @@ function SbmSoilParameters(
     soilthickness = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens =
-        lens_input_parameter(config, "soil~compacted_surface_water__infiltration_capacity")
+        lens_input_parameter(config, "soil_compacted_surface_water__infiltration_capacity")
     infiltcappath =
         ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64) .*
         (dt / BASETIMESTEP)
     lens =
-        lens_input_parameter(config, "soil_water_sat-zone_bottom__max_leakage_volume_flux")
+        lens_input_parameter(config, "soil_water_saturated_zone_bottom__max_leakage_volume_flux")
     maxleakage =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
         (dt / BASETIMESTEP)
@@ -463,23 +463,23 @@ function SbmSoilParameters(
     # soil infiltration capacity based on kv_0 and kvfrac upper soil layer
     infiltcapsoil = kv_0 .* @view kvfrac[1, :]
     # fraction compacted area
-    lens = lens_input_parameter(config, "soil~compacted__area_fraction")
+    lens = lens_input_parameter(config, "soil_compacted__area_fraction")
     pathfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # vegetation parameters
-    lens = lens_input_parameter(config, "soil_root~wet__sigmoid_function_shape_parameter")
+    lens = lens_input_parameter(config, "soil_root_wet__sigmoid_function_shape_parameter")
     rootdistpar =
         ncread(dataset, config, lens; sel = indices, defaults = -500.0, type = Float64)
     lens = lens_input_parameter(
         config,
-        "soil_water_sat-zone_top_capillary-rise__max_water-table_depth",
+        "soil_water_saturated_zone_top_capillary_rise__max_water_table_depth",
     )
     cap_hmax =
         ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "soil_water_sat-zone_top_capillary-rise__averianov_exponent",
+        "soil_water_saturated_zone_top_capillary_rise__averianov_exponent",
     )
     cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
 

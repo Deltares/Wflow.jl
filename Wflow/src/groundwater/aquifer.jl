@@ -393,7 +393,7 @@ function ConstantHead(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "model_boundary_condition~constant_hydraulic_head")
+    lens = lens_input_parameter(config, "model_boundary_condition_constant_hydraulic_head")
     constanthead =
         ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
 

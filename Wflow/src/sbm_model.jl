@@ -135,9 +135,9 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     river_v = routing.river_flow.variables
 
     cold_start = get(config.model, "cold_start__flag", true)::Bool
-    routing_options = ("kinematic-wave", "local-inertial")
+    routing_options = ("kinematic_wave", "local_inertial")
     land_routing =
-        get_options(config.model, "land_routing", routing_options, "kinematic-wave")::String
+        get_options(config.model, "land_routing", routing_options, "kinematic_wave")::String
     do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     floodplain_1d = get(config.model, "floodplain_1d__flag", false)::Bool
 
@@ -156,7 +156,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                 (land.soil.parameters.theta_s .- land.soil.parameters.theta_r),
             )
         land.soil.variables.zi .= zi
-        if land_routing == "kinematic-wave"
+        if land_routing == "kinematic_wave"
             (; surface_flow_width, flow_length) = domain.land.parameters
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(surface_flow_width)
@@ -166,7 +166,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                 end
             end
             land_v.storage .= land_v.h .* surface_flow_width .* flow_length
-        elseif land_routing == "local-inertial"
+        elseif land_routing == "local_inertial"
             (; river_location, x_length, y_length) = domain.land.parameters
             (; flow_width, flow_length) = domain.river.parameters
             (; bankfull_storage) = routing.river_flow.parameters

@@ -24,12 +24,12 @@ path_output = "data/outstates-moselle.nc"   # Output location of the states afte
 [state.variables]
 vegetation_canopy_water__depth = "canopystorage"
 
-soil_water_sat-zone__depth = "satwaterdepth"
+soil_water_saturated_zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
-soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
+soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
 
-"snowpack~dry__leq-depth" = "snow"
-"snowpack~liquid__depth" = "snowwater"
+"snowpack_dry__leq_depth" = "snow"
+"snowpack_liquid__depth" = "snowwater"
 
 river_water__instantaneous_depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"

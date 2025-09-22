@@ -36,7 +36,7 @@ td, th {
 | `soil_erosion__eurosem_exponent` | Exponent EUROSEM | - | 2.0 |
 | `vegetation_canopy__height` | Canopy height | m | 0.5 |
 | `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | 0.1 |
-| `soil~compacted__area_fraction` | Fraction of the soil that is covered (eg paved, snow, etc) | - | 0.01 |
+| `soil_compacted__area_fraction` | Fraction of the soil that is covered (eg paved, snow, etc) | - | 0.01 |
 | `soil_erosion__usle_k_factor` | USLE soil erodibility factor | - | 0.1 |
 | `soil_erosion__usle_c_factor` | USLE crop management factor | - | 0.01 |
 | `soil_erosion__answers_rainfall_factor` | Answers rainfall erosion factor | - | 0.108
@@ -45,7 +45,7 @@ td, th {
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `soil_erosion~rainfall__mass_flow_rate` | Total soil erosion from rainfall (splash) | ton Δt⁻¹ |
+| `soil_erosion__rainfall_mass_flow_rate` | Total soil erosion from rainfall (splash) | ton Δt⁻¹ |
 : {.striped .hover}
 
 ## Overland flow erosion
@@ -60,7 +60,7 @@ td, th {
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `soil_erosion~overland_flow__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
+| `soil_erosion__overland_flow_mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
 : {.striped .hover}
 
 ## Soil erosion
@@ -70,8 +70,8 @@ td, th {
 | `soil_clay__mass_fraction` | Soil content clay | - | 0.4 |
 | `soil_silt__mass_fraction` | Soil content silt | - | 0.3 |
 | `soil_sand__mass_fraction` | Soil content sand | - | 0.3 |
-| `soil_aggregates~small__mass_fraction` | Soil content small aggregates | - | 0.0 |
-| `soil_aggregates~large__mass_fraction` | Soil content large aggregates | - | 0.0 |
+| `soil_aggregates_small__mass_fraction` | Soil content small aggregates | - | 0.0 |
+| `soil_aggregates_large__mass_fraction` | Soil content large aggregates | - | 0.0 |
 : {.striped .hover}
 
 ### Output
@@ -81,6 +81,6 @@ td, th {
 | `soil_erosion_clay__mass_flow_rate` | Total clay erosion | ton Δt⁻¹ |
 | `soil_erosion_silt__mass_flow_rate` | Total silt erosion | ton Δt⁻¹ |
 | `soil_erosion_sand__mass_flow_rate` | Total sand erosion | ton Δt⁻¹ |
-| `soil_erosion_aggregates~small__mass_flow_rate` | Total small aggregates erosion | ton Δt⁻¹ |
-| `soil_erosion_aggregates~large__mass_flow_rate` | Total large aggregates erosion | ton Δt⁻¹ |
+| `soil_erosion_aggregates_small__mass_flow_rate` | Total small aggregates erosion | ton Δt⁻¹ |
+| `soil_erosion_aggregates_large__mass_flow_rate` | Total large aggregates erosion | ton Δt⁻¹ |
 : {.striped .hover}

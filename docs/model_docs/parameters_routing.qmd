@@ -33,8 +33,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `reservoir_water__max_volume` | Maximum volume (above which water is spilled) | m³ | - |
 | `reservoir_water__rating_curve_coefficient` | Rating curve coefficient | - | - |
 | `reservoir_water__rating_curve_exponent` | Rating curve exponent | - | - |
-| `reservoir_water_flow_threshold-level__elevation` | Water level threshold, below this level outflow is zero | m | - |
-| `reservoir~lower_location__count` | Index of lower reservoir (linked reservoir) | - | 0 |
+| `reservoir_water_flow_threshold_level__elevation` | Water level threshold, below this level outflow is zero | m | - |
+| `reservoir_lower_location__count` | Index of lower reservoir (linked reservoir) | - | 0 |
 | `reservoir_water__storage_curve_type_count` | Type of reservoir storage curve | - | - |
 | `reservoir_water__rating_curve_type_count` | Type of reservoir rating curve | - | - |
 | `reservoir_water_surface__initial_elevation` | Water level of reservoir (used for initialization) | m | - |
@@ -43,12 +43,12 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ----- | -- | -- |
-| `reservoir_water_demand~required~downstream__volume_flow_rate` | Minimum (environmental) flow released from reservoir | m³ s⁻¹ | - |
-| `reservoir_water_release-below-spillway__max_volume_flow_rate` | Maximum amount that can be released if below spillway | m³ s⁻¹ | - |
-| `reservoir_water~full-target__volume_fraction` | Target fraction full (of max storage) | - | - |
-| `reservoir_water~min-target__volume_fraction` | Target minimum full fraction (of max storage)	| - | - |
-| `reservoir_water_inflow~external__volume_flow_rate` | External inflow reservoir (negative for abstractions) | m³ s⁻¹ | - |
-| `reservoir_water~outgoing~observed__volume_flow_rate` | Observed outflow reservoir | m³ s⁻¹ | - |
+| `reservoir_water_demand__required_downstream_volume_flow_rate` | Minimum (environmental) flow released from reservoir | m³ s⁻¹ | - |
+| `reservoir_water_release_below_spillway__max_volume_flow_rate` | Maximum amount that can be released if below spillway | m³ s⁻¹ | - |
+| `reservoir_water_target_full__volume_fraction` | Target fraction full (of max storage) | - | - |
+| `reservoir_water_target_min__volume_fraction` | Target minimum full fraction (of max storage)	| - | - |
+| `reservoir_water__external_inflow_volume_flow_rate` | External inflow reservoir (negative for abstractions) | m³ s⁻¹ | - |
+| `reservoir_water__outgoing_observed_volume_flow_rate` | Observed outflow reservoir | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### States
@@ -63,8 +63,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `reservoir_water__volume` | Reservoir volume | m³ |
 | `reservoir_water__instantaneous_volume` | Reservoir volume | m³ |
 | `reservoir_water_surface__elevation` | Reservoir water level | m |
-| `reservoir_water~outgoing__volume_flow_rate` | Outflow of the reservoir | m³ s⁻¹ |
-| `reservoir_water~incoming__volume_flow_rate` | Inflow into the reservoir | m³ s⁻¹ |
+| `reservoir_water__outgoing_volume_flow_rate` | Outflow of the reservoir | m³ s⁻¹ |
+| `reservoir_water__incoming_volume_flow_rate` | Inflow into the reservoir | m³ s⁻¹ |
 | `reservoir_water__evaporation_volume_flux` | Average actual evaporation over the reservoir area | mm Δt⁻¹ |
 | `reservoir_water__precipitation_volume_flux` | Average precipitation over the reservoir area | mm Δt⁻¹ |
 | `reservoir_water__potential_evaporation_volume_flux` | Average potential evaporation over the reservoir area | mm Δt⁻¹ |
@@ -83,7 +83,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
+| `river_water__external_inflow_volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### States
@@ -100,8 +100,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_water__depth` | River water depth | m |
 | `river_water__volume` | River water volume | m³ |
 | `river_water__instantaneous_volume` | River water volume | m³ |
-| `river_water_inflow~lateral__volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
-| `river_water_abstraction~external__volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
+| `river_water__lateral_inflow_volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
+| `river_water__external_abstraction_volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
 : {.striped .hover}
 
 ### Overland flow
@@ -123,7 +123,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_surface_water__volume_flow_rate` | Discharge overland flow | m³ s⁻¹ |
-| `land_surface_water~to-river__volume_flow_rate` | Discharge overland flow that flows to the river | m³ s⁻¹ |
+| `land_surface_water__to_river_volume_flow_rate` | Discharge overland flow that flows to the river | m³ s⁻¹ |
 | `land_surface_water__depth` | Water depth overland flow | m |
 | `land_surface_water__volume` | Water volume overland flow | m³ |
 | `land_surface_water__instantaneous_volume` | Water volume overland flow | m³ |
@@ -147,9 +147,9 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `subsurface_water_sat-zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | m |
+| `subsurface_water_saturated_zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | m |
 | `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | mm Δt⁻¹ |
-| `subsurface_water~to-river__volume_flow_rate` | Part of subsurface flow that flows to the river | m³ day⁻¹ |
+| `subsurface_water__to_river_volume_flow_rate` | Part of subsurface flow that flows to the river | m³ day⁻¹ |
 : {.striped .hover}
 
 ## Local inertial
@@ -158,13 +158,13 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `river__length` | River length | m | - |
-| `model_boundary_condition~river__length` | Boundary condition river length downstream river outlets | m | 10 000 |
+| `model_boundary_condition_river__length` | Boundary condition river length downstream river outlets | m | 10 000 |
 | `river__width` | River width | m | - |
-| `model_boundary_condition~river_bank_water__depth` | Boundary condition bankfull depth downstream river outlets | m | 0.0 |
+| `model_boundary_condition_river_bank_water__depth` | Boundary condition bankfull depth downstream river outlets | m | 0.0 |
 | `river_bank_water__elevation` | Bankfull elevation of the river | m | - |
 | `river_bank_water__depth` | Bankfull depth of the river | m | - |
 | `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.0036 |
-| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
+| `river_water__external_inflow_volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### States
@@ -181,7 +181,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_water__depth` | River water depth | m |
 | `river_water__volume` | River water volume | m³ |
 | `river_water__instantaneous_volume` | River water volume | m³ |
-| `river_water_abstraction~external__volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
+| `river_water__external_abstraction_volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
 : {.striped .hover}
 
 ### 1D floodplain flow
@@ -261,13 +261,13 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_water__infiltration_conductance` | River bed infiltration conductance | m² day⁻¹ | - |
 | `river_water__exfiltration_conductance` | River bed exfiltration conductance | m² day⁻¹ | - |
 | `river_bottom__elevation` | River bottom elevation | m | - |
-| `river_water_inflow~external__volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
+| `river_water__external_inflow_volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### Output {#output-gwf-river}
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `river_water~to-subsurface__volume_flow_rate` | Exchange flux (river to aquifer) | m³ day⁻¹ |
+| `river_water__to_subsurface_volume_flow_rate` | Exchange flux (river to aquifer) | m³ day⁻¹ |
 : {.striped .hover}
 
 ### Drainage boundary
@@ -282,21 +282,21 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Output {#output-gwf-drainage}
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `land_drain_water~to-subsurface__volume_flow_rate` | Exchange flux (drain to aquifer) | m³ day⁻¹ |
+| `land_drain_water__to_subsurface_volume_flow_rate` | Exchange flux (drain to aquifer) | m³ day⁻¹ |
 : {.striped .hover}
 
 ### Recharge boundary
 #### Output {#output-gwf-recharge}
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `subsurface_water_sat-zone_top__net_recharge_volume_flow_rate` | Net recharge flux | m³ day⁻¹ |
+| `subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate` | Net recharge flux | m³ day⁻¹ |
 : {.striped .hover}
 
 ### Constant head boundary
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `model_boundary_condition~constant_hydraulic_head` | Head of the boundary | m | - |
+| `model_boundary_condition_constant_hydraulic_head` | Head of the boundary | m | - |
 : {.striped .hover}
 
 ## Sediment
@@ -309,8 +309,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `clay__mean_diameter` | Clay mean diameter | μm | 2.0 |
 | `silt__mean_diameter` | Silt mean diameter | μm | 10.0 |
 | `sand__mean_diameter` | Sand mean diameter | μm | 200.0 |
-| `sediment_aggregates~small__mean_diameter` | Small aggregates mean diameter | μm | 30.0 |
-| `sediment_aggregates~large__mean_diameter` | Large aggregates mean diameter | μm | 500.0 |
+| `sediment_aggregates_small__mean_diameter` | Small aggregates mean diameter | μm | 30.0 |
+| `sediment_aggregates_large__mean_diameter` | Large aggregates mean diameter | μm | 500.0 |
 | `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
 | `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
 : {.striped .hover}
@@ -334,12 +334,12 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | --- | --- | - |
 | `land_surface_water_sediment_transport_capacity__mass_flow_rate` | Total sediment transport capacity | ton Δt⁻¹ |
 | `land_surface_water_clay_transport_capacity__mass_flow_rate` | Clay transport capacity | ton Δt⁻¹ |
-| `land_surface_water_sediment~to-river__mass_flow_rate` | Total sediment flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_clay~to-river__mass_flow_rate` | Clay flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_silt~to-river__mass_flow_rate` | Silt flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_sand~to-river__mass_flow_rate` | Sand flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_aggregates~small~to-river__mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_aggregates~large~to-river__mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_sediment__to_river_mass_flow_rate` | Total sediment flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_clay__to_river_mass_flow_rate` | Clay flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_silt__to_river_mass_flow_rate` | Silt flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_sand__to_river_mass_flow_rate` | Sand flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_aggregates_small__to_river_mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_aggregates_large__to_river_mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
 | `land_surface_water_sediment__mass_flow_rate` | Total sediment flux | ton Δt⁻¹ |
 : {.striped .hover}
 
@@ -347,7 +347,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `river_bottom-and-bank_sediment__median_diameter` | Median diameter in the river bed/bank | mm | 0.1
+| `river_bottom_and_bank_sediment__median_diameter` | Median diameter in the river bed/bank | mm | 0.1
 : {.striped .hover}
 
 ### River transport
@@ -355,16 +355,16 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `reservoir_surface__area` | Reservoir surface area | m² | - |
-| `reservoir_water_sediment~bedload__trapping_efficiency` | Reservoir sediment bedload trapping efficiency | - | 1.0 |
-| `river_bottom-and-bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
-| `river_bottom-and-bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
-| `river_bottom-and-bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
-| `river_bottom-and-bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
+| `reservoir_water_sediment__bedload_trapping_efficiency` | Reservoir sediment bedload trapping efficiency | - | 1.0 |
+| `river_bottom_and_bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
+| `river_bottom_and_bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
+| `river_bottom_and_bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
+| `river_bottom_and_bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
 | `clay__mean_diameter` | Clay mean diameter | µm | 2.0 |
 | `silt__mean_diameter` | Silt mean diameter | µm | 10.0 |
 | `sand__mean_diameter` | Sand mean diameter | µm | 200.0 |
-| `sediment_aggregates~small__mean_diameter` | Small aggregates mean diameter | µm | 30.0 |
-| `sediment_aggregates~large__mean_diameter` | Large aggregates mean diameter | µm | 500.0 |
+| `sediment_aggregates_small__mean_diameter` | Small aggregates mean diameter | µm | 30.0 |
+| `sediment_aggregates_large__mean_diameter` | Large aggregates mean diameter | µm | 500.0 |
 | `gravel__mean_diameter` | Gravel mean diameter | µm | 2000.0 |
 : {.striped .hover}
 
@@ -374,28 +374,28 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton |
 | `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton |
 | `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton |
-| `river_bed_aggregates~small__mass` | Small aggregates stored on the river bed after deposition | ton |
-| `river_bed_aggregates~large__mass` | Large aggregates stored on the river bed after deposition | ton |
+| `river_bed_aggregates_small__mass` | Small aggregates stored on the river bed after deposition | ton |
+| `river_bed_aggregates_large__mass` | Large aggregates stored on the river bed after deposition | ton |
 | `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton |
 | `river_water_clay__mass` | Clay left in cell | ton |
 | `river_water_silt__mass` | Silt left in cell | ton |
 | `river_water_sand__mass` | Sand left in cell | ton |
-| `river_water_aggregates~small__mass` | Small aggregates left in cell | ton |
-| `river_water_aggregates~large__mass` | Large aggregates left in cell | ton |
+| `river_water_aggregates_small__mass` | Small aggregates left in cell | ton |
+| `river_water_aggregates_large__mass` | Large aggregates left in cell | ton |
 | `river_water_gravel__mass` | Gravel left in cell | ton? |
 | `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
 | `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
 | `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
-| `river_water_aggregates~small__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
-| `river_water_aggregates~large__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
+| `river_water_aggregates_small__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
+| `river_water_aggregates_large__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
 | `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `river_water_sediment~bedload__mass_concentration` | Bed load sediment concentration in the river | g m⁻³ |
-| `river_water_sediment~suspended__mass_concentration` | Suspended sediemnt concentration in the river | g m⁻³ |
+| `river_water_sediment__bedload_mass_concentration` | Bed load sediment concentration in the river | g m⁻³ |
+| `river_water_sediment__suspended_mass_concentration` | Suspended sediemnt concentration in the river | g m⁻³ |
 | `river_water_sediment__mass_concentration` | Total sediment concentration in the river | g m⁻³ |
 | `river_water_sediment_erosion__mass` | Total sediment erosion (from store + direct river bed/bank) | ton Δt⁻¹ |
 | `river_water_sediment_deposition__mass` | Total sediment deposition | ton Δt⁻¹ |

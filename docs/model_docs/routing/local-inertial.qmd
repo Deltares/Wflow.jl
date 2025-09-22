@@ -46,7 +46,7 @@ for the `sbm` and `sbm_gwf` model types:
 
 ```toml
 [model]
-river_routing = "local-inertial"                    # default is "kinematic-wave"
+river_routing = "local_inertial"                    # default is "kinematic_wave"
 river_local_inertial_flow__alpha_coefficient = 0.5  # alpha coefficient for model stability (default = 0.7)
 river_water_flow__froude_limit_flag = true          # default is true, limit flow to subcritical-critical according to Froude number
 river_water_flow_threshold__depth = 0.1             # water depth [m] threshold for calculating flow between cells (default = 1e-03)
@@ -60,8 +60,8 @@ as follows:
 
 ```toml
 [input.static]
-"model_boundary_condition~river__length" = "riverlength_bc"           # optional river length [m], default = 1e04
-"model_boundary_condition~river_bank_water__depth" = "riverdepth_bc"  # optional river depth [m], default = 0.0
+"model_boundary_condition_river__length" = "riverlength_bc"           # optional river length [m], default = 1e04
+"model_boundary_condition_river_bank_water__depth" = "riverdepth_bc"  # optional river depth [m], default = 0.0
 ```
 These boundary conditions and river bed elevation and Manning's roughness coefficient are
 copied to a ghost node (downstream of the river outlet node) in the code.
@@ -133,8 +133,8 @@ routing and 2D overland flow can be provided for the `sbm` and `sbm_gwf` model t
 
 ```toml
 [model]
-land_routing = "local-inertial"                     # default is kinematic-wave
-river_routing = "local-inertial"                    # default is kinematic-wave
+land_routing = "local_inertial"                     # default is kinematic_wave
+river_routing = "local_inertial"                    # default is kinematic_wave
 land_local_inertial_flow__alpha_coefficient = 0.5   # alpha coefficient for model stability (default = 0.7)
 land_local_inertial_flow__theta_coefficient = 0.9   # weighting factor that adjusts the amount of artificial numerical diffusion (default = 0.8)
 land_surface_water_flow__froude_limit_flag = true   # default is true, limit flow to subcritical-critical according to Froude number
@@ -153,7 +153,7 @@ the TOML file as follows:
 
 ```toml
 [input.cyclic]
-"river_water_inflow~external__volume_flow_rate" = "river_inflow"
+"river_water__external_inflow_volume_flow_rate" = "river_inflow"
 ```
 These inflows are added or subtracted as part of the continuity equation of the local
 inertial model. Abstractions are limited to a maximum of $\SI{80}{\%}$ of the river storage.

@@ -161,7 +161,7 @@ TOML file as follows:
 constanthead__flag = true # optional, default is "false"
 
 [input.static]
-"model_boundary_condition~constant_hydraulic_head" = "constant_head"
+"model_boundary_condition_constant_hydraulic_head" = "constant_head"
 ```
 
 ## Aquifer boundary conditions
