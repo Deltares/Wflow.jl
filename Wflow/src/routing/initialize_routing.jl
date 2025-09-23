@@ -37,6 +37,7 @@ function initialize_subsurface_flow(
 )
     do_drains = get(config.model, "drain__flag", false)::Bool
     do_constanthead = get(config.model, "constanthead__flag", false)::Bool
+    cold_start = get(config.model, "cold_start__flag", true)::Bool
 
     (; land, river, drain) = domain
 
@@ -63,6 +64,19 @@ function initialize_subsurface_flow(
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if do_constanthead
         initial_head[constant_head.index] = constant_head.variables.head
+    end
+    # reset soil (cold) state and related variables based on initial_head (river cells and constanthead)
+    if cold_start
+        (; zi, satwaterdepth, ustorecapacity, ustorelayerthickness, n_unsatlayers) =
+            soil.variables
+        (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
+            soil.parameters
+
+        zi .= (elevation .- min.(elevation, initial_head)) * 1000.0
+        satwaterdepth .= (soilthickness .- zi) .* (theta_s .- theta_r)
+        ustorecapacity .= soilwatercapacity .- satwaterdepth
+        ustorelayerthickness .= set_layerthickness.(zi, sumlayers, act_thickl)
+        n_unsatlayers .= number_of_active_layers.(ustorelayerthickness)
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
