@@ -72,11 +72,11 @@ function initialize_subsurface_flow(
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
             soil.parameters
 
-        zi .= (elevation .- min.(elevation, initial_head)) * 1000.0
-        satwaterdepth .= (soilthickness .- zi) .* (theta_s .- theta_r)
-        ustorecapacity .= soilwatercapacity .- satwaterdepth
-        ustorelayerthickness .= set_layerthickness.(zi, sumlayers, act_thickl)
-        n_unsatlayers .= number_of_active_layers.(ustorelayerthickness)
+        @. zi = (elevation - min(elevation, initial_head)) * 1000.0
+        @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
+        @. ustorecapacity = soilwatercapacity - satwaterdepth
+        @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
+        @. n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0

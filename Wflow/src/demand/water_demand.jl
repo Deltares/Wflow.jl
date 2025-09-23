@@ -139,7 +139,13 @@ by a maximum irrigation rate.
 function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
     (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
         soil.parameters
-    (; h3, n_unsatlayers, zi, ustorelayerdepth, f_infiltration_reduction) = soil.variables
+    (;
+        h3,
+        ustorelayerthickness,
+        n_unsatlayers,
+        ustorelayerdepth,
+        f_infiltration_reduction,
+    ) = soil.variables
     (;
         irrigation_areas,
         irrigation_trigger,
@@ -150,18 +156,24 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
 
     for i in eachindex(irrigation_areas)
         if irrigation_areas[i] && irrigation_trigger[i]
-            usl = set_layerthickness(zi[i], sumlayers[i], act_thickl[i])
             irri_dem_gross = 0.0
             for k in 1:n_unsatlayers[i]
                 # compute water demand only for root zone through root fraction per layer
-                rootfrac = min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / usl[k]))
+                rootfrac = min(
+                    1.0,
+                    (
+                        max(0.0, rootingdepth[i] - sumlayers[i][k]) /
+                        ustorelayerthickness[i][k]
+                    ),
+                )
                 # vwc_f and vwc_h3 can be precalculated.
                 vwc_fc = vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
                 vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
                 depletion =
-                    (vwc_fc * usl[k]) - (ustorelayerdepth[i][k] + theta_r[i] * usl[k])
+                    (vwc_fc * ustorelayerthickness[i][k]) -
+                    (ustorelayerdepth[i][k] + theta_r[i] * ustorelayerthickness[i][k])
                 depletion *= rootfrac
-                raw = (vwc_fc - vwc_h3) * usl[k] # readily available water
+                raw = (vwc_fc - vwc_h3) * ustorelayerthickness[i][k] # readily available water
                 raw *= rootfrac
 
                 # check if maximum irrigation rate has been applied at the previous time step.

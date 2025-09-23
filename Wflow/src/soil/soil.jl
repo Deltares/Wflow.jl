@@ -167,6 +167,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         ustorelayerdepth = zero(act_thickl),
         ustorecapacity = soilwatercapacity .- satwaterdepth,
         ustorelayerthickness,
+        ustoredepth = zeros(n),
         satwaterdepth,
         zi,
         n_unsatlayers,
@@ -196,7 +197,6 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         rootstore = fill(MISSING_VALUE, n),
         vwc_root = fill(MISSING_VALUE, n),
         vwc_percroot = fill(MISSING_VALUE, n),
-        ustoredepth = fill(MISSING_VALUE, n),
         transfer = fill(MISSING_VALUE, n),
         recharge = fill(MISSING_VALUE, n),
         actleakage = fill(MISSING_VALUE, n),
@@ -1069,11 +1069,8 @@ function update!(
     v = model.variables
     p = model.parameters
 
-    ustoredepth!(model)
-    @. v.ustorecapacity = p.soilwatercapacity - v.satwaterdepth - v.ustoredepth
-    @. v.ustorelayerthickness = set_layerthickness(v.zi, p.sumlayers, p.act_thickl)
-    @. v.n_unsatlayers = number_of_active_layers(v.ustorelayerthickness)
-
+    # mainly required for external state changes (e.g. through BMI)
+    update_diagnostic_vars!(model)
     # infiltration
     soil_temperature!(model, snow, temperature)
     infiltration_reduction_factor!(model; modelsnow, soil_infiltration_reduction)
@@ -1203,10 +1200,14 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         vwc_percroot = (vwc_root / p.theta_s[i]) * 100.0
 
         satwaterdepth = (p.soilthickness[i] - zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        ustorecapacity = p.soilwatercapacity[i] - satwaterdepth - ustoredepth
 
         # update the outputs and states
         v.n_unsatlayers[i] = n_unsatlayers
         v.ustorelayerdepth[i] = ustorelayerdepth
+        v.ustorelayerthickness[i] = ustorelayerthickness
+        v.ustorecapacity[i] = ustorecapacity
+        v.n_unsatlayers[i] = n_unsatlayers
         v.ustoredepth[i] = ustoredepth
         v.satwaterdepth[i] = satwaterdepth
         v.exfiltsatwater[i] = exfiltsatwater[i]
@@ -1224,6 +1225,31 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     update_runoff!(demand.paddy, v.runoff)
     @. v.net_runoff = v.runoff - ae_openw_l
     return nothing
+end
+
+"""
+    update_diagnostic_vars!(model::SbmSoilModel)
+
+Update diagnostic variables of `SbmSoilModel` that are critical for subsequent computations
+and depend on state variables `satwaterdepth` and `ustorelayerdepth`.
+"""
+function update_diagnostic_vars!(model::SbmSoilModel)
+    (;
+        zi,
+        satwaterdepth,
+        ustorelayerthickness,
+        ustorecapacity,
+        ustoredepth,
+        n_unsatlayers,
+    ) = model.variables
+    (; soilthickness, theta_s, theta_r, soilwatercapacity, sumlayers, act_thickl) =
+        model.parameters
+
+    ustoredepth!(model)
+    @. zi .= max(0.0, soilthickness - satwaterdepth / (theta_s .- theta_r))
+    @. ustorecapacity = soilwatercapacity - satwaterdepth - ustoredepth
+    @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
+    @. n_unsatlayers = number_of_active_layers(ustorelayerthickness)
 end
 
 # wrapper method
