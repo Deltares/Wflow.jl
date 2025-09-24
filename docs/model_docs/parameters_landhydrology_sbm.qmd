@@ -118,12 +118,12 @@ td, th {
 | `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm Δt⁻¹ | - |
 | `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth | mm⁻¹ | - |
 | `soil_water__air_entry_pressure_head` | Air entry pressure head of soil | cm | -10.0 |
-| `vegetation_root__feddes_critial_pressure_head_h_1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
-| `vegetation_root__feddes_critial_pressure_head_h_2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
-| `vegetation_root__feddes_critial_pressure_head_h_3_high` | Critical pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 |
-| `vegetation_root__feddes_critial_pressure_head_h_3_low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
-| `vegetation_root__feddes_critial_pressure_head_h_4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -16000.0 |
-| `vegetation_root__feddes_critial_pressure_head_h_1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
+| `vegetation_root__feddes_critial_pressure_head_h1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
+| `vegetation_root__feddes_critial_pressure_head_h2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
+| `vegetation_root__feddes_critial_pressure_head_h3_high` | Critical pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 |
+| `vegetation_root__feddes_critial_pressure_head_h3_low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
+| `vegetation_root__feddes_critial_pressure_head_h4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -16000.0 |
+| `vegetation_root__feddes_critial_pressure_head_h1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
 | `soil__thickness` | Soil thickness | mm | - |
 | `compacted_soil_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
 | `soil_non_compacted_surface_water__infiltration_capacity` | Soil infiltration capacity | mm Δt⁻¹ | 100.0 mm day⁻¹ |
@@ -132,10 +132,10 @@ td, th {
 | `land_water_covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
 | `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer | - | 1.0 |
 | `compacted_soil__area_fraction` | Fraction of compacted soil area | - | - |
-| `soil_root_wet__sigmoid_function_shape_parameter` | Controls sharpness of transition between fully wet and fully dry roots | - | -500.0 |
+| `soil_wet_root__sigmoid_function_shape_parameter` | Controls sharpness of transition between fully wet and fully dry roots | - | -500.0 |
 | `soil_root__length_density_fraction` | Fraction of the root length density per soil layer | - | - |
-| `soil_water_saturated_zone_top_capillary_rise__max_water_table_depth` | Maximum water table depth for capillary rise | mm | 2000.0 |
-| `soil_water_saturated_zone_top_capillary_rise__averianov_exponent` | Averianov exponent controlling capillary rise | - | 2.0 |
+| `soil_water_saturated_zone_top__capillary_rise_max_water_table_depth` | Maximum water table depth for capillary rise | mm | 2000.0 |
+| `soil_water_saturated_zone_top__capillary_rise_averianov_exponent` | Averianov exponent controlling capillary rise | - | 2.0 |
 : {.striped .hover}
 
 ### States
@@ -191,7 +191,7 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `irrigated_non_paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
-| `irrigated_non_paddy__irrigation_area_count` | Irrigation areas (non-paddy) | - | - |
+| `irrigated_non_paddy_area__count` | Irrigation areas (non-paddy) | - | - |
 | `irrigated_non_paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
@@ -228,7 +228,7 @@ td, th {
 #### States
 | Standard Name | Description | Unit |
 | --- | ---| - |
-| `land_surface_water_paddy__depth` | Water depth in paddy field | mm |
+| `paddy_surface_water__depth` | Water depth in paddy field | mm |
 : {.striped .hover}
 
 #### Output

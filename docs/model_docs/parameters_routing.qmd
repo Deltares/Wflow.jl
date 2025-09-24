@@ -338,8 +338,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `land_surface_water_clay__to_river_mass_flow_rate` | Clay flux flowing into the river | ton Δt⁻¹ |
 | `land_surface_water_silt__to_river_mass_flow_rate` | Silt flux flowing into the river | ton Δt⁻¹ |
 | `land_surface_water_sand__to_river_mass_flow_rate` | Sand flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_aggregates_small__to_river_mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_aggregates_large__to_river_mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_small_aggregates__to_river_mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
+| `land_surface_water_large_aggregates__to_river_mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
 | `land_surface_water_sediment__mass_flow_rate` | Total sediment flux | ton Δt⁻¹ |
 : {.striped .hover}
 
@@ -374,8 +374,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton |
 | `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton |
 | `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton |
-| `river_bed_aggregates_small__mass` | Small aggregates stored on the river bed after deposition | ton |
-| `river_bed_aggregates_large__mass` | Large aggregates stored on the river bed after deposition | ton |
+| `river_bed_small_aggregates__mass` | Small aggregates stored on the river bed after deposition | ton |
+| `river_bed_large_aggregates__mass` | Large aggregates stored on the river bed after deposition | ton |
 | `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton |
 | `river_water_clay__mass` | Clay left in cell | ton |
 | `river_water_silt__mass` | Silt left in cell | ton |

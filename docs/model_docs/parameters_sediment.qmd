@@ -81,6 +81,6 @@ td, th {
 | `soil_erosion_clay__mass_flow_rate` | Total clay erosion | ton Δt⁻¹ |
 | `soil_erosion_silt__mass_flow_rate` | Total silt erosion | ton Δt⁻¹ |
 | `soil_erosion_sand__mass_flow_rate` | Total sand erosion | ton Δt⁻¹ |
-| `soil_erosion_aggregates_small__mass_flow_rate` | Total small aggregates erosion | ton Δt⁻¹ |
-| `soil_erosion_aggregates_large__mass_flow_rate` | Total large aggregates erosion | ton Δt⁻¹ |
+| `soil_erosion_small_aggregates__mass_flow_rate` | Total small aggregates erosion | ton Δt⁻¹ |
+| `soil_erosion_large_aggregates__mass_flow_rate` | Total large aggregates erosion | ton Δt⁻¹ |
 : {.striped .hover}

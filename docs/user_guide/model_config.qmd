@@ -123,7 +123,7 @@ irrigated_non_paddy__irrigation_trigger_flag = "irrigation_trigger"
 land_water_allocation_area__count = "allocation_areas"
 land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
 irrigated_paddy_area__count = "paddy_irrigation_areas"
-irrigated_non_paddy__irrigation_area_count = "nonpaddy_irrigation_areas"
+irrigated_non_paddy_area__count = "nonpaddy_irrigation_areas"
 
 # required if paddy is set to "true"
 [state.variables]

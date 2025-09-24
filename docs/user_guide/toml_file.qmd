@@ -181,7 +181,7 @@ soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
 soil_water_saturated_zone_bottom__max_leakage_volume_flux = "MaxLeakage"
 compacted_soil__area_fraction = "PathFrac"
-soil_root_wet__sigmoid_function_shape_parameter = "rootdistpar"
+soil_wet_root__sigmoid_function_shape_parameter = "rootdistpar"
 soil__thickness = "SoilThickness"
 
 vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"

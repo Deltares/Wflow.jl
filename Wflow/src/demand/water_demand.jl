@@ -89,11 +89,7 @@ function NonPaddy(
     efficiency =
         ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
-    lens = lens_input_parameter(
-        config,
-        "irrigated_non_paddy__irrigation_area_count";
-        optional = false,
-    )
+    lens = lens_input_parameter(config, "irrigated_non_paddy_area__count"; optional = false)
     areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
     lens = lens_input_parameter(
         config,
