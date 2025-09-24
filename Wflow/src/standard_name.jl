@@ -324,7 +324,7 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.hydrological_forcing.interception), unit = "mm dt-1"),
     "rainfall_soil_erosion__mass_flow_rate" =>
         (lens = @optic(_.land.rainfall_erosion.variables.amount), unit = "t dt-1"),
-    "soil_erosion_overland_flow__mass_flow_rate" =>
+    "overland_flow_soil_erosion__mass_flow_rate" =>
         (lens = @optic(_.land.overland_flow_erosion.variables.amount), unit = "t dt-1"),
     "soil_erosion__mass_flow_rate" =>
         (lens = @optic(_.land.soil_erosion.variables.amount), unit = "t dt-1"),

@@ -33,11 +33,11 @@ river_water_large_aggregates__mass_flow_rate = "outlagg"
 river_water_small_aggregates__mass_flow_rate = "outsagg"
 river_water_sand__mass_flow_rate = "outsand"
 river_water_silt__mass_flow_rate = "outsilt"
-river_water_small_aggregates__mass = "saggload" 
+river_water_small_aggregates__mass = "saggload"
 river_bed_small_aggregates__mass = "saggstore"
-river_water_sand__mass = "sandload" 
+river_water_sand__mass = "sandload"
 river_bed_sand__mass = "sandstore"
-river_water_silt__mass = "siltload" 
+river_water_silt__mass = "siltload"
 river_bed_silt__mass = "siltstore"
 
 [input]
@@ -122,7 +122,7 @@ path = "output-moselle-sed.nc"
 
 [output.netcdf_grid.variables]
 rainfall_soil_erosion__mass_flow_rate = "rainfall_erosion"
-soil_erosion_overland_flow__mass_flow_rate = "overland_flow_erosion"
+overland_flow_soil_erosion__mass_flow_rate = "overland_flow_erosion"
 soil_erosion__mass_flow_rate = "soilloss"
 soil_erosion_clay__mass_flow_rate = "erosclay"
 
@@ -167,7 +167,7 @@ parameter = "rainfall_soil_erosion__mass_flow_rate"
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SOV"
-parameter = "soil_erosion_overland_flow__mass_flow_rate"
+parameter = "overland_flow_soil_erosion__mass_flow_rate"
 
 [[output.csv.column]]
 coordinate.x = 6.931

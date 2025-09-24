@@ -60,7 +60,7 @@ td, th {
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `soil_erosion_overland_flow__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
+| `overland_flow_soil_erosion__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
 : {.striped .hover}
 
 ## Soil erosion
