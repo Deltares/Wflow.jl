@@ -449,7 +449,7 @@ reservoir_location__count = "wflow_reservoirlocs"
 
 [input.static]
 reservoir_surface__area = "ResSimpleArea"
-"reservoir_water_sediment__bedload_trapping_efficiency" = "ResTrapEff"
+reservoir_water_sediment__bedload_trapping_efficiency = "ResTrapEff"
 ```
 
 Note that in the inland part, reservoir coverage is used to filter erosion and transport in

@@ -34,8 +34,8 @@ td, th {
 ### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `snowpack_dry__leq_depth` | Liquid-water equivalent of dry snow | mm |
-| `snowpack_liquid__depth` | Liquid water content in the snow pack | mm |
+| `snowpack_dry_snow__leq_depth` | Liquid-water equivalent of dry snow | mm |
+| `snowpack_liquid_water__depth` | Liquid water content in the snow pack | mm |
 : {.striped .hover}
 
 ### Output
@@ -108,9 +108,9 @@ td, th {
 ### Input
 | Standard Name | Description | Unit | Default |
 | ----- | ----- | - | - |
-| `soil_vertical_saturated_hydraulic_conductivity_profile_exponential_below_surface__depth` |  Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an `exponential_constant` saturated hydraulic conductivity profile is used | mm | - |
+| `soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth` |  Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an `exponential_constant` saturated hydraulic conductivity profile is used | mm | - |
 | `soil_layer_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used | mm Δt⁻¹ | - |
-| `soil_vertical_saturated_hydraulic_conductivity_profile_layered_below_surface__depth`| Depth from soil surface for which `layered` profile is valid, when a `layered_exponential` saturated hydraulic conductivity profile is used| mm | - |
+| `soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth`| Depth from soil surface for which `layered` profile is valid, when a `layered_exponential` saturated hydraulic conductivity profile is used| mm | - |
 | `soil_surface_temperature__weight_coefficient` | Weighting coefficient for soil surface temperature | - | 0.1125 |
 | `soil_surface_water__infiltration_reduction_parameter` | Controls soil infiltration reduction factor when soil is frozen | - | 0.038 |
 | `soil_water__saturated_volume_fraction` | Saturated water content | - | - |
@@ -125,13 +125,13 @@ td, th {
 | `vegetation_root__feddes_critial_pressure_head_h_4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -16000.0 |
 | `vegetation_root__feddes_critial_pressure_head_h_1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
 | `soil__thickness` | Soil thickness | mm | - |
-| `soil_compacted_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
+| `compacted_soil_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
 | `soil_non_compacted_surface_water__infiltration_capacity` | Soil infiltration capacity | mm Δt⁻¹ | 100.0 mm day⁻¹ |
 | `soil_water_saturated_zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
 | `soil_layer_water__brooks-corey_exponent` | Brooks-Corey power coefficient per soil layer | - | - |
 | `land_water_covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
 | `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer | - | 1.0 |
-| `soil_compacted__area_fraction` | Fraction of compacted soil area | - | - |
+| `compacted_soil__area_fraction` | Fraction of compacted soil area | - | - |
 | `soil_root_wet__sigmoid_function_shape_parameter` | Controls sharpness of transition between fully wet and fully dry roots | - | -500.0 |
 | `soil_root__length_density_fraction` | Fraction of the root length density per soil layer | - | - |
 | `soil_water_saturated_zone_top_capillary_rise__max_water_table_depth` | Maximum water table depth for capillary rise | mm | 2000.0 |
@@ -155,7 +155,7 @@ td, th {
 | `soil_water__transpiration_volume_flux` | Transpiration from vegetation | mm Δt⁻¹ |
 | `soil_surface_water__runoff_volume_flux` | Total surface runoff from infiltration and saturation excess | mm Δt⁻¹ |
 | `soil_surface_water__net_runoff_volume_flux` | Net surface runoff (after open water evaporation) | mm Δt⁻¹ |
-| `soil_compacted_surface_water__excess_volume_flux` | Excess water for compacted soil fraction | mm Δt⁻¹ |
+| `compacted_soil_surface_water__excess_volume_flux` | Excess water for compacted soil fraction | mm Δt⁻¹ |
 | `soil_surface_water_non_compacted__excess_volume_flux` | Excess water for non-compacted soil fraction | mm Δt⁻¹ |
 | `soil_surface_water_unsaturated_zone__exfiltration_volume_flux` | Water exfiltrating from unsaturated store because of rising water table | mm Δt⁻¹ |
 | `soil_surface_water_saturated_zone__exfiltration_volume_flux` | Water exfiltrating from saturated store during saturation excess conditions | mm Δt⁻¹ |
@@ -191,7 +191,7 @@ td, th {
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
 | `land_non_paddy_irrigated__irrigation_efficiency` | Irrigation efficiency | - | - |
-| `land_non_paddy_irrigated_area__count` | Irrigation areas (non-paddy) | - | - |
+| `land_non_paddy_irrigated__irrigation_area_count` | Irrigation areas (non-paddy) | - | - |
 | `land_non_paddy_irrigated__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 

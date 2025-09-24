@@ -19,12 +19,12 @@ snowpack__liquid_water_holding_capacity =  "WHC"
 glacier_surface__area_fraction = "wflow_glacierfrac"
 glacier_ice__degree-day_coefficient = "G_Cfmax"
 glacier_ice__melting_temperature_threshold = "G_TT"
-"glacier_firn_accumulation__snowpack_dry_leq_depth_fraction"  = "G_SIfrac"
+glacier_firn_accumulation__snowpack_dry_leq_depth_fraction = "G_SIfrac"
 glacier_ice__initial_leq-depth = "wflow_glacierstore" # initial glacier liquid-water equivalent depth
 
 [state.variables]
-"snowpack_dry__leq_depth" = "snow"
-"snowpack_liquid__depth" = "snowwater"
+snowpack_dry_snow__leq_depth = "snow"
+snowpack_liquid_water__depth = "snowwater"
 glacier_ice__leq_depth = "glacierstore"
 ```
 
@@ -45,11 +45,11 @@ reservoir_water__rating_curve_coefficient = "reservoir_b"
 reservoir_water__rating_curve_exponent = "reservoir_e"
 reservoir_water_flow_threshold_level__elevation = "reservoir_threshold"
 # specific for rating curve type 4 (simple reservoir operational parameters)
-"reservoir_water_demand__required_downstream_volume_flow_rate" = "ResDemand"
+reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
 reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
-"reservoir_water_target_full__volume_fraction" = "ResTargetFullFrac"
-"reservoir_water_target_min__volume_fraction" = "ResTargetMinFrac"
+reservoir_water_target_full__volume_fraction = "ResTargetFullFrac"
+reservoir_water_target_min__volume_fraction = "ResTargetMinFrac"
 reservoir_water__rating_curve_type_count = "outflowfunc" # rating curve type 
 reservoir_water__storage_curve_type_count  = "storfunc"
 reservoir_water_surface__initial_elevation = "resevoir_waterlevel"
@@ -110,22 +110,22 @@ paddy__flag = true        # optional, default is "false"
 nonpaddy__flag = true     # optional, default is "false"
 
 [input.cyclic]
-"land_domestic__gross_water_demand_volume_flux" = "dom_gross"
-"land_domestic__net_water_demand_volume_flux" = "dom_net"
-"land_industry__gross_water_demand_volume_flux" = "ind_gross"
-"land_industry__net_water_demand_volume_flux" = "ind_net"
-"land_livestock__gross_water_demand_volume_flux" = "lsk_gross"
-"land_livestock__net_water_demand_volume_flux" = "lsk_net"
-"land_paddy_irrigated__irrigation_trigger_flag" = "irrigation_trigger"
-"land_non_paddy_irrigated__irrigation_trigger_flag" = "irrigation_trigger"
+land_domestic__gross_water_demand_volume_flux = "dom_gross"
+land_domestic__net_water_demand_volume_flux = "dom_net"
+land_industry__gross_water_demand_volume_flux = "ind_gross"
+land_industry__net_water_demand_volume_flux = "ind_net"
+land_livestock__gross_water_demand_volume_flux = "lsk_gross"
+land_livestock__net_water_demand_volume_flux = "lsk_net"
+land_paddy_irrigated__irrigation_trigger_flag = "irrigation_trigger"
+land_non_paddy_irrigated__irrigation_trigger_flag = "irrigation_trigger"
 
 [input.static]
 land_water_allocation_area__count = "allocation_areas"
 land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
-"land_paddy_irrigated_area__count" = "paddy_irrigation_areas"
-"land_non_paddy_irrigated_area__count" = "nonpaddy_irrigation_areas"
+land_paddy_irrigated_area__count = "paddy_irrigation_areas"
+land_non_paddy_irrigated__irrigation_area_count = "nonpaddy_irrigation_areas"
 
 # required if paddy is set to "true"
 [state.variables]
-"land_surface_water_paddy__depth" = "h_paddy"
+land_paddy_surface_water__depth = "h_paddy"
 ```

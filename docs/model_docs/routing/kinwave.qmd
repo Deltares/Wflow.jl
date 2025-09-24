@@ -83,7 +83,7 @@ For example, cyclic inflow can be provided in the TOML file as follows:
 
 ```toml
 [input.cyclic]
-"river_water__external_inflow_volume_flow_rate" = "river_inflow"
+river_water__external_inflow_volume_flow_rate = "river_inflow"
 ```
 These inflows are added or subtracted from the lateral inflow before running the kinematic
 wave to solve the impact on resulting river flow $\SIb{Q}{m^3\ s^{-1}}$. In case of an

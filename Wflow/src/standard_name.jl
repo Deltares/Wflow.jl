@@ -173,7 +173,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
     "soil_surface_water_saturated_zone__exfiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
-    "soil_compacted_surface_water__excess_volume_flux" =>
+    "compacted_soil_surface_water__excess_volume_flux" =>
         (lens = @optic(_.land.soil.variables.excesswatersoil), unit = "mm dt-1"),
     "soil_surface_water_non_compacted__excess_volume_flux" =>
         (lens = @optic(_.land.soil.variables.excesswaterpath), unit = "mm dt-1"),
@@ -215,9 +215,9 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.subsurface_flow.variables.ssf), unit = "m3 d-1"),
     "subsurface_water__to_river_volume_flow_rate" =>
         (lens = @optic(_.routing.subsurface_flow.variables.to_river), unit = "m3 d-1"),
-    "snowpack_liquid__depth" =>
+    "snowpack_liquid_water__depth" =>
         (lens = @optic(_.land.snow.variables.snow_water), unit = "mm"),
-    "snowpack_dry__leq_depth" =>
+    "snowpack_dry_snow__leq_depth" =>
         (lens = @optic(_.land.snow.variables.snow_storage), unit = "mm"),
     "glacier_ice__leq_depth" =>
         (lens = @optic(_.land.glacier.variables.glacier_store), unit = "mm"),
@@ -241,7 +241,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.overland_flow.variables.qx), unit = "m3 s-1"),
     "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.qy), unit = "m3 s-1"),
-    "land_surface_water_paddy__depth" =>
+    "land_paddy_surface_water__depth" =>
         (lens = @optic(_.land.demand.paddy.variables.h), unit = "mm"),
     "land_domestic__gross_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.domestic.demand.demand_gross), unit = "mm dt-1"),
@@ -322,9 +322,9 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.hydrological_forcing.waterlevel_land), unit = "m"),
     "vegetation_canopy_water__interception_volume_flux" =>
         (lens = @optic(_.land.hydrological_forcing.interception), unit = "mm dt-1"),
-    "soil_erosion__rainfall_mass_flow_rate" =>
+    "rainfall_soil_erosion__mass_flow_rate" =>
         (lens = @optic(_.land.rainfall_erosion.variables.amount), unit = "t dt-1"),
-    "soil_erosion__overland_flow_mass_flow_rate" =>
+    "soil_erosion_overland_flow__mass_flow_rate" =>
         (lens = @optic(_.land.overland_flow_erosion.variables.amount), unit = "t dt-1"),
     "soil_erosion__mass_flow_rate" =>
         (lens = @optic(_.land.soil_erosion.variables.amount), unit = "t dt-1"),
@@ -334,9 +334,9 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil_erosion.variables.silt), unit = "t dt-1"),
     "soil_erosion_sand__mass_flow_rate" =>
         (lens = @optic(_.land.soil_erosion.variables.sand), unit = "t dt-1"),
-    "soil_erosion_aggregates_small__mass_flow_rate" =>
+    "soil_erosion_small_aggregates__mass_flow_rate" =>
         (lens = @optic(_.land.soil_erosion.variables.sagg), unit = "t dt-1"),
-    "soil_erosion_aggregates_large__mass_flow_rate" =>
+    "soil_erosion_large_aggregates__mass_flow_rate" =>
         (lens = @optic(_.land.soil_erosion.variables.lagg), unit = "t dt-1"),
     "land_surface_water_sediment_transport_capacity__mass_flow_rate" => (
         lens = @optic(_.routing.overland_flow.transport_capacity.variables.amount),
@@ -358,11 +358,11 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.overland_flow.to_river.variables.sand),
         unit = "t dt-1",
     ),
-    "land_surface_water_aggregates_small__to_river_mass_flow_rate" => (
+    "land_surface_water_small_aggregates__to_river_mass_flow_rate" => (
         lens = @optic(_.routing.overland_flow.to_river.variables.sagg),
         unit = "t dt-1",
     ),
-    "land_surface_water_aggregates_large__to_river_mass_flow_rate" => (
+    "land_surface_water_large_aggregates__to_river_mass_flow_rate" => (
         lens = @optic(_.routing.overland_flow.to_river.variables.lagg),
         unit = "t dt-1",
     ),
@@ -398,11 +398,11 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.sediment_flux.variables.store_gravel),
         unit = "t",
     ),
-    "river_water_aggregates_large__mass" => (
+    "river_water_large_aggregates__mass" => (
         lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_lagg),
         unit = "t",
     ),
-    "river_bed_aggregates_large__mass" => (
+    "river_bed_large_aggregates__mass" => (
         lens = @optic(_.routing.river_flow.sediment_flux.variables.store_lagg),
         unit = "t",
     ),
@@ -414,11 +414,11 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.sediment_flux.variables.gravel),
         unit = "t dt-1",
     ),
-    "river_water_aggregates_large__mass_flow_rate" => (
+    "river_water_large_aggregates__mass_flow_rate" => (
         lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg),
         unit = "t dt-1",
     ),
-    "river_water_aggregates_small__mass_flow_rate" => (
+    "river_water_small_aggregates__mass_flow_rate" => (
         lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg),
         unit = "t dt-1",
     ),
@@ -430,11 +430,11 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.sediment_flux.variables.silt),
         unit = "t dt-1",
     ),
-    "river_water_aggregates_small__mass" => (
+    "river_water_small_aggregates__mass" => (
         lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_sagg),
         unit = "t",
     ),
-    "river_bed_aggregates_small__mass" => (
+    "river_bed_small_aggregates__mass" => (
         lens = @optic(_.routing.river_flow.sediment_flux.variables.store_sagg),
         unit = "t",
     ),

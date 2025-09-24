@@ -25,16 +25,16 @@ river_water_clay__mass = "clayload"
 river_bed_clay__mass = "claystore"
 river_water_gravel__mass = "gravload"
 river_bed_gravel__mass = "gravstore"
-"river_water_aggregates_large__mass" = "laggload"
-"river_bed_aggregates_large__mass" = "laggstore"
+river_water_large_aggregates__mass = "laggload"
+river_bed_large_aggregates__mass = "laggstore"
 river_water_clay__mass_flow_rate = "outclay"
 river_water_gravel__mass_flow_rate = "outgrav"
-"river_water_aggregates_large__mass_flow_rate" = "outlagg"
-"river_water_aggregates_small__mass_flow_rate" = "outsagg"
+river_water_large_aggregates__mass_flow_rate = "outlagg"
+river_water_small_aggregates__mass_flow_rate = "outsagg"
 river_water_sand__mass_flow_rate = "outsand"
 river_water_silt__mass_flow_rate = "outsilt"
-"river_water_aggregates_small__mass" = "saggload" 
-"river_bed_aggregates_small__mass" = "saggstore"
+river_water_small_aggregates__mass = "saggload" 
+river_bed_small_aggregates__mass = "saggstore"
 river_water_sand__mass = "sandload" 
 river_bed_sand__mass = "sandstore"
 river_water_silt__mass = "siltload" 
@@ -65,10 +65,10 @@ river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 
 reservoir_surface__area = "ResSimpleArea"
-"reservoir_water_sediment__bedload_trapping_efficiency" = "ResTrapEff"
+reservoir_water_sediment__bedload_trapping_efficiency = "ResTrapEff"
 
 vegetation_canopy__gap_fraction = "CanopyGapFraction"
-"soil_compacted__area_fraction" = "PathFrac"
+compacted_soil__area_fraction = "PathFrac"
 soil_erosion__rainfall_soil_detachability_factor = "soil_detachability"
 soil_erosion__eurosem_exponent = "eros_spl_EUROSEM"
 soil_erosion__usle_k_factor = "usle_k"
@@ -78,8 +78,8 @@ soil_erosion__answers_overland_flow_factor = "eros_ov"
 soil_clay__mass_fraction = "fclay_soil"
 soil_silt__mass_fraction = "fsilt_soil"
 soil_sand__mass_fraction = "fsand_soil"
-"soil_aggregates_small__mass_fraction" = "fsagg_soil"
-"soil_aggregates_large__mass_fraction" = "flagg_soil"
+soil_small_aggregates__mass_fraction = "fsagg_soil"
+soil_large_aggregates__mass_fraction = "flagg_soil"
 
 land_surface_water_sediment__govers_transport_capacity_coefficient = "c_govers"
 land_surface_water_sediment__govers_transport_capacity_exponent = "n_govers"
@@ -103,8 +103,8 @@ sediment__particle_density = "sediment_density"
 clay__mean_diameter = "dm_clay"
 silt__mean_diameter = "dm_silt"
 sand__mean_diameter = "dm_sand"
-"sediment_aggregates_small__mean_diameter" = "dm_sagg"
-"sediment_aggregates_large__mean_diameter" = "dm_lagg"
+sediment_small_aggregates__mean_diameter = "dm_sagg"
+sediment_large_aggregates__mean_diameter = "dm_lagg"
 gravel__mean_diameter = "dm_gravel"
 
 [model]
@@ -121,16 +121,16 @@ type = "sediment"
 path = "output-moselle-sed.nc"
 
 [output.netcdf_grid.variables]
-"soil_erosion__rainfall_mass_flow_rate" = "rainfall_erosion"
-"soil_erosion__overland_flow_mass_flow_rate" = "overland_flow_erosion"
+rainfall_soil_erosion__mass_flow_rate = "rainfall_erosion"
+soil_erosion_overland_flow__mass_flow_rate = "overland_flow_erosion"
 soil_erosion__mass_flow_rate = "soilloss"
 soil_erosion_clay__mass_flow_rate = "erosclay"
 
 land_surface_water_sediment_transport_capacity__mass_flow_rate = "TCsed"
 routing.overland_flow.transport_capacity.variables.clay = "TCclay"
 
-"land_surface_water_sediment__to_river_mass_flow_rate" = "inlandsed"
-"land_surface_water_clay__to_river_mass_flow_rate" = "inlandclay"
+land_surface_water_sediment__to_river_mass_flow_rate = "inlandsed"
+land_surface_water_clay__to_river_mass_flow_rate = "inlandclay"
 
 land_surface_water_sediment__mass_flow_rate = "olsed"
 routing.overland_flow.sediment_flux.variables.clay = "olclay"
@@ -140,8 +140,8 @@ routing.river_flow.sediment_flux.boundary_conditions.erosion_land_clay = "inland
 routing.river_flow.sediment_flux.boundary_conditions.transport_capacity =  "TCsed_riv"
 
 river_water_sediment__mass_concentration = "Sedconc"
-"river_water_sediment__suspended_mass_concentration" = "SSconc"
-"river_water_sediment__bedload_mass_concentration" = "Bedconc"
+river_water_sediment__suspended_mass_concentration = "SSconc"
+river_water_sediment__bedload_mass_concentration = "Bedconc"
 
 river_water_sediment_deposition__mass = "deposition_riv"
 river_water_sediment_erosion__mass = "erosion_riv"
@@ -161,13 +161,13 @@ parameter = "soil_erosion__mass_flow_rate"
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SSPL"
-parameter = "soil_erosion__rainfall_mass_flow_rate"
+parameter = "rainfall_soil_erosion__mass_flow_rate"
 
 [[output.csv.column]]
 coordinate.x = 6.931
 coordinate.y = 48.085
 header = "SOV"
-parameter = "soil_erosion__overland_flow_mass_flow_rate"
+parameter = "soil_erosion_overland_flow__mass_flow_rate"
 
 [[output.csv.column]]
 coordinate.x = 6.931

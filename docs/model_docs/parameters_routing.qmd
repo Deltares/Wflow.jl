@@ -296,7 +296,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `model_boundary_condition_constant_hydraulic_head` | Head of the boundary | m | - |
+| `model_constant_boundary_condition__hydraulic_head` | Head of the boundary | m | - |
 : {.striped .hover}
 
 ## Sediment
@@ -380,14 +380,14 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_water_clay__mass` | Clay left in cell | ton |
 | `river_water_silt__mass` | Silt left in cell | ton |
 | `river_water_sand__mass` | Sand left in cell | ton |
-| `river_water_aggregates_small__mass` | Small aggregates left in cell | ton |
-| `river_water_aggregates_large__mass` | Large aggregates left in cell | ton |
+| `river_water_small_aggregates__mass` | Small aggregates left in cell | ton |
+| `river_water_large_aggregates__mass` | Large aggregates left in cell | ton |
 | `river_water_gravel__mass` | Gravel left in cell | ton? |
 | `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
 | `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
 | `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
-| `river_water_aggregates_small__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
-| `river_water_aggregates_large__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
+| `river_water_small_aggregates__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
+| `river_water_large_aggregates__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
 | `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
 : {.striped .hover}
 

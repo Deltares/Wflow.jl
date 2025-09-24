@@ -133,9 +133,9 @@ examples are listed below.
 ```toml
 [output.netcdf_grid.variables]
 # # Total soil erosion rate [ton/t] from rainfall (splash)
-"soil_erosion__rainfall_mass_flow_rate" = "rainfall_erosion"
+rainfall_soil_erosion__mass_flow_rate = "rainfall_erosion"
 # Soil erosion rate by overland flow [ton/t]
-"soil_erosion__overland_flow_mass_flow_rate" = "overland_flow_erosion"
+soil_erosion_overland_flow__mass_flow_rate = "overland_flow_erosion"
 # Total soil loss rate [ton/t]
 soil_erosion__mass_flow_rate = "soilloss"
 # Total transport capacity of overland flow [ton/t]
@@ -144,15 +144,15 @@ land_surface_water_sediment_transport_capacity__mass_flow_rate = "TCsed"
 # Total sediment flux in overland flow [ton/t]
 land_surface_water_sediment__mass_flow_rate = "olsed"
 # Total (or per particle class) sediment yield to the river [ton/t]
-"land_surface_water_sediment__to_river_mass_flow_rate" = "inlandsed"
-"land_surface_water_clay__to_river_mass_flow_rate" = "inlandclay"
+land_surface_water_sediment__to_river_mass_flow_rate = "inlandsed"
+land_surface_water_clay__to_river_mass_flow_rate = "inlandclay"
 
 # Total sediment concentration in the river (suspended + bed load) [kg/m3]
 river_water_sediment__mass_concentration = "Sedconc"
 # Suspended load [kg/m3]
-"river_water_sediment__suspended_mass_concentration" = "SSconc"
+river_water_sediment__suspended_mass_concentration = "SSconc"
 # Bed load [kg/m3]
-"river_water_sediment__bedload_mass_concentration" = "Bedconc"
+river_water_sediment__bedload_mass_concentration = "Bedconc"
 ```
 
 ## References

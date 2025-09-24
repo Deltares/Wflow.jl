@@ -225,10 +225,10 @@ end
     @test nt["reservoir_water_surface__instantaneous_elevation"].lens(model)[1] ≈
           3.6172022486284856
     @test nt["soil_water_saturated_zone__depth"].lens(model)[9115] ≈ 477.13548089422125
-    @test nt["snowpack_dry__leq_depth"].lens(model)[5] ≈ 11.019233179897599
+    @test nt["snowpack_dry_snow__leq_depth"].lens(model)[5] ≈ 11.019233179897599
     @test nt["soil_surface__temperature"].lens(model)[5] ≈ 0.21814478119608938
     @test nt["soil_layer_water_unsaturated_zone__depth"].lens(model)[50063][1] ≈ 9.969116007201725
-    @test nt["snowpack_liquid__depth"].lens(model)[5] ≈ 0.0
+    @test nt["snowpack_liquid_water__depth"].lens(model)[5] ≈ 0.0
     @test nt["vegetation_canopy_water__depth"].lens(model)[50063] ≈ 0.0
     @test nt["soil_water_saturated_zone_top__depth"].lens(model)[50063] ≈ 296.8028609104624
     @test nt["subsurface_water__volume_flow_rate"].lens(model)[10606] ≈ 39.972334552895816
@@ -476,7 +476,7 @@ end
     @test "subsurface_water__volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "reservoir_water_surface__instantaneous_elevation" in required_states
-    @test "snowpack_liquid__depth" in required_states
+    @test "snowpack_liquid_water__depth" in required_states
     @test !("reservoir_water_level__elevation" in required_states)
 
     # Adding an unused state the see if the right warning message is thrown
@@ -491,7 +491,7 @@ end
 
     # Removing the unused and required state, to test the exception being thrown
     delete!(config.state["variables"], "additional_state")
-    delete!(config.state["variables"], "snowpack_dry__leq_depth")
+    delete!(config.state["variables"], "snowpack_dry_snow__leq_depth")
     @test_throws ArgumentError Wflow.check_states(config)
 
     # Extracting required states for model type sbm_gwf and test if some are covered

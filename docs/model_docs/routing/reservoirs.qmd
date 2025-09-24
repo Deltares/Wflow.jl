@@ -140,11 +140,11 @@ in the TOML file, with below an example:
 
 ```toml
 [input.static]
-"reservoir_water_demand__required_downstream_volume_flow_rate" = "ResDemand"
+reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
 reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
-"reservoir_water_target_full__volume_fraction" = "ResTargetFullFrac"
-"reservoir_water_target_min__volume_fraction" = "ResTargetMinFrac"
+reservoir_water_target_full__volume_fraction = "ResTargetFullFrac"
+reservoir_water_target_min__volume_fraction = "ResTargetMinFrac"
 ```
 
 The complete list of reservoir input parameters that can be provided through the TOML file can be
@@ -198,7 +198,7 @@ forcing. For example, cyclic inflow can be provided in the TOML file as follows:
 
 ```toml
 [input.cyclic]
-"reservoir_water__external_inflow_volume_flow_rate" = "reservoir_inflow"
+reservoir_water__external_inflow_volume_flow_rate = "reservoir_inflow"
 ```
 These inflows are added or subtracted from the reservoir inflow. In case of an abstraction
 (negative inflow), the abstraction is limited by a fixed scaling factor of $0.98$ applied to
@@ -214,7 +214,7 @@ can be provided in the TOML file as follows:
 
 ```toml
 [input.cyclic]
-"reservoir_water__outgoing_observed_volume_flow_rate" = "reservoir_outflow"
+reservoir_water__outgoing_observed_volume_flow_rate = "reservoir_outflow"
 ```
 
 The reservoir outflow is not equal to the user-defined observed reservoir outflow in case

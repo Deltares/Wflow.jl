@@ -172,8 +172,8 @@ end
 # test without snow model
 config.model.snow__flag = false
 config.model.snow_gravitional_transport__flag = true # this should not throw an error
-pop!(Dict(config.output.netcdf_grid.variables), "snowpack_dry__leq_depth")
-pop!(Dict(config.output.netcdf_grid.variables), "snowpack_liquid__depth")
+pop!(Dict(config.output.netcdf_grid.variables), "snowpack_dry_snow__leq_depth")
+pop!(Dict(config.output.netcdf_grid.variables), "snowpack_liquid_water__depth")
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 
@@ -552,9 +552,9 @@ Wflow.close_files(model; delete_output = false)
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.static["soil_layer_water__vertical_saturated_hydraulic_conductivity"] = "kv"
-    config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile_exponential_below_surface__depth"] =
+    config.input.static["soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth"] =
         Dict("value" => 400.0)
-    config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile_layered_below_surface__depth"] =
+    config.input.static["soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth"] =
         Dict("value" => 400.0)
 
     @testset "exponential profile" begin

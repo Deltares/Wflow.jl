@@ -283,7 +283,7 @@ function sbm_kv_profiles(
     elseif kv_profile_type == "exponential_constant"
         lens = lens_input_parameter(
             config,
-            "soil_vertical_saturated_hydraulic_conductivity_profile_exponential_below_surface__depth";
+            "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth";
             optional = false,
         )
         z_exp = ncread(dataset, config, lens; sel = indices, type = Float64)
@@ -313,7 +313,7 @@ function sbm_kv_profiles(
         else
             lens = lens_input_parameter(
                 config,
-                "soil_vertical_saturated_hydraulic_conductivity_profile_layered_below_surface__depth";
+                "soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth";
                 optional = false,
             )
             z_layered = ncread(dataset, config, lens; sel = indices, type = Float64)
@@ -423,12 +423,14 @@ function SbmSoilParameters(
     soilthickness = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens =
-        lens_input_parameter(config, "soil_compacted_surface_water__infiltration_capacity")
+        lens_input_parameter(config, "compacted_soil_surface_water__infiltration_capacity")
     infiltcappath =
         ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64) .*
         (dt / BASETIMESTEP)
-    lens =
-        lens_input_parameter(config, "soil_water_saturated_zone_bottom__max_leakage_volume_flux")
+    lens = lens_input_parameter(
+        config,
+        "soil_water_saturated_zone_bottom__max_leakage_volume_flux",
+    )
     maxleakage =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
         (dt / BASETIMESTEP)
@@ -463,7 +465,7 @@ function SbmSoilParameters(
     # soil infiltration capacity based on kv_0 and kvfrac upper soil layer
     infiltcapsoil = kv_0 .* @view kvfrac[1, :]
     # fraction compacted area
-    lens = lens_input_parameter(config, "soil_compacted__area_fraction")
+    lens = lens_input_parameter(config, "compacted_soil__area_fraction")
     pathfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # vegetation parameters
