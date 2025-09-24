@@ -469,19 +469,19 @@ function SbmSoilParameters(
     pathfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # vegetation parameters
-    lens = lens_input_parameter(config, "soil_root_wet__sigmoid_function_shape_parameter")
+    lens = lens_input_parameter(config, "soil_wet_root__sigmoid_function_shape_parameter")
     rootdistpar =
         ncread(dataset, config, lens; sel = indices, defaults = -500.0, type = Float64)
     lens = lens_input_parameter(
         config,
-        "soil_water_saturated_zone_top_capillary_rise__max_water_table_depth",
+        "soil_water_saturated_zone_top__capillary_rise_max_water_table_depth",
     )
     cap_hmax =
         ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "soil_water_saturated_zone_top_capillary_rise__averianov_exponent",
+        "soil_water_saturated_zone_top__capillary_rise_averianov_exponent",
     )
     cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
 

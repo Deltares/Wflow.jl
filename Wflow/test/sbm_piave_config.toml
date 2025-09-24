@@ -43,8 +43,8 @@ reservoir_water__max_volume = "ResMaxVolume"
 reservoir_surface__area = "reservoir_area"
 reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
 reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
-reservoir_water_target_full__volume_fraction = "ResTargetFullFrac"
-reservoir_water_target_min__volume_fraction = "ResTargetMinFrac"
+reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
 reservoir_water__rating_curve_coefficient = "reservoir_b"
 reservoir_water__rating_curve_exponent = "reservoir_e"
@@ -86,7 +86,7 @@ cold_start__flag = false
 reservoir__flag = true
 glacier__flag = true
 kinematic_wave__adaptive_time_step_flag = true
-soil_layer__thickness = [ 50, 100, 50, 200, 800,]
+soil_layer__thickness = [50, 100, 50, 200, 800]
 river_routing = "kinematic_wave"
 
 [state.variables]

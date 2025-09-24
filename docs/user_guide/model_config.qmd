@@ -48,9 +48,9 @@ reservoir_water_flow_threshold_level__elevation = "reservoir_threshold"
 reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
 reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
-reservoir_water_target_full__volume_fraction = "ResTargetFullFrac"
-reservoir_water_target_min__volume_fraction = "ResTargetMinFrac"
-reservoir_water__rating_curve_type_count = "outflowfunc" # rating curve type 
+reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
+reservoir_water__rating_curve_type_count = "outflowfunc" # rating curve type
 reservoir_water__storage_curve_type_count  = "storfunc"
 reservoir_water_surface__initial_elevation = "resevoir_waterlevel"
 
@@ -110,22 +110,22 @@ paddy__flag = true        # optional, default is "false"
 nonpaddy__flag = true     # optional, default is "false"
 
 [input.cyclic]
-land_domestic__gross_water_demand_volume_flux = "dom_gross"
-land_domestic__net_water_demand_volume_flux = "dom_net"
-land_industry__gross_water_demand_volume_flux = "ind_gross"
-land_industry__net_water_demand_volume_flux = "ind_net"
-land_livestock__gross_water_demand_volume_flux = "lsk_gross"
-land_livestock__net_water_demand_volume_flux = "lsk_net"
-land_paddy_irrigated__irrigation_trigger_flag = "irrigation_trigger"
-land_non_paddy_irrigated__irrigation_trigger_flag = "irrigation_trigger"
+domestic__gross_water_demand_volume_flux = "dom_gross"
+domestic__net_water_demand_volume_flux = "dom_net"
+industry__gross_water_demand_volume_flux = "ind_gross"
+industry__net_water_demand_volume_flux = "ind_net"
+livestock__gross_water_demand_volume_flux = "lsk_gross"
+livestock__net_water_demand_volume_flux = "lsk_net"
+irrigated_paddy__irrigation_trigger_flag = "irrigation_trigger"
+irrigated_non_paddy__irrigation_trigger_flag = "irrigation_trigger"
 
 [input.static]
 land_water_allocation_area__count = "allocation_areas"
 land_surface_water__withdrawal_fraction = "SurfaceWaterFrac"
-land_paddy_irrigated_area__count = "paddy_irrigation_areas"
-land_non_paddy_irrigated__irrigation_area_count = "nonpaddy_irrigation_areas"
+irrigated_paddy_area__count = "paddy_irrigation_areas"
+irrigated_non_paddy__irrigation_area_count = "nonpaddy_irrigation_areas"
 
 # required if paddy is set to "true"
 [state.variables]
-land_paddy_surface_water__depth = "h_paddy"
+paddy_surface_water__depth = "h_paddy"
 ```

@@ -12,7 +12,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     ),
     "land_surface__evapotranspiration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actevap), unit = "mm dt-1"),
-    "land_water_storage_total__depth" =>
+    "land_water_storage__total_depth" =>
         (lens = @optic(_.land.soil.variables.total_storage), unit = "mm"),
     "atmosphere_air__temperature" =>
         (lens = @optic(_.land.atmospheric_forcing.temperature), unit = "°C"),
@@ -77,13 +77,13 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.river_flow.floodplain.variables.q_av),
         unit = "m3 s-1",
     ),
-    "reservoir_water_target_min__volume_fraction" => (
+    "reservoir_water__target_min_volume_fraction" => (
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.parameters.targetminfrac
         ),
         unit = "-",
     ),
-    "reservoir_water_target_full__volume_fraction" => (
+    "reservoir_water__target_full_volume_fraction" => (
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.parameters.targetfullfrac
         ),
@@ -175,7 +175,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
     "compacted_soil_surface_water__excess_volume_flux" =>
         (lens = @optic(_.land.soil.variables.excesswatersoil), unit = "mm dt-1"),
-    "soil_surface_water_non_compacted__excess_volume_flux" =>
+    "non_compacted_soil_surface_water__excess_volume_flux" =>
         (lens = @optic(_.land.soil.variables.excesswaterpath), unit = "mm dt-1"),
     "soil_layer_water__volume_fraction" =>
         (lens = @optic(_.land.soil.variables.vwc), unit = "m3 m-3"),
@@ -241,43 +241,43 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.overland_flow.variables.qx), unit = "m3 s-1"),
     "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.qy), unit = "m3 s-1"),
-    "land_paddy_surface_water__depth" =>
+    "paddy_surface_water__depth" =>
         (lens = @optic(_.land.demand.paddy.variables.h), unit = "mm"),
-    "land_domestic__gross_water_demand_volume_flux" =>
+    "domestic__gross_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.domestic.demand.demand_gross), unit = "mm dt-1"),
-    "land_domestic__net_water_demand_volume_flux" =>
+    "domestic__net_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.domestic.demand.demand_net), unit = "mm dt-1"),
-    "land_industry__gross_water_demand_volume_flux" =>
+    "industry__gross_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.industry.demand.demand_gross), unit = "mm dt-1"),
-    "land_industry__net_water_demand_volume_flux" =>
+    "industry__net_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.industry.demand.demand_net), unit = "mm dt-1"),
-    "land_livestock__gross_water_demand_volume_flux" =>
+    "livestock__gross_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.livestock.demand.demand_gross), unit = "mm dt-1"),
-    "land_livestock__net_water_demand_volume_flux" =>
+    "livestock__net_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.livestock.demand.demand_net), unit = "mm dt-1"),
-    "land_paddy_irrigated__irrigation_trigger_flag" => (
+    "irrigated_paddy__irrigation_trigger_flag" => (
         lens = @optic(_.land.demand.paddy.parameters.irrigation_trigger),
         unit = "mm dt-1",
     ),
-    "land_paddy_irrigated__gross_water_demand_volume_flux" =>
+    "irrigated_paddy__gross_water_demand_volume_flux" =>
         (lens = @optic(_.land.demand.paddy.variables.demand_gross), unit = "mm dt-1"),
-    "land_non_paddy_irrigated__irrigation_trigger_flag" => (
+    "irrigated_non_paddy__irrigation_trigger_flag" => (
         lens = @optic(_.land.demand.nonpaddy.parameters.irrigation_trigger),
         unit = "mm dt-1",
     ),
-    "land_non_paddy_irrigated__gross_water_demand_volume_flux" => (
+    "irrigated_non_paddy__gross_water_demand_volume_flux" => (
         lens = @optic(_.land.demand.nonpaddy.variables.demand_gross),
         unit = "mm dt-1",
     ),
-    "land_irrigated__allocated_water_volume_flux" =>
+    "land__allocated_irrigation_water_volume_flux" =>
         (lens = @optic(_.land.allocation.variables.irri_alloc), unit = "mm dt-1"),
-    "land_non_irrigated__allocated_water_volume_flux" =>
+    "land__allocated_non_irrigation_water_volume_flux" =>
         (lens = @optic(_.land.allocation.variables.nonirri_alloc), unit = "mm dt-1"),
     "subsurface_water__abstraction_volume_flux" => (
         lens = @optic(_.land.allocation.variables.act_groundwater_abst),
         unit = "mm dt-1",
     ),
-    "land_non_irrigation__return_flow_volume_flux" => (
+    "land__non_irrigation_return_flow_volume_flux" => (
         lens = @optic(_.land.allocation.variables.nonirri_returnflow),
         unit = "mm dt-1",
     ),

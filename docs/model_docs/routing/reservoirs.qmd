@@ -143,8 +143,8 @@ in the TOML file, with below an example:
 reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
 reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
-reservoir_water_target_full__volume_fraction = "ResTargetFullFrac"
-reservoir_water_target_min__volume_fraction = "ResTargetMinFrac"
+reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 ```
 
 The complete list of reservoir input parameters that can be provided through the TOML file can be

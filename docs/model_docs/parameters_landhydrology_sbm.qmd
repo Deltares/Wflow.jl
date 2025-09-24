@@ -150,13 +150,13 @@ td, th {
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_surface__evapotranspiration_volume_flux` | Total actual evapotranspiration | mm |
-| `land_water_storage_total__depth` | Total water storage (excluding floodplains and reservoirs) | mm |
+| `land_water_storage__total_depth` | Total water storage (excluding floodplains and reservoirs) | mm |
 | `soil_water__infiltration_volume_flux` | Actual infiltration into the unsaturated zone | mm Δt⁻¹ |
 | `soil_water__transpiration_volume_flux` | Transpiration from vegetation | mm Δt⁻¹ |
 | `soil_surface_water__runoff_volume_flux` | Total surface runoff from infiltration and saturation excess | mm Δt⁻¹ |
 | `soil_surface_water__net_runoff_volume_flux` | Net surface runoff (after open water evaporation) | mm Δt⁻¹ |
 | `compacted_soil_surface_water__excess_volume_flux` | Excess water for compacted soil fraction | mm Δt⁻¹ |
-| `soil_surface_water_non_compacted__excess_volume_flux` | Excess water for non-compacted soil fraction | mm Δt⁻¹ |
+| `non_compacted_soil_surface_water__excess_volume_flux` | Excess water for non-compacted soil fraction | mm Δt⁻¹ |
 | `soil_surface_water_unsaturated_zone__exfiltration_volume_flux` | Water exfiltrating from unsaturated store because of rising water table | mm Δt⁻¹ |
 | `soil_surface_water_saturated_zone__exfiltration_volume_flux` | Water exfiltrating from saturated store during saturation excess conditions | mm Δt⁻¹ |
 | `soil_layer_water__volume_fraction` | Volumetric water content per soil layer (including residual water content and saturated zone) | - |
@@ -178,51 +178,51 @@ td, th {
 #### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land_domestic__gross_water_demand_volume_flux` | Gross domestic water demand | mm Δt⁻¹ | 0.0 |
-| `land_domestic__net_water_demand_volume_flux` | Net domestic water demand | mm Δt⁻¹ | 0.0 |
-| `land_industry__gross_water_demand_volume_flux` | Gross industry water demand | mm Δt⁻¹ | 0.0 |
-| `land_industry__net_water_demand_volume_flux` | Net industry water demand | mm Δt⁻¹ | 0.0 |
-| `land_livestock__gross_water_demand_volume_flux` | Gross livestock water demand | mm Δt⁻¹ | 0.0 |
-| `land_livestock__net_water_demand_volume_flux` | Net livestock water demand | mm Δt⁻¹ | 0.0 |
+| `domestic__gross_water_demand_volume_flux` | Gross domestic water demand | mm Δt⁻¹ | 0.0 |
+| `domestic__net_water_demand_volume_flux` | Net domestic water demand | mm Δt⁻¹ | 0.0 |
+| `industry__gross_water_demand_volume_flux` | Gross industry water demand | mm Δt⁻¹ | 0.0 |
+| `industry__net_water_demand_volume_flux` | Net industry water demand | mm Δt⁻¹ | 0.0 |
+| `livestock__gross_water_demand_volume_flux` | Gross livestock water demand | mm Δt⁻¹ | 0.0 |
+| `livestock__net_water_demand_volume_flux` | Net livestock water demand | mm Δt⁻¹ | 0.0 |
 : {.striped .hover}
 
 ### Non-paddy irrigation
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land_non_paddy_irrigated__irrigation_efficiency` | Irrigation efficiency | - | - |
-| `land_non_paddy_irrigated__irrigation_area_count` | Irrigation areas (non-paddy) | - | - |
-| `land_non_paddy_irrigated__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
+| `irrigated_non_paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
+| `irrigated_non_paddy__irrigation_area_count` | Irrigation areas (non-paddy) | - | - |
+| `irrigated_non_paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
 #### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land_non_paddy_irrigated__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
+| `irrigated_non_paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `land_non_paddy_irrigated__gross_water_demand_volume_flux` | Irrigation (non-paddy) gross demand | mm Δt⁻¹ |
+| `irrigated_non_paddy__gross_water_demand_volume_flux` | Irrigation (non-paddy) gross demand | mm Δt⁻¹ |
 : {.striped .hover}
 
 ### Paddy irrigation
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land_paddy_irrigated__min_depth` | Minimum required water depth in the irrigated paddy fields | mm | 20.0 |
-| `land_paddy_irrigated__optimal_depth` | Optimal water depth in the irrigated paddy fields | mm | 50.0 |
-| `land_paddy_irrigated__max_depth` | Water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
-| `land_paddy_irrigated__irrigation_efficiency` | Irrigation efficiency | - | - |
-| `land_paddy_irrigated_area__count` | Irrigation areas (paddy) | - | - |
-| `land_paddy_irrigated__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
+| `irrigated_paddy__min_depth` | Minimum required water depth in the irrigated paddy fields | mm | 20.0 |
+| `irrigated_paddy__optimal_depth` | Optimal water depth in the irrigated paddy fields | mm | 50.0 |
+| `irrigated_paddy__max_depth` | Water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
+| `irrigated_paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
+| `irrigated_paddy_area__count` | Irrigation areas (paddy) | - | - |
+| `irrigated_paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
 
 #### Static or cyclic/forcing input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `land_paddy_irrigated__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
+| `irrigated_paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
 : {.striped .hover}
 
 #### States
@@ -234,7 +234,7 @@ td, th {
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `land_paddy_irrigated__gross_water_demand_volume_flux` | Irrigation (paddy) gross demand | mm Δt⁻¹ |
+| `irrigated_paddy__gross_water_demand_volume_flux` | Irrigation (paddy) gross demand | mm Δt⁻¹ |
 : {.striped .hover}
 
 ### Allocation
@@ -250,7 +250,7 @@ td, th {
 | --- | --- | - |
 | `land_surface_water__abstraction_volume_flux` | Actual surface water abstraction | mm Δt⁻¹ |
 | `subsurface_water__abstraction_volume_flux` | Actual groundwater abstraction | mm Δt⁻¹ |
-| `land_irrigated__allocated_water_volume_flux` | Allocated water for irrigation | mm Δt⁻¹ |
-| `land_non_irrigated__allocated_water_volume_flux` | Allocated water for non-irrigation | mm Δt⁻¹ |
-| `land_non_irrigation__return_flow_volume_flux` | Return flow from non-irrgation sectors | mm Δt⁻¹ |
+| `land__allocated_irrigation_water_volume_flux` | Allocated water for irrigation | mm Δt⁻¹ |
+| `land__allocated_non_irrigation_water_volume_flux` | Allocated water for non-irrigation | mm Δt⁻¹ |
+| `land__non_irrigation_return_flow_volume_flux` | Return flow from non-irrgation sectors | mm Δt⁻¹ |
 : {.striped .hover}

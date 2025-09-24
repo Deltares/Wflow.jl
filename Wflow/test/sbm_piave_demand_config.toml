@@ -29,7 +29,7 @@ river_water__instantaneous_volume_flow_rate = "q_river"
 river_water__instantaneous_depth = "h_river"
 reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
 glacier_ice__leq_depth = "glacierstore"
-land_paddy_surface_water__depth = "h_paddy"
+paddy_surface_water__depth = "h_paddy"
 
 [input]
 path_forcing = "forcing-piave.nc"
@@ -59,8 +59,8 @@ reservoir_water__max_volume = "ResMaxVolume"
 reservoir_surface__area = "reservoir_area"
 reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
 reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
-reservoir_water_target_full__volume_fraction = "ResTargetFullFrac"
-reservoir_water_target_min__volume_fraction = "ResTargetMinFrac"
+reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
 reservoir_water__rating_curve_coefficient = "reservoir_b"
 reservoir_water__rating_curve_exponent = "reservoir_e"
@@ -92,20 +92,20 @@ soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
 land_water_allocation_area__count = "allocation_areas_admin2"
 land_surface_water__withdrawal_fraction = "frac_sw_used"
 soil_water__vertical_saturated_hydraulic_conductivity_factor = "kvfrac"
-land_paddy_irrigated_area__count = "paddy_irrigation_areas"
-land_non_paddy_irrigated__irrigation_area_count = "nonpaddy_irrigation_areas"
+irrigated_paddy_area__count = "paddy_irrigation_areas"
+irrigated_non_paddy__irrigation_area_count = "nonpaddy_irrigation_areas"
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio.value = 100
 
 [input.cyclic]
 vegetation__leaf_area_index = "LAI"
-land_domestic__gross_water_demand_volume_flux = "domestic_gross"
-land_domestic__net_water_demand_volume_flux = "domestic_net"
-land_industry__gross_water_demand_volume_flux = "industry_gross"
-land_industry__net_water_demand_volume_flux = "industry_net"
-land_livestock__gross_water_demand_volume_flux = "livestock_gross"
-land_livestock__net_water_demand_volume_flux = "livestock_net"
-land_paddy_irrigated__irrigation_trigger_flag = "paddy_irrigation_trigger"
-land_non_paddy_irrigated__irrigation_trigger_flag = "nonpaddy_irrigation_trigger"
+domestic__gross_water_demand_volume_flux = "domestic_gross"
+domestic__net_water_demand_volume_flux = "domestic_net"
+industry__gross_water_demand_volume_flux = "industry_gross"
+industry__net_water_demand_volume_flux = "industry_net"
+livestock__gross_water_demand_volume_flux = "livestock_gross"
+livestock__net_water_demand_volume_flux = "livestock_net"
+irrigated_paddy__irrigation_trigger_flag = "paddy_irrigation_trigger"
+irrigated_non_paddy__irrigation_trigger_flag = "nonpaddy_irrigation_trigger"
 
 [model]
 type = "sbm"
@@ -149,10 +149,10 @@ parameter = "river_water__volume_flow_rate"
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "paddy_h_bycoord"
-parameter = "land_paddy_surface_water__depth"
+parameter = "paddy_surface_water__depth"
 
 [[output.csv.column]]
 coordinate.x = 12.7243
 coordinate.y = 45.5851
 header = "irri_bycoord"
-parameter = "land_irrigated__allocated_water_volume_flux"
+parameter = "land__allocated_irrigation_water_volume_flux"

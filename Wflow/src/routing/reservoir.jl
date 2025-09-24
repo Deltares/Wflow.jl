@@ -122,14 +122,14 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
         lens = lens_input_parameter(
             config,
-            "reservoir_water_target_full__volume_fraction";
+            "reservoir_water__target_full_volume_fraction";
             optional = false,
         )
         targetfullfrac =
             ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
         lens = lens_input_parameter(
             config,
-            "reservoir_water_target_min__volume_fraction";
+            "reservoir_water__target_min_volume_fraction";
             optional = false,
         )
         targetminfrac =

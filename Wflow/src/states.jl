@@ -195,7 +195,7 @@ function extract_required_states(config::Config)
         ("reservoir_water_surface__instantaneous_elevation",) : ()
 
     # Paddy states
-    paddy_states = do_paddy ? ("land_paddy_surface_water__depth",) : ()
+    paddy_states = do_paddy ? ("paddy_surface_water__depth",) : ()
 
     # Add required states to a tuple, similar to the keys in the output of
     # `ncnames(config.state.variables)`
