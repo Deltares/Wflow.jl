@@ -102,7 +102,7 @@ function update!(
     )
     update!(runoff, atmospheric_forcing, parameters)
 
-    if do_water_demand
+    if do_water_demand && get(config.model.water_demand, "nonpaddy__flag", false)::Bool
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)
