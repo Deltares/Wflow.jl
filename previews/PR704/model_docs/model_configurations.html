@@ -616,9 +616,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Model outputs can be saved for both the inland and the instream part of the model. Some examples are listed below.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # Total soil erosion rate [ton/t] from rainfall (splash)</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion__rainfall_mass_flow_rate"</span> <span class="op">=</span> <span class="st">"rainfall_erosion"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">rainfall_soil_erosion__mass_flow_rate</span> <span class="op">=</span> <span class="st">"rainfall_erosion"</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Soil erosion rate by overland flow [ton/t]</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion__overland_flow_mass_flow_rate"</span> <span class="op">=</span> <span class="st">"overland_flow_erosion"</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_erosion_overland_flow__mass_flow_rate</span> <span class="op">=</span> <span class="st">"overland_flow_erosion"</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Total soil loss rate [ton/t]</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_erosion__mass_flow_rate</span> <span class="op">=</span> <span class="st">"soilloss"</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Total transport capacity of overland flow [ton/t]</span></span>
@@ -627,15 +627,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment flux in overland flow [ton/t]</span></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment__mass_flow_rate</span> <span class="op">=</span> <span class="st">"olsed"</span></span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Total (or per particle class) sediment yield to the river [ton/t]</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_sediment__to_river_mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandsed"</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_clay__to_river_mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandclay"</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment__to_river_mass_flow_rate</span> <span class="op">=</span> <span class="st">"inlandsed"</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_clay__to_river_mass_flow_rate</span> <span class="op">=</span> <span class="st">"inlandclay"</span></span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment concentration in the river (suspended + bed load) [kg/m3]</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__mass_concentration</span> <span class="op">=</span> <span class="st">"Sedconc"</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Suspended load [kg/m3]</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment__suspended_mass_concentration"</span> <span class="op">=</span> <span class="st">"SSconc"</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__suspended_mass_concentration</span> <span class="op">=</span> <span class="st">"SSconc"</span></span>
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Bed load [kg/m3]</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment__bedload_mass_concentration"</span> <span class="op">=</span> <span class="st">"Bedconc"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__bedload_mass_concentration</span> <span class="op">=</span> <span class="st">"Bedconc"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="references" class="level2">
