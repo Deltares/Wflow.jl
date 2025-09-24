@@ -83,7 +83,7 @@ function get_sediment_states()
         "river_bed_clay__mass",
         "river_water_gravel__mass",
         "river_bed_gravel__mass",
-        "river_water_small_aggregates__mass",
+        "river_water_large_aggregates__mass",
         "river_bed_large_aggregates__mass",
         "river_water_clay__mass_flow_rate",
         "river_water_gravel__mass_flow_rate",
