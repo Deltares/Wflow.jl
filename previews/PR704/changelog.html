@@ -477,13 +477,15 @@ window.Quarto = {
 <ul>
 <li>Introduced in v1.0.0-rc1, fixed unit conversion model parameter <code>kv_0</code> to <code>kh_0</code> for sub-daily model timestep.</li>
 <li>Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation parameters.</li>
+<li>Introduced in v1.0.0-rc1, fixed computation of exfiltration rate for <code>GroundwaterFlow</code>. Before the exfiltration rate was computed (function <code>get_exfiltwater</code>), the maximum groundwater head was adjusted to the surface level (function <code>get_water_depth</code>), resulting in zero exfiltration rates. The exfiltration rate computation has been moved to the <code>update_head!</code> function of <code>GroundwaterFlow</code>.</li>
+<li>Fixed soil model <code>SbmSoilModel</code> cold states for model type <code>sbm_gwf</code>. <code>GroundwaterFlow</code> can have constant head boundary cells, and for river cells the initial head is set equal to the surface elevation. <code>SbmSoilModel</code> cold states and depending variables are now corrected based on the <code>GroundwaterFlow</code> initial head values.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
 <li>Refactor <code>SimpleReservoir</code> and <code>Lake</code> structs by introducing a <code>Reservoir</code> struct that combines data and functionality of both structs. For the simple reservoir a rating curve type (4) has been added. To represent reservoirs, (natural) lakes or other water storage features that can be represented by the available functionality the common name <code>reservoir</code> is used, also for the standard names of associated model variables and parameters.</li>
-<li>The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25 as recommended by Chu and Willis (1984. This has been changed to a configurable model setting (<code>subsurface_water_flow__alpha_coefficient</code>), so this can be lowered easily in case of numerical instabilities. Additionally, internal timestepping for groundwater flow is now supported.</li>
+<li>The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25 as recommended by Chu and Willis (1984). This has been changed to a configurable model setting (<code>subsurface_water_flow__alpha_coefficient</code>), so this can be lowered easily in case of numerical instabilities. Additionally, internal timestepping for groundwater flow is now supported.</li>
 <li>For scalar NetCDF output files, when using the same output map (gauge or subcatchment map) multiple times, each variable that uses these IDs are now sharing the same dimension (instead of creating a new dimension for each variable). The name of this dimension is based on the name of the map defined in the .toml file.</li>
 </ul>
 </section>
