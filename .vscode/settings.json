@@ -2,15 +2,14 @@
     "[julia]": {
         "editor.formatOnSave": true,
     },
+    "julia.environmentPath": "./Wflow",
     "julia.lint.disabledDirs": [
         ".pixi"
     ],
     "julia.lint.run": true,
-  
     "files.associations": {
         "*.qmd": "markdown"
     },
-
     "[markdown]": {
         "rewrap.wordWrapColumn": 92
     }
