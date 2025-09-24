@@ -478,6 +478,7 @@ window.Quarto = {
 <li>Introduced in v1.0.0-rc1, fixed unit conversion model parameter <code>kv_0</code> to <code>kh_0</code> for sub-daily model timestep.</li>
 <li>Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation parameters.</li>
 <li>Introduced in v1.0.0-rc1, fixed computation of exfiltration rate for <code>GroundwaterFlow</code>. Before the exfiltration rate was computed (function <code>get_exfiltwater</code>), the maximum groundwater head was adjusted to the surface level (function <code>get_water_depth</code>), resulting in zero exfiltration rates. The exfiltration rate computation has been moved to the <code>update_head!</code> function of <code>GroundwaterFlow</code>.</li>
+<li>Fixed soil model <code>SbmSoilModel</code> cold states for model type <code>sbm_gwf</code>. <code>GroundwaterFlow</code> can have constant head boundary cells, and for river cells the initial head is set equal to the surface elevation. <code>SbmSoilModel</code> cold states and depending variables are now corrected based on the <code>GroundwaterFlow</code> initial head values.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
