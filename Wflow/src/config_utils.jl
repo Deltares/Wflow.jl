@@ -36,16 +36,42 @@ option_names(::Type{RoutingType.T}) = ("kinematic-wave", "local-inertial")
 get_something_type(::Type{T}) where {T} = last(Base.uniontypes(T))
 
 # Pretty printing AbstractConfigurationSection instances
-function Base.show(io::IO, c::AbstractConfigSection)
+function Base.show(io::IO, config_section::AbstractConfigSection)
     first = true
-    for field in fieldnames(typeof(c))
-        f = getfield(c, field)
-        if f !== nothing
+    for field_name in fieldnames(typeof(config_section))
+        (field_name == :_was_specified) && continue
+        value = getfield(config_section, field_name)
+        if !isnothing(value)
             first && (first = false; println(io))
-            println(io, "\t\t$field\t= $f")
+            println(io, "\t\t$field_name\t= $value")
         end
     end
 end
+
+# Specialized printing for InputEntry
+function Base.show(io::IO, input_entry::InputEntry)
+    (; netcdf_variable_name, scale, offset, value, external_name) = input_entry
+    if !isnothing(netcdf_variable_name)
+        if scale == [1.0] && offset == [0.0]
+            print(io, netcdf_variable_name)
+        else
+            print(io, netcdf_variable_name * " (scale = $scale, offset = $offset)")
+        end
+    elseif !isnothing(value)
+        print(io, value)
+    else
+        print(io, external_name)
+    end
+end
+
+# Specialized printing for CoordinateSection
+Base.show(io::IO, cs::CoordinateSection) = print(io, "(x = $(cs.x), y = $(cs.y))")
+
+# Specialized printing for IndexSection
+Base.isnothing(index::IndexSection) =
+    all(isnothing(val) for val in (index.i, index.x, index.y))
+Base.show(io::IO, index::IndexSection) =
+    isnothing(index.i) ? print(io, "(x = $(index.x), y = $(index.y))") : print(io, index.i)
 
 const log_level_map::Dict{Union{Int, String}, LogLevel} =
     Dict("debug" => Debug, "info" => Info, "warn" => Warn, "error" => Error)
@@ -95,3 +121,13 @@ input_path(config::Config, path::Union{Nothing, AbstractString}) =
 "Construct a path relative to both the TOML directory and the optional `dir_output`"
 output_path(config::Config, path::Union{Nothing, AbstractString}) =
     normpath(dirname(config), config.dir_output, path)
+
+function variable_info(var::InputEntry)
+    (; layer, scale, offset) = var
+
+    for (i, (scale, offset)) in enumerate(zip(scale, offset))
+        msg = "NetCDF parameter $(variable_name(var)) is modified with scale $scale and offset $offset"
+        !isnothing(layer) && (msg *= "at index $(layer[i])")
+        @info "$msg."
+    end
+end

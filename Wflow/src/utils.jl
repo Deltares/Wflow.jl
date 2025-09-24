@@ -283,6 +283,7 @@ function ncread(
     end
 
     (; value, layer, scale, offset) = var
+    variable_info(var)
 
     if !isnothing(value)
         @info "Set `$(parameter.name)` using uniform value `$value` from TOML file."

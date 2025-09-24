@@ -141,14 +141,6 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
         len = coalesce(len, 0)
         !haskey(dict, "scale") && (dict["scale"] = ones(len))
         !haskey(dict, "offset") && (dict["offset"] = zeros(len))
-        has_layer = haskey(dict, "layer")
-
-        for (i, (scale, offset)) in enumerate(zip(dict["scale"], dict["offset"]))
-            # Modifier info
-            msg = "NetCDF parameter $netcdf_variable_name is modified with scale $scale and offset $offset"
-            has_layer && (msg *= "at index $(dict["layer"][i])")
-            @info "$msg."
-        end
 
         # Invoke default method
         return init_config_section_default(InputEntry, dict)

@@ -555,6 +555,7 @@ function NCReader(config)
 
     for (par, var) in config.input.forcing
         ncname = variable_name(var)
+        variable_info(var)
         @info "Set `$par` using netCDF variable `$ncname` as forcing parameter."
     end
 
@@ -571,6 +572,7 @@ function NCReader(config)
             dimname = dimnames(cyclic_dataset[ncname])[i]
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[par] = timecycles(cyclic_nc_times)
+            variable_info(var)
             @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
@@ -1014,12 +1016,12 @@ reducer_func(reducer_type::ReducerType.T) = function_map[reducer_type]
 function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
     (; parameter, map, reducer, index, coordinate) = col
     fileformat = col isa CSVColumn ? "CSV" : "NetCDF"
+    f = reducer_func(reducer)
     if !isnothing(map)
         # assumes the parameter in "map" has a 2D input map, with
         # integers indicating the points or zones that are to be aggregated
         # if no reducer is given, pick "only", this is the only safe reducer,
         # and makes sense in the case of a gauge map
-        f = reducer_func(reducer)
         lens = lens_input(map)
         map_2d = ncread(
             dataset,
@@ -1030,7 +1032,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             logging = false,
         )
         @info "Adding scalar output for a map with a reducer function." fileformat param =
-            parameter mapname = map reducer_name = Symbol(reducer)
+            parameter mapname = map reducer_name = String(nameof(f))
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
@@ -1051,7 +1053,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer
         @info "Adding scalar output of all active cells with reducer function." fileformat param =
-            parameter reducer_name = Symbol(reducer)
+            parameter reducer_name = String(nameof(f))
         return function_map[reducer]
     elseif do_index(index)
         if !isnothing(index.i)
