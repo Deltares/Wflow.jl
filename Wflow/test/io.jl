@@ -326,7 +326,7 @@ Wflow.close_files(model; delete_output = false)
 end
 
 @testset "NetCDF read variants" begin
-    NCDataset(staticmaps_moselle_path) do ds
+    NCDataset(normpath(input_data_path, "staticmaps-moselle.nc")) do ds
         @test Wflow.is_increasing(ds[:lon])
         @test !Wflow.is_increasing(ds[:lat])
 

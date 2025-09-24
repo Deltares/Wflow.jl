@@ -1,44 +1,44 @@
-const dt_sec = 86400.0
-const ldd_MISSING_VALUE = 255
+@testset "flow_rate" begin
+    dt_sec = 86400.0
+    ldd_MISSING_VALUE = 255
 
-# read the staticmaps into memory
-nc = NCDataset(staticmaps_rhine_path)
-# helper function to get the axis order and directionality right
-read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
-ldd_2d = read_right(nc, "ldd")
+    # read the staticmaps into memory
+    nc = NCDataset(normpath(input_data_path, "staticmaps-rhine.nc"))
+    # helper function to get the axis order and directionality right
+    read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
+    ldd_2d = read_right(nc, "ldd")
 
-inds, _ = Wflow.active_indices(ldd_2d, ldd_MISSING_VALUE)
-n = length(inds)
+    inds, _ = Wflow.active_indices(ldd_2d, ldd_MISSING_VALUE)
+    n = length(inds)
 
-# take out only the active cells
-ldd = ldd_2d[inds]
-slope = read_right(nc, "slope")[inds]
-N = read_right(nc, "N")[inds]
-Qold = read_right(nc, "Qold")[inds]
-Bw = read_right(nc, "Bw")[inds]
-waterlevel = read_right(nc, "waterlevel")[inds]
-DCL = read_right(nc, "DCL")[inds]
-close(nc)
+    # take out only the active cells
+    ldd = ldd_2d[inds]
+    slope = read_right(nc, "slope")[inds]
+    N = read_right(nc, "N")[inds]
+    Qold = read_right(nc, "Qold")[inds]
+    Bw = read_right(nc, "Bw")[inds]
+    waterlevel = read_right(nc, "waterlevel")[inds]
+    DCL = read_right(nc, "DCL")[inds]
+    close(nc)
 
-# create the directed acyclic graph from the drainage direction array
-graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
-# a topological sort is used for visiting nodes in order from upstream to downstream
-toposort = topological_sort_by_dfs(graph)
-sink = toposort[end]
-@test ldd[sink] == 5  # the most downstream node must be a sink
+    # create the directed acyclic graph from the drainage direction array
+    graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
+    # a topological sort is used for visiting nodes in order from upstream to downstream
+    toposort = topological_sort_by_dfs(graph)
+    sink = toposort[end]
+    @test ldd[sink] == 5  # the most downstream node must be a sink
 
-# calculate parameters of kinematic wave
-const q = 0.000001
-const beta = 0.6
-const AlpPow = (2.0 / 3.0) * beta
-AlpTermR = (N ./ sqrt.(slope)) .^ beta
-P = Bw + (2.0 * waterlevel)
-alpha = AlpTermR .* P .^ AlpPow
+    # calculate parameters of kinematic wave
+    q = 0.000001
+    beta = 0.6
+    AlpPow = (2.0 / 3.0) * beta
+    AlpTermR = (N ./ sqrt.(slope)) .^ beta
+    P = Bw + (2.0 * waterlevel)
+    alpha = AlpTermR .* P .^ AlpPow
 
-Q = zeros(n)
-Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+    Q = zeros(n)
+    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
 
-@testset "flow rate" begin
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
     @test Q[toposort[n - 100]] ≈ 3945.762718338739
