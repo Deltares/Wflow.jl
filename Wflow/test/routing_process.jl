@@ -1,4 +1,6 @@
-@testset "flow_rate" begin
+@testitem "flow_rate" begin
+    using NCDatasets: NCDataset
+
     dt_sec = 86400.0
     ldd_MISSING_VALUE = 255
 
