@@ -650,12 +650,12 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>snowpack~dry__leq-depth</code></td>
+<td><code>snowpack_dry_snow__leq_depth</code></td>
 <td>Liquid-water equivalent of dry snow</td>
 <td>mm</td>
 </tr>
 <tr class="even">
-<td><code>snowpack~liquid__depth</code></td>
+<td><code>snowpack_liquid_water__depth</code></td>
 <td>Liquid water content in the snow pack</td>
 <td>mm</td>
 </tr>
@@ -679,7 +679,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>snowpack__leq-depth</code></td>
+<td><code>snowpack__leq_depth</code></td>
 <td>Liquid-water equivalent of snow pack (SWE)</td>
 <td>mm</td>
 </tr>
@@ -736,7 +736,7 @@ td, th {
 <td>3.0 mm ᵒC⁻¹ day⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>glacier_firn_accumulation__snowpack~dry_leq-depth_fraction</code></td>
+<td><code>glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction</code></td>
 <td>Fraction of the snowpack on top of the glacier converted into ice</td>
 <td>Δt⁻¹</td>
 <td>0.001 day⁻¹</td>
@@ -762,7 +762,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>glacier_ice__leq-depth</code></td>
+<td><code>glacier_ice__leq_depth</code></td>
 <td>Glacier liquid-water equivalent</td>
 <td>mm</td>
 </tr>
@@ -873,7 +873,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>vegetation__leaf-area_index</code></td>
+<td><code>vegetation__leaf_area_index</code></td>
 <td>Leaf area index</td>
 <td>m² m⁻²</td>
 <td>-</td>
@@ -956,7 +956,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth</code></td>
+<td><code>soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
 <td>Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an <code>exponential_constant</code> saturated hydraulic conductivity profile is used</td>
 <td>mm</td>
 <td>-</td>
@@ -968,7 +968,7 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth</code></td>
+<td><code>soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
 <td>Depth from soil surface for which <code>layered</code> profile is valid, when a <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
 <td>mm</td>
 <td>-</td>
@@ -1016,37 +1016,37 @@ td, th {
 <td>-10.0</td>
 </tr>
 <tr class="odd">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~1</code></td>
+<td><code>vegetation_root__feddes_critial_pressure_head_h1</code></td>
 <td>Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~2</code></td>
+<td><code>vegetation_root__feddes_critial_pressure_head_h2</code></td>
 <td>Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-100.0</td>
 </tr>
 <tr class="odd">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~3~high</code></td>
+<td><code>vegetation_root__feddes_critial_pressure_head_h3_high</code></td>
 <td>Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-400.0</td>
 </tr>
 <tr class="even">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~3~low</code></td>
+<td><code>vegetation_root__feddes_critial_pressure_head_h3_low</code></td>
 <td>Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-1000.0</td>
 </tr>
 <tr class="odd">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~4</code></td>
+<td><code>vegetation_root__feddes_critial_pressure_head_h4</code></td>
 <td>Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-16000.0</td>
 </tr>
 <tr class="even">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient</code></td>
+<td><code>vegetation_root__feddes_critial_pressure_head_h1_reduction_coefficient</code></td>
 <td>Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
 <td>-</td>
 <td>1.0</td>
@@ -1058,67 +1058,61 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>soil~compacted_surface_water__infiltration_capacity</code></td>
+<td><code>compacted_soil_surface_water__infiltration_capacity</code></td>
 <td>Infiltration capacity of compacted areas</td>
 <td>mm Δt⁻¹</td>
 <td>10 mm day⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil~non-compacted_surface_water__infiltration_capacity</code></td>
-<td>Soil infiltration capacity</td>
-<td>mm Δt⁻¹</td>
-<td>100.0 mm day⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>soil_water_sat-zone_bottom__max_leakage_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_bottom__max_leakage_volume_flux</code></td>
 <td>Maximum leakage from saturated zone</td>
 <td>mm Δt⁻¹</td>
 <td>0.0 mm day⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_layer_water__brooks-corey_exponent</code></td>
 <td>Brooks-Corey power coefficient per soil layer</td>
 <td>-</td>
 <td>-</td>
 </tr>
-<tr class="even">
-<td><code>land~water-covered__area_fraction</code></td>
+<tr class="odd">
+<td><code>land_water_covered__area_fraction</code></td>
 <td>Fraction of open water (excluding rivers)</td>
 <td>-</td>
 <td>0.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_layer_water__vertical_saturated_hydraulic_conductivity_factor</code></td>
 <td>Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer</td>
 <td>-</td>
 <td>1.0</td>
 </tr>
-<tr class="even">
-<td><code>soil~compacted__area_fraction</code></td>
+<tr class="odd">
+<td><code>compacted_soil__area_fraction</code></td>
 <td>Fraction of compacted soil area</td>
 <td>-</td>
 <td>-</td>
 </tr>
-<tr class="odd">
-<td><code>soil_root~wet__sigmoid_function_shape_parameter</code></td>
+<tr class="even">
+<td><code>soil_wet_root__sigmoid_function_shape_parameter</code></td>
 <td>Controls sharpness of transition between fully wet and fully dry roots</td>
 <td>-</td>
 <td>-500.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_root__length_density_fraction</code></td>
 <td>Fraction of the root length density per soil layer</td>
 <td>-</td>
 <td>-</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water_sat-zone_top_capillary-rise__max_water-table_depth</code></td>
+<tr class="even">
+<td><code>soil_water_saturated_zone_top__capillary_rise_max_water_table_depth</code></td>
 <td>Maximum water table depth for capillary rise</td>
 <td>mm</td>
 <td>2000.0</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_sat-zone_top_capillary-rise__averianov_exponent</code></td>
+<tr class="odd">
+<td><code>soil_water_saturated_zone_top__capillary_rise_averianov_exponent</code></td>
 <td>Averianov exponent controlling capillary rise</td>
 <td>-</td>
 <td>2.0</td>
@@ -1148,12 +1142,12 @@ td, th {
 <td>ᵒC</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_sat-zone__depth</code></td>
+<td><code>soil_water_saturated_zone__depth</code></td>
 <td>Amount of water in the saturated store</td>
 <td>mm</td>
 </tr>
 <tr class="odd">
-<td><code>soil_layer_water_unsat-zone__depth</code></td>
+<td><code>soil_layer_water_unsaturated_zone__depth</code></td>
 <td>Amount of water in the unsaturated store, per soil layer</td>
 <td>mm</td>
 </tr>
@@ -1182,7 +1176,7 @@ td, th {
 <td>mm</td>
 </tr>
 <tr class="even">
-<td><code>land_water~storage~total__depth</code></td>
+<td><code>land_water_storage__total_depth</code></td>
 <td>Total water storage (excluding floodplains and reservoirs)</td>
 <td>mm</td>
 </tr>
@@ -1207,22 +1201,22 @@ td, th {
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil~compacted_surface_water__excess_volume_flux</code></td>
+<td><code>compacted_soil_surface_water__excess_volume_flux</code></td>
 <td>Excess water for compacted soil fraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>soil~non-compacted_surface_water__excess_volume_flux</code></td>
+<td><code>non_compacted_soil_surface_water__excess_volume_flux</code></td>
 <td>Excess water for non-compacted soil fraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil_surface_water_unsat-zone__exfiltration_volume_flux</code></td>
+<td><code>soil_surface_water_unsaturated_zone__exfiltration_volume_flux</code></td>
 <td>Water exfiltrating from unsaturated store because of rising water table</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>soil_surface_water_sat-zone__exfiltration_volume_flux</code></td>
+<td><code>soil_surface_water_saturated_zone__exfiltration_volume_flux</code></td>
 <td>Water exfiltrating from saturated store during saturation excess conditions</td>
 <td>mm Δt⁻¹</td>
 </tr>
@@ -1237,47 +1231,47 @@ td, th {
 <td>%</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_root-zone__volume_fraction</code></td>
+<td><code>soil_water_root_zone__volume_fraction</code></td>
 <td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_root-zone__volume_percentage</code></td>
+<td><code>soil_water_root_zone__volume_percentage</code></td>
 <td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
 <td>%</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_root-zone__depth</code></td>
+<td><code>soil_water_root_zone__depth</code></td>
 <td>Root water storage in unsaturated and saturated zone (excluding residual water content)</td>
 <td>mm</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_unsat-zone__depth</code></td>
+<td><code>soil_water_unsaturated_zone__depth</code></td>
 <td>Amount of water in the unsaturated store</td>
 <td>mm</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_top__capillary_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_top__capillary_volume_flux</code></td>
 <td>Actual capillary rise</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_sat-zone_top__recharge_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_top__recharge_volume_flux</code></td>
 <td>Downward flux from unsaturated to saturated zone</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_top__net_recharge_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_top__net_recharge_volume_flux</code></td>
 <td>Net recharge to saturated zone</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_sat-zone_bottom__leakage_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_bottom__leakage_volume_flux</code></td>
 <td>Actual leakage from saturated store</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_top__depth</code></td>
+<td><code>soil_water_saturated_zone_top__depth</code></td>
 <td>Pseudo-water table depth (top of the saturated zone)</td>
 <td>mm</td>
 </tr>
@@ -1308,37 +1302,37 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~domestic__gross_water_demand_volume_flux</code></td>
+<td><code>domestic__gross_water_demand_volume_flux</code></td>
 <td>Gross domestic water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>land~domestic__net_water_demand_volume_flux</code></td>
+<td><code>domestic__net_water_demand_volume_flux</code></td>
 <td>Net domestic water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td><code>land~industry__gross_water_demand_volume_flux</code></td>
+<td><code>industry__gross_water_demand_volume_flux</code></td>
 <td>Gross industry water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>land~industry__net_water_demand_volume_flux</code></td>
+<td><code>industry__net_water_demand_volume_flux</code></td>
 <td>Net industry water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td><code>land~livestock__gross_water_demand_volume_flux</code></td>
+<td><code>livestock__gross_water_demand_volume_flux</code></td>
 <td>Gross livestock water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>land~livestock__net_water_demand_volume_flux</code></td>
+<td><code>livestock__net_water_demand_volume_flux</code></td>
 <td>Net livestock water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
@@ -1368,19 +1362,19 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__irrigation_efficiency</code></td>
+<td><code>irrigated_non_paddy__irrigation_efficiency</code></td>
 <td>Irrigation efficiency</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-non-paddy_area__count</code></td>
+<td><code>irrigated_non_paddy_area__count</code></td>
 <td>Irrigation areas (non-paddy)</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__max_irrigation_rate</code></td>
+<td><code>irrigated_non_paddy__max_irrigation_rate</code></td>
 <td>Maximum irrigation rate</td>
 <td>mm Δt⁻¹</td>
 <td>25.0 mm day⁻¹</td>
@@ -1407,7 +1401,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__irrigation_trigger_flag</code></td>
+<td><code>irrigated_non_paddy__irrigation_trigger_flag</code></td>
 <td>Irrigation trigger (off or on, 0 or 1)</td>
 <td>-</td>
 <td>-</td>
@@ -1432,7 +1426,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__gross_water_demand_volume_flux</code></td>
+<td><code>irrigated_non_paddy__gross_water_demand_volume_flux</code></td>
 <td>Irrigation (non-paddy) gross demand</td>
 <td>mm Δt⁻¹</td>
 </tr>
@@ -1461,37 +1455,37 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-paddy__min_depth</code></td>
+<td><code>irrigated_paddy__min_depth</code></td>
 <td>Minimum required water depth in the irrigated paddy fields</td>
 <td>mm</td>
 <td>20.0</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-paddy__optimal_depth</code></td>
+<td><code>irrigated_paddy__optimal_depth</code></td>
 <td>Optimal water depth in the irrigated paddy fields</td>
 <td>mm</td>
 <td>50.0</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated-paddy__max_depth</code></td>
+<td><code>irrigated_paddy__max_depth</code></td>
 <td>Water depth when paddy field starts spilling water (overflow)</td>
 <td>mm</td>
 <td>80.0</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-paddy__irrigation_efficiency</code></td>
+<td><code>irrigated_paddy__irrigation_efficiency</code></td>
 <td>Irrigation efficiency</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated-paddy_area__count</code></td>
+<td><code>irrigated_paddy_area__count</code></td>
 <td>Irrigation areas (paddy)</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-paddy__max_irrigation_rate</code></td>
+<td><code>irrigated_paddy__max_irrigation_rate</code></td>
 <td>Maximum irrigation rate</td>
 <td>mm Δt⁻¹</td>
 <td>25.0 mm day⁻¹</td>
@@ -1518,7 +1512,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-paddy__irrigation_trigger_flag</code></td>
+<td><code>irrigated_paddy__irrigation_trigger_flag</code></td>
 <td>Irrigation trigger (off or on, 0 or 1)</td>
 <td>-</td>
 <td>-</td>
@@ -1538,7 +1532,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land_surface_water~paddy__depth</code></td>
+<td><code>paddy_surface_water__depth</code></td>
 <td>Water depth in paddy field</td>
 <td>mm</td>
 </tr>
@@ -1562,7 +1556,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-paddy__gross_water_demand_volume_flux</code></td>
+<td><code>irrigated_paddy__gross_water_demand_volume_flux</code></td>
 <td>Irrigation (paddy) gross demand</td>
 <td>mm Δt⁻¹</td>
 </tr>
@@ -1622,27 +1616,27 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land_surface_water_abstraction__volume_flux</code></td>
+<td><code>land_surface_water__abstraction_volume_flux</code></td>
 <td>Actual surface water abstraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>subsurface_water_abstraction__volume_flux</code></td>
+<td><code>subsurface_water__abstraction_volume_flux</code></td>
 <td>Actual groundwater abstraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated__allocated_water_volume_flux</code></td>
+<td><code>land__allocated_irrigation_water_volume_flux</code></td>
 <td>Allocated water for irrigation</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>land~non-irrigated__allocated_water_volume_flux</code></td>
+<td><code>land__allocated_non_irrigation_water_volume_flux</code></td>
 <td>Allocated water for non-irrigation</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>land~non-irrigation__return_flow_volume_flux</code></td>
+<td><code>land__non_irrigation_return_flow_volume_flux</code></td>
 <td>Return flow from non-irrgation sectors</td>
 <td>mm Δt⁻¹</td>
 </tr>

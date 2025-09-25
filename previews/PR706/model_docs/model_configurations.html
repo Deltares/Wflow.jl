@@ -583,15 +583,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="local-inertial-river">Local inertial river</h3>
 <p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river flow. There is also the option to use the local inertial model for river flow with an optional 1D floodplain schematization (routing is done separately for the river channel and floodplain), by providing the following in the TOML file:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span>    <span class="co"># optional, default is "kinematic-wave"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>    <span class="co"># optional, default is "kinematic_wave"</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span>                <span class="co"># optional, default is false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="local-inertial-river-1d-and-land-2d" class="level3">
 <h3 class="anchored" data-anchor-id="local-inertial-river-1d-and-land-2d">Local inertial river (1D) and land (2D)</h3>
 <p>By default the model types <code>sbm</code> and <code>sbm_gwf</code> use the kinematic wave approach for river and overland flow. There is also the option to use the local inertial model for 1D river and 2D overland flow, by providing the following in the TOML file:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local-inertial"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The local inertial approach is described in more detail in the section <a href="../model_docs/routing/local-inertial.html">Local inertial model</a>.</p>
 </section>
 </section>
@@ -616,9 +616,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Model outputs can be saved for both the inland and the instream part of the model. Some examples are listed below.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # Total soil erosion rate [ton/t] from rainfall (splash)</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion~rainfall__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"rainfall_erosion"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">rainfall_soil_erosion__mass_flow_rate</span> <span class="op">=</span> <span class="st">"rainfall_erosion"</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Soil erosion rate by overland flow [ton/t]</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">"soil_erosion~overland_flow__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"overland_flow_erosion"</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">overland_flow_soil_erosion__mass_flow_rate</span> <span class="op">=</span> <span class="st">"overland_flow_erosion"</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Total soil loss rate [ton/t]</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_erosion__mass_flow_rate</span> <span class="op">=</span> <span class="st">"soilloss"</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Total transport capacity of overland flow [ton/t]</span></span>
@@ -627,15 +627,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment flux in overland flow [ton/t]</span></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment__mass_flow_rate</span> <span class="op">=</span> <span class="st">"olsed"</span></span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Total (or per particle class) sediment yield to the river [ton/t]</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_sediment~to-river__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandsed"</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">"land_surface_water_clay~to-river__mass_flow_rate"</span> <span class="op">=</span> <span class="st">"inlandclay"</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_sediment__to_river_mass_flow_rate</span> <span class="op">=</span> <span class="st">"inlandsed"</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_clay__to_river_mass_flow_rate</span> <span class="op">=</span> <span class="st">"inlandclay"</span></span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sediment concentration in the river (suspended + bed load) [kg/m3]</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__mass_concentration</span> <span class="op">=</span> <span class="st">"Sedconc"</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Suspended load [kg/m3]</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment~suspended__mass_concentration"</span> <span class="op">=</span> <span class="st">"SSconc"</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__suspended_mass_concentration</span> <span class="op">=</span> <span class="st">"SSconc"</span></span>
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Bed load [kg/m3]</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_sediment~bedload__mass_concentration"</span> <span class="op">=</span> <span class="st">"Bedconc"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_sediment__bedload_mass_concentration</span> <span class="op">=</span> <span class="st">"Bedconc"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="references" class="level2">
