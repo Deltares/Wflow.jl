@@ -219,8 +219,6 @@ end
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.cyclic["reservoir_water__outgoing_observed_volume_flow_rate"] = "reservoir_outflow"
-    config.logging.loglevel = "debug"
-    config.logging.path_log = "log_sbm_piave_debug.txt"
     config.time.endtime = DateTime(2010, 7, 3)
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
@@ -239,8 +237,13 @@ end
 # test debug message using observed outflow for two timesteps
 @testitem "piave: log debug message using observed reservoir outflow" begin
     using TOML
+    using Dates: DateTime
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
+    config.input.cyclic["reservoir_water__outgoing_observed_volume_flow_rate"] = "reservoir_outflow"
+    config.logging.loglevel = "debug"
+    config.logging.path_log = "log_sbm_piave_debug.txt"
+    config.time.endtime = DateTime(2010, 7, 3)
     tomlpath_debug = joinpath(@__DIR__, "sbm_piave_config-debug.toml")
     open(tomlpath_debug, "w") do io
         TOML.print(io, Dict(config))
