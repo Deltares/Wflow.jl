@@ -19,7 +19,7 @@ snowpack__liquid_water_holding_capacity =  "WHC"
 glacier_surface__area_fraction = "wflow_glacierfrac"
 glacier_ice__degree-day_coefficient = "G_Cfmax"
 glacier_ice__melting_temperature_threshold = "G_TT"
-glacier_firn_accumulation__snowpack_dry_leq_depth_fraction = "G_SIfrac"
+glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction = "G_SIfrac"
 glacier_ice__initial_leq-depth = "wflow_glacierstore" # initial glacier liquid-water equivalent depth
 
 [state.variables]
