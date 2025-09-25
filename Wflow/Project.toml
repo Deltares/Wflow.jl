@@ -54,7 +54,9 @@ Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [targets]
-test = ["Aqua", "Downloads", "Polynomials", "QuadGK", "Test", "Random"]
+test = ["Aqua", "Downloads", "Polynomials", "QuadGK", "SpecialFunctions", "Test", "TestItemRunner", "Random"]
