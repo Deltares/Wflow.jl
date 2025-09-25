@@ -227,7 +227,8 @@ end
     @test nt["soil_water_saturated_zone__depth"].lens(model)[9115] ≈ 477.13548089422125
     @test nt["snowpack_dry_snow__leq_depth"].lens(model)[5] ≈ 11.019233179897599
     @test nt["soil_surface__temperature"].lens(model)[5] ≈ 0.21814478119608938
-    @test nt["soil_layer_water_unsaturated_zone__depth"].lens(model)[50063][1] ≈ 9.969116007201725
+    @test nt["soil_layer_water_unsaturated_zone__depth"].lens(model)[50063][1] ≈
+          9.969116007201725
     @test nt["snowpack_liquid_water__depth"].lens(model)[5] ≈ 0.0
     @test nt["vegetation_canopy_water__depth"].lens(model)[50063] ≈ 0.0
     @test nt["soil_water_saturated_zone_top__depth"].lens(model)[50063] ≈ 296.8028609104624
@@ -283,7 +284,7 @@ end
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
-config.input.static["snowpack__degree-day_coefficient"] = Dict("value" => 2.0)
+config.input.static["snowpack__degree_day_coefficient"] = Dict("value" => 2.0)
 config.input.static.soil__thickness = Dict(
     "scale" => 3.0,
     "offset" => 100.0,
@@ -291,7 +292,7 @@ config.input.static.soil__thickness = Dict(
 )
 config.input.forcing.atmosphere_water__precipitation_volume_flux =
     Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-config.input.static["soil_layer_water__brooks-corey_exponent"] = Dict(
+config.input.static["soil_layer_water__brooks_corey_exponent"] = Dict(
     "scale" => [2.0, 3.0],
     "offset" => [0.0, 0.0],
     "layer" => [1, 3],

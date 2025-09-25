@@ -89,10 +89,10 @@ land_surface_water_sediment__govers_transport_capacity_exponent = "n_govers"
 river_sediment__median_diameter = "D50_River"
 river_water_sediment__bagnold_transport_capacity_coefficient = "c_Bagnold"
 river_water_sediment__bagnold_transport_capacity_exponent = "exp_Bagnold"
-river_water_sediment__kodatie_transport_capacity_a-coefficient.value = 2829.6
-river_water_sediment__kodatie_transport_capacity_b-coefficient.value = 3.646
-river_water_sediment__kodatie_transport_capacity_c-coefficient.value = 0.406
-river_water_sediment__kodatie_transport_capacity_d-coefficient.value = 0.412
+river_water_sediment__kodatie_transport_capacity_a_coefficient.value = 2829.6
+river_water_sediment__kodatie_transport_capacity_b_coefficient.value = 3.646
+river_water_sediment__kodatie_transport_capacity_c_coefficient.value = 0.406
+river_water_sediment__kodatie_transport_capacity_d_coefficient.value = 0.412
 
 river_bottom_and_bank_sediment__median_diameter = "D50_River"
 river_bottom_and_bank_clay__mass_fraction = "ClayF_River"
