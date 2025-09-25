@@ -390,6 +390,7 @@ end
     config.logging.path_log = "log-debug.txt"
     config.input.path_forcing = "doesnt-exist.nc"
     config.fews_run__flag = true
+    config.logging.silent = true
 
     open(tomlpath_debug, "w") do io
         TOML.print(io, Wflow.to_dict(config))
