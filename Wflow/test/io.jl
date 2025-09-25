@@ -309,7 +309,7 @@ end
 
 @testitem "more model initialization" begin
     using NCDatasets: NCDataset
-    using Logging
+    using LoggingExtras
     using TOML
     using CFTime: DateTimeNoLeap
     using Dates: Second, Day
