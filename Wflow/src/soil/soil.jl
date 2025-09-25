@@ -167,6 +167,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         ustorelayerdepth = zero(act_thickl),
         ustorecapacity = soilwatercapacity .- satwaterdepth,
         ustorelayerthickness,
+        ustoredepth = zeros(n),
         satwaterdepth,
         zi,
         n_unsatlayers,
@@ -196,7 +197,6 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         rootstore = fill(MISSING_VALUE, n),
         vwc_root = fill(MISSING_VALUE, n),
         vwc_percroot = fill(MISSING_VALUE, n),
-        ustoredepth = fill(MISSING_VALUE, n),
         transfer = fill(MISSING_VALUE, n),
         recharge = fill(MISSING_VALUE, n),
         actleakage = fill(MISSING_VALUE, n),
@@ -269,7 +269,7 @@ function sbm_kv_profiles(
     elseif kv_profile_type == VerticalConductivityProfile.exponential_constant
         lens = lens_input_parameter(
             config,
-            "soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth";
+            "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth";
             optional = false,
         )
         z_exp = ncread(dataset, config, lens; sel = indices, type = Float64)
@@ -300,7 +300,7 @@ function sbm_kv_profiles(
         else
             lens = lens_input_parameter(
                 config,
-                "soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth";
+                "soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth";
                 optional = false,
             )
             z_layered = ncread(dataset, config, lens; sel = indices, type = Float64)
@@ -371,32 +371,30 @@ function SbmSoilParameters(
     lens = lens_input_parameter(config, "soil_water__air_entry_pressure_head")
     hb = ncread(dataset, config, lens; sel = indices, defaults = -10.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~1")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h1")
     h1 = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~2")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h2")
     h2 = ncread(dataset, config, lens; sel = indices, defaults = -100.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "vegetation_root__feddes_critial_pressure_head_h~3~high",
+        "vegetation_root__feddes_critial_pressure_head_h3_high",
     )
     h3_high =
         ncread(dataset, config, lens; sel = indices, defaults = -400.0, type = Float64)
 
-    lens = lens_input_parameter(
-        config,
-        "vegetation_root__feddes_critial_pressure_head_h~3~low",
-    )
+    lens =
+        lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h3_low")
     h3_low =
         ncread(dataset, config, lens; sel = indices, defaults = -1000.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h~4")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h4")
     h4 = ncread(dataset, config, lens; sel = indices, defaults = -16000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient",
+        "vegetation_root__feddes_critial_pressure_head_h1_reduction_coefficient",
     )
     alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
@@ -404,12 +402,14 @@ function SbmSoilParameters(
     soilthickness = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens =
-        lens_input_parameter(config, "soil~compacted_surface_water__infiltration_capacity")
+        lens_input_parameter(config, "compacted_soil_surface_water__infiltration_capacity")
     infiltcappath =
         ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64) .*
         (dt / BASETIMESTEP)
-    lens =
-        lens_input_parameter(config, "soil_water_sat-zone_bottom__max_leakage_volume_flux")
+    lens = lens_input_parameter(
+        config,
+        "soil_water_saturated_zone_bottom__max_leakage_volume_flux",
+    )
     maxleakage =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
         (dt / BASETIMESTEP)
@@ -444,23 +444,23 @@ function SbmSoilParameters(
     # soil infiltration capacity based on kv_0 and kvfrac upper soil layer
     infiltcapsoil = kv_0 .* @view kvfrac[1, :]
     # fraction compacted area
-    lens = lens_input_parameter(config, "soil~compacted__area_fraction")
+    lens = lens_input_parameter(config, "compacted_soil__area_fraction")
     pathfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # vegetation parameters
-    lens = lens_input_parameter(config, "soil_root~wet__sigmoid_function_shape_parameter")
+    lens = lens_input_parameter(config, "soil_wet_root__sigmoid_function_shape_parameter")
     rootdistpar =
         ncread(dataset, config, lens; sel = indices, defaults = -500.0, type = Float64)
     lens = lens_input_parameter(
         config,
-        "soil_water_sat-zone_top_capillary-rise__max_water-table_depth",
+        "soil_water_saturated_zone_top__capillary_rise_max_water_table_depth",
     )
     cap_hmax =
         ncread(dataset, config, lens; sel = indices, defaults = 2000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "soil_water_sat-zone_top_capillary-rise__averianov_exponent",
+        "soil_water_saturated_zone_top__capillary_rise_averianov_exponent",
     )
     cap_n = ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
 
@@ -1045,11 +1045,8 @@ function update!(
     v = model.variables
     p = model.parameters
 
-    ustoredepth!(model)
-    @. v.ustorecapacity = p.soilwatercapacity - v.satwaterdepth - v.ustoredepth
-    @. v.ustorelayerthickness = set_layerthickness(v.zi, p.sumlayers, p.act_thickl)
-    @. v.n_unsatlayers = number_of_active_layers(v.ustorelayerthickness)
-
+    # mainly required for external state changes (e.g. through BMI)
+    update_diagnostic_vars!(model)
     # infiltration
     soil_temperature!(model, snow, temperature)
     infiltration_reduction_factor!(
@@ -1183,10 +1180,14 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         vwc_percroot = (vwc_root / p.theta_s[i]) * 100.0
 
         satwaterdepth = (p.soilthickness[i] - zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        ustorecapacity = p.soilwatercapacity[i] - satwaterdepth - ustoredepth
 
         # update the outputs and states
         v.n_unsatlayers[i] = n_unsatlayers
         v.ustorelayerdepth[i] = ustorelayerdepth
+        v.ustorelayerthickness[i] = ustorelayerthickness
+        v.ustorecapacity[i] = ustorecapacity
+        v.n_unsatlayers[i] = n_unsatlayers
         v.ustoredepth[i] = ustoredepth
         v.satwaterdepth[i] = satwaterdepth
         v.exfiltsatwater[i] = exfiltsatwater[i]
@@ -1204,6 +1205,31 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     update_runoff!(demand.paddy, v.runoff)
     @. v.net_runoff = v.runoff - ae_openw_l
     return nothing
+end
+
+"""
+    update_diagnostic_vars!(model::SbmSoilModel)
+
+Update diagnostic variables of `SbmSoilModel` that are critical for subsequent computations
+and depend on state variables `satwaterdepth` and `ustorelayerdepth`.
+"""
+function update_diagnostic_vars!(model::SbmSoilModel)
+    (;
+        zi,
+        satwaterdepth,
+        ustorelayerthickness,
+        ustorecapacity,
+        ustoredepth,
+        n_unsatlayers,
+    ) = model.variables
+    (; soilthickness, theta_s, theta_r, soilwatercapacity, sumlayers, act_thickl) =
+        model.parameters
+
+    ustoredepth!(model)
+    @. zi .= max(0.0, soilthickness - satwaterdepth / (theta_s .- theta_r))
+    @. ustorecapacity = soilwatercapacity - satwaterdepth - ustoredepth
+    @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
+    @. n_unsatlayers = number_of_active_layers(ustorelayerthickness)
 end
 
 # wrapper method

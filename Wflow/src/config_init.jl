@@ -36,7 +36,7 @@ function convert_value(
     ::Type{T},
     option_string::String,
 ) where {T <: Union{Nothing, EnumX.Enum}}
-    option = Symbol(add_leading_underscore(replace(option_string, "-" => "_")))
+    option = Symbol(add_leading_underscore(option_string))
     for instance in instances(get_something_type(T))
         if option == Symbol(instance)
             return instance
@@ -287,8 +287,6 @@ to_dict(data::Vector) = to_dict.(data)
 
 to_dict(x::Any) = x
 to_dict(x::EnumX.Enum) = remove_leading_underscore(String(Symbol(x)))
-to_dict(x::RoutingType.T) =
-    (x == RoutingType.kinematic_wave) ? "kinematic-wave" : "local-inertial"
 to_dict(x::LogLevel) = lowercase(string(x))
 
 Base.setproperty!(

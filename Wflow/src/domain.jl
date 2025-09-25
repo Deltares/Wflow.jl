@@ -293,7 +293,7 @@ function get_water_fraction(
     network::NetworkLand,
     river_fraction::Vector{Float64},
 )
-    lens = lens_input_parameter(config, "land~water-covered__area_fraction")
+    lens = lens_input_parameter(config, "land_water_covered__area_fraction")
     water_fraction =
         ncread(dataset, config, lens; sel = network.indices, defaults = 0.0, type = Float64)
     water_fraction = max.(water_fraction .- river_fraction, 0.0)

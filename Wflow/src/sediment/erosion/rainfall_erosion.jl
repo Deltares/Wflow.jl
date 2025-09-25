@@ -57,7 +57,7 @@ function RainfallErosionEurosemParameters(
     lens = lens_input_parameter(config, "vegetation_canopy__gap_fraction")
     canopygapfraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
-    lens = lens_input_parameter(config, "soil~compacted__area_fraction")
+    lens = lens_input_parameter(config, "compacted_soil__area_fraction")
     soilcover_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
 

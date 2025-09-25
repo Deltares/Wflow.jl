@@ -5,6 +5,20 @@ config = Wflow.Config(tomlpath)
 model = Wflow.Model(config)
 (; domain) = model
 
+@testset "initial states and depending variables" begin
+    # test if states and depending variables are consistent between soil and groundwater
+    # flow models
+    (; aquifer) = model.routing.subsurface_flow
+    (; zi, ustorecapacity) = model.land.soil.variables
+    (; land_indices) = model.domain.river.network
+    @test all(
+        0.001 * zi .==
+        aquifer.parameters.top .- min.(aquifer.variables.head, aquifer.parameters.top),
+    )
+    @test all(ustorecapacity[land_indices] .== 0.0)
+    @test all(aquifer.variables.head[land_indices] .== aquifer.parameters.top[land_indices])
+end
+
 Wflow.run_timestep!(model)
 
 # test if the first timestep was written to the CSV file
@@ -46,25 +60,25 @@ end
 @testset "river domain (kinematic wave)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.035425926757567935
-    @test q[6] ≈ 0.00802617565138912
-    @test river.variables.storage[6] ≈ 4.528690358701646
-    @test river.boundary_conditions.inwater[6] ≈ 0.0004037674722635451
-    @test q[13] ≈ 0.0006016241976247014
-    @test q[domain.river.network.order[end]] ≈ 0.008553261399338265
+    @test sum(q) ≈ 0.03460420763022196
+    @test q[6] ≈ 0.007809586997135836
+    @test river.variables.storage[6] ≈ 4.452845039409768
+    @test river.boundary_conditions.inwater[6] ≈ 0.0003627879093024724
+    @test q[13] ≈ 0.000592145641193449
+    @test q[domain.river.network.order[end]] ≈ 0.008317914181880935
 end
 
 @testset "groundwater" begin
     gw = model.routing.subsurface_flow
     @test gw.boundaries.river.variables.stage[1] ≈ 1.212479774379469
     @test gw.aquifer.variables.head[17:21] ≈ [
-        1.286914528615439,
-        1.3481205868263955,
+        1.284126255728794,
+        1.345258485244677,
         1.7999999523162842,
-        1.6225103807809076,
-        1.400811075413439,
+        1.6224360370353534,
+        1.398423446844073,
     ]
-    @test gw.boundaries.river.variables.flux[1] ≈ -51.32817280138138
+    @test gw.boundaries.river.variables.flux[1] ≈ -49.624776263594335
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
     @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
 end
@@ -74,7 +88,7 @@ end
     config.model.drain__flag = false
     delete!(
         config.output.netcdf_grid.variables,
-        "land_drain_water~to-subsurface__volume_flow_rate",
+        "land_drain_water__to_subsurface_volume_flow_rate",
     )
     model = Wflow.Model(config)
     @test collect(keys(model.routing.subsurface_flow.boundaries)) == [:recharge, :river]
@@ -88,7 +102,7 @@ Wflow.run(tomlpath; silent = true)
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
-config.model.river_routing = "local-inertial"
+config.model.river_routing = "local_inertial"
 
 config.input.static["river_bank_water__elevation"] = "bankfull_elevation"
 config.input.static["river_bank_water__depth"] = "bankfull_depth"
@@ -100,20 +114,20 @@ Wflow.run_timestep!(model)
 @testset "river domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.025966484848150714
-    @test q[6] ≈ 0.0057918662111618585
-    @test river.variables.storage[6] ≈ 7.347727838567257
-    @test river.boundary_conditions.inwater[6] ≈ 0.00017632250611970184
-    @test q[13] ≈ 0.00044406241604129745
-    @test q[5] ≈ 0.006109927807397471
+    @test sum(q) ≈ 0.025242745327901266
+    @test q[6] ≈ 0.005597737309703839
+    @test river.variables.storage[6] ≈ 7.185727159119112
+    @test river.boundary_conditions.inwater[6] ≈ 0.00013534294315862918
+    @test q[13] ≈ 0.0004363336769343206
+    @test q[5] ≈ 0.005899536075917488
 end
 Wflow.close_files(model; delete_output = false)
 
 # test local-inertial option for river and overland flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
-config = Wflow.Config(tomlpath;)
-config.model.river_routing = "local-inertial"
-config.model.land_routing = "local-inertial"
+config = Wflow.Config(tomlpath)
+config.model.river_routing = "local_inertial"
+config.model.land_routing = "local_inertial"
 
 config.input.static["river_bank_water__elevation"] = "bankfull_elevation"
 config.input.static["river_bank_water__depth"] = "bankfull_depth"
@@ -130,14 +144,14 @@ Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 0.02596647126178727
-    @test q[6] ≈ 0.0057918687419759255
-    @test q[13] ≈ 0.00044406258154064935
-    @test q[5] ≈ 0.00610990650349414
+    @test sum(q) ≈ 0.025242731947236016
+    @test q[6] ≈ 0.005597739889073783
+    @test q[13] ≈ 0.00043633384561159253
+    @test q[5] ≈ 0.005899514829371013
     h = model.routing.river_flow.variables.h_av
-    @test h[6] ≈ 0.07894230285870471
-    @test h[5] ≈ 0.07635048570353754
-    @test h[13] ≈ 0.08095204525673293
+    @test h[6] ≈ 0.07757871828439228
+    @test h[5] ≈ 0.07502750093278375
+    @test h[13] ≈ 0.07960288161114154
     qx = model.routing.overland_flow.variables.qx
     qy = model.routing.overland_flow.variables.qy
     @test all(qx .== 0.0)

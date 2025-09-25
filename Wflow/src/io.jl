@@ -140,7 +140,7 @@ function update_forcing!(model)
         end
         sel = active_indices(domain, par)
         # missing data for observed reservoir outflow is allowed at reservoir location(s)
-        if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+        if par == "reservoir_water__outgoing_observed_volume_flow_rate"
             data_sel = nomissing(data[sel], MISSING_VALUE)
         else
             data_sel = data[sel]
@@ -200,7 +200,7 @@ function update_cyclic!(model)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
-            if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+            if par == "reservoir_water__outgoing_observed_volume_flow_rate"
                 data_sel = nomissing(data[sel], MISSING_VALUE)
             else
                 data_sel = data[sel]

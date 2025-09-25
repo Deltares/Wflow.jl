@@ -102,12 +102,12 @@ path_output = "outstates-moselle.nc"
 [state.variables]
 vegetation_canopy_water__depth = "canopystorage"
 
-soil_water_sat-zone__depth = "satwaterdepth"
+soil_water_saturated_zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
-soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
+soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
 
-"snowpack~dry__leq-depth" = "snow"
-"snowpack~liquid__depth" = "snowwater"
+snowpack_dry_snow__leq_depth = "snow"
+snowpack_liquid_water__depth = "snowwater"
 
 river_water__instantaneous_depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
@@ -126,7 +126,7 @@ parameters files (in netCDF format). `input.forcing` lists the mapping of forcin
 standard names to the external netCDF variable names. `input.static` lists the mapping of
 static parameter standard names to the external netCDF variable names. In `input.cyclic`,
 it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In
-the example below, the model parameter standard name `vegetation__leaf-area_index` is mapped
+the example below, the model parameter standard name `vegetation__leaf_area_index` is mapped
 to the external netCDF variable "LAI". Cyclic time inputs of parameters can be different
 (e.g., daily or monthly). The `time` dimension name of these cylic input parameters in the
 model parameter netCDF file should start with "time". If a model parameter is not mapped,
@@ -165,7 +165,7 @@ atmosphere_air__temperature = "temp"
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 
-"land~water-covered__area_fraction" = "WaterFrac"
+land_water_covered__area_fraction = "WaterFrac"
 
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
@@ -175,13 +175,12 @@ soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
 soil_layer_water__brooks-corey_exponent = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
-"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
-"soil~non-compacted_surface_water__infiltration_capacity" = "InfiltCapSoil"
+compacted_soil_surface_water__infiltration_capacity = "InfiltCapPath"
 soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
-soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
-"soil~compacted__area_fraction" = "PathFrac"
-"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil_water_saturated_zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+compacted_soil__area_fraction = "PathFrac"
+soil_wet_root__sigmoid_function_shape_parameter = "rootdistpar"
 soil__thickness = "SoilThickness"
 
 vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
@@ -201,11 +200,11 @@ land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
 reservoir_surface__area = "reservoir_area"
-"reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
-reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
+reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
+reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
-"reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
-"reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
 reservoir_water__rating_curve_type_count = "outflowfunc"
 reservoir_water__storage_curve_type_count = "storfunc"
@@ -214,7 +213,7 @@ subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio 
 
 # Map cyclic parameter standard names to variable names in the static netCDF file
 [input.cyclic]
-vegetation__leaf-area_index = "LAI"
+vegetation__leaf_area_index = "LAI"
 ```
 
 ## Output netCDF section
@@ -239,11 +238,11 @@ compressionlevel = 1                # Compression level (default 0)
 
 # Mapping of standard model variable names to external netCDF variables
 [output.netcdf_grid.variables]
-soil_water_sat-zone__depth = "satwaterdepth"
+soil_water_saturated_zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
-soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
-"snowpack~dry__leq-depth" = "snow"
-"snowpack~liquid__depth" = "snowwater"
+soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
+snowpack_dry_snow__leq_depth = "snow"
+snowpack_liquid_water__depth = "snowwater"
 river_water__depth = "h_av_river"
 river_water__volume_flow_rate = "q_av_river"
 reservoir_water__volume = "storage_reservoir"
@@ -387,7 +386,7 @@ parameter = "river_water__volume_flow_rate"
 [[output.csv.column]]
 header = "recharge"
 map = "subbasin_location__count"
-parameter = "soil_water_sat-zone_top__net_recharge_volume_flux"
+parameter = "soil_water_saturated_zone_top__net_recharge_volume_flux"
 reducer = "mean"
 ```
 
@@ -416,7 +415,7 @@ example, a list of values can be provided for input parameter
 ```toml
 [input.static]
 snowpack__liquid_water_holding_capacity =  "WHC"
-"land~water-covered__area_fraction" = "WaterFrac"
+land_water_covered__area_fraction = "WaterFrac"
 soil_layer_water__brooks-corey_epsilon_parameter.value = [10.5, 11.25, 9.5, 7.0]
 ```
 

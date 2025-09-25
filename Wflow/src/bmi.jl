@@ -104,7 +104,7 @@ function BMI.get_input_var_names(model::Model)
         var_names = config.API.variables
         idx = []
         for (i, var) in enumerate(var_names)
-            if occursin("soil_layer~", var)
+            if startswith(var, "soil_layer_") && occursin(r"soil_layer_\d+_", var)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
@@ -207,7 +207,7 @@ function BMI.get_value_ptr(model::Model, name::String)
     (; land, domain) = model
     n = length(active_indices(domain, name))
 
-    if occursin("soil_layer~", name)
+    if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         name_2d, ind = soil_layer_standard_name(name)
         lens = standard_name_map(land)[name_2d].lens
         model_vals = lens(model)
@@ -374,11 +374,20 @@ of svectors) and the layer index `layer_index` based on a standard `name` repres
 layer of a layered soil model variable.
 """
 function soil_layer_standard_name(name::AbstractString)
-    layer_part = split(name, "_")[2]
-    j = split(layer_part, "~")[2]
-    name_layered = replace(name, "~" * j => "")
-    layer_index = tryparse(Int, j)
-    return name_layered, layer_index
+    # Parse new naming format: soil_layer_N_water_... where N is the layer number
+    parts = split(name, "_")
+    if length(parts) >= 3 && parts[1] == "soil" && parts[2] == "layer"
+        layer_number = parts[3]
+        layer_index = tryparse(Int, layer_number)
+        if !isnothing(layer_index)
+            # Remove the layer number to get the base name
+            name_layered = join([parts[1], parts[2], parts[4:end]...], "_")
+            return name_layered, layer_index
+        end
+    end
+    # Fallback for unexpected format
+    @warn "Unable to parse layer standard name: $name"
+    return name, nothing
 end
 
 """

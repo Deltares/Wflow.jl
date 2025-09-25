@@ -259,9 +259,9 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_silt = ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64)
     lens = lens_input_parameter(config, "sand__mean_diameter")
     dm_sand = ncread(dataset, config, lens; sel = indices, defaults = 200.0, type = Float64)
-    lens = lens_input_parameter(config, "sediment_aggregates~small__mean_diameter")
+    lens = lens_input_parameter(config, "sediment_small_aggregates__mean_diameter")
     dm_sagg = ncread(dataset, config, lens; sel = indices, defaults = 30.0, type = Float64)
-    lens = lens_input_parameter(config, "sediment_aggregates~large__mean_diameter")
+    lens = lens_input_parameter(config, "sediment_large_aggregates__mean_diameter")
     dm_lagg = ncread(dataset, config, lens; sel = indices, defaults = 500.0, type = Float64)
 
     tc_parameters = TransportCapacityYalinDifferentiationParameters(;

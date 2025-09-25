@@ -91,7 +91,7 @@ function GlacierHbvParameters(
         ) .* (dt / BASETIMESTEP)
     lens = lens_input_parameter(
         config,
-        "glacier_firn_accumulation__snowpack~dry_leq-depth_fraction",
+        "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction",
     )
     g_sifrac =
         ncread(

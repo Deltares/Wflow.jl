@@ -33,7 +33,7 @@ function LocalInertialRiverFlowParameters(
     (; pit_indices, indices, graph, local_drain_direction, nodes_at_edge) = domain.network
     (; flow_width, flow_length, reservoir_outlet) = domain.parameters
 
-    lens = lens_input_parameter(config, "model_boundary_condition~river__length")
+    lens = lens_input_parameter(config, "model_boundary_condition_river__length")
     riverlength_bc =
         ncread(dataset, config, lens; sel = pit_indices, defaults = 1.0e04, type = Float64)
     lens = lens_input_parameter(config, "river_bank_water__elevation"; optional = false)
@@ -126,7 +126,7 @@ function LocalInertialRiverFlowVariables(
 )
     (; pit_indices, indices, graph) = network
 
-    lens = lens_input_parameter(config, "model_boundary_condition~river_bank_water__depth")
+    lens = lens_input_parameter(config, "model_boundary_condition_river_bank_water__depth")
     riverdepth_bc =
         ncread(dataset, config, lens; sel = pit_indices, defaults = 0.0, type = Float64)
 

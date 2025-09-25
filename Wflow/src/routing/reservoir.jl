@@ -63,7 +63,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     )
     outflowfunc = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
 
-    lens = lens_input("reservoir~lower_location__count"; config, optional = true)
+    lens = lens_input("reservoir_lower_location__count"; config, optional = true)
     linked_reslocs = ncread(
         dataset,
         config,
@@ -84,7 +84,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     if 2 in outflowfunc || 3 in outflowfunc
         lens = lens_input_parameter(
             config,
-            "reservoir_water_flow_threshold-level__elevation";
+            "reservoir_water_flow_threshold_level__elevation";
             optional = false,
         )
         threshold =
@@ -105,14 +105,14 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     if 4 in outflowfunc
         lens = lens_input_parameter(
             config,
-            "reservoir_water_demand~required~downstream__volume_flow_rate";
+            "reservoir_water_demand__required_downstream_volume_flow_rate";
             optional = false,
         )
         demand =
             ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
         lens = lens_input_parameter(
             config,
-            "reservoir_water_release-below-spillway__max_volume_flow_rate";
+            "reservoir_water_release_below_spillway__max_volume_flow_rate";
             optional = false,
         )
         maxrelease =
@@ -122,14 +122,14 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
         lens = lens_input_parameter(
             config,
-            "reservoir_water~full-target__volume_fraction";
+            "reservoir_water__target_full_volume_fraction";
             optional = false,
         )
         targetfullfrac =
             ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
         lens = lens_input_parameter(
             config,
-            "reservoir_water~min-target__volume_fraction";
+            "reservoir_water__target_min_volume_fraction";
             optional = false,
         )
         targetminfrac =
@@ -560,7 +560,7 @@ end
 
 "Check if observed outflow is used for reservoirs"
 function using_observed_outflow(reservoir::Union{Reservoir, Nothing}, config::Config)
-    par = "reservoir_water~outgoing~observed__volume_flow_rate"
+    par = "reservoir_water__outgoing_observed_volume_flow_rate"
     check =
         !isnothing(reservoir) &&
         (haskey(config.input.forcing, par) || haskey(config.input.cyclic, par))

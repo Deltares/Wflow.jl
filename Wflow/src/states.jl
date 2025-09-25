@@ -6,7 +6,7 @@ required states (standard name).
 """
 function get_snow_states(model_type::ModelType.T)
     return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
-        ("snowpack~dry__leq-depth", "snowpack~liquid__depth")
+        ("snowpack_dry_snow__leq_depth", "snowpack_liquid_water__depth")
     elseif model_type == ModelType.sediment
         ()
     end
@@ -20,7 +20,7 @@ the required states (standard name).
 """
 function get_glacier_states(model_type::ModelType.T)
     return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
-        ("glacier_ice__leq-depth",)
+        ("glacier_ice__leq_depth",)
     elseif model_type == ModelType.sediment
         ()
     end
@@ -50,12 +50,12 @@ function get_soil_states(model_type::ModelType.T; snow::Bool = false)
     return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         if snow
             (
-                "soil_water_sat-zone__depth",
+                "soil_water_saturated_zone__depth",
                 "soil_surface__temperature",
-                "soil_layer_water_unsat-zone__depth",
+                "soil_layer_water_unsaturated_zone__depth",
             )
         else
-            ("soil_water_sat-zone__depth", "soil_layer_water_unsat-zone__depth")
+            ("soil_water_saturated_zone__depth", "soil_layer_water_unsaturated_zone__depth")
         end
     elseif model_type == ModelType.sediment
         ()
@@ -68,16 +68,16 @@ function get_sediment_states()
         "river_bed_clay__mass",
         "river_water_gravel__mass",
         "river_bed_gravel__mass",
-        "river_water_aggregates~large__mass",
-        "river_bed_aggregates~large__mass",
+        "river_water_large_aggregates__mass",
+        "river_bed_large_aggregates__mass",
         "river_water_clay__mass_flow_rate",
         "river_water_gravel__mass_flow_rate",
-        "river_water_aggregates~large__mass_flow_rate",
-        "river_water_aggregates~small__mass_flow_rate",
+        "river_water_large_aggregates__mass_flow_rate",
+        "river_water_small_aggregates__mass_flow_rate",
         "river_water_sand__mass_flow_rate",
         "river_water_silt__mass_flow_rate",
-        "river_water_aggregates~small__mass",
-        "river_bed_aggregates~small__mass",
+        "river_water_small_aggregates__mass",
+        "river_bed_small_aggregates__mass",
         "river_water_sand__mass",
         "river_bed_sand__mass",
         "river_water_silt__mass",
@@ -167,7 +167,7 @@ function extract_required_states(config::Config)
         ("reservoir_water_surface__instantaneous_elevation",) : ()
 
     # Paddy states
-    paddy_states = do_paddy ? ("land_surface_water~paddy__depth",) : ()
+    paddy_states = do_paddy ? ("paddy_surface_water__depth",) : ()
 
     # Add required states to a tuple, similar to the keys in the output of
     # `ncnames(config.state.variables)`

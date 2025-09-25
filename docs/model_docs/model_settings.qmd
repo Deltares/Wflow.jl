@@ -33,8 +33,8 @@ The Tables in this subsection show the available models settings for the model t
 ### Routing method
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
-| `land_routing` | Routing approach for overland flow: ["kinematic-wave", "local-inertial"] | - | "kinematic-wave" |
-| `river_routing` | Routing approach for river flow: ["kinematic-wave", "local-inertial"] | - | "kinematic-wave" |
+| `land_routing` | Routing approach for overland flow: ["kinematic_wave", "local_inertial"] | - | "kinematic_wave" |
+| `river_routing` | Routing approach for river flow: ["kinematic_wave", "local_inertial"] | - | "kinematic_wave" |
 : {.striped .hover}
 
 ### Kinematic wave routing
