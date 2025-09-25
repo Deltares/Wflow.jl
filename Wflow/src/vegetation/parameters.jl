@@ -33,7 +33,7 @@ function VegetationParameters(
     if do_cyclic && haskey(config.input.cyclic, "vegetation__leaf_area_index")
         lens = lens_input_parameter(
             config,
-            "vegetation__specific-leaf_storage";
+            "vegetation__specific_leaf_storage";
             optional = false,
         )
         storage_specific_leaf = ncread(dataset, config, lens; sel = indices, type = Float64)
@@ -45,7 +45,7 @@ function VegetationParameters(
         storage_wood = ncread(dataset, config, lens; sel = indices, type = Float64)
         lens = lens_input_parameter(
             config,
-            "vegetation_canopy__light-extinction_coefficient";
+            "vegetation_canopy__light_extinction_coefficient";
             optional = false,
         )
         kext = ncread(dataset, config, lens; sel = indices, type = Float64)

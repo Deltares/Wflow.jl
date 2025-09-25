@@ -134,7 +134,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio` | A muliplication factor applied to vertical hydraulic conductivity | - | - |
+| `subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio` | A muliplication factor applied to vertical hydraulic conductivity | - | - |
 | `land_surface__slope` | Land surface slope | m m⁻¹ | - |
 : {.striped .hover}
 
@@ -188,7 +188,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `floodplain_water__sum_of_volume-per-depth` | Floodplain profile (cumulative volume per flood depth) | m³ | - |
+| `floodplain_water__sum_of_volume_per_depth` | Floodplain profile (cumulative volume per flood depth) | m³ | - |
 | `floodplain_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.072 |
 : {.striped .hover}
 
@@ -322,10 +322,10 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `river_sediment__median_diameter` | Particle median diameter | mm | 0.1 |
 | `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
 | `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
-| `river_water_sediment__kodatie_transport_capacity_a-coefficient` | Kodatie transport capacity coefficient a | - | - |
-| `river_water_sediment__kodatie_transport_capacity_b-coefficient` | Kodatie transport capacity coefficient b | - | - |
-| `river_water_sediment__kodatie_transport_capacity_c-coefficient` | Kodatie transport capacity coefficient c | - | - |
-| `river_water_sediment__kodatie_transport_capacity_d-coefficient` | Kodatie transport capacity coefficient d | - | - |
+| `river_water_sediment__kodatie_transport_capacity_a_coefficient` | Kodatie transport capacity coefficient a | - | - |
+| `river_water_sediment__kodatie_transport_capacity_b_coefficient` | Kodatie transport capacity coefficient b | - | - |
+| `river_water_sediment__kodatie_transport_capacity_c_coefficient` | Kodatie transport capacity coefficient c | - | - |
+| `river_water_sediment__kodatie_transport_capacity_d_coefficient` | Kodatie transport capacity coefficient d | - | - |
 : {.striped .hover}
 
 ### Overland flow transport
