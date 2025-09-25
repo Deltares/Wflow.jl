@@ -14,7 +14,7 @@ See [here](./warm_states.qmd)
 
 ### How do I add external inflows and/or abstractions?
 
-`river_water_inflow~external__volume_flow_rate`: positive for inflows, negative for
+`river_water__external_inflow_volume_flow_rate`: positive for inflows, negative for
 abstraction. If parameter is time varying, add it to the correct section, see
 [below](#how-do-i-add-time-varying-parameters). Note that these values can only be specified
 on river cells.

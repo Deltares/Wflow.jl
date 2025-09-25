@@ -108,7 +108,9 @@ Wflow.run_timestep!(model)
 (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
     model.land.allocation.variables
-(; reservoir) = model.routing.river_flow.boundary_conditions
+(; soil) = model.land
+(; river_flow) = model.routing
+(; reservoir) = river_flow.boundary_conditions
 
 @testset "piave water demand and allocation first timestep" begin
     sum_total_alloc = sum(total_alloc)
@@ -140,6 +142,16 @@ Wflow.run_timestep!(model)
           [1.8948850499097648e8, 4.279957853085982e7, 7.159979181269434e7]
     @test reservoir.variables.outflow_av ≈
           [4.839262369375678, 9.7190485747002, 58.12081274927687]
+    @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
+        3.0893977492724853,
+        5.578470134806561,
+        3.786149968248084,
+        5.885016269749918,
+        13.893648427170046,
+    ]
+    @test maximum(soil.variables.exfiltsatwater) ≈ 238.31894380154702
+    @test mean(river_flow.variables.q_av) ≈ 60.52064519451218
+    @test maximum(river_flow.variables.q_av) ≈ 235.61280384784553
 end
 
 Wflow.run_timestep!(model)
@@ -162,6 +174,16 @@ Wflow.run_timestep!(model)
           [1.8953043195283672e8, 4.279951562880186e7, 7.159979105537169e7]
     @test reservoir.variables.outflow_av ≈
           [4.84140356355074, 9.32858384747847, 54.86508305737946]
+    @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
+        3.4693288170013075,
+        6.14288940791711,
+        4.3326122983307815,
+        6.312154057645372,
+        14.323267783512565,
+    ]
+    @test maximum(soil.variables.exfiltsatwater) ≈ 227.99207811004757
+    @test mean(river_flow.variables.q_av) ≈ 56.793322211707945
+    @test maximum(river_flow.variables.q_av) ≈ 227.44570424026352
 end
 
 Wflow.close_files(model; delete_output = false)
@@ -184,7 +206,7 @@ end
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
-config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
+config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -201,7 +223,7 @@ end
 # test use of observed reservoir outflow (cyclic) 
 tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
 config = Wflow.Config(tomlpath)
-config.input.cyclic["reservoir_water~outgoing~observed__volume_flow_rate"] = "reservoir_outflow"
+config.input.cyclic["reservoir_water__outgoing_observed_volume_flow_rate"] = "reservoir_outflow"
 config.logging.loglevel = "debug"
 config.logging.path_log = "log_sbm_piave_debug.txt"
 config.time.endtime = DateTime(2010, 7, 3)

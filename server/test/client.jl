@@ -30,7 +30,7 @@ end
 @testset "Reading and writing NaN values allowed" begin
     msg = (
         fn = "get_value",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         dest = fill(0.0, 50063),
     )
     @test isnan(mean(request(msg)["value"]))
@@ -48,9 +48,9 @@ end
     @test request((fn = "get_output_item_count",)) == Dict("output_item_count" => 7)
     to_check = [
         "river_water__volume_flow_rate",
-        "soil_water_unsat-zone__depth",
+        "soil_water_unsaturated_zone__depth",
         "soil_water__transpiration_volume_flux",
-        "soil_layer~2_water_unsat-zone__depth",
+        "soil_layer_2_water_unsaturated_zone__depth",
     ]
     retrieved_vars = request((fn = "get_input_var_names",))["input_var_names"]
     @test all(x -> x in retrieved_vars, to_check)
@@ -68,26 +68,26 @@ vwc_1_size = 0
     @test request((fn = "get_var_location", name = "river_water__volume_flow_rate")) ==
           Dict("var_location" => "node")
     zi_nbytes =
-        request((fn = "get_var_nbytes", name = "soil_water_sat-zone_top__depth"))["var_nbytes"]
+        request((fn = "get_var_nbytes", name = "soil_water_saturated_zone_top__depth"))["var_nbytes"]
     @test zi_nbytes == 400504
     zi_itemsize =
-        request((fn = "get_var_itemsize", name = "soil_water_sat-zone_top__depth"))["var_itemsize"]
+        request((fn = "get_var_itemsize", name = "soil_water_saturated_zone_top__depth"))["var_itemsize"]
     zi_size = Int(zi_nbytes / zi_itemsize)
     vwc_1_nbytes =
-        request((fn = "get_var_nbytes", name = "soil_layer~1_water__volume_fraction"))["var_nbytes"]
+        request((fn = "get_var_nbytes", name = "soil_layer_1_water__volume_fraction"))["var_nbytes"]
     @test vwc_1_nbytes == 400504
     vwc_1_itemsize =
-        request((fn = "get_var_itemsize", name = "soil_layer~1_water__volume_fraction"))["var_itemsize"]
+        request((fn = "get_var_itemsize", name = "soil_layer_1_water__volume_fraction"))["var_itemsize"]
     vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
     @test request((fn = "get_var_grid", name = "river_water__depth")) ==
           Dict("var_grid" => 2)
     msg = (
         fn = "get_value",
-        name = "soil_water_sat-zone_top__depth",
+        name = "soil_water_saturated_zone_top__depth",
         dest = fill(0.0, zi_size),
     )
     @test mean(request(msg)["value"]) ≈ 277.83281204756514
-    msg = (fn = "get_value_ptr", name = "soil_water_root-zone__depth")
+    msg = (fn = "get_value_ptr", name = "soil_water_root_zone__depth")
     @test mean(request(msg)["value_ptr"]) ≈ 28.883053734762495
     msg = (
         fn = "get_value_at_indices",
@@ -99,39 +99,39 @@ vwc_1_size = 0
           [2.0985771393491577, 2.5680470722620474, 3.2885971839105763]
     msg = (
         fn = "set_value",
-        name = "soil_water_sat-zone_top__depth",
+        name = "soil_water_saturated_zone_top__depth",
         src = fill(300.0, zi_size),
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value",
-        name = "soil_water_sat-zone_top__depth",
+        name = "soil_water_saturated_zone_top__depth",
         dest = fill(0.0, zi_size),
     )
     @test mean(request(msg)["value"]) == 300.0
     msg = (
         fn = "set_value_at_indices",
-        name = "soil_water_sat-zone_top__depth",
+        name = "soil_water_saturated_zone_top__depth",
         src = [250.0, 350.0],
         inds = [1, 2],
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value_at_indices",
-        name = "soil_water_sat-zone_top__depth",
+        name = "soil_water_saturated_zone_top__depth",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] == [250.0, 350.0, 300.0]
     msg = (
         fn = "get_value",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         dest = fill(0.0, vwc_1_size),
     )
     @test mean(request(msg)["value"]) ≈ 0.18599394957561358
     msg = (
         fn = "get_value_at_indices",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
@@ -139,33 +139,33 @@ vwc_1_size = 0
           [0.12089607119560242, 0.11968416924304527, 0.14602328618707333]
     msg = (
         fn = "set_value",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         src = fill(0.3, vwc_1_size),
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         dest = fill(0.0, vwc_1_size),
     )
     @test mean(request(msg)["value"]) ≈ 0.3
     msg = (
         fn = "get_value_at_indices",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         dest = [0.0, 0.0, 0.0],
         inds = [1, 2, 3],
     )
     @test request(msg)["value_at_indices"] == [0.3, 0.3, 0.3]
     msg = (
         fn = "set_value_at_indices",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         src = [0.1, 0.25],
         inds = [1, 2],
     )
     @test request(msg) == Dict("status" => "OK")
     msg = (
         fn = "get_value_at_indices",
-        name = "soil_layer~1_water__volume_fraction",
+        name = "soil_layer_1_water__volume_fraction",
         dest = [0.0, 0.0],
         inds = [1, 2],
     )

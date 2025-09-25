@@ -85,10 +85,10 @@ function SoilErosionParameters(
     lens = lens_input_parameter(config, "soil_sand__mass_fraction")
     sand_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float64)
-    lens = lens_input_parameter(config, "soil_aggregates~small__mass_fraction")
+    lens = lens_input_parameter(config, "soil_small_aggregates__mass_fraction")
     sagg_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
-    lens = lens_input_parameter(config, "soil_aggregates~large__mass_fraction")
+    lens = lens_input_parameter(config, "soil_large_aggregates__mass_fraction")
     lagg_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
     # Check that soil fractions sum to 1

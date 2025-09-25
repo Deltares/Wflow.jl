@@ -84,14 +84,14 @@ function Domain(
     routing_types::NamedTuple,
 )
     network_land = NetworkLand(dataset, config, modelsettings)
-    if routing_types.land == "kinematic-wave" ||
-       routing_types.subsurface == "kinematic-wave"
+    if routing_types.land == "kinematic_wave" ||
+       routing_types.subsurface == "kinematic_wave"
         network_land = network_subdomains(config, network_land)
     end
 
     network_river =
         NetworkRiver(dataset, config, network_land; do_pits = modelsettings.pits)
-    if routing_types.river == "kinematic-wave"
+    if routing_types.river == "kinematic_wave"
         network_river = network_subdomains(config, network_river)
     end
 
@@ -107,22 +107,22 @@ function Domain(
     end
     @reset network_river.reservoir_indices = inds_reservoir_map2river
 
-    if routing_types.river == "kinematic-wave"
+    if routing_types.river == "kinematic_wave"
         @reset network_river.upstream_nodes =
             filter_upsteam_nodes(network_river.graph, pits[network_river.indices])
-    elseif routing_types.river == "local-inertial"
+    elseif routing_types.river == "local_inertial"
         nodes_at_edge, index_pit = NodesAtEdge(network_river)
         @reset network_river.nodes_at_edge = nodes_at_edge
         @reset network_river.pit_indices = network_river.indices[index_pit]
         @reset network_river.edges_at_node = EdgesAtNode(network_river)
     end
 
-    if routing_types.land == "kinematic-wave" ||
-       routing_types.subsurface == "kinematic-wave"
+    if routing_types.land == "kinematic_wave" ||
+       routing_types.subsurface == "kinematic_wave"
         @reset network_land.upstream_nodes =
             filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
     end
-    if routing_types.land == "local-inertial"
+    if routing_types.land == "local_inertial"
         @reset network_land.edge_indices = EdgeConnectivity(network_land)
         @reset network_land.river_indices =
             network_river.reverse_indices[network_land.indices]
@@ -162,10 +162,10 @@ function Domain(
 
     if nthreads() > 1
         (; min_streamorder_land, min_streamorder_river) = modelsettings
-        if routing_types.river == "kinematic-wave"
+        if routing_types.river == "kinematic_wave"
             @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
-        elseif routing_types.land == "kinematic-wave" ||
-               routing_types.subsurface == "kinematic-wave"
+        elseif routing_types.land == "kinematic_wave" ||
+               routing_types.subsurface == "kinematic_wave"
             @info "Parallel execution of kinematic wave" min_streamorder_land
         end
     end
@@ -295,7 +295,7 @@ function get_water_fraction(
     network::NetworkLand,
     river_fraction::Vector{Float64},
 )
-    lens = lens_input_parameter(config, "land~water-covered__area_fraction")
+    lens = lens_input_parameter(config, "land_water_covered__area_fraction")
     water_fraction =
         ncread(dataset, config, lens; sel = network.indices, defaults = 0.0, type = Float64)
     water_fraction = max.(water_fraction .- river_fraction, 0.0)

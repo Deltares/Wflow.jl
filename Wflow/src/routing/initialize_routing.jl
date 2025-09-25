@@ -37,6 +37,7 @@ function initialize_subsurface_flow(
 )
     do_drains = get(config.model, "drain__flag", false)::Bool
     do_constanthead = get(config.model, "constanthead__flag", false)::Bool
+    cold_start = get(config.model, "cold_start__flag", true)::Bool
 
     (; land, river, drain) = domain
 
@@ -63,6 +64,19 @@ function initialize_subsurface_flow(
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if do_constanthead
         initial_head[constant_head.index] = constant_head.variables.head
+    end
+    # reset soil (cold) state and related variables based on initial_head (river cells and constanthead)
+    if cold_start
+        (; zi, satwaterdepth, ustorecapacity, ustorelayerthickness, n_unsatlayers) =
+            soil.variables
+        (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
+            soil.parameters
+
+        @. zi = (elevation - min(elevation, initial_head)) * 1000.0
+        @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
+        @. ustorecapacity = soilwatercapacity - satwaterdepth
+        @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
+        @. n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
@@ -119,14 +133,14 @@ function initialize_overland_flow(
     domain::Domain,
     routing_types::NamedTuple,
 )
-    if routing_types.land == "kinematic-wave"
+    if routing_types.land == "kinematic_wave"
         overland_flow = KinWaveOverlandFlow(dataset, config, domain.land)
-    elseif routing_types.land == "local-inertial"
+    elseif routing_types.land == "local_inertial"
         overland_flow = LocalInertialOverlandFlow(dataset, config, domain)
     else
         error(
             """An unknown "land_routing" method is specified in the TOML file
-            ($(routing_types.land)). This should be "kinematic-wave" or "local-inertial".
+            ($(routing_types.land)). This should be "kinematic_wave" or "local_inertial".
             """,
         )
     end
@@ -150,14 +164,14 @@ function initialize_river_flow(
         reservoir = nothing
     end
 
-    if routing_types.river == "kinematic-wave"
+    if routing_types.river == "kinematic_wave"
         river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)
-    elseif routing_types.river == "local-inertial"
+    elseif routing_types.river == "local_inertial"
         river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir)
     else
         error(
             """An unknown "river_routing" method is specified in the TOML file
-             ($(routing_types.river)). This should be "kinematic-wave" or "local-inertial".
+             ($(routing_types.river)). This should be "kinematic_wave" or "local_inertial".
             """,
         )
     end

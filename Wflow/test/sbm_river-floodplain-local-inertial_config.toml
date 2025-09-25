@@ -26,12 +26,12 @@ path_output = "outstates-moselle.nc"
 [state.variables]
 vegetation_canopy_water__depth = "canopystorage"
 
-soil_water_sat-zone__depth = "satwaterdepth"
+soil_water_saturated_zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
-soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
+soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
 
-"snowpack~dry__leq-depth" = "snow"
-"snowpack~liquid__depth" = "snowwater"
+snowpack_dry_snow__leq_depth = "snow"
+snowpack_liquid_water__depth = "snowwater"
 
 river_water__instantaneous_depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
@@ -41,7 +41,7 @@ floodplain_water__instantaneous_depth = "h_floodplain"
 
 reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
 
-subsurface_water__volume_flow_rate  = "ssf"
+subsurface_water__volume_flow_rate = "ssf"
 
 land_surface_water__instantaneous_volume_flow_rate = "q_land"
 land_surface_water__instantaneous_depth = "h_land"
@@ -67,21 +67,21 @@ atmosphere_air__temperature = "temp"
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 
-"land~water-covered__area_fraction" = "WaterFrac"
+land_water_covered__area_fraction = "WaterFrac"
 
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
-snowpack__liquid_water_holding_capacity =  "WHC"
+snowpack__liquid_water_holding_capacity = "WHC"
 
 soil_layer_water__brooks-corey_exponent = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
-"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+compacted_soil_surface_water__infiltration_capacity = "InfiltCapPath"
 soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
-soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
-"soil~compacted__area_fraction" = "PathFrac"
-"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil_water_saturated_zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+compacted_soil__area_fraction = "PathFrac"
+soil_wet_root__sigmoid_function_shape_parameter = "rootdistpar"
 soil__thickness = "SoilThickness"
 
 vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
@@ -102,11 +102,11 @@ land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
 reservoir_surface__area = "reservoir_area"
-"reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
-reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
+reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
+reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
-"reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
-"reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
 reservoir_water__rating_curve_type_count = "outflowfunc"
 reservoir_water__storage_curve_type_count = "storfunc"
@@ -114,7 +114,7 @@ reservoir_water__storage_curve_type_count = "storfunc"
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
 [input.cyclic]
-vegetation__leaf-area_index = "LAI"
+vegetation__leaf_area_index = "LAI"
 
 [input.static.soil_surface_water__vertical_saturated_hydraulic_conductivity]
 netcdf.variable.name = "KsatVer"
@@ -123,7 +123,7 @@ offset = 0.0
 
 [model]
 kinematic_wave__adaptive_time_step_flag = true
-river_routing = "local-inertial"
+river_routing = "local_inertial"
 floodplain_1d__flag = true
 snow_gravitional_transport__flag = true
 cold_start__flag = true
@@ -138,15 +138,15 @@ land_streamorder__min_count = 5
 path = "output_moselle.nc"
 
 [output.netcdf_grid.variables]
-soil_water_sat-zone__depth = "satwaterdepth"
+soil_water_saturated_zone__depth = "satwaterdepth"
 soil_surface__temperature = "tsoil"
-soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
-"snowpack~dry__leq-depth" = "snow"
-"snowpack~liquid__depth" = "snowwater"
+soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
+snowpack_dry_snow__leq_depth = "snow"
+snowpack_liquid_water__depth = "snowwater"
 river_water__depth = "h_av_river"
 river_water__volume_flow_rate = "q_av_river"
 reservoir_water__volume = "storage_reservoir"
-subsurface_water__volume_flow_rate  = "ssf"
+subsurface_water__volume_flow_rate = "ssf"
 land_surface_water__volume_flow_rate = "q_av_land"
 land_surface_water__depth = "h_av_land"
 land.interception.variables.canopy_storage = "canopystorage"
@@ -213,16 +213,16 @@ parameter = "river_water__volume_flow_rate"
 [[output.csv.column]]
 header = "recharge"
 map = "subbasin_location__count"
-parameter = "soil_water_sat-zone_top__net_recharge_volume_flux"
+parameter = "soil_water_saturated_zone_top__net_recharge_volume_flux"
 reducer = "mean"
 
 [API]
 variables = [
   "river_water__volume_flow_rate",
-   "soil_water_unsat-zone__depth",
-   "soil_water__transpiration_volume_flux",
-   "soil_layer~1_water_unsat-zone__depth",
-   "soil_layer~2_water_unsat-zone__depth",
-   "soil_layer~3_water_unsat-zone__depth",
-   "soil_layer~4_water_unsat-zone__depth",
+  "soil_water_unsaturated_zone__depth",
+  "soil_water__transpiration_volume_flux",
+  "soil_layer_1_water_unsaturated_zone__depth",
+  "soil_layer_2_water_unsaturated_zone__depth",
+  "soil_layer_3_water_unsaturated_zone__depth",
+  "soil_layer_4_water_unsaturated_zone__depth",
 ]

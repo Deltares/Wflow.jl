@@ -67,7 +67,7 @@ providing the following in the TOML file:
 
 ```toml
 [model]
-river_routing = "local-inertial"    # optional, default is "kinematic-wave"
+river_routing = "local_inertial"    # optional, default is "kinematic_wave"
 floodplain_1d__flag = true                # optional, default is false
 ```
 
@@ -78,8 +78,8 @@ overland flow, by providing the following in the TOML file:
 
 ```toml
 [model]
-river_routing = "local-inertial"
-land_routing = "local-inertial"
+river_routing = "local_inertial"
+land_routing = "local_inertial"
 ```
 
 The local inertial approach is described in more detail in the section [Local inertial
@@ -133,9 +133,9 @@ examples are listed below.
 ```toml
 [output.netcdf_grid.variables]
 # # Total soil erosion rate [ton/t] from rainfall (splash)
-"soil_erosion~rainfall__mass_flow_rate" = "rainfall_erosion"
+rainfall_soil_erosion__mass_flow_rate = "rainfall_erosion"
 # Soil erosion rate by overland flow [ton/t]
-"soil_erosion~overland_flow__mass_flow_rate" = "overland_flow_erosion"
+overland_flow_soil_erosion__mass_flow_rate = "overland_flow_erosion"
 # Total soil loss rate [ton/t]
 soil_erosion__mass_flow_rate = "soilloss"
 # Total transport capacity of overland flow [ton/t]
@@ -144,15 +144,15 @@ land_surface_water_sediment_transport_capacity__mass_flow_rate = "TCsed"
 # Total sediment flux in overland flow [ton/t]
 land_surface_water_sediment__mass_flow_rate = "olsed"
 # Total (or per particle class) sediment yield to the river [ton/t]
-"land_surface_water_sediment~to-river__mass_flow_rate" = "inlandsed"
-"land_surface_water_clay~to-river__mass_flow_rate" = "inlandclay"
+land_surface_water_sediment__to_river_mass_flow_rate = "inlandsed"
+land_surface_water_clay__to_river_mass_flow_rate = "inlandclay"
 
 # Total sediment concentration in the river (suspended + bed load) [kg/m3]
 river_water_sediment__mass_concentration = "Sedconc"
 # Suspended load [kg/m3]
-"river_water_sediment~suspended__mass_concentration" = "SSconc"
+river_water_sediment__suspended_mass_concentration = "SSconc"
 # Bed load [kg/m3]
-"river_water_sediment~bedload__mass_concentration" = "Bedconc"
+river_water_sediment__bedload_mass_concentration = "Bedconc"
 ```
 
 ## References
