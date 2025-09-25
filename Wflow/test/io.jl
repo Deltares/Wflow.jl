@@ -316,7 +316,7 @@ end
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.input.static["snowpack__degree-day_coefficient"] = Dict("value" => 2.0)
+    config.input.static["snowpack__degree_day_coefficient"] = Dict("value" => 2.0)
     config.input.static.soil__thickness = Dict(
         "scale" => 3.0,
         "offset" => 100.0,
@@ -324,7 +324,7 @@ end
     )
     config.input.forcing.atmosphere_water__precipitation_volume_flux =
         Dict("scale" => 1.5, "netcdf" => Dict("variable" => Dict("name" => "precip")))
-    config.input.static["soil_layer_water__brooks-corey_exponent"] = Dict(
+    config.input.static["soil_layer_water__brooks_corey_exponent"] = Dict(
         "scale" => [2.0, 3.0],
         "offset" => [0.0, 0.0],
         "layer" => [1, 3],
