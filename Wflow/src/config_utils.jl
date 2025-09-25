@@ -126,11 +126,10 @@ function variable_info(var::InputEntry)
     (; layer, scale, offset) = var
 
     for (i, (scale, offset)) in enumerate(zip(scale, offset))
-        msg = "NetCDF parameter `$(variable_name(var))` is modified"
         if !isone(scale) || !iszero(offset)
-            msg *= "with scale `$scale` and offset `$offset`"
+            msg = "NetCDF parameter `$(variable_name(var))` is modified with  scale `$scale` and offset `$offset`"
+            !isnothing(layer) && (msg *= "at index $(layer[i])")
+            @info "$msg."
         end
-        !isnothing(layer) && (msg *= "at index $(layer[i])")
-        @info "$msg."
     end
 end
