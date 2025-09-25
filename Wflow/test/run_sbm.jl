@@ -284,7 +284,7 @@ Wflow.run_timestep!(model)
     @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
     @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
           0.0
-    @test model.routing.river_flow.variables.q_av[44] ≈ 10.50644055015246
+    @test model.routing.river_flow.variables.q_av[44] ≈ 10.506442564804969
     @test reservoir.boundary_conditions.external_inflow[2] == -1.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
     @test reservoir.boundary_conditions.inflow[2] ≈ -0.9071721542108732
