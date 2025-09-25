@@ -1,49 +1,53 @@
-tomlpath = joinpath(@__DIR__, "sbm_config.toml")
-config = Wflow.Config(tomlpath)
+@testitem "Subdomains kinematic wave" begin
+    using Base.Threads: nthreads
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
 
-model = Wflow.Model(config)
+    model = Wflow.Model(config)
 
-(; domain) = model
+    (; domain) = model
 
-min_sto_river = get(config.model, "min_streamorder_river", 6)
-min_sto_land = get(config.model, "min_streamorder_land", 5)
-index_pit = [domain.land.network.order[end]]
-@test min_sto_river == 6
+    min_sto_river = get(config.model, "min_streamorder_river", 6)
+    min_sto_land = get(config.model, "min_streamorder_land", 5)
+    index_pit = [domain.land.network.order[end]]
+    @test min_sto_river == 6
 
-streamorder = Wflow.stream_order(domain.land.network.graph, domain.land.network.order)
-subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
-    domain.land.network.graph,
-    domain.land.network.order,
-    index_pit,
-    streamorder,
-    min_sto_land,
-)
+    streamorder = Wflow.stream_order(domain.land.network.graph, domain.land.network.order)
+    subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
+        domain.land.network.graph,
+        domain.land.network.order,
+        index_pit,
+        streamorder,
+        min_sto_land,
+    )
 
-Wflow.close_files(model; delete_output = false)
+    Wflow.close_files(model; delete_output = false)
 
-if nthreads() == 1
-    @testset "Nonparallel subdomains kinematic wave (nthreads = 1)" begin
-        @test subbas_order == [[1]]
-        @test indices_subbas == [[1:length(domain.land.network.order);]]
-        @test topo_subbas == [domain.land.network.order]
-    end
-else
-    @testset "Parallel subdomains kinematic wave (nthreads > 1)" begin
-        @test length(subbas_order) == 4
-        @test length.(subbas_order) == [34, 12, 6, 1]
-        @test maximum(subbas_order) == [53]
-        @test subbas_order[1][1:4] == [3, 7, 10, 14]
-        @test subbas_order[3][1:4] == [2, 9, 12, 16]
-        @test length(topo_subbas) == 53
-        @test topo_subbas[1][1:4] == [46345, 46344, 46343, 46149]
-        @test topo_subbas[end][1:4] == [49884, 49883, 49842, 49791]
-        @test length(indices_subbas) == 53
-        @test indices_subbas[1][1:4] == [3585, 3586, 3587, 3788]
-        @test indices_subbas[end][1:4] == [166, 167, 201, 236]
+    if nthreads() == 1
+        @testset "Nonparallel (nthreads = 1)" begin
+            @test subbas_order == [[1]]
+            @test indices_subbas == [[1:length(domain.land.network.order);]]
+            @test topo_subbas == [domain.land.network.order]
+        end
+    else
+        @testset "Parallel (nthreads > 1)" begin
+            @test length(subbas_order) == 4
+            @test length.(subbas_order) == [34, 12, 6, 1]
+            @test maximum(subbas_order) == [53]
+            @test subbas_order[1][1:4] == [3, 7, 10, 14]
+            @test subbas_order[3][1:4] == [2, 9, 12, 16]
+            @test length(topo_subbas) == 53
+            @test topo_subbas[1][1:4] == [46345, 46344, 46343, 46149]
+            @test topo_subbas[end][1:4] == [49884, 49883, 49842, 49791]
+            @test length(indices_subbas) == 53
+            @test indices_subbas[1][1:4] == [3585, 3586, 3587, 3788]
+            @test indices_subbas[end][1:4] == [166, 167, 201, 236]
+        end
     end
 end
 
-@testset "Streamorder and subbasins" begin
+@testitem "Streamorder and subbasins" begin
+    using Graphs: Graphs, Graph, DiGraph, add_edge!, topological_sort_by_dfs
     # directed acyclic graph of basin
     g = DiGraph(16)
     add_edge!(g, 1, 3)
