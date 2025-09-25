@@ -126,7 +126,6 @@ td, th {
 | `vegetation_root__feddes_critial_pressure_head_h1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
 | `soil__thickness` | Soil thickness | mm | - |
 | `compacted_soil_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
-| `soil_non_compacted_surface_water__infiltration_capacity` | Soil infiltration capacity | mm Δt⁻¹ | 100.0 mm day⁻¹ |
 | `soil_water_saturated_zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
 | `soil_layer_water__brooks-corey_exponent` | Brooks-Corey power coefficient per soil layer | - | - |
 | `land_water_covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
