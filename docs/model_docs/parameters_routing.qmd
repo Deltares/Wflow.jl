@@ -309,8 +309,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `clay__mean_diameter` | Clay mean diameter | μm | 2.0 |
 | `silt__mean_diameter` | Silt mean diameter | μm | 10.0 |
 | `sand__mean_diameter` | Sand mean diameter | μm | 200.0 |
-| `sediment_aggregates_small__mean_diameter` | Small aggregates mean diameter | μm | 30.0 |
-| `sediment_aggregates_large__mean_diameter` | Large aggregates mean diameter | μm | 500.0 |
+| `sediment_small_aggregates__mean_diameter` | Small aggregates mean diameter | μm | 30.0 |
+| `sediment_large_aggregates__mean_diameter` | Large aggregates mean diameter | μm | 500.0 |
 | `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
 | `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
 : {.striped .hover}
@@ -363,8 +363,8 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | `clay__mean_diameter` | Clay mean diameter | µm | 2.0 |
 | `silt__mean_diameter` | Silt mean diameter | µm | 10.0 |
 | `sand__mean_diameter` | Sand mean diameter | µm | 200.0 |
-| `sediment_aggregates_small__mean_diameter` | Small aggregates mean diameter | µm | 30.0 |
-| `sediment_aggregates_large__mean_diameter` | Large aggregates mean diameter | µm | 500.0 |
+| `sediment_small_aggregates__mean_diameter` | Small aggregates mean diameter | µm | 30.0 |
+| `sediment_large_aggregates__mean_diameter` | Large aggregates mean diameter | µm | 500.0 |
 | `gravel__mean_diameter` | Gravel mean diameter | µm | 2000.0 |
 : {.striped .hover}
 
