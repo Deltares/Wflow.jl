@@ -1,11 +1,12 @@
 @testitem "flow_rate" begin
     using NCDatasets: NCDataset
+    using Graphs: topological_sort_by_dfs
 
     dt_sec = 86400.0
     ldd_MISSING_VALUE = 255
 
     # read the staticmaps into memory
-    nc = NCDataset(normpath(input_data_path, "staticmaps-rhine.nc"))
+    nc = NCDataset("data/input/staticmaps-rhine.nc")
     # helper function to get the axis order and directionality right
     read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
     ldd_2d = read_right(nc, "ldd")
@@ -47,7 +48,7 @@
     @test Q[sink] ≈ 4131.101474418251
 end
 
-@testset "kinematic wave subsurface flow" begin
+@testitem "kinematic wave subsurface flow" begin
     kh_profile = Wflow.KhExponential([18021.0], [0.0017669756])
     @test all(
         isapprox.(
@@ -71,7 +72,8 @@ end
     )
 end
 
-@testset "accucapacity" begin
+@testitem "accucapacity" begin
+    using Graphs: DiGraph, add_edge!
     # test based on a subset of the examples at
     # https://pcraster.geo.uu.nl/pcraster/4.3.0/documentation/pcraster_manual/sphinx/op_accucapacity.html#examples
     # of the node at (row 3, column 2) and upstream nodes
@@ -114,7 +116,11 @@ end
     @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
 end
 
-@testset "local inertial long channel MacDonald (1997)" begin
+@testitem "local inertial long channel MacDonald (1997)" begin
+    using QuadGK: quadgk
+    using Graphs: DiGraph, add_edge!, ne
+    using Statistics: mean
+
     g = 9.80665
     L = 1000.0
     dx = 5.0

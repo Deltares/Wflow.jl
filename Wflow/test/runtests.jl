@@ -18,8 +18,6 @@ using Aqua: Aqua
 
 const BMI = BasicModelInterface
 
-input_data_path = normpath(@__DIR__, "data", "input")
-
 include("testing_utils.jl")
 
 @info "testing Wflow with" nthreads() VERSION
@@ -42,6 +40,6 @@ with_logger(NullLogger()) do
         include("bmi.jl")
         include("run_sediment.jl")
         include("subdomains.jl")
-        Aqua.test_all(Wflow; ambiguities=false, persistent_tasks=false)
+        Aqua.test_all(Wflow; ambiguities = false, persistent_tasks = false)
     end
 end
