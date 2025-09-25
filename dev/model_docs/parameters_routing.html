@@ -42,9 +42,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-97294a9af8ce176bb4c6ae3f3739bf4a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-4b325b5645c20096e1e8ed450f9c1787.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -645,13 +645,13 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>reservoir_water_flow_threshold-level__elevation</code></td>
+<td><code>reservoir_water_flow_threshold_level__elevation</code></td>
 <td>Water level threshold, below this level outflow is zero</td>
 <td>m</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>reservoir~lower_location__count</code></td>
+<td><code>reservoir_lower_location__count</code></td>
 <td>Index of lower reservoir (linked reservoir)</td>
 <td>-</td>
 <td>0</td>
@@ -696,37 +696,37 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>reservoir_water_demand~required~downstream__volume_flow_rate</code></td>
+<td><code>reservoir_water_demand__required_downstream_volume_flow_rate</code></td>
 <td>Minimum (environmental) flow released from reservoir</td>
 <td>m³ s⁻¹</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>reservoir_water_release-below-spillway__max_volume_flow_rate</code></td>
+<td><code>reservoir_water_release_below_spillway__max_volume_flow_rate</code></td>
 <td>Maximum amount that can be released if below spillway</td>
 <td>m³ s⁻¹</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>reservoir_water~full-target__volume_fraction</code></td>
+<td><code>reservoir_water__target_full_volume_fraction</code></td>
 <td>Target fraction full (of max storage)</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>reservoir_water~min-target__volume_fraction</code></td>
+<td><code>reservoir_water__target_min_volume_fraction</code></td>
 <td>Target minimum full fraction (of max storage)</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>reservoir_water_inflow~external__volume_flow_rate</code></td>
+<td><code>reservoir_water__external_inflow_volume_flow_rate</code></td>
 <td>External inflow reservoir (negative for abstractions)</td>
 <td>m³ s⁻¹</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>reservoir_water~outgoing~observed__volume_flow_rate</code></td>
+<td><code>reservoir_water__outgoing_observed_volume_flow_rate</code></td>
 <td>Observed outflow reservoir</td>
 <td>m³ s⁻¹</td>
 <td>-</td>
@@ -790,12 +790,12 @@ td, th {
 <td>m</td>
 </tr>
 <tr class="even">
-<td><code>reservoir_water~outgoing__volume_flow_rate</code></td>
+<td><code>reservoir_water__outgoing_volume_flow_rate</code></td>
 <td>Outflow of the reservoir</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>reservoir_water~incoming__volume_flow_rate</code></td>
+<td><code>reservoir_water__incoming_volume_flow_rate</code></td>
 <td>Inflow into the reservoir</td>
 <td>m³ s⁻¹</td>
 </tr>
@@ -880,7 +880,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>river_water_inflow~external__volume_flow_rate</code></td>
+<td><code>river_water__external_inflow_volume_flow_rate</code></td>
 <td>External inflow into the river (negative for abstractions)</td>
 <td>m³ s⁻¹</td>
 <td>-</td>
@@ -954,12 +954,12 @@ td, th {
 <td>m³</td>
 </tr>
 <tr class="odd">
-<td><code>river_water_inflow~lateral__volume_flow_rate</code></td>
+<td><code>river_water__lateral_inflow_volume_flow_rate</code></td>
 <td>Lateral inflow into the river</td>
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>river_water_abstraction~external__volume_flow_rate</code></td>
+<td><code>river_water__external_abstraction_volume_flow_rate</code></td>
 <td>Actual abstraction based on external negative inflow</td>
 <td>m³ s⁻¹</td>
 </tr>
@@ -1053,7 +1053,7 @@ td, th {
 <td>m³ s⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>land_surface_water~to-river__volume_flow_rate</code></td>
+<td><code>land_surface_water__to_river_volume_flow_rate</code></td>
 <td>Discharge overland flow that flows to the river</td>
 <td>m³ s⁻¹</td>
 </tr>
@@ -1147,7 +1147,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>subsurface_water_sat-zone_top__depth</code></td>
+<td><code>subsurface_water_saturated_zone_top__depth</code></td>
 <td>Pseudo-water table depth (top of the saturated zone)</td>
 <td>m</td>
 </tr>
@@ -1157,7 +1157,7 @@ td, th {
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>subsurface_water~to-river__volume_flow_rate</code></td>
+<td><code>subsurface_water__to_river_volume_flow_rate</code></td>
 <td>Part of subsurface flow that flows to the river</td>
 <td>m³ day⁻¹</td>
 </tr>
@@ -1195,7 +1195,7 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>model_boundary_condition~river__length</code></td>
+<td><code>model_boundary_condition_river__length</code></td>
 <td>Boundary condition river length downstream river outlets</td>
 <td>m</td>
 <td>10 000</td>
@@ -1207,7 +1207,7 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>model_boundary_condition~river_bank_water__depth</code></td>
+<td><code>model_boundary_condition_river_bank_water__depth</code></td>
 <td>Boundary condition bankfull depth downstream river outlets</td>
 <td>m</td>
 <td>0.0</td>
@@ -1231,7 +1231,7 @@ td, th {
 <td>0.0036</td>
 </tr>
 <tr class="even">
-<td><code>river_water_inflow~external__volume_flow_rate</code></td>
+<td><code>river_water__external_inflow_volume_flow_rate</code></td>
 <td>External inflow into the river (negative for abstractions)</td>
 <td>m³ s⁻¹</td>
 <td>-</td>
@@ -1305,7 +1305,7 @@ td, th {
 <td>m³</td>
 </tr>
 <tr class="odd">
-<td><code>river_water_abstraction~external__volume_flow_rate</code></td>
+<td><code>river_water__external_abstraction_volume_flow_rate</code></td>
 <td>Actual abstraction based on external negative inflow</td>
 <td>m³ s⁻¹</td>
 </tr>
@@ -1644,7 +1644,7 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>river_water_inflow~external__volume_flow_rate</code></td>
+<td><code>river_water__external_inflow_volume_flow_rate</code></td>
 <td>External inflow into the river (negative for abstractions)</td>
 <td>m³ s⁻¹</td>
 <td>-</td>
@@ -1669,7 +1669,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>river_water~to-subsurface__volume_flow_rate</code></td>
+<td><code>river_water__to_subsurface_volume_flow_rate</code></td>
 <td>Exchange flux (river to aquifer)</td>
 <td>m³ day⁻¹</td>
 </tr>
@@ -1729,7 +1729,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land_drain_water~to-subsurface__volume_flow_rate</code></td>
+<td><code>land_drain_water__to_subsurface_volume_flow_rate</code></td>
 <td>Exchange flux (drain to aquifer)</td>
 <td>m³ day⁻¹</td>
 </tr>
@@ -1756,7 +1756,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>subsurface_water_sat-zone_top__net_recharge_volume_flow_rate</code></td>
+<td><code>subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate</code></td>
 <td>Net recharge flux</td>
 <td>m³ day⁻¹</td>
 </tr>
@@ -1785,7 +1785,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>model_boundary_condition~constant_hydraulic_head</code></td>
+<td><code>model_constant_boundary_condition__hydraulic_head</code></td>
 <td>Head of the boundary</td>
 <td>m</td>
 <td>-</td>
@@ -1848,13 +1848,13 @@ td, th {
 <td>200.0</td>
 </tr>
 <tr class="even">
-<td><code>sediment_aggregates~small__mean_diameter</code></td>
+<td><code>sediment_small_aggregates__mean_diameter</code></td>
 <td>Small aggregates mean diameter</td>
 <td>μm</td>
 <td>30.0</td>
 </tr>
 <tr class="odd">
-<td><code>sediment_aggregates~large__mean_diameter</code></td>
+<td><code>sediment_large_aggregates__mean_diameter</code></td>
 <td>Large aggregates mean diameter</td>
 <td>μm</td>
 <td>500.0</td>
@@ -1970,32 +1970,32 @@ td, th {
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>land_surface_water_sediment~to-river__mass_flow_rate</code></td>
+<td><code>land_surface_water_sediment__to_river_mass_flow_rate</code></td>
 <td>Total sediment flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>land_surface_water_clay~to-river__mass_flow_rate</code></td>
+<td><code>land_surface_water_clay__to_river_mass_flow_rate</code></td>
 <td>Clay flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>land_surface_water_silt~to-river__mass_flow_rate</code></td>
+<td><code>land_surface_water_silt__to_river_mass_flow_rate</code></td>
 <td>Silt flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>land_surface_water_sand~to-river__mass_flow_rate</code></td>
+<td><code>land_surface_water_sand__to_river_mass_flow_rate</code></td>
 <td>Sand flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>land_surface_water_aggregates~small~to-river__mass_flow_rate</code></td>
+<td><code>land_surface_water_small_aggregates__to_river_mass_flow_rate</code></td>
 <td>Small aggregates flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>land_surface_water_aggregates~large~to-river__mass_flow_rate</code></td>
+<td><code>land_surface_water_large_aggregates__to_river_mass_flow_rate</code></td>
 <td>Large aggregates flux flowing into the river</td>
 <td>ton Δt⁻¹</td>
 </tr>
@@ -2029,7 +2029,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>river_bottom-and-bank_sediment__median_diameter</code></td>
+<td><code>river_bottom_and_bank_sediment__median_diameter</code></td>
 <td>Median diameter in the river bed/bank</td>
 <td>mm</td>
 <td>0.1</td>
@@ -2065,31 +2065,31 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>reservoir_water_sediment~bedload__trapping_efficiency</code></td>
+<td><code>reservoir_water_sediment__bedload_trapping_efficiency</code></td>
 <td>Reservoir sediment bedload trapping efficiency</td>
 <td>-</td>
 <td>1.0</td>
 </tr>
 <tr class="odd">
-<td><code>river_bottom-and-bank_clay__mass_fraction</code></td>
+<td><code>river_bottom_and_bank_clay__mass_fraction</code></td>
 <td>River bed/bank content clay</td>
 <td>-</td>
 <td>0.15</td>
 </tr>
 <tr class="even">
-<td><code>river_bottom-and-bank_silt__mass_fraction</code></td>
+<td><code>river_bottom_and_bank_silt__mass_fraction</code></td>
 <td>River bed/bank content silt</td>
 <td>-</td>
 <td>0.65</td>
 </tr>
 <tr class="odd">
-<td><code>river_bottom-and-bank_sand__mass_fraction</code></td>
+<td><code>river_bottom_and_bank_sand__mass_fraction</code></td>
 <td>River bed/bank content sand</td>
 <td>-</td>
 <td>0.15</td>
 </tr>
 <tr class="even">
-<td><code>river_bottom-and-bank_gravel__mass_fraction</code></td>
+<td><code>river_bottom_and_bank_gravel__mass_fraction</code></td>
 <td>River bed/bank content gravel</td>
 <td>-</td>
 <td>0.05</td>
@@ -2113,13 +2113,13 @@ td, th {
 <td>200.0</td>
 </tr>
 <tr class="even">
-<td><code>sediment_aggregates~small__mean_diameter</code></td>
+<td><code>sediment_small_aggregates__mean_diameter</code></td>
 <td>Small aggregates mean diameter</td>
 <td>µm</td>
 <td>30.0</td>
 </tr>
 <tr class="odd">
-<td><code>sediment_aggregates~large__mean_diameter</code></td>
+<td><code>sediment_large_aggregates__mean_diameter</code></td>
 <td>Large aggregates mean diameter</td>
 <td>µm</td>
 <td>500.0</td>
@@ -2165,12 +2165,12 @@ td, th {
 <td>ton</td>
 </tr>
 <tr class="even">
-<td><code>river_bed_aggregates~small__mass</code></td>
+<td><code>river_bed_small_aggregates__mass</code></td>
 <td>Small aggregates stored on the river bed after deposition</td>
 <td>ton</td>
 </tr>
 <tr class="odd">
-<td><code>river_bed_aggregates~large__mass</code></td>
+<td><code>river_bed_large_aggregates__mass</code></td>
 <td>Large aggregates stored on the river bed after deposition</td>
 <td>ton</td>
 </tr>
@@ -2195,12 +2195,12 @@ td, th {
 <td>ton</td>
 </tr>
 <tr class="even">
-<td><code>river_water_aggregates~small__mass</code></td>
+<td><code>river_water_small_aggregates__mass</code></td>
 <td>Small aggregates left in cell</td>
 <td>ton</td>
 </tr>
 <tr class="odd">
-<td><code>river_water_aggregates~large__mass</code></td>
+<td><code>river_water_large_aggregates__mass</code></td>
 <td>Large aggregates left in cell</td>
 <td>ton</td>
 </tr>
@@ -2225,12 +2225,12 @@ td, th {
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>river_water_aggregates~small__mass_flow_rate</code></td>
+<td><code>river_water_small_aggregates__mass_flow_rate</code></td>
 <td>Sediment flux (small aggregates)</td>
 <td>ton Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>river_water_aggregates~large__mass_flow_rate</code></td>
+<td><code>river_water_large_aggregates__mass_flow_rate</code></td>
 <td>Sediment flux (large aggregates)</td>
 <td>ton Δt⁻¹</td>
 </tr>
@@ -2259,12 +2259,12 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>river_water_sediment~bedload__mass_concentration</code></td>
+<td><code>river_water_sediment__bedload_mass_concentration</code></td>
 <td>Bed load sediment concentration in the river</td>
 <td>g m⁻³</td>
 </tr>
 <tr class="even">
-<td><code>river_water_sediment~suspended__mass_concentration</code></td>
+<td><code>river_water_sediment__suspended_mass_concentration</code></td>
 <td>Suspended sediemnt concentration in the river</td>
 <td>g m⁻³</td>
 </tr>
