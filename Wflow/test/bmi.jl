@@ -21,9 +21,9 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             @test BMI.get_output_item_count(model) == 7
             to_check = [
                 "river_water__volume_flow_rate",
-                "soil_water_unsat-zone__depth",
+                "soil_water_unsaturated_zone__depth",
                 "soil_water__transpiration_volume_flux",
-                "soil_layer~2_water_unsat-zone__depth",
+                "soil_layer_2_water_unsaturated_zone__depth",
             ]
             retrieved_vars = BMI.get_input_var_names(model)
             @test all(x -> x in retrieved_vars, to_check)
@@ -34,8 +34,8 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @testset "variable information functions" begin
             @test BMI.get_var_grid(model, "soil_water__infiltration_volume_flux") == 5
             @test BMI.get_var_grid(model, "river_water__volume_flow_rate") == 2
-            @test BMI.get_var_grid(model, "reservoir_water~outgoing__volume_flow_rate") == 0
-            @test BMI.get_var_type(model, "reservoir_water~incoming__volume_flow_rate") ==
+            @test BMI.get_var_grid(model, "reservoir_water__outgoing_volume_flow_rate") == 0
+            @test BMI.get_var_type(model, "reservoir_water__incoming_volume_flow_rate") ==
                   "Float64"
             @test BMI.get_var_units(model, "river_water__volume_flow_rate") == "m3 s-1"
             @test BMI.get_var_itemsize(model, "subsurface_water__volume_flow_rate") ==
@@ -52,17 +52,17 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         @testset "update and get and set functions" begin
             @test BMI.get_current_time(model) == 86400.0
             dest = zeros(Float64, size(model.land.soil.variables.zi))
-            BMI.get_value(model, "soil_water_sat-zone_top__depth", dest)
+            BMI.get_value(model, "soil_water_saturated_zone_top__depth", dest)
             @test mean(dest) ≈ 276.16325589542333
             @test BMI.get_value_at_indices(
                 model,
-                "soil_layer~1_water__volume_fraction",
+                "soil_layer_1_water__volume_fraction",
                 zeros(Float64, 3),
                 [1, 2, 3],
             ) ≈ getindex.(model.land.soil.variables.vwc, 1)[1:3]
             BMI.set_value_at_indices(
                 model,
-                "soil_layer~2_water__volume_fraction",
+                "soil_layer_2_water__volume_fraction",
                 [1, 2, 3],
                 [0.10, 0.15, 0.20],
             ) ≈ getindex.(model.land.soil.variables.vwc, 2)[1:3]
@@ -74,20 +74,20 @@ tomlpath = joinpath(@__DIR__, "sbm_config.toml")
             ) ≈ [0.6525634030110335, 7.493560511070567, 0.023197145979653312]
             BMI.set_value(
                 model,
-                "soil_water_sat-zone_top__depth",
+                "soil_water_saturated_zone_top__depth",
                 fill(300.0, length(model.land.soil.variables.zi)),
             )
             @test mean(
                 BMI.get_value(
                     model,
-                    "soil_water_sat-zone_top__depth",
+                    "soil_water_saturated_zone_top__depth",
                     zeros(Float64, size(model.land.soil.variables.zi)),
                 ),
             ) == 300.0
-            BMI.set_value_at_indices(model, "soil_water_sat-zone_top__depth", [1], [250.0])
+            BMI.set_value_at_indices(model, "soil_water_saturated_zone_top__depth", [1], [250.0])
             @test BMI.get_value_at_indices(
                 model,
-                "soil_water_sat-zone_top__depth",
+                "soil_water_saturated_zone_top__depth",
                 zeros(Float64, 2),
                 [1, 2],
             ) == [250.0, 300.0]

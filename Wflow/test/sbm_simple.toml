@@ -32,7 +32,7 @@ atmosphere_air__temperature = "temp"
 atmosphere_air__snowfall_temperature_threshold = "TT"
 atmosphere_air__snowfall_temperature_interval = "TTI"
 
-"land~water-covered__area_fraction" = "WaterFrac"
+land_water_covered__area_fraction = "WaterFrac"
 
 snowpack__melting_temperature_threshold = "TTM"
 snowpack__degree-day_coefficient = "Cfmax"
@@ -41,12 +41,12 @@ soil_layer_water__brooks-corey_exponent = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "KsatVer"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
-"soil~compacted_surface_water__infiltration_capacity" = "InfiltCapPath"
+compacted_soil_surface_water__infiltration_capacity = "InfiltCapPath"
 soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
-soil_water_sat-zone_bottom__max_leakage_volume_flux = "MaxLeakage"
-"soil~compacted__area_fraction" = "PathFrac"
-"soil_root~wet__sigmoid_function_shape_parameter" = "rootdistpar"
+soil_water_saturated_zone_bottom__max_leakage_volume_flux = "MaxLeakage"
+compacted_soil__area_fraction = "PathFrac"
+soil_wet_root__sigmoid_function_shape_parameter = "rootdistpar"
 soil__thickness = "SoilThickness"
 
 vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
@@ -64,11 +64,11 @@ land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
 
 reservoir_surface__area = "reservoir_area"
-"reservoir_water_demand~required~downstream__volume_flow_rate" = "ResDemand"
-reservoir_water_release-below-spillway__max_volume_flow_rate = "ResMaxRelease"
+reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
+reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
 reservoir_water__max_volume = "ResMaxVolume"
-"reservoir_water~full-target__volume_fraction" = "ResTargetFullFrac"
-"reservoir_water~min-target__volume_fraction" = "ResTargetMinFrac"
+reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
 reservoir_water__rating_curve_type_count = "outflowfunc"
 reservoir_water__storage_curve_type_count = "storfunc"
@@ -76,7 +76,7 @@ reservoir_water__storage_curve_type_count = "storfunc"
 subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
 [input.cyclic]
-vegetation__leaf-area_index = "LAI"
+vegetation__leaf_area_index = "LAI"
 
 [model]
 soil_layer__thickness = [100, 300, 800]
@@ -93,5 +93,5 @@ parameter = "river_water__volume_flow_rate"
 
 [[output.csv.column]]
 header = "recharge"
-parameter = "soil_water_sat-zone_top__recharge_volume_flux"
+parameter = "soil_water_saturated_zone_top__recharge_volume_flux"
 reducer = "mean"

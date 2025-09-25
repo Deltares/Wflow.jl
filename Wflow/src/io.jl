@@ -299,7 +299,7 @@ function update_forcing!(model)
         end
         sel = active_indices(domain, par)
         # missing data for observed reservoir outflow is allowed at reservoir location(s)
-        if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+        if par == "reservoir_water__outgoing_observed_volume_flow_rate"
             data_sel = nomissing(data[sel], MISSING_VALUE)
         else
             data_sel = data[sel]
@@ -359,7 +359,7 @@ function update_cyclic!(model)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
-            if par == "reservoir_water~outgoing~observed__volume_flow_rate"
+            if par == "reservoir_water__outgoing_observed_volume_flow_rate"
                 data_sel = nomissing(data[sel], MISSING_VALUE)
             else
                 data_sel = data[sel]
@@ -1714,16 +1714,16 @@ end
 "Return routing types for the river, land and subsurface domains"
 function get_routing_types(config::Config)
     land =
-        get_options(config.model, "land_routing", ROUTING_OPTIONS, "kinematic-wave")::String
+        get_options(config.model, "land_routing", ROUTING_OPTIONS, "kinematic_wave")::String
 
     river = get_options(
         config.model,
         "river_routing",
         ROUTING_OPTIONS,
-        "kinematic-wave",
+        "kinematic_wave",
     )::String
 
-    subsurface = config.model.type == "sbm" ? "kinematic-wave" : "groundwaterflow"
+    subsurface = config.model.type == "sbm" ? "kinematic_wave" : "groundwaterflow"
 
     return (; land, river, subsurface)
 end

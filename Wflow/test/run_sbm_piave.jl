@@ -206,7 +206,7 @@ end
 
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
-config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
+config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -223,7 +223,7 @@ end
 # test use of observed reservoir outflow (cyclic) 
 tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
 config = Wflow.Config(tomlpath)
-config.input.cyclic["reservoir_water~outgoing~observed__volume_flow_rate"] = "reservoir_outflow"
+config.input.cyclic["reservoir_water__outgoing_observed_volume_flow_rate"] = "reservoir_outflow"
 config.logging.loglevel = "debug"
 config.logging.path_log = "log_sbm_piave_debug.txt"
 config.time.endtime = DateTime(2010, 7, 3)

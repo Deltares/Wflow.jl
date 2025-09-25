@@ -38,11 +38,11 @@ function NonIrrigationDemand(
     dt::Second,
     sector::AbstractString,
 )
-    lens = lens_input_parameter(config, "land~$(sector)__gross_water_demand_volume_flux")
+    lens = lens_input_parameter(config, "$(sector)__gross_water_demand_volume_flux")
     demand_gross =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
         (dt / BASETIMESTEP)
-    lens = lens_input_parameter(config, "land~$(sector)__net_water_demand_volume_flux")
+    lens = lens_input_parameter(config, "$(sector)__net_water_demand_volume_flux")
     demand_net =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
         (dt / BASETIMESTEP)
@@ -61,7 +61,7 @@ end
 
 "Struct to store non-paddy irrigation model variables"
 @with_kw struct NonPaddyVariables
-    demand_gross::Vector{Float64}     # irrigation gross demand [mm Δt⁻¹] 
+    demand_gross::Vector{Float64}     # irrigation gross demand [mm Δt⁻¹]
 end
 
 "Struct to store non-paddy irrigation model parameters"
@@ -85,24 +85,20 @@ function NonPaddy(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "land~irrigated-non-paddy__irrigation_efficiency")
+    lens = lens_input_parameter(config, "irrigated_non_paddy__irrigation_efficiency")
     efficiency =
         ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
-    lens = lens_input_parameter(
-        config,
-        "land~irrigated-non-paddy_area__count";
-        optional = false,
-    )
+    lens = lens_input_parameter(config, "irrigated_non_paddy_area__count"; optional = false)
     areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
     lens = lens_input_parameter(
         config,
-        "land~irrigated-non-paddy__irrigation_trigger_flag";
+        "irrigated_non_paddy__irrigation_trigger_flag";
         optional = false,
     )
     irrigation_trigger =
         ncread(dataset, config, lens; sel = indices, defaults = 1, type = Bool)
-    lens = lens_input_parameter(config, "land~irrigated-non-paddy__max_irrigation_rate")
+    lens = lens_input_parameter(config, "irrigated_non_paddy__max_irrigation_rate")
     max_irri_rate =
         ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float64) .*
         (dt / BASETIMESTEP)
@@ -181,13 +177,13 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
                     model.variables.demand_gross[i] == maximum_irrigation_rate[i]
                 if depletion >= raw # start irrigation
                     irri_dem_gross += depletion
-                    # add depletion to irrigation gross demand when the maximum irrigation rate has been 
+                    # add depletion to irrigation gross demand when the maximum irrigation rate has been
                     # applied at the previous time step (to get volumetric water content at field capacity)
                 elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
                     irri_dem_gross += depletion
                 end
             end
-            # limit irrigation demand to infiltration capacity 
+            # limit irrigation demand to infiltration capacity
             infiltration_capacity =
                 f_infiltration_reduction[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
             irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
@@ -207,7 +203,7 @@ update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
 @with_kw struct PaddyVariables
     demand_gross::Vector{Float64}     # irrigation gross demand [mm Δt⁻¹]
     h::Vector{Float64}                # actual water depth in rice field [mm]
-    evaporation::Vector{Float64}      # evaporation rate [mm Δt⁻¹] 
+    evaporation::Vector{Float64}      # evaporation rate [mm Δt⁻¹]
 end
 
 "Struct to store paddy irrigation model parameters"
@@ -234,30 +230,29 @@ function Paddy(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "land~irrigated-paddy__min_depth")
+    lens = lens_input_parameter(config, "irrigated_paddy__min_depth")
     h_min = ncread(dataset, config, lens; sel = indices, defaults = 20.0, type = Float64)
 
-    lens = lens_input_parameter(config, "land~irrigated-paddy__optimal_depth")
+    lens = lens_input_parameter(config, "irrigated_paddy__optimal_depth")
     h_opt = ncread(dataset, config, lens; sel = indices, defaults = 50.0, type = Float64)
 
-    lens = lens_input_parameter(config, "land~irrigated-paddy__max_depth")
+    lens = lens_input_parameter(config, "irrigated_paddy__max_depth")
     h_max = ncread(dataset, config, lens; sel = indices, defaults = 80.0, type = Float64)
 
-    lens = lens_input_parameter(config, "land~irrigated-paddy__irrigation_efficiency")
+    lens = lens_input_parameter(config, "irrigated_paddy__irrigation_efficiency")
     efficiency =
         ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
-    lens =
-        lens_input_parameter(config, "land~irrigated-paddy_area__count"; optional = false)
+    lens = lens_input_parameter(config, "irrigated_paddy_area__count"; optional = false)
     areas = ncread(dataset, config, lens; sel = indices, type = Bool)
 
     lens = lens_input_parameter(
         config,
-        "land~irrigated-paddy__irrigation_trigger_flag";
+        "irrigated_paddy__irrigation_trigger_flag";
         optional = false,
     )
     irrigation_trigger = ncread(dataset, config, lens; sel = indices, type = Bool)
-    lens = lens_input_parameter(config, "land~irrigated-paddy__max_irrigation_rate")
+    lens = lens_input_parameter(config, "irrigated_paddy__max_irrigation_rate")
     max_irri_rate =
         ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float64) .*
         (dt / BASETIMESTEP)
@@ -454,7 +449,7 @@ end
     act_surfacewater_abst::Vector{Float64}        # actual surface water abstraction [mm Δt⁻¹]
     act_surfacewater_abst_vol::Vector{Float64}    # actual surface water abstraction [m³ Δt⁻¹]
     available_surfacewater::Vector{Float64}       # available surface water [m³]
-    nonirri_returnflow::Vector{Float64}           # return flow from non irrigation [mm Δt⁻¹] 
+    nonirri_returnflow::Vector{Float64}           # return flow from non irrigation [mm Δt⁻¹]
 end
 
 "Initialize river allocation model variables"
@@ -609,7 +604,7 @@ function surface_water_allocation_local!(
             surfacewater_demand_vol = surfacewater_demand[i] * 0.001 * area[i]
             abstraction_vol = min(surfacewater_demand_vol, available_volume)
             act_surfacewater_abst_vol[indices_river[i]] = abstraction_vol
-            # remaining available surface water and demand 
+            # remaining available surface water and demand
             available_surfacewater[indices_river[i]] =
                 max(available_volume - abstraction_vol, 0.0)
             abstraction = (abstraction_vol / area[i]) * 1000.0
@@ -681,7 +676,7 @@ function surface_water_allocation_area!(
         # level
         frac_abstract_sw = bounded_divide(sw_abstraction, sw_available)
         # fraction of water demand that can be satisfied by available surface water at
-        # allocation area level. 
+        # allocation area level.
         frac_allocate_sw = bounded_divide(sw_abstraction, sw_demand_vol)
 
         # water abstracted from surface water at each river cell (including reservoir
@@ -728,7 +723,7 @@ function groundwater_allocation_local!(
             available_volume = groundwater_storage[i] * 0.75 # limit available groundwater volume
             abstraction_vol = min(groundwater_demand_vol, available_volume)
             act_groundwater_abst_vol[i] = abstraction_vol
-            # remaining available groundwater and demand 
+            # remaining available groundwater and demand
             available_groundwater[i] = max(available_volume - abstraction_vol, 0.0)
             abstraction = (abstraction_vol / area[i]) * 1000.0
             groundwater_demand[i] = max(groundwater_demand[i] - abstraction, 0.0)

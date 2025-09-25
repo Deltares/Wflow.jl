@@ -172,8 +172,8 @@ end
 # test without snow model
 config.model.snow__flag = false
 config.model.snow_gravitional_transport__flag = true # this should not throw an error
-pop!(Dict(config.output.netcdf_grid.variables), "snowpack~dry__leq-depth")
-pop!(Dict(config.output.netcdf_grid.variables), "snowpack~liquid__depth")
+pop!(Dict(config.output.netcdf_grid.variables), "snowpack_dry_snow__leq_depth")
+pop!(Dict(config.output.netcdf_grid.variables), "snowpack_liquid_water__depth")
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 
@@ -220,7 +220,7 @@ config.input.forcing.land_surface_water__potential_evaporation_volume_flux = Dic
     "offset" => 1.50,
     "netcdf" => Dict("variable" => Dict("name" => "pet")),
 )
-config.input.cyclic["vegetation__leaf-area_index"] =
+config.input.cyclic["vegetation__leaf_area_index"] =
     Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI")))
 
 model = Wflow.Model(config)
@@ -240,8 +240,8 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
-config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
+config.input.cyclic["river_water__external_inflow_volume_flow_rate"] = "inflow"
+config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
@@ -264,8 +264,8 @@ end
 tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
 config = Wflow.Config(tomlpath)
 
-config.input.cyclic["river_water_inflow~external__volume_flow_rate"] = "inflow"
-config.input.cyclic["reservoir_water_inflow~external__volume_flow_rate"] = "reservoir_inflow"
+config.input.cyclic["river_water__external_inflow_volume_flow_rate"] = "inflow"
+config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
@@ -525,8 +525,8 @@ Wflow.run_timestep!(model)
 end
 
 # set boundary condition local inertial routing from netCDF file
-config.input.static["model_boundary_condition~river__length"] = "riverlength_bc"
-config.input.static["model_boundary_condition~river_bank_water__depth"] = "riverdepth_bc"
+config.input.static["model_boundary_condition_river__length"] = "riverlength_bc"
+config.input.static["model_boundary_condition_river_bank_water__depth"] = "riverdepth_bc"
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
 Wflow.run_timestep!(model)
@@ -552,9 +552,9 @@ Wflow.close_files(model; delete_output = false)
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.static["soil_layer_water__vertical_saturated_hydraulic_conductivity"] = "kv"
-    config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth"] =
+    config.input.static["soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth"] =
         Dict("value" => 400.0)
-    config.input.static["soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth"] =
+    config.input.static["soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth"] =
         Dict("value" => 400.0)
 
     @testset "exponential profile" begin

@@ -232,7 +232,7 @@ function ncread(
     # for optional parameters (`lens` set to `nothing`) default values are used.
     if isnothing(parameter.lens)
         @info "Set `$(parameter.name)` using default value `$defaults`."
-        @assert !isnothing(defaults)
+        @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
         end
