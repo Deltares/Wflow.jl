@@ -27,7 +27,7 @@ td, th {
 | `atmosphere_air__snowfall_temperature_threshold` | Threshold temperature for snowfall | ᵒC | 0.0 |
 | `atmosphere_air__snowfall_temperature_interval` | Threshold temperature interval length | ᵒC | 1.0 |
 | `snowpack__melting_temperature_threshold` | Threshold temperature for snowmelt | ᵒC | 0.0 |
-| `snowpack__degree-day_coefficient` | Degree-day factor for snowmelt | mm ᵒC⁻¹ Δt⁻¹ | 3.75 mm ᵒC⁻¹ day⁻¹|
+| `snowpack__degree_day_coefficient` | Degree-day factor for snowmelt | mm ᵒC⁻¹ Δt⁻¹ | 3.75 mm ᵒC⁻¹ day⁻¹|
 | `snowpack__liquid_water_holding_capacity` | Water holding capacity as fraction of current snow pack | - | 0.1 |
 : {.striped .hover}
 
@@ -76,10 +76,10 @@ td, th {
 | ----- | ---- | -- | -- |
 | `vegetation_root__depth` | Rooting depth | mm | - |
 | `vegetation__crop_factor` | Crop coefficient | - | 1.0 |
-| `vegetation__specific-leaf_storage` | Specific leaf storage | mm | - |
+| `vegetation__specific_leaf_storage` | Specific leaf storage | mm | - |
 | `vegetation_wood_water__storage_capacity` | Storage woody part of vegetation | mm | - |
-| `vegetation_canopy__light-extinction_coefficient` | Extinction coefficient (to calculate canopy gap fraction) | - | - |
-| `vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio` | Gash interception model parameter | - | 0.1 |
+| `vegetation_canopy__light_extinction_coefficient` | Extinction coefficient (to calculate canopy gap fraction) | - | - |
+| `vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio` | Gash interception model parameter | - | 0.1 |
 | `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | - |
 | `vegetation_water__storage_capacity` | Maximum canopy storage | mm | 1.0 |
 : {.striped .hover}
@@ -127,7 +127,7 @@ td, th {
 | `soil__thickness` | Soil thickness | mm | - |
 | `compacted_soil_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
 | `soil_water_saturated_zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
-| `soil_layer_water__brooks-corey_exponent` | Brooks-Corey power coefficient per soil layer | - | - |
+| `soil_layer_water__brooks_corey_exponent` | Brooks-Corey power coefficient per soil layer | - | - |
 | `land_water_covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
 | `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer | - | 1.0 |
 | `compacted_soil__area_fraction` | Fraction of compacted soil area | - | - |

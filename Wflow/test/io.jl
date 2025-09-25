@@ -10,7 +10,7 @@ parsed_toml = TOML.parsefile(tomlpath)
 config = Wflow.Config(tomlpath)
 
 @testset "configuration file" begin
-    @test parsed_toml isa Dict{String,Any}
+    @test parsed_toml isa Dict{String, Any}
     @test config isa Wflow.Config
     @test dirname(config) == dirname(tomlpath)
 
@@ -47,7 +47,7 @@ config = Wflow.Config(tomlpath)
     @test_throws ErrorException Wflow.lens_input_parameter(
         config,
         "not_set_in_TOML";
-        optional=false,
+        optional = false,
     )
 end
 
@@ -61,7 +61,7 @@ end
     # mock a NCReader object
     ncpath = Wflow.input_path(config, config.input.path_forcing)
     ds = NCDataset(ncpath)
-    reader = (; dataset=ds)
+    reader = (; dataset = ds)
 
     clock = Wflow.Clock(config, reader)
 
@@ -265,19 +265,19 @@ end
           [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
 end
 
-config.input.static["snowpack__degree-day_coefficient"] = 2.0
+config.input.static["snowpack__degree_day_coefficient"] = 2.0
 config.input.static["soil__thickness"] = Wflow.InputEntry(;
-    scale=[3.0],
-    offset=[100.0],
-    netcdf_variable_name="SoilThickness",
+    scale = [3.0],
+    offset = [100.0],
+    netcdf_variable_name = "SoilThickness",
 )
 config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
-    Wflow.InputEntry(; scale=[1.5], netcdf_variable_name="precip")
-config.input.static["soil_layer_water__brooks-corey_exponent"] = Wflow.InputEntry(;
-    scale=[2.0, 3.0],
-    offset=[0.0, 0.0],
-    layer=[1, 3],
-    netcdf_variable_name="c",
+    Wflow.InputEntry(; scale = [1.5], netcdf_variable_name = "precip")
+config.input.static["soil_layer_water__brooks_corey_exponent"] = Wflow.InputEntry(;
+    scale = [2.0, 3.0],
+    offset = [0.0, 0.0],
+    layer = [1, 3],
+    netcdf_variable_name = "c",
 )
 
 model = Wflow.Model(config)
@@ -297,7 +297,7 @@ Wflow.load_dynamic_input!(model)
     ]
 end
 
-Wflow.close_files(model; delete_output=false)
+Wflow.close_files(model; delete_output = false)
 
 @testset "NetCDF creation" begin
     path = Base.Filesystem.tempname()
@@ -319,23 +319,23 @@ end
 
         x = collect(Wflow.nc_dim(ds, :lon))
         @test length(x) == 291
-        @test x isa Vector{Union{Missing,Float64}}
+        @test x isa Vector{Union{Missing, Float64}}
 
         @test Wflow.internal_dim_name(:lon) == :x
         @test Wflow.internal_dim_name(:latitude) == :y
         @test Wflow.internal_dim_name(:time) == :time
 
-        @test_throws ArgumentError Wflow.read_dims(ds["c"], (x=:, y=:))
-        @test_throws ArgumentError Wflow.read_dims(ds["LAI"], (x=:, y=:))
-        data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x=:, y=:))
-        @test data isa Matrix{Union{Float32,Missing}}
+        @test_throws ArgumentError Wflow.read_dims(ds["c"], (x = :, y = :))
+        @test_throws ArgumentError Wflow.read_dims(ds["LAI"], (x = :, y = :))
+        data, data_dim_order = Wflow.read_dims(ds["wflow_dem"], (x = :, y = :))
+        @test data isa Matrix{Union{Float32, Missing}}
         @test data[end, end] === missing
         @test data[125, 1] ≈ 647.187
         @test data_dim_order == (:x, :y)
 
-        @test Wflow.dim_directions(ds, (:x, :y)) === (x=true, y=false)
+        @test Wflow.dim_directions(ds, (:x, :y)) === (x = true, y = false)
         @test Wflow.dim_directions(ds, (:y, :x, :layer)) ===
-              (y=false, x=true, layer=true)
+              (y = false, x = true, layer = true)
 
         data, dims = Wflow.permute_data(zeros(1, 2, 3), (:layer, :y, :x))
         @test size(data) == (3, 2, 1)
@@ -347,17 +347,17 @@ end
 
         data = collect(reshape(1:6, (2, 3)))
         # flip y, which is the second dimension
-        @test Wflow.reverse_data!(data, (y=false, x=true))[1, :] == [5, 3, 1]
+        @test Wflow.reverse_data!(data, (y = false, x = true))[1, :] == [5, 3, 1]
         # and mutate it back, the NamedTuple order should not matter
-        @test Wflow.reverse_data!(data, (x=true, y=false))[1, :] == [1, 3, 5]
+        @test Wflow.reverse_data!(data, (x = true, y = false))[1, :] == [1, 3, 5]
         # flip both dimensions at the same time
-        data = Wflow.reverse_data!(data, (x=false, y=false))
+        data = Wflow.reverse_data!(data, (x = false, y = false))
         @test data[1, :] == [6, 4, 2]
         @test data[:, 1] == [6, 5]
 
-        data = Wflow.read_standardized(ds, "wflow_dem", (x=:, y=:))
+        data = Wflow.read_standardized(ds, "wflow_dem", (x = :, y = :))
         # since in this case only the second dimension needs reversing, we can easily do it manually
-        manual_fix = reverse(ds["wflow_dem"]; dims=2)
+        manual_fix = reverse(ds["wflow_dem"]; dims = 2)
         @test all(data .=== manual_fix)
     end
 end
@@ -368,7 +368,7 @@ end
     @test Wflow.convert_value(LogLevel, 0) == Logging.Info
 
     tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-    Wflow.run(tomlpath; silent=true)
+    Wflow.run(tomlpath; silent = true)
 
     config = Wflow.Config(tomlpath)
     output = normpath(abspath(config.dir_output))
@@ -407,9 +407,9 @@ end
     # Final run to test error handling during simulation
     tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
     config.input.static["river__width"] = Wflow.InputEntry(;
-        scale=[0.0],
-        offset=[0.0],
-        netcdf_variable_name="wflow_riverwidth",
+        scale = [0.0],
+        offset = [0.0],
+        netcdf_variable_name = "wflow_riverwidth",
     )
     open(tomlpath_error, "w") do io
         TOML.print(io, Wflow.to_dict(config))

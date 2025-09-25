@@ -567,25 +567,25 @@ function TransportCapacityKodatieParameters(
 )
     lens = lens_input_parameter(
         config,
-        "river_water_sediment__kodatie_transport_capacity_a-coefficient";
+        "river_water_sediment__kodatie_transport_capacity_a_coefficient";
         optional = false,
     )
     a_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(
         config,
-        "river_water_sediment__kodatie_transport_capacity_b-coefficient";
+        "river_water_sediment__kodatie_transport_capacity_b_coefficient";
         optional = false,
     )
     b_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(
         config,
-        "river_water_sediment__kodatie_transport_capacity_c-coefficient";
+        "river_water_sediment__kodatie_transport_capacity_c_coefficient";
         optional = false,
     )
     c_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(
         config,
-        "river_water_sediment__kodatie_transport_capacity_d-coefficient";
+        "river_water_sediment__kodatie_transport_capacity_d_coefficient";
         optional = false,
     )
     d_kodatie = ncread(dataset, config, lens; sel = indices, type = Float64)

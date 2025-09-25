@@ -70,10 +70,10 @@ atmosphere_air__snowfall_temperature_interval = "TTI"
 land_water_covered__area_fraction = "WaterFrac"
 
 snowpack__melting_temperature_threshold = "TTM"
-snowpack__degree-day_coefficient = "Cfmax"
+snowpack__degree_day_coefficient = "Cfmax"
 snowpack__liquid_water_holding_capacity = "WHC"
 
-soil_layer_water__brooks-corey_exponent = "c"
+soil_layer_water__brooks_corey_exponent = "c"
 soil_surface_water__infiltration_reduction_parameter = "cf_soil"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "f"
 compacted_soil_surface_water__infiltration_capacity = "InfiltCapPath"
@@ -84,9 +84,9 @@ compacted_soil__area_fraction = "PathFrac"
 soil_wet_root__sigmoid_function_shape_parameter = "rootdistpar"
 soil__thickness = "SoilThickness"
 
-vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
-vegetation_canopy__light-extinction_coefficient = "Kext"
-vegetation__specific-leaf_storage = "Sl"
+vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio = "EoverR"
+vegetation_canopy__light_extinction_coefficient = "Kext"
+vegetation__specific_leaf_storage = "Sl"
 vegetation_wood_water__storage_capacity = "Swood"
 vegetation_root__depth = "RootingDepth"
 
@@ -96,7 +96,7 @@ river__slope = "RiverSlope"
 river__width = "wflow_riverwidth"
 river_bank_water__depth = "RiverDepth"
 river_bank_water__elevation = "RiverZ"
-floodplain_water__sum_of_volume-per-depth = "floodplain_volume"
+floodplain_water__sum_of_volume_per_depth = "floodplain_volume"
 
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
@@ -111,7 +111,7 @@ reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
 reservoir_water__rating_curve_type_count = "outflowfunc"
 reservoir_water__storage_curve_type_count = "storfunc"
 
-subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
+subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio = "KsatHorFrac"
 
 [input.cyclic]
 vegetation__leaf_area_index = "LAI"

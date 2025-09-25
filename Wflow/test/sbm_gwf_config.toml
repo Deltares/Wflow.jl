@@ -50,13 +50,13 @@ land_surface_water__potential_evaporation_volume_flux = "PET"
 [input.static]
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "kv"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter.value = 0.001
-soil_layer_water__brooks-corey_exponent.value = [10.0, 10.0, 10.0, 10.0]
+soil_layer_water__brooks_corey_exponent.value = [10.0, 10.0, 10.0, 10.0]
 soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
 compacted_soil__area_fraction = "PathFrac"
 soil__thickness = "soilthickness"
 
-vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio = "EoverR"
 vegetation_root__depth = "rootingdepth"
 vegetation_canopy__gap_fraction = "canopygapfraction"
 vegetation_water__storage_capacity = "cmax"

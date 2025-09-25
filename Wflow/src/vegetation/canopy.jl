@@ -47,7 +47,7 @@ function GashInterceptionModel(
 )
     lens = lens_input_parameter(
         config,
-        "vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio",
+        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio",
     )
     e_r = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     n = length(indices)
