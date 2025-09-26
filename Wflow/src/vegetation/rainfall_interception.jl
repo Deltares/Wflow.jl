@@ -46,7 +46,7 @@ function rainfall_interception_gash(
     interception = min(interception, maxevap)
 
     # Add surpluss to the throughfall
-    throughfall = throughfall + canopy_drainage
+    throughfall += canopy_drainage
 
     return throughfall, interception, stemflow, canopystorage
 end
@@ -74,18 +74,18 @@ function rainfall_interception_modrut(
     # Canopystorage cannot be larger than cmax, no gravity drainage below that. This check
     # is required because cmax can change over time
     canopy_drainage1 = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage = canopystorage - canopy_drainage1
+    canopystorage -= canopy_drainage1
 
     # Add the precipitation that falls on the canopy to the store
-    canopystorage = canopystorage + precip_canopy
+    canopystorage += precip_canopy
 
     # Evaporation, make sure the store does not get negative
     canopy_evap = min(canopystorage, potential_evaporation) # interception rate
-    canopystorage = canopystorage - canopy_evap
+    canopystorage -= canopy_evap
 
     # Drain the canopystorage again if needed
     canopy_drainage2 = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage = canopystorage - canopy_drainage2
+    canopystorage -= canopy_drainage2
 
     # Calculate throughfall and stemflow
     throughfall = canopy_drainage1 + canopy_drainage2 + canopygapfraction * precipitation

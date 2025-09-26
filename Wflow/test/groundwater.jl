@@ -231,7 +231,7 @@ end
         end
 
         @testset "conductance" begin
-            conductivity_profile = "uniform"
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             @test Wflow.conductance(
                 conf_aqf,
                 2,
@@ -275,7 +275,7 @@ end
         end
 
         @testset "stable_timestep" begin
-            conductivity_profile = "uniform"
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             cfl = 0.25
             @test Wflow.stable_timestep(conf_aqf, conductivity_profile, cfl) == 0.25
         end
@@ -288,7 +288,7 @@ end
 
         @testset "flux-confined" begin
             conf_aqf.variables.q_net .= 0.0
-            conductivity_profile = "uniform"
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             Wflow.flux!(conf_aqf, connectivity, conductivity_profile)
             # kD = 10 * 10 = 100
             # dH = 7.5, 12.5
@@ -297,7 +297,7 @@ end
 
         @testset "flux-unconfined" begin
             unconf_aqf.variables.q_net .= 0.0
-            conductivity_profile = "uniform"
+            conductivity_profile = Wflow.GwfConductivityProfileType.uniform
             Wflow.flux!(unconf_aqf, connectivity, conductivity_profile)
             # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
             @test unconf_aqf.variables.q_net == [562.5, 687.5, -1250.0]
@@ -382,7 +382,7 @@ end
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
-        conductivity_profile = "uniform"
+        conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
             timestepping,
@@ -402,7 +402,7 @@ end
             gwf.aquifer.variables.q_net .= 0.0
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
         end
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
     end
@@ -411,7 +411,7 @@ end
         connectivity, aquifer, _ = homogenous_aquifer(3, 1)
         variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
         constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
-        conductivity_profile = "exponential"
+        conductivity_profile = Wflow.GwfConductivityProfileType.exponential
         timestepping = Wflow.TimeStepping(; cfl = 0.25)
         gwf = Wflow.GroundwaterFlow(;
             timestepping,
@@ -431,7 +431,7 @@ end
             gwf.aquifer.variables.q_net .= 0.0
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
         end
         @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
     end
@@ -448,7 +448,7 @@ end
         beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
-        conductivity_profile = "uniform"
+        conductivity_profile = Wflow.GwfConductivityProfileType.uniform
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -499,7 +499,7 @@ end
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -530,7 +530,7 @@ end
         beta = 1.12
         aquifer_length = cellsize * ncol
         gwf_f = 3.0
-        conductivity_profile = "exponential"
+        conductivity_profile = Wflow.GwfConductivityProfileType.exponential
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -581,7 +581,7 @@ end
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
         end
@@ -616,7 +616,7 @@ end
         storativity = 0.15
         aquifer_length = cellsize * ncol
         discharge = -50.0
-        conductivity_profile = "uniform"
+        conductivity_profile = Wflow.GwfConductivityProfileType.uniform
 
         # Domain, geometry
         domain = ones(Bool, shape)
@@ -674,7 +674,7 @@ end
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
             Wflow.update_head!(gwf, dt_s)
-            t = t + dt_s
+            t += dt_s
         end
 
         # test for symmetry on x and y axes
@@ -685,7 +685,7 @@ end
         # compare with analytical solution
         start = -0.5 * aquifer_length + 0.5 * cellsize
         stop = 0.5 * aquifer_length - 0.5 * cellsize
-        X = collect(range(start; stop = stop, step = cellsize))
+        X = collect(range(start; stop, step = cellsize))
         head_analytical =
             [drawdown_theis(x, time, discharge, transmissivity, storativity) for x in X] .+ 10.0
         # compare left-side, since it's symmetric anyway. Skip the well cell, and its first neighbor

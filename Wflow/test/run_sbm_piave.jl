@@ -246,7 +246,7 @@ end
 @testset "piave: log debug message using observed reservoir outflow" begin
     tomlpath_debug = joinpath(@__DIR__, "sbm_piave_config-debug.toml")
     open(tomlpath_debug, "w") do io
-        TOML.print(io, Dict(config))
+        TOML.print(io, Wflow.to_dict(config))
     end
     Wflow.run(tomlpath_debug; silent = true)
     rm(tomlpath_debug)

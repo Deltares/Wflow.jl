@@ -109,7 +109,7 @@ irrigated_non_paddy__irrigation_trigger_flag = "nonpaddy_irrigation_trigger"
 
 [model]
 type = "sbm"
-snow_gravitional_transport__flag = true
+snow_gravitational_transport__flag = true
 snow__flag = true
 cold_start__flag = false
 reservoir__flag = true

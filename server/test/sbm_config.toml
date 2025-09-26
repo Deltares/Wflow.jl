@@ -120,7 +120,7 @@ offset = 0.0
 
 [model]
 kinematic_wave__adaptive_time_step_flag = true
-snow_gravitional_transport__flag = true
+snow_gravitational_transport__flag = true
 cold_start__flag = true
 reservoir__flag = true
 snow__flag = true

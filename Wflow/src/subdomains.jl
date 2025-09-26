@@ -5,7 +5,12 @@ Fill `nodata` upstream cells with the value from the first downstream valid cell
 directed acyclic graph `g`, topological order `toposort`, nodata value `nodata` and `data`
 containing missing values. Returns filled data `data_out`.
 """
-function fillnodata_upstream(g, toposort, data, nodata)
+function fillnodata_upstream(
+    g::SimpleDiGraph{Int},
+    toposort::Vector{Int},
+    data::Vector{Int},
+    nodata::Int,
+)::Vector{Int}
     data_out = copy(data)
     for v in reverse(toposort)  # down- to upstream
         idx_ds = outneighbors(g, v)
@@ -24,7 +29,7 @@ end
 Return the Strahler streamorder based on directed acyclic graph `g` and topological order
 `toposort`.
 """
-function stream_order(g, toposort)
+function stream_order(g::SimpleDiGraph{Int}, toposort::Vector{Int})::Vector{Int}
     n = length(toposort)
     strord = fill(1, n)
     for v in toposort
@@ -47,7 +52,12 @@ end
 Return subbasins with a unique id starting at 1, based on a minimum streamorder `min_sto`,
 directed acyclic graph `g` and topological order `toposort`.
 """
-function subbasins(g, streamorder, toposort, min_sto)
+function subbasins(
+    g::SimpleDiGraph{Int},
+    streamorder::Vector{Int},
+    toposort::Vector{Int},
+    min_sto::Int,
+)::Vector{Int}
     n = length(toposort)
     subbas = fill(0, n)
 
@@ -79,7 +89,11 @@ to maximum distance `max_dist`) from the `outlet`, based on the directed acyclic
 of subbasins. Returns grouped subbasins `order`, ordered from `max_dist` (including
 subbasins without upstream neighbor and distance < `max_dist`) to distance 0 (`outlet`).
 """
-function subbasins_order(g, outlet, max_dist)
+function subbasins_order(
+    g::SimpleDiGraph{Int},
+    outlet::Int,
+    max_dist::Int,
+)::Vector{Vector{Int}}
     order = Vector{Vector{Int}}(undef, max_dist + 1)
     order[1] = [outlet]
     for i in 1:max_dist
@@ -113,7 +127,11 @@ Extract directed acyclic graph `g` representing the flow network at subbasin lev
 subbasin ids for the complete domain, and directed acyclic graph `graph` representing the
 flow network for each subbasin cell.
 """
-function graph_from_nodes(graph, subbas, subbas_fill)
+function graph_from_nodes(
+    graph::SimpleDiGraph{Int},
+    subbas::Vector{Int},
+    subbas_fill::Vector{Int},
+)::SimpleDiGraph{Int}
     n = maximum(subbas)
     g = DiGraph(n)
     for i in 1:n
@@ -148,7 +166,13 @@ streamorder, toposort, min_sto)`). Subbasins are extracted for each basin outlet
 - `indices_subbas` list of indices per subbasin id stored as `Vector{Vector{Int}}`
 - `topo_subbas` topological order per subbasin id stored as `Vector{Vector{Int}}`
 """
-function kinwave_set_subdomains(graph, toposort, index_pit, streamorder, min_sto)
+function kinwave_set_subdomains(
+    graph::SimpleDiGraph{Int},
+    toposort::Vector{Int},
+    index_pit::Vector{Int},
+    streamorder::Vector{Int},
+    min_sto::Int,
+)::Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}, Vector{Vector{Int}}}
     if nthreads() > 1
         # extract basins (per outlet/pit), assign unique basin id
         n_pits = length(index_pit)
