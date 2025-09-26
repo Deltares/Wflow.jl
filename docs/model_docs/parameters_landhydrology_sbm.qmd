@@ -118,12 +118,12 @@ td, th {
 | `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm Δt⁻¹ | - |
 | `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth | mm⁻¹ | - |
 | `soil_water__air_entry_pressure_head` | Air entry pressure head of soil | cm | -10.0 |
-| `vegetation_root__feddes_critial_pressure_head_h1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
-| `vegetation_root__feddes_critial_pressure_head_h2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
-| `vegetation_root__feddes_critial_pressure_head_h3_high` | Critical pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 |
-| `vegetation_root__feddes_critial_pressure_head_h3_low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
-| `vegetation_root__feddes_critial_pressure_head_h4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -16000.0 |
-| `vegetation_root__feddes_critial_pressure_head_h1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
+| `vegetation_root__feddes_critical_pressure_head_h1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
+| `vegetation_root__feddes_critical_pressure_head_h2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
+| `vegetation_root__feddes_critical_pressure_head_h3_high` | Critical pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 |
+| `vegetation_root__feddes_critical_pressure_head_h3_low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
+| `vegetation_root__feddes_critical_pressure_head_h4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -16000.0 |
+| `vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
 | `soil__thickness` | Soil thickness | mm | - |
 | `compacted_soil_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
 | `soil_water_saturated_zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
