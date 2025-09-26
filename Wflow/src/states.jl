@@ -1,80 +1,65 @@
 """
-    get_snow_states(model_type::AbstractString)
+    get_snow_states(model_type::ModelType.T)
 
 Extract required snow model states, given a certain `model_type`. Returns a tuple with the
 required states (standard name).
 """
-function get_snow_states(model_type::AbstractString)
-    if model_type == "sbm" || model_type == "sbm_gwf"
-        states = ("snowpack_dry_snow__leq_depth", "snowpack_liquid_water__depth")
-    elseif model_type == "sediment"
-        states = ()
-    else
-        throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
+function get_snow_states(model_type::ModelType.T)
+    return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
+        ("snowpack_dry_snow__leq_depth", "snowpack_liquid_water__depth")
+    elseif model_type == ModelType.sediment
+        ()
     end
-    return states
 end
 
 """
-    get_glacier_states(model_type::AbstractString)
+    get_glacier_states(model_type::ModelType.T)
 
 Extract required glacier model states, given a certain `model_type`. Returns a tuple with
 the required states (standard name).
 """
-function get_glacier_states(model_type::AbstractString)
-    if model_type == "sbm" || model_type == "sbm_gwf"
-        states = ("glacier_ice__leq_depth",)
-    elseif model_type == "sediment"
-        states = ()
-    else
-        throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
+function get_glacier_states(model_type::ModelType.T)
+    return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
+        ("glacier_ice__leq_depth",)
+    elseif model_type == ModelType.sediment
+        ()
     end
-    return states
 end
 
 """
-    get_interception_states(model_type::AbstractString)
+    get_interception_states(model_type::ModelType.T)
 
 Extract required interception model states, given a certain `model_type`. Returns a tuple
 with the required states (standard name).
 """
-function get_interception_states(model_type::AbstractString)
-    if model_type == "sbm" || model_type == "sbm_gwf"
-        states = ("vegetation_canopy_water__depth",)
-    elseif model_type == "sediment"
-        states = ()
-    else
-        throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
+function get_interception_states(model_type::ModelType.T)
+    return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
+        ("vegetation_canopy_water__depth",)
+    elseif model_type == ModelType.sediment
+        ()
     end
-    return states
 end
 
 """
-    get_soil_states(model_type::AbstractString; snow = false)
+    get_soil_states(model_type::ModelType.T; snow = false)
 
 Extract required soil model states, given a certain `model_type` and whether `snow` is
 modelled. Returns a tuple with the required states (internal names as symbols).
 """
-function get_soil_states(model_type::AbstractString; snow = false)
-    if model_type == "sbm" || model_type == "sbm_gwf"
+function get_soil_states(model_type::ModelType.T; snow::Bool = false)
+    return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         if snow
-            states = (
+            (
                 "soil_water_saturated_zone__depth",
                 "soil_surface__temperature",
                 "soil_layer_water_unsaturated_zone__depth",
             )
         else
-            states = (
-                "soil_water_saturated_zone__depth",
-                "soil_layer_water_unsaturated_zone__depth",
-            )
+            ("soil_water_saturated_zone__depth", "soil_layer_water_unsaturated_zone__depth")
         end
-    elseif model_type == "sediment"
-        states = ()
-    else
-        throw(ArgumentError("Unknown model_type provided (`$model_type`)"))
+    elseif model_type == ModelType.sediment
+        ()
     end
-    return states
 end
 
 function get_sediment_states()
@@ -111,17 +96,14 @@ Returns as list of required states, in the same formats as the keys that are ret
 """
 function extract_required_states(config::Config)
     # Extract model type
-    model_type = config.model.type::String
+    model_type = config.model.type
 
     # Extract model settings
-    do_snow = get(config.model, "snow__flag", false)::Bool
-    do_glaciers = get(config.model, "glacier__flag", false)::Bool
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    do_floodplains = get(config.model, "floodplain_1d__flag", false)::Bool
-    do_paddy = false
-    if haskey(config.model, "water_demand")
-        do_paddy = get(config.model.water_demand, "paddy__flag", false)::Bool
-    end
+    do_snow = config.model.snow__flag
+    do_glaciers = config.model.glacier__flag
+    do_reservoirs = config.model.reservoir__flag
+    do_floodplains = config.model.floodplain_1d__flag
+    do_paddy = config.model.water_demand.paddy__flag
 
     # Extract required stated based on model configuration file
     if do_snow
@@ -138,33 +120,26 @@ function extract_required_states(config::Config)
     soil_states = get_soil_states(model_type; snow = do_snow)
 
     # Subsurface states
-    if model_type == "sbm_gwf"
-        ssf_states = ("subsurface_water__instantaneous_hydraulic_head",)
-    elseif model_type == "sbm"
-        ssf_states = ("subsurface_water__volume_flow_rate",)
-    else
-        ssf_states = ()
+    ssf_states = if model_type == ModelType.sbm_gwf
+        ("subsurface_water__instantaneous_hydraulic_head",)
+    elseif model_type == ModelType.sbm
+        ("subsurface_water__volume_flow_rate",)
+    else # model_type == ModelType.sediment
+        ()
     end
 
     # Land states
-    if model_type == "sediment"
-        land_states = ()
+    land_states = if model_type == ModelType.sediment
+        ()
     else
-        routing_options = ("kinematic_wave", "local_inertial")
-        land_routing = get_options(
-            config.model,
-            "land_routing",
-            routing_options,
-            "kinematic_wave",
-        )::String
-        if land_routing == "local_inertial"
-            land_states = (
+        if config.model.land_routing == RoutingType.local_inertial
+            (
                 "land_surface_water__x_component_of_instantaneous_volume_flow_rate",
                 "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
                 "land_surface_water__instantaneous_depth",
             )
         else
-            land_states = (
+            (
                 "land_surface_water__instantaneous_volume_flow_rate",
                 "land_surface_water__instantaneous_depth",
             )
@@ -172,13 +147,10 @@ function extract_required_states(config::Config)
     end
 
     # River states
-    if model_type == "sediment"
+    river_states = if model_type == ModelType.sediment
         river_states = get_sediment_states()
     else
-        river_states = (
-            "river_water__instantaneous_volume_flow_rate",
-            "river_water__instantaneous_depth",
-        )
+        ("river_water__instantaneous_volume_flow_rate", "river_water__instantaneous_depth")
     end
 
     # Floodplain states
@@ -191,7 +163,7 @@ function extract_required_states(config::Config)
 
     # Reservoir states
     reservoir_states =
-        do_reservoirs && model_type !== "sediment" ?
+        do_reservoirs && model_type !== ModelType.sediment ?
         ("reservoir_water_surface__instantaneous_elevation",) : ()
 
     # Paddy states

@@ -59,10 +59,10 @@ function rainfall_erosion_eurosem(
     ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
     # Rainfall / splash erosion [g/m2]
     rainfall_erosion = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
-    rainfall_erosion = rainfall_erosion * area * 1e-6 # ton/cell
+    rainfall_erosion *= area * 1e-6 # ton/cell
 
     # Remove the impervious area
-    rainfall_erosion = rainfall_erosion * (1.0 - soilcover_fraction)
+    rainfall_erosion *= 1.0 - soilcover_fraction
     return rainfall_erosion
 end
 

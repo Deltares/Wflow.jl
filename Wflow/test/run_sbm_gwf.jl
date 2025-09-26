@@ -84,9 +84,10 @@ end
 end
 
 @testset "no drains" begin
+    config = Wflow.Config(tomlpath)
     config.model.drain__flag = false
     delete!(
-        Dict(config.output.netcdf_grid.variables),
+        config.output.netcdf_grid.variables,
         "land_drain_water__to_subsurface_volume_flow_rate",
     )
     model = Wflow.Model(config)
@@ -103,8 +104,8 @@ tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
 config.model.river_routing = "local_inertial"
 
-config.input.static.river_bank_water__elevation = "bankfull_elevation"
-config.input.static.river_bank_water__depth = "bankfull_depth"
+config.input.static["river_bank_water__elevation"] = "bankfull_elevation"
+config.input.static["river_bank_water__depth"] = "bankfull_depth"
 
 model = Wflow.Model(config)
 Wflow.run_timestep!(model)
@@ -128,11 +129,11 @@ config = Wflow.Config(tomlpath)
 config.model.river_routing = "local_inertial"
 config.model.land_routing = "local_inertial"
 
-config.input.static.river_bank_water__elevation = "bankfull_elevation"
-config.input.static.river_bank_water__depth = "bankfull_depth"
-config.input.static.land_surface_water_flow__ground_elevation = "wflow_dem"
+config.input.static["river_bank_water__elevation"] = "bankfull_elevation"
+config.input.static["river_bank_water__depth"] = "bankfull_depth"
+config.input.static["land_surface_water_flow__ground_elevation"] = "wflow_dem"
 
-pop!(Dict(config.state.variables), "land_surface_water__instantaneous_volume_flow_rate")
+pop!(config.state.variables, "land_surface_water__instantaneous_volume_flow_rate")
 config.state.variables.land_surface_water__depth = "h_av_land"
 config.state.variables.land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
 config.state.variables.land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"

@@ -71,7 +71,7 @@ Model-specific settings can be included in the model section of the TOML file.
 ```toml
 [model]
 type = "sbm"                                    # one of ("sbm" or "sbm_gwf")
-snow_gravitional_transport__flag = true         # include lateral snow transport in the model, default is false
+snow_gravitational_transport__flag = true         # include lateral snow transport in the model, default is false
 snow__flag = true                               # include snow modelling, default is false
 cold_start__flag = true                         # cold (cold_start__flag = true) or warm state (cold_start__flag = false), default is true
 reservoir__flag = true                          # include reservoir modelling, default is false
@@ -302,7 +302,7 @@ index.y = 264
 parameter = "atmosphere_air__temperature"
 
 # Using coordinates and layer to extract volumetric water content
-[[netcdf.variable]]
+[[output.netcdf_scalar.variable]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 name = "vwc_layer2_bycoord"
@@ -424,7 +424,7 @@ factor of $1.5$ and an `offset` of $0.5$:
 
 ```toml
 [input.forcing.atmosphere_water__precipitation_volume_flux]
-netcdf.variable.name = "P"
+netcdf_variable_name = "P"
 scale = 1.5
 offset = 0.5
 ```
@@ -436,7 +436,7 @@ of $2.0$ and $1.5$ respectively, and an `offset` of $0.0$ for both indices:
 
 ```toml
 [input.static.soil_layer_water__brooks_corey_exponent]
-netcdf.variable.name = "c"
+netcdf_variable_name = "c"
 scale = [2.0, 1.5]
 offset = [0.0, 0.0]
 layer = [1, 2]
