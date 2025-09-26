@@ -390,30 +390,32 @@ function SbmSoilParameters(
     lens = lens_input_parameter(config, "soil_water__air_entry_pressure_head")
     hb = ncread(dataset, config, lens; sel = indices, defaults = -10.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h1")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critical_pressure_head_h1")
     h1 = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h2")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critical_pressure_head_h2")
     h2 = ncread(dataset, config, lens; sel = indices, defaults = -100.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "vegetation_root__feddes_critial_pressure_head_h3_high",
+        "vegetation_root__feddes_critical_pressure_head_h3_high",
     )
     h3_high =
         ncread(dataset, config, lens; sel = indices, defaults = -400.0, type = Float64)
 
-    lens =
-        lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h3_low")
+    lens = lens_input_parameter(
+        config,
+        "vegetation_root__feddes_critical_pressure_head_h3_low",
+    )
     h3_low =
         ncread(dataset, config, lens; sel = indices, defaults = -1000.0, type = Float64)
 
-    lens = lens_input_parameter(config, "vegetation_root__feddes_critial_pressure_head_h4")
+    lens = lens_input_parameter(config, "vegetation_root__feddes_critical_pressure_head_h4")
     h4 = ncread(dataset, config, lens; sel = indices, defaults = -16000.0, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "vegetation_root__feddes_critial_pressure_head_h1_reduction_coefficient",
+        "vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient",
     )
     alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
