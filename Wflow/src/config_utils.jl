@@ -91,7 +91,7 @@ function get_nested(dict::AbstractDict, keys)
     end
 end
 
-Base.dirname(config::Config) = isnothing(config.path) ? nothing : dirname(config.path)
+Base.dirname(config::Config) = dirname(config.path)
 
 do_water_demand(config::Config) = config.model.water_demand._was_specified
 do_api(config::Config) = config.API._was_specified
@@ -115,11 +115,11 @@ function Base.show(io::IO, c::Config)
 end
 
 "Construct a path relative to both the TOML directory and the optional `dir_input`"
-input_path(config::Config, path::Union{Nothing, AbstractString}) =
+input_path(config::Config, path::AbstractString) =
     normpath(dirname(config), config.dir_input, path)
 
 "Construct a path relative to both the TOML directory and the optional `dir_output`"
-output_path(config::Config, path::Union{Nothing, AbstractString}) =
+output_path(config::Config, path::AbstractString) =
     normpath(dirname(config), config.dir_output, path)
 
 function variable_info(var::InputEntry)

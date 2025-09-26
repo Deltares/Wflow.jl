@@ -249,8 +249,8 @@ end
 
 # Fields with a default value are optional
 @kwdef mutable struct Config <: AbstractConfigSection
-    dir_input::Union{Nothing, String} = nothing
-    dir_output::Union{Nothing, String} = nothing
+    dir_input::String = "."
+    dir_output::String = "."
     fews_run__flag::Bool = false
     time::TimeSection = TimeSection()
     logging::LoggingSection = LoggingSection()
@@ -259,5 +259,5 @@ end
     input::InputSection
     output::OutputSection = OutputSection()
     API::APISection = APISection(; _was_specified = false)
-    path::Union{Nothing, String}  # path to the TOML file, or nothing
+    path::String  # path to the TOML file
 end

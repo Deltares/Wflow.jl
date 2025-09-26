@@ -218,18 +218,18 @@ end
 
 """
     Config(path::AbstractString
-    Config(dict::AbstractDict; path::Union{Nothing, String} = nothing)
+    Config(dict::AbstractDict; path::AbstractString)
 
-Struct that contains the parsed TOML configurations, as well as a reference to the TOML path
-if it exists. The object behaves largely like an mutable nested struct.
-Fields whose name start with an underscore should not be specified in the TOML.
+Struct that contains the parsed TOML configurations, as well as a reference to the TOML
+path. The object behaves largely like an mutable nested struct. Fields whose name start with
+an underscore should not be specified in the TOML.
 """
 function Config(path::AbstractString)
     dict = TOML.parsefile(path)
     Config(dict; path)
 end
 
-function Config(dict::AbstractDict; path::Union{Nothing, String} = nothing)
+function Config(dict::AbstractDict; path::AbstractString)
     # Add path to config
     dict["path"] = path
     config = init_config_section(Config, dict)
