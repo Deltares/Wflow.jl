@@ -76,21 +76,6 @@ Base.show(io::IO, index::IndexSection) =
 const log_level_map::Dict{Union{Int, String}, LogLevel} =
     Dict("debug" => Debug, "info" => Info, "warn" => Warn, "error" => Error)
 
-# Get a value from a nested dict if each intermediate
-# key exists, otherwise return nothing
-function get_nested(dict::AbstractDict, keys)
-    return if length(keys) == 1
-        get(dict, only(keys), nothing)
-    else
-        key = first(keys)
-        if haskey(dict, key) && dict[key] isa AbstractDict
-            get_nested(dict[key], view(keys, 2:length(keys)))
-        else
-            nothing
-        end
-    end
-end
-
 Base.dirname(config::Config) = dirname(config.path)
 
 do_water_demand(config::Config) = config.model.water_demand._was_specified
