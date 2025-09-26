@@ -50,9 +50,9 @@ td, th {
 ### Input
 | Standard Name | Description | Unit | Default |
 | ----- | ---- | -- | -- |
-| `glacier_ice__initial_leq-depth` | Initial glacier liquid-water equivalent (cold state) | mm | 5500.0 |
+| `glacier_ice__initial_leq_depth` | Initial glacier liquid-water equivalent (cold state) | mm | 5500.0 |
 | `glacier_ice__melting_temperature_threshold` | Threshold temperature for glacier melt | ᵒC | 0.0 |
-| `glacier_ice__degree-day_coefficient` | Degree-day factor for melt from glacier | mm ᵒC⁻¹ Δt⁻¹ | 3.0 mm ᵒC⁻¹ day⁻¹  |
+| `glacier_ice__degree_day_coefficient` | Degree-day factor for melt from glacier | mm ᵒC⁻¹ Δt⁻¹ | 3.0 mm ᵒC⁻¹ day⁻¹  |
 | `glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction` | Fraction of the snowpack on top of the glacier converted into ice | Δt⁻¹ | 0.001  day⁻¹ |
 | `glacier_surface__area_fraction` | Fraction covered by a glacier | - | 0.0 |
 : {.striped .hover}
