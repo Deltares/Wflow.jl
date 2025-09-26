@@ -1,5 +1,5 @@
-using Dates
-@testset "vertical processes" begin
+@testitem "vertical processes" begin
+    using Dates
     @test all(
         isapprox.(
             Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, 4.0),

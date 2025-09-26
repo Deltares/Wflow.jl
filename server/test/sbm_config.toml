@@ -155,6 +155,11 @@ map = "river_gauge__count"
 parameter = "routing.river_flow.variables.q"
 
 [[output.netcdf_scalar.variable]]
+name = "T"
+map = "river_gauge__count"
+parameter = "atmosphere_air__temperature"
+
+[[output.netcdf_scalar.variable]]
 coordinate.x = 6.255
 coordinate.y = 50.012
 name = "temp_coord"
@@ -213,11 +218,11 @@ reducer = "mean"
 
 [API]
 variables = [
-  "river_water__volume_flow_rate",
-  "soil_water_unsaturated_zone__depth",
-  "soil_water__transpiration_volume_flux",
-  "soil_layer_1_water_unsaturated_zone__depth",
-  "soil_layer_2_water_unsaturated_zone__depth",
-  "soil_layer_3_water_unsaturated_zone__depth",
-  "soil_layer_4_water_unsaturated_zone__depth",
+    "river_water__volume_flow_rate",
+    "soil_water_unsaturated_zone__depth",
+    "soil_water__transpiration_volume_flux",
+    "soil_layer_1_water_unsaturated_zone__depth",
+    "soil_layer_2_water_unsaturated_zone__depth",
+    "soil_layer_3_water_unsaturated_zone__depth",
+    "soil_layer_4_water_unsaturated_zone__depth",
 ]
