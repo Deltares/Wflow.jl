@@ -20,7 +20,6 @@ function print_benchmark(trialmin)
     )
 end
 
-
 # test/run_hbv.jl
 benchmark = @benchmark Wflow.update(model)
 trialmin = BenchmarkTools.minimum(benchmark)

@@ -7,7 +7,7 @@ title: Different model configurations
 ```toml
 [model]
 snow__flag = true
-snow_gravitional_transport__flag = true
+snow_gravitational_transport__flag = true
 glacier__flag = true
 
 [input.static]

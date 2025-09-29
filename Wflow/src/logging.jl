@@ -1,30 +1,3 @@
-"""
-    parse_loglevel(input_level::AbstractString)::LogLevel
-    parse_loglevel(input_level::Integer)::LogLevel
-
-Parse a log level from either an integer or string.
-
-# Examples
-    parse_loglevel("info") -> Logging.Info
-    parse_loglevel(0) -> LogLevel(0) (== Logging.Info)
-"""
-function parse_loglevel(input_level::AbstractString)::LogLevel
-    level = lowercase(input_level)
-    if level == "debug"
-        return Logging.Debug
-    elseif level == "info"
-        return Logging.Info
-    elseif level == "warn"
-        return Logging.Warn
-    elseif level == "error"
-        return Logging.Error
-    else
-        error("loglevel $input_level not recognized")
-    end
-end
-
-parse_loglevel(input_level::Integer) = LogLevel(input_level)
-
 "Print a log message to a single line, for Delft-FEWS"
 function format_message(io::IO, args)::Nothing
     kwargs = IOBuffer()
@@ -47,12 +20,12 @@ end
 
 "Initialize a logger, which is different if `fews_run` is set in the Config."
 function init_logger(config::Config; silent = false)::Tuple{TeeLogger, IOStream}
-    loglevel = parse_loglevel(get(config.logging, "loglevel", "info"))
-    path_log = output_path(config, get(config.logging, "path_log", "log.txt"))
+    (; loglevel) = config.logging
+    path_log = output_path(config, config.logging.path_log)
     mkpath(dirname(path_log))
     log_handle = open(path_log, "w")
-    fews_run = get(config, "fews_run", false)::Bool
 
+    fews_run = config.fews_run__flag
     file_logger = if fews_run
         # Format the log message to be printed on a single line.
         MinLevelLogger(FormatLogger(format_message, log_handle), loglevel)

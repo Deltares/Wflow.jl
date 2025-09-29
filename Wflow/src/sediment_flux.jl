@@ -6,6 +6,25 @@
     to_river::TR
 end
 
+function get_transport_capacity(
+    transport_methods::Dict{<:EnumX.Enum, Type{<:AbstractTransportCapacityModel}},
+    transport_method::Union{LandTransportType.T, RiverTransportType.T},
+    dataset::NCDataset,
+    config::Config,
+    indices,
+)::AbstractTransportCapacityModel
+    transport_capacity_constr = get(transport_methods, transport_method, nothing)
+    @assert !isnothing(transport_capacity_constr)
+    return transport_capacity_constr(dataset, config, indices)
+end
+
+const land_transport_method =
+    Dict{LandTransportType.T, Type{<:AbstractTransportCapacityModel}}(
+        LandTransportType.yalinpart => TransportCapacityYalinDifferentiationModel,
+        LandTransportType.govers => TransportCapacityGoversModel,
+        LandTransportType.yalin => TransportCapacityYalinModel,
+    )
+
 "Initialize the overland flow sediment transport model"
 function OverlandFlowSediment(
     dataset::NCDataset,
@@ -17,22 +36,20 @@ function OverlandFlowSediment(
     (; hydrological_forcing) = soilloss
 
     # Check what transport capacity equation will be used
-    do_river = get(config.model, "run_river_model__flag", false)::Bool
+    do_river = config.model.run_river_model__flag
     # Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]
-    landtransportmethod = get(config.model, "land_transport", "yalinpart")::String
+    (; land_transport) = config.model
 
-    if do_river || landtransportmethod == "yalinpart"
-        transport_capacity =
-            TransportCapacityYalinDifferentiationModel(dataset, config, indices)
-    elseif landtransportmethod == "govers"
-        transport_capacity = TransportCapacityGoversModel(dataset, config, indices)
-    elseif landtransportmethod == "yalin"
-        transport_capacity = TransportCapacityYalinModel(dataset, config, indices)
-    else
-        error("Unknown land transport method: $landtransportmethod")
-    end
+    do_river && (land_transport = LandTransportType.yalinpart)
+    transport_capacity = get_transport_capacity(
+        land_transport_method,
+        land_transport,
+        dataset,
+        config,
+        indices,
+    )
 
-    if do_river || landtransportmethod == "yalinpart"
+    if do_river || land_transport == LandTransportType.yalinpart
         sediment_flux = SedimentLandTransportDifferentiationModel(indices)
         to_river = SedimentToRiverDifferentiationModel(indices)
     else
@@ -89,28 +106,31 @@ end
     concentrations::CR
 end
 
+const river_transport_method =
+    Dict{RiverTransportType.T, Type{<:AbstractTransportCapacityModel}}(
+        RiverTransportType.bagnold => TransportCapacityBagnoldModel,
+        RiverTransportType.engelund => TransportCapacityEngelundModel,
+        RiverTransportType.yang => TransportCapacityYangModel,
+        RiverTransportType.kodatie => TransportCapacityKodatieModel,
+        RiverTransportType.molinas => TransportCapacityMolinasModel,
+    )
+
 "Initialize the river sediment transport model"
 function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     n = length(indices)
-    hydrological_forcing = HydrologicalForcing(n)
+    hydrological_forcing = HydrologicalForcing(; n)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
-    transport_method = get(config.model, "river_transport", "bagnold")::String
-    if transport_method == "bagnold"
-        transport_capacity = TransportCapacityBagnoldModel(dataset, config, indices)
-    elseif transport_method == "engelund"
-        transport_capacity = TransportCapacityEngelundModel(dataset, config, indices)
-    elseif transport_method == "yang"
-        transport_capacity = TransportCapacityYangModel(dataset, config, indices)
-    elseif transport_method == "kodatie"
-        transport_capacity = TransportCapacityKodatieModel(dataset, config, indices)
-    elseif transport_method == "molinas"
-        transport_capacity = TransportCapacityMolinasModel(dataset, config, indices)
-    else
-        error("Unknown river transport method: $transport_method")
-    end
+    (; river_transport) = config.model
+    transport_capacity = get_transport_capacity(
+        river_transport_method,
+        river_transport,
+        dataset,
+        config,
+        indices,
+    )
 
     # Potential river erosion
     potential_erosion = RiverErosionJulianTorresModel(dataset, config, indices)

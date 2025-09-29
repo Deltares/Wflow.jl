@@ -412,31 +412,22 @@ function Demand(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    domestic = if get(config.model.water_demand, "domestic__flag", false)
-        NonIrrigationDemand(dataset, config, indices, dt, "domestic")
-    else
-        NoNonIrrigationDemand()
-    end
-    industry = if get(config.model.water_demand, "industry__flag", false)
-        NonIrrigationDemand(dataset, config, indices, dt, "industry")
-    else
-        NoNonIrrigationDemand()
-    end
-    livestock = if get(config.model.water_demand, "livestock__flag", false)
-        NonIrrigationDemand(dataset, config, indices, dt, "livestock")
-    else
-        NoNonIrrigationDemand()
-    end
-    paddy = if get(config.model.water_demand, "paddy__flag", false)
-        Paddy(dataset, config, indices, dt)
-    else
-        NoIrrigationPaddy()
-    end
-    nonpaddy = if get(config.model.water_demand, "nonpaddy__flag", false)
-        NonPaddy(dataset, config, indices, dt)
-    else
-        NoIrrigationNonPaddy()
-    end
+    demand(name; constr = NonIrrigationDemand, constr_triv = NoNonIrrigationDemand) =
+        if getfield(config.model.water_demand, Symbol("$(name)__flag"))::Bool
+            if constr == NonIrrigationDemand
+                constr(dataset, config, indices, dt, name)
+            else
+                constr(dataset, config, indices, dt)
+            end
+        else
+            constr_triv()
+        end
+
+    domestic = demand("domestic")
+    industry = demand("industry")
+    livestock = demand("livestock")
+    paddy = demand("paddy"; constr = Paddy, constr_triv = NoIrrigationPaddy)
+    nonpaddy = demand("nonpaddy"; constr = NonPaddy, constr_triv = NoIrrigationNonPaddy)
 
     n = length(indices)
     vars = DemandVariables(n)

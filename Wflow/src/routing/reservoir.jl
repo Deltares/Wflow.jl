@@ -63,7 +63,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     )
     outflowfunc = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
 
-    lens = lens_input(config, "reservoir_lower_location__count")
+    lens = lens_input("reservoir_lower_location__count"; config, optional = true)
     linked_reslocs = ncread(
         dataset,
         config,
@@ -75,7 +75,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     )
 
     n_reservoirs = length(area)
-    lens = lens_input(config, "reservoir_location__count"; optional = false)
+    lens = lens_input("reservoir_location__count")
     reslocs = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
     @info "Read `$n_reservoirs` reservoir locations."
 
@@ -338,13 +338,13 @@ function update_reservoir_simple(
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = scurve(percfull, res_p.targetminfrac[i], 1.0, 30.0)
     demandrelease = min(fac * res_p.demand[i] * dt, storage)
-    storage = storage - demandrelease
+    storage -= demandrelease
 
     wantrel = max(0.0, storage - (res_p.maxstorage[i] * res_p.targetfullfrac[i]))
     # Assume extra maximum Q if spilling
     overflow_q = max((storage - res_p.maxstorage[i]), 0.0)
     torelease = min(wantrel, overflow_q + res_p.maxrelease[i] * dt - demandrelease)
-    storage = storage - torelease
+    storage -= torelease
     outflow = torelease + demandrelease
     outflow /= dt
 
@@ -409,7 +409,7 @@ function update_reservoir_hq(
 
     overflow = max(0.0, (storage - res_p.maxstorage[i]) / dt)
     storage = min(storage, res_p.maxstorage[i])
-    outflow = outflow + overflow
+    outflow += overflow
 
     return outflow, storage
 end

@@ -89,8 +89,7 @@ function SnowHbvParameters(
 
     lens = lens_input_parameter(config, "snowpack__liquid_water_holding_capacity")
     whc = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
-    snow_hbv_params =
-        SnowHbvParameters(; cfmax = cfmax, tt = tt, tti = tti, ttm = ttm, whc = whc)
+    snow_hbv_params = SnowHbvParameters(; cfmax, tt, tti, ttm, whc)
     return snow_hbv_params
 end
 

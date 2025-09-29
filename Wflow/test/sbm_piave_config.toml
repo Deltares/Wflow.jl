@@ -80,7 +80,7 @@ vegetation__leaf_area_index = "LAI"
 
 [model]
 type = "sbm"
-snow_gravitional_transport__flag = true
+snow_gravitational_transport__flag = true
 snow__flag = true
 cold_start__flag = false
 reservoir__flag = true
