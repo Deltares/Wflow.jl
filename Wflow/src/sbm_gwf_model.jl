@@ -13,38 +13,27 @@ function Model(config::Config, type::SbmGwfModel)
     static_path = input_path(config, config.input.path_static)
     dataset = NCDataset(static_path)
 
-    reader = prepare_reader(config)
+    reader = NCReader(config)
     clock = Clock(config, reader)
 
-    modelsettings = (;
-        snow = get(config.model, "snow__flag", false)::Bool,
-        gravitational_snow_transport = get(
-            config.model,
-            "snow_gravitional_transport__flag",
-            false,
-        )::Bool,
-        glacier = get(config.model, "glacier__flag", false)::Bool,
-        reservoirs = get(config.model, "reservoir__flag", false)::Bool,
-        drains = get(config.model, "drain__flag", false)::Bool,
-        constanthead = get(config.model, "constanthead__flag", false)::Bool,
-        water_demand = haskey(config.model, "water_demand"),
-        water_mass_balance = get(config.model, "water_mass_balance", false)::Bool,
-        pits = false,
-        min_streamorder_river = get(config.model, "river_streamorder__min_count", 6),
-        min_streamorder_land = get(config.model, "land_streamorder__min_count", 5),
-    )
+    @info "General model settings" (;
+        snow = config.model.snow__flag,
+        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
+        glacier = config.model.glacier__flag,
+        reservoirs = config.model.reservoir__flag,
+        drains = config.model.drain__flag,
+        constanthead = config.model.constanthead__flag,
+        water_demand = do_water_demand(config),
+    )...
 
-    @info "General model settings" modelsettings[keys(modelsettings)[1:8]]...
-
-    routing_types = get_routing_types(config)
-    domain = Domain(dataset, config, modelsettings, routing_types)
+    domain = Domain(dataset, config, type)
 
     land_hydrology = LandHydrologySBM(dataset, config, domain.land)
-    routing = Routing(dataset, config, domain, land_hydrology.soil, routing_types, type)
+    routing = Routing(dataset, config, domain, land_hydrology.soil, type)
 
     modelmap = (land = land_hydrology, routing)
     (; maxlayers) = land_hydrology.soil.parameters
-    writer = prepare_writer(
+    writer = Writer(
         config,
         modelmap,
         domain,
@@ -53,7 +42,7 @@ function Model(config::Config, type::SbmGwfModel)
     )
     close(dataset)
 
-    mass_balance = HydrologicalMassBalance(domain, modelsettings)
+    mass_balance = HydrologicalMassBalance(domain, config)
 
     model = Model(
         config,
@@ -76,9 +65,8 @@ end
 function update!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
-
-    do_water_demand = haskey(config.model, "water_demand")
     (; boundaries) = routing.subsurface_flow
+
     dt = tosecond(clock.dt)
 
     update!(land, routing, domain, config, dt)
@@ -92,20 +80,19 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     end
 
     # determine stable time step for groundwater flow
-    conductivity_profile = get(config.model, "conductivity_profile", "uniform")
     dt_gwf = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
 
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
     @. boundaries.recharge.variables.rate =
         soil.variables.recharge / 1000.0 * (1.0 / dt_gwf)
-    if do_water_demand
+    if do_water_demand(config)
         @. boundaries.recharge.variables.rate -=
             land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_gwf)
     end
 
     # update groundwater domain
-    update!(routing.subsurface_flow, dt_gwf, conductivity_profile)
+    update!(routing.subsurface_flow, dt_gwf, config.model.conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))

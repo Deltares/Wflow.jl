@@ -5,21 +5,22 @@ function initialize_subsurface_flow(
     config::Config,
     domain::Domain,
     soil::SbmSoilModel,
-    type::SbmModel,
+    ::SbmModel,
 )
     (; parameters) = domain.land
     subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
 
-    kh_profile_type =
-        get(config.model, "saturated_hydraulic_conductivity_profile", "exponential")::String
+    kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
-    if kh_profile_type == "exponential" || kh_profile_type == "exponential_constant"
+    if kh_profile_type == VerticalConductivityProfile.exponential ||
+       kh_profile_type == VerticalConductivityProfile.exponential_constant
         initialize_lateral_ssf!(
             subsurface_flow,
             parameters,
             subsurface_flow.parameters.kh_profile,
         )
-    elseif kh_profile_type == "layered" || kh_profile_type == "layered_exponential"
+    elseif kh_profile_type == VerticalConductivityProfile.layered ||
+           kh_profile_type == VerticalConductivityProfile.layered_exponential
         (; kv_profile) = soil.parameters
         dt = Second(config.time.timestepsecs)
         initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))
@@ -33,11 +34,8 @@ function initialize_subsurface_flow(
     config::Config,
     domain::Domain,
     soil::SbmSoilModel,
-    type::SbmGwfModel,
+    ::SbmGwfModel,
 )
-    do_drains = get(config.model, "drain__flag", false)::Bool
-    do_constanthead = get(config.model, "constanthead__flag", false)::Bool
-
     (; land, river, drain) = domain
 
     (; indices, reverse_indices) = land.network
@@ -49,7 +47,7 @@ function initialize_subsurface_flow(
     elevation = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # unconfined aquifer
-    if do_constanthead
+    if config.model.constanthead__flag
         constant_head = ConstantHead(dataset, config, indices)
     else
         variables = ConstantHeadVariables(; head = Float64[])
@@ -61,8 +59,21 @@ function initialize_subsurface_flow(
     # cold state for groundwater head based on water table depth zi
     initial_head = elevation .- soil.variables.zi / 1000.0
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
-    if do_constanthead
+    if config.model.constanthead__flag
         initial_head[constant_head.index] = constant_head.variables.head
+    end
+    # reset soil (cold) state and related variables based on initial_head (river cells and constanthead)
+    if config.model.cold_start__flag
+        (; zi, satwaterdepth, ustorecapacity, ustorelayerthickness, n_unsatlayers) =
+            soil.variables
+        (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
+            soil.parameters
+
+        @. zi = (elevation - min(elevation, initial_head)) * 1000.0
+        @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
+        @. ustorecapacity = soilwatercapacity - satwaterdepth
+        @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
+        @. n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
@@ -90,7 +101,7 @@ function initialize_subsurface_flow(
     )
 
     # drain boundary of unconfined aquifer (optional)
-    if do_drains
+    if config.model.drain__flag
         gwf_drain = Drainage(dataset, config, indices, drain.network.land_indices)
         aquifer_boundaries =
             (; recharge = gwf_recharge, river = gwf_river, drain = gwf_drain)
@@ -98,7 +109,7 @@ function initialize_subsurface_flow(
         aquifer_boundaries = (; recharge = gwf_recharge, river = gwf_river)
     end
 
-    cfl = get(config.model, "subsurface_water_flow__alpha_coefficient", 0.25)::Float64
+    cfl = config.model.subsurface_water_flow__alpha_coefficient
     @info "Numerical stability coefficient for groundwater flow `alpha`: `$cfl`."
     timestepping = TimeStepping(; cfl)
 
@@ -113,22 +124,13 @@ function initialize_subsurface_flow(
 end
 
 "Initialize kinematic wave or local inertial overland flow routing"
-function initialize_overland_flow(
-    dataset::NCDataset,
-    config::Config,
-    domain::Domain,
-    routing_types::NamedTuple,
-)
-    if routing_types.land == "kinematic-wave"
+function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Domain)
+    (; land_routing) = config.model
+
+    if land_routing == RoutingType.kinematic_wave
         overland_flow = KinWaveOverlandFlow(dataset, config, domain.land)
-    elseif routing_types.land == "local-inertial"
+    elseif land_routing == RoutingType.local_inertial
         overland_flow = LocalInertialOverlandFlow(dataset, config, domain)
-    else
-        error(
-            """An unknown "land_routing" method is specified in the TOML file
-            ($(routing_types.land)). This should be "kinematic-wave" or "local-inertial".
-            """,
-        )
     end
     return overland_flow
 end
@@ -137,29 +139,17 @@ end
 Initialize kinematic wave or local inertial overland flow routing, including optional
 reservoirs.
 """
-function initialize_river_flow(
-    dataset::NCDataset,
-    config::Config,
-    domain::Domain,
-    routing_types::NamedTuple,
-)
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    if do_reservoirs
-        reservoir = Reservoir(dataset, config, domain.reservoir.network)
-    else
-        reservoir = nothing
-    end
+function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domain)
+    (; river_routing) = config.model
 
-    if routing_types.river == "kinematic-wave"
+    reservoir =
+        config.model.reservoir__flag ?
+        Reservoir(dataset, config, domain.reservoir.network) : nothing
+
+    if river_routing == RoutingType.kinematic_wave
         river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)
-    elseif routing_types.river == "local-inertial"
+    elseif river_routing == RoutingType.local_inertial
         river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir)
-    else
-        error(
-            """An unknown "river_routing" method is specified in the TOML file
-             ($(routing_types.river)). This should be "kinematic-wave" or "local-inertial".
-            """,
-        )
     end
 end
 
@@ -169,12 +159,11 @@ function Routing(
     config::Config,
     domain::Domain,
     soil::SbmSoilModel,
-    routing_types::NamedTuple,
     type,
 )
     subsurface_flow = initialize_subsurface_flow(dataset, config, domain, soil, type)
-    overland_flow = initialize_overland_flow(dataset, config, domain, routing_types)
-    river_flow = initialize_river_flow(dataset, config, domain, routing_types)
+    overland_flow = initialize_overland_flow(dataset, config, domain)
+    river_flow = initialize_river_flow(dataset, config, domain)
 
     routing = Routing(; subsurface_flow, overland_flow, river_flow)
     return routing

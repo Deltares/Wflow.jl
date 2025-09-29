@@ -38,14 +38,7 @@ Standard names that contain `instantaneous` in the `quantity` part of the standa
 be valid for an internal time step (for example for kinematic wave routing an internal time
 step is optional (and recommended), with a time step equal to the model simulation time step
 the standard name nonetheless contains `instantaneous`) and thus considered instantaneous
-compared to the model simulation time step Δt $\SIb{}{s}$. Standard names can contain a
-tilde that are used to distinguish nouns and adjectives in the `object` part of the standard
-name. These standard names should be quoted in the TOML configuration file, e.g.:
-
-```toml
-[input.static]
-"soil~compacted__area_fraction".value = 0.2
-```
+compared to the model simulation time step Δt $\SIb{}{s}$.
 
 ## Generic input maps {#input-generic}
 The table below lists static input maps that are not directly part of wflow models and are

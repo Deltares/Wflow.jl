@@ -17,7 +17,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     dt = Second(config.time.timestepsecs)
     n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(n)
+    atmospheric_forcing = AtmosphericForcing(; n)
     vegetation_parameters = VegetationParameters(dataset, config, indices)
     if dt >= Hour(23)
         interception =
@@ -26,17 +26,17 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         interception = RutterInterceptionModel(vegetation_parameters, n)
     end
 
-    do_snow = get(config.model, "snow__flag", false)::Bool
+    do_snow = config.model.snow__flag
+    do_glacier = config.model.glacier__flag
     if do_snow
         snow = SnowHbvModel(dataset, config, indices, dt)
     else
         snow = NoSnowModel(n)
     end
-    do_glacier = get(config.model, "glacier__flag", false)::Bool
     if do_snow && do_glacier
         glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
         glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
-    elseif do_snow == false && do_glacier == true
+    elseif !do_snow && do_glacier
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
             "glacier modelling, set `snow__flag` to `true` in the Model section of the TOML file.",
@@ -51,10 +51,13 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     @. vegetation_parameters.rootingdepth =
         min(soil.parameters.soilthickness * 0.99, vegetation_parameters.rootingdepth)
 
-    do_water_demand = haskey(config.model, "water_demand")
-    allocation =
-        do_water_demand ? AllocationLand(dataset, config, indices) : NoAllocationLand(n)
-    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand(; n)
+    if do_water_demand(config)
+        allocation = AllocationLand(dataset, config, indices)
+        demand = Demand(dataset, config, indices, dt)
+    else
+        allocation = NoAllocationLand(n)
+        demand = NoDemand(; n)
+    end
 
     args = (demand, allocation)
     land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
@@ -79,7 +82,6 @@ function update!(
     config::Config,
     dt::Float64,
 )
-    do_water_demand = haskey(config.model, "water_demand")::Bool
     (; parameters) = domain.land
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         model
@@ -88,7 +90,9 @@ function update!(
 
     update_boundary_conditions!(snow, (; interception))
     update!(snow, atmospheric_forcing)
-    lateral_snow_transport!(snow, domain.land)
+    if config.model.snow_gravitational_transport__flag
+        lateral_snow_transport!(snow, domain.land)
+    end
 
     update!(glacier, atmospheric_forcing)
 
@@ -100,7 +104,7 @@ function update!(
     )
     update!(runoff, atmospheric_forcing, parameters)
 
-    if do_water_demand
+    if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)

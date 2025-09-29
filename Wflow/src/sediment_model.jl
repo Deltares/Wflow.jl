@@ -5,29 +5,24 @@ Initial part of the sediment model concept. Reads the input settings and data as
 the Config object. Will return a Model that is ready to run.
 """
 function Model(config::Config, type::SedimentModel)
-    model_type = config.model.type::String
+    model_type = config.model.type
     @info "Initialize model variables for model type `$model_type`."
 
     # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
     dataset = NCDataset(static_path)
 
-    reader = prepare_reader(config)
+    reader = NCReader(config)
     clock = Clock(config, reader)
 
-    modelsettings = (;
-        reservoirs = get(config.model, "reservoir__flag", false)::Bool,
-        pits = get(config.model, "pit__flag", false)::Bool,
-    )
+    @info "General model settings" reservoirs = config.model.reservoir__flag
 
-    @info "General model settings" modelsettings[keys(modelsettings)[1:1]]...
-
-    domain = Domain(dataset, config, modelsettings)
+    domain = Domain(dataset, config, type)
     soilloss = SoilLoss(dataset, config, domain.land.network.indices)
     routing = Routing(dataset, config, domain, soilloss)
 
     modelmap = (land = soilloss, routing)
-    writer = prepare_writer(config, modelmap, domain, dataset)
+    writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 
     model = Model(
@@ -60,8 +55,7 @@ function update!(model::AbstractModel{<:SedimentModel})
     update!(routing.overland_flow, land.soil_erosion, domain.land, dt)
 
     # River sediment transport
-    do_river = get(config.model, "run_river_model__flag", false)::Bool
-    if do_river
+    if config.model.run_river_model__flag
         update!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
     end
 
@@ -72,8 +66,7 @@ end
 function set_states!(model::AbstractModel{<:SedimentModel})
     # read and set states in model object if cold_start=false
     (; config) = model
-    cold_start = get(config.model, "cold_start__flag", true)::Bool
-    if cold_start == false
+    if !config.model.cold_start__flag
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float64)

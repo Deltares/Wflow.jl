@@ -20,13 +20,11 @@ end
     routing::FlowRoutingMassBalance
 end
 
-function HydrologicalMassBalance(domain::Domain, modelsettings::NamedTuple)
-    do_water_mass_balance = modelsettings.water_mass_balance
-    if do_water_mass_balance
-        do_reservoirs = modelsettings.reservoirs
+function HydrologicalMassBalance(domain::Domain, config::Config)
+    if config.model.water_mass_balance__flag
         n_land = length(domain.land.network.indices)
         n_river = length(domain.river.network.indices)
-        if do_reservoirs
+        if config.model.reservoir__flag
             n_reservoir = length(domain.reservoir.network.indices_outlet)
             reservoir = MassBalance(; n = n_reservoir)
         else

@@ -23,8 +23,8 @@ path_output = "outstates-example-sbm-gwf.nc"
 [state.variables]
 vegetation_canopy_water__depth = "canopystorage"
 
-soil_water_sat-zone__depth = "satwaterdepth"
-soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
+soil_water_saturated_zone__depth = "satwaterdepth"
+soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
 
 river_water__instantaneous_depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
@@ -50,13 +50,13 @@ land_surface_water__potential_evaporation_volume_flux = "PET"
 [input.static]
 soil_surface_water__vertical_saturated_hydraulic_conductivity = "kv"
 soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter.value = 0.001
-soil_layer_water__brooks-corey_exponent.value = [10.0, 10.0, 10.0, 10.0]
+soil_layer_water__brooks_corey_exponent.value = [10.0, 10.0, 10.0, 10.0]
 soil_water__residual_volume_fraction = "thetaR"
 soil_water__saturated_volume_fraction = "thetaS"
-"soil~compacted__area_fraction" = "PathFrac"
+compacted_soil__area_fraction = "PathFrac"
 soil__thickness = "soilthickness"
 
-vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio = "EoverR"
+vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio = "EoverR"
 vegetation_root__depth = "rootingdepth"
 vegetation_canopy__gap_fraction = "canopygapfraction"
 vegetation_water__storage_capacity = "cmax"
@@ -71,7 +71,7 @@ land_surface__elevation = "wflow_dem"
 land_surface__slope = "Slope"
 
 subsurface_surface_water__horizontal_saturated_hydraulic_conductivity = "k"
-"model_boundary_condition~constant_hydraulic_head" = "constant_head"
+"model_constant_boundary_condition__hydraulic_head" = "constant_head"
 land_drain_location__mask = "drain"
 land_drain__conductance = "cond_drain"
 land_drain__elevation = "elev_drain"
@@ -95,14 +95,14 @@ path = "output_example-sbm-gwf.nc"
 
 [output.netcdf_grid.variables]
 vegetation_canopy_water__depth = "canopystorage"
-soil_water_sat-zone__depth = "satwaterdepth"
-soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
+soil_water_saturated_zone__depth = "satwaterdepth"
+soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
 land.soil.parameters.soilthickness = "soilthickness"
 river_water__volume_flow_rate = "q_av"
 subsurface_water__hydraulic_head = "head"
-subsurface_water_sat-zone_top__net_recharge_volume_flow_rate = "rate"
-"land_drain_water~to-subsurface__volume_flow_rate" = "drain_flux"
-"river_water~to-subsurface__volume_flow_rate" = "flux"
+subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate = "rate"
+land_drain_water__to_subsurface_volume_flow_rate = "drain_flux"
+river_water__to_subsurface_volume_flow_rate = "flux"
 
 [output.csv]
 path = "output_example-sbm-gwf.csv"

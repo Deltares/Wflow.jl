@@ -30,7 +30,8 @@ Wflow.run_timestep!(model)
     @test eros.hydrological_forcing.q_land[1] ≈ 0.0
     @test eros.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934
     @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
-    @test eros.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈ 0.8999999761581421
+    @test eros.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈
+          0.8999999761581421
     @test eros.overland_flow_erosion.variables.amount[1] ≈ 0.0
     @test eros.rainfall_erosion.variables.amount[1] ≈ 0.00027245577922893746
     @test model.clock.iteration == 1
@@ -93,7 +94,8 @@ end
 end
 
 # test reading warm states
-config.model["cold_start__flag"] = false
+config = Wflow.Config(tomlpath)
+config.model.cold_start__flag = false
 model = Wflow.Model(config)
 @testset "initial warm states" begin
     river = model.routing.river_flow
@@ -184,7 +186,7 @@ tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
 config = Wflow.Config(tomlpath)
 # Update config to run only the land model
 config.model.run_river_model__flag = false
-# Use yalin equation for land transport capacity
+# Use govers equation for land transport capacity
 config.model.land_transport = "yalin"
 
 model = Wflow.Model(config)

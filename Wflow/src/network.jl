@@ -79,13 +79,13 @@ end
 Initialize `NetworkLand` fields related to catchment (active indices model domain) and land
 drainage network.
 """
-function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
-    lens = lens_input(config, "subbasin_location__count"; optional = false)
+function NetworkLand(dataset::NCDataset, config::Config)
+    lens = lens_input("subbasin_location__count")
     subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
     graph, local_drain_direction =
-        get_drainage_network(dataset, config, indices; do_pits = modelsettings.pits)
+        get_drainage_network(dataset, config, indices; do_pits = config.model.pit__flag)
     order = topological_sort_by_dfs(graph)
     streamorder = stream_order(graph, order)
 
@@ -108,13 +108,12 @@ domain.
 """
 function network_subdomains(config::Config, network::NetworkLand)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
-    min_streamorder = get(config.model, "land_streamorder__min_count", 5)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
         network.order,
         pit_inds,
         network.streamorder,
-        min_streamorder,
+        config.model.land_streamorder__min_count,
     )
     @reset network.order_of_subdomains = order_of_subdomains
     @reset network.order_subdomain = toposort_subdomain
@@ -150,14 +149,14 @@ function get_drainage_network(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}};
-    do_pits = false,
-    logging = true,
+    do_pits::Bool = false,
+    logging::Bool = true,
 )
-    lens = lens_input(config, "basin__local_drain_direction"; optional = false)
+    lens = lens_input("basin__local_drain_direction")
     ldd_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        lens = lens_input(config, "basin_pit_location__mask"; optional = false)
+        lens = lens_input("basin_pit_location__mask"; config)
         pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
@@ -212,7 +211,7 @@ function NetworkRiver(
     do_pits = false,
 )
     logging = false
-    lens = lens_input(config, "river_location__mask"; optional = false)
+    lens = lens_input("river_location__mask")
     river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false, logging)
     indices, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction =
@@ -241,14 +240,13 @@ nthreads > 1 to run the kinematic wave parallel, otherwise it is equal to the co
 domain.
 """
 function network_subdomains(config::Config, network::NetworkRiver)
-    min_streamorder = get(config.model, "river_streamorder__min_count", 6)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
         network.order,
         pit_inds,
         network.streamorder,
-        min_streamorder,
+        config.model.river_streamorder__min_count,
     )
     @reset network.order_of_subdomains = order_of_subdomains
     @reset network.order_subdomain = toposort_subdomain
@@ -291,11 +289,11 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     logging = false
     # allow reservoir only in river cells
     # note that these locations are only the reservoir outlet pixels
-    lens = lens_input(config, "reservoir_location__count"; optional = false)
+    lens = lens_input("reservoir_location__count")
     locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0, logging)
 
     # this holds the same ids as locs, but covers the entire reservoir
-    lens = lens_input(config, "reservoir_area__count"; optional = false)
+    lens = lens_input("reservoir_area__count")
     coverage_2d = ncread(dataset, config, lens; allow_missing = true, logging)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]

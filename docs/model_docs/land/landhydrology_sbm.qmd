@@ -93,7 +93,7 @@ path_forcing = "forcing-moselle.nc"
 path_static = "staticmaps-moselle.nc"
 
 [input.cyclic]
-vegetation__leaf-area_index = "LAI"
+vegetation__leaf_area_index = "LAI"
 ```
 Furthermore, these additional parameters are required:
 
@@ -987,7 +987,7 @@ following in the TOML file:
 
 ```toml
 [input.static]
-soil_water_sat-zone_bottom__max_leakage_volume_flux = "maxleakage"
+soil_water_saturated_zone_bottom__max_leakage_volume_flux = "maxleakage"
 ```
 
 ## Open water

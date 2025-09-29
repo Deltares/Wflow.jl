@@ -6,7 +6,9 @@ Wflow.run_timestep!(model)
 (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
 (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
     model.land.allocation.variables
-(; reservoir) = model.routing.river_flow.boundary_conditions
+(; soil) = model.land
+(; river_flow) = model.routing
+(; reservoir) = river_flow.boundary_conditions
 
 @testset "piave water demand and allocation first timestep" begin
     sum_total_alloc = sum(total_alloc)
@@ -31,12 +33,22 @@ Wflow.run_timestep!(model)
     @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
     @test reservoir.variables.waterlevel_av ≈
-          [23.956777464091655, 32.68528833371174, 39.96881815487859]
+          [23.95914400555985, 32.68535935572136, 39.969135230891744]
     @test reservoir.variables.storage_av ≈
-          [1.5523991796731403e8, 4.279896636165852e7, 7.159755286167501e7]
+          [1.5525525315602788e8, 4.27990593597248e7, 7.15981208511133e7]
     @test reservoir.variables.outflow_av ≈
-          [3.248031210948757, 5.04778640418958, 14.259912531748482]
-    @test reservoir.variables.demandrelease[[2, 3]] ≈ [1.182999968528626, 7.902500152587073]
+          [3.248673046140208, 8.352196766583088, 29.02990124474297]
+    @test soil.variables.exfiltsatwater[27:31] ≈ [
+        25.189525467679577,
+        0.505190607750432,
+        10.146835651996657,
+        6.953613376684237,
+        19.43824331070573,
+    ]
+    @test maximum(soil.variables.exfiltsatwater) ≈ 221.55275282631922
+    @test soil.variables.exfiltsatwater[17] == 0.0
+    @test mean(river_flow.variables.q_av) ≈ 30.13050620962414
+    @test maximum(river_flow.variables.q_av) ≈ 117.02953499886921
 end
 
 Wflow.run_timestep!(model)
@@ -53,12 +65,24 @@ Wflow.run_timestep!(model)
     @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
           [0.0, 3.9965040974684207, 5.44810857188258]
     @test reservoir.variables.waterlevel_av ≈
-          [23.946156606576015, 32.68503511233224, 39.968913991701285]
+          [23.95845092987531, 32.68554507549814, 39.96988968054929]
     @test reservoir.variables.storage_av ≈
-          [1.5517109481061247e8, 4.2798634787000515e7, 7.159772453755285e7]
+          [1.552507620255922e8, 4.2799302546029136e7, 7.159947232337902e7]
     @test reservoir.variables.outflow_av ≈
-          [3.2451518657160476, 4.654493902558098, 13.362835228238662]
-    @test reservoir.variables.demandrelease[[2, 3]] ≈ [1.182999968528626, 7.902500152587073]
+          [3.2484850081729024, 9.328049956914716, 38.06870720301024]
+    @test soil.variables.exfiltsatwater[27:33] ≈ [
+        38.826956323090826,
+        1.8763852574365876,
+        16.706492573991078,
+        11.498353008214291,
+        28.941091934618065,
+        18.349141868407173,
+        19.768912534412685,
+    ]
+    @test maximum(soil.variables.exfiltsatwater) ≈ 341.6531285891759
+    @test soil.variables.exfiltsatwater[17] == 0.0
+    @test mean(river_flow.variables.q_av) ≈ 35.77645362130085
+    @test maximum(river_flow.variables.q_av) ≈ 138.32457335760404
 end
 
 Wflow.close_files(model; delete_output = false)

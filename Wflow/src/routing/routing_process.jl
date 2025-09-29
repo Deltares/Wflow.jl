@@ -46,7 +46,7 @@ function kinematic_wave(Qin, Qold, q, alpha, beta, dt, dx)
         while true
             fQkx = dtx * Qkx + alpha * pow(Qkx, beta) - C
             dfQkx = dtx + alpha * beta * pow(Qkx, (beta - 1.0))
-            Qkx = Qkx - fQkx / dfQkx
+            Qkx -= fQkx / dfQkx
             Qkx = max(Qkx, 1.0e-30)
             if (abs(fQkx) <= epsilon) || (count >= max_iters)
                 break
@@ -162,7 +162,7 @@ function kinematic_wave_ssf(
         # Derivative of the continuity equation w.r.t. Q_out for iteration 1
         dfQ = (dt / dx) + 1.0 / Cn
         # Update lateral outflow estimate ssf (Q_out) for iteration 1
-        ssf = ssf - (fQ / dfQ)
+        ssf -= fQ / dfQ
         if isnan(ssf)
             ssf = 0.0
         end
@@ -184,7 +184,7 @@ function kinematic_wave_ssf(
             # Derivative of the continuity equation w.r.t. Q_out for iteration m+1
             dfQ = (dt / dx) + 1.0 / Cn
             # Update lateral outflow estimate ssf (Q_out) for iteration m+1
-            ssf = ssf - (fQ / dfQ)
+            ssf -= fQ / dfQ
             if isnan(ssf)
                 ssf = 0.0
             end
@@ -249,7 +249,7 @@ function kinematic_wave_ssf(
         # Derivative of the continuity equation
         dfQ = (dt / dx) + 1.0 / Cn
         # Update lateral subsurface flow estimate ssf
-        ssf = ssf - (fQ / dfQ)
+        ssf -= fQ / dfQ
         if isnan(ssf)
             ssf = 0.0
         end
@@ -259,7 +259,7 @@ function kinematic_wave_ssf(
         while true
             fQ = (dt / dx) * ssf + (1.0 / Cn) * ssf - c
             dfQ = (dt / dx) + 1.0 / Cn
-            ssf = ssf - (fQ / dfQ)
+            ssf -= fQ / dfQ
             if isnan(ssf)
                 ssf = 0.0
             end

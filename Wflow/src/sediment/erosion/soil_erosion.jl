@@ -2,58 +2,28 @@ abstract type AbstractSoilErosionModel end
 
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
+    n::Int
     # Total soil erosion rate [t dt-1]
-    amount::Vector{Float64}
+    amount::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total clay erosion rate [t dt-1]
-    clay::Vector{Float64}
+    clay::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total silt erosion rate [t dt-1]
-    silt::Vector{Float64}
+    silt::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sand erosion rate [t dt-1]
-    sand::Vector{Float64}
+    sand::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total small aggregates erosion rate [t dt-1]
-    sagg::Vector{Float64}
+    sagg::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total large aggregates erosion rate [t dt-1]
-    lagg::Vector{Float64}
-end
-
-"Initialize soil erosion model variables"
-function SoilErosionModelVariables(
-    n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
-    clay::Vector{Float64} = fill(MISSING_VALUE, n),
-    silt::Vector{Float64} = fill(MISSING_VALUE, n),
-    sand::Vector{Float64} = fill(MISSING_VALUE, n),
-    sagg::Vector{Float64} = fill(MISSING_VALUE, n),
-    lagg::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return SoilErosionModelVariables(;
-        amount = amount,
-        clay = clay,
-        silt = silt,
-        sand = sand,
-        sagg = sagg,
-        lagg = lagg,
-    )
+    lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
+    n::Int
     # Rainfall erosion rate [t dt-1]
-    rainfall_erosion::Vector{Float64}
+    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow erosion rate [t dt-1]
-    overland_flow_erosion::Vector{Float64}
-end
-
-"Initialize soil erosion model boundary conditions"
-function SoilErosionBC(
-    n::Int;
-    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n),
-    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return SoilErosionBC(;
-        rainfall_erosion = rainfall_erosion,
-        overland_flow_erosion = overland_flow_erosion,
-    )
+    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model parameters"
@@ -85,10 +55,10 @@ function SoilErosionParameters(
     lens = lens_input_parameter(config, "soil_sand__mass_fraction")
     sand_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float64)
-    lens = lens_input_parameter(config, "soil_aggregates~small__mass_fraction")
+    lens = lens_input_parameter(config, "soil_small_aggregates__mass_fraction")
     sagg_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
-    lens = lens_input_parameter(config, "soil_aggregates~large__mass_fraction")
+    lens = lens_input_parameter(config, "soil_large_aggregates__mass_fraction")
     lagg_fraction =
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
     # Check that soil fractions sum to 1
@@ -98,11 +68,11 @@ function SoilErosionParameters(
         error("Particle fractions in the soil must sum to 1")
     end
     soil_parameters = SoilErosionParameters(;
-        clay_fraction = clay_fraction,
-        silt_fraction = silt_fraction,
-        sand_fraction = sand_fraction,
-        sagg_fraction = sagg_fraction,
-        lagg_fraction = lagg_fraction,
+        clay_fraction,
+        silt_fraction,
+        sand_fraction,
+        sagg_fraction,
+        lagg_fraction,
     )
 
     return soil_parameters
@@ -122,9 +92,9 @@ function SoilErosionModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = SoilErosionModelVariables(n)
+    vars = SoilErosionModelVariables(; n)
     params = SoilErosionParameters(dataset, config, indices)
-    bc = SoilErosionBC(n)
+    bc = SoilErosionBC(; n)
     model =
         SoilErosionModel(; boundary_conditions = bc, parameters = params, variables = vars)
     return model
