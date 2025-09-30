@@ -209,3 +209,8 @@ end
 end
 
 Wflow.close_files(model; delete_output = false)
+
+@testset "run wflow sbm_gwf" begin
+    config.time.endtime = "2000-06-04"
+    Wflow.run(config)
+end

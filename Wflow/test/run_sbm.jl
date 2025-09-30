@@ -650,3 +650,10 @@ Wflow.close_files(model; delete_output = false)
 
     Wflow.close_files(model; delete_output = false)
 end
+
+@testset "run wflow sbm" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.time.endtime = "2000-01-05"
+    Wflow.run(config)
+end
