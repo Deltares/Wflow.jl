@@ -3,15 +3,15 @@ struct NoMassBalance <: AbstractMassBalance end
 
 @with_kw struct MassBalance
     n::Int
-    storage_prev::Vector{Float64} = fill(MISSING_VALUE, n)
-    error::Vector{Float64} = fill(MISSING_VALUE, n)
-    relative_error::Vector{Float64} = fill(MISSING_VALUE, n)
+    storage_prev::Vector{Float64} = zeros(n)
+    error::Vector{Float64} = zeros(n)
+    relative_error::Vector{Float64} = zeros(n)
 end
 
 @with_kw struct FlowRoutingMassBalance
-    river::MassBalance
+    river::Union{MassBalance, NoMassBalance}
     reservoir::Union{MassBalance, NoMassBalance}
-    land::MassBalance
+    overland::MassBalance
     subsurface::MassBalance
 end
 
@@ -21,7 +21,8 @@ end
 end
 
 function HydrologicalMassBalance(domain::Domain, config::Config)
-    if config.model.water_mass_balance__flag
+    (; river_routing, land_routing, water_mass_balance__flag) = config.model
+    if water_mass_balance__flag
         n_land = length(domain.land.network.indices)
         n_river = length(domain.river.network.indices)
         if config.model.reservoir__flag
@@ -30,10 +31,16 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
         else
             reservoir = NoMassBalance()
         end
+        if land_routing == RoutingType.local_inertial &&
+           river_routing == RoutingType.local_inertial
+            river = NoMassBalance()
+        else
+            river = MassBalance(; n = n_river)
+        end
         routing = FlowRoutingMassBalance(;
-            river = MassBalance(; n = n_river),
+            river,
             reservoir,
-            land = MassBalance(; n = n_land),
+            overland = MassBalance(; n = n_land),
             subsurface = MassBalance(; n = n_land),
         )
         mass_balance = HydrologicalMassBalance(; land = MassBalance(; n = n_land), routing)
@@ -43,9 +50,9 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
     return mass_balance
 end
 
-function compute_mass_balance_error(total_input, total_output, storage_rate)
-    error = total_input - total_output - storage_rate
-    average_flow_rate = (total_input + total_output) / 2.0
+function compute_mass_balance_error(total_in, total_out, storage_rate)
+    error = total_in - total_out - storage_rate
+    average_flow_rate = (total_in + total_out) / 2.0
     relative_error = iszero(average_flow_rate) ? 0.0 : error / average_flow_rate
     return error, relative_error
 end
@@ -77,19 +84,38 @@ function compute_total_storage!(model::LandHydrologySBM, water_balance::MassBala
     return nothing
 end
 
-function storage_prev!(model, reservoir::MassBalance)
-    (; storage) = model.routing.river_flow.boundary_conditions.reservoir.variables
-    reservoir.storage_prev .= storage
+function get_storage(model::LocalInertialRiverFlow, i)
+    (; storage) = model.variables
+    if isnothing(model.floodplain)
+        return storage[i]
+    else
+        total_storage = storage[i] + model.floodplain.variables.storage[i]
+        return total_storage
+    end
+end
+get_storage(model::KinWaveRiverFlow, i) = model.variables.storage[i]
+
+function storage_prev!(model::AbstractRiverFlowModel, water_balance::MassBalance)
+    (; storage_prev) = water_balance
+    for i in eachindex(storage_prev)
+        storage_prev[i] = get_storage(model, i)
+    end
+    return nothing
+end
+
+function storage_prev!(reservoir::Reservoir, water_balance::MassBalance)
+    water_balance.storage_prev .= reservoir.variables.storage
 end
 
 function storage_prev!(model, ::HydrologicalMassBalance)
-    (; river, reservoir, land, subsurface) = model.mass_balance.routing
+    (; river, reservoir, overland, subsurface) = model.mass_balance.routing
+    reservoir_model = model.routing.river_flow.boundary_conditions.reservoir
 
     compute_total_storage!(model.land, model.mass_balance.land)
-    river.storage_prev .= model.routing.river_flow.variables.storage[1:(river.n)]
-    land.storage_prev .= model.routing.overland_flow.variables.storage
+    storage_prev!(model.routing.river_flow, river)
+    overland.storage_prev .= model.routing.overland_flow.variables.storage
     subsurface.storage_prev .= get_storage(model.routing.subsurface_flow)
-    storage_prev!(model, reservoir)
+    storage_prev!(reservoir_model, reservoir)
     return nothing
 end
 
@@ -97,52 +123,86 @@ function storage_prev!(model, ::NoMassBalance)
     return nothing
 end
 
-function compute_land_hydrology_balance!(
-    model::AbstractModel{<:Union{SbmModel, SbmGwfModel}},
-)
+function vertical_in(model::LandHydrologySBM, i::Int)
+    (; precipitation) = model.atmospheric_forcing
+    (; allocation) = model
+    total_in = precipitation[i] + get_irrigation_allocated(allocation)[i]
+    return total_in
+end
+
+function vertical_out(model::LandHydrologySBM, i::Int)
+    (; allocation) = model
+    (; net_runoff, actevap, actleakage) = model.soil.variables
+    (; net_runoff_river) = model.runoff.variables
+    total_out =
+        net_runoff[i] +
+        actevap[i] +
+        net_runoff_river[i] +
+        actleakage[i] +
+        get_groundwater_abstraction_flux(allocation)[i]
+    return total_out
+end
+
+function compute_land_hydrology_balance!(model::AbstractModel{<:SbmModel})
     (; storage_prev, error, relative_error) = model.mass_balance.land
-    (; allocation, snow) = model.land
-    (; net_runoff, actevap, actleakage) = model.land.soil.variables
-    (; net_runoff_river) = model.land.runoff.variables
-    (; precipitation) = model.land.atmospheric_forcing
+    (; snow) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
 
     for i in eachindex(storage_prev)
-        subsurface_flow_in = get_inflow(subsurface_flow)[i]
-        subsurface_flux_in =
-            1000.0 * subsurface_flow_in / area[i] * (model.clock.dt / BASETIMESTEP)
-        total_input =
-            subsurface_flux_in +
-            precipitation[i] +
-            get_irrigation_allocated(allocation)[i] +
-            get_snow_in(snow)[i]
+        f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)
+        subsurface_flux_in = get_inflow(subsurface_flow)[i] * f_conv
+        total_in = subsurface_flux_in + vertical_in(model.land, i) + get_snow_in(snow)[i]
 
-        subsurface_flow_out = get_outflow(subsurface_flow)[i]
-        subsurface_flux_out =
-            1000.0 * subsurface_flow_out / area[i] * (model.clock.dt / BASETIMESTEP)
-        vertical_flux_out =
-            net_runoff[i] +
-            actevap[i] +
-            net_runoff_river[i] +
-            actleakage[i] +
-            get_groundwater_abstraction_flux(allocation)[i]
-        total_output = subsurface_flux_out + vertical_flux_out + get_snow_out(snow)[i]
+        subsurface_flux_out = get_outflow(subsurface_flow)[i] * f_conv
+        vertical_flux_out = vertical_out(model.land, i)
+        total_out = subsurface_flux_out + vertical_flux_out + get_snow_out(snow)[i]
         storage = compute_total_storage(model.land, i)
-
         storage_rate = storage - storage_prev[i]
-        _error, _relative_error =
-            compute_mass_balance_error(total_input, total_output, storage_rate)
-        error[i] = _error
-        relative_error[i] = _relative_error
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
     end
+    return nothing
+end
+
+function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
+    (; storage_prev, error, relative_error) = model.mass_balance.land
+    (; snow) = model.land
+    (; area) = model.domain.land.parameters
+    (; subsurface_flow) = model.routing
+
+    boundaries_flow_in, boundaries_flow_out =
+        sum_boundary_fluxes(subsurface_flow; exclude = Recharge)
+
+    for i in eachindex(storage_prev)
+        f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)
+        subsurface_flux_in = get_inflow(subsurface_flow)[i] * f_conv
+        total_in =
+            subsurface_flux_in +
+            vertical_in(model.land, i) +
+            get_snow_in(snow)[i] +
+            boundaries_flow_in[i] * f_conv
+        subsurface_flux_out = get_outflow(subsurface_flow)[i] * f_conv
+        vertical_flux_out = vertical_out(model.land, i)
+        total_out =
+            subsurface_flux_out +
+            vertical_flux_out +
+            get_snow_out(snow)[i] +
+            boundaries_flow_out[i] * f_conv
+        storage = compute_total_storage(model.land, i)
+        storage_rate = storage - storage_prev[i]
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
+    end
+    k = subsurface_flow.constanthead.index
+    error[k] .= 0.0
+    relative_error[k] .= 0.0
     return nothing
 end
 
 function compute_flow_balance!(
     reservoir::Reservoir,
     water_balance::MassBalance,
-    i::Int,
     dt::Float64,
 )
     (; storage_prev, error, relative_error) = water_balance
@@ -150,41 +210,94 @@ function compute_flow_balance!(
     (; precipitation, inflow) = reservoir.boundary_conditions
     (; area) = reservoir.parameters
 
-    total_input = inflow[i] + (precipitation[i] * 0.001 * area[i]) / dt
-    total_output = outflow_av[i] + (actevap[i] * 0.001 * area[i]) / dt
-    storage_rate = (storage[i] - storage_prev[i]) / dt
-    _error, _relative_error =
-        compute_mass_balance_error(total_input, total_output, storage_rate)
-    error[i] = _error
-    relative_error[i] = _relative_error
+    for i in eachindex(storage_prev)
+        total_in = inflow[i] + (precipitation[i] * 0.001 * area[i]) / dt
+        total_out = outflow_av[i] + (actevap[i] * 0.001 * area[i]) / dt
+        storage_rate = (storage[i] - storage_prev[i]) / dt
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
+    end
+    return nothing
 end
+compute_flow_balance!(reservoir::Nothing, water_balance::NoMassBalance, dt::Float64) =
+    nothing
 
 function compute_flow_balance!(
     river_flow::KinWaveRiverFlow,
-    routing_balance::FlowRoutingMassBalance,
+    water_balance::MassBalance,
     network::NetworkRiver,
     dt::Float64,
 )
-    (; storage_prev, error, relative_error) = routing_balance.river
-    (; reservoir) = river_flow.boundary_conditions
+    (; storage_prev, error, relative_error) = water_balance
     (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
         river_flow.boundary_conditions
     (; qin_av, q_av, storage) = river_flow.variables
 
     for i in eachindex(storage_prev)
-        res_index = network.reservoir_indices[i]
-        if !isnothing(reservoir) && res_index != 0
-            compute_flow_balance!(reservoir, routing_balance.reservoir, res_index, dt)
-        end
-        total_input = inwater[i] + qin_av[i] + max(0.0, external_inflow[i])
-        total_output = q_av[i] + actual_external_abstraction_av[i] + abstraction[i]
+        total_in = inwater[i] + qin_av[i] + max(0.0, external_inflow[i])
+        total_out = q_av[i] + actual_external_abstraction_av[i] + abstraction[i]
         storage_rate = (storage[i] - storage_prev[i]) / dt
-        _error, _relative_error =
-            compute_mass_balance_error(total_input, total_output, storage_rate)
-        error[i] = _error
-        relative_error[i] = _relative_error
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
     end
     return nothing
+end
+
+function compute_flow_balance!(
+    river_flow::LocalInertialRiverFlow,
+    water_balance::MassBalance,
+    network::NetworkRiver,
+    dt::Float64,
+)
+    (; storage_prev, error, relative_error) = water_balance
+    (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
+        river_flow.boundary_conditions
+    (; edges_at_node) = network
+
+    for i in river_flow.parameters.active_n
+        total_in = 0.0
+        total_out = 0.0
+        q_src = sum_at(river_flow.variables.q_av, edges_at_node.src[i])
+        total_in, total_out = add_inflow(total_in, total_out, [q_src, inwater[i]])
+        total_in += max(0.0, external_inflow[i])
+        q_dst = sum_at(river_flow.variables.q_av, edges_at_node.dst[i])
+        total_in, total_out = add_outflow(total_in, total_out, q_dst)
+        total_out += actual_external_abstraction_av[i] + abstraction[i]
+        storage = river_flow.variables.storage[i]
+        if !isnothing(river_flow.floodplain)
+            q_src = sum_at(river_flow.floodplain.variables.q_av, edges_at_node.src[i])
+            total_in, total_out = add_inflow(total_in, total_out, q_src)
+            q_dst = sum_at(river_flow.floodplain.variables.q_av, edges_at_node.dst[i])
+            total_in, total_out = add_outflow(total_in, total_out, q_dst)
+            storage += river_flow.floodplain.variables.storage[i]
+        end
+        storage_rate = (storage - storage_prev[i]) / dt
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
+    end
+    return nothing
+end
+
+function add_inflow(qin, qout, inflow)
+    for q in inflow
+        if q > 0.0
+            qin += q
+        else
+            qout -= q
+        end
+    end
+    return qin, qout
+end
+
+function add_outflow(qin, qout, outflow)
+    for q in outflow
+        if q > 0.0
+            qout += q
+        else
+            qin -= q
+        end
+    end
+    return qin, qout
 end
 
 function compute_flow_balance!(
@@ -197,25 +310,137 @@ function compute_flow_balance!(
     (; qin_av, q_av, storage) = overland_flow.variables
 
     for i in eachindex(storage_prev)
-        total_input = inwater[i] + qin_av[i]
-        total_output = q_av[i]
+        total_in = inwater[i] + qin_av[i]
+        total_out = q_av[i]
         storage_rate = (storage[i] - storage_prev[i]) / dt
-        _error, _relative_error =
-            compute_mass_balance_error(total_input, total_output, storage_rate)
-        error[i] = _error
-        relative_error[i] = _relative_error
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
     end
     return nothing
 end
 
+function compute_flow_balance!(
+    river_flow::LocalInertialRiverFlow,
+    overland_flow::LocalInertialOverlandFlow,
+    water_balance::MassBalance,
+    domain::Domain,
+    dt::Float64,
+)
+    indices = domain.land.network.edge_indices
+    inds_river = domain.land.network.river_indices
+    (; storage_prev, error, relative_error) = water_balance
+    (; river_location, reservoir_outlet) = domain.land.parameters
+    (; edges_at_node) = domain.river.network
+    (; qx_av, qy_av, storage) = overland_flow.variables
+    (; runoff) = overland_flow.boundary_conditions
+    (; external_inflow, actual_external_abstraction_av, abstraction) =
+        river_flow.boundary_conditions
+
+    for i in 1:(overland_flow.parameters.n)
+        yd = indices.yd[i]
+        xd = indices.xd[i]
+        total_in = 0.0
+        total_out = 0.0
+        total_in, total_out =
+            add_inflow(total_in, total_out, [qx_av[xd], qy_av[yd], runoff[i]])
+        total_in, total_out = add_outflow(total_in, total_out, [qx_av[i], qy_av[i]])
+        if river_location[i]
+            reservoir_outlet[i] && continue
+            k = inds_river[i]
+            q_src = sum_at(river_flow.variables.q_av, edges_at_node.src[k])
+            total_in, total_out = add_inflow(total_in, total_out, q_src)
+            total_in += max(0.0, external_inflow[k])
+            q_dst = sum_at(river_flow.variables.q_av, edges_at_node.dst[k])
+            total_in, total_out = add_outflow(total_in, total_out, q_dst)
+            total_out += actual_external_abstraction_av[k] + abstraction[k]
+        end
+        storage_rate = (storage[i] - storage_prev[i]) / dt
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
+    end
+end
+
+function compute_flow_balance!(
+    subsurface_flow::LateralSSF,
+    water_balance::MassBalance,
+    parameters::LandParameters,
+    dt::Float64,
+)
+    (; storage_prev, error, relative_error) = water_balance
+    (; storage, ssfin, ssf, exfiltwater) = subsurface_flow.variables
+    (; recharge) = subsurface_flow.boundary_conditions
+    (; flow_length, area) = parameters
+    for i in eachindex(storage_prev)
+        total_in = ssfin[i]
+        total_out = ssf[i] + exfiltwater[i] * area[i]
+        total_in, total_out = add_inflow(total_in, total_out, recharge[i] * flow_length[i])
+        storage_rate = (storage[i] - storage_prev[i]) / (dt / tosecond(BASETIMESTEP))
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
+    end
+end
+
+function compute_flow_balance!(
+    subsurface_flow::GroundwaterFlow{A},
+    water_balance::MassBalance,
+    parameters::LandParameters,
+    dt::Float64,
+) where {A <: UnconfinedAquifer}
+    (; storage_prev, error, relative_error) = water_balance
+    (; storage, q_in_av, q_out_av, exfiltwater_av) = subsurface_flow.aquifer.variables
+    (; area) = subsurface_flow.aquifer.parameters
+
+    n = length(storage_prev)
+    flux_in = zeros(n)
+    flux_out = zeros(n)
+    flux_in, flux_out = sum_boundary_fluxes(subsurface_flow)
+
+    for i in eachindex(storage_prev)
+        total_in = q_in_av[i] + flux_in[i]
+        total_out = q_out_av[i] + flux_out[i] + exfiltwater_av[i] * area[i]
+        storage_rate = (storage[i] - storage_prev[i]) / (dt / tosecond(BASETIMESTEP))
+        error[i], relative_error[i] =
+            compute_mass_balance_error(total_in, total_out, storage_rate)
+    end
+    index_const_head = subsurface_flow.constanthead.index
+    error[index_const_head] .= 0.0
+    relative_error[index_const_head] .= 0.0
+    return nothing
+end
+
 function compute_flow_routing_balance!(model)
-    (; river_flow, overland_flow) = model.routing
+    (; river_flow, overland_flow, subsurface_flow) = model.routing
+    (; reservoir) = river_flow.boundary_conditions
     (; routing) = model.mass_balance
-    (; land) = routing
-    (; network) = model.domain.river
     dt = tosecond(model.clock.dt)
-    compute_flow_balance!(river_flow, routing, network, dt)
-    compute_flow_balance!(overland_flow, land, dt)
+
+    compute_flow_balance!(river_flow, routing.river, model.domain.river.network, dt)
+    compute_flow_balance!(reservoir, routing.reservoir, dt)
+    compute_flow_balance!(overland_flow, routing.overland, dt)
+    compute_flow_balance!(
+        subsurface_flow,
+        routing.subsurface,
+        model.domain.land.parameters,
+        dt,
+    )
+end
+
+function compute_flow_routing_balance!(
+    model::Model{R},
+) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
+    (; river_flow, overland_flow, subsurface_flow) = model.routing
+    (; reservoir) = river_flow.boundary_conditions
+    (; routing) = model.mass_balance
+    dt = tosecond(model.clock.dt)
+
+    compute_flow_balance!(river_flow, overland_flow, routing.overland, model.domain, dt)
+    compute_flow_balance!(reservoir, routing.reservoir, dt)
+    compute_flow_balance!(
+        subsurface_flow,
+        routing.subsurface,
+        model.domain.land.parameters,
+        dt,
+    )
 end
 
 function compute_mass_balance!(model, ::HydrologicalMassBalance)

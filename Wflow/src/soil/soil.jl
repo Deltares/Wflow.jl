@@ -1228,6 +1228,7 @@ function update_diagnostic_vars!(model::SbmSoilModel)
         ustorelayerthickness,
         ustorecapacity,
         ustoredepth,
+        total_soilwater_storage,
         n_unsatlayers,
     ) = model.variables
     (; soilthickness, theta_s, theta_r, soilwatercapacity, sumlayers, act_thickl) =
@@ -1238,6 +1239,7 @@ function update_diagnostic_vars!(model::SbmSoilModel)
     @. ustorecapacity = soilwatercapacity - satwaterdepth - ustoredepth
     @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
     @. n_unsatlayers = number_of_active_layers(ustorelayerthickness)
+    @. total_soilwater_storage = satwaterdepth + ustoredepth
 end
 
 # wrapper method
