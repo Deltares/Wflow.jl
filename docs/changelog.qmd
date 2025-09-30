@@ -10,6 +10,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Unreleased
 
 ### Fixed
+- Introduced in v1.0.0-rc2, setting fixed values for forcing parameters failed for model
+  type `sediment` because of incorrect handling of reservoirs, this has been fixed.
 
 ### Changed
 
