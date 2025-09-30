@@ -9,14 +9,14 @@ struct NoMassBalance <: AbstractMassBalance end
 end
 
 @with_kw struct FlowRoutingMassBalance
-    river::Union{MassBalance, NoMassBalance}
-    reservoir::Union{MassBalance, NoMassBalance}
-    overland::MassBalance
-    subsurface::MassBalance
+    river_water_balance::Union{MassBalance, NoMassBalance}
+    reservoir_water_balance::Union{MassBalance, NoMassBalance}
+    overland_water_balance::MassBalance
+    subsurface_water_balance::MassBalance
 end
 
 @with_kw struct HydrologicalMassBalance <: AbstractMassBalance
-    land::MassBalance
+    land_water_balance::MassBalance
     routing::FlowRoutingMassBalance
 end
 
@@ -27,23 +27,26 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
         n_river = length(domain.river.network.indices)
         if config.model.reservoir__flag
             n_reservoir = length(domain.reservoir.network.indices_outlet)
-            reservoir = MassBalance(; n = n_reservoir)
+            reservoir_water_balance = MassBalance(; n = n_reservoir)
         else
-            reservoir = NoMassBalance()
+            reservoir_water_balance = NoMassBalance()
         end
         if land_routing == RoutingType.local_inertial &&
            river_routing == RoutingType.local_inertial
-            river = NoMassBalance()
+            river_water_balance = NoMassBalance()
         else
-            river = MassBalance(; n = n_river)
+            river_water_balance = MassBalance(; n = n_river)
         end
         routing = FlowRoutingMassBalance(;
-            river,
-            reservoir,
-            overland = MassBalance(; n = n_land),
-            subsurface = MassBalance(; n = n_land),
+            river_water_balance,
+            reservoir_water_balance,
+            overland_water_balance = MassBalance(; n = n_land),
+            subsurface_water_balance = MassBalance(; n = n_land),
         )
-        mass_balance = HydrologicalMassBalance(; land = MassBalance(; n = n_land), routing)
+        mass_balance = HydrologicalMassBalance(;
+            land_water_balance = MassBalance(; n = n_land),
+            routing,
+        )
     else
         mass_balance = NoMassBalance()
     end
@@ -108,14 +111,22 @@ function storage_prev!(reservoir::Reservoir, water_balance::MassBalance)
 end
 
 function storage_prev!(model, ::HydrologicalMassBalance)
-    (; river, reservoir, overland, subsurface) = model.mass_balance.routing
-    reservoir_model = model.routing.river_flow.boundary_conditions.reservoir
+    (;
+        river_water_balance,
+        reservoir_water_balance,
+        overland_water_balance,
+        subsurface_water_balance,
+    ) = model.mass_balance.routing
+    (; land_water_balance) = model.mass_balance
+    (; land) = model
+    (; overland_flow, river_flow, subsurface_flow) = model.routing
+    (; reservoir) = model.routing.river_flow.boundary_conditions
 
-    compute_total_storage!(model.land, model.mass_balance.land)
-    storage_prev!(model.routing.river_flow, river)
-    overland.storage_prev .= model.routing.overland_flow.variables.storage
-    subsurface.storage_prev .= get_storage(model.routing.subsurface_flow)
-    storage_prev!(reservoir_model, reservoir)
+    compute_total_storage!(land, land_water_balance)
+    storage_prev!(river_flow, river_water_balance)
+    overland_water_balance.storage_prev .= overland_flow.variables.storage
+    subsurface_water_balance.storage_prev .= get_storage(subsurface_flow)
+    storage_prev!(reservoir, reservoir_water_balance)
     return nothing
 end
 
@@ -144,7 +155,7 @@ function vertical_out(model::LandHydrologySBM, i::Int)
 end
 
 function compute_land_hydrology_balance!(model::AbstractModel{<:SbmModel})
-    (; storage_prev, error, relative_error) = model.mass_balance.land
+    (; storage_prev, error, relative_error) = model.mass_balance.land_water_balance
     (; snow) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
@@ -166,7 +177,7 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmModel})
 end
 
 function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
-    (; storage_prev, error, relative_error) = model.mass_balance.land
+    (; storage_prev, error, relative_error) = model.mass_balance.land_water_balance
     (; snow) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
@@ -411,15 +422,20 @@ end
 function compute_flow_routing_balance!(model)
     (; river_flow, overland_flow, subsurface_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
-    (; routing) = model.mass_balance
+    (;
+        river_water_balance,
+        reservoir_water_balance,
+        overland_water_balance,
+        subsurface_water_balance,
+    ) = model.mass_balance.routing
     dt = tosecond(model.clock.dt)
 
-    compute_flow_balance!(river_flow, routing.river, model.domain.river.network, dt)
-    compute_flow_balance!(reservoir, routing.reservoir, dt)
-    compute_flow_balance!(overland_flow, routing.overland, dt)
+    compute_flow_balance!(river_flow, river_water_balance, model.domain.river.network, dt)
+    compute_flow_balance!(reservoir, reservoir_water_balance, dt)
+    compute_flow_balance!(overland_flow, overland_water_balance, dt)
     compute_flow_balance!(
         subsurface_flow,
-        routing.subsurface,
+        subsurface_water_balance,
         model.domain.land.parameters,
         dt,
     )
@@ -430,14 +446,21 @@ function compute_flow_routing_balance!(
 ) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
     (; river_flow, overland_flow, subsurface_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
-    (; routing) = model.mass_balance
+    (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =
+        model.mass_balance.routing
     dt = tosecond(model.clock.dt)
 
-    compute_flow_balance!(river_flow, overland_flow, routing.overland, model.domain, dt)
-    compute_flow_balance!(reservoir, routing.reservoir, dt)
+    compute_flow_balance!(
+        river_flow,
+        overland_flow,
+        overland_water_balance,
+        model.domain,
+        dt,
+    )
+    compute_flow_balance!(reservoir, reservoir_water_balance, dt)
     compute_flow_balance!(
         subsurface_flow,
-        routing.subsurface,
+        subsurface_water_balance,
         model.domain.land.parameters,
         dt,
     )
