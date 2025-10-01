@@ -1141,12 +1141,14 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         end
 
         ustoredepth = sum(@view ustorelayerdepth[1:n_unsatlayers])
-        sbm_runoff =
+        sbm_runoff = max(
+            0.0,
             exfiltustore +
             exfiltsatwater[i] +
             v.excesswater[i] +
             runoff_land[i] +
-            v.infiltexcess[i]
+            v.infiltexcess[i],
+        )
 
         # volumetric water content per soil layer and root zone
         vwc = v.vwc[i]

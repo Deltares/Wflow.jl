@@ -276,10 +276,6 @@ function compute_flow_balance!(
         total_out += actual_external_abstraction_av[i] + abstraction[i]
         storage = river_flow.variables.storage[i]
         if !isnothing(river_flow.floodplain)
-            q_src = sum_at(river_flow.floodplain.variables.q_av, edges_at_node.src[i])
-            total_in, total_out = add_inflow(total_in, total_out, q_src)
-            q_dst = sum_at(river_flow.floodplain.variables.q_av, edges_at_node.dst[i])
-            total_in, total_out = add_outflow(total_in, total_out, q_dst)
             storage += river_flow.floodplain.variables.storage[i]
         end
         storage_rate = (storage - storage_prev[i]) / dt

@@ -116,6 +116,7 @@ snow__flag = true
 soil_layer__thickness = [100, 300, 800]
 river_routing = "local_inertial"
 land_routing = "local_inertial"
+land_local_inertial_flow__theta_coefficient = 1.0
 type = "sbm"
 
 [output.netcdf_grid]
