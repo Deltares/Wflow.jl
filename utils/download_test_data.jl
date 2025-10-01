@@ -4,7 +4,6 @@ const source_url = "https://github.com/visr/wflow-artifacts/releases/download"
 const testdir = normpath(@__DIR__, "../Wflow/test")
 
 # ensure test data is present
-# this code is copied from runtests.jl, and is a temporary solution to get the data in place
 const datadir = joinpath(testdir, "data")
 const inputdir = joinpath(datadir, "input")
 isdir(inputdir) || mkpath(inputdir)
