@@ -654,3 +654,40 @@ Wflow.close_files(model; delete_output = false)
 
     Wflow.close_files(model; delete_output = false)
 end
+
+@testset "water balance sbm (kinematic wave routing)" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; land_water_balance, routing) = model.mass_balance
+    (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 6.6e11, overland_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_av)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.2e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 5.4e11, routing.overland_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_av)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 3e-5, river_water_balance.error)
+        @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_av)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 1.2e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+end
