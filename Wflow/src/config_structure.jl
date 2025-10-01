@@ -126,7 +126,7 @@ end
 
 @kwdef mutable struct InputEntry <: AbstractConfigSection
     # Option 1
-    netcdf_variable_name::Union{Nothing, String} = nothing # Comes from dict["netcdf"]["variable"]["name"]
+    netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
     offset::Vector{Float64} = [0.0]
     layer::Union{Nothing, Vector{Int}} = nothing

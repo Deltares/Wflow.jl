@@ -215,20 +215,16 @@ config = Wflow.Config(tomlpath)
 config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
     Wflow.init_config_section(
         Wflow.InputEntry,
-        Dict("scale" => 2.0, "netcdf" => Dict("variable" => Dict("name" => "precip"))),
+        Dict("scale" => 2.0, "netcdf_variable_name" => "precip"),
     )
 config.input.forcing["land_surface_water__potential_evaporation_volume_flux"] =
     Wflow.init_config_section(
         Wflow.InputEntry,
-        Dict(
-            "scale" => 3.0,
-            "offset" => 1.50,
-            "netcdf" => Dict("variable" => Dict("name" => "pet")),
-        ),
+        Dict("scale" => 3.0, "offset" => 1.50, "netcdf_variable_name" => "pet"),
     )
 config.input.cyclic["vegetation__leaf_area_index"] = Wflow.init_config_section(
     Wflow.InputEntry,
-    Dict("scale" => 1.6, "netcdf" => Dict("variable" => Dict("name" => "LAI"))),
+    Dict("scale" => 1.6, "netcdf_variable_name" => "LAI"),
 )
 
 model = Wflow.Model(config)

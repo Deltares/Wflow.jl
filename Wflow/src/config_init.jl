@@ -50,7 +50,7 @@ function convert_value(
 end
 
 """
-Initialize the configuration section of type T<:AbstractConfigSection. If T itself contains fields of 
+Initialize the configuration section of type T<:AbstractConfigSection. If T itself contains fields of
 type <:AbstractConfigSection, this function works recursively.
 """
 function init_config_section(
@@ -109,12 +109,10 @@ init_config_section(::Type{T}, data::Any) where {T <: AbstractConfigSection} =
 
 # Option 1 and 2 (see struct InputEntry)
 function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
-    netcdf_variable_name = get_nested(dict, ["netcdf", "variable", "name"])
+    netcdf_variable_name = get(dict, "netcdf_variable_name", nothing)
     value = get(dict, "value", nothing)
 
     if !isnothing(netcdf_variable_name)
-        dict["netcdf_variable_name"] = netcdf_variable_name
-        pop!(dict, "netcdf")
         # Option 1
         len = missing
 
@@ -269,16 +267,10 @@ to_dict(input_entries::InputEntries) =
     Dict{String, Any}(name => to_dict(entry) for (name, entry) in input_entries.dict)
 
 function to_dict(input_entry::InputEntry)
-    (; netcdf_variable_name, external_name) = input_entry
+    (; external_name) = input_entry
     dict = invoke(to_dict, Tuple{AbstractConfigSection}, input_entry)
-    if !isnothing(input_entry.external_name)
+    if !isnothing(external_name)
         return external_name
-    end
-    if !isnothing(netcdf_variable_name)
-        dict["netcdf"] = Dict{String, Any}(
-            "variable" => Dict{String, Any}("name" => netcdf_variable_name),
-        )
-        pop!(dict, "netcdf_variable_name")
     end
     return dict
 end
