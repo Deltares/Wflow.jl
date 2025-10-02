@@ -6,7 +6,7 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>{39da8083-e405-42e6-850c-d25685e91f81}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <ReleaseVersion>1.0.0-rc3-dev</ReleaseVersion>
+    <ReleaseVersion>1.0.0-rc2</ReleaseVersion>
     <OutputType>Package</OutputType>
     <DefineSolutionProperties>false</DefineSolutionProperties>
   </PropertyGroup>
