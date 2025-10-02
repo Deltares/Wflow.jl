@@ -876,17 +876,6 @@
     ]
   },
   {
-    "objectID": "changelog.html#unreleased",
-    "href": "changelog.html#unreleased",
-    "title": "Changelog",
-    "section": "Unreleased",
-    "text": "Unreleased\n\nFixed\n\nIntroduced in v1.0.0-rc2, setting fixed values for forcing parameters failed for model type sediment because of incorrect handling of reservoirs, this has been fixed.\n\n\n\nChanged\n\n\nAdded",
-    "crumbs": [
-      "Home",
-      "Changelog"
-    ]
-  },
-  {
     "objectID": "changelog.html#v1.0.0-rc2---2025-09-29",
     "href": "changelog.html#v1.0.0-rc2---2025-09-29",
     "title": "Changelog",
