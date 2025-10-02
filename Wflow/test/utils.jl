@@ -20,6 +20,8 @@ end
     @test Wflow.julian_day(DateTime(2001, 2, 28)) == 59
     @test Wflow.julian_day(DateTime(2001, 3, 1)) == 60
     @test Wflow.julian_day(DateTime(2001, 12, 31)) == 365
+    @test Wflow.julian_day(CFTime.DateTimeStandard(2001, 12, 31)) == 365
+    @test Wflow.julian_day(CFTime.DateTime360Day(2001, 12, 30)) == 360
 end
 
 @testset "Bounded divide" begin
