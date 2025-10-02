@@ -278,3 +278,7 @@ Wflow.run_timestep!(model)
 end
 
 Wflow.close_files(model)
+
+@testset "run wflow sediment" begin
+    Wflow.run(tomlpath; silent = true)
+end

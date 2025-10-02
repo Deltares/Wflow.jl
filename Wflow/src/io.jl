@@ -70,11 +70,13 @@ end
 Get fixed netCDF forcing input."
 """
 function load_fixed_forcing!(model)
-    (; reader, domain, config) = model
+    (; reader, domain) = model
     (; forcing_parameters) = reader
 
+    do_reservoirs = routing_with_reservoirs(model)
+
     reverse_indices = domain.land.network.reverse_indices
-    if config.model.reservoir__flag
+    if do_reservoirs
         sel_reservoirs = domain.reservoir.network.indices_coverage
         param_res = get_param_res(model)
     end
@@ -88,7 +90,7 @@ function load_fixed_forcing!(model)
             # the reservoir structs and set the precipitation and evaporation to 0 in the
             # land model
             if par in mover_params
-                if config.model.reservoir__flag
+                if do_reservoirs
                     for (i, sel_reservoir) in enumerate(sel_reservoirs)
                         param[reverse_indices[sel_reservoir]] .= 0
                         param_res[par][i] = val
