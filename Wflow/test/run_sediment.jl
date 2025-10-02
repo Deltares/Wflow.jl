@@ -101,7 +101,7 @@ end
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_config.toml")
     config = Wflow.Config(tomlpath)
-    config.model["cold_start__flag"] = false
+    config.model.cold_start__flag = false
     model = Wflow.Model(config)
     @testset "initial warm states" begin
         river = model.routing.river_flow

@@ -113,14 +113,14 @@ subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio 
 vegetation__leaf_area_index = "LAI"
 
 [input.static.soil_surface_water__vertical_saturated_hydraulic_conductivity]
-netcdf.variable.name = "KsatVer"
+netcdf_variable_name = "KsatVer"
 scale = 1.0
 offset = 0.0
 
 [model]
 kinematic_wave__adaptive_time_step_flag = true
 river_routing = "local_inertial"
-snow_gravitional_transport__flag = true
+snow_gravitational_transport__flag = true
 cold_start__flag = true
 reservoir__flag = true
 snow__flag = true

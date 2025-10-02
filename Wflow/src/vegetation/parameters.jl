@@ -29,8 +29,7 @@ function VegetationParameters(
     rootingdepth = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(config, "vegetation__crop_factor")
     kc = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
-    do_cyclic = haskey(config.input, "cyclic")
-    if do_cyclic && haskey(config.input.cyclic, "vegetation__leaf_area_index")
+    if do_cyclic(config) && haskey(config.input.cyclic, "vegetation__leaf_area_index")
         lens = lens_input_parameter(
             config,
             "vegetation__specific_leaf_storage";

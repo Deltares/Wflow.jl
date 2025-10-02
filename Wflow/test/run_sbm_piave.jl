@@ -246,7 +246,7 @@ end
     config.time.endtime = DateTime(2010, 7, 3)
     tomlpath_debug = joinpath(@__DIR__, "sbm_piave_config-debug.toml")
     open(tomlpath_debug, "w") do io
-        TOML.print(io, Dict(config))
+        TOML.print(io, Wflow.to_dict(config))
     end
     Wflow.run(tomlpath_debug; silent = true)
     rm(tomlpath_debug)

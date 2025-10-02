@@ -4,7 +4,7 @@ abstract type AbstractGlacierModel end
 @with_kw struct GlacierVariables
     # Water within the glacier [mm]
     glacier_store::Vector{Float64}
-    # Glacier melt [mm Δt⁻¹]  
+    # Glacier melt [mm Δt⁻¹]
     glacier_melt::Vector{Float64}
 end
 
@@ -14,7 +14,7 @@ function GlacierVariables(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "glacier_ice__initial_leq-depth")
+    lens = lens_input_parameter(config, "glacier_ice__initial_leq_depth")
     glacier_store = ncread(
         dataset,
         config,
@@ -78,7 +78,7 @@ function GlacierHbvParameters(
         type = Float64,
         fill = 0.0,
     )
-    lens = lens_input_parameter(config, "glacier_ice__degree-day_coefficient")
+    lens = lens_input_parameter(config, "glacier_ice__degree_day_coefficient")
     g_cfmax =
         ncread(
             dataset,

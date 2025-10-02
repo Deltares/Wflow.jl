@@ -7,8 +7,8 @@
 
     (; domain) = model
 
-    min_sto_river = get(config.model, "min_streamorder_river", 6)
-    min_sto_land = get(config.model, "min_streamorder_land", 5)
+    min_sto_river = config.model.river_streamorder__min_count
+    min_sto_land = config.model.land_streamorder__min_count
     index_pit = [domain.land.network.order[end]]
     @test min_sto_river == 6
 

@@ -77,27 +77,24 @@ each domain that can used by different model components.
 end
 
 "Initialize `Domain` for model types `sbm` and `sbm_gwf`"
-function Domain(
-    dataset::NCDataset,
-    config::Config,
-    modelsettings::NamedTuple,
-    routing_types::NamedTuple,
-)
-    network_land = NetworkLand(dataset, config, modelsettings)
-    if routing_types.land == "kinematic_wave" ||
-       routing_types.subsurface == "kinematic_wave"
+function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfModel})
+    (; land_routing, river_routing) = config.model
+
+    network_land = NetworkLand(dataset, config)
+    if land_routing == RoutingType.kinematic_wave ||
+       subsurface_routing(config) == RoutingType.kinematic_wave
         network_land = network_subdomains(config, network_land)
     end
 
     network_river =
-        NetworkRiver(dataset, config, network_land; do_pits = modelsettings.pits)
-    if routing_types.river == "kinematic_wave"
+        NetworkRiver(dataset, config, network_land; do_pits = config.model.pit__flag)
+    if river_routing == RoutingType.kinematic_wave
         network_river = network_subdomains(config, network_river)
     end
 
     pits = zeros(Bool, network_land.modelsize)
     nriv = length(network_river.indices)
-    if modelsettings.reservoirs
+    if config.model.reservoir__flag
         network_reservoir, inds_reservoir_map2river =
             NetworkReservoir(dataset, config, network_river)
         pits[network_reservoir.indices_outlet] .= true
@@ -107,22 +104,22 @@ function Domain(
     end
     @reset network_river.reservoir_indices = inds_reservoir_map2river
 
-    if routing_types.river == "kinematic_wave"
+    if river_routing == RoutingType.kinematic_wave
         @reset network_river.upstream_nodes =
             filter_upsteam_nodes(network_river.graph, pits[network_river.indices])
-    elseif routing_types.river == "local_inertial"
+    elseif river_routing == RoutingType.local_inertial
         nodes_at_edge, index_pit = NodesAtEdge(network_river)
         @reset network_river.nodes_at_edge = nodes_at_edge
         @reset network_river.pit_indices = network_river.indices[index_pit]
         @reset network_river.edges_at_node = EdgesAtNode(network_river)
     end
 
-    if routing_types.land == "kinematic_wave" ||
-       routing_types.subsurface == "kinematic_wave"
+    if land_routing == RoutingType.kinematic_wave ||
+       subsurface_routing(config) == RoutingType.kinematic_wave
         @reset network_land.upstream_nodes =
             filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
     end
-    if routing_types.land == "local_inertial"
+    if land_routing == RoutingType.local_inertial
         @reset network_land.edge_indices = EdgeConnectivity(network_land)
         @reset network_land.river_indices =
             network_river.reverse_indices[network_land.indices]
@@ -141,14 +138,14 @@ function Domain(
     @reset domain.land.parameters = land_params
     @reset domain.river.parameters = river_params
 
-    if modelsettings.drains
+    if config.model.drain__flag
         (; indices) = domain.land.network
         (; surface_flow_width) = domain.land.parameters
         @reset domain.drain.network =
             NetworkDrain(dataset, config, indices, surface_flow_width)
     end
 
-    if modelsettings.water_demand
+    if do_water_demand(config)
         allocation_area_indices, river_allocation_indices =
             get_allocation_area_indices(dataset, config, domain)
         @reset domain.land.network.allocation_area_indices = allocation_area_indices
@@ -161,11 +158,12 @@ function Domain(
     end
 
     if nthreads() > 1
-        (; min_streamorder_land, min_streamorder_river) = modelsettings
-        if routing_types.river == "kinematic_wave"
+        min_streamorder_land = config.model.land_streamorder__min_count
+        min_streamorder_river = config.model.river_streamorder__min_count
+        if river_routing == RoutingType.kinematic_wave
             @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
-        elseif routing_types.land == "kinematic_wave" ||
-               routing_types.subsurface == "kinematic_wave"
+        elseif land_routing == RoutingType.kinematic_wave ||
+               subsurface_routing(config) == RoutingType.kinematic_wave
             @info "Parallel execution of kinematic wave" min_streamorder_land
         end
     end
@@ -174,8 +172,8 @@ function Domain(
 end
 
 "Initialize `Domain` for model type `sediment`"
-function Domain(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
-    network_land = NetworkLand(dataset, config, modelsettings)
+function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
+    network_land = NetworkLand(dataset, config)
     network_river = NetworkRiver(dataset, config, network_land)
 
     domain_land = DomainLand(; network = network_land)
@@ -338,8 +336,8 @@ function get_cell_lengths(dataset::NCDataset, config::Config, network::NetworkLa
     y = permutedims(repeat(y_coords; outer = (1, length(x_coords))))[network.indices]
     celllength = abs(mean(diff(x_coords)))
 
-    cell_length_in_meter = get(config.model, "cell_length_in_meter__flag", false)::Bool
-    x_length, y_length = cell_lengths(y, celllength, cell_length_in_meter)
+    x_length, y_length =
+        cell_lengths(y, celllength, config.model.cell_length_in_meter__flag)
     return x_length, y_length
 end
 
@@ -353,7 +351,7 @@ end
 
 "Return river mask"
 function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
-    lens = lens_input(config, "river_location__mask"; optional = false)
+    lens = lens_input("river_location__mask")
     river_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     river_location = river_2d[network.indices]
     return river_location
@@ -364,12 +362,11 @@ function reservoir_mask(
     dataset::NCDataset,
     config::Config,
     network::NetworkLand;
-    region = "location",
+    region::String = "location",
 )
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     reservoirs = fill(0, length(network.indices))
-    if do_reservoirs
-        lens = lens_input(config, "reservoir_$(region)__count"; optional = false)
+    if config.model.reservoir__flag
+        lens = lens_input("reservoir_$(region)__count")
         reservoirs =
             ncread(dataset, config, lens; sel = network.indices, type = Float64, fill = 0)
     end
@@ -378,16 +375,10 @@ function reservoir_mask(
 end
 
 "Mask reservoir coverage based on mask value `mask_value`"
-function mask_reservoir_coverage!(
-    mask::AbstractMatrix,
-    config::Config,
-    domain::Domain;
-    mask_value = 0,
-)
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    if do_reservoirs
+function mask_reservoir_coverage!(mask::AbstractMatrix, config::Config, domain::Domain)
+    if config.model.reservoir__flag
         inds_cov = collect(Iterators.flatten(domain.reservoir.network.indices_coverage))
-        mask[inds_cov] .= mask_value
+        mask[inds_cov] .= 0
     end
     return nothing
 end

@@ -77,12 +77,12 @@ vegetation__specific_leaf_storage = "Sl"
 vegetation_wood_water__storage_capacity = "Swood"
 land_water_covered__area_fraction = "WaterFrac"
 vegetation__crop_factor = "kc"
-vegetation_root__feddes_critial_pressure_head_h1_reduction_coefficient = "alpha_h1"
-vegetation_root__feddes_critial_pressure_head_h1 = "h1"
-vegetation_root__feddes_critial_pressure_head_h2 = "h2"
-vegetation_root__feddes_critial_pressure_head_h3_high = "h3_high"
-vegetation_root__feddes_critial_pressure_head_h3_low = "h3_low"
-vegetation_root__feddes_critial_pressure_head_h4 = "h4"
+vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient = "alpha_h1"
+vegetation_root__feddes_critical_pressure_head_h1 = "h1"
+vegetation_root__feddes_critical_pressure_head_h2 = "h2"
+vegetation_root__feddes_critical_pressure_head_h3_high = "h3_high"
+vegetation_root__feddes_critical_pressure_head_h3_low = "h3_low"
+vegetation_root__feddes_critical_pressure_head_h4 = "h4"
 soil_water__saturated_volume_fraction = "thetaS"
 soil_water__residual_volume_fraction = "thetaR"
 soil__thickness = "SoilThickness"
@@ -109,7 +109,7 @@ irrigated_non_paddy__irrigation_trigger_flag = "nonpaddy_irrigation_trigger"
 
 [model]
 type = "sbm"
-snow_gravitional_transport__flag = true
+snow_gravitational_transport__flag = true
 snow__flag = true
 cold_start__flag = false
 reservoir__flag = true
