@@ -391,7 +391,7 @@ function lens_input(
         end
         if !optional && !was_set
             error(
-                """Required input model parameter with standard name $p not set in TOML file 
+                """Required input model parameter with standard name $p not set in TOML file
                 (below `[input]` section)""",
             )
         end
@@ -706,7 +706,7 @@ function set_effective_flowwidth!(
 end
 
 "Return julian day of year (leap days are not counted)"
-function julian_day(time::Union{Date, DateTime})::Int
+function julian_day(time)::Int
     # for all years February 28 is day 59 and March 1 is day 60.
     day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60)
     return day
