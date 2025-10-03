@@ -1,5 +1,6 @@
 ## load test dependencies and set paths to testing data
 using Accessors
+using CFTime
 using Dates
 using Downloads
 using Graphs
