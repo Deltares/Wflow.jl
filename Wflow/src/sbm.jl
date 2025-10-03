@@ -31,7 +31,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     if do_snow
         snow = SnowHbvModel(dataset, config, indices, dt)
     else
-        snow = NoSnowModel()
+        snow = NoSnowModel(n)
     end
     if do_snow && do_glacier
         glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
@@ -41,9 +41,9 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
             "glacier modelling, set `snow__flag` to `true` in the Model section of the TOML file.",
         )
-        glacier = NoGlacierModel()
+        glacier = NoGlacierModel(n)
     else
-        glacier = NoGlacierModel()
+        glacier = NoGlacierModel(n)
     end
     runoff = OpenWaterRunoff(n)
 
@@ -55,8 +55,8 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         allocation = AllocationLand(dataset, config, indices)
         demand = Demand(dataset, config, indices, dt)
     else
-        allocation = NoAllocationLand()
-        demand = NoDemand()
+        allocation = NoAllocationLand(n)
+        demand = NoDemand(; n)
     end
 
     args = (demand, allocation)

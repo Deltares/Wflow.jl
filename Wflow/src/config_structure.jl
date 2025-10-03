@@ -73,6 +73,7 @@ end
     soil_layer__thickness::Vector{Int} = [100, 300, 800]
     saturated_hydraulic_conductivity_profile::VerticalConductivityProfile.T =
         VerticalConductivityProfile.exponential
+    water_mass_balance__flag::Bool = false
     # Routing method
     land_routing::RoutingType.T = RoutingType.kinematic_wave
     river_routing::RoutingType.T = RoutingType.kinematic_wave

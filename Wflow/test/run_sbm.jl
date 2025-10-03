@@ -104,7 +104,7 @@ Wflow.run_timestep!(model)
     @test snow.variables.snow_storage[5] ≈ 3.843412524052313
     @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949
     @test sbm.variables.total_storage[50063] ≈ 560.0152135062889
-    @test sbm.variables.total_storage[429] ≈ 616.8916185820142  # river cell
+    @test sbm.variables.total_storage[429] ≈ 616.8761558137226  # river cell
 end
 
 @testset "subsurface flow" begin
@@ -117,7 +117,7 @@ end
 
 @testset "overland flow" begin
     q = model.routing.overland_flow.variables.q_av
-    @test sum(q) ≈ 285.29655590226673
+    @test sum(q) ≈ 285.1981173293668
     @test q[26625] ≈ 0.0
     @test q[39308] ≈ 0.0
     @test q[domain.land.network.order[end]] ≈ 1.0e-30
@@ -125,17 +125,17 @@ end
 
 @testset "river flow" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 3846.1068741546355
-    @test q[1622] ≈ 0.0007514485505472345
-    @test q[43] ≈ 11.928086691686428
-    @test q[domain.river.network.order[end]] ≈ 0.044189018390543434
+    @test sum(q) ≈ 3845.0705121561696
+    @test q[1622] ≈ 0.0007514484909894775
+    @test q[43] ≈ 11.924021956599734
+    @test q[domain.river.network.order[end]] ≈ 0.04418902201143241
 end
 
 @testset "reservoir simple" begin
     res = model.routing.river_flow.boundary_conditions.reservoir
     @test res.variables.outflow[1] ≈ 0.2174998614438593
     @test res.variables.outflow_av[1] ≈ 0.21749986282401396
-    @test res.boundary_conditions.inflow[1] ≈ 0.00051287944327482
+    @test res.boundary_conditions.inflow[1] ≈ 0.0005128794515421848
     @test res.variables.storage[1] ≈ 2.751299001489657f7
     @test res.variables.storage_av[1] ≈ 2.752388968718314f7
     @test res.variables.actevap[1] ≈ 0.5400000810623169
@@ -204,7 +204,7 @@ end
     q = model.routing.river_flow.variables.q_av
     @test q[4009] ≈ 8.533285784984278 # pit/ outlet, CartesianIndex(141, 228)
     @test q[4020] ≈ 0.006779712743030111 # downstream of pit 4009, CartesianIndex(141, 229)
-    @test q[2508] ≈ 150.2672574147025 # pit/ outlet
+    @test q[2508] ≈ 150.27203595973015 # pit/ outlet
     @test q[5808] ≈ 0.12319287597731672 # pit/ outlet
 end
 
@@ -256,10 +256,10 @@ Wflow.run_timestep!(model)
     @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
     @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
           0.0
-    @test model.routing.river_flow.variables.q_av[44] ≈ 10.545108098407255
+    @test model.routing.river_flow.variables.q_av[44] ≈ 10.541686508804975
     @test reservoir.boundary_conditions.external_inflow[2] == -1.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
-    @test reservoir.boundary_conditions.inflow[2] ≈ -0.9034940832803586
+    @test reservoir.boundary_conditions.inflow[2] ≈ -0.9034940467629443
     @test reservoir.variables.storage_av[2] ≈ 4.621644103995512e7
     @test reservoir.variables.outflow_av[2] ≈ 3.000999922024245
 end
@@ -280,7 +280,7 @@ Wflow.run_timestep!(model)
     @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
     @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
           0.0
-    @test model.routing.river_flow.variables.q_av[44] ≈ 10.506442564804969
+    @test model.routing.river_flow.variables.q_av[44] ≈ 10.50305047607618
     @test reservoir.boundary_conditions.external_inflow[2] == -1.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
     @test reservoir.boundary_conditions.inflow[2] ≈ -0.9071721542108732
@@ -301,12 +301,12 @@ model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
     @test actual_external_abstraction_av[44] ≈ 1.5977234689598292
     @test q_av[44] ≈ 1.4346381048266201
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ 5.6461557885428135
-    @test q_av[44] ≈ 4.173559689914583
+    @test actual_external_abstraction_av[44] ≈ 5.64400573816782
+    @test q_av[44] ≈ 4.172112930680855
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ 9.85199447859229
+    @test actual_external_abstraction_av[44] ≈ 9.852122696509884
     @test external_inflow[44] == -10.0
-    @test q_av[44] ≈ 8.159414181574551
+    @test q_av[44] ≈ 8.161991862446984
 end
 
 # test fixed forcing (precipitation = 2.5)
@@ -351,14 +351,14 @@ Wflow.run_timestep!(model)
 
 @testset "river flow and depth (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 3851.882468453605
+    @test sum(q) ≈ 3850.753338502619
     @test q[1622] ≈ 7.289980625194041e-5
-    @test q[43] ≈ 11.708212586581881
-    @test q[501] ≈ 3.477737734513234
+    @test q[43] ≈ 11.704258106198282
+    @test q[501] ≈ 3.476287791554973
     h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.001985933166759342
-    @test h[43] ≈ 0.4329730866991719
-    @test h[501] ≈ 0.0563033301985948
+    @test h[43] ≈ 0.4329048397352018
+    @test h[501] ≈ 0.056289163404440894
     q_channel = model.routing.river_flow.variables.q_channel_av
     @test q ≈ q_channel
 end
@@ -376,12 +376,12 @@ model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
     @test actual_external_abstraction_av[44] ≈ 3.0125200444690616
     @test q_av[44] ≈ 0.0007487510598495983
     Wflow.run_timestep!(model)
-    @test actual_external_abstraction_av[44] ≈ 9.73523034718189
-    @test q_av[44] ≈ 0.07687497983468243
+    @test actual_external_abstraction_av[44] ≈ 9.734928407265986
+    @test q_av[44] ≈ 0.07394550065229302
     Wflow.run_timestep!(model)
     @test actual_external_abstraction_av[44] ≈ 10.0
     @test external_inflow[44] == -10.0
-    @test q_av[44] ≈ 7.904126692597465
+    @test q_av[44] ≈ 7.906446199343239
 end
 model = Wflow.Model(config)
 
@@ -397,21 +397,21 @@ Wflow.run_timestep!(model)
 
 @testset "river and overland flow and depth (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 2495.9569197351266
-    @test q[1622] ≈ 7.300041557915818e-5
-    @test q[43] ≈ 5.361194661421843
-    @test q[501] ≈ 1.6008404903133953
+    @test sum(q) ≈ 2487.788003075457
+    @test q[1622] ≈ 7.300095720748329e-5
+    @test q[43] ≈ 5.361589700955226
+    @test q[501] ≈ 1.5963379999546816
     h = model.routing.river_flow.variables.h_av
-    @test h[1622] ≈ 0.001986911257475209
-    @test h[43] ≈ 0.30038092757954926
-    @test h[501] ≈ 0.031910646103667804
+    @test h[1622] ≈ 0.0019869164746288163
+    @test h[43] ≈ 0.30039113560179925
+    @test h[501] ≈ 0.031860877159887564
     qx = model.routing.overland_flow.variables.qx
     qy = model.routing.overland_flow.variables.qy
-    @test qx[[26, 35, 631]] ≈ [0.19370097955175714, 0.026749121396015898, 0.0]
-    @test qy[[26, 35, 631]] ≈ [0.1284818298277494, 1.7209662222437763, 0.0]
+    @test qx[[26, 35, 631]] ≈ [0.1928420096938017, 0.002124444980556465, 0.0]
+    @test qy[[26, 35, 631]] ≈ [0.12999207241357758, 0.019683666075707637, 0.0]
     h = model.routing.overland_flow.variables.h
     @test h[[26, 35, 631]] ≈
-          [0.07360961858558272, 0.009134592417481706, 0.000726454163107432]
+          [0.07350852898039464, 0.009095444794837867, 0.0007154858608760465]
 end
 
 Wflow.close_files(model; delete_output = false)
@@ -516,16 +516,16 @@ Wflow.run_timestep!(model)
 
 @testset "river flow (local inertial) with floodplain schematization simulation" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 3841.1358969211033
+    @test sum(q) ≈ 3840.021470150266
     @test q[1622] ≈ 7.289980623447371e-5
-    @test q[43] ≈ 11.708212586581894
-    @test q[501] ≈ 3.4204477934334836
-    @test q[5808] ≈ 0.0022226684528054044
+    @test q[43] ≈ 11.70425810619834
+    @test q[501] ≈ 3.4191680122612005
+    @test q[5808] ≈ 0.00222269668257336
     h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.0019859331038689374
-    @test h[43] ≈ 0.4329730866994521
-    @test h[501] ≈ 0.05578682441669217
-    @test h[5808] ≈ 0.005930509404131392
+    @test h[43] ≈ 0.4329048397354824
+    @test h[501] ≈ 0.05577415609134651
+    @test h[5808] ≈ 0.005930538978773336
 end
 
 # set boundary condition local inertial routing from netCDF file
@@ -537,15 +537,15 @@ Wflow.run_timestep!(model)
 
 @testset "change boundary condition for local inertial routing (including floodplain)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 3841.325252009684
+    @test sum(q) ≈ 3840.2108240608068
     @test q[1622] ≈ 7.289980623447371e-5
-    @test q[43] ≈ 11.708212586581894
-    @test q[501] ≈ 3.4204477934334836
-    @test q[5808] ≈ 0.055273361881645354
+    @test q[43] ≈ 11.70425810619834
+    @test q[501] ≈ 3.4191680122612005
+    @test q[5808] ≈ 0.05527314374908936
     h = model.routing.river_flow.variables.h_av
     @test h[1622] ≈ 0.0019859331038689374
-    @test h[43] ≈ 0.4329730866994521
-    @test h[501] ≈ 0.05578682441669217
+    @test h[43] ≈ 0.4329048397354824
+    @test h[501] ≈ 0.05577415609134651
     @test h[5808] ≈ 1.9999993313276971
 end
 Wflow.close_files(model; delete_output = false)
@@ -643,11 +643,107 @@ Wflow.close_files(model; delete_output = false)
         Wflow.run_timestep!(model)
         Wflow.run_timestep!(model)
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 3300.5679346067054
-        @test q[1622] ≈ 0.000698946772256762
-        @test q[43] ≈ 9.667763405724566
+        @test sum(q) ≈ 3299.1174916381046
+        @test q[1622] ≈ 0.0006989466706737165
+        @test q[43] ≈ 9.661448841687085
     end
 
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testset "water balance sbm (kinematic wave routing)" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; land_water_balance, routing) = model.mass_balance
+    (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 6.6e11, overland_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_av)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.2e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 5.4e11, routing.overland_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_av)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 3e-5, river_water_balance.error)
+        @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_av)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 1.2e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testset "water balance river local inertial routing" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
+    config = Wflow.Config(tomlpath)
+    model = Wflow.Model(config)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testset "water balance river local inertial routing with floodplain" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testset "water balance river and land local inertial routing" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; overland_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+    end
     Wflow.close_files(model; delete_output = false)
 end
 

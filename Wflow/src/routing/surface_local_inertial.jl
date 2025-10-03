@@ -208,7 +208,7 @@ function LocalInertialRiverFlow(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(),
+        allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(n),
     )
     return river_flow
 end
@@ -526,7 +526,9 @@ end
     qy0::Vector{Float64}              # flow in y direction at edge at previous time step [m³ s⁻¹]
     qx0::Vector{Float64}              # flow in x direction at edge at previous time step [m³ s⁻¹]
     qx::Vector{Float64}               # flow in x direction at egde [m³ s⁻¹]
+    qx_av::Vector{Float64}            # average flow in x direction at egde [m³ s⁻¹] for model timestep Δt
     qy::Vector{Float64}               # flow in y direction at edge [m³ s⁻¹]
+    qy_av::Vector{Float64}            # average flow in y direction at egde [m³ s⁻¹] for model timestep Δt
     storage::Vector{Float64}          # total storage of cell [m³] (including river storage for river cells)
     storage_av::Vector{Float64}       # average total storage of cell [m³] (including river storage for river cells) (model timestep Δt)
     error::Vector{Float64}            # error storage [m³]
@@ -540,7 +542,9 @@ function LocalInertialOverlandFlowVariables(n::Int)
         qx0 = zeros(n + 1),
         qy0 = zeros(n + 1),
         qx = zeros(n + 1),
+        qx_av = zeros(n + 1),
         qy = zeros(n + 1),
+        qy_av = zeros(n + 1),
         storage = zeros(n),
         storage_av = zeros(n),
         error = zeros(n),
@@ -755,6 +759,8 @@ the total (weighted) sum is computed from values at each sub timestep.
 function set_flow_vars!(variables::LocalInertialOverlandFlowVariables)
     variables.h_av .= 0.0
     variables.storage_av .= 0.0
+    variables.qx_av .= 0.0
+    variables.qy_av .= 0.0
     return nothing
 end
 
@@ -765,6 +771,8 @@ This is done at the end of each simulation timestep.
 function average_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt::Float64)
     variables.h_av ./= dt
     variables.storage_av ./= dt
+    variables.qx_av ./= dt
+    variables.qy_av ./= dt
     return nothing
 end
 
@@ -870,6 +878,7 @@ function local_inertial_update_fluxes!(
             else
                 land_v.qx[i] = 0.0
             end
+            land_v.qx_av[i] += land_v.qx[i] * dt
         end
 
         # update qy
@@ -909,6 +918,7 @@ function local_inertial_update_fluxes!(
             else
                 land_v.qy[i] = 0.0
             end
+            land_v.qy_av[i] += land_v.qy[i] * dt
         end
     end
     return nothing

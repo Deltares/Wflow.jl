@@ -86,3 +86,37 @@ Wflow.run_timestep!(model)
 end
 
 Wflow.close_files(model; delete_output = false)
+
+@testset "water balance piave water demand sbm_gwf" begin
+    tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; land_water_balance, routing) = model.mass_balance
+    (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 3.5e-6, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-6, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-7, subsurface_water_balance.error)
+        @test all(re -> abs(re) <= 2.0, subsurface_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 3.5e-6, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-7, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-7, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.5e-5, subsurface_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end

@@ -12,6 +12,10 @@ abstract type AbstractSnowModel end
     snow_melt::Vector{Float64}
     # Runoff from snowpack [mm Δt⁻¹]
     runoff::Vector{Float64}
+    # Lateral snow (SWE) transport from upstreams cells [mm Δt⁻¹]
+    snow_in::Vector{Float64}
+    # Lateral snow (SWE) transport out of a cell [mm Δt⁻¹]
+    snow_out::Vector{Float64}
 end
 
 "Initialize snow model variables"
@@ -22,6 +26,8 @@ function SnowVariables(n::Int)
         swe = fill(MISSING_VALUE, n),
         runoff = fill(MISSING_VALUE, n),
         snow_melt = fill(MISSING_VALUE, n),
+        snow_in = fill(0.0, n),
+        snow_out = fill(0.0, n),
     )
 end
 
@@ -65,7 +71,9 @@ end
     variables::SnowVariables
 end
 
-struct NoSnowModel <: AbstractSnowModel end
+struct NoSnowModel <: AbstractSnowModel
+    n::Int
+end
 
 "Initialize snow HBV model parameters"
 function SnowHbvParameters(
@@ -153,9 +161,13 @@ function update!(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
 end
 
 # wrapper methods
-get_runoff(model::NoSnowModel) = 0.0
+get_runoff(model::NoSnowModel) = Zeros(model.n)
 get_runoff(model::AbstractSnowModel) = model.variables.runoff
-get_snow_storage(model::NoSnowModel) = 0.0
+get_snow_storage(model::NoSnowModel) = Zeros(model.n)
 get_snow_storage(model::AbstractSnowModel) = model.variables.snow_storage
-get_snow_water(model::NoSnowModel) = 0.0
+get_snow_water(model::NoSnowModel) = Zeros(model.n)
 get_snow_water(model::AbstractSnowModel) = model.variables.snow_water
+get_snow_out(model::NoSnowModel) = Zeros(model.n)
+get_snow_out(model::AbstractSnowModel) = model.variables.snow_out
+get_snow_in(model::NoSnowModel) = Zeros(model.n)
+get_snow_in(model::AbstractSnowModel) = model.variables.snow_in

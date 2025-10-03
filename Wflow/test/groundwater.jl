@@ -49,6 +49,8 @@ function homogenous_aquifer(nrow, ncol)
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
+        q_in_av = fill(0.0, ncell),
+        q_out_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
         exfiltwater_av = fill(0.0, ncell),
     )
@@ -68,6 +70,8 @@ function homogenous_aquifer(nrow, ncol)
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
+        q_in_av = fill(0.0, ncell),
+        q_out_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
         exfiltwater_av = fill(0.0, ncell),
     )
@@ -287,23 +291,26 @@ end
         # fill(0.0, ncell),  # bottom
 
         @testset "flux-confined" begin
+            dt = 1.0
             conf_aqf.variables.q_net .= 0.0
             conductivity_profile = Wflow.GwfConductivityProfileType.uniform
-            Wflow.flux!(conf_aqf, connectivity, conductivity_profile)
+            Wflow.flux!(conf_aqf, connectivity, conductivity_profile, dt)
             # kD = 10 * 10 = 100
             # dH = 7.5, 12.5
             @test conf_aqf.variables.q_net == [750.0, 500.0, -1250.0]
         end
 
         @testset "flux-unconfined" begin
+            dt = 1.0
             unconf_aqf.variables.q_net .= 0.0
             conductivity_profile = Wflow.GwfConductivityProfileType.uniform
-            Wflow.flux!(unconf_aqf, connectivity, conductivity_profile)
+            Wflow.flux!(unconf_aqf, connectivity, conductivity_profile, dt)
             # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
             @test unconf_aqf.variables.q_net == [562.5, 687.5, -1250.0]
         end
 
         @testset "river" begin
+            dt = 1.0
             parameters = Wflow.GwfRiverParameters(;
                 infiltration_conductance = [100.0, 100.0],
                 exfiltration_conductance = [200.0, 200.0],
@@ -317,7 +324,7 @@ end
             )
             river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(river, conf_aqf, 1.0)
+            Wflow.flux!(river, conf_aqf, dt)
             # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
             # river storage (20.0)
             @test conf_aqf.variables.q_net[1] == 20.0
@@ -326,6 +333,7 @@ end
         end
 
         @testset "drainage" begin
+            dt = 1.0
             parameters = Wflow.DrainageParameters(;
                 elevation = [2.0, 2.0],
                 conductance = [100.0, 100.0],
@@ -333,12 +341,13 @@ end
             variables = Wflow.DrainageVariables(; flux = [0.0, 0.0], flux_av = [0.0, 0.0])
             drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(drainage, conf_aqf, 1.0)
+            Wflow.flux!(drainage, conf_aqf, dt)
             @test conf_aqf.variables.q_net[1] == 0.0
             @test conf_aqf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
         end
 
         @testset "headboundary" begin
+            dt = 1.0
             parameters = Wflow.HeadBoundaryParameters(; conductance = [100.0, 100.0])
             variables = Wflow.HeadBoundaryVariables(;
                 head = [2.0, 2.0],
@@ -348,12 +357,13 @@ end
 
             headboundary = Wflow.HeadBoundary(; parameters, variables, index = [1, 2])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(headboundary, conf_aqf, 1.0)
+            Wflow.flux!(headboundary, conf_aqf, dt)
             @test conf_aqf.variables.q_net[1] == 100.0 * (2.0 - 0.0)
             @test conf_aqf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
         end
 
         @testset "recharge" begin
+            dt = 1.0
             variables = Wflow.RechargeVariables(;
                 rate = [1.0e-3, 1.0e-3, 1.0e-3],
                 flux = [0.0, 0.0, 0.0],
@@ -361,11 +371,12 @@ end
             )
             recharge = Wflow.Recharge(; variables, index = [1, 2, 3])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(recharge, conf_aqf, 1.0)
+            Wflow.flux!(recharge, conf_aqf, dt)
             @test all(conf_aqf.variables.q_net .== 1.0e-3 * 100.0)
         end
 
         @testset "well" begin
+            dt = 1.0
             variables = Wflow.WellVariables(;
                 volumetric_rate = [-1000.0],
                 flux = [0.0],
@@ -373,7 +384,7 @@ end
             )
             well = Wflow.Well(; variables, index = [1])
             conf_aqf.variables.q_net .= 0.0
-            Wflow.flux!(well, conf_aqf, 1.0)
+            Wflow.flux!(well, conf_aqf, dt)
             @test conf_aqf.variables.q_net[1] == -1000.0
         end
     end
@@ -465,6 +476,8 @@ end
             conductance = fill(0.0, connectivity.nconnection),
             storage = fill(0.0, ncell),
             q_net = fill(0.0, ncell),
+            q_in_av = fill(0.0, ncell),
+            q_out_av = fill(0.0, ncell),
             exfiltwater = fill(0.0, ncell),
             exfiltwater_av = fill(0.0, ncell),
         )
@@ -547,6 +560,8 @@ end
             conductance = fill(0.0, connectivity.nconnection),
             storage = fill(0.0, ncell),
             q_net = fill(0.0, ncell),
+            q_in_av = fill(0.0, ncell),
+            q_out_av = fill(0.0, ncell),
             exfiltwater = fill(0.0, ncell),
             exfiltwater_av = fill(0.0, ncell),
         )
@@ -640,6 +655,8 @@ end
             conductance = fill(0.0, connectivity.nconnection),
             storage = fill(0.0, ncell),
             q_net = fill(0.0, ncell),
+            q_in_av = fill(0.0, ncell),
+            q_out_av = fill(0.0, ncell),
             exfiltwater = fill(0.0, ncell),
             exfiltwater_av = fill(0.0, ncell),
         )

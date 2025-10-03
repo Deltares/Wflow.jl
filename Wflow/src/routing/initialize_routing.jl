@@ -64,7 +64,7 @@ function initialize_subsurface_flow(
     end
     # reset soil (cold) state and related variables based on initial_head (river cells and constanthead)
     if config.model.cold_start__flag
-        (; zi, satwaterdepth, ustorecapacity, ustorelayerthickness, n_unsatlayers) =
+        (; zi, satwaterdepth, ustorecapacity, ustorelayerthickness, n_unsatlayers, total_soilwater_storage) =
             soil.variables
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
             soil.parameters
@@ -74,6 +74,7 @@ function initialize_subsurface_flow(
         @. ustorecapacity = soilwatercapacity - satwaterdepth
         @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
         @. n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
+        @. total_soilwater_storage = satwaterdepth
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0

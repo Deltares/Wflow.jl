@@ -55,7 +55,7 @@ forcing_sbm_gw_path = testdata(
     "forcing-sbm-groundwater-part2.nc",
 )
 staticmaps_sbm_gw_path =
-    testdata(v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
+    testdata(v"0.2.4", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc")
 instates_sbm_gw_path =
     testdata(v"0.2.3", "instates-example-sbm-gwf.nc", "instates-example-sbm-gwf.nc")
 lake_sh_1_path = testdata(v"0.2.1", "lake_sh_1.csv", "reservoir_sh_1.csv")

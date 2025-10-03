@@ -42,8 +42,19 @@ function Model(config::Config, type::SbmGwfModel)
     )
     close(dataset)
 
-    model =
-        Model(config, domain, routing, land_hydrology, clock, reader, writer, SbmGwfModel())
+    mass_balance = HydrologicalMassBalance(domain, config)
+
+    model = Model(
+        config,
+        domain,
+        routing,
+        land_hydrology,
+        mass_balance,
+        clock,
+        reader,
+        writer,
+        SbmGwfModel(),
+    )
 
     set_states!(model)
 

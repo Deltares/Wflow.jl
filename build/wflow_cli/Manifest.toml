@@ -233,6 +233,22 @@ version = "1.0.5"
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 version = "1.11.0"
 
+[[deps.FillArrays]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "173e4d8f14230a7523ae11b9a3fa9edb3e0efd78"
+uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
+version = "1.14.0"
+
+    [deps.FillArrays.extensions]
+    FillArraysPDMatsExt = "PDMats"
+    FillArraysSparseArraysExt = "SparseArrays"
+    FillArraysStatisticsExt = "Statistics"
+
+    [deps.FillArrays.weakdeps]
+    PDMats = "90014a1f-27ba-587c-ab20-58faa44d9150"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
 [[deps.Glob]]
 git-tree-sha1 = "97285bbd5230dd766e9ef6749b80fc617126d496"
 uuid = "c27321d9-0574-5035-807b-f59d2c89b15c"
@@ -668,7 +684,7 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 version = "1.11.0"
 
 [[deps.Wflow]]
-deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "EnumX", "Glob", "Graphs", "LoggingExtras", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "PropertyDicts", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
+deps = ["Accessors", "BasicModelInterface", "CFTime", "CompositionsBase", "Dates", "DelimitedFiles", "EnumX", "FillArrays", "Glob", "Graphs", "LoggingExtras", "NCDatasets", "Parameters", "Polyester", "ProgressLogging", "PropertyDicts", "StaticArrays", "Statistics", "TOML", "TerminalLoggers"]
 path = "../../Wflow"
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 version = "1.0.0-rc2"

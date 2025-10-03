@@ -37,8 +37,19 @@ function Model(config::Config, type::SbmModel)
     )
     close(dataset)
 
-    model =
-        Model(config, domain, routing, land_hydrology, clock, reader, writer, SbmModel())
+    mass_balance = HydrologicalMassBalance(domain, config)
+
+    model = Model(
+        config,
+        domain,
+        routing,
+        land_hydrology,
+        mass_balance,
+        clock,
+        reader,
+        writer,
+        SbmModel(),
+    )
 
     set_states!(model)
 
@@ -156,6 +167,18 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                     land_v.storage[i] = land_v.h[i] * x_length[i] * y_length[i]
                 end
             end
+        end
+        if config.model.type == ModelType.sbm
+            (; zi, storage) = routing.subsurface_flow.variables
+            (; theta_s, theta_r, soilthickness) = routing.subsurface_flow.parameters
+            @. zi = 0.001 * land.soil.variables.zi
+            @. storage =
+                (theta_s - theta_r) * (soilthickness - zi) * domain.land.parameters.area
+        elseif config.model.type == ModelType.sbm_gwf
+            (; aquifer) = routing.subsurface_flow
+            aquifer.variables.storage .=
+                saturated_thickness(aquifer) .* aquifer.parameters.area .*
+                storativity(aquifer)
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
         (; flow_width, flow_length) = domain.river.parameters
