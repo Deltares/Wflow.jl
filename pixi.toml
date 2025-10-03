@@ -21,10 +21,9 @@ initialize-julia = { depends-on = [
 		"Wflow",
 	] },
 ] }
+# Test data
+download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
 # Build
-download-test-data = { cmd = "julia --project download_test_data.jl", cwd = "build/create_binaries", depends-on = [
-	"initialize-julia",
-] }
 build-wflow-cli = { cmd = "julia --project create_app.jl", cwd = "build/create_binaries", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
 		"build/create_binaries",
@@ -40,23 +39,25 @@ test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_rere
 ] }
 test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
 	"initialize-julia",
+	"download-test-data"
 ] }
 # Server
 test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", allow_reresolve=false, coverage=true)'", depends-on = [
 	{ "task" = "instantiate-julia", "args" = [
 		"server",
 	] },
+	"download-test-data",
 ] }
 # Docs
-install-ci     = { depends-on = ["install-julia", "update-registry-julia"] }
-quarto-check   = { cmd = "quarto check all" }
-quarto-render  = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
+install-ci = { depends-on = ["install-julia", "update-registry-julia"] }
+quarto-check = { cmd = "quarto check all" }
+quarto-render = { cmd = "julia --project=docs --eval 'using Pkg; Pkg.build(\"IJulia\")' && quarto render docs --to html --execute" }
 quarto-preview = { cmd = "quarto preview docs" }
 
 [tasks.instantiate-julia]
 args = [{ "arg" = "cwd" }]
-cmd  = "julia --project={{cwd}} --eval='using Pkg; Pkg.instantiate()'"
-env  = { SSL_CERT_DIR = "" }
+cmd = "julia --project={{cwd}} --eval='using Pkg; Pkg.instantiate()'"
+env = { SSL_CERT_DIR = "" }
 
 [tasks.generate-sbom]
 depends-on = [
@@ -73,7 +74,7 @@ outputs = ["Wflow.spdx.json"]
 
 [dependencies]
 juliaup = "*"
-python  = ">=3.10"
+python = ">=3.10"
 jupyter = ">=1.1.1,<2"
 
 [system-requirements]
