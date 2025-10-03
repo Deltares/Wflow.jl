@@ -575,7 +575,7 @@
         i = 100
 
         @testset "exponential profile" begin
-            config = get_config("exponential")
+            config = get_config(Wflow.VerticalConductivityProfile.exponential)
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -589,8 +589,7 @@
         end
 
         @testset "exponential constant profile" begin
-            config = get_config("exponential_constant")
-            config.model.saturated_hydraulic_conductivity_profile = "exponential_constant"
+            config = get_config(Wflow.VerticalConductivityProfile.exponential_constant)
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -612,8 +611,7 @@
         end
 
         @testset "layered profile" begin
-            config = get_config("layered")
-            config.model.saturated_hydraulic_conductivity_profile = "layered"
+            config = get_config(Wflow.VerticalConductivityProfile.layered)
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -628,7 +626,7 @@
             @test subsurface_flow.variables.ssf[i] ≈ 14546.518932613191
         end
 
-        config = get_config("layered_exponential")
+        config = get_config(Wflow.VerticalConductivityProfile.layered_exponential)
 
         @testset "layered exponential profile" begin
             model = Wflow.Model(config)
@@ -659,4 +657,11 @@
 
         Wflow.close_files(model; delete_output = false)
     end
+end
+
+@testitem "run wflow sbm" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.time.endtime = "2000-01-05"
+    Wflow.run(config)
 end

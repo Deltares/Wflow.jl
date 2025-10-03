@@ -299,3 +299,9 @@ end
 
     Wflow.close_files(model)
 end
+
+@testitem "run wflow sediment" begin
+    tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
+    config = Wflow.Config(tomlpath)
+    Wflow.run(tomlpath; silent = true)
+end

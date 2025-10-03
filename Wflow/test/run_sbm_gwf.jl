@@ -217,3 +217,10 @@ end
 
     Wflow.close_files(model; delete_output = false)
 end
+
+@testitem "run wflow sbm_gwf" begin
+    tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.time.endtime = "2000-06-04"
+    Wflow.run(config)
+end
