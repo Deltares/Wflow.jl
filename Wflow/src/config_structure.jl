@@ -87,7 +87,7 @@ end
     # Local inertial routing
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
-    land_local_inertial_flow__theta_coefficient::Float64 = 0.8
+    land_local_inertial_flow__theta_coefficient::Float64 = 1.0
     river_water_flow_threshold__depth = 1e-3
     land_surface_water_flow_threshold__depth = 1e-3
     river_water_flow__froude_limit_flag = true

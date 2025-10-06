@@ -53,7 +53,7 @@ The Tables in this subsection show the available models settings for the model t
 | --- | ----- | - | - |
 | `river_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step river flow routing (CFL condition) | - | 0.7 |
 | `land_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step overland flow routing (CFL condition) | - | 0.7 |
-| `land_local_inertial_flow__theta_coefficient` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 0.8 |
+| `land_local_inertial_flow__theta_coefficient` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 1.0 |
 | `river_water_flow_threshold__depth` | Water depth threshold for calculating river flow between cells | m | 0.001 |
 | `land_surface_water_flow_threshold__depth` | Water depth threshold for calculating overland flow between cells | m | 0.001 |
 | `river_water_flow__froude_limit_flag` | Limit river flow to subcritical-critical according to Froude number | - | `true` |
