@@ -1,0 +1,50 @@
+---
+title: Mass balance
+---
+
+## Water mass balance error
+For model types `sbm` and `sbm_gwf` water mass balance error computations are supported, and
+can be enabled by setting the following model setting in the TOML file:
+
+```toml
+[model]
+water_mass_balance__flag = true
+```
+The water balance error $\epsilon$ and relative error $\epsilon_{\mathrm{r}}$ can be written as:
+
+$$
+\begin{aligned}
+\epsilon = \frac{S^{k+1} - S^{k}}{\Delta{t}} - Q^{k+1}_{\mathrm{total, in}} + Q^{k+1}_{\mathrm{total, out}}\\
+\epsilon_{\mathrm{r}} = \frac{\epsilon}{0.5(Q^{k+1}_{\mathrm{total, in}} + Q^{k+1}_{\mathrm{total, out}})}
+\end{aligned}
+$$
+
+where $k$ refers to model time step, $S$ is storage and $Q_{\mathrm{total, in}}$ and
+$Q_{\mathrm{total, out}}$ are total inflow and total outflow, respectively. Water balance
+(relative) errors are computed separately for:
+
++ the Land Hydrology `SBM` model
++ different routing concepts.
+
+For the local inertial model for 1D river and 2D overland flow that includes subgrid
+channels for the 1D river routing, water balance errors are computed for each land cell
+(total storage) considering both river and overland flow. For this routing type output
+standard names that refer to land surface water should be used, for example:
+
+```toml
+[output.netcdf_grid.variables]
+land_surface_water_mass_balance_error__volume_flow_rate = "balance_error"
+```
+
+For the local inertial river routing including 1D floodplains, water balance errors are
+computed considering both river and floodplain flow and total storage (river and
+floodplain), and output standard names that refer to river water should be used, for
+example:
+
+```toml
+[output.netcdf_grid.variables]
+river_water_mass_balance_error__volume_flow_rate = "balance_error"
+```
+
+The list of water balance (relative) error output parameters that can be provided through
+the TOML file can be found [here](parameters_mass_balance.qmd#water-mass-balance).

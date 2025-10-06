@@ -19,6 +19,11 @@ The Table below shows the general model settings applicable for all model types.
 ## Model types `sbm` and `sbm_gwf`
 The Tables in this subsection show the available models settings for the model types `sbm` and `sbm_gwf`.
 
+### Water mass balance
+| Setting | Description | Unit | Default |
+| ----- | ----- | -- | -- |
+| `water_mass_balance__flag` | Include water mass balance error computations | - | `false` |
+
 ### Land Hydrology `SBM`
 | Setting | Description | Unit | Default |
 | ----- | ----- | -- | -- |
