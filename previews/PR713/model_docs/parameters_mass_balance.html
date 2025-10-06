@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>About – Wflow.jl</title>
+<title>Mass balance – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -330,7 +330,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/index.html">About</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_mass_balance.html">Mass balance</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -348,7 +348,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/index.html" class="sidebar-item-text sidebar-link active">
+  <a href="../model_docs/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">About</span></a>
   </div>
 </li>
@@ -469,7 +469,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Mass balance</span></a>
   </div>
 </li>
@@ -480,16 +480,29 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#water-mass-balance" id="toc-water-mass-balance" class="nav-link active" data-scroll-target="#water-mass-balance">Water mass balance</a>
+  <ul class="collapse">
+  <li><a href="#land-hydrology-sbm" id="toc-land-hydrology-sbm" class="nav-link" data-scroll-target="#land-hydrology-sbm">Land Hydrology <code>SBM</code></a></li>
+  <li><a href="#river-flow-including-floodplains" id="toc-river-flow-including-floodplains" class="nav-link" data-scroll-target="#river-flow-including-floodplains">River flow (including floodplains)</a></li>
+  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link" data-scroll-target="#reservoirs">Reservoirs</a></li>
+  <li><a href="#overland-flow" id="toc-overland-flow" class="nav-link" data-scroll-target="#overland-flow">Overland flow</a></li>
+  <li><a href="#subsurface-flow" id="toc-subsurface-flow" class="nav-link" data-scroll-target="#subsurface-flow">Subsurface flow</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_mass_balance.html">Mass balance</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">About</h1>
+<h1 class="title">Mass balance</h1>
 </div>
 
 
@@ -506,9 +519,166 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>As opposed to the user guide, which describes the steps needed to build and apply a model in the software, this section explains the different model concepts that are available within the wflow modelling framework. Descriptions are given regarding the model concepts with references to scientific papers that explain the concepts in more detail. The model parameters which influence the processes are also shown, using inline code blocks. An overview of all model parameters, states and output variables is also provided for easy reference, including their standard names, descriptions, units and default values for input parameters.</p>
+<style>
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+td, th {
+  word-wrap: break-word;
+}
+</style>
+<section id="water-mass-balance" class="level2">
+<h2 class="anchored" data-anchor-id="water-mass-balance">Water mass balance</h2>
+<section id="land-hydrology-sbm" class="level3">
+<h3 class="anchored" data-anchor-id="land-hydrology-sbm">Land Hydrology <code>SBM</code></h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land_water_mass_balance_error__volume_flux</code></td>
+<td>Water mass balance error</td>
+<td>mm Δt⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>land_water_mass_balance_relative_error__number</code></td>
+<td>Water mass balance relative error</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="river-flow-including-floodplains" class="level3">
+<h3 class="anchored" data-anchor-id="river-flow-including-floodplains">River flow (including floodplains)</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>river_water_mass_balance_error__volume_flow_rate</code></td>
+<td>River water mass balance error</td>
+<td>m³ s⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>river_water_mass_balance_relative_error__number</code></td>
+<td>River water mass balance relative error</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reservoirs" class="level3">
+<h3 class="anchored" data-anchor-id="reservoirs">Reservoirs</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>reservoir_water_mass_balance_error__volume_flow_rate</code></td>
+<td>Reservoir water mass balance error</td>
+<td>m³ s⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>reservoir_water_mass_balance_relative_error__number</code></td>
+<td>Reservoir water mass balance relative error</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="overland-flow" class="level3">
+<h3 class="anchored" data-anchor-id="overland-flow">Overland flow</h3>
+<p>For kinematic wave routing and local inertial routing 1D river and 2D overland flow. For the local inertial routing 1D river and 2D overland flow, water balance errors are computed for each land cell (total storage) considering both river and overland flow.</p>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>land_surface_water_mass_balance_error__volume_flow_rate</code></td>
+<td>Overland (and river) flow water mass balance error</td>
+<td>m³ s⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>land_surface_water_mass_balance_relative_error__number</code></td>
+<td>Overland (and river) flow water mass balance relative error</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="subsurface-flow" class="level3">
+<h3 class="anchored" data-anchor-id="subsurface-flow">Subsurface flow</h3>
+<table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Standard Name</th>
+<th>Description</th>
+<th>Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>subsurface_water_mass_balance_error__volume_flow_rate</code></td>
+<td>Subsurface flow water mass balance error</td>
+<td>m³ day⁻¹</td>
+</tr>
+<tr class="even">
+<td><code>subsurface_water_mass_balance_relative_error__number</code></td>
+<td>Subsurface flow water mass balance relative error</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

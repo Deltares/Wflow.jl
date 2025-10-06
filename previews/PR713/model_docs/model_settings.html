@@ -428,6 +428,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -461,6 +467,12 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -476,6 +488,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#general" id="toc-general" class="nav-link active" data-scroll-target="#general">General</a></li>
   <li><a href="#model-types-sbm-and-sbm_gwf" id="toc-model-types-sbm-and-sbm_gwf" class="nav-link" data-scroll-target="#model-types-sbm-and-sbm_gwf">Model types <code>sbm</code> and <code>sbm_gwf</code></a>
   <ul class="collapse">
+  <li><a href="#water-mass-balance" id="toc-water-mass-balance" class="nav-link" data-scroll-target="#water-mass-balance">Water mass balance</a></li>
   <li><a href="#land-hydrology-sbm" id="toc-land-hydrology-sbm" class="nav-link" data-scroll-target="#land-hydrology-sbm">Land Hydrology <code>SBM</code></a></li>
   <li><a href="#routing-method" id="toc-routing-method" class="nav-link" data-scroll-target="#routing-method">Routing method</a></li>
   <li><a href="#kinematic-wave-routing" id="toc-kinematic-wave-routing" class="nav-link" data-scroll-target="#kinematic-wave-routing">Kinematic wave routing</a></li>
@@ -559,6 +572,33 @@ ul.task-list li input[type="checkbox"] {
 <section id="model-types-sbm-and-sbm_gwf" class="level2">
 <h2 class="anchored" data-anchor-id="model-types-sbm-and-sbm_gwf">Model types <code>sbm</code> and <code>sbm_gwf</code></h2>
 <p>The Tables in this subsection show the available models settings for the model types <code>sbm</code> and <code>sbm_gwf</code>.</p>
+<section id="water-mass-balance" class="level3">
+<h3 class="anchored" data-anchor-id="water-mass-balance">Water mass balance</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 35%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Setting</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>water_mass_balance__flag</code></td>
+<td>Include water mass balance error computations</td>
+<td>-</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="land-hydrology-sbm" class="level3">
 <h3 class="anchored" data-anchor-id="land-hydrology-sbm">Land Hydrology <code>SBM</code></h3>
 <table class="table-striped table-hover caption-top table">
