@@ -20,8 +20,9 @@ function Model(config::Config, type::SedimentModel)
     domain = Domain(dataset, config, type)
     soilloss = SoilLoss(dataset, config, domain.land.network.indices)
     routing = Routing(dataset, config, domain, soilloss)
+    mass_balance = NoMassBalance()
 
-    modelmap = (land = soilloss, routing)
+    modelmap = (land = soilloss, routing, mass_balance)
     writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 
@@ -30,7 +31,7 @@ function Model(config::Config, type::SedimentModel)
         domain,
         routing,
         soilloss,
-        NoMassBalance(),
+        mass_balance,
         clock,
         reader,
         writer,

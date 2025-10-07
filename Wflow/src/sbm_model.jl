@@ -25,9 +25,10 @@ function Model(config::Config, type::SbmModel)
 
     land_hydrology = LandHydrologySBM(dataset, config, domain.land)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
+    mass_balance = HydrologicalMassBalance(domain, config)
 
     (; maxlayers) = land_hydrology.soil.parameters
-    modelmap = (land = land_hydrology, routing)
+    modelmap = (land = land_hydrology, routing, mass_balance)
     writer = Writer(
         config,
         modelmap,
@@ -36,8 +37,6 @@ function Model(config::Config, type::SbmModel)
         extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
     )
     close(dataset)
-
-    mass_balance = HydrologicalMassBalance(domain, config)
 
     model = Model(
         config,
