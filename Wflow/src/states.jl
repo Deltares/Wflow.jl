@@ -121,7 +121,7 @@ function extract_required_states(config::Config)
 
     # Subsurface states
     ssf_states = if model_type == ModelType.sbm_gwf
-        ("subsurface_water__instantaneous_hydraulic_head",)
+        ("subsurface_water__hydraulic_head",)
     elseif model_type == ModelType.sbm
         ("subsurface_water__volume_flow_rate",)
     else # model_type == ModelType.sediment
@@ -136,13 +136,10 @@ function extract_required_states(config::Config)
             (
                 "land_surface_water__x_component_of_instantaneous_volume_flow_rate",
                 "land_surface_water__y_component_of_instantaneous_volume_flow_rate",
-                "land_surface_water__instantaneous_depth",
+                "land_surface_water__depth",
             )
         else
-            (
-                "land_surface_water__instantaneous_volume_flow_rate",
-                "land_surface_water__instantaneous_depth",
-            )
+            ("land_surface_water__instantaneous_volume_flow_rate", "land_surface_water__depth")
         end
     end
 
@@ -150,21 +147,18 @@ function extract_required_states(config::Config)
     river_states = if model_type == ModelType.sediment
         river_states = get_sediment_states()
     else
-        ("river_water__instantaneous_volume_flow_rate", "river_water__instantaneous_depth")
+        ("river_water__instantaneous_volume_flow_rate", "river_water__depth")
     end
 
     # Floodplain states
     floodplain_states =
         do_floodplains ?
-        (
-            "floodplain_water__instantaneous_volume_flow_rate",
-            "floodplain_water__instantaneous_depth",
-        ) : ()
+        ("floodplain_water__instantaneous_volume_flow_rate", "floodplain_water__depth") : ()
 
     # Reservoir states
     reservoir_states =
         do_reservoirs && model_type !== ModelType.sediment ?
-        ("reservoir_water_surface__instantaneous_elevation",) : ()
+        ("reservoir_water_surface__elevation",) : ()
 
     # Paddy states
     paddy_states = do_paddy ? ("paddy_surface_water__depth",) : ()

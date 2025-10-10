@@ -26,13 +26,13 @@ vegetation_canopy_water__depth = "canopystorage"
 soil_water_saturated_zone__depth = "satwaterdepth"
 soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
 
-river_water__instantaneous_depth = "h_river"
+river_water__depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
 land_surface_water__instantaneous_volume_flow_rate = "q_land"
-land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_land"
 
-subsurface_water__instantaneous_hydraulic_head = "head"
+subsurface_water__hydraulic_head = "head"
 
 [input]
 path_forcing = "forcing-sbm-groundwater-part*.nc"

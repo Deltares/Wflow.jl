@@ -186,12 +186,8 @@ end
 @with_kw struct ReservoirVariables
     # waterlevel H [m] of reservoir
     waterlevel::Vector{Float64}
-    # average waterlevel H [m] of reservoir for model timestep Δt
-    waterlevel_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # reservoir storage [m³]
     storage::Vector{Float64}
-    # average reservoir storage [m³] for model timestep Δt
-    storage_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # outflow from reservoir [m³ s⁻¹]
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
@@ -539,8 +535,6 @@ function update!(
     # average variables (here accumulated for model timestep Δt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt
-    res_v.storage_av[i] += storage * dt
-    res_v.waterlevel_av[i] += waterlevel * dt
     res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
 
     return nothing

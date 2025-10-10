@@ -95,7 +95,6 @@ end
 
 @with_kw struct AquiferVariables
     head::Vector{Float64}               # hydraulic head [m]
-    head_av::Vector{Float64}            # average hydraulic head [m] for model timestep Δt
     conductance::Vector{Float64}        # conductance [m² d⁻¹]
     storage::Vector{Float64}            # total storage of water that can be released [m³]
     q_net::Vector{Float64}              # net flow [m³ d⁻¹]
@@ -179,18 +178,10 @@ function UnconfinedAquifer(
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
     n = length(storage)
     q_net = zeros(n)
-    head_av = zeros(n)
     exfiltwater = zeros(n)
     exfiltwater_av = zeros(n)
-    variables = AquiferVariables(
-        head,
-        head_av,
-        conductance,
-        storage,
-        q_net,
-        exfiltwater,
-        exfiltwater_av,
-    )
+    variables =
+        AquiferVariables(head, conductance, storage, q_net, exfiltwater, exfiltwater_av)
     aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end
@@ -506,7 +497,6 @@ function update_head!(gwf::GroundwaterFlow{A}, dt::Float64) where {A <: Aquifer}
     gwf.aquifer.variables.storage .=
         saturated_thickness(gwf.aquifer) .* gwf.aquifer.parameters.area .*
         storativity(gwf.aquifer)
-    gwf.aquifer.variables.head_av .+= gwf.aquifer.variables.head .* dt
     gwf.aquifer.variables.exfiltwater_av .+= gwf.aquifer.variables.exfiltwater .* dt
     return nothing
 end
@@ -520,7 +510,6 @@ function update!(
     for boundary in gwf.boundaries
         boundary.variables.flux_av .= 0.0
     end
-    gwf.aquifer.variables.head_av .= 0.0
     gwf.aquifer.variables.exfiltwater_av .= 0.0
     t = 0.0
     while t < dt
@@ -534,7 +523,6 @@ function update!(
     for boundary in gwf.boundaries
         boundary.variables.flux_av ./= dt
     end
-    gwf.aquifer.variables.head_av ./= dt
     gwf.aquifer.variables.exfiltwater_av ./= dt
     return nothing
 end

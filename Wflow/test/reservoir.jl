@@ -34,7 +34,6 @@ res = Wflow.Reservoir(;
     @test res.variables.outflow[1] ≈ 91.3783714867453
     @test res.variables.outflow_av[1] == res.variables.outflow[1]
     @test res.variables.storage[1] ≈ 2.0e7
-    @test res.variables.storage[1] == res.variables.storage_av[1]
     @test res.boundary_conditions.precipitation[1] ≈ 4.2
     @test res.boundary_conditions.evaporation[1] ≈ 1.5
     @test res.variables.actevap[1] ≈ 1.5
@@ -51,7 +50,6 @@ res.variables.waterlevel[1] = 10.208598234556407
     @test res.variables.outflow[1] ≈ 80.0
     @test res.variables.outflow_av[1] == res.variables.outflow[1]
     @test res.variables.storage[1] ≈ 2.0983091296454795e7
-    @test res.variables.storage[1] == res.variables.storage_av[1]
 end
 
 # Reservoir Modified Puls approach (outflowfunc = 3)  
@@ -99,9 +97,7 @@ res = Wflow.Reservoir(;
     @test res_v.outflow[1] ≈ 85.14292808113598
     @test res_v.outflow_av ≈ res_v.outflow
     @test res_v.storage[1] ≈ 3.55111879238499e9
-    @test res_v.storage ≈ res_v.storage_av
     @test res_v.waterlevel[1] ≈ 19.672653848925634
-    @test res_v.waterlevel ≈ res_v.waterlevel_av
     @test res_bc.precipitation[1] ≈ 20.0
     @test res_bc.evaporation[1] ≈ 3.2
     @test res_v.actevap[1] ≈ 3.2
@@ -169,7 +165,6 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
     @test res_v.outflow ≈ [214.80170846121263, 236.83281600000214]
     @test res_v.outflow_av ≈ res_v.outflow
     @test res_v.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8]
-    @test res_v.storage ≈ res_v.storage_av
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 500.0, 86400.0, 86400.0)
     Wflow.update!(res, 2, 500.0, 86400.0, 86400.0)
@@ -179,7 +174,6 @@ hq = Vector{Union{Wflow.HQ, Missing}}([
     @test res_v.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8]
     @test res_v.storage ≈ res_v.storage
     @test res_v.waterlevel ≈ [395.239782021054, 395.21771942667266]
-    @test res_v.waterlevel ≈ res_v.waterlevel_av
     @test res_v.actevap ≈ [2.0, 2.0]
 end
 
@@ -230,7 +224,5 @@ end
     @test res_v.outflow ≈ [1303.67476852]
     @test res_v.outflow_av ≈ res_v.outflow
     @test res_v.storage ≈ [4.293225e8]
-    @test res_v.storage ≈ res_v.storage_av
     @test res_v.waterlevel ≈ [398.000000]
-    @test res_v.waterlevel ≈ res_v.waterlevel_av
 end

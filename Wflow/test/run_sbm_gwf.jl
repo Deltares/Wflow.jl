@@ -148,10 +148,10 @@ Wflow.run_timestep!(model)
     @test q[6] ≈ 0.005597739889073783
     @test q[13] ≈ 0.00043633384561159253
     @test q[5] ≈ 0.005899514829371013
-    h = model.routing.river_flow.variables.h_av
-    @test h[6] ≈ 0.07757871828439228
-    @test h[5] ≈ 0.07502750093278375
-    @test h[13] ≈ 0.07960288161114154
+    h = model.routing.river_flow.variables.h
+    @test h[6] ≈ 0.07185713458543772
+    @test h[5] ≈ 0.06945465347888498
+    @test h[13] ≈ 0.07381249815138224
     qx = model.routing.overland_flow.variables.qx
     qy = model.routing.overland_flow.variables.qy
     @test all(qx .== 0.0)

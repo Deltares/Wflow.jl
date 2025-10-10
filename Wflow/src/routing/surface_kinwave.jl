@@ -5,9 +5,7 @@
     qin::Vector{Float64}          # Inflow from upstream cells [m³ s⁻¹]
     q_av::Vector{Float64}         # Average discharge [m³ s⁻¹] for model timestep Δt
     storage::Vector{Float64}      # Kinematic wave storage [m³] (based on water depth h)
-    storage_av::Vector{Float64}   # Average kinematic wave storage [m³] for model timestep Δt
     h::Vector{Float64}            # Water depth [m]
-    h_av::Vector{Float64}         # Average water depth [m] for model timestep Δt
 end
 
 "Initialize timestepping for kinematic wave (river and overland flow models)"
@@ -34,9 +32,7 @@ function FlowVariables(n::Int)
         qin = zeros(Float64, n),
         q_av = zeros(Float64, n),
         storage = zeros(Float64, n),
-        storage_av = zeros(Float64, n),
         h = zeros(Float64, n),
-        h_av = zeros(Float64, n),
     )
     return variables
 end
@@ -219,9 +215,7 @@ function set_reservoir_vars!(reservoir::Reservoir)
     reservoir.boundary_conditions.inflow .= 0.0
     reservoir.boundary_conditions.actual_external_abstraction_av .= 0.0
     reservoir.variables.outflow_av .= 0.0
-    reservoir.variables.storage_av .= 0.0
     reservoir.variables.actevap .= 0.0
-    reservoir.variables.waterlevel_av .= 0.0
 
     return nothing
 end
@@ -233,9 +227,7 @@ each simulation timestep.
 """
 function average_reservoir_vars!(reservoir::Reservoir, dt::Float64)
     reservoir.variables.outflow_av ./= dt
-    reservoir.variables.storage_av ./= dt
     reservoir.boundary_conditions.inflow ./= dt
-    reservoir.variables.waterlevel_av ./= dt
     reservoir.boundary_conditions.actual_external_abstraction_av ./= dt
 
     return nothing
@@ -252,10 +244,8 @@ is done at the start of each simulation timestep, during the timestep the total 
 sum is computed from values at each sub timestep.
 """
 function set_flow_vars!(variables)
-    (; q_av, h_av, storage_av) = variables
+    (; q_av) = variables
     q_av .= 0.0
-    h_av .= 0.0
-    storage_av .= 0.0
     return nothing
 end
 
@@ -274,10 +264,8 @@ actual abstraction (based on external negative inflow) from river. This is done 
 of each simulation timestep.
 """
 function average_flow_vars!(variables, dt::Float64)
-    (; q_av, h_av, storage_av) = variables
+    (; q_av) = variables
     q_av ./= dt
-    h_av ./= dt
-    storage_av ./= dt
     return nothing
 end
 
@@ -297,7 +285,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
         domain.network
 
     (; beta, alpha) = model.parameters
-    (; h, h_av, q, q_av, storage, storage_av, qin, qlat, to_river) = model.variables
+    (; h, q, q_av, storage, qin, qlat, to_river) = model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
     ns = length(order_of_subdomains)
@@ -341,9 +329,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
                 end
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
-                # average variables (here accumulated for model timestep Δt)
-                storage_av[v] += storage[v] * dt
-                h_av[v] += h[v] * dt
+                # average flow (here accumulated for model timestep Δt)
                 q_av[v] += q[v] * dt
             end
         end
@@ -399,12 +385,12 @@ function kinwave_river_update!(
         reservoir_indices,
     ) = domain.network
 
-    (; reservoir, inwater, external_inflow, actual_external_abstraction_av, abstraction) =
+    (; reservoir, external_inflow, actual_external_abstraction_av, abstraction) =
         model.boundary_conditions
 
     (; beta, alpha) = model.parameters
     (; flow_width, flow_length) = domain.parameters
-    (; h, h_av, q, q_av, storage, storage_av, qin, qlat) = model.variables
+    (; h, q, q_av, storage, qin, qlat) = model.variables
 
     if !isnothing(reservoir)
         res_bc = reservoir.boundary_conditions
@@ -484,8 +470,6 @@ function kinwave_river_update!(
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
 
                 # average variables (here accumulated for model timestep Δt)
-                storage_av[v] += storage[v] * dt
-                h_av[v] += h[v] * dt
                 q_av[v] += q[v] * dt
             end
         end
