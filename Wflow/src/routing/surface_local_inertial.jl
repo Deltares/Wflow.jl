@@ -479,16 +479,16 @@ function update!(
     clock::Clock;
     update_h = true,
 )
-    (; reservoir, actual_external_abstraction_av) = model.boundary_conditions
+    (; reservoir) = model.boundary_conditions
     (; flow_length) = domain.river.parameters
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
 
     if !isnothing(model.floodplain)
-        set_flow_vars!(model.floodplain.variables)
+        model.floodplain.variables.q_av .= 0.0
     end
-    set_flow_vars!(model.variables, actual_external_abstraction_av)
+    set_flow_vars!(model)
 
     dt = tosecond(clock.dt)
     t = 0.0
@@ -498,11 +498,11 @@ function update!(
         local_inertial_river_update!(model, domain, dt_s, dt, update_h)
         t += dt_s
     end
-    average_flow_vars!(model.variables, actual_external_abstraction_av, dt)
+    average_flow_vars!(model, dt)
     average_reservoir_vars!(reservoir, dt)
 
     if !isnothing(model.floodplain)
-        average_flow_vars!(model.floodplain.variables, dt)
+        model.floodplain.variables.q_av ./= dt
         model.variables.q_channel_av .= model.variables.q_av
         model.variables.q_av .=
             model.variables.q_channel_av .+ model.floodplain.variables.q_av
@@ -745,13 +745,13 @@ function update!(
     clock::Clock;
     update_h = false,
 )
-    (; reservoir, actual_external_abstraction_av) = river.boundary_conditions
+    (; reservoir) = river.boundary_conditions
     (; flow_length) = domain.river.parameters
     (; parameters) = domain.land
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
-    set_flow_vars!(river.variables, actual_external_abstraction_av)
+    set_flow_vars!(river)
 
     dt = tosecond(clock.dt)
     t = 0.0
@@ -768,7 +768,7 @@ function update!(
 
         t += dt_s
     end
-    average_flow_vars!(river.variables, actual_external_abstraction_av, dt)
+    average_flow_vars!(river, dt)
     average_reservoir_vars!(reservoir, dt)
 
     return nothing
