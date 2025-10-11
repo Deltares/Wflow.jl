@@ -134,9 +134,8 @@ via the flux, but the head is set directly instead.
 
 The groundwater flow component of model type `sbm_gwf` consists of a single layer unconfined
 aquifer. The list of input parameters for an unconfined aquifer can be found
-[here](../parameters_routing.qmd#input-gwf-unconfined). Hydraulic head $\SIb{\phi}{m}$ is a
-[state variable](../parameters_routing.qmd#state-gwf-unconfined) and [output
-variable](../parameters_routing.qmd#output-gwf-unconfined).
+[here](../parameters_routing.qmd#input-gwf-unconfined). Hydraulic head $\SIb{\phi}{m}$ is an
+output and state [variable](../parameters_routing.qmd#state-gwf-unconfined).
 
 Below an example of setting the `conductivity_profile` and input parameters in the TOML
 configuration file for an unconfined aquifer:

@@ -41,6 +41,8 @@ td, th {
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
+| `snowpack_dry_snow__leq_depth` | Liquid-water equivalent of dry snow | mm |
+| `snowpack_liquid_water__depth` | Liquid water content in the snow pack | mm |
 | `snowpack__leq_depth` | Liquid-water equivalent of snow pack (SWE) | mm |
 | `snowpack_meltwater__volume_flux` | Amount of snow melt |  mm Δt⁻¹ |
 | `snowpack_water__runoff_volume_flux` | Runoff from snowpack | mm Δt⁻¹ |
@@ -66,6 +68,7 @@ td, th {
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
+| `glacier_ice__leq_depth` | Glacier liquid-water equivalent | mm |
 | `glacier_ice__melt_volume_flux` | Melt from the glacier | mm Δt⁻¹ |
 : {.striped .hover}
 
@@ -99,6 +102,7 @@ td, th {
 ### Output
 | Standard Name | Description | Unit |
 | ---- | --- | - |
+| `vegetation_canopy_water__depth` | Canopy storage | mm |
 | `vegetation_canopy_water__stemflow_volume_flux` | Stemflow | mm Δt⁻¹ |
 | `vegetation_canopy_water__throughfall_volume_flux` | Throughfall | mm Δt⁻¹ |
 | `vegetation_canopy_water__interception_volume_flux` | Interception | mm Δt⁻¹ |
@@ -148,6 +152,9 @@ td, th {
 ### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
+| `soil_surface__temperature` | Soil surface temperature, only when snow is modelled | ᵒC |
+| `soil_water_saturated_zone__depth` | Amount of water in the saturated store | mm |
+| `soil_layer_water_unsaturated_zone__depth` | Amount of water in the unsaturated store, per soil layer | mm |
 | `land_surface__evapotranspiration_volume_flux` | Total actual evapotranspiration | mm |
 | `land_water_storage__total_depth` | Total water storage (excluding floodplains and reservoirs) | mm |
 | `soil_water__infiltration_volume_flux` | Actual infiltration into the unsaturated zone | mm Δt⁻¹ |
@@ -233,6 +240,7 @@ td, th {
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
+| `paddy_surface_water__depth` | Water depth in paddy field | mm |
 | `irrigated_paddy__gross_water_demand_volume_flux` | Irrigation (paddy) gross demand | mm Δt⁻¹ |
 : {.striped .hover}
 

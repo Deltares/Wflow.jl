@@ -212,7 +212,7 @@ end
           9.969116007201725
     @test nt["snowpack_liquid_water__depth"].lens(model)[5] ≈ 0.0
     @test nt["vegetation_canopy_water__depth"].lens(model)[50063] ≈ 0.0
-    @test nt["soil_water_saturated_zone_top__depth"].lens(model)[50063] ≈ 296.8028609104624
+    @test nt["soil_water_saturated_zone__depth"].lens(model)[50063] ≈ 558.8578304603327
     @test nt["subsurface_water__volume_flow_rate"].lens(model)[10606] ≈ 39.972334552895816
     @test nt["river_water__instantaneous_volume_flow_rate"].lens(model)[149] ≈
           53.48673634956338

@@ -11,11 +11,11 @@ td, th {
 }
 </style>
 
-Standard names in the Tables below that contain `instantaneous` in the `quantity` part of
-the standard name can be valid for an internal time step (for example for kinematic wave
-routing an internal time step is optional (and recommended), with a time step equal to the
-model simulation time step the standard name nonetheless contains `instantaneous`) and thus
-considered instantaneous compared to the model simulation time step Δt $\SIb{}{s}$.
+Standard names for flow state variables in the Tables below that contain `instantaneous` in
+the `quantity` part of the standard name can be valid for an internal time step (depending
+on the model time simulation time step) and thus considered instantaneous compared to the
+model simulation time step Δt $\SIb{}{s}$. These flow state variables can also be specified
+as a model output variable.
 
 ## Reservoirs
 
@@ -54,14 +54,13 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `reservoir_water_surface__instantaneous_elevation` | Reservoir water level | m |
+| `reservoir_water_surface__elevation` | Reservoir water level | m |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `reservoir_water__volume` | Reservoir volume | m³ |
-| `reservoir_water__instantaneous_volume` | Reservoir volume | m³ |
 | `reservoir_water_surface__elevation` | Reservoir water level | m |
 | `reservoir_water__outgoing_volume_flow_rate` | Outflow of the reservoir | m³ s⁻¹ |
 | `reservoir_water__incoming_volume_flow_rate` | Inflow into the reservoir | m³ s⁻¹ |
@@ -90,16 +89,16 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `river_water__instantaneous_volume_flow_rate` | River discharge | m³ s⁻¹ |
-| `river_water__instantaneous_depth` | River water depth | m |
+| `river_water__depth` | River water depth | m |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `river_water__volume_flow_rate` | River discharge | m³ s⁻¹ |
-| `river_water__depth` | River water depth | m |
+| `river_water__instantaneous_volume_flow_rate` | River discharge | m³ s⁻¹ |
 | `river_water__volume` | River water volume | m³ |
-| `river_water__instantaneous_volume` | River water volume | m³ |
+| `river_water__depth` | River water depth | m |
 | `river_water__lateral_inflow_volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
 | `river_water__external_abstraction_volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
 : {.striped .hover}
@@ -116,17 +115,17 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_surface_water__instantaneous_volume_flow_rate` | Discharge overland flow | m³ s⁻¹ |
-| `land_surface_water__instantaneous_depth` | Water depth overland flow | m |
+| `land_surface_water__depth` | Water depth overland flow | m |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `land_surface_water__volume_flow_rate` | Discharge overland flow | m³ s⁻¹ |
+| `land_surface_water__instantaneous_volume_flow_rate` | Discharge overland flow | m³ s⁻¹ |
 | `land_surface_water__to_river_volume_flow_rate` | Discharge overland flow that flows to the river | m³ s⁻¹ |
-| `land_surface_water__depth` | Water depth overland flow | m |
 | `land_surface_water__volume` | Water volume overland flow | m³ |
-| `land_surface_water__instantaneous_volume` | Water volume overland flow | m³ |
+| `land_surface_water__depth` | Water depth overland flow | m |
 : {.striped .hover}
 
 
@@ -147,6 +146,7 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
+| `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
 | `subsurface_water_saturated_zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | m |
 | `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | mm Δt⁻¹ |
 | `subsurface_water__to_river_volume_flow_rate` | Part of subsurface flow that flows to the river | m³ day⁻¹ |
@@ -171,16 +171,16 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `river_water__instantaneous_volume_flow_rate` | River discharge | m³ s⁻¹ |
-| `river_water__instantaneous_depth` | River water depth | m |
+| `river_water__depth` | River water depth | m |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `river_water__volume_flow_rate` | River (+ floodplain) discharge | m³ s⁻¹ |
+| `river_water__instantaneous_volume_flow_rate` | River discharge | m³ s⁻¹ |
 | `river_water__depth` | River water depth | m |
 | `river_water__volume` | River water volume | m³ |
-| `river_water__instantaneous_volume` | River water volume | m³ |
 | `river_water__external_abstraction_volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
 : {.striped .hover}
 
@@ -196,15 +196,16 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | Standard Name | Description | Unit | |
 | --- | --- | - |
 | `floodplain_water__instantaneous_volume_flow_rate` | Floodplain discharge | m³ s⁻¹ |
-| `floodplain_water__instantaneous_depth` | Floodplain water depth | m |
+| `floodplain_water__depth` | Floodplain water depth | m |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `floodplain_water__volume` | Floodplain volume | m³ |
-| `floodplain_water__instantaneous_volume` | Floodplain volume | m³ |
+| `floodplain_water__depth` | Floodplain water depth | m |
 | `floodplain_water__volume_flow_rate` | Floodplain discharge | m³ s⁻¹ |
+| `floodplain_water__instantaneous_volume_flow_rate` | Floodplain discharge | m³ s⁻¹ |
 : {.striped .hover}
 
 ### Overland flow
@@ -220,15 +221,16 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 | --- | ---- | - |
 | `land_surface_water__x_component_of_instantaneous_volume_flow_rate` | Flow in x direction | m³ s⁻¹ |
 | `land_surface_water__y_component_of_instantaneous_volume_flow_rate` | Flow in y direction | m³ s⁻¹ |
-| `land_surface_water__instantaneous_depth` | Water depth | m |
+| `land_surface_water__depth` | Water depth | m |
 : {.striped .hover}
 
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
+| `land_surface_water__x_component_of_instantaneous_volume_flow_rate` | Flow in x direction | m³ s⁻¹ |
+| `land_surface_water__y_component_of_instantaneous_volume_flow_rate` | Flow in y direction | m³ s⁻¹ |
 | `land_surface_water__depth` | Water depth | m |
 | `land_surface_water__volume` | Total surface water storage of cell (including river storage for river cells) | m³ |
-| `land_surface_water__instantaneous_volume` | Total surface water storage of cell (including river storage for river cells) | m³ |
 : {.striped .hover}
 
 ## Groundwater flow
@@ -245,10 +247,10 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### States{#state-gwf-unconfined}
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `subsurface_water__instantaneous_hydraulic_head` | Groundwater head | m |
+| `subsurface_water__hydraulic_head` | Groundwater head | m |
 : {.striped .hover}
 
-#### Output{#output-gwf-unconfined}
+#### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water__hydraulic_head` | Groundwater head | m |
@@ -394,6 +396,24 @@ considered instantaneous compared to the model simulation time step Δt $\SIb{}{
 #### Output
 | Standard Name | Description | Unit |
 | --- | --- | - |
+| `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton |
+| `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton |
+| `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton |
+| `river_bed_small_aggregates__mass` | Small aggregates stored on the river bed after deposition | ton |
+| `river_bed_large_aggregates__mass` | Large aggregates stored on the river bed after deposition | ton |
+| `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton |
+| `river_water_clay__mass` | Clay left in cell | ton |
+| `river_water_silt__mass` | Silt left in cell | ton |
+| `river_water_sand__mass` | Sand left in cell | ton |
+| `river_water_small_aggregates__mass` | Small aggregates left in cell | ton |
+| `river_water_large_aggregates__mass` | Large aggregates left in cell | ton |
+| `river_water_gravel__mass` | Gravel left in cell | ton? |
+| `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
+| `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
+| `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
+| `river_water_small_aggregates__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
+| `river_water_large_aggregates__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
+| `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
 | `river_water_sediment__bedload_mass_concentration` | Bed load sediment concentration in the river | g m⁻³ |
 | `river_water_sediment__suspended_mass_concentration` | Suspended sediemnt concentration in the river | g m⁻³ |
 | `river_water_sediment__mass_concentration` | Total sediment concentration in the river | g m⁻³ |
