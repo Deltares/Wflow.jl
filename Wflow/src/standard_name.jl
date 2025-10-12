@@ -439,3 +439,4 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
 # wrapper methods for standard name mapping
 standard_name_map(::LandHydrologySBM) = sbm_standard_name_map
 standard_name_map(::SoilLoss) = sediment_standard_name_map
+get_lens(name::AbstractString, T::AbstractLandModel) = standard_name_map(T)[name].lens
