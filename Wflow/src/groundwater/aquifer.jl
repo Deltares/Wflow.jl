@@ -97,7 +97,9 @@ end
     head::Vector{Float64}               # hydraulic head [m]
     conductance::Vector{Float64}        # conductance [m² d⁻¹]
     storage::Vector{Float64}            # total storage of water that can be released [m³]
-    q_net::Vector{Float64}              # net flow [m³ d⁻¹]
+    q_net::Vector{Float64}              # net flow (groundwater and boundaries) [m³ d⁻¹]
+    q_in_av::Vector{Float64}            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
+    q_out_av::Vector{Float64}           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
     exfiltwater::Vector{Float64}        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 
@@ -178,7 +180,11 @@ function UnconfinedAquifer(
     n = length(storage)
     q_net = zeros(n)
     exfiltwater = zeros(n)
-    variables = AquiferVariables(head, conductance, storage, q_net, exfiltwater)
+    q_in_av = zeros(n)
+    q_out_av = zeros(n)
+    exfiltwater = zeros(n)
+    variables =
+        AquiferVariables(head, conductance, storage, q_net, q_in_av, q_out_av, exfiltwater)
     aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end
@@ -362,6 +368,7 @@ function flux!(
     aquifer::Aquifer,
     connectivity::Connectivity,
     conductivity_profile::GwfConductivityProfileType.T,
+    dt::Float64,
 )
     for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
@@ -370,7 +377,13 @@ function flux!(
             j = connectivity.rowval[nzi]
             delta_head = aquifer.variables.head[i] - aquifer.variables.head[j]
             cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
-            aquifer.variables.q_net[i] -= cond * delta_head
+            flow = cond * delta_head
+            aquifer.variables.q_net[i] -= flow
+            if flow > 0.0
+                aquifer.variables.q_out_av[i] += flow * dt
+            else
+                aquifer.variables.q_in_av[i] -= flow * dt
+            end
         end
     end
     return nothing
@@ -468,7 +481,7 @@ function update_fluxes!(
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
 ) where {A <: Aquifer}
-    flux!(gwf.aquifer, gwf.connectivity, conductivity_profile)
+    flux!(gwf.aquifer, gwf.connectivity, conductivity_profile, dt)
     for boundary in gwf.boundaries
         flux!(boundary, gwf.aquifer, dt)
     end
@@ -507,6 +520,8 @@ function update!(
         boundary.variables.flux_av .= 0.0
     end
     gwf.aquifer.variables.exfiltwater .= 0.0
+    gwf.aquifer.variables.q_in_av .= 0.0
+    gwf.aquifer.variables.q_out_av .= 0.0
     t = 0.0
     while t < dt
         gwf.aquifer.variables.q_net .= 0.0
@@ -519,6 +534,8 @@ function update!(
     for boundary in gwf.boundaries
         boundary.variables.flux_av ./= dt
     end
+    gwf.aquifer.variables.q_in_av ./= dt
+    gwf.aquifer.variables.q_out_av ./= dt
     return nothing
 end
 
@@ -536,3 +553,31 @@ function get_flux_to_river(
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end
+
+function sum_boundary_fluxes(
+    gwf::GroundwaterFlow{A};
+    exclude = nothing,
+) where {A <: UnconfinedAquifer}
+    (; boundaries) = gwf
+    n = length(gwf.aquifer.variables.storage)
+    flux_in = zeros(n)
+    flux_out = zeros(n)
+    for boundary in boundaries
+        typeof(boundary) == exclude && continue
+        for (i, index) in enumerate(boundary.index)
+            flux = boundary.variables.flux_av[i]
+            if flux > 0.0
+                flux_in[index] += flux
+            else
+                flux_out[index] -= flux
+            end
+        end
+    end
+    return flux_in, flux_out
+end
+get_inflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf.aquifer.variables.q_in_av
+get_outflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf.aquifer.variables.q_out_av
+get_storage(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf.aquifer.variables.storage

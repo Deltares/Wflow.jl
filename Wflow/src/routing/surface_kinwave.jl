@@ -3,6 +3,7 @@
     q::Vector{Float64}            # Discharge [m³ s⁻¹]
     qlat::Vector{Float64}         # Lateral inflow per unit length [m² s⁻¹]
     qin::Vector{Float64}          # Inflow from upstream cells [m³ s⁻¹]
+    qin_av::Vector{Float64}       # Average inflow from upstream cells  [m³ s⁻¹] for model timestep Δt
     q_av::Vector{Float64}         # Average discharge [m³ s⁻¹] for model timestep Δt
     storage::Vector{Float64}      # Kinematic wave storage [m³] (based on water depth h)
     h::Vector{Float64}            # Water depth [m]
@@ -30,6 +31,7 @@ function FlowVariables(n::Int)
         q = zeros(Float64, n),
         qlat = zeros(Float64, n),
         qin = zeros(Float64, n),
+        qin_av = zeros(Float64, n),
         q_av = zeros(Float64, n),
         storage = zeros(Float64, n),
         h = zeros(Float64, n),
@@ -137,7 +139,7 @@ function KinWaveRiverFlow(
 
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
-    allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver()
+    allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(n)
 
     variables = FlowVariables(n)
     parameters = RiverFlowParameters(dataset, config, domain)
@@ -270,7 +272,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
         domain.network
 
     (; beta, alpha) = model.parameters
-    (; h, q, q_av, storage, qin, qlat, to_river) = model.variables
+    (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
     ns = length(order_of_subdomains)
@@ -316,6 +318,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
 
                 # average flow (here accumulated for model timestep Δt)
                 q_av[v] += q[v] * dt
+                qin_av[v] += qin[v] * dt
             end
         end
     end
@@ -329,7 +332,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha) = model.parameters
     (; surface_flow_width, flow_length, slope) = domain.parameters
-    (; q_av, qlat, to_river) = model.variables
+    (; q_av, qlat, qin_av, to_river) = model.variables
     (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
@@ -339,6 +342,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
 
     q_av .= 0.0
     to_river .= 0.0
+    qin_av .= 0.0
 
     t = 0.0
     while t < dt
@@ -351,6 +355,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     end
     q_av ./= dt
     to_river ./= dt
+    qin_av ./= dt
     return nothing
 end
 
@@ -375,7 +380,7 @@ function kinwave_river_update!(
 
     (; beta, alpha) = model.parameters
     (; flow_width, flow_length) = domain.parameters
-    (; h, q, q_av, storage, qin, qlat) = model.variables
+    (; h, q, q_av, storage, qin, qin_av, qlat) = model.variables
 
     if !isnothing(reservoir)
         res_bc = reservoir.boundary_conditions
@@ -456,6 +461,7 @@ function kinwave_river_update!(
 
                 # average variables (here accumulated for model timestep Δt)
                 q_av[v] += q[v] * dt
+                qin_av[v] += qin[v] * dt
             end
         end
     end
@@ -469,7 +475,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
     (; reservoir, inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) = model.parameters
     (; slope, flow_width, flow_length) = domain.river.parameters
-    (; qlat) = model.variables
+    (; qlat, qin_av) = model.variables
     (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
@@ -478,6 +484,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
     @. qlat = inwater / flow_length
 
     set_flow_vars!(model)
+    qin_av .= 0.0
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
 
@@ -494,6 +501,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
 
     average_reservoir_vars!(reservoir, dt)
     average_flow_vars!(model, dt)
+    qin_av ./= dt
     return nothing
 end
 

@@ -187,3 +187,7 @@ get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
 get_flux_to_river(model::LateralSSF, inds::Vector{Int}) =
     model.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+
+get_inflow(model::LateralSSF) = model.variables.ssfin
+get_outflow(model::LateralSSF) = model.variables.ssf
+get_storage(model::LateralSSF) = model.variables.storage

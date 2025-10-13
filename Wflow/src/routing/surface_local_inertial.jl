@@ -204,7 +204,7 @@ function LocalInertialRiverFlow(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(),
+        allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(n),
     )
     return river_flow
 end
@@ -516,7 +516,9 @@ end
     qy0::Vector{Float64}              # flow in y direction at edge at previous time step [m³ s⁻¹]
     qx0::Vector{Float64}              # flow in x direction at edge at previous time step [m³ s⁻¹]
     qx::Vector{Float64}               # flow in x direction at egde [m³ s⁻¹]
+    qx_av::Vector{Float64}            # average flow in x direction at egde [m³ s⁻¹] for model timestep Δt
     qy::Vector{Float64}               # flow in y direction at edge [m³ s⁻¹]
+    qy_av::Vector{Float64}            # average flow in y direction at egde [m³ s⁻¹] for model timestep Δt
     storage::Vector{Float64}          # total storage of cell [m³] (including river storage for river cells)
     error::Vector{Float64}            # error storage [m³]
     h::Vector{Float64}                # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
@@ -528,7 +530,9 @@ function LocalInertialOverlandFlowVariables(n::Int)
         qx0 = zeros(n + 1),
         qy0 = zeros(n + 1),
         qx = zeros(n + 1),
+        qx_av = zeros(n + 1),
         qy = zeros(n + 1),
+        qy_av = zeros(n + 1),
         storage = zeros(n),
         error = zeros(n),
         h = zeros(n),
@@ -734,6 +738,29 @@ function update_inflow!(
 end
 
 """
+Helper function to set flow variables of the `LocalInertialOverlandFlow` model to zero. This
+is done at the start of each simulation timestep, during the timestep the total (weighted)
+sum is computed from values at each sub timestep.
+"""
+function set_flow_vars!(model::LocalInertialOverlandFlow)
+    (; qx_av, qy_av) = model.variables
+    qx_av .= 0.0
+    qy_av .= 0.0
+    return nothing
+end
+
+"""
+Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
+This is done at the end of each simulation timestep.
+"""
+function average_flow_vars!(model::LocalInertialOverlandFlow, dt::Float64)
+    (; qx_av, qy_av) = model.variables
+    qx_av ./= dt
+    qy_av ./= dt
+    return nothing
+end
+
+"""
 Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow`
 models for a single timestep `dt`. An adaptive timestepping method is used (computing a sub
 timestep `dt_s`).
@@ -752,6 +779,7 @@ function update!(
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
     set_flow_vars!(river)
+    set_flow_vars!(land)
 
     dt = tosecond(clock.dt)
     t = 0.0
@@ -769,6 +797,7 @@ function update!(
         t += dt_s
     end
     average_flow_vars!(river, dt)
+    average_flow_vars!(land, dt)
     average_reservoir_vars!(reservoir, dt)
 
     return nothing
@@ -833,6 +862,7 @@ function local_inertial_update_fluxes!(
             else
                 land_v.qx[i] = 0.0
             end
+            land_v.qx_av[i] += land_v.qx[i] * dt
         end
 
         # update qy
@@ -872,6 +902,7 @@ function local_inertial_update_fluxes!(
             else
                 land_v.qy[i] = 0.0
             end
+            land_v.qy_av[i] += land_v.qy[i] * dt
         end
     end
     return nothing

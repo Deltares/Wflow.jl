@@ -28,7 +28,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 
     @test row.time == DateTime("2000-06-01T00:00:00")
     @test row.Q_av ≈ 0.01619703129434486
-    @test row.head ≈ 1.6471323360175287
+    @test row.head ≈ 1.6483613552507124
 end
 
 @testset "first timestep" begin
@@ -60,25 +60,25 @@ end
 @testset "river domain (kinematic wave)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.03460420763022196
-    @test q[6] ≈ 0.007809586997135836
-    @test river.variables.storage[6] ≈ 4.452845039409768
-    @test river.boundary_conditions.inwater[6] ≈ 0.0003627879093024724
-    @test q[13] ≈ 0.000592145641193449
-    @test q[domain.river.network.order[end]] ≈ 0.008317914181880935
+    @test sum(q) ≈ 0.04467596116472541
+    @test q[6] ≈ 0.01045806777050397
+    @test river.variables.storage[6] ≈ 5.327514648713158
+    @test river.boundary_conditions.inwater[6] ≈ 0.0008954764365446767
+    @test q[13] ≈ 0.0007247351389898374
+    @test q[domain.river.network.order[end]] ≈ 0.01147048008100743
 end
 
 @testset "groundwater" begin
     gw = model.routing.subsurface_flow
     @test gw.boundaries.river.variables.stage[1] ≈ 1.212479774379469
     @test gw.aquifer.variables.head[17:21] ≈ [
-        1.284126255728794,
-        1.345258485244677,
+        1.4037567076805044,
+        1.4616545639019285,
         1.7999999523162842,
-        1.6224360370353534,
-        1.398423446844073,
+        1.6266815385109639,
+        1.503470591440436,
     ]
-    @test gw.boundaries.river.variables.flux[1] ≈ -49.624776263594335
+    @test gw.boundaries.river.variables.flux[1] ≈ -61.786976087971084
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
     @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
 end
@@ -96,9 +96,6 @@ end
 
 Wflow.close_files(model; delete_output = false)
 
-# test complete run including logging entry TOML file (not set)
-Wflow.run(tomlpath; silent = true)
-
 # test local-inertial option for river flow routing
 tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 config = Wflow.Config(tomlpath)
@@ -114,12 +111,12 @@ Wflow.run_timestep!(model)
 @testset "river domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.025242745327901266
-    @test q[6] ≈ 0.005597737309703839
-    @test river.variables.storage[6] ≈ 7.185727159119112
-    @test river.boundary_conditions.inwater[6] ≈ 0.00013534294315862918
-    @test q[13] ≈ 0.0004363336769343206
-    @test q[5] ≈ 0.005899536075917488
+    @test sum(q) ≈ 0.03415339215740202
+    @test q[6] ≈ 0.00797964303605101
+    @test river.variables.storage[6] ≈ 9.072782344941736
+    @test river.boundary_conditions.inwater[6] ≈ 0.0006680314704008334
+    @test q[13] ≈ 0.0005485471116586621
+    @test q[5] ≈ 0.008757115063950119
 end
 Wflow.close_files(model; delete_output = false)
 
@@ -144,14 +141,14 @@ Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 0.025242731947236016
-    @test q[6] ≈ 0.005597739889073783
-    @test q[13] ≈ 0.00043633384561159253
-    @test q[5] ≈ 0.005899514829371013
+    @test sum(q) ≈ 0.034153376823583735
+    @test q[6] ≈ 0.007979645156223385
+    @test q[13] ≈ 0.0005485472496903369
+    @test q[5] ≈ 0.008757093275644737
     h = model.routing.river_flow.variables.h
-    @test h[6] ≈ 0.07185713458543772
-    @test h[5] ≈ 0.06945465347888498
-    @test h[13] ≈ 0.07381249815138224
+    @test h[6] ≈ 0.09072771746166071
+    @test h[5] ≈ 0.08793512486538263
+    @test h[13] ≈ 0.09266296831143483
     qx = model.routing.overland_flow.variables.qx
     qy = model.routing.overland_flow.variables.qy
     @test all(qx .== 0.0)
@@ -185,32 +182,69 @@ end
 @testset "river domain warm start (kinematic wave)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.011918302776165372
-    @test q[6] ≈ 0.002435524985929997
-    @test river.variables.storage[6] ≈ 2.2278805130264883
-    @test river.boundary_conditions.inwater[6] ≈ -1.2985462545754242e-5
-    @test q[13] ≈ 7.335056957297285e-5
-    @test q[domain.river.network.order[end]] ≈ 0.0024727437195071356
+    @test sum(q) ≈ 0.012035660670336177
+    @test q[6] ≈ 0.002461611895159899
+    @test river.variables.storage[6] ≈ 2.243001377077464
+    @test river.boundary_conditions.inwater[6] ≈ -9.80491995209067e-6
+    @test q[13] ≈ 8.306151934987444e-5
+    @test q[domain.river.network.order[end]] ≈ 0.0024978487353360577
 end
 
 @testset "groundwater warm start" begin
     gw = model.routing.subsurface_flow
     @test gw.boundaries.river.variables.stage[1] ≈ 1.2030201719029363
     @test gw.aquifer.variables.head[17:21] ≈ [
-        1.2277387243899684,
-        1.2868951594984024,
+        1.2271445115520103,
+        1.2841099964673919,
         1.7999999523162842,
-        1.5901818206391656,
-        1.2094134130011027,
+        1.5991095485460984,
+        1.2079062115823571,
     ]
-    @test gw.boundaries.river.variables.flux[1] ≈ -6.693665350868727
+    @test gw.boundaries.river.variables.flux[1] ≈ -7.205394770592832
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
     @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
 end
 
 Wflow.close_files(model; delete_output = false)
 
+@testset "water balance sbm with groundwater" begin
+    tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; land_water_balance, routing) = model.mass_balance
+    (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1.5e-6, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-7, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-6, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-7, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
 @testset "run wflow sbm_gwf" begin
     config.time.endtime = "2000-06-04"
     Wflow.run(config)
 end
+
+# test complete run including logging entry TOML file (not set)
+Wflow.run(tomlpath; silent = true)
