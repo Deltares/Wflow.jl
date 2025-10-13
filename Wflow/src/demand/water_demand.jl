@@ -2,11 +2,21 @@ abstract type AbstractIrrigationModel end
 abstract type AbstractAllocationModel end
 abstract type AbstractDemandModel end
 
-struct NoIrrigationPaddy <: AbstractIrrigationModel end
-struct NoIrrigationNonPaddy <: AbstractIrrigationModel end
-struct NoNonIrrigationDemand <: AbstractDemandModel end
-struct NoAllocationLand <: AbstractAllocationModel end
-struct NoAllocationRiver <: AbstractAllocationModel end
+struct NoIrrigationPaddy <: AbstractIrrigationModel
+    n::Int
+end
+struct NoIrrigationNonPaddy <: AbstractIrrigationModel
+    n::Int
+end
+struct NoNonIrrigationDemand <: AbstractDemandModel
+    n::Int
+end
+struct NoAllocationLand <: AbstractAllocationModel
+    n::Int
+end
+struct NoAllocationRiver <: AbstractAllocationModel
+    n::Int
+end
 
 "Struct to store non-irrigation water demand variables"
 @with_kw struct NonIrrigationDemandVariables
@@ -28,7 +38,7 @@ end
 
 # wrapper methods
 get_demand_gross(model::NonIrrigationDemand) = model.demand.demand_gross
-get_demand_gross(model::NoNonIrrigationDemand) = 0.0
+get_demand_gross(model::NoNonIrrigationDemand) = Zeros(model.n)
 
 "Initialize non-irrigation water demand model for a water use `sector`"
 function NonIrrigationDemand(
@@ -118,7 +128,7 @@ end
 
 # wrapper methods
 get_demand_gross(model::NonPaddy) = model.variables.demand_gross
-get_demand_gross(model::NoIrrigationNonPaddy) = 0.0
+get_demand_gross(model::NoIrrigationNonPaddy) = Zeros(model.n)
 
 """
     update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
@@ -277,9 +287,9 @@ end
 
 # wrapper methods
 get_water_depth(model::Paddy) = model.variables.h
-get_water_depth(model::NoIrrigationPaddy) = 0.0
+get_water_depth(model::NoIrrigationPaddy) = Zeros(model.n)
 get_demand_gross(model::Paddy) = model.variables.demand_gross
-get_demand_gross(model::NoIrrigationPaddy) = 0.0
+get_demand_gross(model::NoIrrigationPaddy) = Zeros(model.n)
 
 """
     evaporation!(model::Paddy, potential_evaporation)
@@ -300,7 +310,7 @@ end
 evaporation!(model::NoIrrigationPaddy, potential_evaporation) = nothing
 
 # wrapper methods
-get_evaporation(model::NoIrrigationPaddy) = 0.0
+get_evaporation(model::NoIrrigationPaddy) = Zeros(model.n)
 get_evaporation(model::Paddy) = model.variables.evaporation
 
 """
@@ -398,11 +408,12 @@ end
 end
 
 @with_kw struct NoDemand <: AbstractDemandModel
-    domestic::NoNonIrrigationDemand = NoNonIrrigationDemand()
-    industry::NoNonIrrigationDemand = NoNonIrrigationDemand()
-    livestock::NoNonIrrigationDemand = NoNonIrrigationDemand()
-    paddy::NoIrrigationPaddy = NoIrrigationPaddy()
-    nonpaddy::NoIrrigationNonPaddy = NoIrrigationNonPaddy()
+    n::Int
+    domestic::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
+    industry::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
+    livestock::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
+    paddy::NoIrrigationPaddy = NoIrrigationPaddy(n)
+    nonpaddy::NoIrrigationNonPaddy = NoIrrigationNonPaddy(n)
 end
 
 "Initialize water demand model"
@@ -459,7 +470,7 @@ end
 end
 
 get_nonirrigation_returnflow(model::AllocationRiver) = model.variables.nonirri_returnflow
-get_nonirrigation_returnflow(model::NoAllocationRiver) = 0.0
+get_nonirrigation_returnflow(model::NoAllocationRiver) = Zeros(model.n)
 
 "Initialize water allocation for the river domain"
 function AllocationRiver(n::Int)
@@ -531,9 +542,12 @@ end
 
 # wrapper methods
 get_irrigation_allocated(model::AllocationLand) = model.variables.irri_alloc
-get_irrigation_allocated(model::NoAllocationLand) = 0.0
+get_irrigation_allocated(model::NoAllocationLand) = Zeros(model.n)
 get_nonirrigation_returnflow(model::AllocationLand) = model.variables.nonirri_returnflow
-get_nonirrigation_returnflow(model::NoAllocationLand) = 0.0
+get_nonirrigation_returnflow(model::NoAllocationLand) = Zeros(model.n)
+get_groundwater_abstraction_flux(model::AllocationLand) =
+    model.variables.act_groundwater_abst
+get_groundwater_abstraction_flux(model::NoAllocationLand) = Zeros(model.n)
 
 """
 Return return flow fraction based on gross water demand `demand_gross` and net water demand

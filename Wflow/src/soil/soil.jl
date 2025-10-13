@@ -74,6 +74,8 @@ abstract type AbstractSoilModel end
     actleakage::Vector{Float64}
     # Total water storage (excluding floodplain volume and reservoirs) [mm]
     total_storage::Vector{Float64}
+    # Total soil water storage [mm]
+    total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
     tsoil::Vector{Float64}
     # Soil infiltration reduction factor (when soil is frozen) [-]
@@ -156,12 +158,14 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         theta_r,
     ) = parameters
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
+    ustoredepth = zeros(Float64, n)
     zi = @. max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
 
     vwc = fill(MISSING_VALUE, maxlayers, n)
     vwc_perc = fill(MISSING_VALUE, maxlayers, n)
+    total_soilwater_storage = satwaterdepth .+ ustoredepth
 
     vars = SbmSoilVariables(;
         ustorelayerdepth = zero(act_thickl),
@@ -202,6 +206,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         actleakage = fill(MISSING_VALUE, n),
         tsoil = fill(10.0, n),
         total_storage = zeros(Float64, n),
+        total_soilwater_storage,
     )
     return vars
 end
@@ -1136,12 +1141,14 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         end
 
         ustoredepth = sum(@view ustorelayerdepth[1:n_unsatlayers])
-        sbm_runoff =
+        sbm_runoff = max(
+            0.0,
             exfiltustore +
             exfiltsatwater[i] +
             v.excesswater[i] +
             runoff_land[i] +
-            v.infiltexcess[i]
+            v.infiltexcess[i],
+        )
 
         # volumetric water content per soil layer and root zone
         vwc = v.vwc[i]
@@ -1201,6 +1208,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         v.vwc_root[i] = vwc_root
         v.vwc_percroot[i] = vwc_percroot
         v.zi[i] = zi[i]
+        v.total_soilwater_storage[i] = satwaterdepth + ustoredepth
     end
     # update runoff and net_runoff (the runoff rate depends on the presence of paddy fields
     # and the h_max parameter of a paddy field)
@@ -1222,6 +1230,7 @@ function update_diagnostic_vars!(model::SbmSoilModel)
         ustorelayerthickness,
         ustorecapacity,
         ustoredepth,
+        total_soilwater_storage,
         n_unsatlayers,
     ) = model.variables
     (; soilthickness, theta_s, theta_r, soilwatercapacity, sumlayers, act_thickl) =
@@ -1232,6 +1241,7 @@ function update_diagnostic_vars!(model::SbmSoilModel)
     @. ustorecapacity = soilwatercapacity - satwaterdepth - ustoredepth
     @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
     @. n_unsatlayers = number_of_active_layers(ustorelayerthickness)
+    @. total_soilwater_storage = satwaterdepth + ustoredepth
 end
 
 # wrapper method

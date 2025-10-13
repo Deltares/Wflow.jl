@@ -8,6 +8,7 @@ that can be exchanged (input and output) with standard names (subsection below) 
 + [The Land Hydrology SBM model](./parameters_landhydrology_sbm.qmd).
 + [The Land Sediment model](./parameters_sediment.qmd)
 + [Routing concepts](./parameters_routing.qmd)
++ [Water mass balance error](./parameters_massbalance.qmd)
 
 These tables include standard names, descriptions, units and default values (input
 parameters) for model parameters, states and variables. Note that a state variable can also

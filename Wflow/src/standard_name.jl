@@ -14,6 +14,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.actevap), unit = "mm dt-1"),
     "land_water_storage__total_depth" =>
         (lens = @optic(_.land.soil.variables.total_storage), unit = "mm"),
+    "land_water_mass_balance_error__volume_flux" =>
+        (lens = @optic(_.mass_balance.land_water_balance.error), unit = "mm dt-1"),
+    "land_water_mass_balance_relative_error__number" =>
+        (lens = @optic(_.mass_balance.land_water_balance.relative_error), unit = "-"),
     "atmosphere_air__temperature" =>
         (lens = @optic(_.land.atmospheric_forcing.temperature), unit = "°C"),
     "vegetation__leaf_area_index" =>
@@ -59,6 +63,14 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.river_flow.variables.storage_av), unit = "m3"),
     "river_water__instantaneous_volume" =>
         (lens = @optic(_.routing.river_flow.variables.storage), unit = "m3"),
+    "river_water_mass_balance_error__volume_flow_rate" => (
+        lens = @optic(_.mass_balance.routing.river_water_balance.error),
+        unit = "m3 s-1",
+    ),
+    "river_water_mass_balance_relative_error__number" => (
+        lens = @optic(_.mass_balance.routing.river_water_balance.relative_error),
+        unit = "-",
+    ),
     "land_surface_water__abstraction_volume_flux" => (
         lens = @optic(_.routing.river_flow.allocation.variables.act_surfacewater_abst),
         unit = "mm dt-1",
@@ -161,6 +173,14 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         ),
         unit = "m3 s-1",
     ),
+    "reservoir_water_mass_balance_error__volume_flow_rate" => (
+        lens = @optic(_.mass_balance.routing.reservoir_water_balance.error),
+        unit = "m3 s-1",
+    ),
+    "reservoir_water_mass_balance_relative_error__number" => (
+        lens = @optic(_.mass_balance.routing.reservoir_water_balance.relative_error),
+        unit = "-",
+    ),
     "soil_water__infiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actinfilt), unit = "mm dt-1"),
     "soil_water__transpiration_volume_flux" =>
@@ -215,6 +235,14 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.subsurface_flow.variables.ssf), unit = "m3 d-1"),
     "subsurface_water__to_river_volume_flow_rate" =>
         (lens = @optic(_.routing.subsurface_flow.variables.to_river), unit = "m3 d-1"),
+    "subsurface_water_mass_balance_error__volume_flow_rate" => (
+        lens = @optic(_.mass_balance.routing.subsurface_water_balance.error),
+        unit = "m3 d-1",
+    ),
+    "subsurface_water_mass_balance_relative_error__number" => (
+        lens = @optic(_.mass_balance.routing.subsurface_water_balance.relative_error),
+        unit = "-",
+    ),
     "snowpack_liquid_water__depth" =>
         (lens = @optic(_.land.snow.variables.snow_water), unit = "mm"),
     "snowpack_dry_snow__leq_depth" =>
@@ -241,6 +269,14 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.routing.overland_flow.variables.qx), unit = "m3 s-1"),
     "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.qy), unit = "m3 s-1"),
+    "land_surface_water_mass_balance_error__volume_flow_rate" => (
+        lens = @optic(_.mass_balance.routing.overland_water_balance.error),
+        unit = "m3 s-1",
+    ),
+    "land_surface_water_mass_balance_relative_error__number" => (
+        lens = @optic(_.mass_balance.routing.overland_water_balance.relative_error),
+        unit = "-",
+    ),
     "paddy_surface_water__depth" =>
         (lens = @optic(_.land.demand.paddy.variables.h), unit = "mm"),
     "domestic__gross_water_demand_volume_flux" =>
