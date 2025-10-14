@@ -199,11 +199,30 @@ end
 end
 
 "Initialize reservoir model variables"
-function ReservoirVariables(parameters::ReservoirParameters, waterlevel::Vector{Float64})
+function ReservoirVariables(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkReservoir,
+    parameters::ReservoirParameters,
+    waterlevel::Vector{Float64},
+)
     (; storfunc, area, sh) = parameters
+    (; indices_outlet) = network
+    lens =
+        lens_input_parameter(config, "reservoir_water__outgoing_observed_volume_flow_rate")
+    outflow_obs = ncread(
+        dataset,
+        config,
+        lens;
+        sel = indices_outlet,
+        defaults = MISSING_VALUE,
+        type = Float64,
+        fill = MISSING_VALUE,
+    )
     variables = ReservoirVariables(;
         waterlevel,
         storage = initialize_storage(storfunc, area, waterlevel, sh),
+        outflow_obs,
     )
     return variables
 end
@@ -220,12 +239,17 @@ end
 end
 
 "Initialize reservoir model boundary conditions"
-function ReservoirBC(n::Int)
+function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservoir)
+    (; indices_outlet) = network
+    lens = lens_input_parameter(config, "reservoir_water__external_inflow_volume_flow_rate")
+    external_inflow =
+        ncread(dataset, config, lens; sel = indices_outlet, defaults = 0.0, type = Float64)
+    n = length(indices_outlet)
     bc = ReservoirBC(;
         inflow_subsurface = fill(MISSING_VALUE, n),
         inflow_overland = fill(MISSING_VALUE, n),
         inflow = fill(MISSING_VALUE, n),
-        external_inflow = zeros(Float64, n),
+        external_inflow,
         actual_external_abstraction_av = zeros(Float64, n),
         precipitation = fill(MISSING_VALUE, n),
         evaporation = fill(MISSING_VALUE, n),
@@ -243,8 +267,8 @@ end
 "Initialize reservoir model `SimpleReservoir`"
 function Reservoir(dataset::NCDataset, config::Config, network::NetworkReservoir)
     parameters, waterlevel = ReservoirParameters(dataset, config, network)
-    variables = ReservoirVariables(parameters, waterlevel)
-    boundary_conditions = ReservoirBC(length(parameters.area))
+    variables = ReservoirVariables(dataset, config, network, parameters, waterlevel)
+    boundary_conditions = ReservoirBC(dataset, config, network)
     reservoir = Reservoir(; boundary_conditions, parameters, variables)
 
     return reservoir

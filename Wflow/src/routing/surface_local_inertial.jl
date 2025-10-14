@@ -187,9 +187,7 @@ function LocalInertialRiverFlow(
 
     parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
     variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
-
-    n = length(domain.network.indices)
-    boundary_conditions = RiverFlowBC(n, reservoir)
+    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
     if config.model.floodplain_1d__flag
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
@@ -198,6 +196,7 @@ function LocalInertialRiverFlow(
         floodplain = nothing
     end
 
+    n = length(domain.network.indices)
     river_flow = LocalInertialRiverFlow(;
         timestepping,
         boundary_conditions,

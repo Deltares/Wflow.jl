@@ -107,10 +107,20 @@ end
 end
 
 "Initialize river flow model boundary conditions"
-function RiverFlowBC(n::Int, reservoir::Union{Reservoir, Nothing})
+function RiverFlowBC(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkRiver,
+    reservoir::Union{Reservoir, Nothing},
+)
+    (; indices) = network
+    lens = lens_input_parameter(config, "river_water__external_inflow_volume_flow_rate")
+    external_inflow =
+        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
+    n = length(indices)
     bc = RiverFlowBC(;
         inwater = zeros(Float64, n),
-        external_inflow = zeros(Float64, n),
+        external_inflow,
         actual_external_abstraction_av = zeros(Float64, n),
         abstraction = zeros(Float64, n),
         reservoir,
@@ -143,7 +153,7 @@ function KinWaveRiverFlow(
 
     variables = FlowVariables(n)
     parameters = RiverFlowParameters(dataset, config, domain)
-    boundary_conditions = RiverFlowBC(n, reservoir)
+    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
     river_flow = KinWaveRiverFlow(;
         timestepping,
