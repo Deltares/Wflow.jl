@@ -59,9 +59,9 @@ lines can be inserted in the TOML file of the model:
 # Adaptive (internal) time stepping for the kinematic wave
 kinematic_wave__adaptive_time_step_flag = false    # optional, default is false
 # Fixed internal timestep for river flow (river cells)
-river_kinematic_wave__time_step = 900        # optional, default is model timestep
+river_kinematic_wave__time_step = 900        # optional, default is 900
 # Fixed internal timestep for overland flow (land cells)
-land_kinematic_wave__time_step = 3600        # optional, default is model timestep
+land_kinematic_wave__time_step = 3600        # optional, default 3600
 ```
 
 Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of

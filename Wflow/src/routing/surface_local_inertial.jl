@@ -110,11 +110,9 @@ end
     zs_src::Vector{Float64}                   # water elevation of source node of edge [m]
     zs_dst::Vector{Float64}                   # water elevation of downstream node of edge [m]
     hf::Vector{Float64}                       # water depth at edge [m]
-    h_av::Vector{Float64}                     # average water depth for model timestep Δt [m]
     a::Vector{Float64}                        # flow area at edge [m²]
     r::Vector{Float64}                        # wetted perimeter at edge [m]
     storage::Vector{Float64}                  # river storage [m³]
-    storage_av::Vector{Float64}               # average river storage for model timestep Δt [m³]
     error::Vector{Float64}                    # error storage [m³]
 end
 
@@ -147,11 +145,9 @@ function LocalInertialRiverFlowVariables(
         zs_src = zeros(n_edges),
         zs_dst = zeros(n_edges),
         hf = zeros(n_edges),
-        h_av = zeros(n),
         a = zeros(n_edges),
         r = zeros(n_edges),
         storage = zeros(n),
-        storage_av = zeros(n),
         error = zeros(n),
     )
     return variables
@@ -467,13 +463,7 @@ function local_inertial_river_update!(
                     floodplain_v.h[i] = 0.0
                     floodplain_v.storage[i] = 0.0
                 end
-                # average variables (here accumulated for model timestep Δt)
-                floodplain_v.storage_av[i] += floodplain_v.storage[i] * dt
-                floodplain_v.h_av[i] += floodplain_v.h_av[i] * dt
             end
-            # average variables (here accumulated for model timestep Δt)
-            river_v.storage_av[i] += river_v.storage[i] * dt
-            river_v.h_av[i] += river_v.h[i] * dt
         end
     end
     return nothing
@@ -489,16 +479,16 @@ function update!(
     clock::Clock;
     update_h = true,
 )
-    (; reservoir, actual_external_abstraction_av) = model.boundary_conditions
+    (; reservoir) = model.boundary_conditions
     (; flow_length) = domain.river.parameters
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
 
     if !isnothing(model.floodplain)
-        set_flow_vars!(model.floodplain.variables)
+        model.floodplain.variables.q_av .= 0.0
     end
-    set_flow_vars!(model.variables, actual_external_abstraction_av)
+    set_flow_vars!(model)
 
     dt = tosecond(clock.dt)
     t = 0.0
@@ -508,11 +498,11 @@ function update!(
         local_inertial_river_update!(model, domain, dt_s, dt, update_h)
         t += dt_s
     end
-    average_flow_vars!(model.variables, actual_external_abstraction_av, dt)
+    average_flow_vars!(model, dt)
     average_reservoir_vars!(reservoir, dt)
 
     if !isnothing(model.floodplain)
-        average_flow_vars!(model.floodplain.variables, dt)
+        model.floodplain.variables.q_av ./= dt
         model.variables.q_channel_av .= model.variables.q_av
         model.variables.q_av .=
             model.variables.q_channel_av .+ model.floodplain.variables.q_av
@@ -530,10 +520,8 @@ end
     qy::Vector{Float64}               # flow in y direction at edge [m³ s⁻¹]
     qy_av::Vector{Float64}            # average flow in y direction at egde [m³ s⁻¹] for model timestep Δt
     storage::Vector{Float64}          # total storage of cell [m³] (including river storage for river cells)
-    storage_av::Vector{Float64}       # average total storage of cell [m³] (including river storage for river cells) (model timestep Δt)
     error::Vector{Float64}            # error storage [m³]
     h::Vector{Float64}                # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
-    h_av::Vector{Float64}             # average water depth [m] (for river cells the reference is the river bed elevation `zb`) (model timestep Δt)
 end
 
 "Initialize local inertial overland flow model variables"
@@ -546,10 +534,8 @@ function LocalInertialOverlandFlowVariables(n::Int)
         qy = zeros(n + 1),
         qy_av = zeros(n + 1),
         storage = zeros(n),
-        storage_av = zeros(n),
         error = zeros(n),
         h = zeros(n),
-        h_av = zeros(n),
     )
     return variables
 end
@@ -752,15 +738,14 @@ function update_inflow!(
 end
 
 """
-Helper function to set storage and water depth variables of the `LocalInertialOverlandFlow`
-model to zero. This is done at the start of each simulation timestep, during the timestep
-the total (weighted) sum is computed from values at each sub timestep.
+Helper function to set flow variables of the `LocalInertialOverlandFlow` model to zero. This
+is done at the start of each simulation timestep, during the timestep the total (weighted)
+sum is computed from values at each sub timestep.
 """
-function set_flow_vars!(variables::LocalInertialOverlandFlowVariables)
-    variables.h_av .= 0.0
-    variables.storage_av .= 0.0
-    variables.qx_av .= 0.0
-    variables.qy_av .= 0.0
+function set_flow_vars!(model::LocalInertialOverlandFlow)
+    (; qx_av, qy_av) = model.variables
+    qx_av .= 0.0
+    qy_av .= 0.0
     return nothing
 end
 
@@ -768,11 +753,10 @@ end
 Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
 This is done at the end of each simulation timestep.
 """
-function average_flow_vars!(variables::LocalInertialOverlandFlowVariables, dt::Float64)
-    variables.h_av ./= dt
-    variables.storage_av ./= dt
-    variables.qx_av ./= dt
-    variables.qy_av ./= dt
+function average_flow_vars!(model::LocalInertialOverlandFlow, dt::Float64)
+    (; qx_av, qy_av) = model.variables
+    qx_av ./= dt
+    qy_av ./= dt
     return nothing
 end
 
@@ -788,14 +772,14 @@ function update!(
     clock::Clock;
     update_h = false,
 )
-    (; reservoir, actual_external_abstraction_av) = river.boundary_conditions
+    (; reservoir) = river.boundary_conditions
     (; flow_length) = domain.river.parameters
     (; parameters) = domain.land
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
-    set_flow_vars!(river.variables, actual_external_abstraction_av)
-    set_flow_vars!(land.variables)
+    set_flow_vars!(river)
+    set_flow_vars!(land)
 
     dt = tosecond(clock.dt)
     t = 0.0
@@ -812,8 +796,8 @@ function update!(
 
         t += dt_s
     end
-    average_flow_vars!(river.variables, actual_external_abstraction_av, dt)
-    average_flow_vars!(land.variables, dt)
+    average_flow_vars!(river, dt)
+    average_flow_vars!(land, dt)
     average_reservoir_vars!(reservoir, dt)
 
     return nothing
@@ -1029,9 +1013,6 @@ function local_inertial_update_water_depth!(
                 land_v.h[i] = 0.0
                 river_v.storage[inds_river[i]] = land_v.storage[i]
             end
-            # average variables (here accumulated for model timestep Δt)
-            river_v.h_av[inds_river[i]] += river_v.h[inds_river[i]] * dt
-            river_v.storage_av[inds_river[i]] += river_v.storage[inds_river[i]] * dt
         else
             land_v.storage[i] +=
                 (
@@ -1044,9 +1025,6 @@ function local_inertial_update_water_depth!(
             end
             land_v.h[i] = land_v.storage[i] / (x_length[i] * y_length[i])
         end
-        # average variables (here accumulated for model timestep Δt)
-        land_v.h_av[i] += land_v.h[i] * dt
-        land_v.storage_av[i] += land_v.storage[i] * dt
     end
     return nothing
 end
@@ -1202,9 +1180,7 @@ end
 "Struct to store floodplain flow model variables"
 @with_kw struct FloodPlainVariables
     storage::Vector{Float64}        # storage [m³]
-    storage_av::Vector{Float64}     # average storage for model timestep Δt [m³]
     h::Vector{Float64}              # water depth [m]
-    h_av::Vector{Float64}           # average water depth [m] for model timestep Δt
     error::Vector{Float64}          # error storage [m³]
     a::Vector{Float64}              # flow area at egde [m²]
     r::Vector{Float64}              # hydraulic radius at edge [m]
@@ -1219,10 +1195,8 @@ end
 function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
     variables = FloodPlainVariables(;
         storage = zeros(n),
-        storage_av = zeros(n),
         error = zeros(n),
         h = zeros(n + length(index_pit)),
-        h_av = zeros(n),
         a = zeros(n_edges),
         r = zeros(n_edges),
         hf = zeros(n_edges),

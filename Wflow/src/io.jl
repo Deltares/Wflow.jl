@@ -51,7 +51,7 @@ const mover_params = (
 
 function get_param(model, parameter::AbstractString)
     (; land) = model
-    lens = standard_name_map(land)[parameter].lens
+    lens = get_lens(parameter, land)
     param = lens(model)
     return param
 end
@@ -284,7 +284,7 @@ function setup_scalar_netcdf(
             )
         end
         v = if haskey(standard_name_map(land), parameter)
-            lens = standard_name_map(land)[parameter].lens
+            lens = get_lens(parameter, land)
             lens(modelmap)
         else
             param(modelmap, parameter)
@@ -692,7 +692,7 @@ function out_map(ncnames_dict, modelmap)
     (; land) = modelmap
     for (par, ncname) in ncnames_dict
         A = if haskey(standard_name_map(land), par)
-            lens = standard_name_map(land)[par].lens
+            lens = get_lens(par, land)
             lens(modelmap)
         else
             param(modelmap, par)
@@ -847,7 +847,7 @@ function write_netcdf_timestep(model, dataset)
         (; name, parameter) = var
         reducer = writer.reducer[var]
         A = if haskey(standard_name_map(land), parameter)
-            lens = standard_name_map(land)[parameter].lens
+            lens = get_lens(parameter, land)
             lens(model)
         else
             param(model, parameter)
@@ -1096,7 +1096,7 @@ function write_csv_row(model)
         (; parameter) = col
         reducer = writer.reducer[col]
         A = if haskey(standard_name_map(land), parameter)
-            lens = standard_name_map(land)[parameter].lens
+            lens = get_lens(parameter, land)
             lens(model)
         else
             param(model, parameter)

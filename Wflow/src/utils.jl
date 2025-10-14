@@ -187,7 +187,7 @@ function set_states!(
                     end
                 end
                 # set state in model object
-                lens = standard_name_map(land)[state].lens
+                lens = get_lens(state, land)
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
@@ -201,7 +201,7 @@ function set_states!(
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = standard_name_map(land)[state].lens
+                lens = get_lens(state, land)
                 lens(model)[1:n] .= A
             else
                 error(

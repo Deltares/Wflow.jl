@@ -136,10 +136,9 @@ Wflow.run_timestep!(model)
     @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
     @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
-    @test reservoir.variables.waterlevel_av ≈
-          [29.24205323934821, 32.68575584329306, 39.97006803315815]
-    @test reservoir.variables.storage_av ≈
-          [1.8948850499097648e8, 4.279957853085982e7, 7.159979181269434e7]
+    @test reservoir.variables.waterlevel ≈
+          [29.259249722425544, 32.68607771649561, 39.970184252221905]
+    @test reservoir.variables.storage ≈ [1.8959993820131782e8, 4.28e7, 7.16e7]
     @test reservoir.variables.outflow_av ≈
           [4.839262369375678, 9.7190485747002, 58.12081274927687]
     @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
@@ -168,10 +167,9 @@ Wflow.run_timestep!(model)
     @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
     @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
           [4.722084191267045, 0.7260732965706886, 5.452294842123767]
-    @test reservoir.variables.waterlevel_av ≈
-          [29.2485234495118, 32.68570780540624, 39.9700676103882]
-    @test reservoir.variables.storage_av ≈
-          [1.8953043195283672e8, 4.279951562880186e7, 7.159979105537169e7]
+    @test reservoir.variables.waterlevel ≈
+          [29.251508060520067, 32.68607771649562, 39.97018425222191]
+    @test reservoir.variables.storage ≈ [1.8954977223217008e8, 4.28e7, 7.16e7]
     @test reservoir.variables.outflow_av ≈
           [4.84140356355074, 9.32858384747847, 54.86508305737946]
     @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
@@ -200,7 +198,7 @@ Wflow.run_timestep!(model)
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] == 0.0
     @test reservoir.boundary_conditions.inflow[1] ≈ 5.738423327629313
-    @test reservoir.variables.storage_av[1] ≈ 1.8953043195283672e8
+    @test reservoir.variables.storage[1] ≈ 1.8954977223217008e8
     @test reservoir.variables.outflow_av[1] ≈ 4.84140356355074
 end
 
@@ -216,7 +214,7 @@ Wflow.run_timestep!(model)
     @test reservoir.boundary_conditions.external_inflow[1] == -3.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 3.0
     @test reservoir.boundary_conditions.inflow[1] ≈ 2.7384228457941124
-    @test reservoir.variables.storage_av[1] ≈ 1.891429435839712e8
+    @test reservoir.variables.storage[1] ≈ 1.8903385527525035e8
     @test reservoir.variables.outflow_av[1] ≈ 4.82162803109911
 end
 
@@ -237,7 +235,7 @@ Wflow.close_files(model; delete_output = false)
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 0.0
     @test reservoir.boundary_conditions.inflow[1] ≈ 5.717880860903631
-    @test reservoir.variables.storage_av[1] ≈ 1.9001358432815728e8
+    @test reservoir.variables.storage[1] ≈ 1.90111367690907e8
     @test reservoir.variables.outflow_av[1] ≈ 3.0
     @test reservoir.variables.outflow[1] ≈ 3.0
 end

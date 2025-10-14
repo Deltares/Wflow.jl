@@ -11,12 +11,10 @@ that can be exchanged (input and output) with standard names (subsection below) 
 + [Water mass balance error](./parameters_massbalance.qmd)
 
 These tables include standard names, descriptions, units and default values (input
-parameters) for model parameters, states and variables. Note that a state variable can also
-be specified as a model output variable but is listed only in the states table and not in in
-the output table. The time unit of input flux parameters is day (the model base time step
-size), hence default values for these parameters are expressed per day. During model
-initialization these input parameters are converted to the user-defined model time step size
-Δt.
+parameters) for model parameters, states and variables. The time unit of input flux
+parameters is day (the model base time step size), hence default values for these parameters
+are expressed per day. During model initialization these input parameters are converted to
+the user-defined model time step size Δt.
 
 ## Standard names
 The standard names of model parameters, states and variables are based on [CSDMS Standard
@@ -35,11 +33,11 @@ TOML configuration file, but this is not considered as part of the public API, e
 land.interception.variables.canopy_storage = "canopystorage"
 ```
 
-Standard names that contain `instantaneous` in the `quantity` part of the standard name can
-be valid for an internal time step (for example for kinematic wave routing an internal time
-step is optional (and recommended), with a time step equal to the model simulation time step
-the standard name nonetheless contains `instantaneous`) and thus considered instantaneous
-compared to the model simulation time step Δt $\SIb{}{s}$.
+Standard names for routing flow state variables that contain `instantaneous` in the
+`quantity` part of the standard name can be valid for an internal time step (depending on
+the model simulation time step size) and thus considered instantaneous compared to the model
+simulation time step Δt $\SIb{}{s}$. These state flow variables can also be specified as a
+model output variable.
 
 ## Generic input maps {#input-generic}
 The table below lists static input maps that are not directly part of wflow models and are

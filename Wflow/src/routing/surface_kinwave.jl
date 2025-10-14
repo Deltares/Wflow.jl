@@ -6,9 +6,7 @@
     qin_av::Vector{Float64}       # Average inflow from upstream cells  [m³ s⁻¹] for model timestep Δt
     q_av::Vector{Float64}         # Average discharge [m³ s⁻¹] for model timestep Δt
     storage::Vector{Float64}      # Kinematic wave storage [m³] (based on water depth h)
-    storage_av::Vector{Float64}   # Average kinematic wave storage [m³] for model timestep Δt
     h::Vector{Float64}            # Water depth [m]
-    h_av::Vector{Float64}         # Average water depth [m] for model timestep Δt
 end
 
 "Initialize timestepping for kinematic wave (river and overland flow models)"
@@ -36,9 +34,7 @@ function FlowVariables(n::Int)
         qin_av = zeros(Float64, n),
         q_av = zeros(Float64, n),
         storage = zeros(Float64, n),
-        storage_av = zeros(Float64, n),
         h = zeros(Float64, n),
-        h_av = zeros(Float64, n),
     )
     return variables
 end
@@ -221,9 +217,7 @@ function set_reservoir_vars!(reservoir::Reservoir)
     reservoir.boundary_conditions.inflow .= 0.0
     reservoir.boundary_conditions.actual_external_abstraction_av .= 0.0
     reservoir.variables.outflow_av .= 0.0
-    reservoir.variables.storage_av .= 0.0
     reservoir.variables.actevap .= 0.0
-    reservoir.variables.waterlevel_av .= 0.0
 
     return nothing
 end
@@ -235,9 +229,7 @@ each simulation timestep.
 """
 function average_reservoir_vars!(reservoir::Reservoir, dt::Float64)
     reservoir.variables.outflow_av ./= dt
-    reservoir.variables.storage_av ./= dt
     reservoir.boundary_conditions.inflow ./= dt
-    reservoir.variables.waterlevel_av ./= dt
     reservoir.boundary_conditions.actual_external_abstraction_av ./= dt
 
     return nothing
@@ -245,50 +237,31 @@ end
 average_reservoir_vars!(reservoir, dt) = nothing
 
 """
-    set_flow_vars!(variables)
-    set_flow_vars!(variables, actual_external_abstraction_av::Vector{Float64})
+    set_flow_vars!(model::AbstractRiverFlowModel)
 
-Helper functions to set river and overland flow routing variables discharge, water depth,
-storage and actual abstraction (based on external negative inflow) from river to zero. This
-is done at the start of each simulation timestep, during the timestep the total (weighted)
-sum is computed from values at each sub timestep.
+Helper functions to set river flow routing variables discharge and actual abstraction (based
+on external negative inflow) from river to zero. This is done at the start of each
+simulation timestep, during the timestep the total (weighted) sum is computed from values at
+each sub timestep.
 """
-function set_flow_vars!(variables)
-    (; q_av, h_av, storage_av) = variables
+function set_flow_vars!(model::AbstractRiverFlowModel)
+    (; q_av) = model.variables
+    (; actual_external_abstraction_av) = model.boundary_conditions
     q_av .= 0.0
-    h_av .= 0.0
-    storage_av .= 0.0
-    return nothing
-end
-
-function set_flow_vars!(variables, actual_external_abstraction_av::Vector{Float64})
-    set_flow_vars!(variables)
     actual_external_abstraction_av .= 0.0
     return nothing
 end
 
 """
-    average_flow_vars!(variables, dt::Float64)
-    average_flow_vars!(variables, actual_external_abstraction_av::Vector{Float64}, dt::Float64)
+    average_flow_vars!(model::AbstractRiverFlowModel, dt::Float64)
 
-Helper functions to compute average river and overland flow routing variables and average
-actual abstraction (based on external negative inflow) from river. This is done at the end
-of each simulation timestep.
+Helper functions to compute average river flow routing variables. This is done at the end of
+each simulation timestep.
 """
-function average_flow_vars!(variables, dt::Float64)
-    (; q_av, h_av, storage_av) = variables
+function average_flow_vars!(model::AbstractRiverFlowModel, dt::Float64)
+    (; q_av) = model.variables
+    (; actual_external_abstraction_av) = model.boundary_conditions
     q_av ./= dt
-    h_av ./= dt
-    storage_av ./= dt
-    return nothing
-end
-
-function average_flow_vars!(
-    variables,
-    actual_external_abstraction_av::Vector{Float64},
-    dt::Float64,
-)
-    average_flow_vars!(variables, dt)
     actual_external_abstraction_av ./= dt
     return nothing
 end
@@ -299,7 +272,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
         domain.network
 
     (; beta, alpha) = model.parameters
-    (; h, h_av, q, q_av, storage, storage_av, qin, qin_av, qlat, to_river) = model.variables
+    (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
     ns = length(order_of_subdomains)
@@ -343,9 +316,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
                 end
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
-                # average variables (here accumulated for model timestep Δt)
-                storage_av[v] += storage[v] * dt
-                h_av[v] += h[v] * dt
+                # average flow (here accumulated for model timestep Δt)
                 q_av[v] += q[v] * dt
                 qin_av[v] += qin[v] * dt
             end
@@ -361,7 +332,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha) = model.parameters
     (; surface_flow_width, flow_length, slope) = domain.parameters
-    (; qlat, to_river, qin_av) = model.variables
+    (; q_av, qlat, qin_av, to_river) = model.variables
     (; adaptive) = model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
@@ -369,7 +340,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     @. alpha = alpha_term * pow(surface_flow_width, alpha_pow)
     @. qlat = inwater / flow_length
 
-    set_flow_vars!(model.variables)
+    q_av .= 0.0
     to_river .= 0.0
     qin_av .= 0.0
 
@@ -382,7 +353,7 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
         kinwave_land_update!(model, domain, dt_s)
         t += dt_s
     end
-    average_flow_vars!(model.variables, dt)
+    q_av ./= dt
     to_river ./= dt
     qin_av ./= dt
     return nothing
@@ -404,12 +375,12 @@ function kinwave_river_update!(
         reservoir_indices,
     ) = domain.network
 
-    (; reservoir, inwater, external_inflow, actual_external_abstraction_av, abstraction) =
+    (; reservoir, external_inflow, actual_external_abstraction_av, abstraction) =
         model.boundary_conditions
 
     (; beta, alpha) = model.parameters
     (; flow_width, flow_length) = domain.parameters
-    (; h, h_av, q, q_av, storage, storage_av, qin, qin_av, qlat) = model.variables
+    (; h, q, q_av, storage, qin, qin_av, qlat) = model.variables
 
     if !isnothing(reservoir)
         res_bc = reservoir.boundary_conditions
@@ -489,8 +460,6 @@ function kinwave_river_update!(
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
 
                 # average variables (here accumulated for model timestep Δt)
-                storage_av[v] += storage[v] * dt
-                h_av[v] += h[v] * dt
                 q_av[v] += q[v] * dt
                 qin_av[v] += qin[v] * dt
             end
@@ -503,7 +472,7 @@ Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepp
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
-    (; reservoir, inwater, actual_external_abstraction_av) = model.boundary_conditions
+    (; reservoir, inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) = model.parameters
     (; slope, flow_width, flow_length) = domain.river.parameters
     (; qlat, qin_av) = model.variables
@@ -514,7 +483,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
     @. alpha = alpha_term * pow(flow_width + bankfull_depth, alpha_pow)
     @. qlat = inwater / flow_length
 
-    set_flow_vars!(model.variables, actual_external_abstraction_av)
+    set_flow_vars!(model)
     qin_av .= 0.0
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
@@ -531,7 +500,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
     end
 
     average_reservoir_vars!(reservoir, dt)
-    average_flow_vars!(model.variables, actual_external_abstraction_av, dt)
+    average_flow_vars!(model, dt)
     qin_av ./= dt
     return nothing
 end

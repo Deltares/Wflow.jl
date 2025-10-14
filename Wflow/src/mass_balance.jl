@@ -487,7 +487,7 @@ function compute_flow_balance!(
     dt::Float64,
 ) where {A <: UnconfinedAquifer}
     (; storage_prev, error, relative_error) = water_balance
-    (; storage, q_in_av, q_out_av, exfiltwater_av) = subsurface_flow.aquifer.variables
+    (; storage, q_in_av, q_out_av, exfiltwater) = subsurface_flow.aquifer.variables
     (; area) = subsurface_flow.aquifer.parameters
 
     n = length(storage_prev)
@@ -497,7 +497,7 @@ function compute_flow_balance!(
 
     for i in eachindex(storage_prev)
         total_in = q_in_av[i] + flux_in[i]
-        total_out = q_out_av[i] + flux_out[i] + exfiltwater_av[i] * area[i]
+        total_out = q_out_av[i] + flux_out[i] + exfiltwater[i] * area[i]
         storage_rate = (storage[i] - storage_prev[i]) / (dt / tosecond(BASETIMESTEP))
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
