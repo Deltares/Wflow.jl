@@ -25,7 +25,7 @@ function VegetationParameters(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    lens = lens_input_parameter(config, "vegetation_root__depth")
+    lens = lens_input_parameter(config, "vegetation_root__depth"; optional = false)
     rootingdepth = ncread(dataset, config, lens; sel = indices, type = Float64)
     lens = lens_input_parameter(config, "vegetation__crop_factor")
     kc = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)

@@ -1053,7 +1053,11 @@ function FloodPlainProfile(
 )
     (; indices) = domain.network
     (; flow_width, flow_length) = domain.parameters
-    lens = lens_input_parameter(config, "floodplain_water__sum_of_volume_per_depth")
+    lens = lens_input_parameter(
+        config,
+        "floodplain_water__sum_of_volume_per_depth";
+        optional = false,
+    )
     storage =
         ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :flood_depth)
     n = length(indices)

@@ -62,7 +62,8 @@ function LateralSsfParameters(
 )
     lens = lens_input_parameter(
         config,
-        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
+        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio";
+        optional = false,
     )
     khfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 

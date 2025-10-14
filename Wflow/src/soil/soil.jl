@@ -284,7 +284,8 @@ function sbm_kv_profiles(
            kv_profile_type == VerticalConductivityProfile.layered_exponential
         lens = lens_input_parameter(
             config,
-            "soil_layer_water__vertical_saturated_hydraulic_conductivity",
+            "soil_layer_water__vertical_saturated_hydraulic_conductivity";
+            optional = false,
         )
         kv =
             ncread(
@@ -354,22 +355,32 @@ function SbmSoilParameters(
     cf_soil = ncread(dataset, config, lens; sel = indices, defaults = 0.038, type = Float64)
 
     # soil parameters
-    lens = lens_input_parameter(config, "soil_water__saturated_volume_fraction")
+    lens = lens_input_parameter(
+        config,
+        "soil_water__saturated_volume_fraction";
+        optional = false,
+    )
     theta_s = ncread(dataset, config, lens; sel = indices, type = Float64)
 
-    lens = lens_input_parameter(config, "soil_water__residual_volume_fraction")
+    lens = lens_input_parameter(
+        config,
+        "soil_water__residual_volume_fraction";
+        optional = false,
+    )
     theta_r = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens = lens_input_parameter(
         config,
-        "soil_surface_water__vertical_saturated_hydraulic_conductivity",
+        "soil_surface_water__vertical_saturated_hydraulic_conductivity";
+        optional = false,
     )
     kv_0 =
         ncread(dataset, config, lens; sel = indices, type = Float64) .* (dt / BASETIMESTEP)
 
     lens = lens_input_parameter(
         config,
-        "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter",
+        "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter";
+        optional = false,
     )
     f = ncread(dataset, config, lens; sel = indices, type = Float64)
 
@@ -405,7 +416,7 @@ function SbmSoilParameters(
     )
     alpha_h1 = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
 
-    lens = lens_input_parameter(config, "soil__thickness")
+    lens = lens_input_parameter(config, "soil__thickness"; optional = false)
     soilthickness = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens =
@@ -421,7 +432,11 @@ function SbmSoilParameters(
         ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
         (dt / BASETIMESTEP)
 
-    lens = lens_input_parameter(config, "soil_layer_water__brooks_corey_exponent")
+    lens = lens_input_parameter(
+        config,
+        "soil_layer_water__brooks_corey_exponent";
+        optional = false,
+    )
     c = ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :layer)
     if size(c, 1) != maxlayers
         parname = lens(config)
@@ -451,7 +466,7 @@ function SbmSoilParameters(
     # soil infiltration capacity based on kv_0 and kvfrac upper soil layer
     infiltcapsoil = kv_0 .* @view kvfrac[1, :]
     # fraction compacted area
-    lens = lens_input_parameter(config, "compacted_soil__area_fraction")
+    lens = lens_input_parameter(config, "compacted_soil__area_fraction"; optional = false)
     pathfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # vegetation parameters

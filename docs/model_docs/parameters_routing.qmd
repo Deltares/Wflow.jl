@@ -74,6 +74,8 @@ as a model output variable.
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
+| `river__length` | River length | m | - |
+| `river__width` | River width | m | - |
 | `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.036 |
 | `river_bank_water__depth` | Bankfull river depth | m | 1.0 |
 | `river__slope` | River slope | m m⁻¹ | - |

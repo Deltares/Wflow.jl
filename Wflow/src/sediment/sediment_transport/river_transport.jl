@@ -129,8 +129,7 @@ function SedimentRiverTransportParameters(
             ncread(dataset, config, lens; sel = indices, type = Float64, fill = 0.0)
         lens = lens_input_parameter(
             config,
-            "reservoir_water_sediment__bedload_trapping_efficiency";
-            optional = false,
+            "reservoir_water_sediment__bedload_trapping_efficiency",
         )
         reservoir_trapping_efficiency = ncread(
             dataset,
@@ -764,11 +763,12 @@ function update!(
     SSsand = ifelse.(dm_sand .<= dsuspf, sand, ifelse.(dm_sand .<= dbedf, sand ./ 2, zeros))
     SSsagg = ifelse.(dm_sagg .<= dsuspf, sagg, ifelse.(dm_sagg .<= dbedf, sagg ./ 2, zeros))
     SSlagg = ifelse.(dm_lagg .<= dsuspf, lagg, ifelse.(dm_lagg .<= dbedf, lagg ./ 2, zeros))
-    SSgrav = ifelse.(
-        dm_gravel .<= dsuspf,
-        gravel,
-        ifelse.(dm_gravel .<= dbedf, gravel ./ 2, zeros),
-    )
+    SSgrav =
+        ifelse.(
+            dm_gravel .<= dsuspf,
+            gravel,
+            ifelse.(dm_gravel .<= dbedf, gravel ./ 2, zeros),
+        )
 
     SS = SSclay .+ SSsilt .+ SSsagg .+ SSsand .+ SSlagg .+ SSgrav
     Bedload = (clay .+ silt .+ sagg .+ sand .+ lagg .+ gravel) .- SS

@@ -350,7 +350,7 @@ function NetworkDrain(
     surface_flow_width::Vector{Float64},
 )
     n_cells = length(indices)
-    lens = lens_input_parameter(config, "land_drain_location__mask")
+    lens = lens_input_parameter(config, "land_drain_location__mask"; optional = false)
     drain_2d = ncread(dataset, config, lens; type = Bool, fill = false)
     drain = drain_2d[indices]
 

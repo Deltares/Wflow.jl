@@ -46,13 +46,21 @@ function GwfRiver(
     indices::Vector{CartesianIndex{2}},
     index::Vector{Int},
 )
-    lens = lens_input_parameter(config, "river_water__infiltration_conductance")
+    lens = lens_input_parameter(
+        config,
+        "river_water__infiltration_conductance";
+        optional = false,
+    )
     infiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
 
-    lens = lens_input_parameter(config, "river_water__exfiltration_conductance")
+    lens = lens_input_parameter(
+        config,
+        "river_water__exfiltration_conductance";
+        optional = false,
+    )
     exfiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
 
-    lens = lens_input_parameter(config, "river_bottom__elevation")
+    lens = lens_input_parameter(config, "river_bottom__elevation"; optional = false)
     bottom = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     parameters =
@@ -107,11 +115,11 @@ function Drainage(
     indices::Vector{CartesianIndex{2}},
     index::Vector{Int},
 )
-    lens = lens_input_parameter(config, "land_drain__elevation")
+    lens = lens_input_parameter(config, "land_drain__elevation"; optional = false)
     drain_elevation =
         ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
 
-    lens = lens_input_parameter(config, "land_drain__conductance")
+    lens = lens_input_parameter(config, "land_drain__conductance"; optional = false)
     drain_conductance =
         ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
     elevation = drain_elevation[index]
