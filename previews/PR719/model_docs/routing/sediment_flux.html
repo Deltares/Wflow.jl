@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Sediment flux – Wflow.jl</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      macros: {
+        SI: ["#1\\;\\mathrm\{#2\}", 2],
+        SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+        subtext: ["#1_\\text\{#2\}", 2]
+      }
+    }
+  };
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../_static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Wflow.jl</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../getting_started/index.html"> 
+<span class="menu-text">Getting started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../user_guide/index.html"> 
+<span class="menu-text">User guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../model_docs/index.html"> 
+<span class="menu-text">Model documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../developments/index.html"> 
+<span class="menu-text">Developments</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-bi-github" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-bi-github">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl">
+ <span class="dropdown-text">Source Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl/issues/new/choose">
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/sediment_flux.html">Sediment flux</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model configurations</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Land models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Routing concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematic wave</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local inertial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Groundwater flow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Sediment flux</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Model parameters and variables</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#inland-sediment-model" id="toc-inland-sediment-model" class="nav-link active" data-scroll-target="#inland-sediment-model">Inland Sediment Model</a>
+  <ul class="collapse">
+  <li><a href="#sediment-flux-in-overland-flow" id="toc-sediment-flux-in-overland-flow" class="nav-link" data-scroll-target="#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a></li>
+  </ul></li>
+  <li><a href="#river-sediment-model" id="toc-river-sediment-model" class="nav-link" data-scroll-target="#river-sediment-model">River Sediment Model</a>
+  <ul class="collapse">
+  <li><a href="#sediment-inputs-in-a-river-cell" id="toc-sediment-inputs-in-a-river-cell" class="nav-link" data-scroll-target="#sediment-inputs-in-a-river-cell">Sediment inputs in a river cell</a></li>
+  <li><a href="#river-transport-and-erosion" id="toc-river-transport-and-erosion" class="nav-link" data-scroll-target="#river-transport-and-erosion">River transport and erosion</a></li>
+  <li><a href="#river-deposition" id="toc-river-deposition" class="nav-link" data-scroll-target="#river-deposition">River deposition</a></li>
+  <li><a href="#mass-balance-and-sediment-concentration" id="toc-mass-balance-and-sediment-concentration" class="nav-link" data-scroll-target="#mass-balance-and-sediment-concentration">Mass balance and sediment concentration</a></li>
+  <li><a href="#reservoir-modelling" id="toc-reservoir-modelling" class="nav-link" data-scroll-target="#reservoir-modelling">Reservoir modelling</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/sediment_flux.html">Sediment flux</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Sediment flux</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Both the inland and river sediment model take into account sediment flux or transport of sediment in water, either in overland flow or in the stream flow. These two transport are distinguished in two different structures.</p>
+<section id="inland-sediment-model" class="level2">
+<h2 class="anchored" data-anchor-id="inland-sediment-model">Inland Sediment Model</h2>
+<section id="sediment-flux-in-overland-flow" class="level3">
+<h3 class="anchored" data-anchor-id="sediment-flux-in-overland-flow">Sediment Flux in overland flow</h3>
+<p>Once the amount of soil detached by both rainfall and overland flow has been estimated, it has then to be routed and delivered to the river network. Inland routing in sediment models is usually done by comparing the amount of detached sediment with the transport capacity of the flow, which is the maximum amount of sediment that the flow can carry downslope. There are several existing formulas available in the literature. For a wide range of slopes and for overland flow, the Govers equation (1990) seems the most appropriate choice (Hessel et al, 2007). However, as the wflow_sediment model was developed to be linked to water quality issues, the Yalin transport equation was chosen as it can handle particle differentiation (Govers equation can still be used if wflow_sediment is used to only model inland processes with no particle differentiation). For land cells, wflow_sediment assumes that erosion can mobilize 5 classes of sediment:</p>
+<ul>
+<li>Clay (mean diameter of <span class="math inline">\(\SI{2}{\mu m}\)</span>)</li>
+<li>Silt (mean diameter of <span class="math inline">\(\SI{10}{\mu m}\)</span>)</li>
+<li>Sand (mean diameter of <span class="math inline">\(\SI{200}{\mu m}\)</span>)</li>
+<li>Small aggregates (mean diameter of <span class="math inline">\(\SI{30}{\mu m}\)</span>)</li>
+<li>Large aggregates (mean diameter of <span class="math inline">\(\SI{50}{\mu m}\)</span>).</li>
+</ul>
+<span class="math display">\[\begin{gathered}
+   \mathrm{PSA} = \mathrm{SAN} (1-\mathrm{CLA})^{2.4} \\
+   \mathrm{PSI} = 0.13\mathrm{SIL}\\
+   \mathrm{PCL} = 0.20\mathrm{CLA} \\
+
+   \mathrm{SAG} =
+   \begin{align*}
+      \begin{cases}
+         2.0\mathrm{CLA} &amp;\text{ if }\quad \mathrm{CLA} &lt; 0.25 \\
+         0.28(\mathrm{CLA}-0.25)+0.5 &amp;\text{ if }\quad 0.25 \leq \mathrm{CLA} \leq 0.5 \\
+         0.57 &amp;\text{ if }\quad \mathrm{CLA} &gt; 0.5
+      \end{cases}
+   \end{align*} \\
+
+   \mathrm{LAG} = 1 - \mathrm{PSA} - \mathrm{PSI} - \mathrm{PCL} - \mathrm{SAG}
+\end{gathered}\]</span>
+<p>where <span class="math inline">\(\mathrm{CLA}\)</span>, <span class="math inline">\(\mathrm{SIL}\)</span> and <span class="math inline">\(\mathrm{SAN}\)</span> are the primary clay, silt, sand fractions of the topsoil and <span class="math inline">\(\mathrm{PCL}\)</span>, <span class="math inline">\(\mathrm{PSI}\)</span>, <span class="math inline">\(\mathrm{PSA}\)</span>, <span class="math inline">\(\mathrm{SAG}\)</span> and <span class="math inline">\(\mathrm{LAG}\)</span> are the clay, silt, sand, small and large aggregates fractions of the detached sediment respectively. The transport capacity of the flow using Yalin’s equation with particle differentiation, developed by Foster (1982), is:</p>
+<p><span class="math display">\[
+   \mathrm{TC}_i = (P_e)_i  (S_g)_i \, \rho_w \,  g \, d_i  V_*
+\]</span></p>
+<p>where <span class="math inline">\(\mathrm{TC}_i\)</span> is the transport capacity of the flow for the particle class <span class="math inline">\(i\)</span>, <span class="math inline">\((P_e)_i\)</span> is the effective number of particles of class <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{(S_g)_i}{kg\ m^{-3}}\)</span> is the specific gravity for the particle class <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{\rho_w}{kg\ m^{-3}}\)</span> is the mass density of the fluid, <span class="math inline">\(\SIb{g}{m\ s^{-2}}\)</span> is the acceleration due to gravity, <span class="math inline">\(\SIb{d_i}{m}\)</span> is the diameter of the particle of class <span class="math inline">\(i\)</span> and <span class="math inline">\(V_* = \SIb{(g R
+S)^{0.5}}{m\ s^{-1}}\)</span> is the shear velocity of the flow with <span class="math inline">\(S\)</span> the slope gradient and <span class="math inline">\(\SIb{R}{m}\)</span> the hydraulic radius of the flow. The detached sediment are then routed down slope until the river network using the <code>accucapacityflux</code>, <code>accupacitystate</code> functions depending on the transport capacity from Yalin.</p>
+<p>The choice of transport capacity method for the overland flow is set up in the model section of the TOML:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_transport</span> <span class="op">=</span> <span class="st">"yalinpart"</span> <span class="co"># Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Note that the “govers” and “yalin” equations can only assess total transport capacity of the flow and can therefore not be used in combination with the river part of the sediment model.</p>
+</section>
+</section>
+<section id="river-sediment-model" class="level2">
+<h2 class="anchored" data-anchor-id="river-sediment-model">River Sediment Model</h2>
+<p>Sediment dynamics in rivers can be described by the same three processes on land: erosion, deposition and transport. The difference is that channel ﬂow is much higher, deeper and permanent compared to overland ﬂow. In channels, erosion is the direct removal of sediments from the river bed or bank (lateral erosion). Sediments are transported in the river either by rolling, sliding and silting (bed load transport) or via turbulent flow in the higher water column (suspended load transport). The type of transport is determined by the river bed shear stress. As sediment particles have a higher density than water, they can also be deposited on the river bed according to their settling velocity compared to the ﬂow velocity. In addition to regular deposition in the river, lakes, reservoirs and floodplains represents additional major sediment settling pools.</p>
+<p>Complete models of sediment dynamics based on hydrology and not on hydraulics or hydrodynamics are much rarer than for soil loss and inland dynamics. The simpler models such as the SWAT default sediment river model uses again the transport capacity of the ﬂow to determine if there is erosion or deposition (Neitsch et al., 2011). A more physics-based approach (Partheniades, 1965) to determine river erosion is used by Liu et al.&nbsp;(2018) and in the new SWAT’s approach developed by Narasimhan et al.&nbsp;(2017). For wﬂow_sediment, the new physics-based model of SWAT was chosen for transport and erosion as it enables the use of parameter estimation for erosion of bed and bank of the channel and separates the suspended from the bed loads.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/river-scheme.png" class="img-fluid figure-img"></p>
+<figcaption>Overview of the different processes for a river cell in wflow_sediment.</figcaption>
+</figure>
+</div>
+<p>Running the river model is an option of the wflow_sediment model and is enabled using the TOML file. By default it is <code>false</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">run_river_model__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="sediment-inputs-in-a-river-cell" class="level3">
+<h3 class="anchored" data-anchor-id="sediment-inputs-in-a-river-cell">Sediment inputs in a river cell</h3>
+<p>The first part of the river model assesses how much detached sediment are in the river cell at the beginning of the timestep <span class="math inline">\(t\)</span>. Sources of detached sediment are sediments coming from land erosion, estimated with the soil loss part of wflow_sediment model, the sediment coming from upstream river cells and the detached sediment that were left in the cell at the end of the previous timestep <span class="math inline">\((t-1)\)</span>:</p>
+<p><span class="math display">\[
+   (\subtext{\mathrm{sed}}{in})_t = (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\text{sed}}{out})_{t-1}\right] + (\subtext{\text{sed}}{riv})_{t-1}
+\]</span></p>
+</section>
+<section id="river-transport-and-erosion" class="level3">
+<h3 class="anchored" data-anchor-id="river-transport-and-erosion">River transport and erosion</h3>
+<p>Once the amount of sediment inputs at the beginning of the timestep is known, the model then estimates transport, and river erosion if there is a deficit of sediments. Transport in the river system is estimated via a transport capacity formula. There are several transport capacity formulas available in wflow_sediment, some requiring calibration and some not. Choosing a transport capacity equation depends on the river characteristics (some equation are more suited for narrow or wider rivers), and on the reliability of the required river parameters (such as slope, width or mean particle diameter of the river channel). Several river transport capacity are available and the choice is set up in the model section of the TOML:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_transport</span> <span class="op">=</span> <span class="st">"bagnold"</span> <span class="co"># River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Simplified Bagnold</strong></p>
+<p>Originally more valid for intermediate to large rivers, this simplified version of the Bagnold equation relates sediment transport to flow velocity with two simple calibration parameters (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
+C_{\max} = \subtext{c}{sp}  \left( \dfrac{\mathrm{prf} Q}{h W} \right)^{\subtext{\mathrm{sp}}{exp}}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{C_{\max}}{kg\ L^{-1}}\)</span> (or <span class="math inline">\(\SIb{}{ton\ m^{-1}}\)</span>) is the sediment concentration, <span class="math inline">\(\SIb{Q}{m^3\ s^{-1}}\)</span> is the surface runoff in the river cell, <span class="math inline">\(\SIb{h}{m}\)</span> is the river water level, <span class="math inline">\(\SIb{W}{m}\)</span> is the river width and <span class="math inline">\(\subtext{c}{sp}\)</span>, <span class="math inline">\(\mathrm{prf}\)</span> and <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> are calibration parameters. The <span class="math inline">\(\mathrm{prf}\)</span> coefficient is usually used to deduce the peak velocity of the flow, but for simplification in <code>wflow_sediment</code>, the equation was simplified to only get two parameters to calibrate: <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> and <span class="math inline">\(\subtext{c}{Bagnold} = \subtext{c}{sp} \,
+\mathrm{prf}^{\subtext{\mathrm{sp}}{exp}}\)</span>. The coefficient <span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> usually varies between <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span> while <span class="math inline">\(\mathrm{prf}\)</span> and <span class="math inline">\(\subtext{c}{sp}\)</span> have a wider range of variation. The table below summarizes ranges and values of the three Bagnold coefficients used by other studies:</p>
+<table class="caption-top table">
+<caption>Range of the simplified Bagnold coefficients (and calibrated value)</caption>
+<colgroup>
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 22%">
+<col style="width: 27%">
+<col style="width: 31%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Study</th>
+<th>River</th>
+<th><span class="math inline">\(\mathrm{prf}\)</span> range</th>
+<th><span class="math inline">\(\subtext{c}{sp}\)</span> range</th>
+<th><span class="math inline">\(\subtext{\mathrm{sp}}{exp}\)</span> range</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Vigiak 2015</td>
+<td>Danube</td>
+<td>0.5-2 (/)</td>
+<td>0.0001-0.01 (0.003-0.006)</td>
+<td>1-2 (1.4)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Vigiak 2017</td>
+<td>Danube</td>
+<td>/</td>
+<td>0.0001-0.01 (0.0015)</td>
+<td>1-2 (1.4)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Abbaspour 2007</td>
+<td>Thur (CH)</td>
+<td>0.2-0.25 (/)</td>
+<td>0.001-0.002 (/)</td>
+<td>0.35-1.47 (/)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oeurng 2011</td>
+<td>Save (FR)</td>
+<td>0-2 (0.58)</td>
+<td>0.0001-0.01 (0.01)</td>
+<td>1-2 (2)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Engelund and Hansen</strong> This transport capacity is not present in SWAT but used in many models such as Delft3D-WAQ, Engelund and Hansen calculates the total sediment load as (Engelund and Hansen, 1967): <span class="math display">\[
+   C_w = 0.05 \left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) \left( \dfrac{u S}{\sqrt{\left( \dfrac{\rho_{s}}{\rho_{s} - \rho} \right) g  D_{50}}} \right) \theta^{1/2}
+\]</span></p>
+<p>where <span class="math inline">\(C_w\)</span> is the sediment concentration by weight, <span class="math inline">\(\SIb{\rho}{g\ m^{-3}}\)</span> and <span class="math inline">\(\SIb{\rho_{s}}{g\ m^{-3}}\)</span> are the fluid and sediment density (here respectively equal to <span class="math inline">\(\SI{1000}{g\ m^{-3}}\)</span> and <span class="math inline">\(\SI{2650}{g\ m^{-3}}\)</span>), <span class="math inline">\(\SIb{u}{m\ s^{-1}}\)</span> is the water mean velocity, <span class="math inline">\(S\)</span> is the river slope, <span class="math inline">\(g\)</span> is the acceleration due to gravity, <span class="math inline">\(\SIb{D_{50}}{m}\)</span> is the river mean diameter and <span class="math inline">\(\theta\)</span> is the Shields parameter.</p>
+<p><strong>Kodatie</strong> Kodatie (1999) developed the power relationships from Posada (1995) using field data and linear optimization so that they would be applicable for a wider range of riverbed sediment size. The resulting equation, for a rectangular channel, is (Neitsch et al, 2011): <span class="math display">\[
+   C_{\max} = \left( \dfrac{a u^{b} h^{c} S^{d}}{\subtext{V}{in}} \right)  W
+\]</span> where <span class="math inline">\(\SIb{\subtext{V}{in}}{m^3}\)</span> in the volume of water entering the river cell during the timestep and <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(c\)</span> and <span class="math inline">\(d\)</span> are coefficients depending on the riverbed sediment size. Values of these coefficients are summarized in the table below.</p>
+<table class="caption-top table">
+<caption>Range of the simplified Bagnold coefficients (and calibrated value)</caption>
+<colgroup>
+<col style="width: 67%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">River sediment diameter</th>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+<th>d</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(D_{50} \leq \SI{0.05}{mm}\)</span></td>
+<td>281.4</td>
+<td>2.622</td>
+<td>0.182</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\SI{0.05}{mm} &lt; D_{50} \leq \SI{0.25}{mm}\)</span></td>
+<td>2 829.6</td>
+<td>3.646</td>
+<td>0.406</td>
+<td>0.412</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\SI{0.25}{mm} &lt; D_{50} \leq \SI{2.0}{mm}\)</span></td>
+<td>2 123.4</td>
+<td>3.300</td>
+<td>0.468</td>
+<td>0.613</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(D_{50} &gt; \SI{2.0}{mm}\)</span></td>
+<td>431 884.8</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>2.000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Yang</strong> Yang (1996) developed a set of two equations giving transport of sediments for sand-bed or gravel-bed rivers. The sand equation (<span class="math inline">\(D_{50} &lt; \SI{2.0}{mm}\)</span>) is:</p>
+<p><span class="math display">\[
+   \log\left(C_{ppm}\right) = 5.435 - 0.286\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.457\log\left(\frac{u_*}{\omega_{s,50}}\right) \\
+   +\left(1.799-0.409\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.314\log\left(\frac{u_*}{\omega_{s,50}}\right)\right)\log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
+\]</span></p>
+<p>And the gravel equation (<span class="math inline">\(\SI{2.0}{mm} \leq D_{50} &lt; \SI{10.0}{mm}\)</span>) is:</p>
+<p><span class="math display">\[
+   \log\left(C_{ppm}\right) = 6.681 - 0.633\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-4.816\log\left(\frac{u_*}{\omega_{s,50}}\right) \\
+   +\left(2.784-0.305\log\left(\frac{\omega_{s,50}D_{50}}{\nu}\right)-0.282\log\left(\frac{u_*}{\omega_{s,50}}\right)\right)\log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
+\]</span></p>
+<p>where <span class="math inline">\(C_{ppm}\)</span> is sediment concentration in parts per million by weight, <span class="math inline">\(\SIb{\omega_{s,50}}{m\ s^{-1}}\)</span> is the settling velocity of a particle with the median riverbed diameter estimated with Stokes, <span class="math inline">\(\SIb{\nu}{m^2\ s^{-1}}\)</span> is the kinematic viscosity of the fluid, <span class="math inline">\(\SIb{u_*}{m\ s^{-1}}\)</span> is the shear velocity where <span class="math inline">\(u_* = \sqrt{gR_{H}S}\)</span> with <span class="math inline">\(R_{H}\)</span> the hydraulic radius of the river and <span class="math inline">\(\SIb{u_{cr}}{m\ s^{-1}}\)</span> is the critical velocity (equation can be found in Hessel, 2007).</p>
+<p><strong>Molinas and Wu</strong> The Molinas and Wu (2001) transport equation was developed for large sand-bed rivers based on the universal stream power <span class="math inline">\(\psi\)</span>. The corresponding equation is (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
+   C_{w} = \dfrac{1430 (0.86+\sqrt{\psi}) \psi^{1.5}}{0.016+\psi} 10^{-6}
+\]</span></p>
+<p>where <span class="math inline">\(\psi\)</span> is the universal stream power given by:</p>
+<p><span class="math display">\[
+   \psi = \dfrac{\psi^{3}}{\left(\dfrac{\rho_{s}}{\rho}-1\right) g h \omega_{s,50}  \left[ \log_{10}\left(\dfrac{h}{D_{50}}\right)\right]^{2}}
+\]</span></p>
+<p>Once the maximum concentration <span class="math inline">\(C_{\max}\)</span> is established with one of the above transport formula, the model then determines if there is erosion of the river bed and bank. In order to do that, the difference <span class="math inline">\(sed_{ex}\)</span> between the maximum amount of sediment estimated with transport (<span class="math inline">\(\mathrm{sed}_{\max} = C_{\max} \subtext{V}{in}\)</span>) and the sediment inputs to the river cell (<span class="math inline">\(\subtext{\mathrm{sed}}{in}\)</span> calculated above) is calculated. If too much sediment is coming in and <span class="math inline">\(\subtext{\mathrm{sed}}{ex}\)</span> is negative, then there is no river bed and bank erosion. And if the river has not reach its maximum transport capacity, then erosion of the river happens.</p>
+<p>First, the sediments stored in the cell from deposition in previous timesteps <span class="math inline">\(\subtext{\mathrm{sed}}{stor}\)</span> are eroded from clay to gravel. If this amount is not enough to cover <span class="math inline">\(\subtext{\mathrm{sed}}{ex}\)</span>, then erosion of the local river bed and bank material starts.</p>
+<p>Instead of just setting river erosion amount to just cover the remaining difference <span class="math inline">\(\subtext{\mathrm{sed}}{exeff}\)</span> between <span class="math inline">\(\subtext{\mathrm{sed}}{ex}\)</span> and <span class="math inline">\(\subtext{\mathrm{sed}}{stor}\)</span>, actual erosion potential is adjusted using river characteristics and is separated between the bed and bank of the river using the physics-based approach of Knight (1984).</p>
+<p>The bed and bank of the river are supposed to only be able to erode a maximum amount of their material <span class="math inline">\(E_{R,\mathrm{bed}}\)</span> for the bed and <span class="math inline">\(E_{R,\mathrm{bank}}\)</span> for the river bank. For a rectangular channel, assuming it is meandering and thus only one bank is prone to erosion, they are calculated from the equations (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
+\begin{gathered}
+   E_{R,\mathrm{bed}} = k_{d,\mathrm{bed}} \left( \tau_{e,\mathrm{bed}} - \tau_{cr,\mathrm{bed}} \right) 10^{-6}  L  W  \rho_{b, \mathrm{bed}}  \Delta t \\
+   E_{R,\mathrm{bank}} = k_{d,\mathrm{bank}} \left( \tau_{e,\mathrm{bank}} - \tau_{cr,\mathrm{bank}} \right) 10^{-6} L h \rho_{b, \mathrm{bank}}  \Delta t
+\end{gathered}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{E_R}{ton}\)</span> is the potential bed/bank erosion rates, <span class="math inline">\(\SIb{k_d}{cm^3\ N^{-1}\
+s^{-1}}\)</span> is the erodibility of the bed/bank material, <span class="math inline">\(\SIb{\tau_e}{N\ m^{-2}}\)</span> is the effective shear stress from the flow on the bed/bank, <span class="math inline">\(\SIb{\tau_{cr}}{N\ m^{-2}}\)</span> is the critical shear stress for erosion to happen, <span class="math inline">\(\SIb{L}{m}\)</span>, <span class="math inline">\(\SIb{W}{m}\)</span> and <span class="math inline">\(\SIb{h}{m}\)</span> are the channel length, width and water height, <span class="math inline">\(\SIb{\rho_{b}}{g\ cm^{-3}}\)</span> is the bulk density of the bed/bank of the river and <span class="math inline">\(\SIb{\Delta t}{s}\)</span> is the model timestep.</p>
+<p>In wflow_sediment, the erodibility of the bed/bank are approximated using the formula from Hanson and Simon (2001):</p>
+<p><span class="math display">\[
+   k_d=0.2 \tau_{cr}^{-0.5}
+\]</span></p>
+<p>Normally erodibilities are evaluated using jet test in the field and there are several reviews and some adjustments possible to this equation (Simon et al, 2011). However, to avoid too heavy calibration and for the scale considered, this equation is supposed to be efficient enough. The critical shear stress <span class="math inline">\(\tau_{cr}\)</span> is evaluated differently for the bed and bank. For the bed, the most common formula from Shields initiation of movement is used. For the bank, a more recent approach from Julian and Torres (2006) is used:</p>
+<p><span class="math display">\[
+   \tau_{cr,\mathrm{bank}} = (0.1+0.1779 SC+0.0028 SC^{2}-2.34 10^{-5}  SC^{3}) C_{ch}
+\]</span></p>
+<p>where <span class="math inline">\(SC\)</span> is the percent clay and silt content of the river bank and <span class="math inline">\(C_{ch}\)</span> is a coefficient taking into account the positive impact of vegetation on erosion reduction. This coefficient is then dependent on the land use and classical values are shown in the table below. These values where then adapted for use with the GlobCover land use map. Percent of clay and silt (along with sand and gravel) for the channel is estimated from the river median particle diameter assuming the same values as SWAT shown in the table below. Median particle diameter is here estimated depending on the Strahler river order. The higher the order, the smaller the diameter is. As the median diameter is only used in wflow_sediment for the estimation of the river bed/bank sediment composition, this supposition should be enough. Actual refined data or calibration may however be needed if the median diameter is also required for the transport formula. In a similar way, the bulk densities of river bed and bank are also just assumed to be of respectively <span class="math inline">\(\SI{1.5}{g\ cm^{-3}}\)</span> and <span class="math inline">\(\SI{1.4}{g\
+cm^{-3}}\)</span>.</p>
+<table class="caption-top table">
+<caption>Classical values of the channel cover vegetation coefficient (Julian and Torres, 2006)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Bank vegetation</th>
+<th><span class="math inline">\(C_{ch}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">None</td>
+<td>1.00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Grassy</td>
+<td>1.97</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sparse trees</td>
+<td>5.40</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dense trees</td>
+<td>19.20</td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<caption>Composition of the river bed/bank depending on the median diameter <span class="math inline">\(\SIb{d_{50}}{\mu m}\)</span> (Neitsch et al, 2011)</caption>
+<thead>
+<tr class="header">
+<th>Sediment Fraction</th>
+<th><span class="math inline">\(\leq\)</span> 5</th>
+<th>5 to 50</th>
+<th>50 to 2000</th>
+<th><span class="math inline">\(&gt;\)</span> 2000</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sand</td>
+<td>0.15</td>
+<td>0.15</td>
+<td>0.65</td>
+<td>0.15</td>
+</tr>
+<tr class="even">
+<td>Silt</td>
+<td>0.15</td>
+<td>0.65</td>
+<td>0.15</td>
+<td>0.15</td>
+</tr>
+<tr class="odd">
+<td>Clay</td>
+<td>0.65</td>
+<td>0.15</td>
+<td>0.15</td>
+<td>0.05</td>
+</tr>
+<tr class="even">
+<td>Gravel</td>
+<td>0.05</td>
+<td>0.05</td>
+<td>0.05</td>
+<td>0.65</td>
+</tr>
+</tbody>
+</table>
+<p>Then, the repartition of the flow shear stress is refined into the effective shear stress and the bed and bank of the river using the equations developed by Knight (1984) for a rectangular channel:</p>
+<p><span class="math display">\[
+\begin{gathered}
+   \tau_{e,\mathrm{bed}} = \rho g R_{H} S  \left(1 - \dfrac{SF_{\mathrm{bank}}}{100}\right) \left(1+\dfrac{2h}{W}\right) \\
+   \tau_{e,\mathrm{bank}} = \rho g R_{H} S  \left( SF_{\mathrm{bank}}\right)  \left(1+\dfrac{W}{2h}\right)
+\end{gathered}
+\]</span></p>
+<p>where <span class="math inline">\(\rho g\)</span> is the fluid specific weight (<span class="math inline">\(\SI{9800}{N\ m^{-3}}\)</span> for water), <span class="math inline">\(\SIb{R_H}{m}\)</span> is the hydraulic radius of the channel, <span class="math inline">\(\SIb{h}{m}\)</span> and <span class="math inline">\(\SIb{W}{m}\)</span> are the water level and river width. <span class="math inline">\(SF_{\mathrm{bank}}\)</span> is the proportion of shear stress acting on the bank (%) and is estimated from (Knight, 1984):</p>
+<p><span class="math display">\[
+   \mathrm{SF}_{\mathrm{bank}} = \exp \left( -3.230 \log_{10}\left(\dfrac{W}{h}+3\right)+6.146 \right)
+\]</span></p>
+<p>Finally the relative erosion potential of the bank and bed of the river is calculated by:</p>
+<p><span class="math display">\[
+\begin{gathered}
+   \mathrm{RTE}_{\mathrm{bed}} = \dfrac{E_{R,\mathrm{bed}}}{E_{R,\mathrm{bed}}+E_{R,\mathrm{bank}}} \\
+   \mathrm{RTE}_{\mathrm{bank}} = 1 - RTE_{\mathrm{bed}}
+\end{gathered}
+\]</span></p>
+<p>And the final actual eroded amount for the bed and bank is the maximum between <span class="math inline">\(\mathrm{RTE}
+\subtext{\mathrm{sed}}{exeff}\)</span> and the erosion potential <span class="math inline">\(E_R\)</span>. Total eroded amount of sediment <span class="math inline">\(\subtext{\mathrm{sed}}{erod}\)</span> is then the sum of the eroded sediment coming from the storage of previously deposited sediment and the river bed/bank erosion.</p>
+</section>
+<section id="river-deposition" class="level3">
+<h3 class="anchored" data-anchor-id="river-deposition">River deposition</h3>
+<p>As sediments have a higher density than water, moving sediments in water can be deposited in the river bed. The deposition process depends on the mass of the sediment, but also on flow characteristics such as velocity. In wflow_sediment, as in SWAT, deposition is modelled with Einstein’s equation (Neitsch et al, 2011):</p>
+<p><span class="math display">\[
+   \subtext{P}{dep}=\left(1-\dfrac{1}{e^{x}}\right)100
+\]</span></p>
+<p>where <span class="math inline">\(\subtext{P}{dep}\)</span> is the percentage of sediments that is deposited on the river bed and x is a parameter calculated with:</p>
+<p><span class="math display">\[
+   x = \dfrac{1.055 L  \omega_{s}}{u h}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{L}{m}\)</span> and <span class="math inline">\(\SIb{h}{m}\)</span> are channel length and water height, <span class="math inline">\(\SIb{\omega_s}{m\
+s^{-1}}\)</span> is the particle settling velocity calculated with Stokes’ formula and <span class="math inline">\(\SIb{u}{m\
+s^{-1}}\)</span> is the mean flow velocity. The calculated percentage is then subtracted from the amount of sediment input and eroded river sediment for each particle size class (<span class="math inline">\(\subtext{\mathrm{sed}}{dep} = \subtext{P}{dep}/100 (\subtext{\mathrm{sed}}{in} +
+\subtext{\mathrm{sed}}{erod})\)</span>). Resulting deposited sediment are then stored in the river bed and can be re-mobilized in future time steps by erosion.</p>
+</section>
+<section id="mass-balance-and-sediment-concentration" class="level3">
+<h3 class="anchored" data-anchor-id="mass-balance-and-sediment-concentration">Mass balance and sediment concentration</h3>
+<p>Finally after estimating inputs, deposition and erosion with the transport capacity of the flow, the amount of sediment actually leaving the river cell to go downstream is estimated using:</p>
+<p><span class="math display">\[
+   \subtext{\mathrm{sed}}{out} = (\subtext{\mathrm{sed}}{in} + \subtext{\mathrm{sed}}{erod} - \subtext{\mathrm{sed}}{dep}) \dfrac{\subtext{V}{out}}{V}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{out}}{ton}\)</span> is the amount of sediment leaving the river cell (tons), <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{in}}{ton}\)</span> is the amount of sediment coming into the river cell (storage from previous timestep, land erosion and sediment flux from upstream river cells), <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{erod}}{ton}\)</span> is the amount of sediment coming from river erosion, <span class="math inline">\(\SIb{\subtext{\mathrm{sed}}{dep}}{ton}\)</span> is the amount of deposited sediments, <span class="math inline">\(\SIb{\subtext{V}{out}}{m^3}\)</span> is the volume of water leaving the river cell (surface runoff <span class="math inline">\(Q\)</span> times timestep <span class="math inline">\(\Delta t\)</span>) and <span class="math inline">\(\SIb{V}{m^3}\)</span> is the total volume of water in the river cell (<span class="math inline">\(\subtext{V}{out}\)</span> plus storage <span class="math inline">\(h W L\)</span>).</p>
+<p>A mass balance is then used to calculate the amount of sediment remaining in the cell at the end of the timestep <span class="math inline">\((\subtext{\mathrm{sed}}{riv})_t\)</span>:</p>
+<p><span class="math display">\[
+   (\subtext{\mathrm{sed}}{riv})_t = (\subtext{\mathrm{sed}}{riv})_{t-1} + (\subtext{\mathrm{sed}}{land})_t + \mathrm{upstream}\left[(\subtext{\mathrm{sed}}{out})_{t-1}\right] + (\subtext{\mathrm{sed}}{erod})_t - (\subtext{\mathrm{sed}}{dep})_t - (\subtext{\mathrm{sed}}{out})_t
+\]</span></p>
+</section>
+<section id="reservoir-modelling" class="level3">
+<h3 class="anchored" data-anchor-id="reservoir-modelling">Reservoir modelling</h3>
+<p>Apart from land and river, the hydrological <code>wflow_sbm</code> model also handles reservoir modelling. In <code>wflow_sbm</code>, <code>reservoir</code> nodes representing reservoirs, (natural) lakes or other water storage features are modelled using a 1D bucket model at the cell corresponding to the outlet. For the other cells belonging to the reservoir which are not the outlet, processes such as precipitation and evaporation are filtered out and shifted to the outlet cell. <code>wflow_sediment</code> handles the reservoirs in the same way. If a cell belongs to a reservoir and is not the outlet then the model assumes that no erosion/deposition of sediments is happening and the sediments are transported to the reservoir outlet. Once the sediments reach the outlet, then sediments are deposited in the reservoir according to Camp’s model (1945) (Verstraeten et al, 2000):</p>
+<p><span class="math display">\[
+   \mathrm{TE} = \dfrac{\omega_s}{u_{cr,\mathrm{res}}} = \dfrac{\subtext{A}{res}}{\subtext{Q}{out,res}} \omega_s
+\]</span></p>
+<p>where <span class="math inline">\(\mathrm{TE}\)</span> is the trapping efficiency of the reservoir (or the fraction of particles trapped), <span class="math inline">\(\SIb{\omega_{s}}{m\ s^{-1}}\)</span> is the particle velocity from Stokes, <span class="math inline">\(\SIb{\subtext{u}{cr,res}}{m\ s^{-1}}\)</span> is the reservoir’s critical settling velocity which is equal to the reservoir’s outflow <span class="math inline">\(\SIb{\subtext{Q}{out,res}}{m^3\ s^{-1}}\)</span> divided by the reservoir’s surface area <span class="math inline">\(\SIb{\subtext{A}{res}}{m^2}\)</span>.</p>
+<p>For reservoirs, coarse sediment particles from the bed load are also assumed to be trapped by the dam structure. This adding trapping is taken into account with a reservoir trapping efficiency coefficient for large particles (between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>). Depending on the type of the dam, all bed load particles are trapped (<code>reservoir_water_sediment__bedload_trapping_efficiency = 1.0</code>, for example for a gravity dam) or only partly (for example for run-of-the-river dams).</p>
+<p>Reservoir modelling is enabled in the model section of the TOML and require the extra following input arguments:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir__flag</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_area__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirareas"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_surface__area</span> <span class="op">=</span> <span class="st">"ResSimpleArea"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_water_sediment__bedload_trapping_efficiency</span> <span class="op">=</span> <span class="st">"ResTrapEff"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Note that in the inland part, reservoir coverage is used to filter erosion and transport in overland flow.</p>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>K.C. Abbaspour, J. Yang, I. Maximov, R. Siber, K. Bogner, J. Mieleitner, J. Zobrist, and R.Srinivasan. Modelling hydrology and water quality in the pre-alpine/alpine Thur watershed using SWAT. Journal of Hydrology, 333(2-4):413-430, 2007. 10.1016/j.jhydrol.2006.09.014</li>
+<li>P. Borrelli, M. Märker, P. Panagos, and B. Schütt. Modeling soil erosion and river sediment yield for an intermountain drainage basin of the Central Apennines, Italy. Catena, 114:45-58,
+<ol start="2014" type="1">
+<li>10.1016/j.catena.2013.10.007</li>
+</ol></li>
+<li>F. Engelund and E. Hansen. A monograph on sediment transport in alluvial streams. Technical University of Denmark 0stervoldgade 10, Copenhagen K., 1967.</li>
+<li>G. Govers. Empirical relationships for the transport capacity of overland flow. IAHS Publication, (January 1990):45-63 ST, 1990.</li>
+<li>G.J Hanson and A Simon. Erodibility of cohesive streambeds in the loess area of the midwestern USA. Hydrological Processes, 15(May 1999):23-38, 2001.</li>
+<li>R Hessel and V Jetten. Suitability of transport equations in modelling soil erosion for a small Loess Plateau catchment. Engineering Geology, 91(1):56-71, 2007. 10.1016/j.enggeo.2006.12.013</li>
+<li>J.P Julian, and R. Torres. Hydraulic erosion of cohesive riverbanks. Geomorphology, 76:193-206, 2006. 10.1016/j.geomorph.2005.11.003</li>
+<li>D.W. Knight, J.D. Demetriou, and M.E. Hamed. Boundary Shear in Smooth Rectangular Channels. J. Hydraul. Eng., 110(4):405-422, 1984. 10.1061/(ASCE)0733-9429(1987)113:1(120)</li>
+<li>S.L Neitsch, J.G Arnold, J.R Kiniry, and J.R Williams. SWAT Theoretical Documentation Version
+<ol start="2009" type="1">
+<li>Texas Water Resources Institute, pages 1-647, 2011. 10.1016/j.scitotenv.2015.11.063</li>
+</ol></li>
+<li>C. Oeurng, S. Sauvage, and J.M. Sanchez-Perez. Assessment of hydrology, sediment and particulate organic carbon yield in a large agricultural catchment using the SWAT model. Journal of Hydrology, 401:145-153, 2011. 10.1016/j.hydrol.2011.02.017</li>
+<li>A. Simon, N. Pollen-Bankhead, and R.E Thomas. Development and application of a deterministic bank stability and toe erosion model for stream restoration. Geophysical Monograph Series, 194:453-474, 2011. 10.1029/2010GM001006</li>
+<li>G. Verstraeten and J. Poesen. Estimating trap efficiency of small reservoirs and ponds: methods and implications for the assessment of sediment yield. Progress in Physical Geography, 24(2):219-251, 2000. 10.1177/030913330002400204</li>
+<li>O. Vigiak, A. Malago, F. Bouraoui, M. Vanmaercke, and J. Poesen. Adapting SWAT hillslope erosion model to predict sediment concentrations and yields in large Basins. Science of the Total Environment, 538:855-875, 2015. 10.1016/j.scitotenv.2015.08.095</li>
+<li>O. Vigiak, A. Malago, F. Bouraoui, M. Vanmaercke, F. Obreja, J. Poesen, H. Habersack, J. Feher, and S. Groselj. Modelling sediment fluxes in the Danube River Basin with SWAT. Science of the Total Environment, 2017. 10.1016/j.scitotenv.2017.04.236</li>
+</ul>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
