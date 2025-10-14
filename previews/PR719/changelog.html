@@ -489,6 +489,7 @@ window.Quarto = {
 <li>For scalar NetCDF output files, when using the same output map (gauge or subcatchment map) multiple times, each variable that uses these IDs are now sharing the same dimension (instead of creating a new dimension for each variable). The name of this dimension is based on the name of the map defined in the .toml file.</li>
 <li>Change default value of weighting factor <code>theta</code> (adjusts the amount of artificial numerical diffusion) from 0.8 to 1.0 for local inertial overland flow routing. This results in smaller water balance errors.</li>
 <li>Introduced in v1.0.0-rc1 (except for average water depth <code>h_av</code> routing), stop supporting time averaged storage variables as these are not required for typical applications and users. Additionally, rename standard names of instantaneous storage variables by removing <code>instantaneous</code> from the name.</li>
+<li>Allow static input of river external inflow.</li>
 </ul>
 </section>
 <section id="added" class="level3">
