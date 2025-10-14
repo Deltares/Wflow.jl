@@ -265,7 +265,6 @@ as a model output variable.
 | `river_water__infiltration_conductance` | River bed infiltration conductance | m² day⁻¹ | - |
 | `river_water__exfiltration_conductance` | River bed exfiltration conductance | m² day⁻¹ | - |
 | `river_bottom__elevation` | River bottom elevation | m | - |
-| `river_water__external_inflow_volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
 : {.striped .hover}
 
 #### Output {#output-gwf-river}
