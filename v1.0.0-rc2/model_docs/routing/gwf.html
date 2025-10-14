@@ -492,6 +492,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -523,6 +529,12 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
   </div>
 </li>
       </ul>
@@ -637,7 +649,7 @@ Note
 <li>head-dependent flux (Robin)</li>
 </ul>
 <p>Neumann and Robin conditions are implemented by adding to or subtracting from a net (lumped) cell flux. Dirichlet conditions are special cased, since they cannot (easily) be implemented via the flux, but the head is set directly instead.</p>
-<p>The groundwater flow component of model type <code>sbm_gwf</code> consists of a single layer unconfined aquifer. The list of input parameters for an unconfined aquifer can be found <a href="../../model_docs/parameters_routing.html#input-gwf-unconfined">here</a>. Hydraulic head <span class="math inline">\(\SIb{\phi}{m}\)</span> is a <a href="../../model_docs/parameters_routing.html#state-gwf-unconfined">state variable</a> and <a href="../../model_docs/parameters_routing.html#output-gwf-unconfined">output variable</a>.</p>
+<p>The groundwater flow component of model type <code>sbm_gwf</code> consists of a single layer unconfined aquifer. The list of input parameters for an unconfined aquifer can be found <a href="../../model_docs/parameters_routing.html#input-gwf-unconfined">here</a>. Hydraulic head <span class="math inline">\(\SIb{\phi}{m}\)</span> is an output and state <a href="../../model_docs/parameters_routing.html#state-gwf-unconfined">variable</a>.</p>
 <p>Below an example of setting the <code>conductivity_profile</code> and input parameters in the TOML configuration file for an unconfined aquifer:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">conductivity_profile</span> <span class="op">=</span> <span class="st">"exponential"</span>  <span class="co"># saturated hydraulic conductivity depth profile, default is "uniform"</span></span>
