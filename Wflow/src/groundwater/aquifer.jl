@@ -138,24 +138,32 @@ function UnconfinedAquiferParameters(
     bottom::Vector{Float64},
     area::Vector{Float64},
 )
-    lens = lens_input_parameter(
+    k = ncread(
+        dataset,
         config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity";
         optional = false,
+        sel = indices,
+        type = Float64,
     )
-    k = ncread(dataset, config, lens; sel = indices, type = Float64)
-
-    lens =
-        lens_input_parameter(config, "subsurface_water__specific_yield"; optional = false)
-    specific_yield = ncread(dataset, config, lens; sel = indices, type = Float64)
+    specific_yield = ncread(
+        dataset,
+        config,
+        "subsurface_water__specific_yield";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
 
     if config.model.conductivity_profile == GwfConductivityProfileType.exponential
-        lens = lens_input_parameter(
+        f = ncread(
+            dataset,
             config,
             "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter";
             optional = false,
+            sel = indices,
+            type = Float64,
         )
-        f = ncread(dataset, config, lens; sel = indices, type = Float64)
     else
         f = Float64[]
     end
@@ -406,14 +414,15 @@ function ConstantHead(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(
+    constanthead = ncread(
+        dataset,
         config,
         "model_constant_boundary_condition__hydraulic_head";
         optional = false,
+        sel = indices,
+        type = Float64,
+        fill = MISSING_VALUE,
     )
-    constanthead =
-        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
-
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]

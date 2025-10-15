@@ -214,9 +214,23 @@ function set_states!(
     return nothing
 end
 
-struct LensWithName{L <: Union{Nothing, ComposedFunction}}
-    lens::L
-    name::String
+function get_var_config(config::Config, parameter::AbstractString; optional = true)
+    if hasfield(InputSection, Symbol(parameter))
+        var = getfield(config.input, Symbol(parameter))
+    elseif haskey(config.input.location_maps, parameter)
+        var = config.input.location_maps[parameter]
+    elseif haskey(config.input.static, parameter)
+        var = config.input.static[parameter]
+    elseif haskey(config.input.cyclic, parameter)
+        var = config.input.cyclic[parameter]
+    elseif optional
+        var = nothing
+    else
+        error(
+            "Required input model parameter with standard name '$parameter' not set in TOML file",
+        )
+    end
+    return var
 end
 
 """
@@ -245,7 +259,8 @@ missing values.
 function ncread(
     nc,
     config::Config,
-    parameter::LensWithName;
+    parameter::AbstractString;
+    optional = true,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -254,9 +269,11 @@ function ncread(
     dimname = nothing,
     logging = true,
 )
-    # for optional parameters (`lens` set to `nothing`) default values are used.
-    if isnothing(parameter.lens)
-        @info "Set `$(parameter.name)` using default value `$defaults`."
+    var = get_var_config(config, parameter; optional)
+
+    # for optional parameters default values are used.
+    if isnothing(var)
+        @info "Set `$parameter` using default value `$defaults`."
         @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -267,8 +284,6 @@ function ncread(
             return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
         end
     end
-
-    var = convert(InputEntry, parameter.lens(config))
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
@@ -282,11 +297,12 @@ function ncread(
         error("Unrecognized dimension name $dimname")
     end
 
+    var = convert(InputEntry, var)
     (; value, layer, scale, offset) = var
     variable_info(var)
 
     if !isnothing(value)
-        @info "Set `$(parameter.name)` using uniform value `$value` from TOML file."
+        @info "Set `$parameter` using uniform value `$value` from TOML file."
         if isnothing(dimname)
             # set to one uniform value
             return Base.fill(only(value), length(sel))
@@ -300,7 +316,7 @@ function ncread(
         end
     else
         if logging
-            @info "Set `$(parameter.name)` using netCDF variable `$var`."
+            @info "Set `$parameter` using netCDF variable `$var`."
         end
         A = read_standardized(nc, variable_name(var), dim_sel)
         if !isnothing(layer)
@@ -347,63 +363,6 @@ function ncread(
     end
 
     return A
-end
-
-"""
-Return `LensWithName` with internal standard `name` and a `lens` to access the external static
-or cyclic input model parameter name in the nested `config` object (parsed TOML file). By
-default specifying a model parameter is `optional` in the TOML file.
-"""
-function lens_input_parameter(
-    config::Config,
-    p::AbstractString;
-    optional::Bool = true,
-)::LensWithName
-    lens = if haskey(config.input.static, p)
-        @optic(_.input.static[p])
-    elseif do_cyclic(config) && haskey(config.input.cyclic, p)
-        @optic(_.input.cyclic[p])
-    elseif optional
-        nothing
-    else
-        error(
-            "Required input static or cyclic model parameter with standard name '$p' not set" *
-            " in TOML file (below `[input.static]` or `[input.cyclic]` section)",
-        )
-    end
-    return LensWithName(lens, p)
-end
-
-function lens_input(
-    p::String;
-    config::Union{Nothing, Config} = nothing,
-    optional::Bool = false,
-)::LensWithName
-    from_location_maps = !hasfield(InputSection, Symbol(p))
-    was_set = true
-    if config isa Config
-        # If the config was passed, check whether the requested parameter
-        # was specified in the config
-        was_set = if from_location_maps
-            haskey(config.input.location_maps, p)
-        else
-            !isnothing(getfield(config.input, Symbol(p)))
-        end
-        if !optional && !was_set
-            error(
-                """Required input model parameter with standard name $p not set in TOML file
-                (below `[input]` section)""",
-            )
-        end
-    end
-    lens = if !was_set
-        nothing
-    elseif from_location_maps
-        @optic(_.input.location_maps[p])
-    else
-        @optic(getfield(_.input, Symbol(p)))
-    end
-    return LensWithName(lens, p)
 end
 
 """

@@ -41,33 +41,46 @@ end
 function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkReservoir)
     (; indices_outlet) = network
 
-    lens = lens_input_parameter(config, "reservoir_surface__area"; optional = false)
-    area = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-    lens = lens_input_parameter(
+    area = ncread(
+        dataset,
+        config,
+        "reservoir_surface__area";
+        optional = false,
+        sel = indices_outlet,
+        type = Float64,
+        fill = 0,
+    )
+    waterlevel = ncread(
+        dataset,
         config,
         "reservoir_water_surface__initial_elevation";
         optional = false,
+        sel = indices_outlet,
+        type = Float64,
+        fill = 0,
     )
-    waterlevel =
-        ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-    lens = lens_input_parameter(
+    storfunc = ncread(
+        dataset,
         config,
         "reservoir_water__storage_curve_type_count";
         optional = false,
+        sel = indices_outlet,
+        type = Int,
+        fill = 0,
     )
-    storfunc = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
-    lens = lens_input_parameter(
+    outflowfunc = ncread(
+        dataset,
         config,
         "reservoir_water__rating_curve_type_count";
         optional = false,
+        sel = indices_outlet,
+        type = Int,
+        fill = 0,
     )
-    outflowfunc = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
-
-    lens = lens_input("reservoir_lower_location__count"; config, optional = true)
     linked_reslocs = ncread(
         dataset,
         config,
-        lens;
+        "reservoir_lower_location__count";
         sel = indices_outlet,
         defaults = 0,
         type = Int,
@@ -75,65 +88,94 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     )
 
     n_reservoirs = length(area)
-    lens = lens_input("reservoir_location__count")
-    reslocs = ncread(dataset, config, lens; sel = indices_outlet, type = Int, fill = 0)
+    reslocs = ncread(
+        dataset,
+        config,
+        "reservoir_location__count";
+        optional = false,
+        sel = indices_outlet,
+        type = Int,
+        fill = 0,
+    )
     @info "Read `$n_reservoirs` reservoir locations."
 
     parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
 
     if 2 in outflowfunc || 3 in outflowfunc
-        lens = lens_input_parameter(
+        threshold = ncread(
+            dataset,
             config,
             "reservoir_water_flow_threshold_level__elevation";
             optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
         )
-        threshold =
-            ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-        lens = lens_input_parameter(
+        b = ncread(
+            dataset,
             config,
             "reservoir_water__rating_curve_coefficient";
             optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
         )
-        b = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-        lens = lens_input_parameter(
+        e = ncread(
+            dataset,
             config,
             "reservoir_water__rating_curve_exponent";
             optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
         )
-        e = ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     end
     if 4 in outflowfunc
-        lens = lens_input_parameter(
+        demand = ncread(
+            dataset,
             config,
             "reservoir_water_demand__required_downstream_volume_flow_rate";
             optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
         )
-        demand =
-            ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-        lens = lens_input_parameter(
+        maxrelease = ncread(
+            dataset,
             config,
             "reservoir_water_release_below_spillway__max_volume_flow_rate";
             optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
         )
-        maxrelease =
-            ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-        lens = lens_input_parameter(config, "reservoir_water__max_volume"; optional = false)
-        maxstorage =
-            ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-        lens = lens_input_parameter(
+        maxstorage = ncread(
+            dataset,
+            config,
+            "reservoir_water__max_volume";
+            optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
+        )
+        targetfullfrac = ncread(
+            dataset,
             config,
             "reservoir_water__target_full_volume_fraction";
             optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
         )
-        targetfullfrac =
-            ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
-        lens = lens_input_parameter(
+        targetminfrac = ncread(
+            dataset,
             config,
             "reservoir_water__target_min_volume_fraction";
             optional = false,
+            sel = indices_outlet,
+            type = Float64,
+            fill = 0,
         )
-        targetminfrac =
-            ncread(dataset, config, lens; sel = indices_outlet, type = Float64, fill = 0)
     end
 
     # reservoir CSV parameter files are expected in the same directory as path_static
@@ -208,12 +250,10 @@ function ReservoirVariables(
 )
     (; storfunc, area, sh) = parameters
     (; indices_outlet) = network
-    lens =
-        lens_input_parameter(config, "reservoir_water__outgoing_observed_volume_flow_rate")
     outflow_obs = ncread(
         dataset,
         config,
-        lens;
+        "reservoir_water__outgoing_observed_volume_flow_rate";
         sel = indices_outlet,
         defaults = MISSING_VALUE,
         type = Float64,
@@ -241,9 +281,14 @@ end
 "Initialize reservoir model boundary conditions"
 function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservoir)
     (; indices_outlet) = network
-    lens = lens_input_parameter(config, "reservoir_water__external_inflow_volume_flow_rate")
-    external_inflow =
-        ncread(dataset, config, lens; sel = indices_outlet, defaults = 0.0, type = Float64)
+    external_inflow = ncread(
+        dataset,
+        config,
+        "reservoir_water__external_inflow_volume_flow_rate";
+        sel = indices_outlet,
+        defaults = 0.0,
+        type = Float64,
+    )
     n = length(indices_outlet)
     bc = ReservoirBC(;
         inflow_subsurface = fill(MISSING_VALUE, n),

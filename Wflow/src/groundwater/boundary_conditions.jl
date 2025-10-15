@@ -46,22 +46,30 @@ function GwfRiver(
     indices::Vector{CartesianIndex{2}},
     index::Vector{Int},
 )
-    lens = lens_input_parameter(
+    infiltration_conductance = ncread(
+        dataset,
         config,
         "river_water__infiltration_conductance";
         optional = false,
+        sel = indices,
+        type = Float64,
     )
-    infiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
-
-    lens = lens_input_parameter(
+    exfiltration_conductance = ncread(
+        dataset,
         config,
         "river_water__exfiltration_conductance";
         optional = false,
+        sel = indices,
+        type = Float64,
     )
-    exfiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
-
-    lens = lens_input_parameter(config, "river_bottom__elevation"; optional = false)
-    bottom = ncread(dataset, config, lens; sel = indices, type = Float64)
+    bottom = ncread(
+        dataset,
+        config,
+        "river_bottom__elevation";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
@@ -115,13 +123,24 @@ function Drainage(
     indices::Vector{CartesianIndex{2}},
     index::Vector{Int},
 )
-    lens = lens_input_parameter(config, "land_drain__elevation"; optional = false)
-    drain_elevation =
-        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
-
-    lens = lens_input_parameter(config, "land_drain__conductance"; optional = false)
-    drain_conductance =
-        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
+    drain_elevation = ncread(
+        dataset,
+        config,
+        "land_drain__elevation";
+        optional = false,
+        sel = indices,
+        type = Float64,
+        fill = MISSING_VALUE,
+    )
+    drain_conductance = ncread(
+        dataset,
+        config,
+        "land_drain__conductance";
+        optional = false,
+        sel = indices,
+        type = Float64,
+        fill = MISSING_VALUE,
+    )
     elevation = drain_elevation[index]
     conductance = drain_conductance[index]
     parameters = DrainageParameters(; elevation, conductance)

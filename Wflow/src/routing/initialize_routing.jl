@@ -43,8 +43,14 @@ function initialize_subsurface_flow(
 
     n_cells = length(indices)
 
-    lens = lens_input_parameter(config, "land_surface__elevation"; optional = false)
-    elevation = ncread(dataset, config, lens; sel = indices, type = Float64)
+    elevation = ncread(
+        dataset,
+        config,
+        "land_surface__elevation";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
 
     # unconfined aquifer
     if config.model.constanthead__flag
@@ -64,8 +70,14 @@ function initialize_subsurface_flow(
     end
     # reset soil (cold) state and related variables based on initial_head (river cells and constanthead)
     if config.model.cold_start__flag
-        (; zi, satwaterdepth, ustorecapacity, ustorelayerthickness, n_unsatlayers, total_soilwater_storage) =
-            soil.variables
+        (;
+            zi,
+            satwaterdepth,
+            ustorecapacity,
+            ustorelayerthickness,
+            n_unsatlayers,
+            total_soilwater_storage,
+        ) = soil.variables
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
             soil.parameters
 

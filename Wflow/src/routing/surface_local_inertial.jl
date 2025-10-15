@@ -33,20 +33,42 @@ function LocalInertialRiverFlowParameters(
     (; pit_indices, indices, graph, local_drain_direction, nodes_at_edge) = domain.network
     (; flow_width, flow_length, reservoir_outlet) = domain.parameters
 
-    lens = lens_input_parameter(config, "model_boundary_condition_river__length")
-    riverlength_bc =
-        ncread(dataset, config, lens; sel = pit_indices, defaults = 1.0e04, type = Float64)
-    lens = lens_input_parameter(config, "river_bank_water__elevation"; optional = false)
-    bankfull_elevation_2d = ncread(dataset, config, lens; type = Float64, fill = 0)
-    lens = lens_input_parameter(config, "river_bank_water__depth"; optional = false)
-    bankfull_depth_2d = ncread(dataset, config, lens; type = Float64, fill = 0)
+    riverlength_bc = ncread(
+        dataset,
+        config,
+        "model_boundary_condition_river__length";
+        sel = pit_indices,
+        defaults = 1.0e04,
+        type = Float64,
+    )
+    bankfull_elevation_2d = ncread(
+        dataset,
+        config,
+        "river_bank_water__elevation";
+        optional = false,
+        type = Float64,
+        fill = 0,
+    )
+    bankfull_depth_2d = ncread(
+        dataset,
+        config,
+        "river_bank_water__depth";
+        optional = false,
+        type = Float64,
+        fill = 0,
+    )
     bankfull_depth = bankfull_depth_2d[indices]
     zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
 
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
-    lens = lens_input_parameter(config, "river_water_flow__manning_n_parameter")
-    mannings_n =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.036, type = Float64)
+    mannings_n = ncread(
+        dataset,
+        config,
+        "river_water_flow__manning_n_parameter";
+        sel = indices,
+        defaults = 0.036,
+        type = Float64,
+    )
 
     n = length(indices)
     index_pit = findall(x -> x == 5, local_drain_direction)
@@ -124,9 +146,14 @@ function LocalInertialRiverFlowVariables(
 )
     (; pit_indices, indices, graph) = network
 
-    lens = lens_input_parameter(config, "model_boundary_condition_river_bank_water__depth")
-    riverdepth_bc =
-        ncread(dataset, config, lens; sel = pit_indices, defaults = 0.0, type = Float64)
+    riverdepth_bc = ncread(
+        dataset,
+        config,
+        "model_boundary_condition_river_bank_water__depth";
+        sel = pit_indices,
+        defaults = 0.0,
+        type = Float64,
+    )
 
     n = length(indices)
     n_edges = ne(graph)
@@ -570,15 +597,22 @@ function LocalInertialOverlandFlowParameters(
 
     @info "Local inertial approach is used for overland flow." alpha theta waterdepth_threshold froude_limit
 
-    lens = lens_input_parameter(config, "land_surface_water_flow__manning_n_parameter")
-    mannings_n =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float64)
-    lens = lens_input_parameter(
+    mannings_n = ncread(
+        dataset,
+        config,
+        "land_surface_water_flow__manning_n_parameter";
+        sel = indices,
+        defaults = 0.072,
+        type = Float64,
+    )
+    elevation_2d = ncread(
+        dataset,
         config,
         "land_surface_water_flow__ground_elevation";
         optional = false,
+        type = Float64,
+        fill = 0,
     )
-    elevation_2d = ncread(dataset, config, lens; type = Float64, fill = 0)
     elevation = elevation_2d[indices]
     n = length(domain.land.network.indices)
 
@@ -1052,13 +1086,15 @@ function FloodPlainProfile(
 )
     (; indices) = domain.network
     (; flow_width, flow_length) = domain.parameters
-    lens = lens_input_parameter(
+    storage = ncread(
+        dataset,
         config,
         "floodplain_water__sum_of_volume_per_depth";
         optional = false,
+        sel = indices,
+        type = Float64,
+        dimname = :flood_depth,
     )
-    storage =
-        ncread(dataset, config, lens; sel = indices, type = Float64, dimname = :flood_depth)
     n = length(indices)
 
     # for convenience (interpolation) flood depth 0.0 m is added, with associated area (a),
@@ -1158,9 +1194,14 @@ function FloodPlainParameters(
     n_edges = ne(graph)
     profile = FloodPlainProfile(dataset, config, domain, index_pit)
 
-    lens = lens_input_parameter(config, "floodplain_water_flow__manning_n_parameter")
-    mannings_n =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float64)
+    mannings_n = ncread(
+        dataset,
+        config,
+        "floodplain_water_flow__manning_n_parameter";
+        sel = indices,
+        defaults = 0.072,
+        type = Float64,
+    )
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes
     mannings_n_sq = fill(Float64(0), n_edges)

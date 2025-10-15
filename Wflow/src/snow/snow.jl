@@ -82,21 +82,47 @@ function SnowHbvParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "snowpack__degree_day_coefficient")
     cfmax =
-        ncread(dataset, config, lens; sel = indices, defaults = 3.75, type = Float64) .*
-        (dt / BASETIMESTEP)
-    lens = lens_input_parameter(config, "atmosphere_air__snowfall_temperature_threshold")
-    tt = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
-
-    lens = lens_input_parameter(config, "atmosphere_air__snowfall_temperature_interval")
-    tti = ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
-
-    lens = lens_input_parameter(config, "snowpack__melting_temperature_threshold")
-    ttm = ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
-
-    lens = lens_input_parameter(config, "snowpack__liquid_water_holding_capacity")
-    whc = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+        ncread(
+            dataset,
+            config,
+            "snowpack__degree_day_coefficient";
+            sel = indices,
+            defaults = 3.75,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
+    tt = ncread(
+        dataset,
+        config,
+        "atmosphere_air__snowfall_temperature_threshold";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
+    tti = ncread(
+        dataset,
+        config,
+        "atmosphere_air__snowfall_temperature_interval";
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
+    )
+    ttm = ncread(
+        dataset,
+        config,
+        "snowpack__melting_temperature_threshold";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
+    whc = ncread(
+        dataset,
+        config,
+        "snowpack__liquid_water_holding_capacity";
+        sel = indices,
+        defaults = 0.1,
+        type = Float64,
+    )
     snow_hbv_params = SnowHbvParameters(; cfmax, tt, tti, ttm, whc)
     return snow_hbv_params
 end
