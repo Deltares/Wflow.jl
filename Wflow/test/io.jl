@@ -40,11 +40,7 @@ config = Wflow.Config(tomlpath)
           joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
 
     # test error is thrown for wrong non-optional model parameter
-    @test_throws ErrorException Wflow.get_var_config(
-        config,
-        "not_set_in_TOML";
-        optional = false,
-    )
+    @test_throws ErrorException Wflow.get_var(config, "not_set_in_TOML"; optional = false)
 end
 
 @testset "Clock constructor" begin

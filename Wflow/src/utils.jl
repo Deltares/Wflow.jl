@@ -214,7 +214,7 @@ function set_states!(
     return nothing
 end
 
-function get_var_config(config::Config, parameter::AbstractString; optional = true)
+function get_var(config::Config, parameter::AbstractString; optional = true)
     if hasfield(InputSection, Symbol(parameter))
         var = getfield(config.input, Symbol(parameter))
     elseif haskey(config.input.location_maps, parameter)
@@ -234,15 +234,16 @@ function get_var_config(config::Config, parameter::AbstractString; optional = tr
 end
 
 """
-    ncread(nc, config::Config, parameter::NamedTuple; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
-`parameter` specifying the internal standard `name` in the TOML configuration file and a
-`lens` to access the external netCDF variable name in the nested `config` object. Supports
-various keyword arguments to get selections of data in desired types, with or without
-missing values.
+model `parameter` (standard name) specified in the TOML configuration file. Supports various
+keyword arguments to get selections of data in desired types, with or without missing
+values.
 
 # Arguments
+- `optional=true`: By default specifying a model `parameter` in the TOML file is optional.
+        Set to false if the model `parameter` is required.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
 - `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
@@ -269,7 +270,7 @@ function ncread(
     dimname = nothing,
     logging = true,
 )
-    var = get_var_config(config, parameter; optional)
+    var = get_var(config, parameter; optional)
 
     # for optional parameters default values are used.
     if isnothing(var)
