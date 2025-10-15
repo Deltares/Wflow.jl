@@ -119,7 +119,6 @@ function NonPaddy(
         "irrigated_non_paddy_area__count";
         optional = false,
         sel = indices,
-        defaults = 1,
         type = Int,
     )
     irrigation_trigger = ncread(
@@ -128,7 +127,6 @@ function NonPaddy(
         "irrigated_non_paddy__irrigation_trigger_flag";
         optional = false,
         sel = indices,
-        defaults = 1,
         type = Bool,
     )
     max_irri_rate =
