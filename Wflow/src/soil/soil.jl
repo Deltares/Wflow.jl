@@ -92,6 +92,8 @@ end
     theta_s::Vector{Float64}
     # Residual water content [-]
     theta_r::Vector{Float64}
+    # Drainable porosity [-]
+    theta_d::Vector{Float64}
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{Float64}
     # Muliplication factor [-] applied to kv_z (vertical flow)
@@ -557,6 +559,9 @@ function SbmSoilParameters(
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
+    c = svectorscopy(c, Val{maxlayers}())
+    theta_d = drainable_porosity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
+
     # root fraction read from dataset file, in case of multiple soil layers and TOML file
     # includes "soil_root__length_density_fraction"
     par_name = "soil_root__length_density_fraction"
@@ -613,6 +618,7 @@ function SbmSoilParameters(
         soilwatercapacity,
         theta_s,
         theta_r,
+        theta_d,
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb,
         h1,
@@ -632,7 +638,7 @@ function SbmSoilParameters(
         rootfraction = svectorscopy(rootfraction, Val{maxlayers}()),
         cap_hmax,
         cap_n,
-        c = svectorscopy(c, Val{maxlayers}()),
+        c,
         w_soil,
         cf_soil,
         soil_fraction = fill(MISSING_VALUE, n),
