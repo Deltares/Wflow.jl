@@ -409,7 +409,7 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#v1.0.0-rc2---2025-10-14" id="toc-v1.0.0-rc2---2025-10-14" class="nav-link active" data-scroll-target="#v1.0.0-rc2---2025-10-14">v1.0.0-rc2 - 2025-10-14</a>
+  <li><a href="#v1.0.0-rc2---2025-10-16" id="toc-v1.0.0-rc2---2025-10-16" class="nav-link active" data-scroll-target="#v1.0.0-rc2---2025-10-16">v1.0.0-rc2 - 2025-10-16</a>
   <ul class="collapse">
   <li><a href="#fixed" id="toc-fixed" class="nav-link" data-scroll-target="#fixed">Fixed</a></li>
   <li><a href="#changed" id="toc-changed" class="nav-link" data-scroll-target="#changed">Changed</a></li>
@@ -470,8 +470,8 @@ window.Quarto = {
 
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
-<section id="v1.0.0-rc2---2025-10-14" class="level2">
-<h2 class="anchored" data-anchor-id="v1.0.0-rc2---2025-10-14">v1.0.0-rc2 - 2025-10-14</h2>
+<section id="v1.0.0-rc2---2025-10-16" class="level2">
+<h2 class="anchored" data-anchor-id="v1.0.0-rc2---2025-10-16">v1.0.0-rc2 - 2025-10-16</h2>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
@@ -489,6 +489,7 @@ window.Quarto = {
 <li>For scalar NetCDF output files, when using the same output map (gauge or subcatchment map) multiple times, each variable that uses these IDs are now sharing the same dimension (instead of creating a new dimension for each variable). The name of this dimension is based on the name of the map defined in the .toml file.</li>
 <li>Change default value of weighting factor <code>theta</code> (adjusts the amount of artificial numerical diffusion) from 0.8 to 1.0 for local inertial overland flow routing. This results in smaller water balance errors.</li>
 <li>Introduced in v1.0.0-rc1 (except for average water depth <code>h_av</code> routing), stop supporting time averaged storage variables as these are not required for typical applications and users. Additionally, rename standard names of instantaneous storage variables by removing <code>instantaneous</code> from the name.</li>
+<li>Allow static input of river external inflow.</li>
 </ul>
 </section>
 <section id="added" class="level3">
