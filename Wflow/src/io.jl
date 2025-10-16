@@ -594,8 +594,14 @@ end
 
 "Get a Vector of all unique location ids from a 2D map"
 function locations_map(ds, mapname, config)
-    lens = lens_input(mapname)
-    map_2d = ncread(ds, config, lens; type = Union{Int, Missing}, allow_missing = true)
+    map_2d = ncread(
+        ds,
+        config,
+        mapname;
+        optional = false,
+        type = Union{Int, Missing},
+        allow_missing = true,
+    )
     ids = unique(skipmissing(map_2d))
     return ids
 end
@@ -1024,11 +1030,10 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         # integers indicating the points or zones that are to be aggregated
         # if no reducer is given, pick "only", this is the only safe reducer,
         # and makes sense in the case of a gauge map
-        lens = lens_input(map)
         map_2d = ncread(
             dataset,
             config,
-            lens;
+            map;
             type = Union{Int, Missing},
             allow_missing = true,
             logging = false,
@@ -1046,7 +1051,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             ind = rev_inds[i]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
-                    map `$mapname` value $v for parameter $param""")
+                    map `$map` value $v for parameter $param""")
             end
             push!(vector, ind)
         end

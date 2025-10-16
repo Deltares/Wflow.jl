@@ -41,13 +41,30 @@ function OverlandFlowErosionAnswersParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "soil_erosion__usle_k_factor")
-    usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
-    lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
-    usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
-    lens = lens_input_parameter(config, "soil_erosion__answers_overland_flow_factor")
-    answers_overland_flow_factor =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.9, type = Float64)
+    usle_k = ncread(
+        dataset,
+        config,
+        "soil_erosion__usle_k_factor";
+        sel = indices,
+        defaults = 0.1,
+        type = Float64,
+    )
+    usle_c = ncread(
+        dataset,
+        config,
+        "soil_erosion__usle_c_factor";
+        sel = indices,
+        defaults = 0.01,
+        type = Float64,
+    )
+    answers_overland_flow_factor = ncread(
+        dataset,
+        config,
+        "soil_erosion__answers_overland_flow_factor";
+        sel = indices,
+        defaults = 0.9,
+        type = Float64,
+    )
 
     answers_parameters =
         OverlandFlowErosionAnswersParameters(; usle_k, usle_c, answers_overland_flow_factor)

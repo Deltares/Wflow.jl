@@ -84,13 +84,22 @@ end
 function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     (; slope) = domain.parameters
-
-    lens = lens_input_parameter(config, "river_water_flow__manning_n_parameter")
-    mannings_n =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.036, type = Float64)
-    lens = lens_input_parameter(config, "river_bank_water__depth")
-    bankfull_depth =
-        ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
+    mannings_n = ncread(
+        dataset,
+        config,
+        "river_water_flow__manning_n_parameter";
+        sel = indices,
+        defaults = 0.036,
+        type = Float64,
+    )
+    bankfull_depth = ncread(
+        dataset,
+        config,
+        "river_bank_water__depth";
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
+    )
 
     flow_params = ManningFlowParameters(mannings_n, slope)
     parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth)
@@ -107,10 +116,25 @@ end
 end
 
 "Initialize river flow model boundary conditions"
-function RiverFlowBC(n::Int, reservoir::Union{Reservoir, Nothing})
+function RiverFlowBC(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkRiver,
+    reservoir::Union{Reservoir, Nothing},
+)
+    (; indices) = network
+    external_inflow = ncread(
+        dataset,
+        config,
+        "river_water__external_inflow_volume_flow_rate";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
+    n = length(indices)
     bc = RiverFlowBC(;
         inwater = zeros(Float64, n),
-        external_inflow = zeros(Float64, n),
+        external_inflow,
         actual_external_abstraction_av = zeros(Float64, n),
         abstraction = zeros(Float64, n),
         reservoir,
@@ -143,7 +167,7 @@ function KinWaveRiverFlow(
 
     variables = FlowVariables(n)
     parameters = RiverFlowParameters(dataset, config, domain)
-    boundary_conditions = RiverFlowBC(n, reservoir)
+    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
     river_flow = KinWaveRiverFlow(;
         timestepping,
@@ -190,9 +214,14 @@ end
 function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainLand)
     (; indices) = domain.network
     (; slope) = domain.parameters
-    lens = lens_input_parameter(config, "land_surface_water_flow__manning_n_parameter")
-    mannings_n =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.072, type = Float64)
+    mannings_n = ncread(
+        dataset,
+        config,
+        "land_surface_water_flow__manning_n_parameter";
+        sel = indices,
+        defaults = 0.072,
+        type = Float64,
+    )
 
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")

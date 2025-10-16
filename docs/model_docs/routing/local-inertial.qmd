@@ -148,8 +148,8 @@ routing](#river-and-floodplain-routing) section of the local inertial model.
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can to added
 the local inertial model for river flow (1D) and river and overland flow combined (1D-2D),
-as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in
-the TOML file as follows:
+as a static or cyclic parameter or as part of forcing. For example, cyclic inflow can be
+provided in the TOML file as follows:
 
 ```toml
 [input.cyclic]

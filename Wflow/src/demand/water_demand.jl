@@ -48,14 +48,24 @@ function NonIrrigationDemand(
     dt::Second,
     sector::AbstractString,
 )
-    lens = lens_input_parameter(config, "$(sector)__gross_water_demand_volume_flux")
     demand_gross =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
-        (dt / BASETIMESTEP)
-    lens = lens_input_parameter(config, "$(sector)__net_water_demand_volume_flux")
+        ncread(
+            dataset,
+            config,
+            "$(sector)__gross_water_demand_volume_flux";
+            sel = indices,
+            defaults = 0.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
     demand_net =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
-        (dt / BASETIMESTEP)
+        ncread(
+            dataset,
+            config,
+            "$(sector)__net_water_demand_volume_flux";
+            sel = indices,
+            defaults = 0.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
@@ -95,23 +105,39 @@ function NonPaddy(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "irrigated_non_paddy__irrigation_efficiency")
-    efficiency =
-        ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_non_paddy_area__count"; optional = false)
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
-    lens = lens_input_parameter(
+    efficiency = ncread(
+        dataset,
+        config,
+        "irrigated_non_paddy__irrigation_efficiency";
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
+    )
+    areas = ncread(
+        dataset,
+        config,
+        "irrigated_non_paddy_area__count";
+        optional = false,
+        sel = indices,
+        type = Int,
+    )
+    irrigation_trigger = ncread(
+        dataset,
         config,
         "irrigated_non_paddy__irrigation_trigger_flag";
         optional = false,
+        sel = indices,
+        type = Bool,
     )
-    irrigation_trigger =
-        ncread(dataset, config, lens; sel = indices, defaults = 1, type = Bool)
-    lens = lens_input_parameter(config, "irrigated_non_paddy__max_irrigation_rate")
     max_irri_rate =
-        ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float64) .*
-        (dt / BASETIMESTEP)
+        ncread(
+            dataset,
+            config,
+            "irrigated_non_paddy__max_irrigation_rate";
+            sel = indices,
+            defaults = 25.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
 
     params = NonPaddyParameters(;
         maximum_irrigation_rate = max_irri_rate,
@@ -240,32 +266,63 @@ function Paddy(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "irrigated_paddy__min_depth")
-    h_min = ncread(dataset, config, lens; sel = indices, defaults = 20.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy__optimal_depth")
-    h_opt = ncread(dataset, config, lens; sel = indices, defaults = 50.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy__max_depth")
-    h_max = ncread(dataset, config, lens; sel = indices, defaults = 80.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy__irrigation_efficiency")
-    efficiency =
-        ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy_area__count"; optional = false)
-    areas = ncread(dataset, config, lens; sel = indices, type = Bool)
-
-    lens = lens_input_parameter(
+    h_min = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__min_depth";
+        sel = indices,
+        defaults = 20.0,
+        type = Float64,
+    )
+    h_opt = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__optimal_depth";
+        sel = indices,
+        defaults = 50.0,
+        type = Float64,
+    )
+    h_max = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__max_depth";
+        sel = indices,
+        defaults = 80.0,
+        type = Float64,
+    )
+    efficiency = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__irrigation_efficiency";
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
+    )
+    areas = ncread(
+        dataset,
+        config,
+        "irrigated_paddy_area__count";
+        optional = false,
+        sel = indices,
+        type = Bool,
+    )
+    irrigation_trigger = ncread(
+        dataset,
         config,
         "irrigated_paddy__irrigation_trigger_flag";
         optional = false,
+        sel = indices,
+        type = Bool,
     )
-    irrigation_trigger = ncread(dataset, config, lens; sel = indices, type = Bool)
-    lens = lens_input_parameter(config, "irrigated_paddy__max_irrigation_rate")
     max_irri_rate =
-        ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float64) .*
-        (dt / BASETIMESTEP)
+        ncread(
+            dataset,
+            config,
+            "irrigated_paddy__max_irrigation_rate";
+            sel = indices,
+            defaults = 25.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
     n = length(indices)
     params = PaddyParameters(;
         irrigation_efficiency = efficiency,
@@ -525,12 +582,22 @@ function AllocationLand(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "land_surface_water__withdrawal_fraction")
-    frac_sw_used =
-        ncread(dataset, config, lens; sel = indices, defaults = 1, type = Float64)
-
-    lens = lens_input_parameter(config, "land_water_allocation_area__count")
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
+    frac_sw_used = ncread(
+        dataset,
+        config,
+        "land_surface_water__withdrawal_fraction";
+        sel = indices,
+        defaults = 1,
+        type = Float64,
+    )
+    areas = ncread(
+        dataset,
+        config,
+        "land_water_allocation_area__count";
+        sel = indices,
+        defaults = 1,
+        type = Int,
+    )
 
     n = length(indices)
 

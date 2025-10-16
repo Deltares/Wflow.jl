@@ -45,21 +45,46 @@ function RainfallErosionEurosemParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "soil_erosion__rainfall_soil_detachability_factor")
-    soil_detachability =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.6, type = Float64)
-    lens = lens_input_parameter(config, "soil_erosion__eurosem_exponent")
-    eurosem_exponent =
-        ncread(dataset, config, lens; sel = indices, defaults = 2.0, type = Float64)
-    lens = lens_input_parameter(config, "vegetation_canopy__height")
-    canopyheight =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.5, type = Float64)
-    lens = lens_input_parameter(config, "vegetation_canopy__gap_fraction")
-    canopygapfraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
-    lens = lens_input_parameter(config, "compacted_soil__area_fraction")
-    soilcover_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
+    soil_detachability = ncread(
+        dataset,
+        config,
+        "soil_erosion__rainfall_soil_detachability_factor";
+        sel = indices,
+        defaults = 0.6,
+        type = Float64,
+    )
+    eurosem_exponent = ncread(
+        dataset,
+        config,
+        "soil_erosion__eurosem_exponent";
+        sel = indices,
+        defaults = 2.0,
+        type = Float64,
+    )
+    canopyheight = ncread(
+        dataset,
+        config,
+        "vegetation_canopy__height";
+        sel = indices,
+        defaults = 0.5,
+        type = Float64,
+    )
+    canopygapfraction = ncread(
+        dataset,
+        config,
+        "vegetation_canopy__gap_fraction";
+        sel = indices,
+        defaults = 0.1,
+        type = Float64,
+    )
+    soilcover_fraction = ncread(
+        dataset,
+        config,
+        "compacted_soil__area_fraction";
+        sel = indices,
+        defaults = 0.01,
+        type = Float64,
+    )
 
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability,
@@ -171,13 +196,30 @@ function RainfallErosionAnswersParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "soil_erosion__usle_k_factor")
-    usle_k = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
-    lens = lens_input_parameter(config, "soil_erosion__usle_c_factor")
-    usle_c = ncread(dataset, config, lens; sel = indices, defaults = 0.01, type = Float64)
-    lens = lens_input_parameter(config, "soil_erosion__answers_rainfall_factor")
-    answers_rainfall_factor =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.108, type = Float64)
+    usle_k = ncread(
+        dataset,
+        config,
+        "soil_erosion__usle_k_factor";
+        sel = indices,
+        defaults = 0.1,
+        type = Float64,
+    )
+    usle_c = ncread(
+        dataset,
+        config,
+        "soil_erosion__usle_c_factor";
+        sel = indices,
+        defaults = 0.01,
+        type = Float64,
+    )
+    answers_rainfall_factor = ncread(
+        dataset,
+        config,
+        "soil_erosion__answers_rainfall_factor";
+        sel = indices,
+        defaults = 0.108,
+        type = Float64,
+    )
 
     answers_parameters =
         RainfallErosionAnswersParameters(; usle_k, usle_c, answers_rainfall_factor)

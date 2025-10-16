@@ -196,7 +196,7 @@ td, th {
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `irrigated_non_paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
+| `irrigated_non_paddy__irrigation_efficiency` | Irrigation efficiency | - | 1.0 |
 | `irrigated_non_paddy_area__count` | Irrigation areas (non-paddy) | - | - |
 | `irrigated_non_paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}
@@ -220,7 +220,7 @@ td, th {
 | `irrigated_paddy__min_depth` | Minimum required water depth in the irrigated paddy fields | mm | 20.0 |
 | `irrigated_paddy__optimal_depth` | Optimal water depth in the irrigated paddy fields | mm | 50.0 |
 | `irrigated_paddy__max_depth` | Water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
-| `irrigated_paddy__irrigation_efficiency` | Irrigation efficiency | - | - |
+| `irrigated_paddy__irrigation_efficiency` | Irrigation efficiency | - | 1.0 |
 | `irrigated_paddy_area__count` | Irrigation areas (paddy) | - | - |
 | `irrigated_paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
 : {.striped .hover}

@@ -45,11 +45,14 @@ function GashInterceptionModel(
     indices::Vector{CartesianIndex{2}},
     vegetation_parameter_set::VegetationParameters,
 )
-    lens = lens_input_parameter(
+    e_r = ncread(
+        dataset,
         config,
-        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio",
+        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio";
+        sel = indices,
+        defaults = 0.1,
+        type = Float64,
     )
-    e_r = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     n = length(indices)
     params = GashParameters(; e_r, vegetation_parameter_set)
     vars = InterceptionVariables(n)

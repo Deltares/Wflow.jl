@@ -60,11 +60,14 @@ function LateralSsfParameters(
     indices::Vector{CartesianIndex{2}},
     soil::SbmSoilParameters,
 )
-    lens = lens_input_parameter(
+    khfrac = ncread(
+        dataset,
         config,
-        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
+        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio";
+        optional = false,
+        sel = indices,
+        type = Float64,
     )
-    khfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     (; theta_s, theta_r, soilthickness) = soil
     soilthickness = soilthickness .* 0.001

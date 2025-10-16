@@ -19,8 +19,11 @@ res_params = Wflow.ReservoirParameters(;
     storfunc = [1],
     outflowfunc = [4],
 )
-res_vars =
-    Wflow.ReservoirVariables(; storage = [1.925e7], waterlevel = [10.208598234556407])
+res_vars = Wflow.ReservoirVariables(;
+    outflow_obs = [Wflow.MISSING_VALUE],
+    storage = [1.925e7],
+    waterlevel = [10.208598234556407],
+)
 
 res = Wflow.Reservoir(;
     boundary_conditions = res_bc,

@@ -46,21 +46,46 @@ function SoilErosionParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "soil_clay__mass_fraction")
-    clay_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.4, type = Float64)
-    lens = lens_input_parameter(config, "soil_silt__mass_fraction")
-    silt_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float64)
-    lens = lens_input_parameter(config, "soil_sand__mass_fraction")
-    sand_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.3, type = Float64)
-    lens = lens_input_parameter(config, "soil_small_aggregates__mass_fraction")
-    sagg_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
-    lens = lens_input_parameter(config, "soil_large_aggregates__mass_fraction")
-    lagg_fraction =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64)
+    clay_fraction = ncread(
+        dataset,
+        config,
+        "soil_clay__mass_fraction";
+        sel = indices,
+        defaults = 0.4,
+        type = Float64,
+    )
+    silt_fraction = ncread(
+        dataset,
+        config,
+        "soil_silt__mass_fraction";
+        sel = indices,
+        defaults = 0.3,
+        type = Float64,
+    )
+    sand_fraction = ncread(
+        dataset,
+        config,
+        "soil_sand__mass_fraction";
+        sel = indices,
+        defaults = 0.3,
+        type = Float64,
+    )
+    sagg_fraction = ncread(
+        dataset,
+        config,
+        "soil_small_aggregates__mass_fraction";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
+    lagg_fraction = ncread(
+        dataset,
+        config,
+        "soil_large_aggregates__mass_fraction";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction

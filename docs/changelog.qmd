@@ -47,6 +47,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   time averaged storage variables as these are not required for typical applications and
   users. Additionally, rename standard names of instantaneous storage variables by removing
   `instantaneous` from the name.
+- Allow static input of river external inflow.
 
 ### Added
 - Support external inflow at reservoir locations.
