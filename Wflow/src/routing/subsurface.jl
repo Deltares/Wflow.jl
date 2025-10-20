@@ -60,11 +60,14 @@ function LateralSsfParameters(
     indices::Vector{CartesianIndex{2}},
     soil::SbmSoilParameters,
 )
-    lens = lens_input_parameter(
+    khfrac = ncread(
+        dataset,
         config,
-        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
+        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio";
+        optional = false,
+        sel = indices,
+        type = Float64,
     )
-    khfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     (; theta_s, theta_r, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
@@ -187,3 +190,7 @@ get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
 get_flux_to_river(model::LateralSSF, inds::Vector{Int}) =
     model.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+
+get_inflow(model::LateralSSF) = model.variables.ssfin
+get_outflow(model::LateralSSF) = model.variables.ssf
+get_storage(model::LateralSSF) = model.variables.storage

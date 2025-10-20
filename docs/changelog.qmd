@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0.0-rc2 - 2025-09-29
+## v1.0.0-rc2 - 2025-10-16
 
 ### Fixed
 - Introduced in v1.0.0-rc1, fixed unit conversion model parameter `kv_0` to `kh_0` for
@@ -40,12 +40,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   multiple times, each variable that uses these IDs are now sharing the same dimension
   (instead of creating a new dimension for each variable). The name of this dimension is
   based on the name of the map defined in the .toml file.
+- Change default value of weighting factor `theta` (adjusts the amount of artificial
+  numerical diffusion) from 0.8 to 1.0 for local inertial overland flow routing. This
+  results in smaller water balance errors.
+- Introduced in v1.0.0-rc1 (except for average water depth `h_av` routing), stop supporting
+  time averaged storage variables as these are not required for typical applications and
+  users. Additionally, rename standard names of instantaneous storage variables by removing
+  `instantaneous` from the name.
+- Allow static input of river external inflow.
 
 ### Added
 - Support external inflow at reservoir locations.
 - Include a SBOM in build distributions (#669).
 - Support use of reservoir observed outflow data for the reservoir water balance
   computation.
+- Support water mass balance computations (error and relative error).
 
 ## v1.0.0-rc1 - 2025-06-23
 

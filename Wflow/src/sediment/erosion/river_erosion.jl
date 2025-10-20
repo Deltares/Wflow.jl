@@ -47,8 +47,14 @@ function RiverErosionParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "river_bottom_and_bank_sediment__median_diameter")
-    d50 = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
+    d50 = ncread(
+        dataset,
+        config,
+        "river_bottom_and_bank_sediment__median_diameter";
+        sel = indices,
+        defaults = 0.1,
+        type = Float64,
+    )
     river_parameters = RiverErosionParameters(; d50 = d50)
 
     return river_parameters

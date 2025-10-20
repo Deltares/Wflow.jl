@@ -193,7 +193,7 @@ end
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] == 0.0
     @test reservoir.boundary_conditions.inflow[1] ≈ 5.738423327629313
-    @test reservoir.variables.storage_av[1] ≈ 1.8953043195283672e8
+    @test reservoir.variables.storage[1] ≈ 1.8954977223217008e8
     @test reservoir.variables.outflow_av[1] ≈ 4.84140356355074
 end
 
@@ -209,7 +209,7 @@ end
     @test reservoir.boundary_conditions.external_inflow[1] == -3.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 3.0
     @test reservoir.boundary_conditions.inflow[1] ≈ 2.7384228457941124
-    @test reservoir.variables.storage_av[1] ≈ 1.891429435839712e8
+    @test reservoir.variables.storage[1] ≈ 1.8903385527525035e8
     @test reservoir.variables.outflow_av[1] ≈ 4.82162803109911
 end
 
@@ -229,7 +229,7 @@ end
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 0.0
     @test reservoir.boundary_conditions.inflow[1] ≈ 5.717880860903631
-    @test reservoir.variables.storage_av[1] ≈ 1.9001358432815728e8
+    @test reservoir.variables.storage[1] ≈ 1.90111367690907e8
     @test reservoir.variables.outflow_av[1] ≈ 3.0
     @test reservoir.variables.outflow[1] ≈ 3.0
 end
@@ -254,4 +254,38 @@ end
     lines = readlines(path_log)
     msg = "┌ Debug: Observed outflow is used for reservoir location ids [169986]"
     @test count(contains(line, msg) for line in lines) == 2
+end
+
+@testset "water balance piave water demand" begin
+    tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; land_water_balance, routing) = model.mass_balance
+    (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.1e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.2e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
 end

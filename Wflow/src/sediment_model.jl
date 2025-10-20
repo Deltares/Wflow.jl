@@ -20,12 +20,23 @@ function Model(config::Config, type::SedimentModel)
     domain = Domain(dataset, config, type)
     soilloss = SoilLoss(dataset, config, domain.land.network.indices)
     routing = Routing(dataset, config, domain, soilloss)
+    mass_balance = NoMassBalance()
 
-    modelmap = (land = soilloss, routing)
+    modelmap = (land = soilloss, routing, mass_balance)
     writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 
-    model = Model(config, domain, routing, soilloss, clock, reader, writer, SedimentModel())
+    model = Model(
+        config,
+        domain,
+        routing,
+        soilloss,
+        mass_balance,
+        clock,
+        reader,
+        writer,
+        SedimentModel(),
+    )
 
     set_states!(model)
     @info "Initialized model"

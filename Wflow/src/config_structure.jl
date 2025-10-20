@@ -73,6 +73,7 @@ end
     soil_layer__thickness::Vector{Int} = [100, 300, 800]
     saturated_hydraulic_conductivity_profile::VerticalConductivityProfile.T =
         VerticalConductivityProfile.exponential
+    water_mass_balance__flag::Bool = false
     # Routing method
     land_routing::RoutingType.T = RoutingType.kinematic_wave
     river_routing::RoutingType.T = RoutingType.kinematic_wave
@@ -86,7 +87,7 @@ end
     # Local inertial routing
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
-    land_local_inertial_flow__theta_coefficient::Float64 = 0.8
+    land_local_inertial_flow__theta_coefficient::Float64 = 1.0
     river_water_flow_threshold__depth = 1e-3
     land_surface_water_flow_threshold__depth = 1e-3
     river_water_flow__froude_limit_flag = true

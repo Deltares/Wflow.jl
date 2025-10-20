@@ -193,8 +193,8 @@ rating curves from data.
 
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example inflows that are not explicitly simulated
-by wflow or abstractions can be added to reservoirs, as a cyclic parameter or as part of
-forcing. For example, cyclic inflow can be provided in the TOML file as follows:
+by wflow or abstractions can be added to reservoirs, as a static or cyclic parameter or as
+part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:
 
 ```toml
 [input.cyclic]
@@ -209,8 +209,8 @@ allocation computations.
 ## Using observed outflow
 When reservoir observed outflow data is available, it is possble to use this data directly
 for computing the reservoir water balance rather than using a rating curve. This data can be
-provided as a cyclic parameter or as part of forcing. For example, cyclic observed outflow
-can be provided in the TOML file as follows:
+provided as a static or cyclic parameter or as part of forcing. For example, cyclic observed
+outflow can be provided in the TOML file as follows:
 
 ```toml
 [input.cyclic]

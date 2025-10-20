@@ -2,11 +2,21 @@ abstract type AbstractIrrigationModel end
 abstract type AbstractAllocationModel end
 abstract type AbstractDemandModel end
 
-struct NoIrrigationPaddy <: AbstractIrrigationModel end
-struct NoIrrigationNonPaddy <: AbstractIrrigationModel end
-struct NoNonIrrigationDemand <: AbstractDemandModel end
-struct NoAllocationLand <: AbstractAllocationModel end
-struct NoAllocationRiver <: AbstractAllocationModel end
+struct NoIrrigationPaddy <: AbstractIrrigationModel
+    n::Int
+end
+struct NoIrrigationNonPaddy <: AbstractIrrigationModel
+    n::Int
+end
+struct NoNonIrrigationDemand <: AbstractDemandModel
+    n::Int
+end
+struct NoAllocationLand <: AbstractAllocationModel
+    n::Int
+end
+struct NoAllocationRiver <: AbstractAllocationModel
+    n::Int
+end
 
 "Struct to store non-irrigation water demand variables"
 @with_kw struct NonIrrigationDemandVariables
@@ -28,7 +38,7 @@ end
 
 # wrapper methods
 get_demand_gross(model::NonIrrigationDemand) = model.demand.demand_gross
-get_demand_gross(model::NoNonIrrigationDemand) = 0.0
+get_demand_gross(model::NoNonIrrigationDemand) = Zeros(model.n)
 
 "Initialize non-irrigation water demand model for a water use `sector`"
 function NonIrrigationDemand(
@@ -38,14 +48,24 @@ function NonIrrigationDemand(
     dt::Second,
     sector::AbstractString,
 )
-    lens = lens_input_parameter(config, "$(sector)__gross_water_demand_volume_flux")
     demand_gross =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
-        (dt / BASETIMESTEP)
-    lens = lens_input_parameter(config, "$(sector)__net_water_demand_volume_flux")
+        ncread(
+            dataset,
+            config,
+            "$(sector)__gross_water_demand_volume_flux";
+            sel = indices,
+            defaults = 0.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
     demand_net =
-        ncread(dataset, config, lens; sel = indices, defaults = 0.0, type = Float64) .*
-        (dt / BASETIMESTEP)
+        ncread(
+            dataset,
+            config,
+            "$(sector)__net_water_demand_volume_flux";
+            sel = indices,
+            defaults = 0.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
@@ -85,23 +105,39 @@ function NonPaddy(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "irrigated_non_paddy__irrigation_efficiency")
-    efficiency =
-        ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_non_paddy_area__count"; optional = false)
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
-    lens = lens_input_parameter(
+    efficiency = ncread(
+        dataset,
+        config,
+        "irrigated_non_paddy__irrigation_efficiency";
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
+    )
+    areas = ncread(
+        dataset,
+        config,
+        "irrigated_non_paddy_area__count";
+        optional = false,
+        sel = indices,
+        type = Int,
+    )
+    irrigation_trigger = ncread(
+        dataset,
         config,
         "irrigated_non_paddy__irrigation_trigger_flag";
         optional = false,
+        sel = indices,
+        type = Bool,
     )
-    irrigation_trigger =
-        ncread(dataset, config, lens; sel = indices, defaults = 1, type = Bool)
-    lens = lens_input_parameter(config, "irrigated_non_paddy__max_irrigation_rate")
     max_irri_rate =
-        ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float64) .*
-        (dt / BASETIMESTEP)
+        ncread(
+            dataset,
+            config,
+            "irrigated_non_paddy__max_irrigation_rate";
+            sel = indices,
+            defaults = 25.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
 
     params = NonPaddyParameters(;
         maximum_irrigation_rate = max_irri_rate,
@@ -118,7 +154,7 @@ end
 
 # wrapper methods
 get_demand_gross(model::NonPaddy) = model.variables.demand_gross
-get_demand_gross(model::NoIrrigationNonPaddy) = 0.0
+get_demand_gross(model::NoIrrigationNonPaddy) = Zeros(model.n)
 
 """
     update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
@@ -230,32 +266,63 @@ function Paddy(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "irrigated_paddy__min_depth")
-    h_min = ncread(dataset, config, lens; sel = indices, defaults = 20.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy__optimal_depth")
-    h_opt = ncread(dataset, config, lens; sel = indices, defaults = 50.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy__max_depth")
-    h_max = ncread(dataset, config, lens; sel = indices, defaults = 80.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy__irrigation_efficiency")
-    efficiency =
-        ncread(dataset, config, lens; sel = indices, defaults = 1.0, type = Float64)
-
-    lens = lens_input_parameter(config, "irrigated_paddy_area__count"; optional = false)
-    areas = ncread(dataset, config, lens; sel = indices, type = Bool)
-
-    lens = lens_input_parameter(
+    h_min = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__min_depth";
+        sel = indices,
+        defaults = 20.0,
+        type = Float64,
+    )
+    h_opt = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__optimal_depth";
+        sel = indices,
+        defaults = 50.0,
+        type = Float64,
+    )
+    h_max = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__max_depth";
+        sel = indices,
+        defaults = 80.0,
+        type = Float64,
+    )
+    efficiency = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__irrigation_efficiency";
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
+    )
+    areas = ncread(
+        dataset,
+        config,
+        "irrigated_paddy_area__count";
+        optional = false,
+        sel = indices,
+        type = Bool,
+    )
+    irrigation_trigger = ncread(
+        dataset,
         config,
         "irrigated_paddy__irrigation_trigger_flag";
         optional = false,
+        sel = indices,
+        type = Bool,
     )
-    irrigation_trigger = ncread(dataset, config, lens; sel = indices, type = Bool)
-    lens = lens_input_parameter(config, "irrigated_paddy__max_irrigation_rate")
     max_irri_rate =
-        ncread(dataset, config, lens; sel = indices, defaults = 25.0, type = Float64) .*
-        (dt / BASETIMESTEP)
+        ncread(
+            dataset,
+            config,
+            "irrigated_paddy__max_irrigation_rate";
+            sel = indices,
+            defaults = 25.0,
+            type = Float64,
+        ) .* (dt / BASETIMESTEP)
     n = length(indices)
     params = PaddyParameters(;
         irrigation_efficiency = efficiency,
@@ -277,9 +344,9 @@ end
 
 # wrapper methods
 get_water_depth(model::Paddy) = model.variables.h
-get_water_depth(model::NoIrrigationPaddy) = 0.0
+get_water_depth(model::NoIrrigationPaddy) = Zeros(model.n)
 get_demand_gross(model::Paddy) = model.variables.demand_gross
-get_demand_gross(model::NoIrrigationPaddy) = 0.0
+get_demand_gross(model::NoIrrigationPaddy) = Zeros(model.n)
 
 """
     evaporation!(model::Paddy, potential_evaporation)
@@ -300,7 +367,7 @@ end
 evaporation!(model::NoIrrigationPaddy, potential_evaporation) = nothing
 
 # wrapper methods
-get_evaporation(model::NoIrrigationPaddy) = 0.0
+get_evaporation(model::NoIrrigationPaddy) = Zeros(model.n)
 get_evaporation(model::Paddy) = model.variables.evaporation
 
 """
@@ -398,11 +465,12 @@ end
 end
 
 @with_kw struct NoDemand <: AbstractDemandModel
-    domestic::NoNonIrrigationDemand = NoNonIrrigationDemand()
-    industry::NoNonIrrigationDemand = NoNonIrrigationDemand()
-    livestock::NoNonIrrigationDemand = NoNonIrrigationDemand()
-    paddy::NoIrrigationPaddy = NoIrrigationPaddy()
-    nonpaddy::NoIrrigationNonPaddy = NoIrrigationNonPaddy()
+    n::Int
+    domestic::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
+    industry::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
+    livestock::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
+    paddy::NoIrrigationPaddy = NoIrrigationPaddy(n)
+    nonpaddy::NoIrrigationNonPaddy = NoIrrigationNonPaddy(n)
 end
 
 "Initialize water demand model"
@@ -459,7 +527,7 @@ end
 end
 
 get_nonirrigation_returnflow(model::AllocationRiver) = model.variables.nonirri_returnflow
-get_nonirrigation_returnflow(model::NoAllocationRiver) = 0.0
+get_nonirrigation_returnflow(model::NoAllocationRiver) = Zeros(model.n)
 
 "Initialize water allocation for the river domain"
 function AllocationRiver(n::Int)
@@ -514,12 +582,22 @@ function AllocationLand(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "land_surface_water__withdrawal_fraction")
-    frac_sw_used =
-        ncread(dataset, config, lens; sel = indices, defaults = 1, type = Float64)
-
-    lens = lens_input_parameter(config, "land_water_allocation_area__count")
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int)
+    frac_sw_used = ncread(
+        dataset,
+        config,
+        "land_surface_water__withdrawal_fraction";
+        sel = indices,
+        defaults = 1,
+        type = Float64,
+    )
+    areas = ncread(
+        dataset,
+        config,
+        "land_water_allocation_area__count";
+        sel = indices,
+        defaults = 1,
+        type = Int,
+    )
 
     n = length(indices)
 
@@ -531,9 +609,12 @@ end
 
 # wrapper methods
 get_irrigation_allocated(model::AllocationLand) = model.variables.irri_alloc
-get_irrigation_allocated(model::NoAllocationLand) = 0.0
+get_irrigation_allocated(model::NoAllocationLand) = Zeros(model.n)
 get_nonirrigation_returnflow(model::AllocationLand) = model.variables.nonirri_returnflow
-get_nonirrigation_returnflow(model::NoAllocationLand) = 0.0
+get_nonirrigation_returnflow(model::NoAllocationLand) = Zeros(model.n)
+get_groundwater_abstraction_flux(model::AllocationLand) =
+    model.variables.act_groundwater_abst
+get_groundwater_abstraction_flux(model::NoAllocationLand) = Zeros(model.n)
 
 """
 Return return flow fraction based on gross water demand `demand_gross` and net water demand

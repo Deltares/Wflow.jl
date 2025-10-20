@@ -26,14 +26,14 @@ soil_layer_water_unsaturated_zone__depth = "ustorelayerdepth"
 snowpack_dry_snow__leq_depth = "snow"
 snowpack_liquid_water__depth = "snowwater"
 
-river_water__instantaneous_depth = "h_river"
+river_water__depth = "h_river"
 river_water__instantaneous_volume_flow_rate = "q_river"
 
-reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
+reservoir_water_surface__elevation = "waterlevel_reservoir"
 
 subsurface_water__volume_flow_rate = "ssf"
 
-land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_land"
 land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
 land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
 

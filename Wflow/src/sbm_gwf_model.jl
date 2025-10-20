@@ -30,8 +30,9 @@ function Model(config::Config, type::SbmGwfModel)
 
     land_hydrology = LandHydrologySBM(dataset, config, domain.land)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
+    mass_balance = HydrologicalMassBalance(domain, config)
 
-    modelmap = (land = land_hydrology, routing)
+    modelmap = (land = land_hydrology, routing, mass_balance)
     (; maxlayers) = land_hydrology.soil.parameters
     writer = Writer(
         config,
@@ -42,8 +43,17 @@ function Model(config::Config, type::SbmGwfModel)
     )
     close(dataset)
 
-    model =
-        Model(config, domain, routing, land_hydrology, clock, reader, writer, SbmGwfModel())
+    model = Model(
+        config,
+        domain,
+        routing,
+        land_hydrology,
+        mass_balance,
+        clock,
+        reader,
+        writer,
+        SbmGwfModel(),
+    )
 
     set_states!(model)
 

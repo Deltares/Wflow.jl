@@ -256,16 +256,34 @@ end
 "Initialize (shared) river parameters"
 function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiver)
     (; indices) = network
-    lens = lens_input_parameter(config, "river__length"; optional = false)
-    flow_length = ncread(dataset, config, lens; sel = indices, type = Float64)
+    flow_length = ncread(
+        dataset,
+        config,
+        "river__length";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     minimum(flow_length) > 0 || error("river length must be positive on river cells")
 
-    lens = lens_input_parameter(config, "river__width"; optional = false)
-    flow_width = ncread(dataset, config, lens; sel = indices, type = Float64)
+    flow_width = ncread(
+        dataset,
+        config,
+        "river__width";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     minimum(flow_width) > 0 || error("river width must be positive on river cells")
 
-    lens = lens_input_parameter(config, "river__slope"; optional = false)
-    slope = ncread(dataset, config, lens; sel = indices, type = Float64)
+    slope = ncread(
+        dataset,
+        config,
+        "river__slope";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     clamp!(slope, 0.00001, Inf)
 
     river_parameters = RiverParameters(; flow_width, flow_length, slope)
@@ -293,9 +311,14 @@ function get_water_fraction(
     network::NetworkLand,
     river_fraction::Vector{Float64},
 )
-    lens = lens_input_parameter(config, "land_water_covered__area_fraction")
-    water_fraction =
-        ncread(dataset, config, lens; sel = network.indices, defaults = 0.0, type = Float64)
+    water_fraction = ncread(
+        dataset,
+        config,
+        "land_water_covered__area_fraction";
+        sel = network.indices,
+        defaults = 0.0,
+        type = Float64,
+    )
     water_fraction = max.(water_fraction .- river_fraction, 0.0)
     return water_fraction
 end
@@ -308,13 +331,26 @@ function get_river_fraction(
     river_location::Vector{Bool},
     area::Vector{Float64},
 )
-    logging = false
-    lens = lens_input_parameter(config, "river__width"; optional = false)
-    river_width_2d = ncread(dataset, config, lens; type = Float64, fill = 0, logging)
+    river_width_2d = ncread(
+        dataset,
+        config,
+        "river__width";
+        optional = false,
+        type = Float64,
+        fill = 0,
+        logging = false,
+    )
     river_width = river_width_2d[network.indices]
 
-    lens = lens_input_parameter(config, "river__length"; optional = false)
-    river_length_2d = ncread(dataset, config, lens; type = Float64, fill = 0, logging)
+    river_length_2d = ncread(
+        dataset,
+        config,
+        "river__length";
+        optional = false,
+        type = Float64,
+        fill = 0,
+        logging = false,
+    )
     river_length = river_length_2d[network.indices]
 
     n = length(river_location)
@@ -343,16 +379,28 @@ end
 
 "Return land surface slope"
 function get_landsurface_slope(dataset::NCDataset, config::Config, network::NetworkLand)
-    lens = lens_input_parameter(config, "land_surface__slope"; optional = false)
-    slope = ncread(dataset, config, lens; sel = network.indices, type = Float64)
+    slope = ncread(
+        dataset,
+        config,
+        "land_surface__slope";
+        optional = false,
+        sel = network.indices,
+        type = Float64,
+    )
     clamp!(slope, 0.00001, Inf)
     return slope
 end
 
 "Return river mask"
 function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
-    lens = lens_input("river_location__mask")
-    river_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+    river_2d = ncread(
+        dataset,
+        config,
+        "river_location__mask";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
     river_location = river_2d[network.indices]
     return river_location
 end
@@ -366,9 +414,15 @@ function reservoir_mask(
 )
     reservoirs = fill(0, length(network.indices))
     if config.model.reservoir__flag
-        lens = lens_input("reservoir_$(region)__count")
-        reservoirs =
-            ncread(dataset, config, lens; sel = network.indices, type = Float64, fill = 0)
+        reservoirs = ncread(
+            dataset,
+            config,
+            "reservoir_$(region)__count";
+            optional = false,
+            sel = network.indices,
+            type = Float64,
+            fill = 0,
+        )
     end
     reservoirs = Vector{Bool}(reservoirs .> 0)
     return reservoirs
@@ -386,9 +440,15 @@ end
 "Return indices of 1D land and river domains per allocation area number."
 function get_allocation_area_indices(dataset::NCDataset, config::Config, domain::Domain)
     (; indices) = domain.land.network
-    lens = lens_input_parameter(config, "land_water_allocation_area__count")
-    logging = false
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int, logging)
+    areas = ncread(
+        dataset,
+        config,
+        "land_water_allocation_area__count";
+        sel = indices,
+        defaults = 1,
+        type = Int,
+        logging = false,
+    )
     unique_areas = unique(areas)
     allocation_area_inds = Vector{Int}[]
     river_allocation_area_inds = Vector{Int}[]

@@ -55,7 +55,7 @@ reservoir_water__storage_curve_type_count  = "storfunc"
 reservoir_water_surface__initial_elevation = "resevoir_waterlevel"
 
 [state.variables]
-reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
+reservoir_water_surface__elevation = "waterlevel_reservoir"
 ```
 
 ## Enabling floodplain routing
@@ -74,7 +74,7 @@ floodplain_water_flow__manning_n_parameter = "floodplain_n"
 
 [state.variables]
 floodplain_water__instantaneous_volume_flow_rate = "q_floodplain"
-floodplain_water__instantaneous_depth = "h_floodplain"
+floodplain_water__depth = "h_floodplain"
 ```
 
 ### 2D floodplains
@@ -89,7 +89,7 @@ river_bank_water__elevation = "RiverZ"
 land_surface_water_flow__ground_elevation = "FloodplainZ"
 
 [state.variables]
-land_surface_water__instantaneous_depth = "h_land"
+land_surface_water__depth = "h_land"
 land_surface_water__x_component_of_instantaneous_volume_flow_rate = "qx_land"
 land_surface_water__y_component_of_instantaneous_volume_flow_rate = "qy_land"
 

@@ -51,7 +51,7 @@ const mover_params = (
 
 function get_param(model, parameter::AbstractString)
     (; land) = model
-    lens = standard_name_map(land)[parameter].lens
+    lens = get_lens(parameter, land)
     param = lens(model)
     return param
 end
@@ -284,7 +284,7 @@ function setup_scalar_netcdf(
             )
         end
         v = if haskey(standard_name_map(land), parameter)
-            lens = standard_name_map(land)[parameter].lens
+            lens = get_lens(parameter, land)
             lens(modelmap)
         else
             param(modelmap, parameter)
@@ -594,8 +594,14 @@ end
 
 "Get a Vector of all unique location ids from a 2D map"
 function locations_map(ds, mapname, config)
-    lens = lens_input(mapname)
-    map_2d = ncread(ds, config, lens; type = Union{Int, Missing}, allow_missing = true)
+    map_2d = ncread(
+        ds,
+        config,
+        mapname;
+        optional = false,
+        type = Union{Int, Missing},
+        allow_missing = true,
+    )
     ids = unique(skipmissing(map_2d))
     return ids
 end
@@ -692,7 +698,7 @@ function out_map(ncnames_dict, modelmap)
     (; land) = modelmap
     for (par, ncname) in ncnames_dict
         A = if haskey(standard_name_map(land), par)
-            lens = standard_name_map(land)[par].lens
+            lens = get_lens(par, land)
             lens(modelmap)
         else
             param(modelmap, par)
@@ -847,7 +853,7 @@ function write_netcdf_timestep(model, dataset)
         (; name, parameter) = var
         reducer = writer.reducer[var]
         A = if haskey(standard_name_map(land), parameter)
-            lens = standard_name_map(land)[parameter].lens
+            lens = get_lens(parameter, land)
             lens(model)
         else
             param(model, parameter)
@@ -1024,11 +1030,10 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         # integers indicating the points or zones that are to be aggregated
         # if no reducer is given, pick "only", this is the only safe reducer,
         # and makes sense in the case of a gauge map
-        lens = lens_input(map)
         map_2d = ncread(
             dataset,
             config,
-            lens;
+            map;
             type = Union{Int, Missing},
             allow_missing = true,
             logging = false,
@@ -1046,7 +1051,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             ind = rev_inds[i]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
-                    map `$mapname` value $v for parameter $param""")
+                    map `$map` value $v for parameter $param""")
             end
             push!(vector, ind)
         end
@@ -1096,7 +1101,7 @@ function write_csv_row(model)
         (; parameter) = col
         reducer = writer.reducer[col]
         A = if haskey(standard_name_map(land), parameter)
-            lens = standard_name_map(land)[parameter].lens
+            lens = get_lens(parameter, land)
             lens(model)
         else
             param(model, parameter)

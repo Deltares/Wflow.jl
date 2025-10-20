@@ -19,11 +19,8 @@
     @test string(config) isa String
 
     # modifiers can also be applied
-    parameter = Wflow.lens_input_parameter(
-        config,
-        "soil_surface_water__vertical_saturated_hydraulic_conductivity",
-    )
-    var = parameter.lens(config)
+    var =
+        config.input.static["soil_surface_water__vertical_saturated_hydraulic_conductivity"]
     @test var.netcdf_variable_name === "KsatVer"
     @test var.scale == [1.0]
     @test var.offset == [0.0]
@@ -38,13 +35,8 @@
     @test Wflow.output_path(config, config.state.path_output) ==
           joinpath(@__DIR__, "data", "output", "outstates-moselle.nc")
 
-    # test error is thrown for required model parameter when mapping internal standard name
-    # to a `lens` (access to nested Config object)
-    @test_throws ErrorException Wflow.lens_input_parameter(
-        config,
-        "not_set_in_TOML";
-        optional = false,
-    )
+    # test error is thrown for wrong non-optional model parameter
+    @test_throws ErrorException Wflow.get_var(config, "not_set_in_TOML"; optional = false)
 end
 
 @testitem "Clock constructor" begin

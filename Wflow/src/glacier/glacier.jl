@@ -14,11 +14,10 @@ function GlacierVariables(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    lens = lens_input_parameter(config, "glacier_ice__initial_leq_depth")
     glacier_store = ncread(
         dataset,
         config,
-        lens;
+        "glacier_ice__initial_leq_depth";
         sel = indices,
         defaults = 5500.0,
         type = Float64,
@@ -59,7 +58,9 @@ end
     variables::GlacierVariables
 end
 
-struct NoGlacierModel <: AbstractGlacierModel end
+struct NoGlacierModel <: AbstractGlacierModel
+    n::Int
+end
 
 "Initialize glacier HBV model parameters"
 function GlacierHbvParameters(
@@ -68,46 +69,39 @@ function GlacierHbvParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    lens = lens_input_parameter(config, "glacier_ice__melting_temperature_threshold")
     g_ttm = ncread(
         dataset,
         config,
-        lens;
+        "glacier_ice__melting_temperature_threshold";
         sel = indices,
         defaults = 0.0,
         type = Float64,
         fill = 0.0,
     )
-    lens = lens_input_parameter(config, "glacier_ice__degree_day_coefficient")
     g_cfmax =
         ncread(
             dataset,
             config,
-            lens;
+            "glacier_ice__degree_day_coefficient";
             sel = indices,
             defaults = 3.0,
             type = Float64,
             fill = 0.0,
         ) .* (dt / BASETIMESTEP)
-    lens = lens_input_parameter(
-        config,
-        "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction",
-    )
     g_sifrac =
         ncread(
             dataset,
             config,
-            lens;
+            "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction";
             sel = indices,
             defaults = 0.001,
             type = Float64,
             fill = 0.0,
         ) .* (dt / BASETIMESTEP)
-    lens = lens_input_parameter(config, "glacier_surface__area_fraction")
     glacier_frac = ncread(
         dataset,
         config,
-        lens;
+        "glacier_surface__area_fraction";
         sel = indices,
         defaults = 0.0,
         type = Float64,
@@ -163,9 +157,9 @@ function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
 end
 
 # wrapper methods
-get_glacier_melt(model::NoGlacierModel) = 0.0
+get_glacier_melt(model::NoGlacierModel) = Zeros(model.n)
 get_glacier_melt(model::AbstractGlacierModel) = model.variables.glacier_melt
-get_glacier_fraction(model::NoGlacierModel) = 0.0
+get_glacier_fraction(model::NoGlacierModel) = Zeros(model.n)
 get_glacier_fraction(model::AbstractGlacierModel) = model.parameters.glacier_frac
-get_glacier_store(model::NoGlacierModel) = 0.0
+get_glacier_store(model::NoGlacierModel) = Zeros(model.n)
 get_glacier_store(model::AbstractGlacierModel) = model.variables.glacier_store

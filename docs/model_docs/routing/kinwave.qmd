@@ -59,9 +59,9 @@ lines can be inserted in the TOML file of the model:
 # Adaptive (internal) time stepping for the kinematic wave
 kinematic_wave__adaptive_time_step_flag = false    # optional, default is false
 # Fixed internal timestep for river flow (river cells)
-river_kinematic_wave__time_step = 900        # optional, default is model timestep
+river_kinematic_wave__time_step = 900        # optional, default is 900
 # Fixed internal timestep for overland flow (land cells)
-land_kinematic_wave__time_step = 3600        # optional, default is model timestep
+land_kinematic_wave__time_step = 3600        # optional, default 3600
 ```
 
 Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of
@@ -78,8 +78,8 @@ storage features can be included as part of the river kinematic wave network.
 
 ## External inflows
 External inflows $\SIb{}{m^3\ s^{-1}}$ for example water supply or abstractions can be added
-to the kinematic wave for river flow routing, as a cyclic parameter or as part of forcing.
-For example, cyclic inflow can be provided in the TOML file as follows:
+to the kinematic wave for river flow routing, as a static or cyclic parameter or as part of
+forcing. For example, cyclic inflow can be provided in the TOML file as follows:
 
 ```toml
 [input.cyclic]
