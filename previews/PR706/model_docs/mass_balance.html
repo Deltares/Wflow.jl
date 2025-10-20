@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Land Sediment model – Wflow.jl</title>
+<title>Mass balance – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -84,6 +119,35 @@ ul.task-list li input[type="checkbox"] {
   };
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../_static/styles.css">
 </head>
@@ -330,7 +394,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_sediment.html">Land Sediment model</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/mass_balance.html">Mass balance</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -430,7 +494,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+  <a href="../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Mass balance</span></a>
   </div>
 </li>
@@ -457,7 +521,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link active">
+  <a href="../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Land Sediment model</span></a>
   </div>
 </li>
@@ -485,23 +549,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#atmospheric-forcing" id="toc-atmospheric-forcing" class="nav-link active" data-scroll-target="#atmospheric-forcing">Atmospheric forcing</a></li>
-  <li><a href="#hydrological-forcing" id="toc-hydrological-forcing" class="nav-link" data-scroll-target="#hydrological-forcing">Hydrological forcing</a></li>
-  <li><a href="#rainfall-erosion" id="toc-rainfall-erosion" class="nav-link" data-scroll-target="#rainfall-erosion">Rainfall erosion</a>
-  <ul class="collapse">
-  <li><a href="#input" id="toc-input" class="nav-link" data-scroll-target="#input">Input</a></li>
-  <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output">Output</a></li>
-  </ul></li>
-  <li><a href="#overland-flow-erosion" id="toc-overland-flow-erosion" class="nav-link" data-scroll-target="#overland-flow-erosion">Overland flow erosion</a>
-  <ul class="collapse">
-  <li><a href="#input-1" id="toc-input-1" class="nav-link" data-scroll-target="#input-1">Input</a></li>
-  <li><a href="#output-1" id="toc-output-1" class="nav-link" data-scroll-target="#output-1">Output</a></li>
-  </ul></li>
-  <li><a href="#soil-erosion" id="toc-soil-erosion" class="nav-link" data-scroll-target="#soil-erosion">Soil erosion</a>
-  <ul class="collapse">
-  <li><a href="#input-2" id="toc-input-2" class="nav-link" data-scroll-target="#input-2">Input</a></li>
-  <li><a href="#output-2" id="toc-output-2" class="nav-link" data-scroll-target="#output-2">Output</a></li>
-  </ul></li>
+  <li><a href="#water-mass-balance-error" id="toc-water-mass-balance-error" class="nav-link active" data-scroll-target="#water-mass-balance-error">Water mass balance error</a></li>
   </ul>
 </nav>
     </div>
@@ -509,9 +557,9 @@ ul.task-list li input[type="checkbox"] {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../model_docs/parameters_intro.html">Model parameters and variables</a></li><li class="breadcrumb-item"><a href="../model_docs/parameters_sediment.html">Land Sediment model</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Land Sediment model</h1>
+<h1 class="title">Mass balance</h1>
 </div>
 
 
@@ -528,359 +576,32 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<style>
-table {
-  table-layout: fixed;
-  width: 100%;
-}
-td, th {
-  word-wrap: break-word;
-}
-</style>
-<section id="atmospheric-forcing" class="level2">
-<h2 class="anchored" data-anchor-id="atmospheric-forcing">Atmospheric forcing</h2>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>atmosphere_water__precipitation_volume_flux</code></td>
-<td>Precipitation</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="hydrological-forcing" class="level2">
-<h2 class="anchored" data-anchor-id="hydrological-forcing">Hydrological forcing</h2>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>river_water__volume_flow_rate</code></td>
-<td>River discharge</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>river_water__depth</code></td>
-<td>River water depth</td>
-<td>m</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td><code>land_surface_water__volume_flow_rate</code></td>
-<td>Overland flow discharge</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td><code>land_surface_water__depth</code></td>
-<td>Overland flow water depth</td>
-<td>m</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td><code>vegetation_canopy_water__interception_volume_flux</code></td>
-<td>Rainfall interception by the vegetation</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="rainfall-erosion" class="level2">
-<h2 class="anchored" data-anchor-id="rainfall-erosion">Rainfall erosion</h2>
-<section id="input" class="level3">
-<h3 class="anchored" data-anchor-id="input">Input</h3>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>soil_erosion__rainfall_soil_detachability_factor</code></td>
-<td>Soil detachability factor</td>
-<td>g J⁻¹</td>
-<td>0.6</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion__eurosem_exponent</code></td>
-<td>Exponent EUROSEM</td>
-<td>-</td>
-<td>2.0</td>
-</tr>
-<tr class="odd">
-<td><code>vegetation_canopy__height</code></td>
-<td>Canopy height</td>
-<td>m</td>
-<td>0.5</td>
-</tr>
-<tr class="even">
-<td><code>vegetation_canopy__gap_fraction</code></td>
-<td>Canopy gap fraction</td>
-<td>-</td>
-<td>0.1</td>
-</tr>
-<tr class="odd">
-<td><code>compacted_soil__area_fraction</code></td>
-<td>Fraction of the soil that is covered (eg paved, snow, etc)</td>
-<td>-</td>
-<td>0.01</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion__usle_k_factor</code></td>
-<td>USLE soil erodibility factor</td>
-<td>-</td>
-<td>0.1</td>
-</tr>
-<tr class="odd">
-<td><code>soil_erosion__usle_c_factor</code></td>
-<td>USLE crop management factor</td>
-<td>-</td>
-<td>0.01</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion__answers_rainfall_factor</code></td>
-<td>Answers rainfall erosion factor</td>
-<td>-</td>
-<td>0.108</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="output" class="level3">
-<h3 class="anchored" data-anchor-id="output">Output</h3>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>rainfall_soil_erosion__mass_flow_rate</code></td>
-<td>Total soil erosion from rainfall (splash)</td>
-<td>ton Δt⁻¹</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="overland-flow-erosion" class="level2">
-<h2 class="anchored" data-anchor-id="overland-flow-erosion">Overland flow erosion</h2>
-<section id="input-1" class="level3">
-<h3 class="anchored" data-anchor-id="input-1">Input</h3>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>soil_erosion__answers_overland_flow_factor</code></td>
-<td>Answers overland flow erosion factor</td>
-<td>-</td>
-<td>0.9</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion__usle_k_factor</code></td>
-<td>USLE soil erodibility factor</td>
-<td>-</td>
-<td>0.1</td>
-</tr>
-<tr class="odd">
-<td><code>soil_erosion__usle_c_factor</code></td>
-<td>USLE crop management factor</td>
-<td>-</td>
-<td>0.01</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="output-1" class="level3">
-<h3 class="anchored" data-anchor-id="output-1">Output</h3>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>overland_flow_soil_erosion__mass_flow_rate</code></td>
-<td>Total soil erosion from overland flow</td>
-<td>ton Δt⁻¹</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="soil-erosion" class="level2">
-<h2 class="anchored" data-anchor-id="soil-erosion">Soil erosion</h2>
-<section id="input-2" class="level3">
-<h3 class="anchored" data-anchor-id="input-2">Input</h3>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>soil_clay__mass_fraction</code></td>
-<td>Soil content clay</td>
-<td>-</td>
-<td>0.4</td>
-</tr>
-<tr class="even">
-<td><code>soil_silt__mass_fraction</code></td>
-<td>Soil content silt</td>
-<td>-</td>
-<td>0.3</td>
-</tr>
-<tr class="odd">
-<td><code>soil_sand__mass_fraction</code></td>
-<td>Soil content sand</td>
-<td>-</td>
-<td>0.3</td>
-</tr>
-<tr class="even">
-<td><code>soil_small_aggregates__mass_fraction</code></td>
-<td>Soil content small aggregates</td>
-<td>-</td>
-<td>0.0</td>
-</tr>
-<tr class="odd">
-<td><code>soil_large_aggregates__mass_fraction</code></td>
-<td>Soil content large aggregates</td>
-<td>-</td>
-<td>0.0</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="output-2" class="level3">
-<h3 class="anchored" data-anchor-id="output-2">Output</h3>
-<table class="table-striped table-hover caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>soil_erosion__mass_flow_rate</code></td>
-<td>Total soil erosion</td>
-<td>ton Δt⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion_clay__mass_flow_rate</code></td>
-<td>Total clay erosion</td>
-<td>ton Δt⁻¹</td>
-</tr>
-<tr class="odd">
-<td><code>soil_erosion_silt__mass_flow_rate</code></td>
-<td>Total silt erosion</td>
-<td>ton Δt⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion_sand__mass_flow_rate</code></td>
-<td>Total sand erosion</td>
-<td>ton Δt⁻¹</td>
-</tr>
-<tr class="odd">
-<td><code>soil_erosion_small_aggregates__mass_flow_rate</code></td>
-<td>Total small aggregates erosion</td>
-<td>ton Δt⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion_large_aggregates__mass_flow_rate</code></td>
-<td>Total large aggregates erosion</td>
-<td>ton Δt⁻¹</td>
-</tr>
-</tbody>
-</table>
+<section id="water-mass-balance-error" class="level2">
+<h2 class="anchored" data-anchor-id="water-mass-balance-error">Water mass balance error</h2>
+<p>For model types <code>sbm</code> and <code>sbm_gwf</code> water mass balance error computations are supported, and can be enabled by setting the following model setting in the TOML file:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">water_mass_balance__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The water balance error <span class="math inline">\(\epsilon\)</span> and relative error <span class="math inline">\(\epsilon_{\mathrm{r}}\)</span> can be written as:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\epsilon = \frac{S^{k+1} - S^{k}}{\Delta{t}} - Q^{k+1}_{\mathrm{total, in}} + Q^{k+1}_{\mathrm{total, out}}\\
+\epsilon_{\mathrm{r}} = \frac{\epsilon}{0.5(Q^{k+1}_{\mathrm{total, in}} + Q^{k+1}_{\mathrm{total, out}})}
+\end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(k\)</span> refers to model time step, <span class="math inline">\(S\)</span> is storage and <span class="math inline">\(Q_{\mathrm{total, in}}\)</span> and <span class="math inline">\(Q_{\mathrm{total, out}}\)</span> are total inflow and total outflow, respectively. Water balance (relative) errors are computed separately for:</p>
+<ul>
+<li>the Land Hydrology <code>SBM</code> model</li>
+<li>different routing concepts.</li>
+</ul>
+<p>For the local inertial model for 1D river and 2D overland flow that includes subgrid channels for the 1D river routing, water balance errors are computed for each land cell (total storage) considering both river and overland flow. For this routing type output standard names that refer to land surface water should be used, for example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_mass_balance_error__volume_flow_rate</span> <span class="op">=</span> <span class="st">"balance_error"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For the local inertial river routing including 1D floodplains, water balance errors are computed considering both river and floodplain flow and total storage (river and floodplain), and output standard names that refer to river water should be used, for example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water_mass_balance_error__volume_flow_rate</span> <span class="op">=</span> <span class="st">"balance_error"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The list of water balance (relative) error output parameters that can be provided through the TOML file can be found <a href="../model_docs/parameters_mass_balance.html#water-mass-balance">here</a>.</p>
 
 
-</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
