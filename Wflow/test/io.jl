@@ -226,28 +226,35 @@ end
     end
 
     @testset "warm states" begin
+        (; land) = model
         nt = Wflow.standard_name_map(model.land)
-        @test nt["reservoir_water_surface__instantaneous_elevation"].lens(model)[1] ≈
-              3.6172022486284856
-        @test nt["soil_water_saturated_zone__depth"].lens(model)[9115] ≈ 477.13548089422125
-        @test nt["snowpack_dry_snow__leq_depth"].lens(model)[5] ≈ 11.019233179897599
-        @test nt["soil_surface__temperature"].lens(model)[5] ≈ 0.21814478119608938
-        @test nt["soil_layer_water_unsaturated_zone__depth"].lens(model)[50063][1] ≈
-              9.969116007201725
-        @test nt["snowpack_liquid_water__depth"].lens(model)[5] ≈ 0.0
-        @test nt["vegetation_canopy_water__depth"].lens(model)[50063] ≈ 0.0
-        @test nt["soil_water_saturated_zone_top__depth"].lens(model)[50063] ≈
-              296.8028609104624
-        @test nt["subsurface_water__volume_flow_rate"].lens(model)[10606] ≈
-              39.972334552895816
-        @test nt["river_water__instantaneous_volume_flow_rate"].lens(model)[149] ≈
-              53.48673634956338
-        @test nt["river_water__instantaneous_depth"].lens(model)[149] ≈ 1.167635369628945
+        lens = Wflow.get_lens("reservoir_water_surface__elevation", land)
+        @test lens(model)[1] ≈ 3.6172022486284856
+        lens = Wflow.get_lens("soil_water_saturated_zone__depth", land)
+        @test lens(model)[9115] ≈ 477.13548089422125
+        lens = Wflow.get_lens("snowpack_dry_snow__leq_depth", land)
+        @test lens(model)[5] ≈ 11.019233179897599
+        lens = Wflow.get_lens("soil_surface__temperature", land)
+        @test lens(model)[5] ≈ 0.21814478119608938
+        lens = Wflow.get_lens("soil_layer_water_unsaturated_zone__depth", land)
+        @test lens(model)[50063][1] ≈ 9.969116007201725
+        lens = Wflow.get_lens("snowpack_liquid_water__depth", land)
+        @test lens(model)[5] ≈ 0.0
+        lens = Wflow.get_lens("vegetation_canopy_water__depth", land)
+        @test lens(model)[50063] ≈ 0.0
+        lens = Wflow.get_lens("soil_water_saturated_zone__depth", land)
+        @test lens(model)[50063] ≈ 558.8578304603327
+        lens = Wflow.get_lens("subsurface_water__volume_flow_rate", land)
+        @test lens(model)[10606] ≈ 39.972334552895816
+        lens = Wflow.get_lens("river_water__instantaneous_volume_flow_rate", land)
+        @test lens(model)[149] ≈ 53.48673634956338
+        lens = Wflow.get_lens("river_water__depth", land)
+        @test lens(model)[149] ≈ 1.167635369628945
         @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
-        @test nt["land_surface_water__instantaneous_volume_flow_rate"].lens(model)[2075] ≈
-              3.285909284322251
-        @test nt["land_surface_water__instantaneous_depth"].lens(model)[2075] ≈
-              0.052076262033771775
+        lens = Wflow.get_lens("land_surface_water__instantaneous_volume_flow_rate", land)
+        @test lens(model)[2075] ≈ 3.285909284322251
+        lens = Wflow.get_lens("land_surface_water__depth", land)
+        @test lens(model)[2075] ≈ 0.052076262033771775
         @test model.routing.overland_flow.variables.storage[2075] ≈ 29920.754983235012
     end
 
@@ -481,7 +488,7 @@ end
         @test "vegetation_canopy_water__depth" in required_states
         @test "subsurface_water__volume_flow_rate" in required_states
         @test "river_water__instantaneous_volume_flow_rate" in required_states
-        @test "reservoir_water_surface__instantaneous_elevation" in required_states
+        @test "reservoir_water_surface__elevation" in required_states
         @test "snowpack_liquid_water__depth" in required_states
         @test !("reservoir_water_level__elevation" in required_states)
 
@@ -507,9 +514,9 @@ end
         @test "soil_water_saturated_zone__depth" in required_states
         @test "soil_layer_water_unsaturated_zone__depth" in required_states
         @test "vegetation_canopy_water__depth" in required_states
-        @test "subsurface_water__instantaneous_hydraulic_head" in required_states
+        @test "subsurface_water__hydraulic_head" in required_states
         @test "river_water__instantaneous_volume_flow_rate" in required_states
-        @test "river_water__instantaneous_depth" in required_states
-        @test "land_surface_water__instantaneous_depth" in required_states
+        @test "river_water__depth" in required_states
+        @test "land_surface_water__depth" in required_states
     end
 end

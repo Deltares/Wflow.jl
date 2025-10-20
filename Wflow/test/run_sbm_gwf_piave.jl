@@ -36,10 +36,9 @@
         @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
         @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
         @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
-        @test reservoir.variables.waterlevel_av ≈
-              [23.95914400555985, 32.68535935572136, 39.969135230891744]
-        @test reservoir.variables.storage_av ≈
-              [1.5525525315602788e8, 4.27990593597248e7, 7.15981208511133e7]
+        @test reservoir.variables.waterlevel ≈
+              [23.968537463000757, 32.68607771649563, 39.97018425222191]
+        @test reservoir.variables.storage ≈ [1.5531612276024494e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [3.248673046140208, 8.352196766583088, 29.02990124474297]
         @test soil.variables.exfiltsatwater[27:31] ≈ [
@@ -68,10 +67,9 @@
         @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
         @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
               [0.0, 3.9965040974684207, 5.44810857188258]
-        @test reservoir.variables.waterlevel_av ≈
-              [23.95845092987531, 32.68554507549814, 39.96988968054929]
-        @test reservoir.variables.storage_av ≈
-              [1.552507620255922e8, 4.2799302546029136e7, 7.159947232337902e7]
+        @test reservoir.variables.waterlevel ≈
+              [23.963613508389003, 32.68607771649562, 39.97018425222191]
+        @test reservoir.variables.storage ≈ [1.5528421553436098e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [3.2484850081729024, 9.328049956914716, 38.06870720301024]
         @test soil.variables.exfiltsatwater[27:33] ≈ [
@@ -89,5 +87,39 @@
         @test maximum(river_flow.variables.q_av) ≈ 138.32457335760404
     end
 
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance piave water demand sbm_gwf" begin
+    tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; land_water_balance, routing) = model.mass_balance
+    (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 3.5e-6, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-6, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-7, subsurface_water_balance.error)
+        @test all(re -> abs(re) <= 2.0, subsurface_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 3.5e-6, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-7, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-7, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.5e-5, subsurface_water_balance.relative_error)
+    end
     Wflow.close_files(model; delete_output = false)
 end

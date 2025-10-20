@@ -15,6 +15,7 @@ end
 
 @testitem "Julian day (leap days are not counted)" begin
     using Dates: DateTime
+    using CFTime
     @test Wflow.julian_day(DateTime(2000, 1, 1)) == 1
     @test Wflow.julian_day(DateTime(2000, 2, 28)) == 59
     @test Wflow.julian_day(DateTime(2000, 2, 29)) == 60

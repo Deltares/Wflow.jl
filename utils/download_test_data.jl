@@ -33,7 +33,7 @@ for input in [
     (v"0.3.1", "instates-moselle.nc", "instates-moselle.nc"),
     (v"0.2.1", "forcing-sbm-groundwater-part1.nc", "forcing-sbm-groundwater-part1.nc"),
     (v"0.2.1", "forcing-sbm-groundwater-part2.nc", "forcing-sbm-groundwater-part2.nc"),
-    (v"0.2.3", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc"),
+    (v"0.2.4", "staticmaps-sbm-groundwater.nc", "staticmaps-sbm-groundwater.nc"),
     (v"0.2.3", "instates-example-sbm-gwf.nc", "instates-example-sbm-gwf.nc"),
     (v"0.2.1", "lake_sh_1.csv", "reservoir_sh_1.csv"),
     (v"0.2.1", "lake_sh_2.csv", "reservoir_sh_2.csv"),

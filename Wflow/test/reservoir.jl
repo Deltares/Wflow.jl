@@ -20,8 +20,11 @@
         storfunc = [1],
         outflowfunc = [4],
     )
-    res_vars =
-        Wflow.ReservoirVariables(; storage = [1.925e7], waterlevel = [10.208598234556407])
+    res_vars = Wflow.ReservoirVariables(;
+        outflow_obs = [Wflow.MISSING_VALUE],
+        storage = [1.925e7],
+        waterlevel = [10.208598234556407],
+    )
 
     res = Wflow.Reservoir(;
         boundary_conditions = res_bc,
@@ -35,7 +38,6 @@
         @test res.variables.outflow[1] ≈ 91.3783714867453
         @test res.variables.outflow_av[1] == res.variables.outflow[1]
         @test res.variables.storage[1] ≈ 2.0e7
-        @test res.variables.storage[1] == res.variables.storage_av[1]
         @test res.boundary_conditions.precipitation[1] ≈ 4.2
         @test res.boundary_conditions.evaporation[1] ≈ 1.5
         @test res.variables.actevap[1] ≈ 1.5
@@ -52,7 +54,6 @@
         @test res.variables.outflow[1] ≈ 80.0
         @test res.variables.outflow_av[1] == res.variables.outflow[1]
         @test res.variables.storage[1] ≈ 2.0983091296454795e7
-        @test res.variables.storage[1] == res.variables.storage_av[1]
     end
 end
 

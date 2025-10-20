@@ -128,10 +128,9 @@ end
         @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
         @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
         @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
-        @test reservoir.variables.waterlevel_av ≈
-              [29.24205323934821, 32.68575584329306, 39.97006803315815]
-        @test reservoir.variables.storage_av ≈
-              [1.8948850499097648e8, 4.279957853085982e7, 7.159979181269434e7]
+        @test reservoir.variables.waterlevel ≈
+              [29.259249722425544, 32.68607771649561, 39.970184252221905]
+        @test reservoir.variables.storage ≈ [1.8959993820131782e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [4.839262369375678, 9.7190485747002, 58.12081274927687]
         @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
@@ -160,10 +159,9 @@ end
         @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
         @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
               [4.722084191267045, 0.7260732965706886, 5.452294842123767]
-        @test reservoir.variables.waterlevel_av ≈
-              [29.2485234495118, 32.68570780540624, 39.9700676103882]
-        @test reservoir.variables.storage_av ≈
-              [1.8953043195283672e8, 4.279951562880186e7, 7.159979105537169e7]
+        @test reservoir.variables.waterlevel ≈
+              [29.251508060520067, 32.68607771649562, 39.97018425222191]
+        @test reservoir.variables.storage ≈ [1.8954977223217008e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [4.84140356355074, 9.32858384747847, 54.86508305737946]
         @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
@@ -256,7 +254,41 @@ end
     @test count(contains(line, msg) for line in lines) == 2
 end
 
-@testset "water balance piave water demand" begin
+@testitem "water balance piave water demand" begin
+    tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; land_water_balance, routing) = model.mass_balance
+    (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.1e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1.e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+        @test all(e -> abs(e) < 1.2e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance piave water demand" begin
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     config.model.water_mass_balance__flag = true
