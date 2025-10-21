@@ -44,8 +44,6 @@ abstract type AbstractSoilModel end
     excesswater::Vector{Float64}
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
     exfiltsatwater::Vector{Float64}
-    # Water exfiltrating from unsaturated store because of change in water table [mm Δt⁻¹]
-    exfiltustore::Vector{Float64}
     # Excess water for non-compacted fraction [mm Δt⁻¹]
     excesswatersoil::Vector{Float64}
     # Excess water for compacted fraction [mm Δt⁻¹]
@@ -193,7 +191,6 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         infiltexcess = fill(MISSING_VALUE, n),
         excesswater = fill(MISSING_VALUE, n),
         exfiltsatwater = fill(MISSING_VALUE, n),
-        exfiltustore = fill(MISSING_VALUE, n),
         excesswatersoil = fill(MISSING_VALUE, n),
         excesswaterpath = fill(MISSING_VALUE, n),
         runoff = fill(MISSING_VALUE, n),
@@ -1189,11 +1186,10 @@ end
 Update the SBM soil model for a single timestep based on the update of a subsurface flow
 model, resulting in a change in water table depth and an exfiltration rate `exfiltwater`.
 
-The water table depth `zi`, unsaturated storage `ustorelayerdepth`, water exfiltrating from
-the unsaturated store `exfiltustore`, land `runoff` and `net_runoff`, the saturated store
-`satwaterdepth` and the water exfiltrating during saturation excess conditions
-`exfiltsatwater` are updated. Addionally, volumetric water content per soil layer and for
-the root zone are updated.
+The water table depth `zi`, unsaturated storage `ustorelayerdepth`, land `runoff` and
+`net_runoff`, the saturated store `satwaterdepth` and the water exfiltrating during
+saturation excess conditions `exfiltsatwater` are updated. Addionally, volumetric water
+content per soil layer and for the root zone are updated.
 """
 function update!(model::SbmSoilModel, external_models::NamedTuple)
     (; runoff, demand, subsurface_flow) = external_models
@@ -1209,26 +1205,33 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     threaded_foreach(1:n; basesize = 1000) do i
         ustorelayerthickness = set_layerthickness(zi[i], p.sumlayers[i], p.act_thickl[i])
         n_unsatlayers = number_of_active_layers(ustorelayerthickness)
-        # exfiltration from ustore
+
+        zi_prev = model.variables.zi[i]
+        n_unsatlayers_prev = model.variables.n_unsatlayers[i]
+        ustorelayerthickness_prev = model.variables.ustorelayerthickness[i]
         ustorelayerdepth = v.ustorelayerdepth[i]
-        exfiltustore = 0.0
-        for k in v.n_unsatlayers[i]:-1:1
-            if k <= n_unsatlayers
-                exfiltustore = max(
-                    0,
-                    ustorelayerdepth[k] -
-                    ustorelayerthickness[k] * (p.theta_s[i] - p.theta_r[i]),
-                )
-            else
-                exfiltustore = ustorelayerdepth[k]
+
+        if zi[i] < zi_prev
+            for k in n_unsatlayers:n_unsatlayers_prev
+                k == 0 && continue
+                if isnan(ustorelayerthickness[k])
+                    ustorelayerdepth = setindex(ustorelayerdepth, 0.0, k)
+                else
+                    f = ustorelayerthickness[k] / ustorelayerthickness_prev[k]
+                    ustorelayerdepth =
+                        setindex(ustorelayerdepth, f * ustorelayerdepth[k], k)
+                end
             end
-            ustorelayerdepth =
-                setindex(ustorelayerdepth, ustorelayerdepth[k] - exfiltustore, k)
-            if k > 1
+        else
+            for k in n_unsatlayers_prev:n_unsatlayers
+                k == 0 && continue
+                thickness_prev =
+                    isnan(ustorelayerthickness_prev[k]) ? 0.0 : ustorelayerthickness_prev[k]
+                delta_thickness = ustorelayerthickness[k] - thickness_prev
                 ustorelayerdepth = setindex(
                     ustorelayerdepth,
-                    ustorelayerdepth[k - 1] + exfiltustore,
-                    k - 1,
+                    ustorelayerdepth[k] + delta_thickness * (p.theta_d[i] - p.theta_r[i]),
+                    k,
                 )
             end
         end
@@ -1236,11 +1239,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         ustoredepth = sum(@view ustorelayerdepth[1:n_unsatlayers])
         sbm_runoff = max(
             0.0,
-            exfiltustore +
-            exfiltsatwater[i] +
-            v.excesswater[i] +
-            runoff_land[i] +
-            v.infiltexcess[i],
+            exfiltsatwater[i] + v.excesswater[i] + runoff_land[i] + v.infiltexcess[i],
         )
 
         # volumetric water content per soil layer and root zone
@@ -1293,7 +1292,6 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         v.ustoredepth[i] = ustoredepth
         v.satwaterdepth[i] = satwaterdepth
         v.exfiltsatwater[i] = exfiltsatwater[i]
-        v.exfiltustore[i] = exfiltustore
         v.runoff[i] = sbm_runoff
         v.vwc[i] = vwc
         v.vwc_perc[i] = vwc_perc

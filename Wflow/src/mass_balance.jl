@@ -461,15 +461,19 @@ function compute_flow_balance!(
     parameters::LandParameters,
     dt::Float64,
 )
-    (; storage_prev, error, relative_error) = water_balance
-    (; storage, ssfin, ssf, exfiltwater) = subsurface_flow.variables
+    (; error, relative_error, storage_prev) = water_balance
+    (; ssfin, ssf, exfiltwater, specific_yield, zi) = subsurface_flow.variables
     (; recharge) = subsurface_flow.boundary_conditions
     (; flow_length, area) = parameters
+    #TODO: storage_prev is set to zi_prev (zi at previous timestep) as quick fix.
+    # better to use a separate variable for this.
     for i in eachindex(storage_prev)
         total_in = ssfin[i]
         total_out = ssf[i] + exfiltwater[i] * area[i]
         total_in, total_out = add_inflow(total_in, total_out, recharge[i] * flow_length[i])
-        storage_rate = (storage[i] - storage_prev[i]) / (dt / tosecond(BASETIMESTEP))
+        storage_rate =
+            (specific_yield[i] * (storage_prev[i] - zi[i]) * area[i]) /
+            (dt / tosecond(BASETIMESTEP))
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end

@@ -111,6 +111,39 @@ function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponentialConstant, i)
     end
 end
 
+function water_table_depth(zi_prev, net_flux, specific_yield, soil, i)
+    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
+    (; theta_s, theta_r) = soil.parameters
+    if net_flux <= 0.0
+        zi = zi_prev - net_flux / specific_yield
+    else
+        total_rise = 0.0
+        net_flux_soil = 0.0
+        for k in n_unsatlayers[i]:-1:1
+            rise = min(
+                net_flux,
+                max(
+                    0.001 * (
+                        ustorelayerthickness[i][k] * (theta_s[i] - theta_r[i]) -
+                        ustorelayerdepth[i][k]
+                    ),
+                    0.0,
+                ),
+            )
+            specific_yield =
+                theta_s[i] -
+                (theta_r[i] + ustorelayerdepth[i][k] / ustorelayerthickness[i][k])
+            total_rise += rise / specific_yield
+            net_flux -= rise
+            net_flux_soil += rise
+        end
+        zi = zi_prev - total_rise
+        specific_yield = net_flux_soil > 0.0 ? net_flux_soil / total_rise : 0.0
+    end
+    rest = net_flux
+    return zi, rest, specific_yield
+end
+
 """
     kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh_0, slope, theta_e, f, d, dt, dx, dw, ssfmax, z_exp, ksat_profile)
 
@@ -136,6 +169,7 @@ function kinematic_wave_ssf(
     dw,
     ssfmax,
     kh_profile::Union{KhExponential, KhExponentialConstant},
+    soil::SbmSoilModel,
     i,
 )
     epsilon = 1.0e-12
@@ -149,13 +183,15 @@ function kinematic_wave_ssf(
         count = 1
 
         # Estimate zi on the basis of the relation between subsurface flow and zi
-        zi = ssf_water_table_depth(ssf, slope, d, dw, kh_profile, i)
+        ssf = min(ssf, (ssfmax * dw))
+        net_flux = (ssfin * dt + r * dx - ssf * dt) / (dw * dx)
+        zi, rest, specific_yield = water_table_depth(zi_prev, net_flux, theta_e, soil, i)
         # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation)
         Cn = ssf_celerity(zi, slope, theta_e, kh_profile, i)
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
         # then (1./Cn)*ssf_prev can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf + (r - (zi_prev - zi) * theta_e * dw)
+        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf + (r - net_flux * dw)
 
         # Continuity equation of which solution should be zero
         fQ = (dt / dx) * ssf + (1.0 / Cn) * ssf - c
@@ -171,13 +207,16 @@ function kinematic_wave_ssf(
         # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero
         while true
             # Estimate zi on the basis of the relation between lateral flow rate and groundwater level
-            zi = ssf_water_table_depth(ssf, slope, d, dw, kh_profile, i)
+            ssf = min(ssf, (ssfmax * dw))
+            net_flux = (ssfin * dt + r * dx - ssf * dt) / (dw * dx)
+            zi, rest, specific_yield =
+                water_table_depth(zi_prev, net_flux, theta_e, soil, i)
             # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
             Cn = ssf_celerity(zi, slope, theta_e, kh_profile, i)
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
             # then (1./Cn)*ssf_prev can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-            c = (dt / dx) * ssfin + (1.0 / Cn) * ssf + (r - (zi_prev - zi) * theta_e * dw)
+            c = (dt / dx) * ssfin + (1.0 / Cn) * ssf + (r - net_flux * dw)
 
             # Continuity equation of which solution should be zero
             fQ = (dt / dx) * ssf + (1.0 / Cn) * ssf - c
@@ -194,16 +233,11 @@ function kinematic_wave_ssf(
             end
             count += 1
         end
-
         # Constrain the lateral flow rate ssf
-        ssf = min(ssf, (ssfmax * dw))
-        # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
-        rest = zi_prev - (ssfin * dt + r * dx - ssf * dt) / (dw * dx) / theta_e
-        # In case the groundwater level lies above surface (saturation excess conditions, rest = negative), calculate the exfiltration rate and set groundwater back to zero.
-        exfilt = min(rest, 0.0) * -theta_e
+        exfilt = max(rest, 0.0)
         zi = clamp(zi, 0.0, d)
 
-        return ssf, zi, exfilt
+        return ssf, zi, exfilt, specific_yield
     end
 end
 
@@ -229,6 +263,7 @@ function kinematic_wave_ssf(
     dw,
     ssfmax,
     kh_profile::KhLayered,
+    soil::SbmSoilModel,
     i,
 )
     epsilon = 1.0e-12
@@ -270,18 +305,13 @@ function kinematic_wave_ssf(
             count += 1
         end
 
-        # Constrain the lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
-        # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
-        zi = zi_prev - (ssfin * dt + r * dx - ssf * dt) / (dw * dx) / theta_e
-        if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
-        end
-        # Exfiltration rate and set zi to zero.
-        exfilt = min(zi, 0.0) * -theta_e
+        net_flux = (ssfin * dt + r * dx - ssf * dt) / (dw * dx)
+        zi, rest, specific_yield = water_table_depth(zi_prev, net_flux, theta_e, soil, i)
+        exfilt = max(rest, 0.0)
         zi = clamp(zi, 0.0, d)
 
-        return ssf, zi, exfilt
+        return ssf, zi, exfilt, specific_yield
     end
 end
 
