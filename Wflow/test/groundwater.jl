@@ -60,6 +60,7 @@ function homogenous_aquifer(nrow, ncol)
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
         specific_yield = fill(0.15, ncell),
+        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(3.0, ncell),
     )
     variables = Wflow.AquiferVariables(;
@@ -258,19 +259,17 @@ end
             ) == 75.0  # upstream sat. thickness
         end
 
-        @testset "minimum_head-confined" begin
+        @testset "check_flux-confined" begin
             original_head = copy(conf_aqf.variables.head)
             conf_aqf.variables.head[1] = -10.0
             @test Wflow.check_flux(-1.0, conf_aqf, 1) == -1.0
-            @test Wflow.minimum_head(conf_aqf)[1] == -10.0
             conf_aqf.variables.head .= original_head
         end
 
-        @testset "minimum_head-unconfined" begin
+        @testset "check_flux-unconfined" begin
             original_head = copy(unconf_aqf.variables.head)
             unconf_aqf.variables.head[1] = -10.0
             @test Wflow.check_flux(-1.0, unconf_aqf, 1) == 0.0
-            @test Wflow.minimum_head(conf_aqf)[1] == 0.0
             unconf_aqf.variables.head .= original_head
         end
 
@@ -481,6 +480,7 @@ end
             bottom = fill(bottom, ncell),
             area = fill(cellsize * cellsize, ncell),
             specific_yield = fill(specific_yield, ncell),
+            specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
             f = fill(gwf_f, ncell),
         )
 
@@ -497,6 +497,13 @@ end
             boundaries = NamedTuple(),
         )
 
+        n_unsatlayers = fill(1, ncell)
+        ustorelayerthickness =
+            SVector{ncell}(1000.0 .* (aquifer.parameters.top - aquifer.variables.head))
+        ustorelayerdepth = SVector{ncell}(fill(0, ncell))
+        theta_r = fill(0.05, ncell)
+        theta_s = fill(0.45, ncell)
+
         time = 20.0
         t = 0.0
         (; cfl) = gwf.timestepping
@@ -505,7 +512,15 @@ end
             dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-            Wflow.update_head!(gwf, dt_s)
+            Wflow.update_head!(
+                gwf,
+                n_unsatlayers,
+                ustorelayerthickness,
+                ustorelayerdepth,
+                theta_s,
+                theta_r,
+                dt_s,
+            )
             t += dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)
@@ -563,6 +578,7 @@ end
             bottom = fill(bottom, ncell),
             area = fill(cellsize * cellsize, ncell),
             specific_yield = fill(specific_yield, ncell),
+            specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
             f = fill(gwf_f, ncell),
         )
 
@@ -579,6 +595,13 @@ end
             boundaries = NamedTuple(),
         )
 
+        n_unsatlayers = fill(1, ncell)
+        ustorelayerthickness =
+            SVector{ncell}(1000.0 .* (aquifer.parameters.top - aquifer.variables.head))
+        ustorelayerdepth = SVector{ncell}(fill(0, ncell))
+        theta_r = fill(0.05, ncell)
+        theta_s = fill(0.45, ncell)
+
         time = 20.0
         t = 0.0
         (; cfl) = gwf.timestepping
@@ -587,7 +610,15 @@ end
             dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
             dt_s = Wflow.check_timestepsize(dt_s, t, time)
             Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-            Wflow.update_head!(gwf, dt_s)
+            Wflow.update_head!(
+                gwf,
+                n_unsatlayers,
+                ustorelayerthickness,
+                ustorelayerdepth,
+                theta_s,
+                theta_r,
+                dt_s,
+            )
             t += dt_s
             # Gradient dh/dx is positive, all flow to the left
             @test all(diff(gwf.aquifer.variables.head) .> 0.0)

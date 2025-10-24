@@ -46,25 +46,33 @@ Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
 end
 
 @testset "kinematic wave subsurface flow" begin
-    kh_profile = Wflow.KhExponential([18021.0], [0.0017669756])
+    kh_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
+    ustorelayerthickness = SVector{6}([39.47955160274994, NaN, NaN, NaN, NaN, NaN])
+    ustorelayerdepth = SVector{6}([0.6763274828690954, 0.0, 0.0, 0.0, 0.0, 0.0])
+    n_unsatlayers = 1
+    theta_e = 0.1703555408323154
     @test all(
         isapprox.(
             Wflow.kinematic_wave_ssf(
-                210128378079.0733,
-                215395179156.82645,
-                1540.34273559,
-                1.238,
-                0.25,
-                0.346,
-                1800.0,
+                151.93545317754274,
+                66.13838493935127,
+                0.037300947928732966,
+                -0.4682469020507169,
+                0.0058632562868297,
+                0.1703555408323154,
+                2.0,
                 1.0,
-                1697.05 * 1000.0,
-                1200.0 * 1000.0,
-                2443723.716252628,
+                651.0959333549443,
+                926.1824194767788,
+                0.07651841216556145,
                 kh_profile,
+                n_unsatlayers,
+                ustorelayerthickness,
+                ustorelayerdepth,
+                theta_e,
                 1,
             ),
-            (7.410313985168225e10, 1540.1496836278836, -0.0),
+            (65.87716383769195, 0.039430950039165864, 0.0, 0.1703555408323154),
         ),
     )
 end

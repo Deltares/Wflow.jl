@@ -90,6 +90,7 @@ function initialize_subsurface_flow(
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
+    specific_yield = soil.parameters.theta_s .- soil.parameters.theta_d
     conductance = zeros(Float64, connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
@@ -100,6 +101,7 @@ function initialize_subsurface_flow(
         area,
         conductance,
         initial_head,
+        specific_yield,
     )
 
     # river boundary of unconfined aquifer

@@ -1180,26 +1180,11 @@ function update!(
     return nothing
 end
 
-"""
-    update!(model::SbmSoilModel, external_models::NamedTuple)
-
-Update the SBM soil model for a single timestep based on the update of a subsurface flow
-model, resulting in a change in water table depth and an exfiltration rate `exfiltwater`.
-
-The water table depth `zi`, unsaturated storage `ustorelayerdepth`, land `runoff` and
-`net_runoff`, the saturated store `satwaterdepth` and the water exfiltrating during
-saturation excess conditions `exfiltsatwater` are updated. Addionally, volumetric water
-content per soil layer and for the root zone are updated.
-"""
-function update!(model::SbmSoilModel, external_models::NamedTuple)
-    (; runoff, demand, subsurface_flow) = external_models
-    (; runoff_land, ae_openw_l) = runoff.variables
+function update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
     p = model.parameters
     v = model.variables
 
     zi = get_water_depth(subsurface_flow) * 1000.0
-    exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0
-    rootingdepth = get_rootingdepth(model)
 
     n = length(model.variables.zi)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -1235,8 +1220,39 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
                 )
             end
         end
+        v.n_unsatlayers[i] = n_unsatlayers
+        v.ustorelayerdepth[i] = ustorelayerdepth
+        v.ustorelayerthickness[i] = ustorelayerthickness
+        v.n_unsatlayers[i] = n_unsatlayers
+        v.zi[i] = zi[i]
+    end
+end
 
-        ustoredepth = sum(@view ustorelayerdepth[1:n_unsatlayers])
+"""
+    update!(model::SbmSoilModel, external_models::NamedTuple)
+
+Update the SBM soil model for a single timestep based on the update of a subsurface flow
+model, resulting in a change in water table depth and an exfiltration rate `exfiltwater`.
+
+The water table depth `zi`, unsaturated storage `ustorelayerdepth`, land `runoff` and
+`net_runoff`, the saturated store `satwaterdepth` and the water exfiltrating during
+saturation excess conditions `exfiltsatwater` are updated. Addionally, volumetric water
+content per soil layer and for the root zone are updated.
+"""
+function update!(model::SbmSoilModel, external_models::NamedTuple)
+    (; runoff, demand, subsurface_flow) = external_models
+    (; runoff_land, ae_openw_l) = runoff.variables
+    p = model.parameters
+    v = model.variables
+
+    exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0
+    rootingdepth = get_rootingdepth(model)
+
+    n = length(v.zi)
+    threaded_foreach(1:n; basesize = 1000) do i
+        ustorelayerdepth = v.ustorelayerdepth[i]
+        ustorelayerthickness = v.ustorelayerthickness[i]
+        ustoredepth = sum(@view ustorelayerdepth[1:(v.n_unsatlayers[i])])
         sbm_runoff = max(
             0.0,
             exfiltsatwater[i] + v.excesswater[i] + runoff_land[i] + v.infiltexcess[i],
@@ -1246,7 +1262,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         vwc = v.vwc[i]
         vwc_perc = v.vwc_perc[i]
         for k in 1:p.nlayers[i]
-            if k <= n_unsatlayers
+            if k <= v.n_unsatlayers[i]
                 vwc = setindex(
                     vwc,
                     (
@@ -1263,7 +1279,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         end
 
         rootstore_unsat = 0
-        for k in 1:n_unsatlayers
+        for k in 1:(v.n_unsatlayers[i])
             rootstore_unsat =
                 rootstore_unsat +
                 min(
@@ -1275,20 +1291,16 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
                 ) * ustorelayerdepth[k]
         end
 
-        rootstore_sat = max(0.0, rootingdepth[i] - zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        rootstore_sat = max(0.0, rootingdepth[i] - v.zi[i]) * (p.theta_s[i] - p.theta_r[i])
         rootstore = rootstore_sat + rootstore_unsat
         vwc_root = rootstore / rootingdepth[i] + p.theta_r[i]
         vwc_percroot = (vwc_root / p.theta_s[i]) * 100.0
 
-        satwaterdepth = (p.soilthickness[i] - zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        satwaterdepth = (p.soilthickness[i] - v.zi[i]) * (p.theta_s[i] - p.theta_r[i])
         ustorecapacity = p.soilwatercapacity[i] - satwaterdepth - ustoredepth
 
         # update the outputs and states
-        v.n_unsatlayers[i] = n_unsatlayers
-        v.ustorelayerdepth[i] = ustorelayerdepth
-        v.ustorelayerthickness[i] = ustorelayerthickness
         v.ustorecapacity[i] = ustorecapacity
-        v.n_unsatlayers[i] = n_unsatlayers
         v.ustoredepth[i] = ustoredepth
         v.satwaterdepth[i] = satwaterdepth
         v.exfiltsatwater[i] = exfiltsatwater[i]
@@ -1298,7 +1310,6 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         v.rootstore[i] = rootstore
         v.vwc_root[i] = vwc_root
         v.vwc_percroot[i] = vwc_percroot
-        v.zi[i] = zi[i]
         v.total_soilwater_storage[i] = satwaterdepth + ustoredepth
     end
     # update runoff and net_runoff (the runoff rate depends on the presence of paddy fields

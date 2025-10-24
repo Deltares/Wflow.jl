@@ -28,7 +28,7 @@ flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
 
     @test row.time == DateTime("2000-06-01T00:00:00")
     @test row.Q_av ≈ 0.01619703129434486
-    @test row.head ≈ 1.6483613552507124
+    @test row.head ≈ 1.6466006412729106
 end
 
 @testset "first timestep" begin
@@ -60,25 +60,25 @@ end
 @testset "river domain (kinematic wave)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.04467596116472541
-    @test q[6] ≈ 0.01045806777050397
-    @test river.variables.storage[6] ≈ 5.327514648713158
-    @test river.boundary_conditions.inwater[6] ≈ 0.0008954764365446767
-    @test q[13] ≈ 0.0007247351389898374
-    @test q[domain.river.network.order[end]] ≈ 0.01147048008100743
+    @test sum(q) ≈ 0.03025208375758796
+    @test q[6] ≈ 0.006665169891136884
+    @test river.variables.storage[6] ≈ 4.037102927161714
+    @test river.boundary_conditions.inwater[6] ≈ 0.0001323377399268941
+    @test q[13] ≈ 0.0005348254420989118
+    @test q[domain.river.network.order[end]] ≈ 0.006956110669004074
 end
 
 @testset "groundwater" begin
     gw = model.routing.subsurface_flow
     @test gw.boundaries.river.variables.stage[1] ≈ 1.212479774379469
     @test gw.aquifer.variables.head[17:21] ≈ [
-        1.4037567076805044,
-        1.4616545639019285,
+        1.2499617962076572,
+        1.3146958617176479,
         1.7999999523162842,
-        1.6266815385109639,
-        1.503470591440436,
+        1.6201330681295285,
+        1.3726090475101977,
     ]
-    @test gw.boundaries.river.variables.flux[1] ≈ -61.786976087971084
+    @test gw.boundaries.river.variables.flux[1] ≈ -44.36320056565769
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
     @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
 end
@@ -111,12 +111,12 @@ Wflow.run_timestep!(model)
 @testset "river domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.03415339215740202
-    @test q[6] ≈ 0.00797964303605101
-    @test river.variables.storage[6] ≈ 9.072782344941736
-    @test river.boundary_conditions.inwater[6] ≈ 0.0006680314704008334
-    @test q[13] ≈ 0.0005485471116586621
-    @test q[5] ≈ 0.008757115063950119
+    @test sum(q) ≈ 0.021521084547539975
+    @test q[6] ≈ 0.004598563634057708
+    @test river.variables.storage[6] ≈ 6.169062629400154
+    @test river.boundary_conditions.inwater[6] ≈ -9.510722621694914e-5
+    @test q[13] ≈ 0.000389969767596223
+    @test q[5] ≈ 0.004699224180900602
 end
 Wflow.close_files(model; delete_output = false)
 
@@ -141,14 +141,14 @@ Wflow.run_timestep!(model)
 
 @testset "river and land domain (local inertial)" begin
     q = model.routing.river_flow.variables.q_av
-    @test sum(q) ≈ 0.034153376823583735
-    @test q[6] ≈ 0.007979645156223385
-    @test q[13] ≈ 0.0005485472496903369
-    @test q[5] ≈ 0.008757093275644737
+    @test sum(q) ≈ 0.021521072635048613
+    @test q[6] ≈ 0.004598566560558798
+    @test q[13] ≈ 0.00038996995865291496
+    @test q[5] ≈ 0.004699203348707801
     h = model.routing.river_flow.variables.h
-    @test h[6] ≈ 0.09072771746166071
-    @test h[5] ≈ 0.08793512486538263
-    @test h[13] ≈ 0.09266296831143483
+    @test h[6] ≈ 0.06169046479599844
+    @test h[5] ≈ 0.059452526028619744
+    @test h[13] ≈ 0.06377260202490082
     qx = model.routing.overland_flow.variables.qx
     qy = model.routing.overland_flow.variables.qy
     @test all(qx .== 0.0)
@@ -182,25 +182,25 @@ end
 @testset "river domain warm start (kinematic wave)" begin
     q = model.routing.river_flow.variables.q_av
     river = model.routing.river_flow
-    @test sum(q) ≈ 0.012035660670336177
-    @test q[6] ≈ 0.002461611895159899
-    @test river.variables.storage[6] ≈ 2.243001377077464
-    @test river.boundary_conditions.inwater[6] ≈ -9.80491995209067e-6
-    @test q[13] ≈ 8.306151934987444e-5
-    @test q[domain.river.network.order[end]] ≈ 0.0024978487353360577
+    @test sum(q) ≈ 0.011927558704212266
+    @test q[6] ≈ 0.002439237560893128
+    @test river.variables.storage[6] ≈ 2.2297897880708595
+    @test river.boundary_conditions.inwater[6] ≈ -1.4361419680049275e-5
+    @test q[13] ≈ 6.915367636708339e-5
+    @test q[domain.river.network.order[end]] ≈ 0.0024769176125029905
 end
 
 @testset "groundwater warm start" begin
     gw = model.routing.subsurface_flow
     @test gw.boundaries.river.variables.stage[1] ≈ 1.2030201719029363
     @test gw.aquifer.variables.head[17:21] ≈ [
-        1.2271445115520103,
-        1.2841099964673919,
+        1.226363413451762,
+        1.2844302137711752,
         1.7999999523162842,
-        1.5991095485460984,
-        1.2079062115823571,
+        1.5860343731919113,
+        1.2068931431179248,
     ]
-    @test gw.boundaries.river.variables.flux[1] ≈ -7.205394770592832
+    @test gw.boundaries.river.variables.flux[1] ≈ -6.472282449944586
     @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
     @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
 end
@@ -216,8 +216,8 @@ Wflow.close_files(model; delete_output = false)
     (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 1.5e-6, land_water_balance.error)
-        @test all(re -> abs(re) < 1e-7, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
         @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
         @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
         @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
@@ -227,8 +227,8 @@ Wflow.close_files(model; delete_output = false)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 1e-6, land_water_balance.error)
-        @test all(re -> abs(re) < 1e-7, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
         @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
         @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)

@@ -993,3 +993,34 @@ function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0):
     z = y > 0.0 ? min(x / y, max) : default
     return z
 end
+
+function water_table_change(
+    net_flux,
+    specific_yield,
+    n_unsatlayers,
+    ustorelayerthickness,
+    ustorelayerdepth,
+    theta_e,
+)
+    if net_flux <= 0.0
+        dh = net_flux / specific_yield
+    else
+        dh = 0.0
+        for k in n_unsatlayers:-1:1
+            flux_layer = min(
+                net_flux,
+                max(0.001 * (ustorelayerthickness[k] * theta_e - ustorelayerdepth[k]), 0.0),
+            )
+            sy = theta_e - (ustorelayerdepth[k] / ustorelayerthickness[k])
+            dh += if sy == 0.0
+                0.001 * ustorelayerthickness[k]
+            else
+                flux_layer / sy
+            end
+            net_flux -= flux_layer
+            net_flux == 0.0 && break
+        end
+    end
+    exfilt = max(net_flux, 0.0)
+    return dh, exfilt
+end

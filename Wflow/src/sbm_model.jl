@@ -25,7 +25,7 @@ function Model(config::Config, type::SbmModel)
 
     land_hydrology = LandHydrologySBM(dataset, config, domain.land)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
-    mass_balance = HydrologicalMassBalance(domain, config)
+    mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
 
     (; maxlayers) = land_hydrology.soil.parameters
     modelmap = (land = land_hydrology, routing, mass_balance)
@@ -169,10 +169,9 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         end
         if config.model.type == ModelType.sbm
             (; zi, storage) = routing.subsurface_flow.variables
-            (; theta_s, theta_r, soilthickness) = routing.subsurface_flow.parameters
+            (; specific_yield, soilthickness) = routing.subsurface_flow.parameters
             @. zi = 0.001 * land.soil.variables.zi
-            @. storage =
-                (theta_s - theta_r) * (soilthickness - zi) * domain.land.parameters.area
+            @. storage = specific_yield * (soilthickness - zi) * domain.land.parameters.area
         elseif config.model.type == ModelType.sbm_gwf
             (; aquifer) = routing.subsurface_flow
             aquifer.variables.storage .=

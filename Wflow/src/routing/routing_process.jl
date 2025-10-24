@@ -68,187 +68,46 @@ function kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt)
     return Q
 end
 
-"Returns water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `KhExponential`"
-function ssf_water_table_depth(ssf, slope, d, dw, kh_profile::KhExponential, i)
-    (; f, kh_0) = kh_profile
-    zi = log((f[i] * ssf) / (dw * kh_0[i] * slope) + exp(-f[i] * d)) / -f[i]
-    return zi
-end
-
-"Returns water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `KhExponentialConstant`"
-function ssf_water_table_depth(ssf, slope, d, dw, kh_profile::KhExponentialConstant, i)
-    (; z_exp) = kh_profile
-    (; kh_0, f) = kh_profile.exponential
-    ssf_constant = kh_0[i] * slope * exp(-f[i] * z_exp[i]) * (d - z_exp[i]) * dw
-    if ssf > ssf_constant
-        zi =
-            log(
-                (f[i] * (ssf - ssf_constant)) / (dw * kh_0[i] * slope) +
-                exp(-f[i] * z_exp[i]),
-            ) / -f[i]
-    else
-        zi = d - ssf / (dw * kh_0[i] * slope * exp(-f[i] * z_exp[i]))
-    end
-    return zi
-end
-
-"Returns kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic conductivity profile `KhExponential`"
-function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponential, i)
+"""
+Return kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic
+conductivity profile `KhExponential`.
+"""
+function ssf_celerity(zi, slope, sy, kh_profile::KhExponential, i)
     (; kh_0, f) = kh_profile
-    Cn = (kh_0[i] * exp(-f[i] * zi) * slope) / theta_e
+    Cn = (kh_0[i] * exp(-f[i] * zi) * slope) / sy
     return Cn
 end
 
-"Returns kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic conductivity profile `KhExponentialConstant`"
-function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponentialConstant, i)
+""" 
+Return kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic
+conductivity profile `KhExponentialConstant`.
+"""
+function ssf_celerity(zi, slope, sy, kh_profile::KhExponentialConstant, i)
     (; z_exp) = kh_profile
     (; kh_0, f) = kh_profile.exponential
-    Cn_const = (kh_0[i] * exp(-f[i] * z_exp[i]) * slope) / theta_e
+    Cn_const = (kh_0[i] * exp(-f[i] * z_exp[i]) * slope) / sy
     return if zi < z_exp[i]
-        (kh_0[i] * exp(-f[i] * zi) * slope) / theta_e + Cn_const
+        (kh_0[i] * exp(-f[i] * zi) * slope) / sy + Cn_const
     else
         Cn_const
     end
 end
 
-function water_table_depth(zi_prev, net_flux, specific_yield, soil, i)
-    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
-    (; theta_s, theta_r) = soil.parameters
-    if net_flux <= 0.0
-        zi = zi_prev - net_flux / specific_yield
-    else
-        total_rise = 0.0
-        net_flux_soil = 0.0
-        for k in n_unsatlayers[i]:-1:1
-            rise = min(
-                net_flux,
-                max(
-                    0.001 * (
-                        ustorelayerthickness[i][k] * (theta_s[i] - theta_r[i]) -
-                        ustorelayerdepth[i][k]
-                    ),
-                    0.0,
-                ),
-            )
-            specific_yield =
-                theta_s[i] -
-                (theta_r[i] + ustorelayerdepth[i][k] / ustorelayerthickness[i][k])
-            total_rise += rise / specific_yield
-            net_flux -= rise
-            net_flux_soil += rise
-        end
-        zi = zi_prev - total_rise
-        specific_yield = net_flux_soil > 0.0 ? net_flux_soil / total_rise : 0.0
-    end
-    rest = net_flux
-    return zi, rest, specific_yield
+"""
+Return kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic
+conductivity profile `KhLayered`.
+"""
+function ssf_celerity(zi, slope, sy, kh_profile::KhLayered, i)
+    Cn = (slope * kh_profile.kh[i]) / sy
+    return Cn
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh_0, slope, theta_e, f, d, dt, dx, dw, ssfmax, z_exp, ksat_profile)
-
-Kinematic wave for lateral subsurface flow for a single cell and timestep. An exponential
-decline of hydraulic conductivity at the soil surface `kh_0`, controllled by parameter `f`,
-is assumed. The hydraulic conductivity profile `ksat_profile` is either `exponential` or
-`exponential_constant`, with `z_exp` the depth from the soil surface for which the
-exponential decline of `kh_0` is valid.
-
-Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
-`exfilt`.
-"""
-function kinematic_wave_ssf(
-    ssfin,
-    ssf_prev,
-    zi_prev,
-    r,
-    slope,
-    theta_e,
-    d,
-    dt,
-    dx,
-    dw,
-    ssfmax,
-    kh_profile::Union{KhExponential, KhExponentialConstant},
-    soil::SbmSoilModel,
-    i,
-)
-    epsilon = 1.0e-12
-    max_iters = 3000
-
-    if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
-        return 0.0, d, 0.0
-    else
-        # initial estimate
-        ssf = (ssf_prev + ssfin) / 2.0
-        count = 1
-
-        # Estimate zi on the basis of the relation between subsurface flow and zi
-        ssf = min(ssf, (ssfmax * dw))
-        net_flux = (ssfin * dt + r * dx - ssf * dt) / (dw * dx)
-        zi, rest, specific_yield = water_table_depth(zi_prev, net_flux, theta_e, soil, i)
-        # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation)
-        Cn = ssf_celerity(zi, slope, theta_e, kh_profile, i)
-        # Term of the continuity equation for Newton-Raphson iteration for iteration 1
-        # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
-        # then (1./Cn)*ssf_prev can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf + (r - net_flux * dw)
-
-        # Continuity equation of which solution should be zero
-        fQ = (dt / dx) * ssf + (1.0 / Cn) * ssf - c
-        # Derivative of the continuity equation w.r.t. Q_out for iteration 1
-        dfQ = (dt / dx) + 1.0 / Cn
-        # Update lateral outflow estimate ssf (Q_out) for iteration 1
-        ssf -= fQ / dfQ
-        if isnan(ssf)
-            ssf = 0.0
-        end
-        ssf = max(ssf, 1.0e-30)
-
-        # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero
-        while true
-            # Estimate zi on the basis of the relation between lateral flow rate and groundwater level
-            ssf = min(ssf, (ssfmax * dw))
-            net_flux = (ssfin * dt + r * dx - ssf * dt) / (dw * dx)
-            zi, rest, specific_yield =
-                water_table_depth(zi_prev, net_flux, theta_e, soil, i)
-            # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
-            Cn = ssf_celerity(zi, slope, theta_e, kh_profile, i)
-            # Term of the continuity equation for given Newton-Raphson iteration m
-            # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
-            # then (1./Cn)*ssf_prev can be replaced with (1./Cn)*ssf, and thus celerity and lateral flow rate ssf are then in line
-            c = (dt / dx) * ssfin + (1.0 / Cn) * ssf + (r - net_flux * dw)
-
-            # Continuity equation of which solution should be zero
-            fQ = (dt / dx) * ssf + (1.0 / Cn) * ssf - c
-            # Derivative of the continuity equation w.r.t. Q_out for iteration m+1
-            dfQ = (dt / dx) + 1.0 / Cn
-            # Update lateral outflow estimate ssf (Q_out) for iteration m+1
-            ssf -= fQ / dfQ
-            if isnan(ssf)
-                ssf = 0.0
-            end
-            ssf = max(ssf, 1.0e-30)
-            if (abs(fQ) <= epsilon) || (count >= max_iters)
-                break
-            end
-            count += 1
-        end
-        # Constrain the lateral flow rate ssf
-        exfilt = max(rest, 0.0)
-        zi = clamp(zi, 0.0, d)
-
-        return ssf, zi, exfilt, specific_yield
-    end
-end
-
-"""
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh, slope, theta_e, d, dt, dx, dw, ssfmax)
-
 Kinematic wave for lateral subsurface flow for a single cell and timestep, based on
-(average) hydraulic conductivity `kh`.
+a hydraulic conductivity depth profile `kh_profile`.
 
-Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
-`exfilt`.
+Return lateral subsurface flow `ssf`, water table depth `zi`, exfiltration rate `exfilt` and
+dynamic specific yield `sy_d`.
 """
 function kinematic_wave_ssf(
     ssfin,
@@ -256,14 +115,17 @@ function kinematic_wave_ssf(
     zi_prev,
     r,
     slope,
-    theta_e,
+    sy,
     d,
     dt,
     dx,
     dw,
     ssfmax,
-    kh_profile::KhLayered,
-    soil::SbmSoilModel,
+    kh_profile,
+    n_unsatlayers,
+    ustorelayerthickness,
+    ustorelayerdepth,
+    theta_e,
     i,
 )
     epsilon = 1.0e-12
@@ -276,7 +138,7 @@ function kinematic_wave_ssf(
         ssf = (ssf_prev + ssfin) / 2.0
         count = 1
         # celerity (Cn)
-        Cn = (slope * kh_profile.kh[i]) / theta_e
+        Cn = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
         # constant term of the continuity equation for Newton-Raphson
         c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r
         # continuity equation of which solution should be zero
@@ -307,11 +169,19 @@ function kinematic_wave_ssf(
 
         ssf = min(ssf, (ssfmax * dw))
         net_flux = (ssfin * dt + r * dx - ssf * dt) / (dw * dx)
-        zi, rest, specific_yield = water_table_depth(zi_prev, net_flux, theta_e, soil, i)
-        exfilt = max(rest, 0.0)
+        dh, exfilt = water_table_change(
+            net_flux,
+            sy,
+            n_unsatlayers,
+            ustorelayerthickness,
+            ustorelayerdepth,
+            theta_e,
+        )
+        zi = zi_prev - dh
+        sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         zi = clamp(zi, 0.0, d)
 
-        return ssf, zi, exfilt, specific_yield
+        return ssf, zi, exfilt, sy_d
     end
 end
 
