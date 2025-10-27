@@ -14,10 +14,18 @@ needed for numerical integration of an ODE.
     # The time derivative of the state vector,
     # generally instantaneous fluxes
     const du::V
+    # The number of sub time steps 
+    n_dt_sub::Int = 0
 end
 
 function WflowIntegrator(u0::V) where {V <: ComponentVector}
     return WflowIntegrator(; u = u0, uprev = copy(u0), du = zero(u0))
+end
+
+# Make sure the time step is not too small
+function set_dt_sub!(integrator::WflowIntegrator, dt_sub::Float64)::Nothing
+    integrator.dt_sub = max(dt_sub, eps(Float64))
+    return nothing
 end
 
 const StateType{A} = ComponentVector{Float64, Vector{Float64}, Tuple{Axis{A}}}
@@ -31,7 +39,8 @@ function set_sub_time_step!(model_vertical::AbstractVerticalModel, i::Integer)::
 end
 
 # Fallback method; do nothing
-dt_sub_callback!(::AbstractVerticalModel, ::LandHydrologySBM, ::Int) = nothing
+dt_sub_callback!(::AbstractVerticalModel, ::LandHydrologySBM, ::Int, dt_sub_type::Any) =
+    nothing
 
 # Fallback method; do nothing (TODO: Make more generic)
 update!(::NoSnowModel, ::LandHydrologySBM) = nothing
@@ -54,23 +63,30 @@ function update!(
 
         # The fraction of the global time step that has passed 
         integrator.progress = 0.0
+        integrator.n_dt_sub = 0
 
         # Perform sub time steps until the global time step has been reached
         while integrator.progress < 1.0
-            # Set the instantaneous rates of changes of the states
+            # Set the instantaneous rate of change of the states
             set_instantaneous_rates!(du, u, p, i, integrator.progress)
 
-            # Get the sub time step 
-            set_sub_time_step!(model_vertical, i)
-            @assert integrator.progress <= 1.0 "Overstepped the global time step for $(nameof(M)) at cell $i."
+            # Get the sub time step and update the progress
+            dt_sub_type = set_sub_time_step!(model_vertical, i)
+            @assert integrator.dt_sub > 0
+            integrator.progress += integrator.dt_sub
 
             # Perform an Euler forward step
             @. uprev = u
             @. u += integrator.dt_sub * du
-            integrator.progress += integrator.dt_sub
 
-            # Perform post processing after sub time step
-            dt_sub_callback!(model_vertical, land, i)
+            # Perform post processing after sub time step based on the sub time step type;
+            # e.g. setting exact values to avoid floating point inaccuracies that affect
+            # conditions in `set_instantaneous_rates!`
+            dt_sub_callback!(model_vertical, land, i, dt_sub_type)
+
+            # Check that the global time step was not overstepped
+            @assert integrator.progress <= 1.0 "Overstepped the global time step for $(nameof(M)) at cell $i."
+            integrator.n_dt_sub += 1
         end
 
         # Perform post processing after global time step
