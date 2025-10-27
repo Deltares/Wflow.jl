@@ -16,9 +16,9 @@ end
 Water mass balance error results (balance error and relative error) for river, overland,
 subsurface and reservoir flow routing.
 """
-@with_kw struct FlowRoutingMassBalance <: AbstractMassBalance
-    river_water_balance::Union{MassBalance, NoMassBalance}
-    reservoir_water_balance::Union{MassBalance, NoMassBalance}
+@with_kw struct FlowRoutingMassBalance{R, RT} <: AbstractMassBalance
+    river_water_balance::R
+    reservoir_water_balance::RT
     overland_water_balance::MassBalance
     subsurface_water_balance::MassBalance
 end
@@ -56,7 +56,8 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
         else
             river_water_balance = MassBalance(; n = n_river)
         end
-        routing = FlowRoutingMassBalance(;
+        args = (river_water_balance, reservoir_water_balance)
+        routing = FlowRoutingMassBalance{typeof.(args)...}(;
             river_water_balance,
             reservoir_water_balance,
             overland_water_balance = MassBalance(; n = n_land),
