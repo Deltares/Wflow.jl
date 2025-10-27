@@ -190,6 +190,7 @@ end
     abs_path_forcing = Wflow.input_path(config, config.input.path_forcing)
     config.input.path_forcing = abs_path_forcing
     @test isabspath(config.input.path_forcing)
+    Wflow.NCReader(config)
 end
 
 @testitem "reducer" begin
