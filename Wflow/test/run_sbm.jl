@@ -145,14 +145,6 @@
         @test res.boundary_conditions.evaporation[1] ≈ 0.5400000810623169
     end
 
-    # set these variables for comparison in "changed dynamic parameters"
-    precip = copy(model.land.atmospheric_forcing.precipitation)
-    evap = copy(model.land.atmospheric_forcing.potential_evaporation)
-    lai = copy(model.land.vegetation_parameters.leaf_area_index)
-    res_evap = copy(
-        model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation,
-    )
-
     Wflow.close_files(model; delete_output = false)
 
     # test without lateral snow transport
@@ -184,7 +176,10 @@
         @test typeof(model.land.snow) == Wflow.NoSnowModel
     end
     Wflow.close_files(model; delete_output = false)
+end
 
+@testitem "Set pit and multithreading multiple basins" begin
+    using Dates
     # test for setting a pit and multithreading multiple basins (by setting 2 extra pits
     # resulting in 3 basins)
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
@@ -209,11 +204,25 @@
         @test q[2508] ≈ 150.27203595973015 # pit/ outlet
         @test q[5808] ≈ 0.12319287597731672 # pit/ outlet
     end
+end
 
-    # test changing forcing and cyclic LAI parameter
+@testitem "Changing forcing and cyclic LAI parameter" begin
+    # Run unchanged
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    model = Wflow.Model(config)
 
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    precip = copy(model.land.atmospheric_forcing.precipitation)
+    evap = copy(model.land.atmospheric_forcing.potential_evaporation)
+    lai = copy(model.land.vegetation_parameters.leaf_area_index)
+    res_evap = copy(
+        model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation,
+    )
+
+    # Run changed
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
         Wflow.init_config_section(
             Wflow.InputEntry,
@@ -228,7 +237,6 @@
         Wflow.InputEntry,
         Dict("scale" => 1.6, "netcdf_variable_name" => "LAI"),
     )
-
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
@@ -242,8 +250,9 @@
         @test land.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.6f0
         @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0f0
     end
+end
 
-    # test cyclic river and reservoir external inflow (kinematic wave routing)
+@testitem "Cyclic river and reservoir external inflow (kinematic wave routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
 
@@ -265,8 +274,9 @@
         @test reservoir.boundary_conditions.inflow[2] ≈ -0.9034940467629443
         @test reservoir.variables.outflow_av[2] ≈ 3.000999922024245
     end
+end
 
-    # test cyclic river and reservoir external inflow (local inertial routing)
+@testitem "Cyclic river and reservoir external inflow (local inertial routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
 
@@ -288,8 +298,9 @@
         @test reservoir.boundary_conditions.inflow[2] ≈ -0.9071721542108732
         @test reservoir.variables.outflow_av[2] ≈ 3.000999922022744
     end
+end
 
-    # test external negative inflow
+@testitem "External negative inflow" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     model = Wflow.Model(config)
@@ -309,8 +320,10 @@
         @test external_inflow[44] == -10.0
         @test q_av[44] ≈ 8.161991862446984
     end
+end
 
-    # test fixed forcing (precipitation = 2.5)
+@testitem "Fixed forcing (precipitation = 2.5)" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] = 2.5
     model = Wflow.Model(config)
@@ -341,8 +354,9 @@
     end
 
     Wflow.close_files(model; delete_output = false)
+end
 
-    # test local-inertial option for river flow river_routing"
+@testitem "Local-inertial option for river flow river_routing" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
 
@@ -363,8 +377,9 @@
         q_channel = model.routing.river_flow.variables.q_channel_av
         @test q ≈ q_channel
     end
+end
 
-    # test external negative inflow local-inertial river flow
+@testitem "External negative inflow local-inertial river flow" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
     model = Wflow.Model(config)
@@ -387,8 +402,9 @@
     model = Wflow.Model(config)
 
     Wflow.close_files(model; delete_output = false)
+end
 
-    # test local-inertial option for river and overland flow
+@testitem "Local-inertial option for river and overland flow" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
 
@@ -416,8 +432,9 @@
     end
 
     Wflow.close_files(model; delete_output = false)
+end
 
-    # test local-inertial option for river flow including 1D floodplain schematization
+@testitem "Local-inertial option for river flow including 1D floodplain schematization" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
     model = Wflow.Model(config)
