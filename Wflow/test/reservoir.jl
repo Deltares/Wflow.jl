@@ -185,7 +185,7 @@ end
 end
 
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
-@testset "Overflowing reservoir with SH and HQ" begin
+@testitem "Overflowing reservoir with SH and HQ" begin
     res_bc = Wflow.ReservoirBC(;
         inflow = [0.0],
         external_inflow = [0.0],

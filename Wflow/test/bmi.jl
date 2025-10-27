@@ -170,7 +170,7 @@ end
     BMI.finalize(model)
 end
 
-@testset "BMI extension functions" begin
+@testitem "BMI extension functions" begin
     model = BMI.initialize(Wflow.Model, tomlpath)
     @test Wflow.get_start_unix_time(model) == 9.466848e8
     satwaterdepth = mean(model.land.soil.variables.satwaterdepth)
