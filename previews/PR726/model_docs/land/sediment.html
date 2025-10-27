@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Sediment – Wflow.jl</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      macros: {
+        SI: ["#1\\;\\mathrm\{#2\}", 2],
+        SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+        subtext: ["#1_\\text\{#2\}", 2]
+      }
+    }
+  };
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../_static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Wflow.jl</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../getting_started/index.html"> 
+<span class="menu-text">Getting started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../user_guide/index.html"> 
+<span class="menu-text">User guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../model_docs/index.html"> 
+<span class="menu-text">Model documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../developments/index.html"> 
+<span class="menu-text">Developments</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-bi-github" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-bi-github">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl">
+ <span class="dropdown-text">Source Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl/issues/new/choose">
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/land/landhydrology_sbm.html">Land models</a></li><li class="breadcrumb-item"><a href="../../model_docs/land/sediment.html">Sediment</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="../../index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_configurations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model configurations</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/model_settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model settings</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Land models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/land/landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/land/sediment.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Sediment</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Routing concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/kinwave.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematic wave</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Local inertial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/gwf.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Groundwater flow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/routing/sediment_flux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sediment flux</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
+ <span class="menu-text">Model parameters and variables</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_landhydrology_sbm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Hydrology SBM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_sediment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Land Sediment model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#soil-erosion" id="toc-soil-erosion" class="nav-link active" data-scroll-target="#soil-erosion">Soil Erosion</a>
+  <ul class="collapse">
+  <li><a href="#rainfall-erosion" id="toc-rainfall-erosion" class="nav-link" data-scroll-target="#rainfall-erosion">Rainfall erosion</a></li>
+  <li><a href="#overland-flow-erosion" id="toc-overland-flow-erosion" class="nav-link" data-scroll-target="#overland-flow-erosion">Overland flow erosion</a></li>
+  </ul></li>
+  <li><a href="#delivery-to-the-river-system" id="toc-delivery-to-the-river-system" class="nav-link" data-scroll-target="#delivery-to-the-river-system">Delivery to the river system</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/land/landhydrology_sbm.html">Land models</a></li><li class="breadcrumb-item"><a href="../../model_docs/land/sediment.html">Sediment</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Sediment</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Over the land, soil erosion, also called soil loss, is closely linked to the water cycle. The main processes governing sediment generation are splash erosion from rain droplets, and sheet and rill erosion from the shear stress caused by overland flow. The intensity of soil erosion by rain or ﬂow depends on the land and soil characteristics such as slope, land use or soil type. Once soil is eroded, the detached particles can be transported downslope by overland ﬂow. Along the transport pathways, soil particles can also be deposited due to a low flow velocity, a change of topography in depressions, footslopes or valley bottoms, and/or can be filtered and stopped by a change in vegetation such as ﬁeld boundaries.</p>
+<p>The inland part of the sediment gathers these different processes, separated in a structure for the soil loss and routing structure for the transport in overland flow.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../images/soilloss-scheme.png" class="img-fluid figure-img"></p>
+<figcaption>Overview of the different processes for a land cell in wflow_sediment.</figcaption>
+</figure>
+</div>
+<section id="soil-erosion" class="level2">
+<h2 class="anchored" data-anchor-id="soil-erosion">Soil Erosion</h2>
+<p>The first process to consider in sediment dynamics is the generation of sediments by land erosion. The main processes behind soil loss are rainfall erosion and overland flow erosion. In order to model such processes at a fine time and space scale, physics-based models such as ANSWERS and EUROSEM were chosen here.</p>
+<p>The choice of rainfall erosion model is set up in the model section of the TOML:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">rainfall_erosion</span> <span class="op">=</span> <span class="st">"answers"</span> <span class="co"># Rainfall erosion model: ["answers", "eurosem"]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="rainfall-erosion" class="level3">
+<h3 class="anchored" data-anchor-id="rainfall-erosion">Rainfall erosion</h3>
+<p>In wflow_sediment, rainfall erosion can both be modelled using EUROSEM or ANSWERS equation. The main difference between the models is that EUROSEM uses a more physics-based approach based on the kinetic energy of the rain drops impacting the soil (Morgan et al, 1998), while ANSWERS is more empirical and uses parameters from the USLE model (Beasley et al, 1991).</p>
+<p>In EUROSEM, rainfall erosion is modelled according to rainfall intensity and its kinetic energy when it reaches the soil according to equations developed by Brandt (1990). As the intensity of the rain kinetic energy depends on the length of the fall, rainfall intercepted by vegetation will then be reduced compared to direct throughfall. The kinetic energy of direct throughfall is estimated by (Morgan et al, 1998): <span class="math display">\[
+   \subtext{\mathrm{KE}}{direct} = 8.95 + 8.44\,\log_{10}(R_i)
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\subtext{\mathrm{KE}}{direct}}{J\ m^{-2}\ mm^{-1}}\)</span> is the kinetic energy of direct throughfall and <span class="math inline">\(\SIb{R_i}{mm\ h^{-1}}\)</span> is rainfall intensity. If the rainfall is intercepted by vegetation and falls as leaf drainage, its kinetic energy is then reduced according to (Brandt, 1990): <span class="math display">\[
+   \subtext{\mathrm{KE}}{leaf} = 15.8\,\sqrt{H_p} - 5.87
+\]</span> where <span class="math inline">\(\SIb{\subtext{\mathrm{KE}}{leaf}}{J\ m^{-2}\ mm^{-1}}\)</span> is kinetic energy of leaf drainage and <span class="math inline">\(\SIb{H_p}{m}\)</span> is the effective canopy height (half of plant height). Canopy height can be derived from the global map from Simard &amp; al.&nbsp;(2011) or by user input depending on the land use.</p>
+<p>Kinetic energies from both direct throughfall and leaf drainage are then multiplied by the respective depths of direct throughfall and leaf drainage (mm) and added to get the total rainfall kinetic energy <span class="math inline">\(\mathrm{KE}\)</span>. The soil detached by rainfall <span class="math inline">\(\SIb{D_R}{g\ m^{-2}}\)</span> is then: <span class="math display">\[
+   D_R = k\,\mathrm{KE}\,e^{-\varphi h}
+\]</span> where <span class="math inline">\(\SIb{k}{g\ J^{-1}}\)</span> is an index of the detachability of the soil, <span class="math inline">\(\SIb{\mathrm{KE}}{J\ m^{-2}}\)</span> is the total rainfall kinetic energy, <span class="math inline">\(\SIb{h}{m}\)</span> is the surface runoff depth on the soil and <span class="math inline">\(\varphi\)</span> is an exponent varying between <span class="math inline">\(0.9\)</span> and <span class="math inline">\(3.1\)</span> used to reduce rainfall impact if the soil is already covered by water. As a simplification, Torri (1987) has shown that a value of <span class="math inline">\(2.0\)</span> for <span class="math inline">\(\varphi\)</span> is representative enough for a wide range of soil conditions. The detachability of the soil <span class="math inline">\(k\)</span> depends on the soil texture (proportion of clay, silt and sand content) and corresponding values are defined in EUROSEM user guide (Morgan et al, 1998). As a simplification, in <code>wflow_sediment</code>, the mean value of the detachability shown in the table below are used. Soil texture can for example be derived from the topsoil clay and silt content from SoilGrids (Hengl et al, 2017).</p>
+<table class="caption-top table">
+<caption>Mean detachability of soil depending on its texture (Morgan et al, 1998).</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Texture (USDA system)</th>
+<th>Mean detachability <span class="math inline">\(\SIb{k}{g\ J^{-1}}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Clay</td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Clay Loam</td>
+<td>1.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Silt</td>
+<td>1.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Silt Loam</td>
+<td>1.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Loam</td>
+<td>2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sandy Loam</td>
+<td>2.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Loamy Sand</td>
+<td>3.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fine Sand</td>
+<td>3.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sand</td>
+<td>1.9</td>
+</tr>
+</tbody>
+</table>
+<p>Rainfall erosion is handled differently in ANSWERS. There, the impacts of vegetation and soil properties are handled through the USLE coefficients in the equation (Beasley et al, 1991):</p>
+<p><span class="math display">\[
+   D_R = 0.108 \, \subtext{C}{USLE} \, \subtext{K}{USLE} \, A_i \, R_i^2
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{D_R}{kg\ min^{-1}}\)</span> is the soil detachment by rainfall, <span class="math inline">\(\subtext{C}{USLE}\)</span> is the soil cover-management factor from the USLE equation, <span class="math inline">\(\subtext{K}{USLE}\)</span> is the soil erodibility factor from the USLE equation, <span class="math inline">\(\SIb{A_i}{m^2}\)</span> is the area of the cell and <span class="math inline">\(\SIb{R_i}{mm\ min^{-1}}\)</span> is the rainfall intensity. There are several methods available to estimate the <span class="math inline">\(C\)</span> and <span class="math inline">\(K\)</span> factors from the USLE. They can come from user input maps, for example maps resulting from Panagos &amp; al.’s recent studies for Europe (Panagos et al, 2015) (Ballabio et al, 2016). To get an estimate of the <span class="math inline">\(C\)</span> factor globally, the other method is to estimate <span class="math inline">\(C\)</span> values for the different land use type in from global land cover maps (e.g. GlobCover). An example is given for the global land cover map GlobCover, summed up in the table below, the values come from a literature study including Panagos et al.’s review (2015), Gericke &amp; al.&nbsp;(2015), Mansoor &amp; al.&nbsp;(2013), Chadli et al.&nbsp;(2016), de Vente et al. (2009), Borrelli et al.&nbsp;(2014), Yang et al.&nbsp;(2003) and Bosco et al.&nbsp;(2015).</p>
+<p>The other methods to estimate the USLE <span class="math inline">\(K\)</span> factor are to use either topsoil composition or topsoil geometric mean diameter. <span class="math inline">\(K\)</span> estimation from topsoil composition is estimated with the equation developed in the EPIC model (Williams et al, 1983):</p>
+<p><span class="math display">\[
+\begin{gathered}
+   \subtext{K}{USLE} = \left[ 0.2 + 0.3\exp\left(-0.0256\;\mathrm{SAN}\frac{(1-\mathrm{SIL})}{100}\right) \right]
+   \left(\frac{\mathrm{SIL}}{\mathrm{CLA}+\mathrm{SIL}}\right)^{0.3} \\
+   \left(1-\frac{0.25\;\mathrm{OC}}{\mathrm{OC}+e^{3.72-2.95\;\mathrm{OC}}}\right)\left(1-\frac{0.75\;\mathrm{SN}}{\mathrm{SN}+e^{-5.51+22.9\;\mathrm{SN}}}\right)
+\end{gathered}
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{\mathrm{CLA}}{\%}\)</span>, <span class="math inline">\(\SIb{\mathrm{SIL}}{\%}\)</span>, <span class="math inline">\(\SIb{\mathrm{SAN}}{\%}\)</span> are respectively the clay, silt and sand fractions of the topsoil, <span class="math inline">\(\SIb{OC}{\%}\)</span> is the topsoil organic carbon content and <span class="math inline">\(\mathrm{SN} = 1-\mathrm{SAN}/100\)</span>. These soil parameters can be derived for example from the SoilGrids dataset. The <span class="math inline">\(K\)</span> factor can also be estimated from the soil mean geometric diameter using the formulation from the RUSLE guide by Renard &amp; al. (1997):</p>
+<p><span class="math display">\[
+   \subtext{K}{USLE} = 0.0034 + 0.0405\exp\left(-\dfrac{1}{2}\left(\dfrac{\log_{10}(D_g)+1.659}{0.7101}\right)^2\right)
+\]</span></p>
+<p>where <span class="math inline">\(D_g\)</span> is the soil geometric mean diameter (mm) estimated from topsoil clay, silt, sand fraction.</p>
+<table class="caption-top table">
+<caption>Estimation of USLE C factor per Globcover land use type</caption>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 66%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">GlobCover Value</th>
+<th>Globcover label</th>
+<th><span class="math inline">\(\subtext{C}{USLE}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">11</td>
+<td>Post-flooding or irrigated croplands (or aquatic)</td>
+<td>0.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">14</td>
+<td>Rainfed croplands</td>
+<td>0.35</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">20</td>
+<td>Mosaic cropland (50-70%) vegetation (grassland/shrubland/forest) (20-50%)</td>
+<td>0.27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">30</td>
+<td>Mosaic vegetation (grassland/shrubland/forest) (50-70%) / cropland (20-50%)</td>
+<td>0.25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">40</td>
+<td>Closed to open (&gt;15%) broadleaved evergreen or semi-deciduous forest (&gt;5m)</td>
+<td>0.0065</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">50</td>
+<td>Closed (&gt;40%) broadleaved deciduous forest (&gt;5m)</td>
+<td>0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">60</td>
+<td>Open (15-40%) broadleaved deciduous forest/woodland (&gt;5m)</td>
+<td>0.01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">70</td>
+<td>Closed (&gt;40%) needleleaved evergreen forest (&gt;5m)</td>
+<td>0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">90</td>
+<td>Open (15-40%) needleleaved deciduous or evergreen forest (&gt;5m)</td>
+<td>0.01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">100</td>
+<td>Closed to open (&gt;15%) mixed broadleaved and needleleaved forest (&gt;5m)</td>
+<td>0.02</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">110</td>
+<td>Mosaic forest or shrubland (50-70%) / grassland (20-50%)</td>
+<td>0.015</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">120</td>
+<td>Mosaic grassland (50-70%) / forest or shrubland (20-50%)</td>
+<td>0.03</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">130</td>
+<td>Closed to open (&gt;15%) (broadleaved or needleleaved, evergreen or deciduous) shrubland (&lt;5m)</td>
+<td>0.035</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">140</td>
+<td>Closed to open (&gt;15%) herbaceous vegetation (grassland, savannas or lichens/mosses)</td>
+<td>0.05</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">150</td>
+<td>Sparse (&lt;15%) vegetation</td>
+<td>0.35</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">160</td>
+<td>Closed to open (&gt;15%) broadleaved forest regularly flooded (semi-permanently or temporarily) - Fresh or brackish water</td>
+<td>0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">170</td>
+<td>Closed (&gt;40%) broadleaved forest or shrubland permanently flooded - Saline or brackish water</td>
+<td>0.0005</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">180</td>
+<td>Closed to open (&gt;15%) grassland or woody vegetation on regularly flooded or waterlogged soil - Fresh, brackish or saline water</td>
+<td>0.04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">190</td>
+<td>Artificial surfaces and associated areas (Urban areas &gt;50%)</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">200</td>
+<td>Bare areas</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">210</td>
+<td>Water bodies</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">220</td>
+<td>Permanent snow and ice</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">230</td>
+<td>No data (burnt areas, clouds,…)</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="overland-flow-erosion" class="level3">
+<h3 class="anchored" data-anchor-id="overland-flow-erosion">Overland flow erosion</h3>
+<p>Overland flow (or surface runoff) erosion is induced by the strength of the shear stress of the surface water on the soil. As in rainfall erosion, the effect of the flow shear stress can be reduced by the soil vegetation or by the soil properties. In wflow_sediment, soil detachment by overland flow is modelled as in ANSWERS with (Beasley et al, 1991):</p>
+<p><span class="math display">\[
+   D_G = 0.90 \, \subtext{C}{USLE} \, \subtext{K}{USLE} \, A_i \, S \, q
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{D_F}{kg\ min^{-1}}\)</span> is soil detachment by flow, <span class="math inline">\(\subtext{C}{USLE}\)</span> and <span class="math inline">\(\subtext{K}{USLE}\)</span> are the USLE cover and soil erodibility factors, <span class="math inline">\(\SIb{A_i}{m^2}\)</span> is the cell area, <span class="math inline">\(S\)</span> is the slope gradient and <span class="math inline">\(\SIb{q}{m^2\ min^{-1}}\)</span> is the overland flow rate per unit width. The USLE <span class="math inline">\(C\)</span> and <span class="math inline">\(K\)</span> factors can be estimated with the same methods as for rainfall erosion and here the slope gradient is obtained from the sinus rather than the tangent of the slope angle.</p>
+</section>
+</section>
+<section id="delivery-to-the-river-system" class="level2">
+<h2 class="anchored" data-anchor-id="delivery-to-the-river-system">Delivery to the river system</h2>
+<p>Once soil is detached, it can be transported by overland flow and reach the river system. This process is described in <a href="../../model_docs/routing/sediment_flux.html#sediment-flux-in-overland-flow">Sediment Flux in overland flow</a>.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>D.B Beasley and L.F Huggins. ANSWERS - Users Manual. Technical report, EPA, 1991.</li>
+<li>P. Borrelli, M. Märker, P. Panagos, and B. Schütt. Modeling soil erosion and river sediment yield for an intermountain drainage basin of the Central Apennines, Italy. Catena, 114:45-58,
+<ol start="2014" type="1">
+<li>10.1016/j.catena.2013.10.007</li>
+</ol></li>
+<li>C. Bosco, D. De Rigo, O. Dewitte, J. Poesen, and P. Panagos. Modelling soil erosion at European scale: Towards harmonization and reproducibility. Natural Hazards and Earth System Sciences, 15(2):225-245, 2015. 10.5194/nhess-15-225-2015</li>
+<li>C.J Brandt. Simulation of the size distribution and erosivity of raindrops and throughfall drops. Earth Surface Processes and Landforms, 15(8):687-698, dec 1990.</li>
+<li>K. Chadli. Estimation of soil loss using RUSLE model for Sebou watershed (Morocco). Modeling Earth Systems and Environment, 2(2):51, 2016. 10.1007/s40808-016-0105-y</li>
+<li>G R Foster. Modeling the erosion process. Hydrologic modeling of small watersheds, pages 295-380, 1982.</li>
+<li>A. Gericke. Soil loss estimation and empirical relationships for sediment delivery ratios of European river catchments. International Journal of River Basin Management, 2015. 10.1080/15715124.2014.1003302</li>
+<li>L.D.K. Mansoor, M.D.&nbsp;Matlock, E.C. Cummings, and L.L. Nalley. Quantifying and mapping multiple ecosystem services change in West Africa. Agriculture, Ecosystems and Environment, 165:6-18, 2013. 10.1016/j.agee.2012.12.001</li>
+<li>Q Morgan, J.N Smith, R.E Govers, G Poesen, J.W.A Auerswald, K Chisci, G Torri, D Styczen, and M E Folly. The European soil erosion model (EUROSEM): documentation and user guide. Technical report, 1998.</li>
+<li>S.L Neitsch, J.G Arnold, J.R Kiniry, and J.R Williams. SWAT Theoretical Documentation Version
+<ol start="2009" type="1">
+<li>Texas Water Resources Institute, pages 1-647, 2011. 10.1016/j.scitotenv.2015.11.063</li>
+</ol></li>
+<li>P. Panagos, P. Borrelli, K. Meusburger, C. Alewell, E. Lugato, and L. Montanarella. Estimating the soil erosion cover-management factor at the European scale. Land Use Policy, 48:38-50, 2015. 10.1016/j.landusepol.2015.05.021</li>
+<li>K Renard, Gr Foster, Ga Weesies, Dk McCool, and Dc Yoder. Predicting soil erosion by water: a guide to conservation planning with the Revised Universal Soil Loss Equation (RUSLE). Washington, 1997.</li>
+<li>D. Torri, M. Sfalanga, and M. Del Sette. Splash detachment: Runoff depth and soil cohesion. Catena, 14(1-3):149-155, 1987. 10.1016/S0341-8162(87)80013-9</li>
+<li>J. de Vente, J. Poesen, G. Govers, and C. Boix-Fayos. The implications of data selection for regional erosion and sediment yield modelling. Earth Surface Processes and Landforms, 34(15):1994-2007, 2009. 10.1002/esp.1884</li>
+<li>G. Verstraeten and J. Poesen. Estimating trap efficiency of small reservoirs and ponds: methods and implications for the assessment of sediment yield. Progress in Physical Geography, 24(2):219-251, 2000. 10.1177/030913330002400204</li>
+<li>O. Vigiak, A. Malago, F. Bouraoui, M. Vanmaercke, and J. Poesen. Adapting SWAT hillslope erosion model to predict sediment concentrations and yields in large Basins. Science of the Total Environment, 538:855-875, 2015. 10.1016/j.scitotenv.2015.08.095</li>
+<li>J.R. Williams, K.G. Renard, and P.T. Dyke. EPIC A new method for assessing erosion’s effect on soil productivity. Journal of Soil and Water Conservation, 38(5):381-383, 1983.</li>
+<li>D. Yang, S. Kanae, T. Oki, T. Koike, and K. Musiake. Global potential soil erosion with reference to land use and climate changes. Hydrological Processes, 17(14):2913-2928, 2003. 10.1002/hyp.1441</li>
+</ul>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="../../_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
