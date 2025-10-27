@@ -258,7 +258,7 @@ end
 
 @testset "initial parameter values" begin
     (; land) = model
-    @test land.snow.parameters.cfmax[1] ≈ 3.7565300464630127
+    @test land.snow.p.properties.cfmax[1] ≈ 3.7565300464630127
     @test land.soil.parameters.soilthickness[1] ≈ 2000.0
     @test land.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
     @test land.soil.parameters.c[1] ≈
@@ -286,7 +286,7 @@ Wflow.load_dynamic_input!(model)
 
 @testset "changed parameter values" begin
     (; land) = model
-    @test land.snow.parameters.cfmax[1] == 2.0
+    @test land.snow.p.properties.cfmax[1] == 2.0
     @test land.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
     @test land.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
     @test land.soil.parameters.c[1] ≈ [

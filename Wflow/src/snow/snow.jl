@@ -144,7 +144,7 @@ end
 
 "Update boundary condition (effective precipitation provided by an interception model) of a snow model for a single timestep"
 function update_boundary_conditions!(model::AbstractSnowModel, external_models::NamedTuple)
-    (; effective_precip) = model.boundary_conditions
+    (; effective_precip) = model.p.cache
     (; interception) = external_models
     @. effective_precip =
         interception.variables.throughfall + interception.variables.stemflow
@@ -188,12 +188,12 @@ end
 
 # wrapper methods
 get_runoff(model::NoSnowModel) = Zeros(model.n)
-get_runoff(model::AbstractSnowModel) = model.variables.runoff
+get_runoff(model::AbstractSnowModel) = model.p.cache.runoff
 get_snow_storage(model::NoSnowModel) = Zeros(model.n)
-get_snow_storage(model::AbstractSnowModel) = model.variables.snow_storage
+get_snow_storage(model::AbstractSnowModel) = model.p.cache.snow_storage
 get_snow_water(model::NoSnowModel) = Zeros(model.n)
-get_snow_water(model::AbstractSnowModel) = model.variables.snow_water
+get_snow_water(model::AbstractSnowModel) = model.p.cache.snow_water
 get_snow_out(model::NoSnowModel) = Zeros(model.n)
-get_snow_out(model::AbstractSnowModel) = model.variables.snow_out
+get_snow_out(model::AbstractSnowModel) = model.p.cache.snow_out
 get_snow_in(model::NoSnowModel) = Zeros(model.n)
-get_snow_in(model::AbstractSnowModel) = model.variables.snow_in
+get_snow_in(model::AbstractSnowModel) = model.p.cache.snow_in
