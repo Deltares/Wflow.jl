@@ -558,6 +558,7 @@
 
     # test different ksat profiles
     @testset "ksat profiles (SBM)" begin
+        tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         function get_config(profile)
             config = Wflow.Config(tomlpath)
             config.model.saturated_hydraulic_conductivity_profile = profile
