@@ -107,7 +107,7 @@
         @test snow.variables.snow_storage[5] ≈ 3.843412524052313
         @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949
         @test sbm.variables.total_storage[50063] ≈ 560.0152135062889
-        @test sbm.variables.total_storage[429] ≈ 616.8916185820142  # river cell
+        @test sbm.variables.total_storage[429] ≈ 621.0736699680651  # river cell
     end
 
     @testset "subsurface flow" begin
@@ -282,7 +282,7 @@
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_av[44] ≈ 10.506442564804948
+        @test model.routing.river_flow.variables.q_av[44] ≈ 10.50305047607618
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
         @test reservoir.boundary_conditions.inflow[2] ≈ -0.9071721542108732
@@ -356,10 +356,10 @@
         @test q[1622] ≈ 7.289980625194041e-5
         @test q[43] ≈ 11.704258106198282
         @test q[501] ≈ 3.476287791554973
-        h = model.routing.river_flow.variables.h_av
-        @test h[1622] ≈ 0.001985933166759342
-        @test h[43] ≈ 0.4329048397352018
-        @test h[501] ≈ 0.056289163404440894
+        h = model.routing.river_flow.variables.h
+        @test h[1622] ≈ 0.001916459564612729
+        @test h[43] ≈ 0.45613016178188176
+        @test h[501] ≈ 0.39135863221416445
         q_channel = model.routing.river_flow.variables.q_channel_av
         @test q ≈ q_channel
     end
@@ -398,14 +398,14 @@
 
     @testset "river and overland flow and depth (local inertial)" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 2487.788003075457
+        @test sum(q) ≈ 2487.7880030754577
         @test q[1622] ≈ 7.300095720748329e-5
         @test q[43] ≈ 5.361589700955226
         @test q[501] ≈ 1.5963379999546816
-        h = model.routing.river_flow.variables.h_av
-        @test h[1622] ≈ 0.0019869164746288163
-        @test h[43] ≈ 0.30039113560179925
-        @test h[501] ≈ 0.031860877159887564
+        h = model.routing.river_flow.variables.h
+        @test h[1622] ≈ 0.001917375987049719
+        @test h[43] ≈ 0.31140576413997656
+        @test h[501] ≈ 0.3137235202786005
         qx = model.routing.overland_flow.variables.qx
         qy = model.routing.overland_flow.variables.qy
         @test qx[[26, 35, 631]] ≈ [0.1928420096938017, 0.002124444980556465, 0.0]
@@ -527,11 +527,11 @@
         @test q[43] ≈ 11.70425810619834
         @test q[501] ≈ 3.4191680122612005
         @test q[5808] ≈ 0.00222269668257336
-        h = model.routing.river_flow.variables.h_av
-        @test h[1622] ≈ 0.0019859331038689374
-        @test h[43] ≈ 0.4329048397354824
-        @test h[501] ≈ 0.05577415609134651
-        @test h[5808] ≈ 0.005930538978773336
+        h = model.routing.river_flow.variables.h
+        @test h[1622] ≈ 0.0019164595646391097
+        @test h[43] ≈ 0.4561301617818869
+        @test h[501] ≈ 0.3853858752080211
+        @test h[5808] ≈ 0.007331224034952326
     end
 
     # set boundary condition local inertial routing from netCDF file
@@ -548,11 +548,11 @@
         @test q[43] ≈ 11.70425810619834
         @test q[501] ≈ 3.4191680122612005
         @test q[5808] ≈ 0.05527314374908936
-        h = model.routing.river_flow.variables.h_av
-        @test h[1622] ≈ 0.0019859331038689374
-        @test h[43] ≈ 0.4329048397354824
-        @test h[501] ≈ 0.05577415609134651
-        @test h[5808] ≈ 1.9999993313276971
+        h = model.routing.river_flow.variables.h
+        @test h[1622] ≈ 0.0019164595646391097
+        @test h[43] ≈ 0.4561301617818869
+        @test h[501] ≈ 0.3853858752080211
+        @test h[5808] ≈ 2.0000260701185257
     end
     Wflow.close_files(model; delete_output = false)
 
