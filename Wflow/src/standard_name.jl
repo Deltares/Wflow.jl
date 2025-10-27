@@ -32,9 +32,9 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.interception.variables.interception_rate),
         unit = "mm dt-1",
     ),
-    "snowpack__leq_depth" => (lens = @optic(_.land.snow.variables.swe), unit = "mm"),
+    "snowpack__leq_depth" => (lens = @optic(_.land.snow.p.cache.swe), unit = "mm"),
     "snowpack_meltwater__volume_flux" =>
-        (lens = @optic(_.land.snow.variables.snow_melt), unit = "mm dt-1"),
+        (lens = @optic(_.land.snow.p.cache.snow_melt), unit = "mm dt-1"),
     "snowpack_water__runoff_volume_flux" =>
         (lens = @optic(_.land.snow.variables.runoff), unit = "mm dt-1"),
     "river_water__external_inflow_volume_flow_rate" => (

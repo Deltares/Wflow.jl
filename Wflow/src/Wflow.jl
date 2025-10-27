@@ -6,6 +6,7 @@ using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using CompositionsBase: decompose
+using ComponentArrays: ComponentVector, Axis
 using Dates:
     Dates,
     Second,
@@ -72,6 +73,8 @@ const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
+
+abstract type AbstractVerticalModel end
 
 mutable struct Clock{T}
     time::T
@@ -229,6 +232,11 @@ include("subdomains.jl")
 include("logging.jl")
 include("states.jl")
 include("mass_balance.jl")
+
+include("vertical/parameter_snow.jl")
+include("vertical/read_snow.jl")
+include("vertical/solve_snow.jl")
+include("vertical/solve.jl")
 
 """
     run(tomlpath::AbstractString; silent=false)
