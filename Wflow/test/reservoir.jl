@@ -186,6 +186,8 @@ end
 
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
 @testitem "Overflowing reservoir with SH and HQ" begin
+    using Accessors: @reset
+    datadir = joinpath(@__DIR__, "data")
     res_bc = Wflow.ReservoirBC(;
         inflow = [0.0],
         external_inflow = [0.0],
