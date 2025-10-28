@@ -56,8 +56,7 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
         else
             river_water_balance = MassBalance(; n = n_river)
         end
-        args = (river_water_balance, reservoir_water_balance)
-        routing = FlowRoutingMassBalance{typeof.(args)...}(;
+        routing = FlowRoutingMassBalance(;
             river_water_balance,
             reservoir_water_balance,
             overland_water_balance = MassBalance(; n = n_land),
