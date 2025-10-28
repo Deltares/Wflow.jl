@@ -7,13 +7,17 @@ function update_preamble!(
 )::Nothing
     (; integrators, p) = model_vertical
     (; cache, properties) = p
-    (; snow_precip, liquid_precip, freeze_rate, melt_rate) = cache
+    (; snow_precip, liquid_precip, freeze_rate, melt_rate, snow_storage, snow_water) = cache
     (; tt, tti, ttm) = properties
 
     # Reset snow melt and runoff
     (; u) = integrators[i]
     u.snow_melt = 0
     u.runoff = 0
+
+    # Obtain the sub time stepping initial condition
+    u.snow_storage = snow_storage[i]
+    u.snow_water = snow_water[i]
 
     # Precipitation rates
     temperature = land.atmospheric_forcing.temperature[i]

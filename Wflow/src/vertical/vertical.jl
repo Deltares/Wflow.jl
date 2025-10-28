@@ -94,3 +94,7 @@ function update!(
     end
     return nothing
 end
+
+include("snow/snow_parameter.jl")
+include("snow/snow_read.jl")
+include("snow/snow_solve.jl")

@@ -233,10 +233,7 @@ include("logging.jl")
 include("states.jl")
 include("mass_balance.jl")
 
-include("vertical/solve.jl")
-include("vertical/parameter_snow.jl")
-include("vertical/read_snow.jl")
-include("vertical/solve_snow.jl")
+include("vertical/vertical.jl")
 
 """
     run(tomlpath::AbstractString; silent=false)
