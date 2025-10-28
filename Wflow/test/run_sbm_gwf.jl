@@ -1,5 +1,5 @@
 
-@testitem "Run SBM GWF 1" begin
+@testitem "Run model sbm_gwf (kinematic wave routing)" begin
     using Dates: DateTime
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -101,10 +101,9 @@
     Wflow.close_files(model; delete_output = false)
 end
 
-@testitem "Run SBM GWF 2" begin
+@testitem "Run sbm_gwf (local inertial routing)" begin
     # test complete run including logging entry TOML file (not set)
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
-    Wflow.run(tomlpath; silent = true)
 
     # test local-inertial option for river flow routing
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
@@ -184,11 +183,6 @@ end
         @test sbm.soil.variables.transpiration[1] ≈ 1.0122634204681036
     end
 
-    @testset "overland flow warm start (kinematic wave)" begin
-        q = model.routing.overland_flow.variables.q_av
-        @test sum(q) ≈ 1.4233852635648338e-5
-    end
-
     @testset "river domain warm start (kinematic wave)" begin
         q = model.routing.river_flow.variables.q_av
         river = model.routing.river_flow
@@ -216,6 +210,20 @@ end
     end
 
     Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "overland flow warm start (kinematic wave)" begin
+    tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.cold_start__flag = false
+
+    model = Wflow.Model(config)
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    q = model.routing.overland_flow.variables.q_av
+    @test sum(q) ≈ 1.4233852635648338e-5
 end
 
 @testitem "run wflow sbm_gwf" begin

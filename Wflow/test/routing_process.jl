@@ -1,4 +1,4 @@
-@testitem "flow_rate" begin
+@testitem "kinematic wave overland flow" begin
     using NCDatasets: NCDataset
     using Graphs: topological_sort_by_dfs
 

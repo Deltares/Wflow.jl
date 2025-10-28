@@ -1,4 +1,4 @@
-@testitem "piave with and without water demand" begin
+@testitem "Piave with and without water demand (sbm model)" begin
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
@@ -87,7 +87,7 @@
     ]
 end
 
-@testitem "Piave water demand and allocation" begin
+@testitem "Piave water demand and allocation (sbm model)" begin
     using Statistics: mean
 
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
@@ -179,7 +179,7 @@ end
     Wflow.close_files(model; delete_output = false)
 end
 
-@testitem "piave: reservoir without external negative inflow" begin
+@testitem "Piave: reservoir without external negative inflow (sbm model)" begin
     # test cyclic reservoir external inflow
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
@@ -195,7 +195,7 @@ end
     @test reservoir.variables.outflow_av[1] ≈ 4.84140356355074
 end
 
-@testitem "piave: reservoir with cyclic external negative inflow" begin
+@testitem "Piave: reservoir with cyclic external negative inflow (sbm model)" begin
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
@@ -211,7 +211,7 @@ end
     @test reservoir.variables.outflow_av[1] ≈ 4.82162803109911
 end
 
-@testitem "piave: reservoir with observed outflow (cyclic)" begin
+@testitem "Piave: reservoir with observed (cyclic) outflow (sbm model)" begin
     using Dates: DateTime
     # test use of observed reservoir outflow (cyclic) 
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
@@ -233,7 +233,7 @@ end
 end
 
 # test debug message using observed outflow for two timesteps
-@testitem "piave: log debug message using observed reservoir outflow" begin
+@testitem "Piave: log debug message using observed reservoir outflow (sbm model)" begin
     using TOML
     using Dates: DateTime
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
@@ -254,7 +254,7 @@ end
     @test count(contains(line, msg) for line in lines) == 2
 end
 
-@testitem "water balance piave water demand" begin
+@testitem "Water balance Piave water demand (sbm model)" begin
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     config.model.water_mass_balance__flag = true

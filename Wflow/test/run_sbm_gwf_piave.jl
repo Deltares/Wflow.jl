@@ -1,4 +1,4 @@
-@testitem "Piave water demand and allocation" begin
+@testitem "Piave water demand and allocation (sbm_gwf model)" begin
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
@@ -90,7 +90,7 @@
     Wflow.close_files(model; delete_output = false)
 end
 
-@testitem "water balance piave water demand sbm_gwf" begin
+@testitem "water balance piave water demand (sbm_gwf model)" begin
     tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     config.model.water_mass_balance__flag = true
