@@ -13,13 +13,13 @@ Wflow.run_timestep!(model)
 @testset "piave water demand and allocation first timestep" begin
     sum_total_alloc = sum(total_alloc)
     @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-    @test sum(surfacewater_alloc) ≈ 1747.401299613164
-    @test sum(act_groundwater_abst) ≈ 392.3593761085565
+    @test sum(surfacewater_alloc) ≈ 1789.6488381807214
+    @test sum(act_groundwater_abst) ≈ 407.090604383911
     @test paddy.variables.h[[25, 42, 45]] ≈ [42.968584878704704, 0.0, 33.2318007065323]
     @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
     @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 25.0, 0.0]
     @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
-    @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈ [0.0, 0.0, 4.487607239115634]
+    @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈ [0.0, 0.0, 4.686514627361238]
     @test industry.demand.demand_gross[[1, end]] ≈ [0.2105557769536972, 0.0485190823674202]
     @test industry.demand.demand_net[[1, end]] ≈ [0.05265098437666893, 0.012132546864449978]
     @test industry.variables.returnflow[[1, end]] ≈
@@ -46,7 +46,7 @@ Wflow.run_timestep!(model)
     ]
     @test maximum(soil.variables.exfiltsatwater) ≈ 221.55275282631922
     @test soil.variables.exfiltsatwater[17] == 0.0
-    @test mean(river_flow.variables.q_av) ≈ 30.13050620962414
+    @test mean(river_flow.variables.q_av) ≈ 30.121490886621505
     @test maximum(river_flow.variables.q_av) ≈ 117.02953499886921
 end
 
@@ -55,32 +55,32 @@ Wflow.run_timestep!(model)
 @testset "piave water demand and allocation second timestep" begin
     sum_total_alloc = sum(total_alloc)
     @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-    @test sum(surfacewater_alloc) ≈ 1657.5137653841352
-    @test sum(act_groundwater_abst) ≈ 355.26436177819943
+    @test sum(surfacewater_alloc) ≈ 1646.0546466090132
+    @test sum(act_groundwater_abst) ≈ 350.07246029268623
     @test paddy.variables.h[[25, 42, 45]] ≈ [38.99648725170036, 0.0, 27.60970255170497]
     @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
     @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 25.0, 0.0]
     @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
     @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
-          [0.0, 3.9965040974684207, 4.934576083986045]
+          [0.0, 4.264347104462701, 5.022735931644931]
     @test reservoir.variables.waterlevel ≈
           [23.963488224416217, 32.68607771649562, 39.970184252221905]
     @test reservoir.variables.storage ≈ [1.552834036942174e8, 4.28e7, 7.16e7]
     @test reservoir.variables.outflow_av ≈
           [3.2484777194372767, 9.786060151682026, 36.775649884896126]
     @test soil.variables.exfiltsatwater[27:33] ≈ [
-        38.826934564590154,
-        1.8763852574365085,
-        16.706492573990445,
-        11.49835300821396,
-        28.941038671258262,
-        18.349098566000947,
-        19.768850213191357,
+        38.691415562179856,
+        1.8640906989562667,
+        16.644987033260467,
+        11.455445650770203,
+        28.858197787867883,
+        18.29079365491743,
+        19.70311503858384,
     ]
     @test maximum(soil.variables.exfiltsatwater) ≈ 341.59378295314747
     @test soil.variables.exfiltsatwater[17] == 0.0
-    @test mean(river_flow.variables.q_av) ≈ 36.15421900368785
-    @test maximum(river_flow.variables.q_av) ≈ 140.4028715367324
+    @test mean(river_flow.variables.q_av) ≈ 36.15037912106164
+    @test maximum(river_flow.variables.q_av) ≈ 140.4266200329677
 end
 
 Wflow.close_files(model; delete_output = false)

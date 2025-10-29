@@ -169,7 +169,7 @@ by the infiltration capacity, taking into account limited irrigation efficiency 
 by a maximum irrigation rate.
 """
 function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
-    (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
+    (; hb, theta_s, theta_r, theta_fc, c, sumlayers, pathfrac, infiltcapsoil) =
         soil.parameters
     (;
         h3,
@@ -198,14 +198,13 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
                         ustorelayerthickness[i][k]
                     ),
                 )
-                # vwc_f and vwc_h3 can be precalculated.
-                vwc_fc = vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
+                # vwc_h3 can be precalculated.
                 vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
                 depletion =
-                    (vwc_fc * ustorelayerthickness[i][k]) -
+                    (theta_fc[i] * ustorelayerthickness[i][k]) -
                     (ustorelayerdepth[i][k] + theta_r[i] * ustorelayerthickness[i][k])
                 depletion *= rootfrac
-                raw = (vwc_fc - vwc_h3) * ustorelayerthickness[i][k] # readily available water
+                raw = (theta_fc[i] - vwc_h3) * ustorelayerthickness[i][k] # readily available water
                 raw *= rootfrac
 
                 # check if maximum irrigation rate has been applied at the previous time step.
