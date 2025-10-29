@@ -1,4 +1,4 @@
-@testitem "configuration file" begin
+@testitem "Configuration file" begin
     using TOML
     using Dates: DateTime
 
@@ -144,6 +144,39 @@ end
     @test clock.dt == dt
 end
 
+@testitem "Calendar noleap (DateTimeNoLeap) for time and clock" begin
+    using CFTime: DateTimeNoLeap
+    using Dates: Second, Day
+
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    # test calendar setting `noleap` in forcing netCDF file (including `_FillValue` in time
+    # dimension) and in TOML file (Clock{DateTimeNoLeap}).
+    config = Wflow.Config(tomlpath)
+    config.input.path_forcing = "forcing-calendar-noleap.nc"
+    config.time.calendar = "noleap"
+
+    # with `_FillValue` in time dimension Wflow throws a warning
+    reader = @test_logs (
+        :warn,
+        "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions.",
+    ) match_mode = :any Wflow.NCReader(config)
+    @test eltype(reader.dataset_times) == DateTimeNoLeap
+    @test ismissing(reader.dataset_times) == false # missing in time dimension is not allowed
+    @test reader.dataset_times ==
+          collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
+
+    # test Clock{DateTimeNoLeap}
+    clock = Wflow.Clock(config, reader)
+    @test clock.time isa DateTimeNoLeap
+    @test clock.time == DateTimeNoLeap(2000, 1, 1)
+
+    starttime = DateTimeNoLeap(2000, 2, 28)
+    dt = Day(1)
+    clock = Wflow.Clock(starttime, 0, Second(dt))
+    Wflow.advance!(clock)
+    @test clock.time == DateTimeNoLeap(2000, 3, 1)
+end
+
 @testitem "CFTime" begin
     using CFTime: DateTimeStandard, DateTimeProlepticGregorian, DateTime360Day
     using Dates: DateTime, Date
@@ -176,23 +209,6 @@ end
     @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before
 end
 
-@testitem "config settings" begin
-    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
-    config = Wflow.Config(tomlpath)
-    # test reading and setting of warm states (cold_start=false)
-    # modify existing config and initialize model with warm states
-    @test config.model.cold_start__flag
-    config.model.cold_start__flag = false
-    @test !config.model.cold_start__flag
-
-    # test using an absolute path for the forcing
-    @test !isabspath(config.input.path_forcing)
-    abs_path_forcing = Wflow.input_path(config, config.input.path_forcing)
-    config.input.path_forcing = abs_path_forcing
-    @test isabspath(config.input.path_forcing)
-    Wflow.NCReader(config)
-end
-
 @testitem "reducer" begin
     V = [6, 5, 4, 1]
     @test Wflow.function_map[Wflow.ReducerType.maximum](V) == 6
@@ -204,12 +220,65 @@ end
     @test Wflow.function_map[Wflow.ReducerType.sum](V) == 16
 end
 
-@testitem "model initialization" begin
+@testitem "State checking" begin
+    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
+    config = Wflow.Config(tomlpath)
+
+    # Extracting required states and test if some are covered (not all are tested!)
+    required_states = Wflow.extract_required_states(config)
+    @test "soil_water_saturated_zone__depth" in required_states
+    @test "soil_layer_water_unsaturated_zone__depth" in required_states
+    @test "vegetation_canopy_water__depth" in required_states
+    @test "subsurface_water__volume_flow_rate" in required_states
+    @test "river_water__instantaneous_volume_flow_rate" in required_states
+    @test "reservoir_water_surface__elevation" in required_states
+    @test "snowpack_liquid_water__depth" in required_states
+    @test !("reservoir_water_level__elevation" in required_states)
+
+    # Adding an unused state the see if the right warning message is thrown
+    config.state.variables.additional_state = "additional_state"
+    @test_logs (
+        :warn,
+        string(
+            "State variable `additional_state` provided, but is not used in ",
+            "model setup, skipping.",
+        ),
+    ) Wflow.check_states(config)
+
+    # Removing the unused and required state, to test the exception being thrown
+    delete!(config.state.variables, "additional_state")
+    delete!(config.state.variables, "snowpack_dry_snow__leq_depth")
+    @test_throws ArgumentError Wflow.check_states(config)
+
+    # Extracting required states for model type sbm_gwf and test if some are covered
+    tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
+    config = Wflow.Config(tomlpath)
+    required_states = Wflow.extract_required_states(config)
+    @test "soil_water_saturated_zone__depth" in required_states
+    @test "soil_layer_water_unsaturated_zone__depth" in required_states
+    @test "vegetation_canopy_water__depth" in required_states
+    @test "subsurface_water__hydraulic_head" in required_states
+    @test "river_water__instantaneous_volume_flow_rate" in required_states
+    @test "river_water__depth" in required_states
+    @test "land_surface_water__depth" in required_states
+end
+
+@testitem "Model initialization" begin
     using NCDatasets: dimnames
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
-    config.model.cold_start__flag = false
+    @testset "config settings" begin
+        @test config.model.cold_start__flag
+        config.model.cold_start__flag = false
+        @test !config.model.cold_start__flag
+        # test using an absolute path for the forcing
+        @test !isabspath(config.input.path_forcing)
+        abs_path_forcing = Wflow.input_path(config, config.input.path_forcing)
+        config.input.path_forcing = abs_path_forcing
+        @test isabspath(config.input.path_forcing)
+    end
+
     model = Wflow.Model(config)
     Wflow.advance!(model.clock)
     Wflow.load_dynamic_input!(model)
@@ -286,37 +355,27 @@ end
         @test land.soil.parameters.c[1] ≈
               [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
     end
-end
 
-@testitem "more model initialization" begin
-    using NCDatasets: NCDataset
-    using LoggingExtras
-    using TOML
-    using CFTime: DateTimeNoLeap
-    using Dates: Second, Day
+    @testset "changing parameter values" begin
+        config.input.static["snowpack__degree_day_coefficient"] = 2.0
+        config.input.static["soil__thickness"] = Wflow.InputEntry(;
+            scale = [3.0],
+            offset = [100.0],
+            netcdf_variable_name = "SoilThickness",
+        )
+        config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
+            Wflow.InputEntry(; scale = [1.5], netcdf_variable_name = "precip")
+        config.input.static["soil_layer_water__brooks_corey_exponent"] = Wflow.InputEntry(;
+            scale = [2.0, 3.0],
+            offset = [0.0, 0.0],
+            layer = [1, 3],
+            netcdf_variable_name = "c",
+        )
 
-    tomlpath = joinpath(@__DIR__, "sbm_config.toml")
-    config = Wflow.Config(tomlpath)
-    config.input.static["snowpack__degree_day_coefficient"] = 2.0
-    config.input.static["soil__thickness"] = Wflow.InputEntry(;
-        scale = [3.0],
-        offset = [100.0],
-        netcdf_variable_name = "SoilThickness",
-    )
-    config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
-        Wflow.InputEntry(; scale = [1.5], netcdf_variable_name = "precip")
-    config.input.static["soil_layer_water__brooks_corey_exponent"] = Wflow.InputEntry(;
-        scale = [2.0, 3.0],
-        offset = [0.0, 0.0],
-        layer = [1, 3],
-        netcdf_variable_name = "c",
-    )
+        model = Wflow.Model(config)
+        Wflow.advance!(model.clock)
+        Wflow.load_dynamic_input!(model)
 
-    model = Wflow.Model(config)
-    Wflow.advance!(model.clock)
-    Wflow.load_dynamic_input!(model)
-
-    @testset "changed parameter values" begin
         (; land) = model
         @test land.snow.parameters.cfmax[1] == 2.0
         @test land.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
@@ -328,8 +387,13 @@ end
             8.690681062890977,
         ]
     end
-
     Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "NetCDF files and logging" begin
+    using NCDatasets: NCDataset
+    using LoggingExtras
+    using TOML
 
     @testset "NetCDF creation" begin
         path = Base.Filesystem.tempname()
@@ -447,77 +511,5 @@ end
         end
         @test_throws ErrorException Wflow.run(tomlpath_error)
         rm(tomlpath_error)
-    end
-
-    # test calendar setting `noleap` in forcing netCDF file (including `_FillValue` in time
-    # dimension) and in TOML file (Clock{DateTimeNoLeap}).
-    @testset "Calendar noleap (DateTimeNoLeap) for time and clock" begin
-        config = Wflow.Config(tomlpath)
-        config.input.path_forcing = "forcing-calendar-noleap.nc"
-        config.time.calendar = "noleap"
-
-        # with `_FillValue` in time dimension Wflow throws a warning
-        reader = @test_logs (
-            :warn,
-            "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions.",
-        ) match_mode = :any Wflow.NCReader(config)
-        @test eltype(reader.dataset_times) == DateTimeNoLeap
-        @test ismissing(reader.dataset_times) == false # missing in time dimension is not allowed
-        @test reader.dataset_times ==
-              collect(DateTimeNoLeap(2000, 1, 2):Day(1):DateTimeNoLeap(2000, 1, 6))
-
-        # test Clock{DateTimeNoLeap}
-        clock = Wflow.Clock(config, reader)
-        @test clock.time isa DateTimeNoLeap
-        @test clock.time == DateTimeNoLeap(2000, 1, 1)
-
-        starttime = DateTimeNoLeap(2000, 2, 28)
-        dt = Day(1)
-        clock = Wflow.Clock(starttime, 0, Second(dt))
-        Wflow.advance!(clock)
-        @test clock.time == DateTimeNoLeap(2000, 3, 1)
-    end
-
-    @testset "State checking" begin
-        tomlpath = joinpath(@__DIR__, "sbm_config.toml")
-        config = Wflow.Config(tomlpath)
-
-        # Extracting required states and test if some are covered (not all are tested!)
-        required_states = Wflow.extract_required_states(config)
-        @test "soil_water_saturated_zone__depth" in required_states
-        @test "soil_layer_water_unsaturated_zone__depth" in required_states
-        @test "vegetation_canopy_water__depth" in required_states
-        @test "subsurface_water__volume_flow_rate" in required_states
-        @test "river_water__instantaneous_volume_flow_rate" in required_states
-        @test "reservoir_water_surface__elevation" in required_states
-        @test "snowpack_liquid_water__depth" in required_states
-        @test !("reservoir_water_level__elevation" in required_states)
-
-        # Adding an unused state the see if the right warning message is thrown
-        config.state.variables.additional_state = "additional_state"
-        @test_logs (
-            :warn,
-            string(
-                "State variable `additional_state` provided, but is not used in ",
-                "model setup, skipping.",
-            ),
-        ) Wflow.check_states(config)
-
-        # Removing the unused and required state, to test the exception being thrown
-        delete!(config.state.variables, "additional_state")
-        delete!(config.state.variables, "snowpack_dry_snow__leq_depth")
-        @test_throws ArgumentError Wflow.check_states(config)
-
-        # Extracting required states for model type sbm_gwf and test if some are covered
-        tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
-        config = Wflow.Config(tomlpath)
-        required_states = Wflow.extract_required_states(config)
-        @test "soil_water_saturated_zone__depth" in required_states
-        @test "soil_layer_water_unsaturated_zone__depth" in required_states
-        @test "vegetation_canopy_water__depth" in required_states
-        @test "subsurface_water__hydraulic_head" in required_states
-        @test "river_water__instantaneous_volume_flow_rate" in required_states
-        @test "river_water__depth" in required_states
-        @test "land_surface_water__depth" in required_states
     end
 end
