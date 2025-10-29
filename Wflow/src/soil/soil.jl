@@ -90,8 +90,8 @@ end
     theta_s::Vector{Float64}
     # Residual water content [-]
     theta_r::Vector{Float64}
-    # Drainable porosity [-]
-    theta_d::Vector{Float64}
+    # Field capacity water content [-]
+    theta_fc::Vector{Float64}
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{Float64}
     # Muliplication factor [-] applied to kv_z (vertical flow)
@@ -557,17 +557,17 @@ function SbmSoilParameters(
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
-    if haskey(config.input.static, "soil_water__drainable_volume_fraction")
-        theta_d = ncread(
+    if haskey(config.input.static, "soil_water__field_capacity_volume_fraction")
+        theta_fc = ncread(
             dataset,
             config,
-            "soil_water__drainable_volume_fraction";
+            "soil_water__field_capacity_volume_fraction";
             optional = false,
             sel = indices,
             type = Float64,
         )
     else
-        theta_d = drainable_porosity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
+        theta_fc = field_capacity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
     end
 
     # root fraction read from dataset file, in case of multiple soil layers and TOML file
@@ -626,7 +626,7 @@ function SbmSoilParameters(
         soilwatercapacity,
         theta_s,
         theta_r,
-        theta_d,
+        theta_fc,
         kvfrac = svectorscopy(kvfrac, Val{maxlayers}()),
         hb,
         h1,
@@ -1226,7 +1226,7 @@ function update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
                 delta_thickness = ustorelayerthickness[k] - thickness_prev
                 ustorelayerdepth = setindex(
                     ustorelayerdepth,
-                    ustorelayerdepth[k] + delta_thickness * (p.theta_d[i] - p.theta_r[i]),
+                    ustorelayerdepth[k] + delta_thickness * (p.theta_fc[i] - p.theta_r[i]),
                     k,
                 )
             end

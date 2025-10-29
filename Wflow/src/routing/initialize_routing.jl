@@ -90,7 +90,7 @@ function initialize_subsurface_flow(
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
-    specific_yield = soil.parameters.theta_s .- soil.parameters.theta_d
+    specific_yield = soil.parameters.theta_s .- soil.parameters.theta_fc
     conductance = zeros(Float64, connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,

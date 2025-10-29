@@ -138,18 +138,19 @@ function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
 end
 
 """
-    drainable_porosity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
+    field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
 
-Return drainable_porosity based on the Brooks-Corey soil hydraulic model.
+Return water content at field capacity based on the Brooks-Corey soil hydraulic model.
 """
-function drainable_porosity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
-    theta_d = 0.0
+function field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
+    theta_fc = 0.0
     total_depth = 0.0
     for i in 1:n_layers
-        theta_d += vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
+        theta_fc +=
+            vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
         total_depth += layer_thickness[i]
     end
-    return theta_d / total_depth
+    return theta_fc / total_depth
 end
 
 """

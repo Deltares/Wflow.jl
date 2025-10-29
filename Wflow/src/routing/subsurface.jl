@@ -15,7 +15,7 @@ end
     kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]  
     khfrac::Vector{Float64}             # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{Float64}      # Soil thickness [m]
-    specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_d) [-]
+    specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_fc) [-]
     specific_yield_dyn::Vector{Float64} # Dynamic specific yield [-]
 end
 
@@ -69,7 +69,7 @@ function LateralSsfParameters(
         type = Float64,
     )
 
-    (; theta_s, theta_d, soilthickness) = soil
+    (; theta_s, theta_fc, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
@@ -90,7 +90,7 @@ function LateralSsfParameters(
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
     specific_yield_dyn = fill(MISSING_VALUE, length(soilthickness))
-    specific_yield = theta_s .- theta_d
+    specific_yield = theta_s .- theta_fc
     ssf_parameters = LateralSsfParameters(;
         kh_profile,
         khfrac,
