@@ -186,6 +186,30 @@ end
 
 Wflow.close_files(model; delete_output = false)
 
+@testset "Piave water demand and allocation, switch off livestock, paddy and nonpaddy" begin
+    tomlpath = joinpath(@__DIR__, "sbm_piave_nonirri-demand_config.toml")
+    config = Wflow.Config(tomlpath)
+    model = Wflow.Model(config)
+    (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
+    (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
+        model.land.allocation.variables
+    @test typeof(paddy) == Wflow.NoIrrigationPaddy
+    @test typeof(nonpaddy) == Wflow.NoIrrigationNonPaddy
+    @test typeof(livestock) == Wflow.NoNonIrrigationDemand
+    Wflow.run_timestep!(model)
+    sum_total_alloc = sum(total_alloc)
+    @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
+    @test sum(surfacewater_alloc) ≈ 824.8974139426691
+    @test sum(act_groundwater_abst) ≈ 115.97004946871232
+    @test industry.demand.demand_gross[[1, end]] ≈ [0.2105557769536972, 0.0485190823674202]
+    @test industry.demand.demand_net[[1, end]] ≈ [0.05265098437666893, 0.012132546864449978]
+    @test industry.variables.returnflow[[1, end]] ≈
+          [0.15790479257702827, 0.03638653550297022]
+    @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
+    @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
+    @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
+end
+
 # test cyclic reservoir external inflow
 tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
 config = Wflow.Config(tomlpath)
