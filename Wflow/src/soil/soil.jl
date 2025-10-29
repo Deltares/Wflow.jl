@@ -495,6 +495,7 @@ function SbmSoilParameters(
         size1 = size(c, 1)
         error("$parname needs a layer dimension of size $maxlayers, but is $size1")
     end
+    c = svectorscopy(c, Val{maxlayers}())
     kvfrac = ncread(
         dataset,
         config,
@@ -556,8 +557,18 @@ function SbmSoilParameters(
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
-    c = svectorscopy(c, Val{maxlayers}())
-    theta_d = drainable_porosity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
+    if haskey(config.input.static, "soil_water__drainable_volume_fraction")
+        theta_d = ncread(
+            dataset,
+            config,
+            "soil_water__drainable_volume_fraction";
+            optional = false,
+            sel = indices,
+            type = Float64,
+        )
+    else
+        theta_d = drainable_porosity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
+    end
 
     # root fraction read from dataset file, in case of multiple soil layers and TOML file
     # includes "soil_root__length_density_fraction"
