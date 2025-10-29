@@ -2,7 +2,6 @@
 @with_kw struct LateralSsfVariables
     zi::Vector{Float64}           # Pseudo-water table depth [m] (top of the saturated zone)
     exfiltwater::Vector{Float64}  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    recharge::Vector{Float64}     # Net recharge to saturated store [m² Δt⁻¹]
     ssf::Vector{Float64}          # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{Float64}        # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{Float64}       # Maximum subsurface flow [m² d⁻¹]
@@ -105,7 +104,6 @@ function LateralSsfVariables(
     variables = LateralSsfVariables(;
         zi,
         exfiltwater = fill(MISSING_VALUE, n),
-        recharge = fill(MISSING_VALUE, n),
         ssf = fill(MISSING_VALUE, n),
         ssfin = fill(MISSING_VALUE, n),
         ssfmax = fill(MISSING_VALUE, n),

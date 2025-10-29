@@ -16,9 +16,9 @@ end
 Water mass balance error results (balance error and relative error) for river, overland,
 subsurface and reservoir flow routing.
 """
-@with_kw struct FlowRoutingMassBalance <: AbstractMassBalance
-    river_water_balance::Union{MassBalance, NoMassBalance}
-    reservoir_water_balance::Union{MassBalance, NoMassBalance}
+@with_kw struct FlowRoutingMassBalance{R, RT} <: AbstractMassBalance
+    river_water_balance::R
+    reservoir_water_balance::RT
     overland_water_balance::MassBalance
     subsurface_water_balance::MassBalance
 end
@@ -465,11 +465,13 @@ function compute_flow_balance!(
     (; storage, ssfin, ssf, exfiltwater) = subsurface_flow.variables
     (; recharge) = subsurface_flow.boundary_conditions
     (; flow_length, area) = parameters
+
+    f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(storage_prev)
-        total_in = ssfin[i]
-        total_out = ssf[i] + exfiltwater[i] * area[i]
+        total_in = ssfin[i] * f_conv
+        total_out = ssf[i] * f_conv + exfiltwater[i] * area[i]
         total_in, total_out = add_inflow(total_in, total_out, recharge[i] * flow_length[i])
-        storage_rate = (storage[i] - storage_prev[i]) / (dt / tosecond(BASETIMESTEP))
+        storage_rate = (storage[i] - storage_prev[i])
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
@@ -495,10 +497,11 @@ function compute_flow_balance!(
     flux_out = zeros(n)
     flux_in, flux_out = sum_boundary_fluxes(subsurface_flow)
 
+    f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(storage_prev)
-        total_in = q_in_av[i] + flux_in[i]
-        total_out = q_out_av[i] + flux_out[i] + exfiltwater[i] * area[i]
-        storage_rate = (storage[i] - storage_prev[i]) / (dt / tosecond(BASETIMESTEP))
+        total_in = (q_in_av[i] + flux_in[i]) * f_conv
+        total_out = f_conv * (q_out_av[i] + flux_out[i]) + exfiltwater[i] * area[i]
+        storage_rate = (storage[i] - storage_prev[i])
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
