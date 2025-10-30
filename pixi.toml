@@ -11,8 +11,10 @@ platforms = ["win-64", "linux-64"]
 
 [tasks]
 # Installation
-install-julia = "juliaup add 1.11.3 && juliaup override set 1.11.3"
 # Julia
+install-julia = "juliaup add 1.11.3 && juliaup override set 1.11.3"
+# Pre-commit
+install-pre-commit = "pre-commit install"
 # Clear SSL_CERT_DIR to avoid Julia warnings, see https://github.com/JuliaLang/Downloads.jl/issues/244
 update-registry-julia = { cmd = "julia --eval='using Pkg; Registry.update()'", env = { SSL_CERT_DIR = "" } }
 initialize-julia = { depends-on = [
@@ -21,6 +23,7 @@ initialize-julia = { depends-on = [
 		"Wflow",
 	] },
 ] }
+install = { depends-on = ["install-julia", "install-pre-commit"] }
 # Test data
 download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
 # Build
@@ -39,7 +42,7 @@ test-wflow-cli = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_rere
 ] }
 test-wflow-cov = { cmd = "julia --project --eval 'using Pkg; Pkg.test(allow_reresolve=false, coverage=true, julia_args=[\"--check-bounds=yes\"])'", cwd = "Wflow", depends-on = [
 	"initialize-julia",
-	"download-test-data"
+	"download-test-data",
 ] }
 # Server
 test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(\"WflowServer\", allow_reresolve=false, coverage=true)'", depends-on = [
@@ -76,6 +79,7 @@ outputs = ["Wflow.spdx.json"]
 juliaup = "*"
 python = ">=3.10"
 jupyter = ">=1.1.1,<2"
+pre-commit = "*"
 
 [system-requirements]
 linux = "3.10.0"
