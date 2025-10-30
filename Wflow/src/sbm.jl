@@ -29,7 +29,8 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     do_snow = config.model.snow__flag
     do_glacier = config.model.glacier__flag
     if do_snow
-        snow = SnowHbvModel(dataset, config, indices, dt)
+        snow = NewSnowModel(dataset, config, indices, dt)
+        #snow = SnowHbvModel(dataset, config, indices, dt)
     else
         snow = NoSnowModel(n)
     end
@@ -89,7 +90,7 @@ function update!(
     update!(interception, atmospheric_forcing)
 
     update_boundary_conditions!(snow, (; interception))
-    update!(snow, atmospheric_forcing)
+    update!(snow, model)
     if config.model.snow_gravitational_transport__flag
         lateral_snow_transport!(snow, domain.land)
     end
