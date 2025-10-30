@@ -950,7 +950,7 @@
     "href": "changelog.html#unreleased",
     "title": "Changelog",
     "section": "Unreleased",
-    "text": "Unreleased\n\nFixed\n\n\nChanged\n\n\nAdded",
+    "text": "Unreleased\n\nFixed\n\nIntroduced in v1.0.0-rc2, fixed initialization of no-demand fields of struct Demand.\nIntroduced in v1.0.0-rc2, fix units water mass balance computations for subsurface flow concepts LateralSSF and UnconfinedAquifer at sub-daily model time step.\n\n\n\nChanged\n\n\nAdded",
     "crumbs": [
       "Home",
       "Changelog"
