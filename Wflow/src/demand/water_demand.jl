@@ -479,6 +479,7 @@ function Demand(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
+    n = length(indices)
     demand(name; constr = NonIrrigationDemand, constr_triv = NoNonIrrigationDemand) =
         if getfield(config.model.water_demand, Symbol("$(name)__flag"))::Bool
             if constr == NonIrrigationDemand
@@ -487,7 +488,7 @@ function Demand(
                 constr(dataset, config, indices, dt)
             end
         else
-            constr_triv()
+            constr_triv(n)
         end
 
     domestic = demand("domestic")
@@ -496,7 +497,6 @@ function Demand(
     paddy = demand("paddy"; constr = Paddy, constr_triv = NoIrrigationPaddy)
     nonpaddy = demand("nonpaddy"; constr = NonPaddy, constr_triv = NoIrrigationNonPaddy)
 
-    n = length(indices)
     vars = DemandVariables(n)
     demand = Demand(; domestic, industry, livestock, paddy, nonpaddy, variables = vars)
     return demand

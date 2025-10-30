@@ -170,7 +170,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         if config.model.type == ModelType.sbm
             (; zi, storage) = routing.subsurface_flow.variables
             (; specific_yield, soilthickness) = routing.subsurface_flow.parameters
-            @. zi = 0.001 * land.soil.variables.zi
+            @. zi = 0.001 * land.soil.variables.zi # convert from unit [mm] to [m]
             @. storage = specific_yield * (soilthickness - zi) * domain.land.parameters.area
         elseif config.model.type == ModelType.sbm_gwf
             (; aquifer) = routing.subsurface_flow
