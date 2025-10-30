@@ -138,7 +138,7 @@ include("routing/routing.jl")
 include("domain.jl")
 
 """
-    Model{R <: Routing, L <: AbstractLandModel, W <: AbstractWaterBalance, T <: AbstractModelType} <:AbstractModel{T}
+    Model{R <: Routing, L <: AbstractLandModel, M <: AbstractMassBalance, T <: AbstractModelType} <: AbstractModel{T}
 
 Composite type that represents all different aspects of a Wflow Model, such as the network,
 parameters, clock, configuration and input and output.

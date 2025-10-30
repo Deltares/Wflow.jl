@@ -213,11 +213,11 @@ reducer = "mean"
 
 [API]
 variables = [
-  "river_water__volume_flow_rate",
-  "soil_water_unsaturated_zone__depth",
-  "soil_water__transpiration_volume_flux",
-  "soil_layer_1_water_unsaturated_zone__depth",
-  "soil_layer_2_water_unsaturated_zone__depth",
-  "soil_layer_3_water_unsaturated_zone__depth",
-  "soil_layer_4_water_unsaturated_zone__depth",
+    "river_water__volume_flow_rate",
+    "soil_water_unsaturated_zone__depth",
+    "soil_water__transpiration_volume_flux",
+    "soil_layer_1_water_unsaturated_zone__depth",
+    "soil_layer_2_water_unsaturated_zone__depth",
+    "soil_layer_3_water_unsaturated_zone__depth",
+    "soil_layer_4_water_unsaturated_zone__depth",
 ]

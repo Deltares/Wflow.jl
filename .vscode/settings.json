@@ -2,15 +2,15 @@
     "[julia]": {
         "editor.formatOnSave": true,
     },
+    "julia.environmentPath": "./Wflow",
+    "julia.numTestProcesses": 1,
     "julia.lint.disabledDirs": [
         ".pixi"
     ],
     "julia.lint.run": true,
-  
     "files.associations": {
         "*.qmd": "markdown"
     },
-
     "[markdown]": {
         "rewrap.wordWrapColumn": 92
     }

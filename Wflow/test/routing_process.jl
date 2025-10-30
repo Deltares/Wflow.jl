@@ -1,51 +1,54 @@
-const dt_sec = 86400.0
-const ldd_MISSING_VALUE = 255
+@testitem "kinematic wave overland flow" begin
+    using NCDatasets: NCDataset
+    using Graphs: topological_sort_by_dfs
 
-# read the staticmaps into memory
-nc = NCDataset(staticmaps_rhine_path)
-# helper function to get the axis order and directionality right
-read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
-ldd_2d = read_right(nc, "ldd")
+    dt_sec = 86400.0
+    ldd_MISSING_VALUE = 255
 
-inds, _ = Wflow.active_indices(ldd_2d, ldd_MISSING_VALUE)
-n = length(inds)
+    # read the staticmaps into memory
+    nc = NCDataset("data/input/staticmaps-rhine.nc")
+    # helper function to get the axis order and directionality right
+    read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
+    ldd_2d = read_right(nc, "ldd")
 
-# take out only the active cells
-ldd = ldd_2d[inds]
-slope = read_right(nc, "slope")[inds]
-N = read_right(nc, "N")[inds]
-Qold = read_right(nc, "Qold")[inds]
-Bw = read_right(nc, "Bw")[inds]
-waterlevel = read_right(nc, "waterlevel")[inds]
-DCL = read_right(nc, "DCL")[inds]
-close(nc)
+    inds, _ = Wflow.active_indices(ldd_2d, ldd_MISSING_VALUE)
+    n = length(inds)
 
-# create the directed acyclic graph from the drainage direction array
-graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
-# a topological sort is used for visiting nodes in order from upstream to downstream
-toposort = topological_sort_by_dfs(graph)
-sink = toposort[end]
-@test ldd[sink] == 5  # the most downstream node must be a sink
+    # take out only the active cells
+    ldd = ldd_2d[inds]
+    slope = read_right(nc, "slope")[inds]
+    N = read_right(nc, "N")[inds]
+    Qold = read_right(nc, "Qold")[inds]
+    Bw = read_right(nc, "Bw")[inds]
+    waterlevel = read_right(nc, "waterlevel")[inds]
+    DCL = read_right(nc, "DCL")[inds]
+    close(nc)
 
-# calculate parameters of kinematic wave
-const q = 0.000001
-const beta = 0.6
-const AlpPow = (2.0 / 3.0) * beta
-AlpTermR = (N ./ sqrt.(slope)) .^ beta
-P = Bw + (2.0 * waterlevel)
-alpha = AlpTermR .* P .^ AlpPow
+    # create the directed acyclic graph from the drainage direction array
+    graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
+    # a topological sort is used for visiting nodes in order from upstream to downstream
+    toposort = topological_sort_by_dfs(graph)
+    sink = toposort[end]
+    @test ldd[sink] == 5  # the most downstream node must be a sink
 
-Q = zeros(n)
-Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+    # calculate parameters of kinematic wave
+    q = 0.000001
+    beta = 0.6
+    AlpPow = (2.0 / 3.0) * beta
+    AlpTermR = (N ./ sqrt.(slope)) .^ beta
+    P = Bw + (2.0 * waterlevel)
+    alpha = AlpTermR .* P .^ AlpPow
 
-@testset "flow rate" begin
+    Q = zeros(n)
+    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
     @test Q[toposort[n - 100]] ≈ 3945.762718338739
     @test Q[sink] ≈ 4131.101474418251
 end
 
-@testset "kinematic wave subsurface flow" begin
+@testitem "kinematic wave subsurface flow" begin
     kh_profile = Wflow.KhExponential([18021.0], [0.0017669756])
     @test all(
         isapprox.(
@@ -69,7 +72,8 @@ end
     )
 end
 
-@testset "accucapacity" begin
+@testitem "accucapacity" begin
+    using Graphs: DiGraph, add_edge!
     # test based on a subset of the examples at
     # https://pcraster.geo.uu.nl/pcraster/4.3.0/documentation/pcraster_manual/sphinx/op_accucapacity.html#examples
     # of the node at (row 3, column 2) and upstream nodes
@@ -116,7 +120,11 @@ end
     @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
 end
 
-@testset "local inertial long channel MacDonald (1997)" begin
+@testitem "local inertial long channel MacDonald (1997)" begin
+    using QuadGK: quadgk
+    using Graphs: DiGraph, add_edge!, ne
+    using Statistics: mean
+
     g = 9.80665
     L = 1000.0
     dx = 5.0
