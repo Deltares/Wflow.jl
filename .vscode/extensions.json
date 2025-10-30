@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "julialang.language-julia",
+        "ms-python.python",
+        "ms-python.mypy-type-checker",
+        "tamasfe.even-better-toml",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "mechatroner.rainbow-csv",
+    ]
+}
