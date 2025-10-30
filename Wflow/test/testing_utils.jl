@@ -95,6 +95,7 @@ function homogenous_aquifer(nrow, ncol)
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
         specific_yield = fill(0.15, ncell),
+        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(3.0, ncell),
     )
     variables = Wflow.AquiferVariables(;
