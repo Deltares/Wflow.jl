@@ -24,3 +24,10 @@
 
 # pixi environments
 .pixi
+
+# Joseph
+/src/Data
+/docs/
+.gitignore
+*.toml
+/Data/
