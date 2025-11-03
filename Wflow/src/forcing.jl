@@ -1,9 +1,9 @@
 "Struct to store atmospheric forcing variables"
 @with_kw struct AtmosphericForcing
     n::Int
-    # Precipitation [mm Δt⁻¹]
+    # Precipitation [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential reference evapotranspiration [mm Δt⁻¹]
+    # Potential reference evapotranspiration [m s⁻¹]
     potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Temperature [ᵒC]
     temperature::Vector{Float64} = fill(MISSING_VALUE, n)
