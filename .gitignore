@@ -41,3 +41,5 @@ Data
 Data/*
 *.[src/Data]
 **/Data
+
+Wflow.jl.code-workspace
