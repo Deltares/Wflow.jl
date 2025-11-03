@@ -522,11 +522,11 @@ end
 
 function update_head!(
     gwf::GroundwaterFlow{A},
-    n_unsatlayers,
-    ustorelayerthickness,
-    ustorelayerdepth,
-    theta_s,
-    theta_r,
+    n_unsatlayers::Vector{Int},
+    ustorelayerthickness::Vector{<:SVector},
+    ustorelayerdepth::Vector{<:SVector},
+    theta_s::Vector{Float64},
+    theta_r::Vector{Float64},
     dt::Float64,
 ) where {A <: UnconfinedAquifer}
     (; head, exfiltwater, q_net) = gwf.aquifer.variables

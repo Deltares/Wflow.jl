@@ -994,26 +994,37 @@ function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0):
     return z
 end
 
+"""
+Return water table change `dh` and exfiltration rate `exfilt`. For a falling water table
+`dh` is based on subsurface net flux `net_flux` and specific yield `specific_yield`. For a
+rising water table `dh` is based on `net_flux` the and unsaturated store capacity (per soil
+layer). For a rising water table a dynamic specific yield is computed.
+"""
 function water_table_change(
-    net_flux,
-    specific_yield,
-    n_unsatlayers,
-    ustorelayerthickness,
-    ustorelayerdepth,
-    theta_e,
+    net_flux::Float64,
+    specific_yield::Float64,
+    n_unsatlayers::Int,
+    ustorelayerthickness::SVector,
+    ustorelayerdepth::SVector,
+    theta_e::Float64,
 )
     if net_flux <= 0.0
         dh = net_flux / specific_yield
     else
         dh = 0.0
+        f_conv = 0.001 # convert units from [mm] to [m]
         for k in n_unsatlayers:-1:1
             flux_layer = min(
                 net_flux,
-                max(0.001 * (ustorelayerthickness[k] * theta_e - ustorelayerdepth[k]), 0.0),
+                max(
+                    f_conv * (ustorelayerthickness[k] * theta_e - ustorelayerdepth[k]),
+                    0.0,
+                ),
             )
             sy = theta_e - (ustorelayerdepth[k] / ustorelayerthickness[k])
             dh += if sy == 0.0
-                0.001 * ustorelayerthickness[k]
+                # if unsaturated layer is fully saturated dh equals layer thickness 
+                f_conv * ustorelayerthickness[k]
             else
                 flux_layer / sy
             end

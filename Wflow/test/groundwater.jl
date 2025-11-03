@@ -362,10 +362,17 @@ end
         boundaries = NamedTuple(),
     )
 
-    n_unsatlayers = fill(1, ncell)
-    ustorelayerthickness =
-        SVector{ncell}(1000.0 .* (aquifer.parameters.top - aquifer.variables.head))
-    ustorelayerdepth = SVector{ncell}(fill(0, ncell))
+    maxlayers = 1
+    n_unsatlayers = fill(maxlayers, ncell)
+    ustorelayerthickness = Wflow.svectorscopy(
+        reshape(
+            1000.0 .* (aquifer.parameters.top - aquifer.variables.head),
+            maxlayers,
+            ncell,
+        ),
+        Val{maxlayers}(),
+    )
+    ustorelayerdepth = fill(SVector{1}(0), ncell)
     theta_r = fill(0.05, ncell)
     theta_s = fill(0.45, ncell)
 
@@ -456,10 +463,17 @@ end
         boundaries = NamedTuple(),
     )
 
-    n_unsatlayers = fill(1, ncell)
-    ustorelayerthickness =
-        SVector{ncell}(1000.0 .* (aquifer.parameters.top - aquifer.variables.head))
-    ustorelayerdepth = SVector{ncell}(fill(0, ncell))
+    maxlayers = 1
+    n_unsatlayers = fill(maxlayers, ncell)
+    ustorelayerthickness = Wflow.svectorscopy(
+        reshape(
+            1000.0 .* (aquifer.parameters.top - aquifer.variables.head),
+            maxlayers,
+            ncell,
+        ),
+        Val{maxlayers}(),
+    )
+    ustorelayerdepth = fill(SVector{1}(0), ncell)
     theta_r = fill(0.05, ncell)
     theta_s = fill(0.45, ncell)
 
