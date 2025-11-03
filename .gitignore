@@ -29,5 +29,7 @@
 /src/Data
 /docs/
 .gitignore
+Manifest.toml
+Project.toml
 *.toml
 /Data/
