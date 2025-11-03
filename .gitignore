@@ -43,3 +43,4 @@ Data/*
 **/Data
 
 Wflow.jl.code-workspace
+StartupWflow,jl
