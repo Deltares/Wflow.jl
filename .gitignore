@@ -27,9 +27,17 @@
 
 # Joseph
 /src/Data
+src/Data
 /docs/
 .gitignore
 Manifest.toml
 Project.toml
 *.toml
 /Data/
+Manifest.*
+Project.*
+/Data
+Data
+Data/*
+*.[src/Data]
+**/Data
