@@ -12,7 +12,7 @@
     surface_flow_width::Vector{Float64} = Float64[]
     # flow length [m]
     flow_length::Vector{Float64} = Float64[]
-    # flow fraction to river [-] 
+    # flow fraction to river [-]
     flow_fraction_to_river::Vector{Float64} = Float64[]
     # slope [-]
     slope::Vector{Float64} = Float64[]

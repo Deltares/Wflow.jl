@@ -536,7 +536,7 @@ end
 
 """
 Compute a stable timestep size for the kinematice wave method for a river or overland flow
-model using a nonlinear scheme (Chow et al., 1988). 
+model using a nonlinear scheme (Chow et al., 1988).
 
 A stable time step is computed for each vector element based on the Courant timestep size
 criterion. A quantile of the vector is computed based on probability `p` to remove potential

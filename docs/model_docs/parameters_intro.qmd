@@ -41,7 +41,7 @@ model output variable.
 
 ## Generic input maps {#input-generic}
 The table below lists static input maps that are not directly part of wflow models and are
-required to run wflow. 
+required to run wflow.
 
 | Standard Name | Description | Unit | Default value |
 | ---- | ----- | - | -- |

@@ -11,7 +11,7 @@ end
 
 "Struct for storing lateral subsurface flow model parameters"
 @with_kw struct LateralSsfParameters{Kh}
-    kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]  
+    kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]
     khfrac::Vector{Float64}             # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{Float64}      # Soil thickness [m]
     theta_s::Vector{Float64}            # Saturated water content (porosity) [-]

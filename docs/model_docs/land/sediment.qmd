@@ -62,7 +62,7 @@ is then:
 $$
    D_R = k\,\mathrm{KE}\,e^{-\varphi h}
 $$
-where $\SIb{k}{g\ J^{-1}}$ is an index of the detachability of the soil, 
+where $\SIb{k}{g\ J^{-1}}$ is an index of the detachability of the soil,
 $\SIb{\mathrm{KE}}{J\ m^{-2}}$ is the total rainfall kinetic energy, $\SIb{h}{m}$ is the
 surface runoff depth on the soil and $\varphi$ is an exponent varying between $0.9$ and
 $3.1$ used to reduce rainfall impact if the soil is already covered by water. As a

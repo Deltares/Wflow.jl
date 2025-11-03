@@ -364,7 +364,7 @@ function accucapacityflux(material, network, capacity)
 end
 
 """
-    accucapacityflux_state(material, network, capacity) -> flux, material 
+    accucapacityflux_state(material, network, capacity) -> flux, material
 
 Non mutating version of combined `accucapacityflux!` and `accucapacitystate!`.
 """

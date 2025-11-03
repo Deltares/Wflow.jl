@@ -10,7 +10,7 @@
     storage_specific_leaf::Union{Vector{Float64}, Nothing}
     # Canopy gap fraction [-]
     canopygapfraction::Vector{Float64}
-    # Maximum canopy storage [mm] 
+    # Maximum canopy storage [mm]
     cmax::Vector{Float64}
     # Rooting depth [mm]
     rootingdepth::Vector{Float64}

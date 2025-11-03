@@ -1,6 +1,6 @@
 {
     "[julia]": {
-        "editor.formatOnSave": true,
+        "editor.formatOnSave": true
     },
     "julia.environmentPath": "./Wflow",
     "julia.numTestProcesses": 1,
