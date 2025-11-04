@@ -8,6 +8,7 @@ m²m⁻² -> Unit(; m = (2, 2))
 struct Unit
     # Time
     s::SVector{2, Int} # second, SI standard
+    d::SVector{2, Int} # day
     dt::SVector{2, Int} # time step
     # Length
     m::SVector{2, Int} # meter, SI standard
@@ -16,9 +17,11 @@ struct Unit
     K::SVector{2, Int} # Kelvin, SI standard
     degC::SVector{2, Int} # Degree Celcius
     # Mass
-    kg::SVector{2, Int} # Kilogram, SI standard
+    kg::SVector{2, Int} # kilogram, SI standard
     g::SVector{2, Int} # gram
     t::SVector{2, Int} # tonne
+    # Fraction
+    percentage::SVector{2, Int} # percentage, converted to unitless fraction
 end
 
 function Unit(; kwargs...)
@@ -27,8 +30,8 @@ function Unit(; kwargs...)
         @assert unit ∈ fieldnames(Unit) "Unrecognized unit $unit."
         powers = if val isa Int
             val > 0 ? (0, val) : (-val, 0)
-        elseif (val isa SVector{2, Int} && val[1] ≥ 0 && val[2] ≥ 0)
-            val
+        elseif (val isa Union{Tuple{Int, Int}, SVector{2, Int}} && val[1] ≥ 0 && val[2] ≥ 0)
+            SVector{2, Int}(val)
         else
             throw(ArgumentError("Invalid input for $unit: $val."))
         end
@@ -52,7 +55,13 @@ function Base.String(unit::Unit)
     n_units = length(units)
     symbols = ntuple(i -> begin
         symb = units[i]
-        symb == :degC ? "°C" : String(symb)
+        if symb == :degC
+            "°C"
+        elseif symb == :percentage
+            "%"
+        else
+            String(symb)
+        end
     end, Val(n_units))
     powers = ntuple(i -> getfield(unit, units[i]), Val(n_units))
     out = String[]
@@ -61,7 +70,7 @@ function Base.String(unit::Unit)
     for (symbol, powers_) in zip(symbols, powers)
         power = powers_[2]
         if !iszero(power)
-            term = isone(power) ? symbol : symbol * String(power)
+            term = isone(power) ? symbol : "$symbol$power"
             push!(out, term)
         end
     end
@@ -84,10 +93,10 @@ Base.show(io::IO, unit::Unit) = print(io, String(unit))
 """
 Obtain the conversion factor from an Unit into
 SI units, e.g.:
-mm/dt -> 1e-3 / dt_val 
+mm/dt -> 1e-3 / dt_val
 """
 function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
-    (; dt, mm, g, t) = unit
+    (; d, dt, mm, g, t, percentage) = unit
 
     if isnothing(dt_val)
         if !all(iszero(dt))
@@ -100,7 +109,8 @@ function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
     factor = 1.0
 
     # Only units that contribute to the factor are relevant
-    for (powers, factor_) in ((dt, dt_val), (mm, 1e-3), (g, 1e-3), (t, 1e3))
+    for (powers, factor_) in
+        ((d, 86400.0), (dt, dt_val), (mm, 1e-3), (g, 1e-3), (t, 1e3), (percentage, 1e-2))
         factor *= factor_^(powers[2] - powers[1])
     end
 
@@ -112,7 +122,7 @@ Convert a general unit to an SI standard unit
 """
 function to_SI(unit::Unit)
     unit_SI = Unit(;
-        s = unit.s + unit.dt,
+        s = unit.s + unit.d + unit.dt,
         m = unit.m + unit.mm,
         K = unit.K + unit.degC,
         kg = unit.kg + unit.g + unit.t,
