@@ -86,8 +86,8 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
 
     for (uuid, pkg_entry) in ctx.env.manifest.deps
         if isnothing(pkg_entry.tree_hash)
-            # seems as though stdlib packages don't have a tree_sha. as there doesn't seem to be 
-            # a different way of detecting those, I'm going to assume that is characteristic 
+            # seems as though stdlib packages don't have a tree_sha. as there doesn't seem to be
+            # a different way of detecting those, I'm going to assume that is characteristic
             continue
         end
         install_path =

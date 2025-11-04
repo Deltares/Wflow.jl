@@ -513,7 +513,7 @@ function update_head!(gwf::GroundwaterFlow{A}, dt::Float64) where {A <: Aquifer}
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.aquifer.variables.head .= minimum_head(gwf.aquifer)
-    # Compute exfiltration rate and make sure head is not above surface for unconfined aquifer 
+    # Compute exfiltration rate and make sure head is not above surface for unconfined aquifer
     gwf.aquifer.variables.exfiltwater .+=
         (gwf.aquifer.variables.head .- maximum_head(gwf.aquifer)) .*
         storativity(gwf.aquifer)

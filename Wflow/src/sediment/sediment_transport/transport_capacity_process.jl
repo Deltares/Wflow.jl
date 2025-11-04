@@ -238,7 +238,7 @@ function transportability_yalin_differentiation(
     dm_lagg,
     slope,
 )
-    sinslope = sin(atan(slope)) #slope in radians    
+    sinslope = sin(atan(slope)) #slope in radians
     # Delta parameter of Yalin for each particle class
     delta = waterlevel * sinslope / (1e-6 * (density / 1000 - 1)) / 0.06
     dclay = max(1 / dm_clay * delta - 1, 0.0)

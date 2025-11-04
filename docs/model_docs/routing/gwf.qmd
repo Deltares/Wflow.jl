@@ -118,7 +118,7 @@ criterion we refer to the paper of Chu and Willis (1984).
 Using the default value for the stability criterion from Chu and Willis (1984) can cause in
 some cases numerical instabilities, for example source and sink flux terms are not included.
 We recommend to check for possible numerical instabilities, especially when fluxes from
-aquifer boundaries (e.g. river) can be large. 
+aquifer boundaries (e.g. river) can be large.
 :::
 
 
