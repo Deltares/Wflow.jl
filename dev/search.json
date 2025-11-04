@@ -895,7 +895,7 @@
     "href": "developments/model_struct.html",
     "title": "Model structure",
     "section": "",
-    "text": "Below the Julia composite type that represents all different aspects of a Wflow.Model, such as the domain and shared parameters, routing concepts, land model, clock, model type, configuration and input and output.\nstruct Model{R &lt;: Routing, L &lt;: AbstractLandModel, T &lt;: AbstractModelType} &lt;:\n       AbstractModel{T}\n    config::Config                  # all configuration options\n    domain::Domain                  # domain connectivity (network) and shared parameters \n    routing::R                      # routing model (horizontal fluxes), moves along network\n    land::L                         # land model simulating vertical fluxes, independent of each other\n    clock::Clock                    # to keep track of simulation time\n    reader::NCReader                # provides the model with dynamic input\n    writer::Writer                  # writes model output\n    type::T                         # model type\nend\nThe domain field represents network (including connectivity) information of different modelling domains as the river, land, or subsurface domain and it contains shared model parameters that can be used across different model components. The routing field of the struct Model can contain different routing concepts for river, land and subsurface flow domains. For example, the wflow_sbm model with default configuration contains the kinematic wave routing concept for river, overland and lateral subsurface flow. The land field of the struct Model represents a land model, simulating vertical fluxes, for example soil erosion as part of the sediment model type and snow melt as part of the sbm model type.\n\n\n\n Back to top",
+    "text": "Below the Julia composite type that represents all different aspects of a Wflow.Model, such as the domain and shared parameters, routing concepts, land model, clock, model type, configuration and input and output.\nstruct Model{R &lt;: Routing, L &lt;: AbstractLandModel, T &lt;: AbstractModelType} &lt;:\n       AbstractModel{T}\n    config::Config                  # all configuration options\n    domain::Domain                  # domain connectivity (network) and shared parameters\n    routing::R                      # routing model (horizontal fluxes), moves along network\n    land::L                         # land model simulating vertical fluxes, independent of each other\n    clock::Clock                    # to keep track of simulation time\n    reader::NCReader                # provides the model with dynamic input\n    writer::Writer                  # writes model output\n    type::T                         # model type\nend\nThe domain field represents network (including connectivity) information of different modelling domains as the river, land, or subsurface domain and it contains shared model parameters that can be used across different model components. The routing field of the struct Model can contain different routing concepts for river, land and subsurface flow domains. For example, the wflow_sbm model with default configuration contains the kinematic wave routing concept for river, overland and lateral subsurface flow. The land field of the struct Model represents a land model, simulating vertical fluxes, for example soil erosion as part of the sediment model type and snow melt as part of the sbm model type.\n\n\n\n Back to top",
     "crumbs": [
       "Developments",
       "Model structure"
@@ -906,7 +906,7 @@
     "href": "developments/guide.html",
     "title": "Developers guide",
     "section": "",
-    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.",
+    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.\nTo get started with local development, install Julia and pre-commit by running the command below.\npixi run install",
     "crumbs": [
       "Developments",
       "Developers guide"
@@ -917,7 +917,7 @@
     "href": "developments/guide.html#contributions-and-reporting-issues",
     "title": "Developers guide",
     "section": "",
-    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.",
+    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.\nTo get started with local development, install Julia and pre-commit by running the command below.\npixi run install",
     "crumbs": [
       "Developments",
       "Developers guide"
