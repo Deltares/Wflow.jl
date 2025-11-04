@@ -55,7 +55,7 @@ end
 """
     precipitation_hbv(precipitation, temperature, tti, tt; rfcf = 1.0, sfcf = 1.0)
 
-HBV type precipitation routine to separate precipitation in snow precipitation and liquid precipitation. 
+HBV type precipitation routine to separate precipitation in snow precipitation and liquid precipitation.
 All correction factors (RFCF and SFCF) are set to 1.
 
 # Arguments
