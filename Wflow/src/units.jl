@@ -130,3 +130,15 @@ function to_SI(unit::Unit)
     @assert to_SI_factor(unit_SI) |> isone
     return unit_SI
 end
+
+"""
+Convert the given value of the given unit to the value of the corresponding standard SI unit
+"""
+function to_SI(x::Number, unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
+    return if unit == Unit(; degC = 1)
+        # Special case: if the unit is "°C" the temperature is assumed to be absolute
+        x + 274.15
+    else
+        x * to_SI_factor(unit; dt_val)
+    end
+end

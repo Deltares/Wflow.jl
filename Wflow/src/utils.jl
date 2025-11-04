@@ -166,6 +166,7 @@ function set_states!(
             sel = active_indices(domain, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
+            (; lens, unit) = standard_name_map[land](state)
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
                 if dimname == :layer
@@ -187,8 +188,7 @@ function set_states!(
                     end
                 end
                 # set state in model object
-                lens = get_lens(state, land)
-                lens(model) .= svectorscopy(A, Val{size(A)[1]}())
+                lens(model) .= svectorscopy(to_SI.(A, unit), Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
@@ -202,7 +202,7 @@ function set_states!(
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
                 lens = get_lens(state, land)
-                lens(model)[1:n] .= A
+                lens(model)[1:n] .= to_SI.(A, unit)
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -261,10 +261,10 @@ function ncread(
     nc,
     config::Config,
     parameter::AbstractString;
+    type = Float64,
     optional = true,
     sel = nothing,
     defaults = nothing,
-    type = nothing,
     allow_missing = false,
     fill = nothing,
     dimname = nothing,

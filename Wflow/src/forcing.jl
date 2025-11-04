@@ -1,18 +1,18 @@
 "Struct to store atmospheric forcing variables"
 @with_kw struct AtmosphericForcing
     n::Int
-    # Precipitation [m s⁻¹]
+    # Precipitation [mm Δt⁻¹ => m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential reference evapotranspiration [m s⁻¹]
     potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Temperature [ᵒC]
+    # Temperature [ᵒC => K]
     temperature::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store hydrological forcing variables"
 @with_kw struct HydrologicalForcing
     n::Int
-    # Rainfall interception by the vegetation [mm]
+    # Rainfall interception by the vegetation [mm => m]
     interception::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow depth [m]
     waterlevel_land::Vector{Float64} = fill(MISSING_VALUE, n)
