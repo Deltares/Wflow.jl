@@ -148,7 +148,7 @@ function update_forcing!(model)
             data_sel = data[sel]
         end
         if any(ismissing, data_sel)
-            msg = "Forcing data at $time has missing values on active model cells for $(ncvar.name)"
+            msg = "Forcing data at $time has missing values on active model cells for $(variable_name(ncvar))"
             throw(ArgumentError(msg))
         end
         param = get_param(model, par)
@@ -208,7 +208,7 @@ function update_cyclic!(model)
                 data_sel = data[sel]
             end
             if any(ismissing, data_sel)
-                msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(ncvar.name)"
+                msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(variable_name(ncvar))"
                 throw(ArgumentError(msg))
             end
             param = get_param(model, par)
