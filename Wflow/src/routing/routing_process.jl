@@ -78,7 +78,7 @@ function ssf_celerity(zi, slope, sy, kh_profile::KhExponential, i)
     return Cn
 end
 
-""" 
+"""
 Return kinematic wave celecity `Cn` of lateral subsurface flow based on hydraulic
 conductivity profile `KhExponentialConstant`.
 """
