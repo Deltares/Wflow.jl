@@ -123,7 +123,7 @@ function main(ARGS::Vector{String})
     else
         throw(
             ArgumentError(
-                "One argument is allowed to specify the port number: `--port=<port>` or `--port <port>`, 
+                "One argument is allowed to specify the port number: `--port=<port>` or `--port <port>`,
                 where `<port>` refers to the port number.",
             ),
         )

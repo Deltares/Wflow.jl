@@ -49,7 +49,7 @@ the cells and yields better results in scenarios where the water surface slope d
 the bed slope. This is particularly relevant in flat (downstream) regions where the river
 slope is limited or during the propagation of larger flood waves where the water surface
 slope is greater than the river slope itself. The local inertial method does incorporate
-backwater effects, although not as comprehensively as the full dynamic wave equation. 
+backwater effects, although not as comprehensively as the full dynamic wave equation.
 
 Generally, the kinematic wave method is computationally faster than the local inertial
 method for river (and land) routing. For the multi-threading execution of the kinematic

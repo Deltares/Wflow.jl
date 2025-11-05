@@ -147,7 +147,7 @@ struct Model{
     T <: AbstractModelType,
 } <: AbstractModel{T}
     config::Config                  # all configuration options
-    domain::Domain                  # domain connectivity (network) and shared parameters 
+    domain::Domain                  # domain connectivity (network) and shared parameters
     routing::R                      # routing model (horizontal fluxes), moves along network
     land::L                         # land model simulating vertical fluxes, independent of each other
     mass_balance::M                 # mass balance error
