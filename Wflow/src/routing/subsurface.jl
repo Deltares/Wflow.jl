@@ -89,7 +89,7 @@ function LateralSsfParameters(
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
     specific_yield_dyn = fill(MISSING_VALUE, length(soilthickness))
-    specific_yield = theta_s .- theta_fc
+    specific_yield = max.(theta_s .- theta_fc, 0.02) # lower limit drainable porosity of 0.02
     ssf_parameters = LateralSsfParameters(;
         kh_profile,
         khfrac,
