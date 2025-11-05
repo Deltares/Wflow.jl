@@ -82,19 +82,20 @@ function SnowHbvParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    cfmax =
-        ncread(
-            dataset,
-            config,
-            "snowpack__degree_day_coefficient";
-            sel = indices,
-            defaults = 3.75,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+    cfmax = ncread(
+        dataset,
+        config,
+        "snowpack__degree_day_coefficient",
+        LandHydrologySBM;
+        sel = indices,
+        defaults = 3.75,
+        type = Float64,
+    )
     tt = ncread(
         dataset,
         config,
-        "atmosphere_air__snowfall_temperature_threshold";
+        "atmosphere_air__snowfall_temperature_threshold",
+        LandHydrologySBM;
         sel = indices,
         defaults = 0.0,
         type = Float64,
@@ -102,7 +103,8 @@ function SnowHbvParameters(
     tti = ncread(
         dataset,
         config,
-        "atmosphere_air__snowfall_temperature_interval";
+        "atmosphere_air__snowfall_temperature_interval",
+        LandHydrologySBM;
         sel = indices,
         defaults = 1.0,
         type = Float64,
@@ -110,7 +112,8 @@ function SnowHbvParameters(
     ttm = ncread(
         dataset,
         config,
-        "snowpack__melting_temperature_threshold";
+        "snowpack__melting_temperature_threshold",
+        LandHydrologySBM;
         sel = indices,
         defaults = 0.0,
         type = Float64,
@@ -118,7 +121,8 @@ function SnowHbvParameters(
     whc = ncread(
         dataset,
         config,
-        "snowpack__liquid_water_holding_capacity";
+        "snowpack__liquid_water_holding_capacity",
+        LandHydrologySBM;
         sel = indices,
         defaults = 0.1,
         type = Float64,

@@ -87,7 +87,8 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
     mannings_n = ncread(
         dataset,
         config,
-        "river_water_flow__manning_n_parameter";
+        "river_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.036,
         type = Float64,
@@ -95,7 +96,8 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
     bankfull_depth = ncread(
         dataset,
         config,
-        "river_bank_water__depth";
+        "river_bank_water__depth",
+        Routing;
         sel = indices,
         defaults = 1.0,
         type = Float64,
@@ -126,7 +128,8 @@ function RiverFlowBC(
     external_inflow = ncread(
         dataset,
         config,
-        "river_water__external_inflow_volume_flow_rate";
+        "river_water__external_inflow_volume_flow_rate",
+        Routing;
         sel = indices,
         defaults = 0.0,
         type = Float64,
@@ -217,7 +220,8 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
     mannings_n = ncread(
         dataset,
         config,
-        "land_surface_water_flow__manning_n_parameter";
+        "land_surface_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.072,
         type = Float64,

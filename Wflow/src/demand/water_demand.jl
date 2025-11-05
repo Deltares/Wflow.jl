@@ -48,24 +48,22 @@ function NonIrrigationDemand(
     dt::Second,
     sector::AbstractString,
 )
-    demand_gross =
-        ncread(
-            dataset,
-            config,
-            "$(sector)__gross_water_demand_volume_flux";
-            sel = indices,
-            defaults = 0.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
-    demand_net =
-        ncread(
-            dataset,
-            config,
-            "$(sector)__net_water_demand_volume_flux";
-            sel = indices,
-            defaults = 0.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+    demand_gross = ncread(
+        dataset,
+        config,
+        "$(sector)__gross_water_demand_volume_flux";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
+    demand_net = ncread(
+        dataset,
+        config,
+        "$(sector)__net_water_demand_volume_flux";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    )
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
@@ -129,15 +127,14 @@ function NonPaddy(
         sel = indices,
         type = Bool,
     )
-    max_irri_rate =
-        ncread(
-            dataset,
-            config,
-            "irrigated_non_paddy__max_irrigation_rate";
-            sel = indices,
-            defaults = 25.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+    max_irri_rate = ncread(
+        dataset,
+        config,
+        "irrigated_non_paddy__max_irrigation_rate";
+        sel = indices,
+        defaults = 25.0,
+        type = Float64,
+    )
 
     params = NonPaddyParameters(;
         maximum_irrigation_rate = max_irri_rate,
@@ -314,15 +311,14 @@ function Paddy(
         sel = indices,
         type = Bool,
     )
-    max_irri_rate =
-        ncread(
-            dataset,
-            config,
-            "irrigated_paddy__max_irrigation_rate";
-            sel = indices,
-            defaults = 25.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+    max_irri_rate = ncread(
+        dataset,
+        config,
+        "irrigated_paddy__max_irrigation_rate";
+        sel = indices,
+        defaults = 25.0,
+        type = Float64,
+    )
     n = length(indices)
     params = PaddyParameters(;
         irrigation_efficiency = efficiency,
@@ -585,15 +581,16 @@ function AllocationLand(
     frac_sw_used = ncread(
         dataset,
         config,
-        "land_surface_water__withdrawal_fraction";
+        "land_surface_water__withdrawal_fraction",
+        LandHydrologySBM;
         sel = indices,
         defaults = 1,
-        type = Float64,
     )
     areas = ncread(
         dataset,
         config,
-        "land_water_allocation_area__count";
+        "land_water_allocation_area__count",
+        LandHydrologySBM;
         sel = indices,
         defaults = 1,
         type = Int,

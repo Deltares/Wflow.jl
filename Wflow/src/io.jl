@@ -597,7 +597,8 @@ function locations_map(ds, mapname, config)
     map_2d = ncread(
         ds,
         config,
-        mapname;
+        mapname,
+        Writer;
         optional = false,
         type = Union{Int, Missing},
         allow_missing = true,
@@ -1033,7 +1034,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         map_2d = ncread(
             dataset,
             config,
-            map;
+            map,
+            Writer;
             type = Union{Int, Missing},
             allow_missing = true,
             logging = false,

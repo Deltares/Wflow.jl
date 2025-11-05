@@ -62,7 +62,8 @@ function LateralSsfParameters(
     khfrac = ncread(
         dataset,
         config,
-        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio";
+        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,

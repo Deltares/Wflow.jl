@@ -4,44 +4,47 @@ m/s -> Unit(; m = 1, s = -1)
 
 Positive and negative powers can be split to support e.g.
 m²m⁻² -> Unit(; m = (2, 2))
+
+The `absolute_temperature` flag indicates whether °C => K
+requires a +273.15 shift.
 """
 struct Unit
-    # Time
-    s::SVector{2, Int} # second, SI standard
-    d::SVector{2, Int} # day
-    dt::SVector{2, Int} # time step
-    # Length
-    m::SVector{2, Int} # meter, SI standard
-    mm::SVector{2, Int} # millimeter
     # Temperature
-    K::SVector{2, Int} # Kelvin, SI standard
-    degC::SVector{2, Int} # Degree Celcius
+    absolute_temperature::Bool # Expected to be first field!
+    K::SVector{2, Rational{Int}} # Kelvin, SI standard
+    degC::SVector{2, Rational{Int}} # Degree Celcius
+    # Time
+    s::SVector{2, Rational{Int}} # second, SI standard
+    d::SVector{2, Rational{Int}} # day
+    dt::SVector{2, Rational{Int}} # time step
+    # Length
+    m::SVector{2, Rational{Int}} # meter, SI standard
+    cm::SVector{2, Rational{Int}} # centimeter
+    mm::SVector{2, Rational{Int}} # millimeter
     # Mass
-    kg::SVector{2, Int} # kilogram, SI standard
-    g::SVector{2, Int} # gram
-    t::SVector{2, Int} # tonne
+    kg::SVector{2, Rational{Int}} # kilogram, SI standard
+    g::SVector{2, Rational{Int}} # gram
+    t::SVector{2, Rational{Int}} # tonne
     # Fraction
-    percentage::SVector{2, Int} # percentage, converted to unitless fraction
+    percentage::SVector{2, Rational{Int}} # percentage, converted to unitless fraction
 end
 
-function Unit(; kwargs...)
-    out = Dict(unit => SVector(0, 0) for unit in fieldnames(Unit))
+const Units = fieldnames(Unit)[2:end]
+
+function Unit(; absolute_temperature = false, kwargs...)
+    out = Dict(unit => SVector(0 // 1, 0 // 1) for unit in Units)
     for (unit, val) in pairs(kwargs)
         @assert unit ∈ fieldnames(Unit) "Unrecognized unit $unit."
-        powers = if val isa Int
+        powers = if val isa Number
             val > 0 ? (0, val) : (-val, 0)
-        elseif (val isa Union{Tuple{Int, Int}, SVector{2, Int}} && val[1] ≥ 0 && val[2] ≥ 0)
-            SVector{2, Int}(val)
         else
-            throw(ArgumentError("Invalid input for $unit: $val."))
+            val
         end
         out[unit] = powers
     end
     return Unit(
-        ntuple(
-            i -> SVector{2, Int}(out[fieldnames(Unit)[i]]),
-            Val(length(fieldnames(Unit))),
-        )...,
+        absolute_temperature,
+        ntuple(i -> SVector{2, Rational{Int}}(out[Units[i]]), Val(length(Units)))...,
     )
 end
 
@@ -51,10 +54,9 @@ following the BMI standard:
 https://bmi.csdms.io/en/stable/bmi.var_funcs.html#get-var-units
 """
 function Base.String(unit::Unit)
-    units = fieldnames(Unit)
-    n_units = length(units)
+    n_units = length(Units)
     symbols = ntuple(i -> begin
-        symb = units[i]
+        symb = Units[i]
         if symb == :degC
             "°C"
         elseif symb == :percentage
@@ -63,14 +65,16 @@ function Base.String(unit::Unit)
             String(symb)
         end
     end, Val(n_units))
-    powers = ntuple(i -> getfield(unit, units[i]), Val(n_units))
+    powers = ntuple(i -> getfield(unit, Units[i]), Val(n_units))
     out = String[]
 
     # Positive powers
     for (symbol, powers_) in zip(symbols, powers)
         power = powers_[2]
+        (; num, den) = power
+        power_str = isinteger(power) ? string(Int(power)) : "$num/$den"
         if !iszero(power)
-            term = isone(power) ? symbol : "$symbol$power"
+            term = isone(power) ? symbol : "$symbol$power_str"
             push!(out, term)
         end
     end
@@ -78,8 +82,10 @@ function Base.String(unit::Unit)
     # Negative powers
     for (symbol, powers_) in zip(symbols, powers)
         power = powers_[1]
+        (; num, den) = power
+        power_str = isinteger(power) ? string(Int(power)) : "$num/$den"
         if !iszero(power)
-            push!(out, "$symbol-$power")
+            push!(out, "$symbol-$power_str")
         end
     end
 
@@ -100,7 +106,7 @@ function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
 
     if isnothing(dt_val)
         if !all(iszero(dt))
-            error("Unit depends on dt but `dt_val` was not passed.")
+            throw(ArgumentError("Unit depends on `dt` but `dt_val` was not passed."))
         else
             dt_val = 1.0
         end
@@ -123,7 +129,7 @@ Convert a general unit to an SI standard unit
 function to_SI(unit::Unit)
     unit_SI = Unit(;
         s = unit.s + unit.d + unit.dt,
-        m = unit.m + unit.mm,
+        m = unit.m + +unit.cm + unit.mm,
         K = unit.K + unit.degC,
         kg = unit.kg + unit.g + unit.t,
     )
@@ -134,11 +140,23 @@ end
 """
 Convert the given value of the given unit to the value of the corresponding standard SI unit
 """
-function to_SI(x::Number, unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
-    return if unit == Unit(; degC = 1)
-        # Special case: if the unit is "°C" the temperature is assumed to be absolute
-        x + 274.15
+function to_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
+    return if unit == Unit(; degC = 1, absolute_temperature = true)
+        # Special case for absolute temperatures in °C
+        x + 273.15
     else
         x * to_SI_factor(unit; dt_val)
     end
+end
+
+# Fallback method for non-Floats, e.g. nothing, missing, Bool, Int
+to_SI(x, unit::Unit; kwargs...) = x
+
+"""
+Convert an array of values to the values in the corresponding SI unit in-place.
+"""
+function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
+    unit_ref = Ref(unit)
+    @. x = to_SI(x, unit_ref; dt_val)
+    return x
 end

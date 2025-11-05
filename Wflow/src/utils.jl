@@ -161,12 +161,12 @@ function set_states!(
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
+            (; lens, unit) = standard_name_map(land)[state]
             @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
-                ncname state
+                ncname state unit
             sel = active_indices(domain, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
-            (; lens, unit) = standard_name_map[land](state)
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
                 if dimname == :layer
@@ -188,7 +188,7 @@ function set_states!(
                     end
                 end
                 # set state in model object
-                lens(model) .= svectorscopy(to_SI.(A, unit), Val{size(A)[1]}())
+                lens(model) .= svectorscopy(to_SI!(A, unit), Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
@@ -202,7 +202,7 @@ function set_states!(
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
                 lens = get_lens(state, land)
-                lens(model)[1:n] .= to_SI.(A, unit)
+                lens(model)[1:n] .= to_SI!(A, unit)
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -234,7 +234,7 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
 end
 
 """
-    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString, model_type; <keyword arguments>)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
 model `parameter` (standard name) specified in the TOML configuration file. Supports various
@@ -260,8 +260,9 @@ values.
 function ncread(
     nc,
     config::Config,
-    parameter::AbstractString;
-    type = Float64,
+    parameter::AbstractString,
+    model_type::Type;
+    type = nothing,
     optional = true,
     sel = nothing,
     defaults = nothing,
@@ -271,10 +272,11 @@ function ncread(
     logging = true,
 )
     var = get_var(config, parameter; optional)
+    unit = get_unit(parameter, model_type)
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
+        @info "Set `$parameter` using default value `$defaults`." unit
         @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -303,7 +305,7 @@ function ncread(
     variable_info(var)
 
     if !isnothing(value)
-        @info "Set `$parameter` using uniform value `$value` from TOML file."
+        @info "Set `$parameter` using uniform value `$value` from TOML file." unit
         if isnothing(dimname)
             # set to one uniform value
             return Base.fill(only(value), length(sel))
@@ -317,7 +319,7 @@ function ncread(
         end
     else
         if logging
-            @info "Set `$parameter` using netCDF variable `$var`."
+            @info "Set `$parameter` using netCDF variable `$var`." unit
         end
         A = read_standardized(nc, variable_name(var), dim_sel)
         if !isnothing(layer)
@@ -363,7 +365,7 @@ function ncread(
         end
     end
 
-    return A
+    return to_SI!(A, unit; dt_val = config.time.timestepsecs)
 end
 
 """

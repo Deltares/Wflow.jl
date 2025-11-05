@@ -46,7 +46,8 @@ function initialize_subsurface_flow(
     elevation = ncread(
         dataset,
         config,
-        "land_surface__elevation";
+        "land_surface__elevation",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,

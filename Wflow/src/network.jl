@@ -83,9 +83,11 @@ function NetworkLand(dataset::NCDataset, config::Config)
     subcatch_2d = ncread(
         dataset,
         config,
-        "subbasin_location__count";
+        "subbasin_location__count",
+        Domain;
         optional = false,
         allow_missing = true,
+        type = nothing,
     )
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
@@ -160,7 +162,8 @@ function get_drainage_network(
     ldd_2d = ncread(
         dataset,
         config,
-        "basin__local_drain_direction";
+        "basin__local_drain_direction",
+        Domain;
         optional = false,
         allow_missing = true,
         logging,
@@ -170,7 +173,8 @@ function get_drainage_network(
         pits_2d = ncread(
             dataset,
             config,
-            "basin_pit_location__mask";
+            "basin_pit_location__mask",
+            Domain;
             optional = false,
             type = Bool,
             fill = false,
@@ -230,7 +234,8 @@ function NetworkRiver(
     river_location_2d = ncread(
         dataset,
         config,
-        "river_location__mask";
+        "river_location__mask",
+        Domain;
         optional = false,
         type = Bool,
         fill = false,
@@ -315,7 +320,8 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     locs = ncread(
         dataset,
         config,
-        "reservoir_location__count";
+        "reservoir_location__count",
+        Domain;
         optional = false,
         sel = indices,
         type = Int,
@@ -327,7 +333,8 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     coverage_2d = ncread(
         dataset,
         config,
-        "reservoir_area__count";
+        "reservoir_area__count",
+        Domain;
         optional = false,
         allow_missing = true,
         logging,

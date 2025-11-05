@@ -72,39 +72,40 @@ function GlacierHbvParameters(
     g_ttm = ncread(
         dataset,
         config,
-        "glacier_ice__melting_temperature_threshold";
+        "glacier_ice__melting_temperature_threshold",
+        LandHydrologySBM;
         sel = indices,
         defaults = 0.0,
         type = Float64,
         fill = 0.0,
     )
-    g_cfmax =
-        ncread(
-            dataset,
-            config,
-            "glacier_ice__degree_day_coefficient";
-            sel = indices,
-            defaults = 3.0,
-            type = Float64,
-            fill = 0.0,
-        ) .* (dt / BASETIMESTEP)
-    g_sifrac =
-        ncread(
-            dataset,
-            config,
-            "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction";
-            sel = indices,
-            defaults = 0.001,
-            type = Float64,
-            fill = 0.0,
-        ) .* (dt / BASETIMESTEP)
+    g_cfmax = ncread(
+        dataset,
+        config,
+        "glacier_ice__degree_day_coefficient",
+        LandHydrologySBM;
+        sel = indices,
+        defaults = 3.0,
+        type = Float64,
+        fill = 0.0,
+    )
+    g_sifrac = ncread(
+        dataset,
+        config,
+        "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction",
+        LandHydrologySBM;
+        sel = indices,
+        defaults = 0.001,
+        type = Float64,
+        fill = 0.0,
+    )
     glacier_frac = ncread(
         dataset,
         config,
-        "glacier_surface__area_fraction";
+        "glacier_surface__area_fraction",
+        LandHydrologySBM;
         sel = indices,
         defaults = 0.0,
-        type = Float64,
         fill = 0.0,
     )
     max_snow_to_glacier = 8.0 * (dt / BASETIMESTEP)
