@@ -86,4 +86,3 @@ The Table below shows the model settings for the model type `sediment`.
 | `land_transport` | Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]  | - | "yalin" |
 | `river_transport` | River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]  | - | "bagnold"  |
 : {.striped .hover}
-

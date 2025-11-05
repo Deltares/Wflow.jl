@@ -31,7 +31,7 @@ $$
   \alpha = \left(\frac{n P_\mathrm{w}^{\frac{2}{3}}}{\sqrt{c_\mathrm{slope}}}\right)^\beta \ \text{and} \ \beta = 0.6,
 $$
 
-where $\SIb{P_\mathrm{w}}{m}$ is the wetted perimeter, $c_\mathrm{slope}$ 
+where $\SIb{P_\mathrm{w}}{m}$ is the wetted perimeter, $c_\mathrm{slope}$
 ($c_\mathrm{land\ slope}$ for overland flow and $c_\mathrm{river\ slope}$ for river flow) is
 the slope $\SIb{}{m\ m^{-1}}$, and $n$ ($n_\mathrm{land}$ for overland flow and
 $n_\mathrm{river}$ for river flow) is Manning's coefficient $\SIb{}{s\ m^{-\frac{1}{3}}}$.
@@ -90,7 +90,7 @@ wave to solve the impact on resulting river flow $\SIb{Q}{m^3\ s^{-1}}$. In case
 abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of
 $0.80$ applied to river storage. Negative external inflows are satisfied first, and the
 remaining river storage is available for internal abstractions as part of water demand and
-allocation computations. 
+allocation computations.
 
 ## Abstractions
 Internal abstractions $\SIb{}{m^3\ s^{-1}}$ from the river are possible when water demand and
@@ -125,7 +125,7 @@ $$
 $$
 
 where $\SIb{c_\mathrm{land\ slope}}{m\ m^{-1}}$ is the land slope,
-$\SIb{\subtext{Q}{subsurface}}{m^3\ d^{-1}}$ is subsurface flow, 
+$\SIb{\subtext{Q}{subsurface}}{m^3\ d^{-1}}$ is subsurface flow,
 $\SIb{K_\mathrm{h0}}{m\ d^{-1}}$ is the saturated hydraulic conductivity at the soil
 surface, $\SIb{\subtext{z}{ssf, watertable}}{m}$ is the water table depth,
 $\SIb{\subtext{z}{ssf,soil}}{m}$ is the soil depth, $\SIb{f_\mathrm{ssf, Kv}}{m^{-1}}$ is a
@@ -159,7 +159,7 @@ $$
 $$
 
 For the `layered` and `layered_exponential` profiles the equivalent horizontal hydraulic
-conductivity $\SIb{\subtext{K}{h}}{m\ d^{-1}}$ is calculated for water table height 
+conductivity $\SIb{\subtext{K}{h}}{m\ d^{-1}}$ is calculated for water table height
 $\SIb{h = \subtext{z}{ssf,soil}-\subtext{z}{ssf,watertable}}{m}$ and lateral subsurface flow
 is calculated as follows:
 

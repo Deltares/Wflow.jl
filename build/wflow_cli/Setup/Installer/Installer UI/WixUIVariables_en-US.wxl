@@ -40,7 +40,7 @@
   <String Id='VerifyReadyDlgUpdateText' />
   <String Id='ProgressDlgTextUpdating' />
   <String Id='ProgressDlgTitleUpdating' />
-  
+
   <!-- Change the color of the description texts in the banners to white -->
   <String Id='BrowseDlgDescription'>{\WixUI_Font_Banner_Description}Configure the installation location.</String>
   <String Id='DiskCostDlgDescription'>{\WixUI_Font_Banner_Description}The amount of disk space required for the configured installation.</String>

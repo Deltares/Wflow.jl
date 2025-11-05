@@ -237,7 +237,7 @@ end
 
 @testitem "Piave: reservoir with observed (cyclic) outflow (sbm model)" begin
     using Dates: DateTime
-    # test use of observed reservoir outflow (cyclic) 
+    # test use of observed reservoir outflow (cyclic)
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.cyclic["reservoir_water__outgoing_observed_volume_flow_rate"] = "reservoir_outflow"

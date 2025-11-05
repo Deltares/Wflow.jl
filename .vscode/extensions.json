@@ -6,6 +6,6 @@
         "tamasfe.even-better-toml",
         "ms-vscode.vscode-json",
         "redhat.vscode-yaml",
-        "mechatroner.rainbow-csv",
+        "mechatroner.rainbow-csv"
     ]
 }

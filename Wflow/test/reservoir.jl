@@ -1,5 +1,5 @@
 @testitem "Update reservoir simple" begin
-    # Simple reservoir (outflowfunc = 4)  
+    # Simple reservoir (outflowfunc = 4)
     res_bc = Wflow.ReservoirBC(;
         inflow = [0.0],
         external_inflow = [0.0],
@@ -58,7 +58,7 @@
 end
 
 @testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
-    # Reservoir Modified Puls approach (outflowfunc = 3)  
+    # Reservoir Modified Puls approach (outflowfunc = 3)
     res_bc = Wflow.ReservoirBC(;
         inflow = [0.0],
         external_inflow = [0.0],
