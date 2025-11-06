@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Changelog – Wflow.jl</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./_static/logo.png" rel="icon" type="image/png">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script type="text/javascript" src="./_static/version.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      macros: {
+        SI: ["#1\\;\\mathrm\{#2\}", 2],
+        SIb: ["#1\\;[\\mathrm\{#2\}]", 2],
+        subtext: ["#1_\\text\{#2\}", 2]
+      }
+    }
+  };
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="_static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    <img src="./_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="./_static/logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Wflow.jl</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./getting_started/index.html"> 
+<span class="menu-text">Getting started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./user_guide/index.html"> 
+<span class="menu-text">User guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./model_docs/index.html"> 
+<span class="menu-text">Model documentation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./developments/index.html"> 
+<span class="menu-text">Developments</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-bi-github" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-bi-github">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl">
+ <span class="dropdown-text">Source Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Wflow.jl/issues/new/choose">
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./changelog.html">Changelog</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
+      <a href="./index.html" class="sidebar-logo-link">
+      </a>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Wflow.jl</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./home/case_studies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Case studies</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./home/publications.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Publications</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./changelog.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Changelog</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#unreleased" id="toc-unreleased" class="nav-link active" data-scroll-target="#unreleased">Unreleased</a>
+  <ul class="collapse">
+  <li><a href="#fixed" id="toc-fixed" class="nav-link" data-scroll-target="#fixed">Fixed</a></li>
+  <li><a href="#changed" id="toc-changed" class="nav-link" data-scroll-target="#changed">Changed</a></li>
+  <li><a href="#added" id="toc-added" class="nav-link" data-scroll-target="#added">Added</a></li>
+  </ul></li>
+  <li><a href="#v1.0.0-rc2---2025-10-16" id="toc-v1.0.0-rc2---2025-10-16" class="nav-link" data-scroll-target="#v1.0.0-rc2---2025-10-16">v1.0.0-rc2 - 2025-10-16</a>
+  <ul class="collapse">
+  <li><a href="#fixed-1" id="toc-fixed-1" class="nav-link" data-scroll-target="#fixed-1">Fixed</a></li>
+  <li><a href="#changed-1" id="toc-changed-1" class="nav-link" data-scroll-target="#changed-1">Changed</a></li>
+  <li><a href="#added-1" id="toc-added-1" class="nav-link" data-scroll-target="#added-1">Added</a></li>
+  </ul></li>
+  <li><a href="#v1.0.0-rc1---2025-06-23" id="toc-v1.0.0-rc1---2025-06-23" class="nav-link" data-scroll-target="#v1.0.0-rc1---2025-06-23">v1.0.0-rc1 - 2025-06-23</a>
+  <ul class="collapse">
+  <li><a href="#fixed-2" id="toc-fixed-2" class="nav-link" data-scroll-target="#fixed-2">Fixed</a></li>
+  <li><a href="#changed-2" id="toc-changed-2" class="nav-link" data-scroll-target="#changed-2">Changed</a></li>
+  <li><a href="#added-2" id="toc-added-2" class="nav-link" data-scroll-target="#added-2">Added</a></li>
+  </ul></li>
+  <li><a href="#v0.x-releases" id="toc-v0.x-releases" class="nav-link" data-scroll-target="#v0.x-releases">v0.x releases</a>
+  <ul class="collapse">
+  <li><a href="#v0.8.1---2024-08-27" id="toc-v0.8.1---2024-08-27" class="nav-link" data-scroll-target="#v0.8.1---2024-08-27">v0.8.1 - 2024-08-27</a></li>
+  <li><a href="#v0.8.0---2024-08-19" id="toc-v0.8.0---2024-08-19" class="nav-link" data-scroll-target="#v0.8.0---2024-08-19">v0.8.0 - 2024-08-19</a></li>
+  <li><a href="#v0.7.3---2024-01-12" id="toc-v0.7.3---2024-01-12" class="nav-link" data-scroll-target="#v0.7.3---2024-01-12">v0.7.3 - 2024-01-12</a></li>
+  <li><a href="#v0.7.2---2023-09-27" id="toc-v0.7.2---2023-09-27" class="nav-link" data-scroll-target="#v0.7.2---2023-09-27">v0.7.2 - 2023-09-27</a></li>
+  <li><a href="#v0.7.1---2023-06-30" id="toc-v0.7.1---2023-06-30" class="nav-link" data-scroll-target="#v0.7.1---2023-06-30">v0.7.1 - 2023-06-30</a></li>
+  <li><a href="#v0.7.0---2023-06-12" id="toc-v0.7.0---2023-06-12" class="nav-link" data-scroll-target="#v0.7.0---2023-06-12">v0.7.0 - 2023-06-12</a></li>
+  <li><a href="#v0.6.3---2023-03-01" id="toc-v0.6.3---2023-03-01" class="nav-link" data-scroll-target="#v0.6.3---2023-03-01">v0.6.3 - 2023-03-01</a></li>
+  <li><a href="#v0.6.2---2022-09-01" id="toc-v0.6.2---2022-09-01" class="nav-link" data-scroll-target="#v0.6.2---2022-09-01">v0.6.2 - 2022-09-01</a></li>
+  <li><a href="#v0.6.1---2022-04-26" id="toc-v0.6.1---2022-04-26" class="nav-link" data-scroll-target="#v0.6.1---2022-04-26">v0.6.1 - 2022-04-26</a></li>
+  <li><a href="#v0.6.0---2022-04-14" id="toc-v0.6.0---2022-04-14" class="nav-link" data-scroll-target="#v0.6.0---2022-04-14">v0.6.0 - 2022-04-14</a></li>
+  <li><a href="#v0.5.2---2022-02-03" id="toc-v0.5.2---2022-02-03" class="nav-link" data-scroll-target="#v0.5.2---2022-02-03">v0.5.2 - 2022-02-03</a></li>
+  <li><a href="#v0.5.1---2021-11-24" id="toc-v0.5.1---2021-11-24" class="nav-link" data-scroll-target="#v0.5.1---2021-11-24">v0.5.1 - 2021-11-24</a></li>
+  <li><a href="#v0.5.0---2021-11-12" id="toc-v0.5.0---2021-11-12" class="nav-link" data-scroll-target="#v0.5.0---2021-11-12">v0.5.0 - 2021-11-12</a></li>
+  <li><a href="#v0.4.1---2021-11-04" id="toc-v0.4.1---2021-11-04" class="nav-link" data-scroll-target="#v0.4.1---2021-11-04">v0.4.1 - 2021-11-04</a></li>
+  <li><a href="#v0.4.0---2021-09-02" id="toc-v0.4.0---2021-09-02" class="nav-link" data-scroll-target="#v0.4.0---2021-09-02">v0.4.0 - 2021-09-02</a></li>
+  <li><a href="#v0.3.1---2021-05-19" id="toc-v0.3.1---2021-05-19" class="nav-link" data-scroll-target="#v0.3.1---2021-05-19">v0.3.1 - 2021-05-19</a></li>
+  <li><a href="#v0.3.0---2021-05-10" id="toc-v0.3.0---2021-05-10" class="nav-link" data-scroll-target="#v0.3.0---2021-05-10">v0.3.0 - 2021-05-10</a></li>
+  <li><a href="#v0.2.0---2021-03-26" id="toc-v0.2.0---2021-03-26" class="nav-link" data-scroll-target="#v0.2.0---2021-03-26">v0.2.0 - 2021-03-26</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Changelog</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<section id="unreleased" class="level2">
+<h2 class="anchored" data-anchor-id="unreleased">Unreleased</h2>
+<section id="fixed" class="level3">
+<h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
+<ul>
+<li>Introduced in v1.0.0-rc2, fixed initialization of no-demand fields of struct <code>Demand</code>.</li>
+<li>Introduced in v1.0.0-rc2, fix units water mass balance computations for subsurface flow concepts <code>LateralSSF</code> and <code>UnconfinedAquifer</code> at sub-daily model time step.</li>
+</ul>
+</section>
+<section id="changed" class="level3">
+<h3 class="anchored" data-anchor-id="changed">Changed</h3>
+</section>
+<section id="added" class="level3">
+<h3 class="anchored" data-anchor-id="added">Added</h3>
+</section>
+</section>
+<section id="v1.0.0-rc2---2025-10-16" class="level2">
+<h2 class="anchored" data-anchor-id="v1.0.0-rc2---2025-10-16">v1.0.0-rc2 - 2025-10-16</h2>
+<section id="fixed-1" class="level3">
+<h3 class="anchored" data-anchor-id="fixed-1">Fixed</h3>
+<ul>
+<li>Introduced in v1.0.0-rc1, fixed unit conversion model parameter <code>kv_0</code> to <code>kh_0</code> for sub-daily model timestep.</li>
+<li>Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation parameters.</li>
+<li>Introduced in v1.0.0-rc1, fixed computation of exfiltration rate for <code>GroundwaterFlow</code>. Before the exfiltration rate was computed (function <code>get_exfiltwater</code>), the maximum groundwater head was adjusted to the surface level (function <code>get_water_depth</code>), resulting in zero exfiltration rates. The exfiltration rate computation has been moved to the <code>update_head!</code> function of <code>GroundwaterFlow</code>.</li>
+<li>Fixed soil model <code>SbmSoilModel</code> cold states for model type <code>sbm_gwf</code>. <code>GroundwaterFlow</code> can have constant head boundary cells, and for river cells the initial head is set equal to the surface elevation. <code>SbmSoilModel</code> cold states and depending variables are now corrected based on the <code>GroundwaterFlow</code> initial head values.</li>
+</ul>
+</section>
+<section id="changed-1" class="level3">
+<h3 class="anchored" data-anchor-id="changed-1">Changed</h3>
+<ul>
+<li>Refactor <code>SimpleReservoir</code> and <code>Lake</code> structs by introducing a <code>Reservoir</code> struct that combines data and functionality of both structs. For the simple reservoir a rating curve type (4) has been added. To represent reservoirs, (natural) lakes or other water storage features that can be represented by the available functionality the common name <code>reservoir</code> is used, also for the standard names of associated model variables and parameters.</li>
+<li>The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25 as recommended by Chu and Willis (1984). This has been changed to a configurable model setting (<code>subsurface_water_flow__alpha_coefficient</code>), so this can be lowered easily in case of numerical instabilities. Additionally, internal timestepping for groundwater flow is now supported.</li>
+<li>For scalar NetCDF output files, when using the same output map (gauge or subcatchment map) multiple times, each variable that uses these IDs are now sharing the same dimension (instead of creating a new dimension for each variable). The name of this dimension is based on the name of the map defined in the .toml file.</li>
+<li>Change default value of weighting factor <code>theta</code> (adjusts the amount of artificial numerical diffusion) from 0.8 to 1.0 for local inertial overland flow routing. This results in smaller water balance errors.</li>
+<li>Introduced in v1.0.0-rc1 (except for average water depth <code>h_av</code> routing), stop supporting time averaged storage variables as these are not required for typical applications and users. Additionally, rename standard names of instantaneous storage variables by removing <code>instantaneous</code> from the name.</li>
+<li>Allow static input of river external inflow.</li>
+</ul>
+</section>
+<section id="added-1" class="level3">
+<h3 class="anchored" data-anchor-id="added-1">Added</h3>
+<ul>
+<li>Support external inflow at reservoir locations.</li>
+<li>Include a SBOM in build distributions (#669).</li>
+<li>Support use of reservoir observed outflow data for the reservoir water balance computation.</li>
+<li>Support water mass balance computations (error and relative error).</li>
+</ul>
+</section>
+</section>
+<section id="v1.0.0-rc1---2025-06-23" class="level2">
+<h2 class="anchored" data-anchor-id="v1.0.0-rc1---2025-06-23">v1.0.0-rc1 - 2025-06-23</h2>
+<section id="fixed-2" class="level3">
+<h3 class="anchored" data-anchor-id="fixed-2">Fixed</h3>
+<ul>
+<li>Initialization of <code>LateralSSF</code> variables <code>ssf</code> and <code>ssfmax</code> with vertical hydraulic conductivity profile <code>exponential_constant</code>. Removed parameter <code>khfrac</code> from the computation, as it is already part of parameter <code>kh_0</code>.</li>
+<li>Mutating BMI model control functions (<code>update</code>, <code>update_until</code> and <code>finalize</code>) and extended mutating BMI functions (<code>load_state</code> and <code>save_state</code>) should return <code>nothing</code>.</li>
+<li>Added downloading of testdata to Dockerfile, to ensure an image was able to build.</li>
+<li>The reservoir (<code>reservoir_index_f</code>) and lake (<code>lake_index_f</code>) indices as part of <code>network.river</code> were not correct. These were mapped to their own index in the <code>SimpleReservoir</code> and <code>Lake</code> struct, and not to the corresponding river index. This resulted in incorrect surface water abstractions from reservoir and lake volumes, and surface water abstractions were set at zero at the wrong river locations.</li>
+<li>Wflow ZMQ server: allow JSON reading and writing of <code>NaN</code> and <code>Inf</code> values to avoid a JSON spec error. For example, during initialization of a wflow model, some (diagnostic) model variables are initialized with <code>NaN</code> values.</li>
+<li>Limit flux from <code>River</code> boundary of <code>GroundwaterFlow</code> to unconfined aquifer based on available river storage (from river flow routing).</li>
+<li>Fixed computation of flow width in diagonal flow direction for model type <code>sediment</code> and fixed the computation of the remaining surface flow width (kinematic wave overland flow) for river cells in the diagonal flow direction. For both cases the width should be based on land area and flow length (area conservative).</li>
+<li>Limit external negative inflow for local inertial routing (maximum of 80% of river volume).</li>
+<li>Abstraction from lakes as part of water demand and allocation computations was skipped because of an incorrect if-statement.</li>
+</ul>
+</section>
+<section id="changed-2" class="level3">
+<h3 class="anchored" data-anchor-id="changed-2">Changed</h3>
+<ul>
+<li>Removed vertical concepts <code>HBV</code> and <code>FLEXTopo</code>.</li>
+<li>Removed metadata macros (used by <code>BMI</code>). The variable unit is moved to the standard name mapping dictionaries, and the grid element type information is moved to a <code>BMI</code> helper function.</li>
+<li>Refactor the vertical <code>SBM</code> concept: divide the long struct <code>SBM</code> into different model components for interception, snow, glacier, (open water) runoff, soil, water demand and allocation stored in the struct <code>LandHydrologySBM</code>. Additionally, the atmospheric forcing and a shared vegetation parameterset are stored as separate fields in struct <code>LandHydrologySBM</code> (with soil model <code>SbmSoilModel</code>). The model component structs have model <code>variables</code>, <code>parameters</code> and <code>boundary_conditions</code> (if applicable), including associated functions for initializing and updating these model components. The original long update function of the <code>SBM</code> soil part has been split into separate functions.</li>
+<li>Refactor the lateral (routing) components: as for the vertical <code>SBM</code> concept split the structs into <code>variables</code>, <code>parameters</code> and <code>boundary_conditions</code> (if applicable).</li>
+<li>Refactor the <code>sediment</code> concept: similar to the refactor of <code>SBM</code> concept, the sediment model has been split into three main structures. <code>SoilLoss</code> was split into rainfall_erosion, overland_flow_erosion and (total) soil_erosion concepts. <code>OverlandFlowSediment</code> has been split into transport_capacity, sediment_flux and to_river concepts. <code>RiverSediment</code> has been split into transport_capacity, potential_erosion, sediment_flux and concentrations concepts.</li>
+<li>Timestepping method parameters for solving the kinematic wave and local inertial approaches for river and overland flow are moved to a <code>TimeStepping</code> struct. The timestepping implementation for the kinematic wave is now similar to the local inertial method: a stable timestep is computed for each sub timestep (or a fixed sub timestep is used) as part of a while loop (for each model timestep).</li>
+<li>Map internal model variable and parameter names based on <a href="https://csdms.colorado.edu/wiki/CSDMS_Standard_Names">CSDMS Standard Names</a>. The previous one to one mapping can be used to output model variables and parameters (TOML config file), but is not considered as part of the public API.</li>
+<li>Refactor TOML configuration file, also as a result of using internal (CSDMS) standard names. Most important changes include: there is now a distinction between static, cyclic and forcing input (<code>[input.static]</code>, <code>[input.cyclic]</code> and <code>[input.forcing]</code>) without the need to specify the internal cyclic and forcing variables in a list (only an external name mapping is required), state variables are listed below the <code>[state.variables]</code> TOML section and use of more clearly defined TOML output sections.</li>
+<li>Replaced the variables that can exchange through <code>BMI</code> (list of model components) by a list of standard names below the <code>[API]</code> TOML section.</li>
+<li>Use the instantaneous routing water depth <code>h</code> at the previous model time step to limit open water evaporation and to set the river <code>stage</code> of the <code>GroundwaterFlow</code> model for the current model time step, as it is more accurate then using the average water depth <code>h_av</code> at the previous model time step.</li>
+<li>Removed <code>LoopVectorization</code> dependency because of compilation issues and the risk of deprecation for newer Julia versions. The <code>tturbo</code> macro has been replaced by the <code>batch</code> macro of <code>Polyester</code>, performance loss is acceptable.</li>
+<li>The infiltration capacity of soil, represented by parameter <code>infiltcapsoil</code>, is now determined from the actual saturated hydraulic conductivity at the soil surface using parameters <code>kv_0</code> and <code>kvfrac</code>, better linking it to soil properties. Setting <code>infiltcapsoil</code> directly by an external netCDF variable is not supported anymore.</li>
+<li>Removed the <code>GroundwaterExchange</code> component that can be used to replace the kinematic wave lateral subsurface flow routing with an external groundwater model (e.g.&nbsp;Modflow). This feature has been added as part of the following <a href="https://studenttheses.uu.nl/handle/20.500.12932/41091">MSc thesis</a> work. One of the potential improvements recommended by this work was to re-activate the lateral subsurface flow routing for coupling with Modflow 6, as a rapid runoff (interflow) generating mechanism was missing and the current coupling did not yield satisfactory results. More work is needed to support this kind of coupling in a good way.</li>
+<li>Removed default values for the following (sensitive) input parameters: <code>khfrac</code>, <code>kv_0</code>, <code>kv</code>, <code>f</code>, <code>c</code>, <code>theta_s</code>, <code>theta_r</code>, <code>soilthickness</code>, <code>canopygapfraction</code>, <code>rootingdepth</code> and <code>pathfrac</code>.</li>
+<li>Changed default values of <code>h4</code> from -15849.0 to -16000.0, and <code>cfmax</code> from 3.75653 to 3.75.</li>
+<li>Removed support for one layer models, and therefore also removed the <code>topog_sbm_transfer__flag</code> option. With this removal, the default soil layer thickness is set to <code>[100, 300, 800]</code>.</li>
+<li>The root length density fraction in unsaturated soil layers is scaled by using the total root length density fraction of the unsaturated zone. Plant transpiration can then be fully satisfied from the unsaturated zone when the water table intersects the root zone. For the transpiration from the saturated store the remaining potential transpiration is used in combination with the wet root fraction (root length density fraction in the saturated soil layers is not used).</li>
+<li>Changed order of computations for 1D-2D local inertial model that improves the accuracy of reservoir or lake state after initialization with a warm state. The inflow from land to a reservoir or lake was updated during the overland flow routing (final computation during each internal time step). This results in small inflow deviations when starting with a warm state as the inflow from land to a reservoir or lake has not been updated yet, while a reservoir or lake is updated as part of the river routing. Order of computations has been changed to: 1) overland flow routing, 2) reservoir or lake inflow and 3) river routing.</li>
+</ul>
+</section>
+<section id="added-2" class="level3">
+<h3 class="anchored" data-anchor-id="added-2">Added</h3>
+<ul>
+<li>Support direct output of snow and glacier melt, and add computation of snow water equivalent (SWE).</li>
+<li>Support computation and output of actual river water abstraction based on external negative inflow.</li>
+</ul>
+</section>
+</section>
+<section id="v0.x-releases" class="level2">
+<h2 class="anchored" data-anchor-id="v0.x-releases">v0.x releases</h2>
+<section id="v0.8.1---2024-08-27" class="level3">
+<h3 class="anchored" data-anchor-id="v0.8.1---2024-08-27">v0.8.1 - 2024-08-27</h3>
+<section id="fixed-3" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-3">Fixed</h4>
+<ul>
+<li>Reduce allocations in update of vertical <code>SBM</code> concept.</li>
+</ul>
+</section>
+</section>
+<section id="v0.8.0---2024-08-19" class="level3">
+<h3 class="anchored" data-anchor-id="v0.8.0---2024-08-19">v0.8.0 - 2024-08-19</h3>
+<section id="fixed-4" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-4">Fixed</h4>
+<ul>
+<li>Added missing BMI function <code>get_grid_size</code>, it is used for unstructured grids, for example to get the length of arrays returned by BMI functions <code>get_grid_x</code> and <code>get_grid_y</code>.</li>
+<li>Added a check for the solution of the quadratic equation as part of the Modified Puls approach for lake outflow. Lower limit should be zero (very small negative values can occur).</li>
+<li>Limit lake evaporation (added variable <code>actevap</code>) and lake outflow to prevent negative lake storage. The variable <code>actevap</code> has also been added to the reservoir module.</li>
+<li>The <code>set_states</code> function for model type <code>sbm</code> with local inertial routing for river and land component.</li>
+<li>Inflow to reservoir and lake locations for local inertial routing: 1) with floodplain routing, the floodplain discharge was not added to the inflow of these locations, 2) the <code>to_river</code> variable from overland flow and lateral subsurface flow was not added to the inflow of these locations.</li>
+<li>Close netCDF <code>NCDataset</code> with state variables in extended BMI function <code>save_state</code>.</li>
+<li>For the computation of Gash interception model parameter <code>e_r</code> multiply the precipitation input with the canopy fraction (this was only done for the potential evapotranspiration input).</li>
+<li>Function <code>BMI.update_until</code> could throw an <code>InexactError: Int64</code> caused by a not whole number, representing how many times (<code>steps</code>) an update of a wflow model is required. This is fixed by using <code>divrem</code> for the computation of the number of <code>steps</code> in this function. An error is thrown when the absolute remainder of <code>divrem</code> is larger than <code>eps()</code>, or when the number of <code>steps</code> is negative.</li>
+<li>Fixed internal and external broken links in docs.</li>
+<li>The internal time step of the local inertial model (<code>stable_timestep</code> function) can get zero when <code>LoopVectorization</code> is applied (<code>@tturbo</code>) to the for loop of these functions. This issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold 6144 CPU (2 processors). This has been fixed by replacing <code>@tturbo</code> with <code>reduction</code> of <code>Polyester.jl</code>.</li>
+<li>Fixed required states of the model type <code>sbm_gwf</code>: added <code>h_av</code> for the river and land domain.</li>
+<li>For the <code>constanthead</code> boundary of <code>GroundwaterFlow</code> the <code>head</code> should not be changed (was set to <code>top</code> elevation of the <code>aquifer</code> if <code>head</code> &gt; <code>top</code>), and <code>exfiltwater</code> should be 0 for these boundary cells.</li>
+</ul>
+</section>
+<section id="changed-3" class="level4">
+<h4 class="anchored" data-anchor-id="changed-3">Changed</h4>
+<ul>
+<li>Stop exposing scalar variables through BMI. The <code>BMI.get_value_ptr</code> function was not working correctly for scalar model variables (a <code>view</code> was applied). Only a few scalar model parameters are defined, and it is not expected that exposing these variables is required (e.g.&nbsp;for model coupling) while code changes for these variables (including struct fields) are required.</li>
+<li>The local inertial routing (constant) river boundary condition <code>depth</code> at a ghost node (downstream river outlet) was set at 0.0 in the code and can now be provided through the model parameter netCDF file (<code>riverdepth_bc</code>). In addition, the boundary condition river length <code>dl</code> at a ghost node should be set through the model parameter netCDF file (<code>riverlength_bc</code>), providing this boundary condition through the <code>[model]</code> settings in the TOML file (<code>model.riverlength_bc</code>) has been deprecated.</li>
+<li>As part of the vertical <code>SBM</code> concept: 1) add variable <code>net_runoff</code> (land runoff minus actual open water evaporation <code>ae_openw_l</code>) and 2) change the definition of variable <code>runoff</code> by removing the subtraction of <code>ae_openw_l</code> (total land runoff). The variable <code>net_runoff</code> is now input to the kinematic wave for overland flow (replaces the original <code>runoff</code> variable as input). The lower limit of the original <code>runoff</code> variable was set at zero, which may result in water balance errors. This lower limit was implemented in the Python version of wflow_sbm, to avoid a very slow kinematic wave solution for surface flow computation (no distinction between a kinematic wave for overland and river flow). When in the Python version of wflow_sbm the kinematic wave for surface flow was split into a river and land component, the lower limit was removed for river runoff (<code>net_runoff_river</code>), but not for land runoff.</li>
+<li>Always use fractions for the computation of potential evapotranspiration (interception and transpiration) and potential evaporation (open water and soil). Replaced variable <code>et_reftopot</code> by crop coefficient <code>kc</code> (use of <code>et_reftopot</code> has been deprecated).</li>
+<li>For improved code readability it is now discouraged to use non-ASCII characters for the names of variables, structs, functions and macros. Using the non-ASCII character for built-in operators is still allowed. This change in naming convention is now in effect and all invalid uses of non-ASCII characters have been replaced by ASCII equivalents. This change also impacts the TOML keys <code>kv₀</code>, <code>θᵣ</code> and <code>θₛ</code>. These keys have been replaced with the ASCII versions <code>kv_0</code>, <code>theta_r</code> and <code>theta_s</code> in v0.4.0 and the old keys are not supported anymore.</li>
+<li>Docs: 1) improved description of different model configurations in model-setup.md, also in relation to hydromt_wflow in docs, 2) citing info related to wflow_sbm publication in Geosci. Model Dev. (from in review to published).</li>
+<li>Root water uptake reduction (Feddes): 1) extend critical pressure head parameters with <code>h3_low</code> and <code>h3_high</code>, 2) all critical pressure head parameters can be set (values for <code>h1</code>, <code>h2</code> and <code>h3</code> were fixed) and 3) the root water uptake reduction coefficient <code>\alpha</code> can be set at 0 (default is 1) at critical pressure head <code>h1</code> (through the model parameter <code>alpha_h1</code>).</li>
+<li>For the actual transpiration computation in <code>SBM</code>, the potential transpiration is partitioned over the soil layers with roots according to the model parameter <code>rootfraction</code> (fraction of the total root length in a soil layer). Previously, for each soil layer (from top to bottom) the actual transpiration was computed, and the remaining potential transpiration was used in the next soil layer.</li>
+</ul>
+</section>
+<section id="added-3" class="level4">
+<h4 class="anchored" data-anchor-id="added-3">Added</h4>
+<ul>
+<li>Total water storage as an export variable for <code>SBM</code> concept. This is the total water stored per grid cell in millimeters. Excluded from this variable are the floodplain, lakes and reservoirs.</li>
+<li>Checks to see if all states are covered in the .toml file. If not all states are covered, an error is thrown. If there are more states specified than required, these states are ignored (with a warning in the logging), and the simulation will continue.</li>
+<li>Support different vertical hydraulic conductivity profiles for the <code>SBM</code> concept. See also the following sections: <a href="@ref">The SBM soil water accounting scheme</a> and <a href="@ref">Subsurface flow routing</a> for a short description.</li>
+<li>Local inertial routing to <code>sbm_gwf</code> model type.</li>
+<li>Water demand and allocation computations for model types <code>sbm</code> and <code>sbm_gwf</code>.</li>
+</ul>
+</section>
+</section>
+<section id="v0.7.3---2024-01-12" class="level3">
+<h3 class="anchored" data-anchor-id="v0.7.3---2024-01-12">v0.7.3 - 2024-01-12</h3>
+<section id="fixed-5" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-5">Fixed</h4>
+<ul>
+<li>Documentation: add leakage term to the wflow_sbm figure, document external input parameter <code>ksathorfrac</code> and fix description of adding external <code>inflow</code> to the kinematic wave.</li>
+<li>Fixed BMI functions (e.g.&nbsp;<code>BMI.get_value</code>) that deviated from BMI specifications (BasicModelInterface.jl), including function arguments, return types and the BMI specification that arrays are always flattened (this was not the case for variables stored as 2-dimensional arrays or as vector of SVectors).</li>
+<li>Bump compat for NCDatasets to 0.13, 0.14.</li>
+<li>The solution for lake outflow as part of the Modified Puls Approach. The inflow and outflow variables are defined for period <code>Δt</code>, and not at <code>t1</code> and <code>t2</code> (instantaneous) as in the original mass balance equation of the Modified Puls Approach. Because of this, the terms of the quadratic equation (and solution) were fixed.</li>
+<li>Use <code>kvfrac</code> for the computation of vertical saturated hydraulic conductivity at the bottom of the soil layer, since <code>kvfrac</code> is also used for the computation of vertical unsaturated flow.</li>
+</ul>
+</section>
+<section id="changed-4" class="level4">
+<h4 class="anchored" data-anchor-id="changed-4">Changed</h4>
+<ul>
+<li>For cyclic parameters different cyclic time inputs are supported (only one common cyclic time (for example daily or monthly) was allowed).</li>
+<li>BMI: 1) added grid information (type and location) and whether a variable can be exchanged to metadata Structs, 2) extend model grid functions for wflow components that store variables on <code>edges</code> (local inertial model) with <code>get_grid_edge_count</code> and <code>get_grid_edge_nodes</code>.</li>
+</ul>
+</section>
+<section id="added-4" class="level4">
+<h4 class="anchored" data-anchor-id="added-4">Added</h4>
+<ul>
+<li>Functions for loading and saving states and getting the <code>starttime</code> in Unix time format. This is convenient for coupling with OpenDA (and other external) software. The set states functionality from the initialization function has been moved to a separate <code>set_states</code> function for each <code>Model</code> type, to support loading states independent of initialization.</li>
+</ul>
+</section>
+</section>
+<section id="v0.7.2---2023-09-27" class="level3">
+<h3 class="anchored" data-anchor-id="v0.7.2---2023-09-27">v0.7.2 - 2023-09-27</h3>
+<section id="fixed-6" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-6">Fixed</h4>
+<ul>
+<li>Water balance of modified Rutter interception model. The sum of the stemflow partitioning coefficient <code>pt</code> and free throughfall coefficient <code>p</code> could get larger than 1, resulting in an overestimation of stemflow and throughfall amounts and negative net interception amounts. And the first drainage amount <code>dd</code>, controlled by a change over time in canopy storage capacity <code>cmax</code>, should not be subtracted from precipitation to compute net interception.</li>
+<li>The <code>netinterception</code> (net interception) computed by the modified Rutter interception model was stored as <code>interception</code> in <code>SBM</code>, while this should be the <code>interception</code> (interception loss by evaporation) output of the modified Rutter interception model. The <code>interception</code> of <code>SBM</code> is used to compute the total actual evapotranspiration <code>actevap</code>.</li>
+</ul>
+</section>
+</section>
+<section id="v0.7.1---2023-06-30" class="level3">
+<h3 class="anchored" data-anchor-id="v0.7.1---2023-06-30">v0.7.1 - 2023-06-30</h3>
+<section id="fixed-7" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-7">Fixed</h4>
+<ul>
+<li>State initialization of 1D floodplain <code>volume</code>. In the initialization function the wrong field name of type <code>FloodPlainProfile</code> was used (<code>area</code> instead of <code>a</code>).</li>
+</ul>
+</section>
+</section>
+<section id="v0.7.0---2023-06-12" class="level3">
+<h3 class="anchored" data-anchor-id="v0.7.0---2023-06-12">v0.7.0 - 2023-06-12</h3>
+<section id="fixed-8" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-8">Fixed</h4>
+<ul>
+<li><code>BMI.get_time_units</code> now gets called on the model rather than the type, like all other BMI functions, except <code>BMI.initialize</code>. Also it returns “s” instead of “seconds since 1970-01-01T00:00:00”, in line with the BMI specification.</li>
+<li>Added the <code>interception</code> component to total actual evapotranspiration <code>actevap</code> of <code>SBM</code> (was defined as the sum of soil evaporation, transpiration and open water evaporation).</li>
+</ul>
+</section>
+<section id="changed-5" class="level4">
+<h4 class="anchored" data-anchor-id="changed-5">Changed</h4>
+<ul>
+<li>The time values returned in the BMI interface are no longer in seconds since 1970, but in seconds since the model start time. This is more in line with standard BMI practices.</li>
+<li>The <code>starttime</code> was defined one model timestep <code>Δt</code> ahead of the actual model time (the initial conditions timestamp (state time)). As a consequence this was also the case for the current model time. To allow for an easier interpretation of wflow time handling, either through BMI or directly, the <code>starttime</code> is now equal to the state time, resulting in current model times without an offset.</li>
+<li>Using more than 8 threads can result in too much overhead with <code>Threads.@threads</code>. After performance testing, this has been changed for kinematic wave routing and the vertical <code>SBM</code> concept to spawning tasks with <code>Threads@spawn</code> for number of threads &lt;= 8, where each task iterates over a chunk of size <code>basesize</code>. For more than 8 threads the low overhead threading <code>Polyester.@batch</code> (including the <code>minbatch</code> argument) is used. For local inertial routing the use of <code>Threads.@threads</code> has been changed to threaded loop vectorization (river and 1D floodplain local inertial momentum equation) and <code>Polyester.@batch</code>.</li>
+</ul>
+</section>
+<section id="added-5" class="level4">
+<h4 class="anchored" data-anchor-id="added-5">Added</h4>
+<ul>
+<li>For (regulated) lakes with rating curve of type 1 (H-Q table), lake <code>storage</code> above the <code>maximumstorage</code> (based on maximum water level from the H-Q table) is spilled instantaneously (overflow) from the lake.</li>
+<li>Added support to use <code>sum</code> as a reducer function for csv and scalar output options.</li>
+</ul>
+</section>
+</section>
+<section id="v0.6.3---2023-03-01" class="level3">
+<h3 class="anchored" data-anchor-id="v0.6.3---2023-03-01">v0.6.3 - 2023-03-01</h3>
+<section id="fixed-9" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-9">Fixed</h4>
+<ul>
+<li>Removed error when <code>_FillValue</code> is present in the time dimension of the forcing netCDF file. The simulation is allowed to continue with the attribute present, given that there are no missing values in the time dimension. This is checked by the code, and an error is thrown if this is the case.</li>
+<li>Column index of daily lake rating curves. This was incorrectly based on <code>dayofyear</code> with a maximum of 365. The column index should be based on julian day (leap days are not counted).</li>
+</ul>
+</section>
+<section id="changed-6" class="level4">
+<h4 class="anchored" data-anchor-id="changed-6">Changed</h4>
+<ul>
+<li><code>NCDatasets</code> version. Reading the <code>time</code> dimension of multifile netCDF file became very slow since <code>NCDatasets</code> v0.12.4, this issue has been solved in v0.12.11.</li>
+<li>Store the <code>time</code> dimension of the forcing netCDF file as part of the struct <code>NCreader</code> instead of calling <code>dataset["time"][:]</code> each time step when loading forcing data.</li>
+</ul>
+</section>
+<section id="added-6" class="level4">
+<h4 class="anchored" data-anchor-id="added-6">Added</h4>
+<ul>
+<li>Show total duration of simulation in the log file (info), and show the current time at execution of each timestep (debug).</li>
+<li>Support for exponential decline in horizontal conductivity in the sbm_gwf concept. This can be enabled using the <code>conductivity_profile</code> setting (either “uniform” or “exponential”). If set to “exponential”, it exponentially reduces the <code>kh0</code> (or <code>conductivity</code>) based on the value of <code>gwf_f</code> to the actual horizontal conductivity (<code>k</code>).</li>
+<li>An optional 1D floodplain schematization for the river flow inertial model, based on provided flood volumes as a function of flood depth per river cell. See also the following sections: <a href="@ref config_sbm_gwf_lie_river">SBM + Local inertial river</a> and <a href="@ref">River and floodplain routing</a> for a short description, and the following section for associated <a href="@ref local-inertial_floodplain_params">model parameters</a>.</li>
+</ul>
+</section>
+</section>
+<section id="v0.6.2---2022-09-01" class="level3">
+<h3 class="anchored" data-anchor-id="v0.6.2---2022-09-01">v0.6.2 - 2022-09-01</h3>
+<section id="fixed-10" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-10">Fixed</h4>
+<ul>
+<li>Two issues related to reservoir and lake locations as part of local inertial model: 1) added as boundary points to the update of overland flow, 2) fixed check reservoir and lake location in update river flow.</li>
+<li>Limit flow (<code>qx</code>, <code>qy</code> and <code>q</code>) in local inertial model when water is not available (set to zero).</li>
+<li>In the grid output netCDFs, don’t set the <code>_FillValue</code> attribute, since the CF conventions don’t allow it.</li>
+<li>Glacier parameter <code>g_sifrac</code> needs to be converted during initialization (time dependent).</li>
+<li>The check that the sum of adaptive timesteps (<code>Δt</code>) of the local inertial model (1D and 2D) does not exceed the model timestep.</li>
+</ul>
+</section>
+<section id="changed-7" class="level4">
+<h4 class="anchored" data-anchor-id="changed-7">Changed</h4>
+<ul>
+<li>Changed depth <code>h</code> for reservoir and lake locations as part of the river local inertial model from <code>bankfull_depth</code> to zero.</li>
+</ul>
+</section>
+<section id="added-7" class="level4">
+<h4 class="anchored" data-anchor-id="added-7">Added</h4>
+<ul>
+<li>External inflow to the <a href="@ref config_sbm_gwf_lie_river_land">SBM + Local inertial river (1D) and land (2D)</a> model configuration.</li>
+</ul>
+</section>
+</section>
+<section id="v0.6.1---2022-04-26" class="level3">
+<h3 class="anchored" data-anchor-id="v0.6.1---2022-04-26">v0.6.1 - 2022-04-26</h3>
+<section id="fixed-11" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-11">Fixed</h4>
+<ul>
+<li>Fixed an error with the log file, when writing to a folder that does not (yet) exists. Now, the folder is created prior to writing the log file.</li>
+<li>Fixed a MethodError for <code>read_dims</code>, thrown when reading netCDF data with NCDatasets.jl 0.12.3 or higher.</li>
+</ul>
+</section>
+</section>
+<section id="v0.6.0---2022-04-14" class="level3">
+<h3 class="anchored" data-anchor-id="v0.6.0---2022-04-14">v0.6.0 - 2022-04-14</h3>
+<section id="added-8" class="level4">
+<h4 class="anchored" data-anchor-id="added-8">Added</h4>
+<ul>
+<li>The <a href="@ref config_flextopo">FLEXTopo</a> model.</li>
+<li>Set a (different) uniform value for each index of input parameters with an extra dimension. A list of values (instead of one uniform value) that should be equal to the length of the extra dimension can be provided in the TOML file. See also <a href="@ref">Modify parameters</a>.</li>
+<li>Modify input parameters with an extra dimension at multiple indices with different <code>scale</code> and <code>offset</code> values, through the TOML file. See also <a href="@ref">Modify parameters</a>.</li>
+<li>Added support for netCDF compression for gridded model output, through the option <code>compressionlevel</code> in the <code>[output]</code> section in the TOML file. The setting defaults to 0 (no compression), but all levels between 0 and 9 can be used.</li>
+</ul>
+</section>
+<section id="changed-8" class="level4">
+<h4 class="anchored" data-anchor-id="changed-8">Changed</h4>
+<ul>
+<li>Re-organized the documentation: moved explanation of different model concepts to a model documentation section, added a user guide to explain setting up the model, added new figures to the description of wflow_sbm.</li>
+<li>The unit of lateral subsurface flow <code>ssf</code> of <code>LateralSSF</code> is now <code>m^3 d^{-1}</code>. The unit was <code>m^3 t^{-1}</code>, where <code>t</code> is the model timestep. Other flow variables are already stored independently from <code>t</code>, this allows for easier interpretation and to use states independently of <code>t</code>.</li>
+<li>Changed the reference level of water depth <code>h</code> and <code>h_av</code> of 2D overland flow (<code>ShallowWaterLand</code>) for cells containing a river from river bed elevation <code>zb</code> to cell elevation <code>z</code>.</li>
+</ul>
+</section>
+<section id="fixed-12" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-12">Fixed</h4>
+<ul>
+<li>Fixed calculation of average water depth <code>h_av</code> of 2D overland flow (<code>ShallowWaterLand</code>) with the local inertial approach. The summation of <code>h</code> was not correct, resulting in too low values for <code>h_av</code>. For river cells of 2D overland flow <code>h_av</code> was only updated as part of the river domain (<code>ShallowWaterRiver</code>), this value is now also updated as part of the land domain (<code>ShallowWaterLand</code>).</li>
+<li>Fixed the following two flow width issues for 2D overland flow of the local inertial model: 1) The flow widths <code>xwidth</code> and <code>ywidth</code> were mapped incorrectly (reversed) to the flow calculation in <code>x</code> and <code>y</code> direction, respectively. 2) For river cells the effective flow width for overland flow was not determined correctly: the <code>riverwidth</code> vector supplied to the function <code>set_effective_flowwidth!</code> covered the complete model domain and should have covered the river domain, resulting in incorrect river widths and thus incorrect effective flow widths for river cells.</li>
+</ul>
+</section>
+</section>
+<section id="v0.5.2---2022-02-03" class="level3">
+<h3 class="anchored" data-anchor-id="v0.5.2---2022-02-03">v0.5.2 - 2022-02-03</h3>
+<section id="changed-9" class="level4">
+<h4 class="anchored" data-anchor-id="changed-9">Changed</h4>
+<ul>
+<li>Model types <code>sbm_gwf</code> and <code>hbv</code> use the same approach for the calculation of the drain width <code>dw</code> as model type <code>sbm</code>.</li>
+<li>Renamed <code>h_bankfull</code> parameter to <code>bankfull_depth</code> for consistency between kinematic-wave and local-inertial river routing. When using the old name under the <code>[input.lateral.river]</code> section of the TOML file, it will work but it is suggested to update the name.</li>
+</ul>
+</section>
+<section id="added-9" class="level4">
+<h4 class="anchored" data-anchor-id="added-9">Added</h4>
+<ul>
+<li>Additional log messages and log file as output, see also <a href="@ref logging_toml">Logging</a>.</li>
+<li>Option to use the local inertial model for river flow as part of the <code>sbm</code> model type. See also <a href="@ref config_sbm_gwf_lie_river">SBM + Local inertial river</a>.</li>
+<li>Option to use the local inertial model for 1D river flow combined with 2D overland flow as part of the <code>sbm</code> model type. See also <a href="@ref config_sbm_gwf_lie_river_land">SBM + Local inertial river (1D) and land (2D)</a>.</li>
+</ul>
+</section>
+<section id="fixed-13" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-13">Fixed</h4>
+<ul>
+<li>Model type <code>hbv</code>: the surface width for overland flow was not corrected with the river width.</li>
+<li>Fixed use of absolute path for <code>path_forcing</code> in TOML file, which gave an error in wflow v0.5.1.</li>
+<li>Fixed a crash when glacier processes are simulated as part of the <code>hbv</code> concept (Δt was not defined).</li>
+<li>When the surface flow width for overland flow is zero, the water level <code>h</code> of the kinematic wave should not be calculated, otherwise this results in <code>NaN</code> values. When the model is initialized from state files, <code>q</code> and <code>h</code> are set to zero for indices with a zero surface flow width.</li>
+<li>Fixed how number of iterations <code>its</code> for kinematic wave river flow are calculated during initialization when using a fixed sub-timestep (specified in the TOML file). For a model timestep smaller than the fixed sub-timestep an InexactError was thrown.</li>
+<li>Fixed providing a cyclic parameter when the netCDF variable is read during model initialization with <code>ncread</code>, this gave an error about the size of the netCDF <code>time</code> dimension.</li>
+<li>Fixed CSV and netCDF scalar output of variables with dimension <code>layer</code> (<code>SVector</code>).</li>
+</ul>
+</section>
+</section>
+<section id="v0.5.1---2021-11-24" class="level3">
+<h3 class="anchored" data-anchor-id="v0.5.1---2021-11-24">v0.5.1 - 2021-11-24</h3>
+<section id="fixed-14" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-14">Fixed</h4>
+<ul>
+<li>Fixed calculation of <code>exfiltwater</code> as part of the <code>sbm_gwf</code> model type. This was based directly on groundwater head above the surface level, without multiplying by the <code>specific_yield</code>, resulting in an overestimation of <code>exfiltwater</code>. This is required since the groundwater model estimates the head by dividing the volume by the specific yield or storativity of the aquifer. So, should the groundwater table rise above surface level, the head above surface level does not represent a water column one to one. (This also means the groundwater model (slightly) overestimates heads when the head rises above the surface level. However, this water is immediately removed, and the head will be set to surface level.)</li>
+</ul>
+</section>
+<section id="added-10" class="level4">
+<h4 class="anchored" data-anchor-id="added-10">Added</h4>
+<ul>
+<li>Optional <code>dir_input</code> and <code>dir_output</code> keys in the TOML, which can be used to quickly change the path for all input or output files that are given as a relative path.</li>
+</ul>
+</section>
+</section>
+<section id="v0.5.0---2021-11-12" class="level3">
+<h3 class="anchored" data-anchor-id="v0.5.0---2021-11-12">v0.5.0 - 2021-11-12</h3>
+<section id="changed-10" class="level4">
+<h4 class="anchored" data-anchor-id="changed-10">Changed</h4>
+<ul>
+<li>Scaling of potential capillary rise is replaced by a common approach found in literature, based on the water table depth <code>zi</code>, a maximum water depth <code>cap_hmax</code> beyond which capillary rise ceases, and a coefficient <code>cap_n</code>. See also <a href="@ref">Capillary rise</a>. Multiplying the scaling factor with the ratio of model time step and <code>basetimestep</code> in the original approach resulted in (much) smaller capillary fluxes at sub-daily model time steps compared to daily model time steps, and is not used in the new approach. Parameters <code>cap_hmax</code> and <code>cap_n</code> can be set through the TOML file, parameter <code>capscale</code> of the previous approach is not used anymore.</li>
+</ul>
+</section>
+<section id="fixed-15" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-15">Fixed</h4>
+<ul>
+<li>Conversion of <code>GroundwaterFlow</code> boundaries <span class="math inline">\(\SIb{}{m^3 d^{-1}}\)</span> as part of model concept <code>sbm_gwf</code> to <span class="math inline">\(\SI{m^3 s^{-1}}\)</span> for sub-daily model time steps. For the conversion the <code>basetimestep</code> (86400 s) should be used (and not the model time step).</li>
+</ul>
+</section>
+</section>
+<section id="v0.4.1---2021-11-04" class="level3">
+<h3 class="anchored" data-anchor-id="v0.4.1---2021-11-04">v0.4.1 - 2021-11-04</h3>
+<section id="changed-11" class="level4">
+<h4 class="anchored" data-anchor-id="changed-11">Changed</h4>
+<ul>
+<li>The <code>\alpha</code> parameter of the kinematic wave has a fixed value now and is not updated because of changes in water height (this could result in large water balance errors). See also <a href="@ref">Surface routing</a>.</li>
+<li>Cyclic input for other structs than vertical are also now supported (for example cyclic inflow to the river).</li>
+<li>Moved <code>update_forcing!</code> and <code>update_cyclic!</code> functions to the <code>run</code> function. It is now easier to implement a custom <code>run</code> function with custom loading of input data (forcing and cyclic parameters).</li>
+</ul>
+</section>
+<section id="added-11" class="level4">
+<h4 class="anchored" data-anchor-id="added-11">Added</h4>
+<ul>
+<li>Check if reservoirs and lakes have downstream nodes. Without downstream nodes is not supported and in that case an error message is thrown that is easier to understand than the previous one: “ArgumentError: Collection is empty, must contain exactly 1 element.”</li>
+<li>For the <code>input.path_forcing</code> TOML setting we use <a href="https://github.com/vtjnash/Glob.jl/">Glob.jl</a> to expand strings like <code>"data/forcing-year-*.nc"</code> to a set of netCDF files that are split in time.</li>
+<li>External water inflow (supply/abstractions) added to the kinematic wave <code>inflow</code> in m3/s. It is added/removed to <code>sf.qlat[v]</code> before computing the new <code>q[v]</code> with the kinematic wave equation.</li>
+<li>Fixed values for forcing parameters are supported, see also <a href="@ref">Fixed forcing values</a>.</li>
+</ul>
+</section>
+<section id="added-12" class="level4">
+<h4 class="anchored" data-anchor-id="added-12">Added</h4>
+<ul>
+<li>Option to use the local inertial model for river flow as part of the <a href="@ref config_sbm">SBM + Kinematic wave</a>. See also <a href="@ref config_sbm_gwf_lie_river_land">SBM + Local inertial river</a>.</li>
+</ul>
+</section>
+<section id="fixed-16" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-16">Fixed</h4>
+<ul>
+<li>River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on <code>sf.q[v]</code> at the previous time step, and this has been fixed to the current time step.</li>
+</ul>
+</section>
+</section>
+<section id="v0.4.0---2021-09-02" class="level3">
+<h3 class="anchored" data-anchor-id="v0.4.0---2021-09-02">v0.4.0 - 2021-09-02</h3>
+<section id="changed-12" class="level4">
+<h4 class="anchored" data-anchor-id="changed-12">Changed</h4>
+<ul>
+<li>Changed length units for lateral subsurface flow component from millimeter to meter. This means that state netCDF files from previous versions can only be reused if <code>ssf</code> is divided by 10^9.</li>
+<li>Add snow and glacier processes to wflow_sbm figure of the documentation.</li>
+</ul>
+</section>
+<section id="added-13" class="level4">
+<h4 class="anchored" data-anchor-id="added-13">Added</h4>
+<ul>
+<li>Multi-threading of vertical SBM concept and lateral kinematic wave components (overland, river and subsurface flow) of wflow_sbm model <a href="@ref config_sbm">SBM + Kinematic wave</a>.</li>
+<li>Improved error message for CSV Reducer.</li>
+<li>The TOML keys <code>kv₀</code>, <code>θᵣ</code> and <code>θₛ</code> have been replaced with the ASCII versions <code>kv_0</code>, <code>theta_r</code> and <code>theta_s</code>, to avoid encoding issues with certain text editors. The old keys still work as well.</li>
+</ul>
+</section>
+<section id="fixed-17" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-17">Fixed</h4>
+<ul>
+<li>Calculation of volumetric water content of vertical SBM (soil layers and root zone).</li>
+<li>Update of <code>satwaterdepth</code> in SBM (evaporation was only subtracted from a local variable, and not from <code>sbm.satwaterdepth</code>).</li>
+<li>Fixed the index <code>lowerlake_ind</code> of <code>NaturalLake</code>. Linked lakes were not simulated correctly (flows between upstream and downstream lake).</li>
+<li>Interpolation function <code>interpolate_linear(x, xp, fp)</code> for CSV tables lakes. When <code>x</code> was larger or smaller than <code>xp</code>, maximum(<code>xp</code>) or minimum(<code>xp</code>) was returned instead of maximum(<code>fp</code>) or minimum(<code>fp</code>).</li>
+<li>Fixed model timestep of reservoirs (<code>SimpleReservoir</code>) and lakes (<code>NaturalLake</code>) in relation to precipitation and evapotranspiration fluxes. This was set to the fixed wflow <code>basetimestep</code> of 86400 s, and should be set to the actual model time step from the TOML configuration file.</li>
+<li>Add <code>flux</code> from <code>Drainage</code> (<code>GroundwaterFlow</code>) in the <code>sbm_gwf_model</code> to the overland flow component instead of the river component of the kinematic wave.</li>
+<li>Fixed option <code>constanthead = false</code> (TOML file), <code>constant_head</code> field of <code>GroundwaterFlow</code> was not defined in this case. Fixed this by initializing empty fields (Vector) for struct <code>ConstantHead</code>.</li>
+<li>Fixed return max(0, boundary.flux[index]) to return max(0, flux) the flux should be returned when cell is dry, no negative value allowed.</li>
+<li>Fixed path to initialize lake to: dirname(static_path)</li>
+<li>Fixed outflow = 0, when lake level is below lake threshold. Before a negative value could enter the log function and model would fail.</li>
+<li>Fixed the lake storage initialization. For continuation runs (<code>reinit = false</code>), this caused the lake to be reset to the initial conditions instead of the saved state.</li>
+</ul>
+</section>
+</section>
+<section id="v0.3.1---2021-05-19" class="level3">
+<h3 class="anchored" data-anchor-id="v0.3.1---2021-05-19">v0.3.1 - 2021-05-19</h3>
+<section id="fixed-18" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-18">Fixed</h4>
+<ul>
+<li>Ignore extra dimensions in input netCDFs if they are size 1</li>
+</ul>
+</section>
+</section>
+<section id="v0.3.0---2021-05-10" class="level3">
+<h3 class="anchored" data-anchor-id="v0.3.0---2021-05-10">v0.3.0 - 2021-05-10</h3>
+<section id="changed-13" class="level4">
+<h4 class="anchored" data-anchor-id="changed-13">Changed</h4>
+<ul>
+<li>New deposition process for coarse sediment in the reservoirs with a new parameter <code>restrapefficiency</code> in the sediment model.</li>
+<li>New variables added to the <code>LandSediment</code> and <code>RiverSediment</code> structs in order to save more output from the sediment model.</li>
+<li>Added variables <code>volume</code> and <code>inwater</code> to <code>SurfaceFlow</code> struct, this is convenient for the coupling with the water quality model Delwaq.</li>
+<li>River water level (<code>h</code>) and discharge (<code>q</code>) forced directly into the <code>RiverSediment</code> struct (instead of using the <code>OverlandFlowSediment</code> struct first).</li>
+<li>Require Julia 1.6 or later.</li>
+</ul>
+</section>
+<section id="added-14" class="level4">
+<h4 class="anchored" data-anchor-id="added-14">Added</h4>
+<ul>
+<li>Modify model parameters and forcing through the TOML file (see <a href="@ref">Modify parameters</a>).</li>
+<li>Run wflow_sbm (SBM + kinematic wave) in two parts (until recharge and after subsurface flow) from BMI, including the option to switch off the lateral subsurface component of wflow_sbm.</li>
+<li>Support more netCDF dimension and axis order variants.</li>
+</ul>
+</section>
+<section id="fixed-19" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-19">Fixed</h4>
+<ul>
+<li>Corrected a bug in sediment deposition in the river (case when incoming sediment load is more than the river transport capacity).</li>
+<li>Fixed update of <code>snow</code> and <code>glacierstore</code> fields of HBV and SBM concepts by the <code>glacier_hbv</code> module.</li>
+</ul>
+</section>
+</section>
+<section id="v0.2.0---2021-03-26" class="level3">
+<h3 class="anchored" data-anchor-id="v0.2.0---2021-03-26">v0.2.0 - 2021-03-26</h3>
+<section id="changed-14" class="level4">
+<h4 class="anchored" data-anchor-id="changed-14">Changed</h4>
+<ul>
+<li>Removed dependency of the <code>f</code> model parameter of wflow_sbm on the parameters <code>\theta_{s}</code>, <code>\theta_{r}</code> and <code>M</code>. This approach is used in Topog_SBM, but not applicable for wflow_sbm. The <code>f</code> parameter needs to be provided as part of the netCDF model parameter file.</li>
+<li>Grid properties as cell length and elevation now stored as part of the <code>model.land.network</code> component and not as part of the vertical model components, as it is not used by these components. <code>altitude</code> (elevation) should now be provided as part of the <code>[input]</code> section of the TOML configuration file, and not as part of the <code>[input.vertical]</code> section.</li>
+<li>Removed parameter <code>\theta_{e}</code> from SBM struct (not used in update). Parameters <code>\theta_{s}</code> and <code>\theta_{r}</code> included separately (instead of <code>\theta_{e}</code>) in <code>LateralSSF struct</code>, now directly linked to SBM parameters.</li>
+<li>Improve error messages (netCDF and cyclic flow graph).</li>
+</ul>
+</section>
+<section id="added-15" class="level4">
+<h4 class="anchored" data-anchor-id="added-15">Added</h4>
+<ul>
+<li>Export of netCDF scalar timeseries (separate netCDF file from gridded timeseries). This also allows for importing these timeseries by Delft-FEWS (General Adapter).</li>
+</ul>
+</section>
+<section id="fixed-20" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-20">Fixed</h4>
+<ul>
+<li>Model parameter Manning’s <code>n</code> now used during the update of the <code>struct SurfaceFlow</code>, to change the related <code>\alpha</code> parameter of the kinematic wave for channel flow.</li>
+</ul>
+
+
+</section>
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="./_static/images/deltares-blue.svg" alt="Deltares" class="footer-image-light" style="height: 40px;"> <img src="./_static/images/deltares-white.svg" alt="Deltares" class="footer-image-dark" style="height: 40px;"> </a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
