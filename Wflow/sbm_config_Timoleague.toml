@@ -1,0 +1,316 @@
+# This is a TOML configuration file for Wflow.
+# Relative file paths are interpreted as being relative to this TOML file.
+# Wflow documentation https://deltares.github.io/Wflow.jl/dev/
+# TOML documentation: https://github.com/toml-lang/toml
+
+# ==== DIRECTORIES ====
+   dir_input      = "data/input/Timoleague"
+   dir_output     = "data/output/Timoleague"
+   fews_run__flag = false # <true> when coupled with DELTARES
+
+
+[logging] # ===========================================
+   loglevel = "debug" # <"debug">; <"info">; <"error">
+   silent   = false
+   path_log = "log.txt"
+
+
+[time] # ===========================================
+   calendar     = "standard"  # <julian>; <proleptic_gregorian>; <standard>
+   endtime      = 2010-01-11T00:00:00
+   starttime    = 2010-12-29T00:00:00
+   time_units   = "days since 1900-01-01 00:00:00" # optional information is used by the writer of the model, for model output in netCDF format
+   timestepsecs = 86400 # [seconds] for output files
+
+# if listed, the variable must be present in the NetCDF or error
+# if not listed, the variable can get a default value if it has one
+
+[model] # ===========================================
+   type                               = "sbm" # <sbm> || <sbm_gwf> || <sediment>
+   cold_start__flag                   = true # Cold state does not include values of storage at time=0
+
+   glacier__flag                      = false # Include glacier modelling
+   reservoir__flag                    = false # Include reservoir modelling
+   snow__flag                         = false # Include snow modelling
+   snow_gravitational_transport__flag = false  # include lateral snow transport in the model, default is false
+   water_mass_balance__flag           = false # Compute water balance error
+   soil_infiltration_reduction__flag  = false  # <soil_infiltration_reduction> reduction of conductivity due to ice
+
+   river_routing       = "kinematic_wave"    # optional,  <"local_inertial">  default is <"kinematic_wave">
+   land_routing        = "kinematic_wave"    # optional,  <"local_inertial">  default is <"kinematic_wave">
+   floodplain_1d__flag = false # optional, default is false
+   pit__flag           = false # Include pits for kinematic wave flow continuous at subbasin only (upstream of provided pit locations)
+
+   kinematic_wave__adaptive_time_step_flag  = true # Enable kinematic wave adaptive (internal) timestepping in the model
+      river_kinematic_wave__time_step = 900        # Fixed internal timestep for river flow (river cells) optional, default is 900
+      land_kinematic_wave__time_step  = 3600        # Fixed internal timestep for overland flow (land cells) optional, default 3600
+
+   land_streamorder__min_count  = 5 # Multi-Threading: Minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
+   river_streamorder__min_count = 4 # Multi-Threading: Minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
+
+   cell_length_in_meter__flag = true # <false> Unit cell length of raster cells in x and y direction in lat/lon degree; <true> in meter
+
+   soil_layer__thickness                    = [100, 300, 800] # <config_soil_layer_thickness> [mm] specific SBM soil model setting: for each soil layer, a thickness is specified
+   saturated_hydraulic_conductivity_profile = "exponential" # <kh_profile_type>; [char]  |"layered"|, |"exponential"|, |"exponential_constant"|,  |"layered_exponential"| Saturated hydraulic conductivity depth profile for SBM soil model (also used for kinematic wave lateral subsurface flow).
+
+[input] # ===========================================
+   path_forcing = "forcing-Timoleague_*.nc"
+   path_static  = "staticmaps-Timoleague.nc"
+
+	# these are not directly part of the model
+   # reservoir_area__count      = "wflow_reservoirareas"
+   # reservoir_location__count  = "wflow_reservoirlocs"
+   basin__local_drain_direction = "Ldd"
+   river_gauge__count           = "Gauges_grdc"
+   river_location__mask         = "River"
+   subbasin_location__count     = "Subcatchment"
+
+
+   [input.forcing]  # -----------------------------
+      atmosphere_air__temperature                           = "temp"
+      atmosphere_water__precipitation_volume_flux           = "precip"
+      land_surface_water__potential_evaporation_volume_flux = "pet"
+
+
+   [input.static] # -----------------------------
+      land_water_covered__area_fraction.value = 0.0 # <water_fraction> open water fraction (excluding rivers) "WaterFrac"
+
+      # ~~~~ SNOW ~~~~
+      # {<snow__flag>=true}
+         # atmosphere_air__snowfall_temperature_threshold = "TT"
+         # atmosphere_air__snowfall_temperature_interval  = "TTI"
+         # snowpack__melting_temperature_threshold        = "TTM"
+         # snowpack__degree_day_coefficient               = "Cfmax"
+         # snowpack__liquid_water_holding_capacity        = "WHC"
+         soil_surface_water__infiltration_reduction_parameter.value = 0.038 # <cf_soil> [-] Controls soil infiltration reduction factor when soil is frozen
+
+      # ~~~~ RAINFALL INTERCEPTION ~~~~
+         # ... Gash interception model: Δt > 24h ...
+            vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio.value = 0.1 # <e_r> [-] Gash interception model parameter
+
+         # ... Rutter interception model: Δt < 24h rainfall_interception_modrut() ...
+            vegetation_canopy__gap_fraction    = "vegetation_canopy_gap_fraction" # <canopygapfraction> [0-1] Canopy gap fraction
+            vegetation_water__storage_capacity = "ScanopyMax" # <cmax> [mm] Maximum canopy storage, if not computed from LAI
+
+         # ... Interception computed from LAI ...
+            #     cmax[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
+            #     canopygapfraction[i] = exp(-kext[i] * leaf_area_index[i])
+            vegetation_canopy__light_extinction_coefficient = "vegetation_kext" # <kext> [0-1] Extinction coefficient (to calculate canopy gap fraction)
+            vegetation__specific-leaf_storage               = "vegetation_leaf_storage" # <storage_specific_leaf> [mm] Specific leaf storage
+            vegetation_wood_water__storage_capacity         = "vegetation_wood_storage" # <storage_wood> [mm] Storage woody part of vegetation
+
+      # ~~~~ ROOT WATER UPTAKE ~~~~
+         # ... Feddes et al. (1978) model  ...
+            vegetation__crop_factor                                                 = "vegetation_crop_factor" # <kc>
+            vegetation_root__depth                                                  = "vegetation_root_depth" # <rootingdepth> [mm] Rooting depth
+
+            vegetation_root__feddes_critical_pressure_head_h1                       = "vegetation_feddes_h1" # <h1> [cm] Critical pressure head h1 of the root water uptake reduction function (Feddes)
+            vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient = "vegetation_feddes_alpha_h1" # <alpha_h1> [0 or 1] Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)
+            vegetation_root__feddes_critical_pressure_head_h2                       = "vegetation_feddes_h2" # <h2> [cm] Critical pressure head h2 of the root water uptake reduction function (Feddes)
+            vegetation_root__feddes_critical_pressure_head_h3_high                  = "vegetation_feddes_h3_high" # <h3_high> [cm] Critical pressure head h3_high of the root water uptake reduction function (Feddes)
+            vegetation_root__feddes_critical_pressure_head_h3_low                   = "vegetation_feddes_h3_low" # <h3_low> [cm] Critical pressure head h3_low of the root water uptake reduction function (Feddes)
+            vegetation_root__feddes_critical_pressure_head_h4                       = "vegetation_feddes_h4" # <h4> [cm] cal_pressure_head_h4	Critical pressure head h4 of the root water uptake reduction function (Feddes)
+
+            soil_root__length_density_fraction.value = [0.4, 0.3, 0.2, 0.0] # <rootfraction> Fraction of the root length density per soil layer
+
+      #  ~~~~SBM SOIL ~~~~
+         soil__thickness                         = "SoilThickness" # [mm] <soilthickness>
+         soil_layer_water__brooks_corey_exponent = "C_BrooksCorey" # [-] <c> Brooks-Corey power coefficient per soil layer
+         soil_water__air_entry_pressure_head     = "Hb_BrooksCorey" # Air entry pressure [cm] of soil (Brooks-Corey)
+         soil_water__residual_volume_fraction    = "ThetaRes" # <theta_r> residual soil moisture
+         soil_water__saturated_volume_fraction   = "ThetaSat"  # <theta_s> Saturated soil moisture
+
+         # ... Ks model ...
+            # +++ IF kh_profile_type == layered +++
+               soil_layer_water__vertical_saturated_hydraulic_conductivity = "Ks" # <kv> [mm Δt⁻¹] Vertical saturated hydraulic conductivity per soil layer, when a layered or layered_exponential saturated hydraulic conductivity profile is used
+
+               soil_layer_water__vertical_saturated_hydraulic_conductivity_factor.value = [1.0, 1.0, 1.0, 1.0] # <kvfrac> Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer
+
+            # +++ IF  kh_profile_type == exponential +++
+               # kv_0[i] * exp(-f[i] * z)
+               soil_surface_water__vertical_saturated_hydraulic_conductivity = "Ks_Top" # [mm Δt⁻¹] <kv_0> Vertical saturated hydraulic conductivity at soil surface
+
+               soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter = "Ks_ParamReduceDepth" # <f> [mm⁻¹] Scaling parameter controlling decline of vertical saturated hydraulic conductivity kv_0 with depth
+
+            # +++  If kh_profile_type == layered_exponential +++
+               # kv_0[i] * exp(-f[i] * z)
+               soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth.value = 500.0 # [mm]<z_layered>  Depth from soil surface for which layered profile is valid, when a [layered_exponential] saturated hydraulic conductivity profile is used
+
+            # +++ IF kh_profile_type == exponential_constant +++
+               soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth.value = 500.0 # [mm] <z_exp> Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an exponential_constant saturated hydraulic conductivity profile is used
+
+         #  ... Compacted soil  ...
+            compacted_soil__area_fraction                             = "soil_compacted_fraction" # [0-1] <pathfrac> Fraction of compacted soil area
+
+            compacted_soil_surface_water__infiltration_capacity.value = 10.0 #  <infiltcappath> [mm Δt⁻¹] maximum infiltration capacity of compacted area
+
+      # == SBM SATURATED/UNSATUARTED ==
+         soil_water_saturated_zone_bottom__max_leakage_volume_flux = "MaxLeakage" # <maxleakage> [mm day⁻¹] Maximum leakage from saturated zone
+
+         soil_wet_root__sigmoid_function_shape_parameter.value = -500.0 # <rootdistpar> Controls sharpness of transition between fully wet and fully dry roots
+
+         soil_water_saturated_zone_top__capillary_rise_max_water_table_depth.value = 2000.0 # [mm] <cap_hmax> Maximum water table depth for capillary rise
+
+         soil_water_saturated_zone_top__capillary_rise_averianov_exponent.value = 2.0 # Averianov exponent controlling capillary rise
+
+      # ~~~~ RIVER FLOW ~~~~
+         river__length                         = "RiverLength" # [m] <river_length>
+         river__slope                          = "RiverSlope" # [m m^-1] <slope>
+         river__width                          = "RiverWidth"  # [m] <flow_width>
+         river_water_flow__manning_n_parameter = "RiverManning" # Manning’s roughness [s m^1/3] <mannings_n>
+         river_bank_water__depth               = "RiverDepth"  # Bankfull depth of the river [m] <bankfull_depth>
+
+      # ~~~~ DEM ~~~~
+         # land_surface_water_flow__ground_elevation = # <elevation_2d>
+         # river_bank_water__elevation           = "RiverZ"
+
+      # ~~~~ OVERLAND FLOW ~~~~
+         land_surface__slope                          = "Slope" # [m m⁻¹] Land surface slope
+         land_surface_water_flow__manning_n_parameter = "land_manning_n" # <mannings_n>
+         subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio.value = 100.0 # <KsatHorFrac> A muliplication factor applied to vertical hydraulic conductivity which is used to calculate the horizontal hydraulic conductivity at the soil surface kh_0
+
+
+      # == RESERVOIR ==
+      # {reservoir__flag=true}
+         # reservoir_surface__area = "reservoir_area"
+         # reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"
+         # reservoir_water_release_below_spillway__max_volume_flow_rate = "ResMaxRelease"
+         # reservoir_water__max_volume = "ResMaxVolume"
+         # reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
+         # reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
+         # reservoir_water_surface__initial_elevation = "waterlevel_reservoir"
+         # reservoir_water__rating_curve_type_count = "outflowfunc"
+         # reservoir_water__storage_curve_type_count = "storfunc"
+
+# [input.static.soil_surface_water__vertical_saturated_hydraulic_conductivity]
+# 	netcdf_variable_name = "KsatVer"
+# 	scale = 1.0
+# 	offset = 0.0
+
+[state] # ===========================================
+	path_input = "instates-Timoleague.nc"
+	path_output = "outstates-Timoleague.nc"
+
+   [state.variables] # -----------------------------
+
+      vegetation_canopy_water__depth                     = "canopystorage" # [mm]
+
+      soil_water_saturated_zone__depth                   = "satwaterdepth"
+      soil_surface__temperature                          = "tsoil"
+      soil_layer_water_unsaturated_zone__depth           = "ustorelayerdepth"
+
+      # snowpack_dry_snow__leq_depth                     = "snow"
+      # snowpack_liquid_water__depth                     = "snowwater"
+
+      river_water__depth                                 = "h_river"
+      river_water__instantaneous_volume_flow_rate        = "q_river"
+
+      # reservoir_water_surface__elevation               = "waterlevel_reservoir"
+
+      subsurface_water__volume_flow_rate                 = "ssf"
+
+      land_surface_water__instantaneous_volume_flow_rate = "q_land"
+      land_surface_water__depth                          = "h_land"
+
+# [input.cyclic] # ===========================================
+	# vegetation__leaf_area_index = "LAI" # <leaf_area_index>
+
+
+[output.netcdf_grid] # ===========================================
+	path = "Output_Timoleague.nc"
+
+	[output.netcdf_grid.variables]
+		land.interception.variables.canopy_storage = "canopystorage"
+		land_surface_water__depth                  = "h_land"
+		land_surface_water__volume_flow_rate       = "q_av_land"
+		river_water__depth                         = "h_river"
+		river_water__volume_flow_rate              = "q_av_river"
+		soil_layer_water_unsaturated_zone__depth   = "ustorelayerdepth"
+		soil_surface__temperature                  = "tsoil"
+		soil_water_saturated_zone__depth           = "satwaterdepth"
+		subsurface_water__volume_flow_rate         = "ssf"
+
+		# reservoir_water__volume                    = "storage_reservoir"
+		# snowpack_dry_snow__leq_depth               = "snow"
+		# snowpack_liquid_water__depth               = "snowwater"
+
+[output.netcdf_scalar] # ===========================================
+   path = "output_scalar_Timoleague.nc"
+
+   [[output.netcdf_scalar.variable]]
+   name = "Q"
+   map = "river_gauge__count"
+   parameter = "routing.river_flow.variables.q"
+
+   # [[output.netcdf_scalar.variable]]
+   # name = "T"
+   # map = "river_gauge__count"
+   # parameter = "atmosphere_air__temperature"
+
+   # [[output.netcdf_scalar.variable]]
+   # coordinate.x = 6.255
+   # coordinate.y = 50.012
+   # name = "temp_coord"
+   # location = "temp_bycoord"
+   # parameter = "atmosphere_air__temperature"
+
+   # [[output.netcdf_scalar.variable]]
+   # location = "temp_byindex"
+   # name = "temp_index"
+   # index.x = 100
+   # index.y = 264
+   # parameter = "atmosphere_air__temperature"
+
+   [output.csv] # ===========================================
+   path = "output_Timoleague.csv"
+
+      [[output.csv.column]]
+      header = "Q"
+      parameter = "river_water__volume_flow_rate"
+      reducer = "maximum"
+
+      # [[output.csv.column]]
+      # header = "storage"
+      # index = 1
+      # parameter = "reservoir_water__volume"
+
+      # [[output.csv.column]]
+      # coordinate.x = 6.255
+      # coordinate.y = 50.012
+      # header = "temp_bycoord"
+      # parameter = "atmosphere_air__temperature"
+
+      # [[output.csv.column]]
+      # coordinate.x = 6.255
+      # coordinate.y = 50.012
+      # header = "vwc_layer2_bycoord"
+      # parameter = "land.soil.variables.vwc"
+      # layer = 2
+
+      # [[output.csv.column]]
+      # header = "temp_byindex"
+      # index.x = 100
+      # index.y = 264
+      # parameter = "atmosphere_air__temperature"
+
+      # [[output.csv.column]]
+      # header = "Q"
+      # map = "river_gauge__count"
+      # parameter = "river_water__volume_flow_rate"
+
+      [[output.csv.column]]
+      header = "recharge"
+      map = "subbasin_location__count"
+      parameter = "soil_water_saturated_zone_top__net_recharge_volume_flux"
+      reducer = "mean"
+
+[API] # ===========================================
+variables = [
+  "river_water__volume_flow_rate",
+  "soil_water_unsaturated_zone__depth",
+  "soil_water__transpiration_volume_flux",
+  "soil_layer_1_water_unsaturated_zone__depth",
+  "soil_layer_2_water_unsaturated_zone__depth",
+  "soil_layer_3_water_unsaturated_zone__depth",
+  "soil_layer_4_water_unsaturated_zone__depth",
+]

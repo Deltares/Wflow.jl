@@ -32,16 +32,16 @@ src/Data
 .gitignore
 Manifest.toml
 Project.toml
-*.toml
+# *.toml
 /Data/
-Manifest.*
-Project.*
+# Manifest.*
+# Project.*
 /Data
 Data
 Data/*
 *.[src/Data]
 **/Data
-*.[.toml]
+# *.[.toml]
 
 Wflow.jl.code-workspace
 StartupWflow.jl

@@ -1,0 +1,301 @@
+# ========================================================================
+# 			TOML configuration file for Wflow
+#			J.A.P. POLLACCO
+# 			27th June 2025
+#------------------------------------------------------------------------
+
+# DIRECTORIES
+	dir_input = "data/input/Cregduff"
+	dir_output = "data/output/Cregduff"
+	fews_run__flag = false # <true> when coupled with DELTARES
+
+[logging]
+   loglevel = "info" # <"debug">
+   silent   = false
+   path_log = "log.txt"
+
+[time]
+	calendar     = "standard" # <julian>; <proleptic_gregorian>; <standard>
+	starttime    = 2010-01-01T00:00:00 # 2000-01-01T00:00:00
+	endtime      = 2010-01-30T00:00:00 # 2000-02-01T00:00:00
+	time_units   = "days since 1900-01-01 00:00:00" # optional information is used by the writer of the model, for model output in netCDF format
+	timestepsecs = 86400 # [seconds] for output files
+
+[input.forcing]
+	atmosphere_air__temperature                           = "temp"
+	atmosphere_water__precipitation_volume_flux           = "precip"
+	land_surface_water__potential_evaporation_volume_flux = "pet"
+
+[model]
+   type                                     = "sbm" # <sbm> || <sbm_gwf> || <sediment>
+   cell_length_in_meter__flag               = true # <false> Unit cell length of raster cells in x and y direction in lat/lon degree; <true> in meter
+   cold_start__flag                         = true # Cold state does not include values of storage at time=0
+   reservoir__flag                          = false # Include reservoir modelling
+   snow__flag                               = false # Include snow modelling
+   snow_gravitional_transport__flag         = false # Include gravitional lateral snow transport
+   glacier__flag                            = false
+
+	# UNSATURATED ZONE
+      soil_layer__thickness                    = [100, 300, 800] # [mm] Specific SBM soil model setting: for each soil layer, soil thickness
+      soil_infiltration_reduction__flag        = false # Enable reduction factor applied to the soil infiltration capacity
+
+      saturated_hydraulic_conductivity_profile = "exponential" # <"exponential_constant">, <"layered">, <"layered_exponential"> Saturated hydraulic conductivity depth profile for SBM soil model (also used for kinematic wave lateral subsurface flow).
+
+	# KINEMATIC WAVE ROUTINE
+      kinematic_wave__adaptive_time_step_flag = true # Enable kinematic wave adaptive (internal) timestepping in the model
+      land_routing                            = "kinematic-wave" # 	Routing approach for overland flow: ["kinematic-wave”, "local-inertial”]
+      river_routing                           = "kinematic-wave" # 	Routing approach for river flow: ["kinematic-wave”, "local-inertial”]
+      river_kinematic_wave__time_step         = 3600 # [seconds] {kinematic_wave__adaptive_time_step_flag =false} Enable kinematic wave fixed internal time stepping for river domain (kinematic_wave__adaptive_time_step_flag = false)
+      land_kinematic_wave__time_step          = 3600 # [seconds] {kinematic_wave__adaptive_time_step_flag =false} Enable kinematic wave fixed internal time stepping for land domain (kinematic_wave__adaptive_time_step_flag = false)
+
+		pit__flag = false # Include pits for kinematic wave flow continuous at subbasin only (upstream of provided pit locations)
+		land_streamorder__min_count              = 5 # Minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
+		river_streamorder__min_count             = 6 # Minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
+
+	# LOCAL INERTIAL ROUTINE
+      land_local_inertial_flow__alpha_coefficient  = 0.7 # Stability coefficient for internal model time step overland flow routing (CFL condition)
+      land_local_inertial_flow__theta_coefficient  = 0.8 # Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow
+      land_surface_water_flow__froude_limit_flag   = true # Limit overland flow to subcritical-critical according to Froude number
+      land_surface_water_flow_threshold__depth     = 0.001 # [m] water depth threshold for calculating overland flow between cells
+
+      river_local_inertial_flow__alpha_coefficient = 0.7 # Stability coefficient for internal model time step river flow routing (CFL condition)
+      river_water_flow_threshold__depth            = 0.001 # [m] Water depth threshold for calculating river flow between cells
+      river_water_flow__froude_limit_flag          = true # Limit river flow to subcritical-critical according to Froude number
+
+      floodplain_1d__flag                          = false # Include 1D floodplain schematization for local inertial river routing
+
+	# GROUND WATER ROUTINE
+	# {model.type="sbm_gwf"}
+      conductivity_profile = "uniform"	# Hydraulic conductivity depth profile: ["uniform” || "exponential”]
+      drain__flag          = false # Include drainage boundary condition
+      constanthead__flag   = false # Include constant head boundary condition
+
+	# MODEL TYPE SEDIMENT
+	# {model.type="sediment"}
+		rainfall_erosion      = "answers" # Rainfall erosion model: [<"answers”>, <"eurosem”>]
+		overland_flow_erosion = "answers" # Overland flow erosion model: [<"answers">]
+		run_river_model__flag = false # Include river sediment model
+		land_transport        = "yalin" # Overland flow transport capacity method: [<"yalinpart">, <"govers">, <"yalin">]	-
+		river_transport       = "bagnold" #	River flow transport capacity method: [<"bagnold">, <"engelund">, <"yang">, <"kodatie">, <"molinas">
+
+[input]
+	path_forcing = "forcing-Cregduff.nc"
+	path_static = "staticmaps-Cregduff.nc"
+
+   basin__local_drain_direction = "Wflow_Ldd"
+   subbasin_location__count     = "Wflow_Subcatchment"
+   river_location__mask         = "Wflow_River"
+   river_gauge__count           = "Wflow_Gauges_grdc"
+
+	# == RESERVOIR ==
+	# {reservoir__flag=true}
+		# reservoir_area__count        = "wflow_reservoirareas"
+		# reservoir_location__count    = "wflow_reservoirlocs"
+
+[input.static]
+	# == SNOW ==
+	# {<snow__flag>=true}
+		# atmosphere_air__snowfall_temperature_interval                                   = "TTI"
+		# atmosphere_air__snowfall_temperature_threshold                                  = "TT"
+		# snowpack__degree-day_coefficient                                                = "Cfmax"
+		# snowpack__liquid_water_holding_capacity                                         = "WHC"
+		# snowpack__melting_temperature_threshold                                         = "TTM"
+
+	# == RESERVOIR ==
+	# {reservoir__flag=true}
+		# reservoir_surface__area                                                         = "reservoir_area"
+		# reservoir_water__max_volume                                                     = "ResMaxVolume"
+		# reservoir_water__rating_curve_type_count                                        = "outflowfunc"
+		# reservoir_water__storage_curve_type_count                                       = "storfunc"
+		# reservoir_water_release-below-spillway__max_volume_flow_rate                    = "ResMaxRelease"
+		# reservoir_water_surface__initial_elevation                                      = "waterlevel_reservoir"
+		# "reservoir_water_demand~required~downstream__volume_flow_rate"                  = "ResDemand"
+		# "reservoir_water~full-target__volume_fraction"                                  = "ResTargetFullFrac"
+		# "reservoir_water~min-target__volume_fraction"                                   = "ResTargetMinFrac"
+
+	# == SBM UNSATURATED ZONE ==
+      "soil~compacted__area_fraction".value                                       = 0.0 #"PathFrac"
+      # "soil~compacted_surface_water__infiltration_capacity"                     = "InfiltCapPath"
+      soil__thickness.value                                                       = 1200.0 #"SoilThickness"
+      soil_layer_water__brooks-corey_exponent.value                               = 10.0 # "c"
+      # soil_surface_water__infiltration_reduction_parameter                      = "cf_soil"
+      soil_water__residual_volume_fraction.value                                  = 0.0 #"thetaR"
+      soil_water__saturated_volume_fraction.value                                 = 0.45 #"thetaS"
+
+		soil_layer_water__vertical_saturated_hydraulic_conductivity.value = [0.5, 0.5, 0.5,0.5]
+
+      soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter.value = 0.5 #"f"
+      # soil_water_sat-zone_bottom__max_leakage_volume_flux                       = "MaxLeakage"
+
+	# == RIVER ==
+		river__length                                                                   = "Wflow_Riverlength"
+		river__slope                                                                    = "Wflow_RiverSlope"
+		river__width                                                                    = "Wflow_Riverwidth"
+		# river_bank_water__depth                                                         = "RiverDepth"
+		# river_bank_water__elevation                                                     = "RiverZ"
+		# river_water_flow__manning_n_parameter                                           = "N_River"
+
+	# == SUBSURFACE FLOW ==
+		land_surface__slope                                                             = "Wflow_Slope"
+		# land_surface_water_flow__manning_n_parameter                                    = "N"
+   	subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio.value = 100.0 #"KsatHorFrac"
+
+	# == VEGETATION ==
+		vegetation__specific-leaf_storage                                               = 0.06 #"Sl"
+   	# "soil_root~wet__sigmoid_function_shape_parameter"                               = "rootdistpar"
+		vegetation_canopy__light-extinction_coefficient                                 = 0.7 # "Kext"
+		# vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio           = "EoverR"
+		vegetation_root__depth.value                                                          = 100.0 #"RootingDepth"
+		# vegetation_wood_water__storage_capacity                                         = "Swood"
+		# "land~water-covered__area_fraction"                                             = "WaterFrac"
+		# vegetation_water__storage_capacity.value = 2.0
+		vegetation_canopy__gap_fraction.value = 0.2
+
+# [input.cyclic]
+# 	vegetation__leaf-area_index = "LAI"
+
+[input.static.soil_surface_water__vertical_saturated_hydraulic_conductivity]
+	netcdf.variable.name = "KsatVer"
+		scale = 1.0
+		offset = 0.0
+
+# ==== INPUT STATE VARIABLES ====
+# """ initial condition based on past simulations
+# {cold_start__flag = false}
+		path_input  = "instates-Cregduff.nc"
+		path_output = "outstates-Cregduff.nc"
+
+	# if listed, the variable must be present in the NetCDF or error
+	# if not listed, the variable can get a default value if it has one
+	[state.variables]
+		# == WATER STORED ON VEGETATION ==
+			vegetation_canopy_water__depth = "canopystorage"
+
+		# == WATER STORED IN SOILS ==
+         soil_water_sat-zone__depth         = "satwaterdepth"
+         soil_surface__temperature          = "tsoil"
+         soil_layer_water_unsat-zone__depth = "ustorelayerdepth"
+
+		# == WATER STORED IN RIVERS ==
+         river_water__instantaneous_depth            = "h_river"
+         river_water__instantaneous_volume_flow_rate = "q_river"
+
+		# == WATER STORED ON LAND ==
+         land_surface_water__instantaneous_volume_flow_rate = "q_land"
+         land_surface_water__instantaneous_depth            = "h_land"
+
+		# == WATER STORED IN SUBSURFACE ==
+			subsurface_water__volume_flow_rate  = "ssf"
+
+		# == WATER STORED IN RESERVOIRS ==
+		# {reservoir__flag=true}
+			reservoir_water_surface__instantaneous_elevation = "waterlevel_reservoir"
+
+		# == WATER STORED IN SNOW ==
+		# {snow__flag=true}
+			"snowpack~dry__leq-depth" = "snow"
+			"snowpack~liquid__depth" = "snowwater"
+
+# =============================
+#           OUTPUT
+# =============================
+	[output.netcdf_grid]
+		path = "output_Cregduff.nc"
+
+	[output.netcdf_grid.variables]
+
+		land.interception.variables.canopy_storage = "canopystorage"
+		land_surface_water__depth                  = "h_av_land"
+		land_surface_water__volume_flow_rate       = "q_av_land"
+		river_water__depth                         = "h_av_river"
+		river_water__volume_flow_rate              = "q_av_river"
+		soil_layer_water_unsat-zone__depth         = "ustorelayerdepth"
+		soil_surface__temperature                  = "tsoil"
+		soil_water_sat-zone__depth                 = "satwaterdepth"
+		subsurface_water__volume_flow_rate         = "ssf"
+
+		# === SNOW ===
+		# {<snow__flag>=false}
+			# "snowpack~dry__leq-depth"                  = "snow"
+			# "snowpack~liquid__depth"                   = "snowwater"
+
+		# == RESERVOIR ===
+		# {reservoir__flag = false}
+			# reservoir_water__volume                    = "storage_reservoir"
+
+	[output.netcdf_scalar]
+		path = "output_scalar_Cregduff.nc"
+
+		[[output.netcdf_scalar.variable]]
+			name = "Q"
+			map = "river_gauge__count"
+			parameter = "routing.river_flow.variables.q"
+
+		[[output.netcdf_scalar.variable]]
+         index.x   = 400
+         index.y   = 500
+			name = "temp_coord"
+			location = "temp_bycoord"
+			parameter = "atmosphere_air__temperature"
+
+		[[output.netcdf_scalar.variable]]
+         location  = "temp_byindex"
+         name      = "temp_index"
+         index.x   = 400
+         index.y   = 500
+         parameter = "atmosphere_air__temperature"
+
+	[output.csv]
+		path = "output_Cregduff.csv"
+
+		[[output.csv.column]]
+         header    = "Q"
+         parameter = "river_water__volume_flow_rate"
+         reducer   = "maximum"
+
+		# === RESERVOIR ===
+			# [[output.csv.column]]
+			# 	header = "storage"
+			# 	index = 1
+			# 	parameter = "reservoir_water__volume"
+
+		# [[output.csv.column]]
+      #    index.x   = 150
+      #    index.y   = 34
+      #    header       = "temp_bycoord"
+      #    parameter    = "atmosphere_air__temperature"
+
+		# [[output.csv.column]]
+      #    index.x   = 150
+      #    index.y   = 34
+      #    header       = "vwc_layer2_bycoord"
+      #    parameter    = "land.soil.variables.vwc"
+      #    layer        = 2
+
+		# [[output.csv.column]]
+      #    header    = "temp_byindex"
+      #    index.x   = 150
+      #    index.y   = 34
+      #    parameter = "atmosphere_air__temperature"
+
+		[[output.csv.column]]
+         header    = "Q"
+         map       = "river_gauge__count"
+         parameter = "river_water__volume_flow_rate"
+
+		[[output.csv.column]]
+         header    = "recharge"
+         map       = "subbasin_location__count"
+         parameter = "soil_water_sat-zone_top__net_recharge_volume_flux"
+         reducer   = "mean"
+
+	[API]
+		variables = [
+		"river_water__volume_flow_rate",
+			"soil_water_unsat-zone__depth",
+			"soil_water__transpiration_volume_flux",
+			"soil_layer~1_water_unsat-zone__depth",
+			"soil_layer~2_water_unsat-zone__depth",
+			"soil_layer~3_water_unsat-zone__depth",
+			"soil_layer~4_water_unsat-zone__depth",
+		]
