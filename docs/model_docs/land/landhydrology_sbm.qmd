@@ -1043,20 +1043,21 @@ $$
     (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat}) \ge (\subtext{S}{root-unsat, fc} - \subtext{S}{root-unsat, h3}),
 $$
 where $\SIb{\subtext{S}{root-unsat, fc}}{mm}$ is the unsaturated store in the root zone at
-field capacity (defined at a soil water pressure head of $\SI{-100}{cm}$),
-$\SIb{\subtext{S}{root-unsat}}{mm}$ is the unsaturated store in the root zone and
-$\SIb{\subtext{S}{root-unsat, h3}}{mm}$ is the unsaturated store in the root zone at the
-critical soil water pressure head $h_3$, below this pressure head reduction of root water
-uptake starts due to drought stress. The net irrigation demand $\SIb{}{mm\ t^{-1}}$ is the
-irrigation rate that brings the root zone back to field capacity, limited by the soil
-infiltration capacity $\SIb{}{mm\ t^{-1}}$, assuming that farmers do not apply an irrigation
-rate higher than the soil infiltration capacity. To account for limited irrigation
-efficiency the net irrigation demand is divided by the irrigation efficiency for non-paddy
-crops ($\SIb{}{-}$, default is $1.0$), resulting in gross irrigation demand $\SIb{}{mm\ t^{-1}}$.
-Finally, the gross irrigation demand is limited by the maximum irrigation rate
-($\SIb{}{mm\ t^{-1}}$, default is $\SI{25}{mm\ d^{-1}}$). If the maximum irrigation rate is
-applied, irrigation continues at subsequent time steps until field capacity is reached.
-Irrigation is added to the amount of water available for infiltration.
+field capacity (water content at field capacity is an input parameter or computed at a soil
+water pressure head of $\SI{-100}{cm}$), $\SIb{\subtext{S}{root-unsat}}{mm}$ is the
+unsaturated store in the root zone and $\SIb{\subtext{S}{root-unsat, h3}}{mm}$ is the
+unsaturated store in the root zone at the critical soil water pressure head $h_3$, below
+this pressure head reduction of root water uptake starts due to drought stress. The net
+irrigation demand $\SIb{}{mm\ t^{-1}}$ is the irrigation rate that brings the root zone back
+to field capacity, limited by the soil infiltration capacity $\SIb{}{mm\ t^{-1}}$, assuming
+that farmers do not apply an irrigation rate higher than the soil infiltration capacity. To
+account for limited irrigation efficiency the net irrigation demand is divided by the
+irrigation efficiency for non-paddy crops ($\SIb{}{-}$, default is $1.0$), resulting in
+gross irrigation demand $\SIb{}{mm\t^{-1}}$. Finally, the gross irrigation demand is limited
+by the maximum irrigation rate ($\SIb{}{mm\ t^{-1}}$, default is $\SI{25}{mm\ d^{-1}}$). If
+the maximum irrigation rate is applied, irrigation continues at subsequent time steps until
+field capacity is reached. Irrigation is added to the amount of water available for
+infiltration.
 
 The list of input parameters for non-paddy irrigation that can be provided through the TOML
 file can be found [here](../parameters_landhydrology_sbm.qmd#non-paddy-irrigation).
