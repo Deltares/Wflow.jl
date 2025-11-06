@@ -150,6 +150,13 @@ reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 The complete list of reservoir input parameters that can be provided through the TOML file can be
 found [here](../parameters_routing.qmd#reservoirs).
 
+::: {.callout-note}
+Please note that for reservoir input parameters (except `reservoir_lower_location__count`)
+missing values in the input data are not allowed, even if the parameter is not used by the
+reservoir type. For example, `reservoir_water__rating_curve_exponent` (for rating curve
+types 2 and 3) should also have a value (e.g. -1) for other input reservoir types.
+:::
+
 ### Storage and rating cuves from data
 Storage and rating curves from field measurement can be supplied to wflow via CSV files
 supplied in the same folder of the TOML file. Naming of the files uses the ID of the
