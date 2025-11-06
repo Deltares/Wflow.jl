@@ -113,9 +113,6 @@ const routing_standard_name_map = Dict{String, NamedTuple}(
         (lens = nothing, unit = Unit(; s = 1, m = -1 // 3)),
 )
 
-const writer_standard_name_map =
-    Dict{String, NamedTuple}("river_gauge__count" => (lens = nothing, unit = Unit()))
-
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
 of type `LandHydrologySBM`. The `lens` of the NamedTuple allows access to a nested model
@@ -803,8 +800,8 @@ standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
 standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
 standard_name_map(::Type{<:Domain}) = domain_standard_name_map
 standard_name_map(::Type{<:Routing}) = routing_standard_name_map
-standard_name_map(::Type{<:Writer}) = writer_standard_name_map
 get_lens(name::AbstractString, model) = get_lens(name, typeof(model))
 get_lens(name::AbstractString, L::Type) = standard_name_map(L)[name].lens
 get_unit(name::AbstractString, model) = get_unit(name, typeof(model))
 get_unit(name::AbstractString, L::Type) = standard_name_map(L)[name].unit
+get_unit(::AbstractString, ::Type{<:Writer}) = Unit()

@@ -20,14 +20,14 @@ end
 
 "Struct to store non-irrigation water demand variables"
 @with_kw struct NonIrrigationDemandVariables
-    returnflow::Vector{Float64}               # return flow [mm Δt⁻¹]
+    returnflow::Vector{Float64}               # return flow [mm Δt⁻¹ => m³ s⁻¹]
     returnflow_fraction::Vector{Float64}      # return flow fraction [-]
 end
 
 "Struct to store prescribed water demand variables"
 @with_kw struct PrescibedDemand
-    demand_gross::Vector{Float64}     # gross water demand [mm Δt⁻¹]
-    demand_net::Vector{Float64}       # net water demand [mm Δt⁻¹]
+    demand_gross::Vector{Float64}     # gross water demand [mm Δt⁻¹ => m³ s⁻¹]
+    demand_net::Vector{Float64}       # net water demand [mm Δt⁻¹ => m³ s⁻¹]
 end
 
 "Non-irrigation water demand model"
