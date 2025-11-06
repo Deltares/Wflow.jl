@@ -971,6 +971,7 @@ td, th {
 <h2 class="anchored" data-anchor-id="soil">Soil</h2>
 <section id="input-3" class="level3">
 <h3 class="anchored" data-anchor-id="input-3">Input</h3>
+<p>Note that the input parameter water content at field capacity (<code>soil_water__field_capacity_volume_fraction</code>) is optional. When not provided the water content is computed at a pressure head of -100 cm using the Brooks and Corey water retention model.</p>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 41%">
@@ -1030,120 +1031,126 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="even">
+<td><code>soil_water__field_capacity_volume_fraction</code></td>
+<td>Field capacity (water content)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
 <td><code>soil_surface_water__vertical_saturated_hydraulic_conductivity</code></td>
 <td>Vertical saturated hydraulic conductivity at soil surface</td>
 <td>mm Δt⁻¹</td>
 <td>-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter</code></td>
 <td>Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth</td>
 <td>mm⁻¹</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_water__air_entry_pressure_head</code></td>
 <td>Air entry pressure head of soil</td>
 <td>cm</td>
 <td>-10.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>vegetation_root__feddes_critical_pressure_head_h1</code></td>
 <td>Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>0.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>vegetation_root__feddes_critical_pressure_head_h2</code></td>
 <td>Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-100.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>vegetation_root__feddes_critical_pressure_head_h3_high</code></td>
 <td>Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-400.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>vegetation_root__feddes_critical_pressure_head_h3_low</code></td>
 <td>Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-1000.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>vegetation_root__feddes_critical_pressure_head_h4</code></td>
 <td>Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-16000.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient</code></td>
 <td>Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
 <td>-</td>
 <td>1.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil__thickness</code></td>
 <td>Soil thickness</td>
 <td>mm</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>compacted_soil_surface_water__infiltration_capacity</code></td>
 <td>Infiltration capacity of compacted areas</td>
 <td>mm Δt⁻¹</td>
 <td>10 mm day⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water_saturated_zone_bottom__max_leakage_volume_flux</code></td>
 <td>Maximum leakage from saturated zone</td>
 <td>mm Δt⁻¹</td>
 <td>0.0 mm day⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_layer_water__brooks_corey_exponent</code></td>
 <td>Brooks-Corey power coefficient per soil layer</td>
 <td>-</td>
 <td>-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>land_water_covered__area_fraction</code></td>
 <td>Fraction of open water (excluding rivers)</td>
 <td>-</td>
 <td>0.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_layer_water__vertical_saturated_hydraulic_conductivity_factor</code></td>
 <td>Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer</td>
 <td>-</td>
 <td>1.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>compacted_soil__area_fraction</code></td>
 <td>Fraction of compacted soil area</td>
 <td>-</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_wet_root__sigmoid_function_shape_parameter</code></td>
 <td>Controls sharpness of transition between fully wet and fully dry roots</td>
 <td>-</td>
 <td>-500.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_root__length_density_fraction</code></td>
 <td>Fraction of the root length density per soil layer</td>
 <td>-</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_water_saturated_zone_top__capillary_rise_max_water_table_depth</code></td>
 <td>Maximum water table depth for capillary rise</td>
 <td>mm</td>
 <td>2000.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water_saturated_zone_top__capillary_rise_averianov_exponent</code></td>
 <td>Averianov exponent controlling capillary rise</td>
 <td>-</td>
