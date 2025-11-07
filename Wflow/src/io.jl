@@ -18,21 +18,22 @@ function get_at(
     var::InputEntry,
     times::AbstractVector{<:TimeType},
     t::TimeType,
+    dt::Second,
 )
     # this behaves like a backward fill interpolation
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at(ds, var, i)
+    return get_at(ds, var, i, dt)
 end
 
-function get_at(ds::CFDataset, var::InputEntry, i)
+function get_at(ds::CFDataset, var::InputEntry, i::Int, dt::Second)
     (; scale, offset) = var
     data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
     if scale != 1.0 || offset != 0.0
         data .= data .* scale .+ offset
     end
-    return data
+    return to_SI!(data, var.unit; dt_val = Dates.value(dt))
 end
 
 function get_param_res(model)
@@ -126,7 +127,7 @@ function update_forcing!(model)
         variable_name(ncvar) === nothing && continue
 
         time = convert(eltype(dataset_times), clock.time)
-        data = get_at(dataset, ncvar, dataset_times, time)
+        data = get_at(dataset, ncvar, dataset_times, time, model.clock.dt)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -198,7 +199,7 @@ function update_cyclic!(model)
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar, i)
+            data = get_at(cyclic_dataset, ncvar, i, clock.dt)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -558,7 +559,7 @@ function NCReader(config)
     for (par, var) in config.input.forcing
         ncname = variable_name(var)
         variable_info(var)
-        @info "Set `$par` using netCDF variable `$ncname` as forcing parameter."
+        @info "Set `$par` using netCDF variable `$ncname` as forcing parameter." var.unit
     end
 
     # create map from internal location to netCDF variable name for cyclic parameters and
@@ -575,7 +576,7 @@ function NCReader(config)
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[par] = timecycles(cyclic_nc_times)
             variable_info(var)
-            @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
+            @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps." var.unit
         end
     else
         cyclic_dataset = nothing

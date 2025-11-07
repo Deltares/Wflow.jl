@@ -154,7 +154,7 @@ Obtain the conversion factor from an Unit into
 SI units, e.g.:
 mm/dt -> 1e-3 / dt_val
 """
-function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
+function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     # Model dependent units
     (; dt) = unit
 
@@ -208,7 +208,7 @@ end
 """
 Convert the given value of the given unit to the value of the corresponding standard SI unit
 """
-function to_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
+function to_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     return if unit == Unit(; degC = 1, absolute_temperature = true)
         # Special case for absolute temperatures in °C
         x + 273.15
@@ -223,8 +223,33 @@ to_SI(x, unit::Unit; kwargs...) = x
 """
 Convert an array of values to the values in the corresponding SI unit in-place.
 """
-function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
+function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
     @. x = to_SI(x, unit_ref; dt_val)
     return x
+end
+
+"""
+Get the unit by checking all `*_standard_name_map` dictionaries
+and make sure that there is no ambiguity.
+"""
+function get_unit(variable_name::AbstractString)::Unit
+    unit = nothing
+
+    for standard_name_map in (
+        sbm_standard_name_map,
+        sediment_standard_name_map,
+        domain_standard_name_map,
+        routing_standard_name_map,
+    )
+        nt = get(standard_name_map, variable_name, nothing)
+        if !isnothing(nt)
+            if isnothing(unit)
+                unit = nt.unit
+            else
+                @assert nt.unit == unit "Unit ambiguity found for variable name `$variable_name`: $unit, $(nt.unit)."
+            end
+        end
+    end
+    return isnothing(unit) ? Unit() : unit
 end

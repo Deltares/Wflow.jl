@@ -297,7 +297,14 @@ function ncread(
         error("Unrecognized dimension name $dimname")
     end
 
-    var = convert(InputEntry, var)
+    if var isa Number
+        var = InputEntry(; value = var, unit)
+    elseif var isa String
+        var = InputEntry(; external_name = var, unit)
+    else
+        @assert var isa InputEntry
+    end
+
     (; value, layer, scale, offset) = var
     variable_info(var)
 

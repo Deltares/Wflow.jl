@@ -125,6 +125,7 @@ end
 ###
 
 @kwdef mutable struct InputEntry <: AbstractConfigSection
+    unit::Unit
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]

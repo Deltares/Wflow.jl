@@ -142,17 +142,15 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
 
         # Invoke default method
         return init_config_section_default(InputEntry, dict)
+    elseif value isa String
+        # Option 3
+        return InputEntry(; unit = dict["unit"], external_name = value)
     elseif !isnothing(value)
         # Option 2
-        return InputEntry(; value)
+        return InputEntry(; value, unit = dict["unit"])
     end
     argument_error("Couldn't parse the section under [input] in the TOML with data $dict.")
 end
-
-# Option 3 (see struct InputEntry)
-init_config_section(::Type{InputEntry}, external_name::String) = InputEntry(; external_name)
-Base.convert(::Type{InputEntry}, external_name::String) = InputEntry(; external_name)
-Base.convert(::Type{InputEntry}, value::Number) = InputEntry(; value)
 
 convert_value(::Type{IndexSection}, i::Int) = IndexSection(; i)
 convert_value(::Type{IndexSection}, dict::AbstractDict{String}) =
@@ -160,9 +158,18 @@ convert_value(::Type{IndexSection}, dict::AbstractDict{String}) =
 init_config_section(::Type{IndexSection}, i::Int) = IndexSection(; i)
 
 function init_config_section(::Type{InputEntries}, dict::AbstractDict{String})
-    InputEntries(
-        Dict(key => init_config_section(InputEntry, value) for (key, value) in dict),
-    )
+    parsed_dict = Dict{String, Any}()
+    # Look up the units of the input entries
+    for (key, value) in dict
+        unit = get_unit(key)
+        if value isa AbstractDict
+            value["unit"] = unit
+        else
+            value = Dict{String, Any}("value" => value, "unit" => unit)
+        end
+        parsed_dict[key] = init_config_section(InputEntry, value)
+    end
+    return InputEntries(parsed_dict)
 end
 
 function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
