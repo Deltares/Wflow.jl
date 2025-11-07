@@ -67,11 +67,14 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+import Subscripts
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
+
+g_gravity = 9.81 # m s⁻²
 
 mutable struct Clock{T}
     time::T
@@ -223,7 +226,24 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
-include("standard_name.jl")
+
+include("standard_name/standard_name_domain.jl")
+include("standard_name/standard_name_routing.jl")
+include("standard_name/standard_name_sbm.jl")
+include("standard_name/standard_name_sediment.jl")
+
+# wrapper methods for standard name mapping
+standard_name_map(model) = standard_name_map(typeof(model))
+standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
+standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
+standard_name_map(::Type{<:Domain}) = domain_standard_name_map
+standard_name_map(::Type{<:Routing}) = routing_standard_name_map
+get_lens(name::AbstractString, model) = get_lens(name, typeof(model))
+get_lens(name::AbstractString, L::Type) = standard_name_map(L)[name].lens
+get_unit(name::AbstractString, model) = get_unit(name, typeof(model))
+get_unit(name::AbstractString, L::Type) = standard_name_map(L)[name].unit
+get_unit(::AbstractString, ::Type{<:Writer}) = Unit()
+
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

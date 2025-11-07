@@ -64,18 +64,17 @@ function update!(model::AbstractModel{<:SbmModel})
 
     update_until_recharge!(model)
     # exchange of recharge between SBM soil model and subsurface flow domain
-    routing.subsurface_flow.boundary_conditions.recharge .=
-        land.soil.variables.recharge ./ 1000.0
+    routing.subsurface_flow.boundary_conditions.recharge .= land.soil.variables.recharge
     if do_water_demand(config)
         @. routing.subsurface_flow.boundary_conditions.recharge -=
-            land.allocation.variables.act_groundwater_abst / 1000.0
+            land.allocation.variables.act_groundwater_abst
     end
     routing.subsurface_flow.boundary_conditions.recharge .*=
         domain.land.parameters.flow_width
-    routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
+    routing.subsurface_flow.variables.zi .= land.soil.variables.zi
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, domain.land, clock.dt / BASETIMESTEP)
+    update!(routing.subsurface_flow, domain.land, clock.dt)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
@@ -170,7 +169,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         if config.model.type == ModelType.sbm
             (; zi, storage) = routing.subsurface_flow.variables
             (; theta_s, theta_r, soilthickness) = routing.subsurface_flow.parameters
-            @. zi = 0.001 * land.soil.variables.zi # convert from unit [mm] to [m]
+            @. zi = land.soil.variables.zi # convert from unit [mm] to [m]
             @. storage =
                 (theta_s - theta_r) * (soilthickness - zi) * domain.land.parameters.area
         elseif config.model.type == ModelType.sbm_gwf

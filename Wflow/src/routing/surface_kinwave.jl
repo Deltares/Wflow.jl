@@ -596,11 +596,13 @@ function update_lateral_inflow!(
     (; cell_area) = domain.river.parameters
     (; area) = domain.land.parameters
 
-    inwater .= (
-        get_flux_to_river(subsurface_flow, land_indices) .+
-        overland_flow.variables.to_river[land_indices] .+
-        (net_runoff_river[land_indices] .* area[land_indices] .* 0.001) ./ dt .+
-        (get_nonirrigation_returnflow(allocation) .* 0.001 .* cell_area) ./ dt
+    nonirrigation_returnflow = get_nonirrigation_returnflow(allocation)
+    flux_to_river = get_flux_to_river(subsurface_flow, land_indices)
+    @. inwater = (
+        flux_to_river +
+        overland_flow.variables.to_river[land_indices] +
+        (net_runoff_river[land_indices] * area[land_indices]) / dt +
+        (nonirrigation_returnflow * cell_area) / dt
     )
     return nothing
 end
@@ -623,13 +625,12 @@ function update_lateral_inflow!(
     if config.model.drain__flag
         drain = subsurface_flow.boundaries.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[drain.index] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
+        drainflux[drain.index] = -drain.variables.flux
     else
         drainflux = 0.0
     end
-    inwater .=
-        (net_runoff .+ get_nonirrigation_returnflow(allocation)) .* area * 0.001 ./ dt .+
-        drainflux
+    nonirrigation_returnflow = get_nonirrigation_returnflow(allocation)
+    @. inwater = (net_runoff + nonirrigation_returnflow) * area / dt + drainflux
 
     return nothing
 end
@@ -659,7 +660,7 @@ end
 get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow, inds::Vector{Int}) =
     model.variables.q_av[inds]
 get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    model.variables.ssf[inds] ./ tosecond(BASETIMESTEP)
+    model.variables.ssf[inds]
 
 # Exclude subsurface flow from `GroundwaterFlow`.
 get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow, inds::Vector{Int}) =

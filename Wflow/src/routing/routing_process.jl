@@ -383,6 +383,8 @@ function flux_in!(flux_in, flux, network)
     return nothing
 end
 
+const tan80 = tan(80 / 360 * 2π)
+
 """
     lateral_snow_transport!(snow, slope, network)
 
@@ -392,7 +394,8 @@ a `snow` model.
 function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
-    snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow_storage ./ 10000.0)
+    snow_storage_max = 10.0 # m
+    snowflux_frac = min.(0.5, slope ./ tan80) .* min.(1.0, snow_storage ./ snow_storage_max)
     maxflux = snowflux_frac .* snow_storage
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
     snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)

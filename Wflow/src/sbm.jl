@@ -1,5 +1,11 @@
+abstract type AbstractDemandModel end
+abstract type AbstractIrrigationModel end
+abstract type AbstractAllocationModel end
+abstract type AbstractIrrigationDemandModel <: AbstractDemandModel end
+
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D, A} <: AbstractLandModel
+@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+                AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -53,7 +59,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
 
     if do_water_demand(config)
         allocation = AllocationLand(dataset, config, indices)
-        demand = Demand(dataset, config, indices, dt)
+        demand = Demand(dataset, config, indices)
     else
         allocation = NoAllocationLand(n)
         demand = NoDemand(; n)

@@ -27,10 +27,13 @@ struct Unit
     m::SVector{2, Rational{Int}} # meter, SI standard
     cm::SVector{2, Rational{Int}} # centimeter
     mm::SVector{2, Rational{Int}} # millimeter
+    μm::SVector{2, Rational{Int}} # micrometer
     # Mass
     kg::SVector{2, Rational{Int}} # kilogram, SI standard
     g::SVector{2, Rational{Int}} # gram
     t::SVector{2, Rational{Int}} # tonne
+    # Energy
+    J::SVector{2, Rational{Int}} # Joules
     # Fraction
     percentage::SVector{2, Rational{Int}} # percentage, converted to unitless fraction in the SI standard
 end
@@ -77,12 +80,28 @@ end
 # the Unit struct
 const UnitStrings = Dict{Symbol, String}(:degC => "°C", :percentage => "%")
 
+function power_string(power::Rational{Int}, BMI_standard::Bool)
+    (; num, den) = power
+    return if isinteger(power)
+        n = string(Int(power))
+        BMI_standard ? n : Subscripts.super(n)
+    else
+        if BMI_standard
+            "$num/$den"
+        else
+            num_str = Subscripts.super(string(num))
+            den_str = Subscripts.super(string(den))
+            "$(num_str)ᐟ$den_str"
+        end
+    end
+end
+
 """
 Represent the Unit as a string,
-following the BMI standard:
+following the BMI standard if `BMI_standard = true`:
 https://bmi.csdms.io/en/stable/bmi.var_funcs.html#get-var-units
 """
-function Base.String(unit::Unit)
+function to_string(unit::Unit; BMI_standard = false)
     n_units = length(Units)
     symbols = ntuple(i -> get(UnitStrings, Units[i], String(Units[i])), Val(n_units))
     powers = ntuple(i -> getfield(unit, Units[i]), Val(n_units))
@@ -91,10 +110,8 @@ function Base.String(unit::Unit)
     # Positive powers
     for (symbol, powers_) in zip(symbols, powers)
         power = powers_[2]
-        (; num, den) = power
-        power_str = isinteger(power) ? string(Int(power)) : "$num/$den"
         if !iszero(power)
-            term = isone(power) ? symbol : "$symbol$power_str"
+            term = isone(power) ? symbol : "$symbol$(power_string(power, BMI_standard))"
             push!(out, term)
         end
     end
@@ -102,10 +119,8 @@ function Base.String(unit::Unit)
     # Negative powers
     for (symbol, powers_) in zip(symbols, powers)
         power = powers_[1]
-        (; num, den) = power
-        power_str = isinteger(power) ? string(Int(power)) : "$num/$den"
         if !iszero(power)
-            push!(out, "$symbol-$power_str")
+            push!(out, "$symbol$(power_string(-power, BMI_standard))")
         end
     end
 
@@ -114,7 +129,8 @@ function Base.String(unit::Unit)
     return isempty(out) ? "-" : out
 end
 
-Base.show(io::IO, unit::Unit) = print(io, String(unit))
+Base.string(unit::Unit) = to_string(unit)
+Base.show(io::IO, unit::Unit) = print(io, to_string(unit))
 
 const to_SI_data = Dict{Symbol, @NamedTuple{factor::Float64, unit_SI::Unit}}(
     :K => (factor = 1.0, unit_SI = Unit(; K = 1)),
@@ -125,9 +141,11 @@ const to_SI_data = Dict{Symbol, @NamedTuple{factor::Float64, unit_SI::Unit}}(
     :m => (factor = 1.0, unit_SI = Unit(; m = 1)),
     :cm => (factor = 1e-2, unit_SI = Unit(; m = 1)),
     :mm => (factor = 1e-3, unit_SI = Unit(; m = 1)),
+    :μm => (factor = 1e-6, unit_SI = Unit(; m = 1)),
     :kg => (factor = 1.0, unit_SI = Unit(; kg = 1)),
     :g => (factor = 1e-3, unit_SI = Unit(; kg = 1)),
     :t => (factor = 1e3, unit_SI = Unit(; kg = 1)),
+    :J => (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)),
     :percentage => (factor = 1e-2, unit_SI = Unit()),
 )
 
@@ -151,7 +169,7 @@ function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Float64} = nothing)
     factor = 1.0
 
     for base_unit in Units
-        factor_unit = to_SI_datafm[base_unit].factor
+        factor_unit = to_SI_data[base_unit].factor
         if isnan(factor_unit)
             # Model dependent conversion factors
             factor_unit = if base_unit == :dt

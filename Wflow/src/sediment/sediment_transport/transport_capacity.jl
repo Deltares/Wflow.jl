@@ -62,7 +62,8 @@ function TransportCapacityGoversParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -70,7 +71,8 @@ function TransportCapacityGoversParameters(
     c_govers = ncread(
         dataset,
         config,
-        "land_surface_water_sediment__govers_transport_capacity_coefficient";
+        "land_surface_water_sediment__govers_transport_capacity_coefficient",
+        SoilLoss;
         sel = indices,
         defaults = 0.000505,
         type = Float64,
@@ -78,7 +80,8 @@ function TransportCapacityGoversParameters(
     n_govers = ncread(
         dataset,
         config,
-        "land_surface_water_sediment__govers_transport_capacity_exponent";
+        "land_surface_water_sediment__govers_transport_capacity_exponent",
+        SoilLoss;
         sel = indices,
         defaults = 4.27,
         type = Float64,
@@ -159,7 +162,8 @@ function TransportCapacityYalinParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -167,7 +171,8 @@ function TransportCapacityYalinParameters(
     d50 = ncread(
         dataset,
         config,
-        "land_surface_sediment__median_diameter";
+        "land_surface_sediment__median_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 0.1,
         type = Float64,
@@ -273,7 +278,8 @@ function TransportCapacityYalinDifferentiationParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -281,7 +287,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_clay = ncread(
         dataset,
         config,
-        "clay__mean_diameter";
+        "clay__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 2.0,
         type = Float64,
@@ -289,7 +296,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_silt = ncread(
         dataset,
         config,
-        "silt__mean_diameter";
+        "silt__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 10.0,
         type = Float64,
@@ -297,7 +305,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_sand = ncread(
         dataset,
         config,
-        "sand__mean_diameter";
+        "sand__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 200.0,
         type = Float64,
@@ -305,7 +314,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_sagg = ncread(
         dataset,
         config,
-        "sediment_small_aggregates__mean_diameter";
+        "sediment_small_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 30.0,
         type = Float64,
@@ -313,7 +323,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_lagg = ncread(
         dataset,
         config,
-        "sediment_large_aggregates__mean_diameter";
+        "sediment_large_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 500.0,
         type = Float64,
@@ -461,7 +472,8 @@ function TransportCapacityRiverParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -469,7 +481,8 @@ function TransportCapacityRiverParameters(
     d50 = ncread(
         dataset,
         config,
-        "river_sediment__median_diameter";
+        "river_sediment__median_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 0.1,
         type = Float64,
@@ -497,7 +510,8 @@ function TransportCapacityBagnoldParameters(
     c_bagnold = ncread(
         dataset,
         config,
-        "river_water_sediment__bagnold_transport_capacity_coefficient";
+        "river_water_sediment__bagnold_transport_capacity_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -505,7 +519,8 @@ function TransportCapacityBagnoldParameters(
     e_bagnold = ncread(
         dataset,
         config,
-        "river_water_sediment__bagnold_transport_capacity_exponent";
+        "river_water_sediment__bagnold_transport_capacity_exponent",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -638,7 +653,8 @@ function TransportCapacityKodatieParameters(
     a_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_a_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_a_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -646,7 +662,8 @@ function TransportCapacityKodatieParameters(
     b_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_b_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_b_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -654,7 +671,8 @@ function TransportCapacityKodatieParameters(
     c_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_c_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_c_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -662,7 +680,8 @@ function TransportCapacityKodatieParameters(
     d_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_d_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_d_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,

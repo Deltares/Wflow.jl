@@ -70,20 +70,19 @@ function LateralSsfParameters(
     )
 
     (; theta_s, theta_r, soilthickness) = soil
-    soilthickness = soilthickness .* 0.001
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
-    factor_dt = BASETIMESTEP / Second(config.time.timestepsecs)
+    dt = config.time.timestepsecs
     if kh_profile_type == VerticalConductivityProfile.exponential
         (; kv_0, f) = soil.kv_profile
-        kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        kh_profile = KhExponential(kh_0, f .* 1000.0)
+        kh_0 = @. khfrac * kv_0 / dt
+        kh_profile = KhExponential(kh_0, f)
     elseif kh_profile_type == VerticalConductivityProfile.exponential_constant
         (; z_exp) = soil.kv_profile
         (; kv_0, f) = soil.kv_profile.exponential
-        kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        exp_profile = KhExponential(kh_0, f .* 1000.0)
-        kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
+        kh_0 = @. khfrac * kv_0 / dt
+        exp_profile = KhExponential(kh_0, f)
+        kh_profile = KhExponentialConstant(exp_profile, z_exp)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
         n_cells = length(khfrac)
@@ -124,7 +123,7 @@ function LateralSSF(
     (; indices) = domain.network
     (; area) = domain.parameters
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
-    zi = 0.001 * soil.variables.zi
+    zi = soil.variables.zi
     variables = LateralSsfVariables(parameters, zi, area)
     boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
@@ -187,8 +186,7 @@ end
 get_water_depth(model::LateralSSF) = model.variables.zi
 get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
-get_flux_to_river(model::LateralSSF, inds::Vector{Int}) =
-    model.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+get_flux_to_river(model::LateralSSF, inds::Vector{Int}) = model.variables.to_river[inds]
 
 get_inflow(model::LateralSSF) = model.variables.ssfin
 get_outflow(model::LateralSSF) = model.variables.ssf

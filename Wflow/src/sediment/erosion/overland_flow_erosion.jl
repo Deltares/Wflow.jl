@@ -1,8 +1,6 @@
-abstract type AbstractOverlandFlowErosionModel end
-
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
-    # Total soil erosion rate [t dt-1] from overland flow
+    # Total soil erosion rate [t dt⁻¹ => kg s⁻¹] from overland flow
     amount::Vector{Float64}
 end
 
@@ -16,7 +14,7 @@ end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
-    # Overland flow [m3 s-1]
+    # Overland flow [m³ s⁻¹]
     q::Vector{Float64}
 end
 
@@ -44,7 +42,8 @@ function OverlandFlowErosionAnswersParameters(
     usle_k = ncread(
         dataset,
         config,
-        "soil_erosion__usle_k_factor";
+        "soil_erosion__usle_k_factor",
+        SoilLoss;
         sel = indices,
         defaults = 0.1,
         type = Float64,
@@ -52,7 +51,8 @@ function OverlandFlowErosionAnswersParameters(
     usle_c = ncread(
         dataset,
         config,
-        "soil_erosion__usle_c_factor";
+        "soil_erosion__usle_c_factor",
+        SoilLoss;
         sel = indices,
         defaults = 0.01,
         type = Float64,
@@ -60,7 +60,8 @@ function OverlandFlowErosionAnswersParameters(
     answers_overland_flow_factor = ncread(
         dataset,
         config,
-        "soil_erosion__answers_overland_flow_factor";
+        "soil_erosion__answers_overland_flow_factor",
+        SoilLoss;
         sel = indices,
         defaults = 0.9,
         type = Float64,
@@ -72,7 +73,7 @@ function OverlandFlowErosionAnswersParameters(
 end
 
 "ANSWERS overland flow erosion model"
-@with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
+@with_kw struct OverlandFlowErosionAnswersModel
     boundary_conditions::OverlandFlowErosionBC
     parameters::OverlandFlowErosionAnswersParameters
     variables::OverlandFlowErosionVariables

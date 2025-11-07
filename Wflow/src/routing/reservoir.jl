@@ -586,9 +586,9 @@ function update!(
     res_v = model.variables
 
     # limit reservoir evaporation based on total available volume [m³]
-    precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
+    precipitation = res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
     available_storage = res_v.storage[i] + inflow * dt + precipitation
-    evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
+    evap = res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
     actevap = min(available_storage, evap) # [m³/dt]
 
     boundary_vars = (; precipitation, actevap, inflow)
@@ -620,7 +620,7 @@ function update!(
     # average variables (here accumulated for model timestep Δt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt
-    res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
+    res_v.actevap[i] += actevap / res_p.area[i]
 
     return nothing
 end

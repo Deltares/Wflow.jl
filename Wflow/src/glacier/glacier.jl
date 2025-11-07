@@ -17,7 +17,8 @@ function GlacierVariables(
     glacier_store = ncread(
         dataset,
         config,
-        "glacier_ice__initial_leq_depth";
+        "glacier_ice__initial_leq_depth",
+        LandHydrologySBM;
         sel = indices,
         defaults = 5500.0,
         type = Float64,
@@ -108,10 +109,14 @@ function GlacierHbvParameters(
         defaults = 0.0,
         fill = 0.0,
     )
-    max_snow_to_glacier = 8.0 * (dt / BASETIMESTEP)
-    glacier_hbv_params =
-        GlacierHbvParameters(; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier)
-    return glacier_hbv_params
+    max_snow_to_glacier = 8.0 * Dates.value(dt)
+    return GlacierHbvParameters(;
+        g_ttm,
+        g_cfmax,
+        g_sifrac,
+        glacier_frac,
+        max_snow_to_glacier,
+    )
 end
 
 "Initialize glacier HBV model"

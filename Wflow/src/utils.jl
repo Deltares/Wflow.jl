@@ -14,9 +14,6 @@ const PCR_DIR = [
 
 const MISSING_VALUE = Float64(NaN)
 
-# timestep that the parameter units are defined in
-const BASETIMESTEP = Second(Day(1))
-
 """
     scurve(x, a, b, c)
 
@@ -768,7 +765,6 @@ function kh_layered_profile!(
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
 
-    t_factor = (tosecond(BASETIMESTEP) / dt)
     for i in eachindex(kh)
         m = nlayers[i]
 
@@ -782,12 +778,10 @@ function kh_layered_profile!(
                 transmissivity += act_thickl[i][n] * kv_profile.kv[i][n]
                 n += 1
             end
-            # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
-            # [mm] and zi [mm])
-            kh[i] =
-                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+
+            kh[i] = (transmissivity / (soilthickness[i] - zi[i])) * khfrac[i] / dt
         else
-            kh[i] = 0.001 * kv_profile.kv[i][m] * t_factor * khfrac[i]
+            kh[i] = kv_profile.kv[i][m] * t_factor * khfrac[i]
         end
     end
     return nothing
@@ -804,7 +798,6 @@ function kh_layered_profile!(
     (; n_unsatlayers, zi) = soil.variables
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
-    t_factor = (tosecond(BASETIMESTEP) / dt)
 
     for i in eachindex(kh)
         m = nlayers[i]
@@ -835,21 +828,13 @@ function kh_layered_profile!(
                 end
                 n += 1
             end
-            # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
-            # [mm] and zi [mm])
-            kh[i] =
-                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+            kh[i] = (transmissivity / (soilthickness[i] - zi[i])) * khfrac[i] / dt
         else
             if zi[i] >= z_layered[i]
                 j = nlayers_kv[i]
-                kh[i] =
-                    0.001 *
-                    kv[i][j] *
-                    exp(-f[i] * (zi[i] - z_layered[i])) *
-                    khfrac[i] *
-                    t_factor
+                kh[i] = kv[i][j] * exp(-f[i] * (zi[i] - z_layered[i])) * khfrac[i] / dt
             else
-                kh[i] = 0.001 * kv[i][m] * t_factor * khfrac[i]
+                kh[i] = kv[i][m] * khfrac[i] / dt
             end
         end
     end
@@ -945,7 +930,7 @@ function initialize_lateral_ssf!(
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
-        kh_max *= khfrac[i] * 0.001 * 0.001
+        kh_max *= khfrac[i]
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
@@ -979,7 +964,7 @@ function initialize_lateral_ssf!(
                 break
             end
         end
-        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+        kh_max = kh_max * khfrac[i]
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing

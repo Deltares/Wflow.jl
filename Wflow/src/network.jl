@@ -397,7 +397,8 @@ function NetworkDrain(
     drain_2d = ncread(
         dataset,
         config,
-        "land_drain_location__mask";
+        "land_drain_location__mask",
+        Domain;
         optional = false,
         type = Bool,
         fill = false,

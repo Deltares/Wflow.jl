@@ -153,7 +153,7 @@ end
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
     (; unit) = standard_name_map(land)[name]
-    return String(to_SI(unit))
+    return to_string(to_SI(unit); BMI_standard = true)
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)
@@ -176,7 +176,7 @@ function BMI.get_current_time(model::Model)
     (; config, clock) = model
     (; starttime, calendar) = config.time
     starttime = cftime(starttime, calendar)
-    return 0.001 * Dates.value(clock.time - starttime)
+    return Dates.value(clock.time - starttime)
 end
 
 function BMI.get_start_time(::Model)
@@ -187,7 +187,7 @@ function BMI.get_end_time(model::Model)
     (; starttime, endtime, calendar) = model.config.time
     starttime_ = cftime(starttime, calendar)
     endtime_ = cftime(endtime, calendar)
-    return 0.001 * Dates.value(endtime_ - starttime_)
+    return Dates.value(endtime_ - starttime_)
 end
 
 function BMI.get_time_units(model::Model)

@@ -258,7 +258,7 @@ get_inflow_reservoir(
 ) = model.variables.q_av[inds] .+ model.variables.to_river[inds]
 
 get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    (model.variables.ssf[inds] .+ model.variables.to_river[inds]) ./ tosecond(BASETIMESTEP)
+    (model.variables.ssf[inds] .+ model.variables.to_river[inds])
 
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
@@ -753,7 +753,7 @@ function update_boundary_conditions!(
     river_indices = domain.river.network.land_indices
 
     @. model.boundary_conditions.runoff =
-        net_runoff / 1000.0 * area / dt + net_runoff_river * area * 0.001 / dt
+        net_runoff / 1000.0 * area / dt + net_runoff_river * area / dt
     model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
     return nothing

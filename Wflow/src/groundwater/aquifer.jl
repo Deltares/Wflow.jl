@@ -85,7 +85,7 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 transmissivity).
 """
 @with_kw struct ConfinedAquiferParameters
-    k::Vector{Float64}                    # horizontal conductivity [m d⁻¹]
+    k::Vector{Float64}                    # horizontal conductivity [m d⁻¹ => m s⁻¹]
     top::Vector{Float64}                  # top of groundwater layer [m]
     bottom::Vector{Float64}               # bottom of groundwater layer [m]
     area::Vector{Float64}                 # area of cell [m²]
@@ -95,11 +95,11 @@ end
 
 @with_kw struct AquiferVariables
     head::Vector{Float64}               # hydraulic head [m]
-    conductance::Vector{Float64}        # conductance [m² d⁻¹]
+    conductance::Vector{Float64}        # conductance [m² d⁻¹ => m² s⁻¹]
     storage::Vector{Float64}            # total storage of water that can be released [m³]
-    q_net::Vector{Float64}              # net flow (groundwater and boundaries) [m³ d⁻¹]
-    q_in_av::Vector{Float64}            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
-    q_out_av::Vector{Float64}           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
+    q_net::Vector{Float64}              # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
+    q_in_av::Vector{Float64}            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹ => m³ s⁻¹]
+    q_out_av::Vector{Float64}           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹ => m³ s⁻¹]
     exfiltwater::Vector{Float64}        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 
@@ -120,7 +120,7 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
 @with_kw struct UnconfinedAquiferParameters
-    k::Vector{Float64}                # reference horizontal conductivity [m d⁻¹]
+    k::Vector{Float64}                # reference horizontal conductivity [m d⁻¹ => m s⁻¹]
     top::Vector{Float64}              # top of groundwater layer [m]
     bottom::Vector{Float64}           # bottom of groundwater layer [m]
     area::Vector{Float64}             # area of cell [m²]
@@ -141,7 +141,8 @@ function UnconfinedAquiferParameters(
     k = ncread(
         dataset,
         config,
-        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity";
+        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -149,7 +150,8 @@ function UnconfinedAquiferParameters(
     specific_yield = ncread(
         dataset,
         config,
-        "subsurface_water__specific_yield";
+        "subsurface_water__specific_yield",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -159,7 +161,8 @@ function UnconfinedAquiferParameters(
         f = ncread(
             dataset,
             config,
-            "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter";
+            "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
+            Routing;
             optional = false,
             sel = indices,
             type = Float64,
@@ -417,7 +420,8 @@ function ConstantHead(
     constanthead = ncread(
         dataset,
         config,
-        "model_constant_boundary_condition__hydraulic_head";
+        "model_constant_boundary_condition__hydraulic_head",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -566,7 +570,7 @@ function get_flux_to_river(
     inds::Vector{Int},
 ) where {A <: UnconfinedAquifer}
     (; river) = subsurface_flow.boundaries
-    flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+    flux = -river.variables.flux_av
     return flux
 end
 
