@@ -107,16 +107,14 @@ end
 
 "Update Rutter interception model for a single timestep"
 function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameter_set
+    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(model)
     end
-    n = length(precipitation)
-    threaded_foreach(1:n; basesize = 1000) do i
+    AK.foreachindex(precipitation; scheduler = :polyester, min_elems = 1000) do i
         canopy_potevap[i] = kc[i] * potential_evaporation[i] * (1.0 - canopygapfraction[i])
         throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
             rainfall_interception_modrut(
@@ -139,7 +137,7 @@ function update_canopy_parameters!(model::AbstractInterceptionModel)
         storage_specific_leaf,
         canopygapfraction,
         cmax,
-    ) = model.parameters.vegetation_parameter_set
+    ) = model.parameters
 
     AK.foreachindex(cmax; scheduler = :polyester, min_elems = 1000) do i
         cmax[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]

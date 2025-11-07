@@ -56,7 +56,6 @@ using Adapt
 using KernelAbstractions
 using KernelAbstractions.Extras
 import AcceleratedKernels as AK
-# using Infiltrator
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
@@ -74,12 +73,10 @@ const cpu_backend = KernelAbstractions.CPU()
 using AMDGPU
 
 const gpu_backend = AMDGPU.ROCBackend()
-const backend = gpu_backend
-const BackendArray = ROCArray
-# const backend = cpu_backend
-# const BackendArray = Array
-
-# AMDGPU.device!(AMDGPU.devices()[2])
+# const backend = gpu_backend
+# const BackendArray = ROCArray
+const backend = cpu_backend
+const BackendArray = Array
 
 # Allows creation of an array on the backend, e.g. `array_from_host(ones(Int32, 10))` or `array_from_host(1:10, Int32)`
 #  copied from https://github.com/JuliaGPU/AcceleratedKernels.jl/blob/main/test/runtests.jl#L140 (MIT License)
@@ -331,7 +328,7 @@ function run!(model::Model; close_files = true)
     runstart_time = now()
 
     t0 = time()
-    @progress for (i, _time) in enumerate(times)
+    for (i, _time) in enumerate(times)
         if i != 1
             @debug "Starting timestep." _time i now()
             run_timestep!(model)
