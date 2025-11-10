@@ -575,6 +575,7 @@ window.Quarto = {
   <li><a href="#infiltration" id="toc-infiltration" class="nav-link" data-scroll-target="#infiltration">Infiltration</a></li>
   <li><a href="#capillary-rise" id="toc-capillary-rise" class="nav-link" data-scroll-target="#capillary-rise">Capillary rise</a></li>
   <li><a href="#leakage" id="toc-leakage" class="nav-link" data-scroll-target="#leakage">Leakage</a></li>
+  <li><a href="#water-table-change" id="toc-water-table-change" class="nav-link" data-scroll-target="#water-table-change">Water table change</a></li>
   </ul></li>
   <li><a href="#open-water" id="toc-open-water" class="nav-link" data-scroll-target="#open-water">Open water</a></li>
   <li><a href="#non-irrigation" id="toc-non-irrigation" class="nav-link" data-scroll-target="#non-irrigation">Non-irrigation</a></li>
@@ -1358,6 +1359,10 @@ maxdepth}}{mm}\)</span> is the critical water depth beyond which capillary rise 
 <p>If the maximum leakage <span class="math inline">\(\SIb{}{mm\ d^{-1}}\)</span> input model parameter is set &gt; 0, water is lost from the saturated zone and runs out of the model. Leakage can be enabled by specifying the following in the TOML file:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="dt">soil_water_saturated_zone_bottom__max_leakage_volume_flux</span> <span class="op">=</span> <span class="st">"maxleakage"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="water-table-change" class="level3">
+<h3 class="anchored" data-anchor-id="water-table-change">Water table change</h3>
+<p>To convert the groundwater storage change, computed as part of <a href="../../model_docs/routing/kinwave.html#subsurface-flow-routing">subsurface flow routing</a> or <a href="../../model_docs/routing/gwf.html#">unconfined groundwater flow</a>, to the water table change, the specific yield parameter is used. For a falling water table specific yield is represented by the drainable porosity, the difference between the saturated water content (required input parameter) and field capacity. Field capacity, an optional input parameter, is the soil water content after excess gravitational water has drained away. When this parameter is not provided field capacity is computed as the water content at a pressure head of -100 cm using the Brooks and Corey water retention model. For a rising water table, specific yield (dynamic) is represented by the fillable porosity, the difference between the saturated water content and water content of unsaturated zone soil layer(s) encountering a water table rise.</p>
 </section>
 </section>
 <section id="open-water" class="level2">
