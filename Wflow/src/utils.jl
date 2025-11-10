@@ -997,7 +997,7 @@ end
 """
 Return water table change `dh` and exfiltration rate `exfilt`. For a falling water table
 `dh` is based on subsurface net flux `net_flux` and specific yield `specific_yield`. For a
-rising water table `dh` is based on `net_flux` the and unsaturated store capacity (per soil
+rising water table `dh` is based on `net_flux` and the unsaturated store capacity (per soil
 layer). For a rising water table a dynamic specific yield is computed.
 """
 function water_table_change(

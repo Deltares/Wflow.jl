@@ -990,6 +990,20 @@ following in the TOML file:
 soil_water_saturated_zone_bottom__max_leakage_volume_flux = "maxleakage"
 ```
 
+### Water table change
+
+To convert the groundwater storage change, computed as part of [subsurface flow
+routing](..\routing\kinwave.qmd#subsurface-flow-routing) or [unconfined groundwater
+flow](..\routing\gwf.qmd#), to the water table change, the specific yield parameter is used.
+For a falling water table specific yield is represented by the drainable porosity, the
+difference between the saturated water content (required input parameter) and field
+capacity. Field capacity, an optional input parameter, is the soil water content after
+excess gravitational water has drained away. When this parameter is not provided field
+capacity is computed as the water content at a pressure head of -100 cm using the Brooks and
+Corey water retention model. For a rising water table, specific yield (dynamic) is
+represented by the fillable porosity, the difference between the saturated water content and
+water content of unsaturated zone soil layer(s) encountering a water table rise.
+
 ## Open water
 
 Part of the water available for infiltration is diverted to the open water, based on the
