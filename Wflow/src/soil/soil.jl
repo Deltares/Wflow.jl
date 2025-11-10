@@ -557,13 +557,8 @@ function SbmSoilParameters(
     sumlayers = @. pushfirst(cumsum(act_thickl), 0.0)
     nlayers = number_of_active_layers.(act_thickl)
 
-    # root fraction read from dataset file, in case of multiple soil layers and TOML file
-    # includes "soil_root__length_density_fraction"
-    par_name = "soil_root__length_density_fraction"
-    do_root_fraction =
-        do_cyclic(config) ? haskey(config.input.cyclic, par_name) :
-        haskey(config.input.static, par_name)
-    if do_root_fraction
+    # optional root fraction
+    if haskey(config.input.static, "soil_root__length_density_fraction")
         rootfraction = ncread(
             dataset,
             config,
@@ -576,7 +571,7 @@ function SbmSoilParameters(
     else
         n = length(indices)
         (; rootingdepth) = vegetation_parameter_set
-        # default root fraction in case of multiple soil layers
+        # default root fraction
         rootfraction = zeros(Float64, maxlayers, n)
         for i in 1:n
             if rootingdepth[i] > 0.0
