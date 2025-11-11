@@ -650,14 +650,14 @@ window.Quarto = {
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{c_\mathrm{land\ slope}}{m\ m^{-1}}\)</span> is the land slope, <span class="math inline">\(\SIb{\subtext{Q}{subsurface}}{m^3\ d^{-1}}\)</span> is subsurface flow, <span class="math inline">\(\SIb{K_\mathrm{h0}}{m\ d^{-1}}\)</span> is the saturated hydraulic conductivity at the soil surface, <span class="math inline">\(\SIb{\subtext{z}{ssf, watertable}}{m}\)</span> is the water table depth, <span class="math inline">\(\SIb{\subtext{z}{ssf,soil}}{m}\)</span> is the soil depth, <span class="math inline">\(\SIb{f_\mathrm{ssf, Kv}}{m^{-1}}\)</span> is a scaling parameter that controls the decrease of <span class="math inline">\(K_\mathrm{h0}\)</span> with depth and <span class="math inline">\(\SIb{\subtext{z}{ssf,exp}}{m}\)</span> is the depth from soil surface for which the exponential decline of <span class="math inline">\(K_\mathrm{h0}\)</span> is valid. For the <code>exponential</code> profile, <span class="math inline">\(\subtext{z}{ssf,exp}\)</span> is equal to <span class="math inline">\(\subtext{z}{ssf,soil}\)</span>.</p>
 <p>Combining with the following continuity equation: <span class="math display">\[
-    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
+    (\theta_s-\theta_{fc})w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{r}}{-}\)</span> are the saturated and residual soil water contents, respectively. Substituting for <span class="math inline">\(h (\frac{\partial Q}{\partial h})\)</span>, gives:</p>
+<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{fc}}{-}\)</span> are the saturated soil water content and soil water content at field capacity, respectively. The difference between <span class="math inline">\(\theta_s\)</span> and <span class="math inline">\(\theta_{fc}\)</span> represents the drainable porosity or specific yield. Substituting for <span class="math inline">\(h (\frac{\partial Q}{\partial h})\)</span>, gives:</p>
 <p><span class="math display">\[
   \frac{\partial \subtext{Q}{subsurface}}{\partial t} = -c\frac{\partial \subtext{Q}{subsurface}}{\partial x} + cwR
 \]</span></p>
 <p>where celerity <span class="math inline">\(c\)</span> is calculated as follows: <span class="math display">\[
-    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
+    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}\begin{cases}
     e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
     + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} &amp; \text{if $\subtext{z}{ssf,watertable} &lt; \subtext{z}{ssf,exp}$}\\
     \\
@@ -670,7 +670,7 @@ window.Quarto = {
 \]</span></p>
 <p>and celerity <span class="math inline">\(c\)</span> is given by:</p>
 <p><span class="math display">\[
-    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_r}.
+    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}.
 \]</span></p>
 <p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
 <div class="callout callout-style-default callout-note callout-titled">
