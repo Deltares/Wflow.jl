@@ -136,13 +136,15 @@ $\subtext{z}{ssf,soil}$.
 
 Combining with the following continuity equation:
 $$
-    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
+    (\theta_s-\theta_{fc})w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
 $$
 
 where $\SIb{h}{m}$ is the water table height, $\SIb{x}{m}$ is the distance downslope,
 $\SIb{R}{m\ d^{-1}}$ is the net input rate to the saturated store, $\SIb{\theta_{s}}{-}$ and
-$\SIb{\theta_{r}}{-}$ are the saturated and residual soil water contents, respectively.
-Substituting for $h (\frac{\partial Q}{\partial h})$, gives:
+$\SIb{\theta_{fc}}{-}$ are the saturated soil water content and soil water content at field
+capacity, respectively. The difference between $\theta_s$ and $\theta_{fc}$ represents the
+drainable porosity or specific yield. Substituting for $h (\frac{\partial Q}{\partial h})$,
+gives:
 
 $$
   \frac{\partial \subtext{Q}{subsurface}}{\partial t} = -c\frac{\partial \subtext{Q}{subsurface}}{\partial x} + cwR
@@ -150,7 +152,7 @@ $$
 
 where celerity $c$ is calculated as follows:
 $$
-    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
+    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}\begin{cases}
     e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
     + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} & \text{if $\subtext{z}{ssf,watertable} < \subtext{z}{ssf,exp}$}\\
     \\
@@ -170,7 +172,7 @@ $$
 and celerity $c$ is given by:
 
 $$
-    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_r}.
+    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}.
 $$
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
