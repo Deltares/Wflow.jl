@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "Wflow.jl"
 authors = [
 	"Joost Buitink <joost.buitink@deltares.nl>",

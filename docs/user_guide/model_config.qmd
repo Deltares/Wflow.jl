@@ -69,7 +69,7 @@ river_routing = "local_inertial"
 floodplain_1d__flag = true
 
 [input.static]
-floodplain_water__sum_of_volume-per-depth = "floodplain_volume"
+floodplain_water__sum_of_volume_per_depth = "floodplain_volume"
 floodplain_water_flow__manning_n_parameter = "floodplain_n"
 
 [state.variables]
