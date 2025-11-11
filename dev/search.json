@@ -946,11 +946,11 @@
     ]
   },
   {
-    "objectID": "changelog.html#v1.0.0-rc3---2025-11-10",
-    "href": "changelog.html#v1.0.0-rc3---2025-11-10",
+    "objectID": "changelog.html#v1.0.0-rc3---2025-11-11",
+    "href": "changelog.html#v1.0.0-rc3---2025-11-11",
     "title": "Changelog",
-    "section": "v1.0.0-rc3 - 2025-11-10",
-    "text": "v1.0.0-rc3 - 2025-11-10\n\nFixed\n\nIntroduced in v1.0.0-rc2, fixed initialization of no-demand fields of struct Demand.\nIntroduced in v1.0.0-rc2, fix units water mass balance computations for subsurface flow concepts LateralSSF and UnconfinedAquifer at sub-daily model time step.\nIntroduced in v1.0.0-rc1, optional parameter soil_root__length_density_fraction only read as cyclic input and not as static input. This should be only static input.",
+    "section": "v1.0.0-rc3 - 2025-11-11",
+    "text": "v1.0.0-rc3 - 2025-11-11\n\nFixed\n\nIntroduced in v1.0.0-rc2, fixed initialization of no-demand fields of struct Demand.\nIntroduced in v1.0.0-rc2, fix units water mass balance computations for subsurface flow concepts LateralSSF and UnconfinedAquifer at sub-daily model time step.\nIntroduced in v1.0.0-rc1, optional parameter soil_root__length_density_fraction only read as cyclic input and not as static input. This should be only static input.",
     "crumbs": [
       "Home",
       "Changelog"
