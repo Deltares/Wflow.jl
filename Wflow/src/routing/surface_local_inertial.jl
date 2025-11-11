@@ -36,7 +36,8 @@ function LocalInertialRiverFlowParameters(
     riverlength_bc = ncread(
         dataset,
         config,
-        "model_boundary_condition_river__length";
+        "model_boundary_condition_river__length",
+        Routing;
         sel = pit_indices,
         defaults = 1.0e04,
         type = Float64,
@@ -44,7 +45,8 @@ function LocalInertialRiverFlowParameters(
     bankfull_elevation_2d = ncread(
         dataset,
         config,
-        "river_bank_water__elevation";
+        "river_bank_water__elevation",
+        Routing;
         optional = false,
         type = Float64,
         fill = 0,
@@ -52,7 +54,8 @@ function LocalInertialRiverFlowParameters(
     bankfull_depth_2d = ncread(
         dataset,
         config,
-        "river_bank_water__depth";
+        "river_bank_water__depth",
+        Routing;
         optional = false,
         type = Float64,
         fill = 0,
@@ -64,7 +67,8 @@ function LocalInertialRiverFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "river_water_flow__manning_n_parameter";
+        "river_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.036,
         type = Float64,
@@ -149,7 +153,8 @@ function LocalInertialRiverFlowVariables(
     riverdepth_bc = ncread(
         dataset,
         config,
-        "model_boundary_condition_river_bank_water__depth";
+        "model_boundary_condition_river_bank_water__depth",
+        Routing;
         sel = pit_indices,
         defaults = 0.0,
         type = Float64,
@@ -253,7 +258,7 @@ get_inflow_reservoir(
 ) = model.variables.q_av[inds] .+ model.variables.to_river[inds]
 
 get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    (model.variables.ssf[inds] .+ model.variables.to_river[inds]) ./ tosecond(BASETIMESTEP)
+    (model.variables.ssf[inds] .+ model.variables.to_river[inds])
 
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
@@ -600,7 +605,8 @@ function LocalInertialOverlandFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "land_surface_water_flow__manning_n_parameter";
+        "land_surface_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.072,
         type = Float64,
@@ -608,7 +614,8 @@ function LocalInertialOverlandFlowParameters(
     elevation_2d = ncread(
         dataset,
         config,
-        "land_surface_water_flow__ground_elevation";
+        "land_surface_water_flow__ground_elevation",
+        Routing;
         optional = false,
         type = Float64,
         fill = 0,
@@ -746,7 +753,7 @@ function update_boundary_conditions!(
     river_indices = domain.river.network.land_indices
 
     @. model.boundary_conditions.runoff =
-        net_runoff / 1000.0 * area / dt + net_runoff_river * area * 0.001 / dt
+        net_runoff / 1000.0 * area / dt + net_runoff_river * area / dt
     model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
     return nothing
@@ -1089,7 +1096,8 @@ function FloodPlainProfile(
     storage = ncread(
         dataset,
         config,
-        "floodplain_water__sum_of_volume_per_depth";
+        "floodplain_water__sum_of_volume_per_depth",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -1197,7 +1205,8 @@ function FloodPlainParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "floodplain_water_flow__manning_n_parameter";
+        "floodplain_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.072,
         type = Float64,

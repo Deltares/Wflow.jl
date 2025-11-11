@@ -1,5 +1,11 @@
+abstract type AbstractDemandModel end
+abstract type AbstractIrrigationModel end
+abstract type AbstractAllocationModel end
+abstract type AbstractIrrigationDemandModel <: AbstractDemandModel end
+
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D, A} <: AbstractLandModel
+@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+                AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -29,7 +35,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     do_snow = config.model.snow__flag
     do_glacier = config.model.glacier__flag
     if do_snow
-        snow = SnowHbvModel(dataset, config, indices, dt)
+        snow = SnowHbvModel(dataset, config, indices)
     else
         snow = NoSnowModel(n)
     end
@@ -53,14 +59,13 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
 
     if do_water_demand(config)
         allocation = AllocationLand(dataset, config, indices)
-        demand = Demand(dataset, config, indices, dt)
+        demand = Demand(dataset, config, indices)
     else
         allocation = NoAllocationLand(n)
         demand = NoDemand(; n)
     end
 
-    args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
+    return LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -71,7 +76,6 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand,
         allocation,
     )
-    return land_hydrology_model
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"

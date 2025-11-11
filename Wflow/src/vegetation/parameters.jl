@@ -28,7 +28,8 @@ function VegetationParameters(
     rootingdepth = ncread(
         dataset,
         config,
-        "vegetation_root__depth";
+        "vegetation_root__depth",
+        LandHydrologySBM;
         optional = false,
         sel = indices,
         type = Float64,
@@ -36,7 +37,8 @@ function VegetationParameters(
     kc = ncread(
         dataset,
         config,
-        "vegetation__crop_factor";
+        "vegetation__crop_factor",
+        LandHydrologySBM;
         sel = indices,
         defaults = 1.0,
         type = Float64,
@@ -45,7 +47,8 @@ function VegetationParameters(
         storage_specific_leaf = ncread(
             dataset,
             config,
-            "vegetation__specific_leaf_storage";
+            "vegetation__specific_leaf_storage",
+            LandHydrologySBM;
             optional = false,
             sel = indices,
             type = Float64,
@@ -53,7 +56,8 @@ function VegetationParameters(
         storage_wood = ncread(
             dataset,
             config,
-            "vegetation_wood_water__storage_capacity";
+            "vegetation_wood_water__storage_capacity",
+            LandHydrologySBM;
             optional = false,
             sel = indices,
             type = Float64,
@@ -61,7 +65,8 @@ function VegetationParameters(
         kext = ncread(
             dataset,
             config,
-            "vegetation_canopy__light_extinction_coefficient";
+            "vegetation_canopy__light_extinction_coefficient",
+            LandHydrologySBM;
             optional = false,
             sel = indices,
             type = Float64,
@@ -80,7 +85,8 @@ function VegetationParameters(
         canopygapfraction = ncread(
             dataset,
             config,
-            "vegetation_canopy__gap_fraction";
+            "vegetation_canopy__gap_fraction",
+            LandHydrologySBM;
             optional = false,
             sel = indices,
             type = Float64,
@@ -88,7 +94,8 @@ function VegetationParameters(
         cmax = ncread(
             dataset,
             config,
-            "vegetation_water__storage_capacity";
+            "vegetation_water__storage_capacity",
+            LandHydrologySBM;
             sel = indices,
             defaults = 1.0,
             type = Float64,

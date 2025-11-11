@@ -56,7 +56,7 @@ function rainfall_erosion_eurosem(
     rddir = max(rdtot - rdleaf - interception, 0.0) #throughfall
 
     #Total kinetic energy by rainfall [J/m2]
-    ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
+    ketot = rddir * kedir + rdleaf * keleaf
     # Rainfall / splash erosion [g/m2]
     rainfall_erosion = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
     rainfall_erosion *= area * 1e-6 # ton/cell
@@ -232,7 +232,7 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
     if waterlevel > 0.0
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
-        E_ = (2.65 - 1) * 9.81
+        E_ = (2.65 - 1) * g_gravity
         E = (E_ * (d50 * 1e-3)^3 / 1e-12)^0.33
         TCrbed =
             E_ *
@@ -249,10 +249,8 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
         # Repartition of the effective shear stress between the bank and the Bed
         SFbank = exp(-3.23 * log10(width / waterlevel + 3) + 6.146)
         # Effective shear stress on river bed and banks [N/m2]
-        TEffbank =
-            1000 * 9.81 * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
-        TEffbed =
-            1000 * 9.81 * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
+        TEffbank = g_gravity * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
+        TEffbed = g_gravity * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
 
         # Potential erosion rates of the bed and bank [t/cell/timestep]
         #(assuming only one bank is eroding)
