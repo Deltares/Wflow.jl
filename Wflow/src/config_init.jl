@@ -279,6 +279,7 @@ function to_dict(input_entry::InputEntry)
     if !isnothing(external_name)
         return external_name
     end
+    delete!(dict, "unit")
     return dict
 end
 

@@ -310,17 +310,18 @@ function ncread(
 
     if !isnothing(value)
         @info "Set `$parameter` using uniform value `$value` from TOML file." unit
-        if isnothing(dimname)
+        A = if isnothing(dimname)
             # set to one uniform value
-            return Base.fill(only(value), length(sel))
+            Base.fill(only(value), length(sel))
         elseif length(value) == 1
             # set to one uniform value (parameter with third dimension of size 1)
-            return Base.fill(only(value), (nc.dim[String(dimname)], length(sel)))
+            Base.fill(only(value), (nc.dim[String(dimname)], length(sel)))
         elseif length(value) > 1
             # set to multiple uniform values (parameter with third dimension of size > 1)
             @assert length(value) == nc.dim[String(dimname)]
-            return repeat(value, 1, length(sel))
+            repeat(value, 1, length(sel))
         end
+        return to_SI!(A, unit; dt_val = config.time.timestepsecs)
     else
         if logging
             @info "Set `$parameter` using netCDF variable `$var`." unit

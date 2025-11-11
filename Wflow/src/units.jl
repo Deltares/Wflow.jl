@@ -36,6 +36,12 @@ struct Unit
     J::SVector{2, Rational{Int}} # Joules
     # Fraction
     percentage::SVector{2, Rational{Int}} # percentage, converted to unitless fraction in the SI standard
+    function Unit(absolute_temperature, powers_all...)
+        for (unit_name, powers) in zip(Units, powers_all)
+            @assert all(≥(0), powers) "Expected non-negative input, got $powers for $unit_name."
+        end
+        return new(absolute_temperature, powers_all...)
+    end
 end
 
 const Units = fieldnames(Unit)[2:end]
@@ -70,9 +76,17 @@ end
 
 function Base.:^(u::Unit, n::Rational{Int})
     # Raise unit to a power by multiplying all powers by n
+    # Raising to a negative power swaps the order of the powers
     Unit(
         u.absolute_temperature,
-        ntuple(i -> getfield(u, Units[i]) .* n, Val(length(Units)))...,
+        ntuple(i -> begin
+            powers = getfield(u, Units[i])
+            if n > 0
+                powers * n
+            else
+                reverse(powers) * abs(n)
+            end
+        end, Val(length(Units)))...,
     )
 end
 
@@ -227,6 +241,18 @@ function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = n
     unit_ref = Ref(unit)
     @. x = to_SI(x, unit_ref; dt_val)
     return x
+end
+
+"""
+Convert the given value of the SI equivalent of the given unit to the value in the given unit
+"""
+function from_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
+    return if unit == Unit(; degC = 1, absolute_temperature = true)
+        # Special case for absolute temperatures in °C
+        x - 273.15
+    else
+        x / to_SI_factor(unit; dt_val)
+    end
 end
 
 """

@@ -80,7 +80,6 @@ function SnowHbvParameters(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    dt::Second,
 )
     cfmax = ncread(
         dataset,
@@ -136,10 +135,9 @@ function SnowHbvModel(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    dt::Second,
 )
     n = length(indices)
-    params = SnowHbvParameters(dataset, config, indices, dt)
+    params = SnowHbvParameters(dataset, config, indices)
     vars = SnowVariables(n)
     bc = SnowBC(n)
     model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)

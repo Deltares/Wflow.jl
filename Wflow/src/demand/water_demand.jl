@@ -80,15 +80,15 @@ end
 
 "Struct to store non-paddy irrigation model variables"
 @with_kw struct NonPaddyVariables
-    demand_gross::Vector{Float64}     # irrigation gross demand [mm Δt⁻¹ => m s^⁻\¹]
+    demand_gross::Vector{Float64}     # irrigation gross demand [mm Δt⁻¹ => m s^⁻¹]
 end
 
 "Struct to store non-paddy irrigation model parameters"
 @with_kw struct NonPaddyParameters
     irrigation_efficiency::Vector{Float64}        # irrigation efficiency [-]
-    maximum_irrigation_rate::Vector{Float64}      # maximum irrigation rate [mm Δt⁻¹ => m s^⁻\¹]
-    irrigation_areas::Vector{Bool}          # irrigation areas [-]
-    irrigation_trigger::Vector{Bool}        # irrigation on or off [-]
+    maximum_irrigation_rate::Vector{Float64}      # maximum irrigation rate [mm Δt⁻¹ => m s^⁻¹]
+    irrigation_areas::Vector{Bool}                # irrigation areas [-]
+    irrigation_trigger::Vector{Bool}              # irrigation on or off [-]
 end
 
 "Non-paddy (other crops than flooded rice) irrigation model"
@@ -166,8 +166,7 @@ by the infiltration capacity, taking into account limited irrigation efficiency 
 by a maximum irrigation rate.
 """
 function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
-    (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
-        soil.parameters
+    (; hb, theta_s, theta_r, c, sumlayers, pathfrac, infiltcapsoil) = soil.parameters
     (;
         h3,
         ustorelayerthickness,
