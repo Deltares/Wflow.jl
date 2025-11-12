@@ -143,8 +143,9 @@ where $\SIb{h}{m}$ is the water table height, $\SIb{x}{m}$ is the distance downs
 $\SIb{R}{m\ d^{-1}}$ is the net input rate to the saturated store, $\SIb{\theta_{s}}{-}$ and
 $\SIb{\theta_{fc}}{-}$ are the saturated soil water content and soil water content at field
 capacity, respectively. The difference between $\theta_s$ and $\theta_{fc}$ represents the
-drainable porosity or specific yield. Substituting for $h (\frac{\partial Q}{\partial h})$,
-gives:
+drainable porosity or specific yield and is assumed to be constant. Substituting for
+$h(\frac{\partial Q}{\partial h})$, gives:
+
 
 $$
   \frac{\partial \subtext{Q}{subsurface}}{\partial t} = -c\frac{\partial \subtext{Q}{subsurface}}{\partial x} + cwR
@@ -174,6 +175,14 @@ and celerity $c$ is given by:
 $$
     c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}.
 $$
+
+The water table depth $\subtext{z}{ssf, watertable}$ is based on the change in subsurface
+storage and the drainable porosity for a falling water table and the fillable porosity for a
+rising water table, see also the following
+[section](..\land\landhydrology_sbm.qmd#water-table-change). Using the fillable porosity for
+a rising water table prevents mass balance errors for the entire soil (unsaturated and
+saturated zone) when the fillable porosity is not equal to the drainable porosity used for
+the computation of lateral subsurface flow.
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
 method.
