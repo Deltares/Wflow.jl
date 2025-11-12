@@ -1186,11 +1186,19 @@ function update!(
     return nothing
 end
 
+"""
+    update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
+
+Update the `SbmSoilModel` variables unsaturated store depth of soil layers
+`ustorelayerdepth`, number of unsaturated zone soil layers `n_unsatlayers`, thickness of
+unsaturated zone soil layers `ustorelayerthickness` and water table depth `zi`, based on the
+water table change computed by a subsurface flow model.
+"""
 function update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
     p = model.parameters
     v = model.variables
 
-    zi = get_water_depth(subsurface_flow) * 1000.0
+    zi = get_water_depth(subsurface_flow) * 1000.0 # convert from [m] to [mm]
 
     n = length(model.variables.zi)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -1229,7 +1237,6 @@ function update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
         v.n_unsatlayers[i] = n_unsatlayers
         v.ustorelayerdepth[i] = ustorelayerdepth
         v.ustorelayerthickness[i] = ustorelayerthickness
-        v.n_unsatlayers[i] = n_unsatlayers
         v.zi[i] = zi[i]
     end
 end
@@ -1240,10 +1247,11 @@ end
 Update the SBM soil model for a single timestep based on the update of a subsurface flow
 model, resulting in a change in water table depth and an exfiltration rate `exfiltwater`.
 
-The water table depth `zi`, unsaturated storage `ustorelayerdepth`, land `runoff` and
-`net_runoff`, the saturated store `satwaterdepth` and the water exfiltrating during
-saturation excess conditions `exfiltsatwater` are updated. Addionally, volumetric water
-content per soil layer and for the root zone are updated.
+The available water in unsaturated zone `ustoredepth`, unsaturated store capacity
+`ustorecapacity`, `total_soilwater_storage`, land `runoff` and `net_runoff`, the saturated
+store `satwaterdepth` and the water exfiltrating during saturation excess conditions
+`exfiltsatwater` are updated. Addionally, volumetric water content per soil layer and for
+the root zone are updated.
 """
 function update!(model::SbmSoilModel, external_models::NamedTuple)
     (; runoff, demand, subsurface_flow) = external_models
@@ -1251,7 +1259,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     p = model.parameters
     v = model.variables
 
-    exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0
+    exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0 # convert from [m] to [mm]
     rootingdepth = get_rootingdepth(model)
 
     n = length(v.zi)
