@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -72,9 +72,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
@@ -336,7 +336,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="../../index.html" aria-current="page"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -348,7 +348,7 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../model_docs/index.html"> 
+    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
@@ -404,10 +404,6 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="../../index.html" class="sidebar-logo-link">
-      </a>
-      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -652,7 +648,7 @@ window.Quarto = {
 <p>Combining with the following continuity equation: <span class="math display">\[
     (\theta_s-\theta_{fc})w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{fc}}{-}\)</span> are the saturated soil water content and soil water content at field capacity, respectively. The difference between <span class="math inline">\(\theta_s\)</span> and <span class="math inline">\(\theta_{fc}\)</span> represents the drainable porosity or specific yield. Substituting for <span class="math inline">\(h (\frac{\partial Q}{\partial h})\)</span>, gives:</p>
+<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{fc}}{-}\)</span> are the saturated soil water content and soil water content at field capacity, respectively. The difference between <span class="math inline">\(\theta_s\)</span> and <span class="math inline">\(\theta_{fc}\)</span> represents the drainable porosity or specific yield and is assumed to be constant. Substituting for <span class="math inline">\(h(\frac{\partial Q}{\partial h})\)</span>, gives:</p>
 <p><span class="math display">\[
   \frac{\partial \subtext{Q}{subsurface}}{\partial t} = -c\frac{\partial \subtext{Q}{subsurface}}{\partial x} + cwR
 \]</span></p>
@@ -672,6 +668,7 @@ window.Quarto = {
 <p><span class="math display">\[
     c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}.
 \]</span></p>
+<p>The water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> is based on the change in subsurface storage and the drainable porosity for a falling water table and the fillable porosity for a rising water table, see also the following <a href="../../model_docs/land/landhydrology_sbm.html#water-table-change">section</a>. Using the fillable porosity for a rising water table prevents mass balance errors for the entire soil (unsaturated and saturated zone) when the fillable porosity is not equal to the drainable porosity used for the computation of lateral subsurface flow.</p>
 <p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
