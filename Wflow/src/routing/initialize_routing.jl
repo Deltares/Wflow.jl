@@ -90,7 +90,7 @@ function initialize_subsurface_flow(
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
-    specific_yield = soil.parameters.theta_s .- soil.parameters.theta_fc
+    specific_yield = max.(soil.parameters.theta_s .- soil.parameters.theta_fc, 0.02) # lower limit drainable porosity of 0.02
     conductance = zeros(Float64, connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
