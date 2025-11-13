@@ -27,7 +27,12 @@ $10^{-2}$ (weak).
 The upper boundary of an unconfined aquifer is the water table (the phreatic surface).
 Specific yield (or drainable porosity) represents the volumetric fraction the aquifer will
 yield when all water drains and the pore volume is filled by air instead. Specific yield
-will vary roughly between $0.05$ (clay) and $0.45$ (peat) (Johnson, 1967).
+will vary roughly between $0.05$ (clay) and $0.45$ (peat) (Johnson, 1967). For the model
+type `sbm_gwf`, specific yield for a falling water table is defined by the difference
+between saturated soil water content and soil water content at field capacity (`SBM` `soil`
+model parameters), for a rising water table the specific yield is based on the fillable
+porosity, see also the following
+[section](..\land\landhydrology_sbm.qmd#water-table-change).
 
 Groundwater flow is solved forward in time and central in space. The vertically averaged
 governing equation for an inhomogeneous and isotropic aquifer in one dimension can be
