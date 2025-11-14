@@ -17,8 +17,8 @@
 [time] # ==============================================
 # optional, default from forcing netCDF
    calendar     = "standard"  # <julian>; <proleptic_gregorian>; <standard>
-   starttime    = 2010-12-29T00:00:00
-   endtime      = 2010-01-11T00:00:00
+   starttime    = 2010-01-11T00:00:00
+   endtime      = 2010-12-29T00:00:00
    time_units   = "days since 1900-01-01 00:00:00" # optional information is used by the writer of the model, for model output in netCDF format
    timestepsecs = 86400 # [seconds] optional information for writer
 
