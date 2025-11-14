@@ -1,7 +1,6 @@
-# This is a TOML configuration file for Wflow.
-# Relative file paths are interpreted as being relative to this TOML file.
-# Wflow documentation https://deltares.github.io/Wflow.jl/dev/
-# TOML documentation: https://github.com/toml-lang/toml
+#===========================================
+#           TIMOLEAGUE
+#-------------------------------------------
 
 # ==== DIRECTORIES ====
    dir_input      = "data/input/Timoleague"
@@ -10,60 +9,67 @@
 
 
 [logging] # ===========================================
-   loglevel = "debug" # <"debug">; <"info">; <"error">
+   loglevel = "info" # <"debug">; <"info">; <"error">
    silent   = false
-   path_log = "log.txt"
+   path_log = "Timoleague_log.txt"
 
 
-[time] # ===========================================
+[time] # ==============================================
+# optional, default from forcing netCDF
    calendar     = "standard"  # <julian>; <proleptic_gregorian>; <standard>
-   endtime      = 2010-01-11T00:00:00
    starttime    = 2010-12-29T00:00:00
+   endtime      = 2010-01-11T00:00:00
    time_units   = "days since 1900-01-01 00:00:00" # optional information is used by the writer of the model, for model output in netCDF format
-   timestepsecs = 86400 # [seconds] for output files
+   timestepsecs = 86400 # [seconds] optional information for writer
 
-# if listed, the variable must be present in the NetCDF or error
-# if not listed, the variable can get a default value if it has one
 
 [model] # ===========================================
    type                               = "sbm" # <sbm> || <sbm_gwf> || <sediment>
-   cold_start__flag                   = true # Cold state does not include values of storage at time=0
+   cell_length_in_meter__flag         = true # <false> Unit cell length of raster cells in x and y direction in lat/lon degree; <true> in meter
 
+   cold_start__flag                   = true # Cold state does not include values of storage at time=0
    glacier__flag                      = false # Include glacier modelling
    reservoir__flag                    = false # Include reservoir modelling
    snow__flag                         = false # Include snow modelling
    snow_gravitational_transport__flag = false  # include lateral snow transport in the model, default is false
+   soil_infiltration_reduction__flag  = true  # <soil_infiltration_reduction> reduction of conductivity due to ice
    water_mass_balance__flag           = false # Compute water balance error
-   soil_infiltration_reduction__flag  = false  # <soil_infiltration_reduction> reduction of conductivity due to ice
 
    river_routing       = "kinematic_wave"    # optional,  <"local_inertial">  default is <"kinematic_wave">
    land_routing        = "kinematic_wave"    # optional,  <"local_inertial">  default is <"kinematic_wave">
    floodplain_1d__flag = false # optional, default is false
-   pit__flag           = false # Include pits for kinematic wave flow continuous at subbasin only (upstream of provided pit locations)
+   # pit__flag           = false # Include pits for kinematic wave flow continuous at subbasin only (upstream of provided pit locations)
 
-   kinematic_wave__adaptive_time_step_flag  = true # Enable kinematic wave adaptive (internal) timestepping in the model
-      river_kinematic_wave__time_step = 900        # Fixed internal timestep for river flow (river cells) optional, default is 900
-      land_kinematic_wave__time_step  = 3600        # Fixed internal timestep for overland flow (land cells) optional, default 3600
+   kinematic_wave__adaptive_time_step_flag  = false # Enable kinematic wave adaptive (internal) timestepping in the model
+      # IF <kinematic_wave__adaptive_time_step_flag> == false
+         river_kinematic_wave__time_step = 900        # Fixed internal timestep for river flow (river cells) optional, default is 900
+         land_kinematic_wave__time_step  = 3600        # Fixed internal timestep for overland flow (land cells) optional, default 3600
 
-   land_streamorder__min_count  = 5 # Multi-Threading: Minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
-   river_streamorder__min_count = 4 # Multi-Threading: Minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
-
-   cell_length_in_meter__flag = true # <false> Unit cell length of raster cells in x and y direction in lat/lon degree; <true> in meter
+   # land_streamorder__min_count  = 5 # Multi-Threading: Minimum stream order to delineate subbasins for river domain, default is 6 (for multi-threading computing purposes)
+   # river_streamorder__min_count = 4 # Multi-Threading: Minimum stream order to delineate subbasins for land domain, default is 5 (for multi-threading computing purposes)
 
    soil_layer__thickness                    = [100, 300, 800] # <config_soil_layer_thickness> [mm] specific SBM soil model setting: for each soil layer, a thickness is specified
    saturated_hydraulic_conductivity_profile = "exponential" # <kh_profile_type>; [char]  |"layered"|, |"exponential"|, |"exponential_constant"|,  |"layered_exponential"| Saturated hydraulic conductivity depth profile for SBM soil model (also used for kinematic wave lateral subsurface flow).
+
+   # ~~~~ GROUNDWATER FLOW ~~~~
+      conductivity_profile                     = "uniform" # Hydraulic conductivity depth profile: [“uniform”, “exponential”]
+      drain__flag                              = false # Include drainage boundary condition	-	false
+      constanthead__flag                       = false # Include constant head boundary condition	-	false
+      subsurface_water_flow__alpha_coefficient = 0.25	# Stability coefficient for internal model time step groundwater flow
+
 
 [input] # ===========================================
    path_forcing = "forcing-Timoleague_*.nc"
    path_static  = "staticmaps-Timoleague.nc"
 
 	# these are not directly part of the model
-   # reservoir_area__count      = "wflow_reservoirareas"
-   # reservoir_location__count  = "wflow_reservoirlocs"
-   basin__local_drain_direction = "Ldd"
+   basin__local_drain_direction = "Ldd" # Local drain direction (1-9)
    river_gauge__count           = "Gauges_grdc"
-   river_location__mask         = "River"
-   subbasin_location__count     = "Subcatchment"
+   river_location__mask         = "River" # River mask (0-1)
+   subbasin_location__count     = "Subcatchment" # Subbasin ids
+
+   # Author input
+      ObservationEcologyPoint = "ObservationEcologyPoint"
 
 
    [input.forcing]  # -----------------------------
@@ -101,17 +107,17 @@
 
       # ~~~~ ROOT WATER UPTAKE ~~~~
          # ... Feddes et al. (1978) model  ...
-            vegetation__crop_factor                                                 = "vegetation_crop_factor" # <kc>
-            vegetation_root__depth                                                  = "vegetation_root_depth" # <rootingdepth> [mm] Rooting depth
+         vegetation__crop_factor                                                 = "vegetation_crop_factor" # <kc>
+         vegetation_root__depth                                                  = "vegetation_root_depth" # <rootingdepth> [mm] Rooting depth
 
-            vegetation_root__feddes_critical_pressure_head_h1                       = "vegetation_feddes_h1" # <h1> [cm] Critical pressure head h1 of the root water uptake reduction function (Feddes)
-            vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient = "vegetation_feddes_alpha_h1" # <alpha_h1> [0 or 1] Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)
-            vegetation_root__feddes_critical_pressure_head_h2                       = "vegetation_feddes_h2" # <h2> [cm] Critical pressure head h2 of the root water uptake reduction function (Feddes)
-            vegetation_root__feddes_critical_pressure_head_h3_high                  = "vegetation_feddes_h3_high" # <h3_high> [cm] Critical pressure head h3_high of the root water uptake reduction function (Feddes)
-            vegetation_root__feddes_critical_pressure_head_h3_low                   = "vegetation_feddes_h3_low" # <h3_low> [cm] Critical pressure head h3_low of the root water uptake reduction function (Feddes)
-            vegetation_root__feddes_critical_pressure_head_h4                       = "vegetation_feddes_h4" # <h4> [cm] cal_pressure_head_h4	Critical pressure head h4 of the root water uptake reduction function (Feddes)
+         vegetation_root__feddes_critical_pressure_head_h1                       = "vegetation_feddes_h1" # <h1> [cm] Critical pressure head h1 of the root water uptake reduction function (Feddes)
+         vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient = "vegetation_feddes_alpha_h1" # <alpha_h1> [0 or 1] Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)
+         vegetation_root__feddes_critical_pressure_head_h2                       = "vegetation_feddes_h2" # <h2> [cm] Critical pressure head h2 of the root water uptake reduction function (Feddes)
+         vegetation_root__feddes_critical_pressure_head_h3_high                  = "vegetation_feddes_h3_high" # <h3_high> [cm] Critical pressure head h3_high of the root water uptake reduction function (Feddes)
+         vegetation_root__feddes_critical_pressure_head_h3_low                   = "vegetation_feddes_h3_low" # <h3_low> [cm] Critical pressure head h3_low of the root water uptake reduction function (Feddes)
+         vegetation_root__feddes_critical_pressure_head_h4                       = "vegetation_feddes_h4" # <h4> [cm] cal_pressure_head_h4	Critical pressure head h4 of the root water uptake reduction function (Feddes)
 
-            soil_root__length_density_fraction.value = [0.4, 0.3, 0.2, 0.0] # <rootfraction> Fraction of the root length density per soil layer
+         soil_root__length_density_fraction                                      = "RootFraction" # <rootfraction> Fraction of the root length density per soil layer
 
       #  ~~~~SBM SOIL ~~~~
          soil__thickness                         = "SoilThickness" # [mm] <soilthickness>
@@ -161,7 +167,7 @@
          river_bank_water__depth               = "RiverDepth"  # Bankfull depth of the river [m] <bankfull_depth>
 
       # ~~~~ DEM ~~~~
-         # land_surface_water_flow__ground_elevation = # <elevation_2d>
+         land_surface_water_flow__ground_elevation = "Dem" # <elevation_2d>
          # river_bank_water__elevation           = "RiverZ"
 
       # ~~~~ OVERLAND FLOW ~~~~
@@ -218,6 +224,7 @@
 
 [output.netcdf_grid] # ===========================================
 	path = "Output_Timoleague.nc"
+   compressionlevel = 1 # Compression level [0-9]
 
 	[output.netcdf_grid.variables]
 		land.interception.variables.canopy_storage = "canopystorage"
@@ -226,13 +233,9 @@
 		river_water__depth                         = "h_river"
 		river_water__volume_flow_rate              = "q_av_river"
 		soil_layer_water_unsaturated_zone__depth   = "ustorelayerdepth"
-		soil_surface__temperature                  = "tsoil"
 		soil_water_saturated_zone__depth           = "satwaterdepth"
 		subsurface_water__volume_flow_rate         = "ssf"
 
-		# reservoir_water__volume                    = "storage_reservoir"
-		# snowpack_dry_snow__leq_depth               = "snow"
-		# snowpack_liquid_water__depth               = "snowwater"
 
 [output.netcdf_scalar] # ===========================================
    path = "output_scalar_Timoleague.nc"
