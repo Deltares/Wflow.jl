@@ -559,7 +559,8 @@ function NCReader(config)
     for (par, var) in config.input.forcing
         ncname = variable_name(var)
         variable_info(var)
-        @info "Set `$par` using netCDF variable `$ncname` as forcing parameter." var.unit
+        @info "Set parameter using netCDF variable as forcing parameter."
+        to_table(; parameter = par, netCDF_variable = ncname, var.unit)
     end
 
     # create map from internal location to netCDF variable name for cyclic parameters and
@@ -576,7 +577,13 @@ function NCReader(config)
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[par] = timecycles(cyclic_nc_times)
             variable_info(var)
-            @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps." var.unit
+            @info "Set parameter using netCDF variable as cyclic parameter."
+            to_table(;
+                parameter = par,
+                netCDF_variable = ncname,
+                n_timesteps = length(cyclic_nc_times),
+                var.unit,
+            )
         end
     else
         cyclic_dataset = nothing
@@ -1041,8 +1048,13 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             allow_missing = true,
             logging = false,
         )
-        @info "Adding scalar output for a map with a reducer function." fileformat param =
-            parameter mapname = map reducer_name = String(nameof(f))
+        @info "Adding scalar output for a map with a reducer function."
+        to_table(;
+            fileformat,
+            param = parameter,
+            mapname = map,
+            reducer_name = String(nameof(f)),
+        )
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
@@ -1062,21 +1074,23 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
     elseif !isnothing(reducer)
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer
-        @info "Adding scalar output of all active cells with reducer function." fileformat param =
-            parameter reducer_name = String(nameof(f))
+        @info "Adding scalar output of all active cells with reducer function."
+        to_table(; fileformat, param = parameter, reducer_name = String(nameof(f)))
         return function_map[reducer]
     elseif do_index(index)
         if !isnothing(index.i)
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
-            @info "Adding scalar output for linear index." fileformat param = parameter index
+            @info "Adding scalar output for linear index."
+            to_table(; fileformat, param = parameter, index)
             return x -> getindex(x, index.i)
         else
             # index into the 2D input/output arrays
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
             ind = rev_inds[index.x, index.y]
-            @info "Adding scalar output for 2D index." fileformat param = parameter index
+            @info "Adding scalar output for 2D index."
+            to_table(; fileformat, param = parameter, index)
             iszero(ind) && error("inactive loc specified for output")
             return A -> getindex(A, ind)
         end
@@ -1087,7 +1101,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         _, ix = findmin(abs.(x_nc .- x))
         I = CartesianIndex(ix, iy)
         i = rev_inds[I]
-        @info "Adding scalar output for coordinate." fileformat param = parameter x y
+        @info "Adding scalar output for coordinate."
+        to_table(; fileformat, param = parameter, x, y)
         iszero(i) && error("inactive coordinate specified for output")
         return A -> getindex(A, i)
     else

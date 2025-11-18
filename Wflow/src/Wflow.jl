@@ -67,6 +67,7 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+using PrettyTables: pretty_table
 import Subscripts
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
@@ -328,7 +329,14 @@ function run!(model::Model; close_files = true)
     endtime = cftime(config.time.endtime, config.time.calendar)
     times = range(starttime + dt, endtime; step = dt)
 
-    @info "Run information" model_type = String(Symbol(model_type)) starttime dt endtime nthreads()
+    @info "Run information"
+    to_table(;
+        model_type = String(Symbol(model_type)),
+        starttime,
+        dt,
+        endtime,
+        nthreads = nthreads(),
+    )
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()
