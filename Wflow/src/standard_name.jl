@@ -177,7 +177,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
     "soil_surface_water_sat-zone__exfiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
-    "soil~compacted_surface_water__excess_volume_flux" =>
+    "soil_compacted_surface_water__excess_volume_flux" =>
         (lens = @optic(_.land.soil.variables.excesswatersoil), unit = "mm dt-1"),
     "soil~non-compacted_surface_water__excess_volume_flux" =>
         (lens = @optic(_.land.soil.variables.excesswaterpath), unit = "mm dt-1"),
