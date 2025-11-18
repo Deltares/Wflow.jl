@@ -25,7 +25,7 @@ end
 
 """
 Store water mass balance error results (balance error and relative error) computed for each
-model time step Δt for a hydrological model.
+model time stepdt for a hydrological model.
 
 - `land_water_balance`: Water mass balance results for a land hydrology model. This is
     largely based on vertical fluxes and lateral fluxes that control for example total soil

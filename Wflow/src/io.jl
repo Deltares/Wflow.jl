@@ -1117,6 +1117,14 @@ function write_csv_row(model)
         else
             v = reducer(A)
         end
+        # Convert to proper unit
+        unit = get_unit(parameter)
+        dt_val = Dates.value(clock.dt)
+        v = if v isa Number
+            from_SI(v, unit; dt_val)
+        else
+            from_SI!(collect(v), unit; dt_val)
+        end
         # numbers are also iterable
         for el in v
             print(csv_io, ',', el)

@@ -100,12 +100,14 @@ Update SBM model after subsurface flow for a single timestep. This function is a
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
-    (; routing, land) = model
+    (; routing, land, clock) = model
     (; soil, runoff, demand) = land
     (; subsurface_flow) = routing
 
+    dt = tosecond(clock.dt)
+
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow))
+    update!(soil, (; runoff, demand, subsurface_flow), dt)
 
     surface_routing!(model)
 

@@ -394,8 +394,11 @@ a `snow` model.
 function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
-    snow_storage_max = 10.0 # m
-    snowflux_frac = min.(0.5, slope ./ tan80) .* min.(1.0, snow_storage ./ snow_storage_max)
+    # [m]
+    snow_storage_max = 10.0
+    # [-] = min([-], [-]) * min([-], [m] / [m])
+    snowflux_frac = @. min(0.5, slope / tan80) * min(1.0, snow_storage / snow_storage_max)
+    # [??????]
     maxflux = snowflux_frac .* snow_storage
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
     snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)

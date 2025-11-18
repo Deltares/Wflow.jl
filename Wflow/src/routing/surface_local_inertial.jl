@@ -129,8 +129,8 @@ end
 @with_kw struct LocalInertialRiverFlowVariables
     q::Vector{Float64}                        # river discharge at edge (subgrid channel) [m³ s⁻¹]
     q0::Vector{Float64}                       # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
-    q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
-    q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
+    q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestepdt)
+    q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestepdt)
     h::Vector{Float64}                        # water depth [m]
     zs_max::Vector{Float64}                   # maximum water elevation at edge [m]
     zs_src::Vector{Float64}                   # water elevation of source node of edge [m]
@@ -314,7 +314,7 @@ function local_inertial_river_update!(
         # limit q in case water is not available
         river_v.q[i] = ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
         river_v.q[i] = ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
-        # average river discharge (here accumulated for model timestep Δt)
+        # average river discharge (here accumulated for model timestepdt)
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if !isnothing(model.floodplain)
@@ -411,7 +411,7 @@ function local_inertial_river_update!(
 
             floodplain_v.q[i] =
                 ifelse(floodplain_v.q[i] * river_v.q[i] < 0.0, 0.0, floodplain_v.q[i])
-            # average floodplain discharge (here accumulated for model timestep Δt)
+            # average floodplain discharge (here accumulated for model timestepdt)
             floodplain_v.q_av[i] += floodplain_v.q[i] * dt
         end
     end
@@ -442,7 +442,7 @@ function local_inertial_river_update!(
             q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v] + _inflow
         update!(reservoir, v, net_inflow, dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
-        # average river discharge (here accumulated for model timestep Δt)
+        # average river discharge (here accumulated for model timestepdt)
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
@@ -529,8 +529,6 @@ function update!(
         local_inertial_river_update!(model, domain, dt_s, dt, update_h)
         t += dt_s
     end
-    average_flow_vars!(model, dt)
-    average_reservoir_vars!(reservoir, dt)
 
     if !isnothing(model.floodplain)
         model.floodplain.variables.q_av ./= dt
@@ -547,9 +545,9 @@ end
     qy0::Vector{Float64}              # flow in y direction at edge at previous time step [m³ s⁻¹]
     qx0::Vector{Float64}              # flow in x direction at edge at previous time step [m³ s⁻¹]
     qx::Vector{Float64}               # flow in x direction at egde [m³ s⁻¹]
-    qx_av::Vector{Float64}            # average flow in x direction at egde [m³ s⁻¹] for model timestep Δt
+    qx_av::Vector{Float64}            # average flow in x direction at egde [m³ s⁻¹] for model timestepdt
     qy::Vector{Float64}               # flow in y direction at edge [m³ s⁻¹]
-    qy_av::Vector{Float64}            # average flow in y direction at egde [m³ s⁻¹] for model timestep Δt
+    qy_av::Vector{Float64}            # average flow in y direction at egde [m³ s⁻¹] for model timestepdt
     storage::Vector{Float64}          # total storage of cell [m³] (including river storage for river cells)
     error::Vector{Float64}            # error storage [m³]
     h::Vector{Float64}                # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
@@ -790,17 +788,6 @@ function set_flow_vars!(model::LocalInertialOverlandFlow)
 end
 
 """
-Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
-This is done at the end of each simulation timestep.
-"""
-function average_flow_vars!(model::LocalInertialOverlandFlow, dt::Float64)
-    (; qx_av, qy_av) = model.variables
-    qx_av ./= dt
-    qy_av ./= dt
-    return nothing
-end
-
-"""
 Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow`
 models for a single timestep `dt`. An adaptive timestepping method is used (computing a sub
 timestep `dt_s`).
@@ -836,9 +823,6 @@ function update!(
 
         t += dt_s
     end
-    average_flow_vars!(river, dt)
-    average_flow_vars!(land, dt)
-    average_reservoir_vars!(reservoir, dt)
 
     return nothing
 end
@@ -1240,7 +1224,7 @@ end
     hf::Vector{Float64}             # water depth at edge [m]
     q0::Vector{Float64}             # discharge at edge at previous time step
     q::Vector{Float64}              # discharge at edge  [m³ s⁻¹]
-    q_av::Vector{Float64}           # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
+    q_av::Vector{Float64}           # average river discharge at edge  [m³ s⁻¹] for model timestepdt
     hf_index::Vector{Int}           # edge index with `hf` [-] above depth threshold
 end
 

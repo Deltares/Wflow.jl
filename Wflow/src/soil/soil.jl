@@ -4,77 +4,77 @@ abstract type AbstractSoilModel end
 @with_kw struct SbmSoilVariables{N}
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
     h3::Vector{Float64}
-    # Unsaturated store capacity [mm]
+    # Unsaturated store capacity [mm => m]
     ustorecapacity::Vector{Float64}
-    # Amount of water in the unsaturated store, per layer [mm]
+    # Amount of water in the unsaturated store, per layer [mm => m]
     ustorelayerdepth::Vector{SVector{N, Float64}}
-    # Thickness of unsaturated zone, per layer [mm]
+    # Thickness of unsaturated zone, per layer [mm => m]
     ustorelayerthickness::Vector{SVector{N, Float64}}
-    # Saturated store [mm]
+    # Saturated store [mm => m]
     satwaterdepth::Vector{Float64}
-    # Pseudo-water table depth [mm] (top of the saturated zone)
+    # Pseudo-water table depth [mm => m] (top of the saturated zone)
     zi::Vector{Float64}
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int}
-    # Transpiration [mm Δt⁻¹]
+    # Transpiration [mm dt⁻¹ => m s⁻¹]
     transpiration::Vector{Float64}
-    # Actual evaporation from unsaturated store [mm Δt⁻¹]
+    # Actual evaporation from unsaturated store [mm dt⁻¹ => m s⁻¹]
     ae_ustore::Vector{Float64}
-    # Soil evaporation from unsaturated and saturated store [mm Δt⁻¹]
+    # Soil evaporation from unsaturated and saturated store [mm dt⁻¹ => m s⁻¹]
     soilevap::Vector{Float64}
-    # Soil evaporation from saturated store [mm Δt⁻¹]
+    # Soil evaporation from saturated store [mm dt⁻¹ => m s⁻¹]
     soilevapsat::Vector{Float64}
-    # Actual capillary rise [mm Δt⁻¹]
+    # Actual capillary rise [mm dt⁻¹ => m s⁻¹]
     actcapflux::Vector{Float64}
-    # Actual transpiration from saturated store [mm Δt⁻¹]
+    # Actual transpiration from saturated store [mm dt⁻¹ => m s⁻¹]
     actevapsat::Vector{Float64}
-    # Total actual evapotranspiration [mm Δt⁻¹]
+    # Total actual evapotranspiration [mm dt⁻¹ => m s⁻¹]
     actevap::Vector{Float64}
-    # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
+    # Actual infiltration into the unsaturated zone [mm dt⁻¹ => m s⁻¹]
     actinfilt::Vector{Float64}
-    # Actual infiltration non-compacted fraction [mm Δt⁻¹]
+    # Actual infiltration non-compacted fraction [mm dt⁻¹ => m s⁻¹]
     actinfiltsoil::Vector{Float64}
-    # Actual infiltration compacted fraction [mm Δt⁻¹]
+    # Actual infiltration compacted fraction [mm dt⁻¹ => m s⁻¹]
     actinfiltpath::Vector{Float64}
-    # Actual infiltration (compacted and the non-compacted areas) [mm Δt⁻¹]
+    # Actual infiltration (compacted and the non-compacted areas) [mm dt⁻¹ => m s⁻¹]
     infiltsoilpath::Vector{Float64}
-    # Infiltration excess water [mm Δt⁻¹]
+    # Infiltration excess water [mm dt⁻¹ => m s⁻¹]
     infiltexcess::Vector{Float64}
-    # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
+    # Water that cannot infiltrate due to saturated soil (saturation excess) [mm dt⁻¹ => m s⁻¹]
     excesswater::Vector{Float64}
-    # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
+    # Water exfiltrating during saturation excess conditions [mm dt⁻¹ => m s⁻¹]
     exfiltsatwater::Vector{Float64}
-    # Water exfiltrating from unsaturated store because of change in water table [mm Δt⁻¹]
+    # Water exfiltrating from unsaturated store because of change in water table [mm dt⁻¹ => m s⁻¹]
     exfiltustore::Vector{Float64}
-    # Excess water for non-compacted fraction [mm Δt⁻¹]
+    # Excess water for non-compacted fraction [mm dt⁻¹ => m s⁻¹]
     excesswatersoil::Vector{Float64}
-    # Excess water for compacted fraction [mm Δt⁻¹]
+    # Excess water for compacted fraction [mm dt⁻¹ => m s⁻¹]
     excesswaterpath::Vector{Float64}
-    # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
+    # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm dt⁻¹ => m s⁻¹]
     runoff::Vector{Float64}
-    # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
+    # Net surface runoff (surface runoff - actual open water evaporation) [mm dt⁻¹ => m s⁻¹]
     net_runoff::Vector{Float64}
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
     vwc::Vector{SVector{N, Float64}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
     vwc_perc::Vector{SVector{N, Float64}}
-    # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
+    # Root water storage [mm => m] in unsaturated and saturated zone (excluding theta_r)
     rootstore::Vector{Float64}
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
     vwc_root::Vector{Float64}
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
     vwc_percroot::Vector{Float64}
-    # Amount of available water in the unsaturated zone [mm]
+    # Amount of available water in the unsaturated zone [mm => m]
     ustoredepth::Vector{Float64}
-    # Downward flux from unsaturated to saturated zone [mm Δt⁻¹]
+    # Downward flux from unsaturated to saturated zone [mm dt⁻¹ => m s⁻¹]
     transfer::Vector{Float64}
-    # Net recharge to saturated store [mm Δt⁻¹]
+    # Net recharge to saturated store [mm dt⁻¹ => m s⁻¹]
     recharge::Vector{Float64}
-    # Actual leakage from saturated store [mm Δt⁻¹]
+    # Actual leakage from saturated store [mm dt⁻¹ => m s⁻¹]
     actleakage::Vector{Float64}
-    # Total water storage (excluding floodplain volume and reservoirs) [mm]
+    # Total water storage (excluding floodplain volume and reservoirs) [mm => m]
     total_storage::Vector{Float64}
-    # Total soil water storage [mm]
+    # Total soil water storage [mm => m]
     total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
     tsoil::Vector{Float64}
@@ -92,25 +92,25 @@ end
     theta_s::Vector{Float64}
     # Residual water content [-]
     theta_r::Vector{Float64}
-    # Soilwater capacity [mm]
+    # Soilwater capacity [mm => m]
     soilwatercapacity::Vector{Float64}
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N, Float64}}
-    # Air entry pressure [cm] of soil (Brooks-Corey)
+    # Air entry pressure [cm => m] of soil (Brooks-Corey)
     hb::Vector{Float64}
-    # Soil thickness [mm]
+    # Soil thickness [mm => m]
     soilthickness::Vector{Float64}
-    # Thickness of soil layers [mm]
+    # Thickness of soil layers [mm => m]
     act_thickl::Vector{SVector{N, Float64}}
-    # Cumulative sum of soil layers [mm], starting at soil surface (0)
+    # Cumulative sum of soil layers [mm => m], starting at soil surface (0)
     sumlayers::Vector{SVector{M, Float64}}
-    # Infiltration capacity of the compacted areas [mm Δt⁻¹]
+    # Infiltration capacity of the compacted areas [mm dt⁻¹ => m s⁻¹]
     infiltcappath::Vector{Float64}
-    # Soil infiltration capacity [mm Δt⁻¹]
+    # Soil infiltration capacity [mm dt⁻¹ => m s⁻¹]
     infiltcapsoil::Vector{Float64}
-    # Maximum leakage [mm Δt⁻¹] from saturated zone
+    # Maximum leakage [mm dt⁻¹ => m s⁻¹] from saturated zone
     maxleakage::Vector{Float64}
-    # Parameter [mm] controlling capillary rise
+    # Parameter [mm => m] controlling capillary rise
     cap_hmax::Vector{Float64}
     # Coefficient [-] controlling capillary rise
     cap_n::Vector{Float64}
@@ -214,17 +214,17 @@ end
 "Struct for storing SBM soil model boundary conditions"
 @with_kw struct SbmSoilBC
     n::Int
-    # Water flux at the soil surface [mm Δt⁻¹]
+    # Water flux at the soil surface [mm dt⁻¹ => m s⁻¹]
     water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential transpiration rate [mm Δt⁻¹]
+    # Potential transpiration rate [mm dt⁻¹ => m s⁻¹]
     potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential soil evaporation rate [mm Δt⁻¹]
+    # Potential soil evaporation rate [mm dt⁻¹ => m s⁻¹]
     potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
 struct KvExponential
-    # Vertical hydraulic conductivity [mm Δt⁻¹] at soil surface
+    # Vertical hydraulic conductivity [mm dt⁻¹ => m s⁻¹] at soil surface
     kv_0::Vector{Float64}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
     f::Vector{Float64}
@@ -233,13 +233,13 @@ end
 "Exponential constant depth profile of vertical hydraulic conductivity"
 struct KvExponentialConstant
     exponential::KvExponential
-    # Depth [mm] from soil surface for which exponential decline of kv_0 is valid
+    # Depth [mm => m] from soil surface for which exponential decline of kv_0 is valid
     z_exp::Vector{Float64}
 end
 
 "Layered depth profile of vertical hydraulic conductivity"
 struct KvLayered{N}
-    # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
+    # Vertical hydraulic conductivity [mm dt⁻¹ => m s⁻¹] per soil layer
     kv::Vector{SVector{N, Float64}}
 end
 
@@ -247,11 +247,11 @@ end
 struct KvLayeredExponential{N}
     # A scaling parameter [mm⁻¹] (controls exponential decline of kv_0)
     f::Vector{Float64}
-    # Vertical hydraulic conductivity [mm Δt⁻¹] per soil layer
+    # Vertical hydraulic conductivity [mm dt⁻¹ => m s⁻¹] per soil layer
     kv::Vector{SVector{N, Float64}}
     # Number of soil layers [-] with vertical hydraulic conductivity value `kv`
     nlayers_kv::Vector{Int}
-    # Depth [mm] from soil surface for which layered profile is valid
+    # Depth [mm => m] from soil surface for which layered profile is valid
     z_layered::Vector{Float64}
 end
 
@@ -704,6 +704,7 @@ function update_boundary_conditions!(
     model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
+    dt::Number,
 )
     (; interception, runoff, demand, allocation) = external_models
     (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
@@ -713,7 +714,7 @@ function update_boundary_conditions!(
 
     @. potential_soilevaporation =
         model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
-    evaporation!(demand.paddy, potential_soilevaporation)
+    evaporation!(demand.paddy, potential_soilevaporation, dt)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
     water_flux_surface .=
@@ -884,13 +885,13 @@ function soil_evaporation!(model::SbmSoilModel)
 end
 
 """
-    transpiration!(model::SbmSoilModel, dt)
+    transpiration!(model::SbmSoilModel)
 
 Update total `transpiration`, transpiration from the unsaturated store `ae_ustore` and
 saturated store `actevapsat` of the SBM soil model for a single timestep. Also unsaturated
 storage `ustorelayerdepth` and the saturated store `satwaterdepth` are updated.
 """
-function transpiration!(model::SbmSoilModel, dt::Float64)
+function transpiration!(model::SbmSoilModel)
     (; potential_transpiration) = model.boundary_conditions
     v = model.variables
     p = model.parameters
@@ -899,7 +900,7 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
     n = length(rootingdepth)
 
     threaded_foreach(1:n; basesize = 250) do i
-        v.h3[i] = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i], dt)
+        v.h3[i] = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i])
 
         # compute sum of root fraction in unsaturated soil layers and adapt root fraction
         # lowest unsaturated soil layer if water table depth intersects the unsaturated root
@@ -1149,7 +1150,6 @@ function update!(
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
     config::Config,
-    dt::Float64,
 )
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
@@ -1171,7 +1171,7 @@ function update!(
     unsaturated_zone_flow!(model)
     # soil evaporation and transpiration
     soil_evaporation!(model)
-    transpiration!(model, dt)
+    transpiration!(model)
     # actual infiltration and excess water
     actual_infiltration!(model)
     @. v.excesswater = water_flux_surface - v.actinfilt - v.infiltexcess
@@ -1207,7 +1207,7 @@ the unsaturated store `exfiltustore`, land `runoff` and `net_runoff`, the satura
 `exfiltsatwater` are updated. Addionally, volumetric water content per soil layer and for
 the root zone are updated.
 """
-function update!(model::SbmSoilModel, external_models::NamedTuple)
+function update!(model::SbmSoilModel, external_models::NamedTuple, dt::Number)
     (; runoff, demand, subsurface_flow) = external_models
     (; runoff_land, ae_openw_l) = runoff.variables
     p = model.parameters
@@ -1317,7 +1317,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     end
     # update runoff and net_runoff (the runoff rate depends on the presence of paddy fields
     # and the h_max parameter of a paddy field)
-    update_runoff!(demand.paddy, v.runoff)
+    update_runoff!(demand.paddy, v.runoff, dt)
     @. v.net_runoff = v.runoff - ae_openw_l
     return nothing
 end

@@ -21,12 +21,12 @@ with:
 The simplest finite difference formulation is forward in time, central in space,
 and can be written as:
 
-Sᵢ * (ϕᵢᵗ⁺¹ - ϕᵢᵗ) / Δt = -Cᵢ₋₁ * (ϕᵢ₋₁ - ϕᵢ) -Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ
+Sᵢ * (ϕᵢᵗ⁺¹ - ϕᵢᵗ) /dt = -Cᵢ₋₁ * (ϕᵢ₋₁ - ϕᵢ) -Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ
 
 with:
 * ᵢ as cell index
 * ᵗ as time index
-* Δt as step size
+*dt as step size
 * Cᵢ₋₁ as the intercell conductance between cell i-1 and i
 * Cᵢ as the intercell conductance between cell i and i+1
 
@@ -43,7 +43,7 @@ using the properties of two cells. See the documentation below.
 
 There is only one unknown, ϕᵢᵗ⁺¹. Reshuffling terms:
 
-ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) * Δt / Sᵢ
+ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) *dt / Sᵢ
 
 This can be generalized to two dimensions, for both regular and irregular cell
 connectivity.
@@ -94,13 +94,14 @@ transmissivity).
 end
 
 @with_kw struct AquiferVariables
-    head::Vector{Float64}               # hydraulic head [m]
-    conductance::Vector{Float64}        # conductance [m² d⁻¹ => m² s⁻¹]
-    storage::Vector{Float64}            # total storage of water that can be released [m³]
-    q_net::Vector{Float64}              # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
-    q_in_av::Vector{Float64}            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹ => m³ s⁻¹]
-    q_out_av::Vector{Float64}           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹ => m³ s⁻¹]
-    exfiltwater::Vector{Float64}        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    n::Int
+    head::Vector{Float64}                   # hydraulic head [m]
+    conductance::Vector{Float64}            # conductance [m² d⁻¹ => m² s⁻¹]
+    storage::Vector{Float64}                # total storage of water that can be released [m³]
+    q_net::Vector{Float64} = zeros(n)       # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
+    q_in_av::Vector{Float64} = zeros(n)     # average groundwater (lateral) inflow for model timestepdt [m³ d⁻¹ => m³ s⁻¹]
+    q_out_av::Vector{Float64} = zeros(n)    # average groundwater (lateral) outflow for model timestepdt [m³ d⁻¹ => m³ s⁻¹]
+    exfiltwater::Vector{Float64} = zeros(n) # Exfiltration [mdt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 
 @with_kw struct ConfinedAquifer <: Aquifer
@@ -192,13 +193,7 @@ function UnconfinedAquifer(
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
     n = length(storage)
-    q_net = zeros(n)
-    exfiltwater = zeros(n)
-    q_in_av = zeros(n)
-    q_out_av = zeros(n)
-    exfiltwater = zeros(n)
-    variables =
-        AquiferVariables(head, conductance, storage, q_net, q_in_av, q_out_av, exfiltwater)
+    variables = AquiferVariables(; n, head, conductance, storage)
     aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end

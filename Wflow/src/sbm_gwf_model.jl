@@ -92,7 +92,7 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     update!(routing.subsurface_flow, dt, config.model.conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
+    update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow), dt)
 
     surface_routing!(model)
 

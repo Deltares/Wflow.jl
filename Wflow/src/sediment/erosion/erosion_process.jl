@@ -15,8 +15,8 @@
 Rainfall erosion model based on EUROSEM.
 
 # Arguments
-- `precip` (precipitation [mm Δt⁻¹])
-- `interception` (interception [mm Δt⁻¹])
+- `precip` (precipitation [mm dt⁻¹])
+- `interception` (interception [mm dt⁻¹])
 - `waterlevel` (water level [m])
 - `soil_detachability` (soil detachability [-])
 - `eurosem_exponent` (EUROSEM exponent [-])
@@ -27,7 +27,7 @@ Rainfall erosion model based on EUROSEM.
 - `dt` (timestep [seconds])
 
 # Output
-- `rainfall_erosion` (soil loss [t Δt⁻¹])
+- `rainfall_erosion` (soil loss [tdt⁻¹])
 """
 function rainfall_erosion_eurosem(
     precip,
@@ -79,7 +79,7 @@ end
 Rainfall erosion model based on ANSWERS.
 
 # Arguments
-- `precip` (precipitation [mm Δt⁻¹])
+- `precip` (precipitation [mm dt⁻¹])
 - `usle_k` (USLE soil erodibility [t ha-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
 - `answers_rainfall_factor` (ANSWERS rainfall erosion factor [-])
@@ -87,7 +87,7 @@ Rainfall erosion model based on ANSWERS.
 - `dt` (timestep [seconds])
 
 # Output
-- `rainfall_erosion` (soil loss [t Δt⁻¹])
+- `rainfall_erosion` (soil loss [tdt⁻¹])
 """
 function rainfall_erosion_answers(precip, usle_k, usle_c, answers_rainfall_factor, area, dt)
     # calculate rainfall intensity [mm/min]
@@ -125,7 +125,7 @@ Overland flow erosion model based on ANSWERS.
 - `dt` (timestep [seconds])
 
 # Output
-- `overland_flow_erosion` (soil loss [t Δt⁻¹])
+- `overland_flow_erosion` (soil loss [tdt⁻¹])
 """
 function overland_flow_erosion_answers(
     overland_flow,
@@ -163,8 +163,8 @@ end
 Calculate total soil erosion and particle differentiation.
 
 # Arguments
-- `rainfall_erosion` (soil loss from rainfall erosion [t Δt⁻¹])
-- `overland_flow_erosion` (soil loss from overland flow erosion [t Δt⁻¹])
+- `rainfall_erosion` (soil loss from rainfall erosion [tdt⁻¹])
+- `overland_flow_erosion` (soil loss from overland flow erosion [tdt⁻¹])
 - `clay_fraction` (clay fraction [-])
 - `silt_fraction` (silt fraction [-])
 - `sand_fraction` (sand fraction [-])
@@ -172,12 +172,12 @@ Calculate total soil erosion and particle differentiation.
 - `lagg_fraction` (large aggregates fraction [-])
 
 # Output
-- `soil_erosion` (total soil loss [t Δt⁻¹])
-- `clay_erosion` (clay loss [t Δt⁻¹])
-- `silt_erosion` (silt loss [t Δt⁻¹])
-- `sand_erosion` (sand loss [t Δt⁻¹])
-- `sagg_erosion` (small aggregates loss [t Δt⁻¹])
-- `lagg_erosion` (large aggregates loss [t Δt⁻¹])
+- `soil_erosion` (total soil loss [tdt⁻¹])
+- `clay_erosion` (clay loss [tdt⁻¹])
+- `silt_erosion` (silt loss [tdt⁻¹])
+- `sand_erosion` (sand loss [tdt⁻¹])
+- `sagg_erosion` (small aggregates loss [tdt⁻¹])
+- `lagg_erosion` (large aggregates loss [tdt⁻¹])
 """
 function total_soil_erosion(
     rainfall_erosion,
@@ -226,8 +226,8 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 - `dt` (timestep [seconds])
 
 # Output
-- `bed` (potential river erosion [t Δt⁻¹])
-- `bank` (potential bank erosion [t Δt⁻¹])
+- `bed` (potential river erosion [tdt⁻¹])
+- `bank` (potential bank erosion [tdt⁻¹])
 """
 function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
     if waterlevel > 0.0
@@ -249,8 +249,10 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
         # Repartition of the effective shear stress between the bank and the Bed
         SFbank = exp(-3.23 * log10(width / waterlevel + 3) + 6.146)
         # Effective shear stress on river bed and banks [N/m2]
-        TEffbank = g_gravity * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
-        TEffbed = g_gravity * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
+        TEffbank =
+            g_gravity * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
+        TEffbed =
+            g_gravity * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
 
         # Potential erosion rates of the bed and bank [t/cell/timestep]
         #(assuming only one bank is eroding)
@@ -281,12 +283,12 @@ end
 River erosion of the previously deposited sediment.
 
 # Arguments
-- `excess_sediment` (excess sediment [t Δt⁻¹])
+- `excess_sediment` (excess sediment [tdt⁻¹])
 - `store` (sediment store [t])
 
 # Output
-- `erosion` (river erosion [t Δt⁻¹])
-- `excess_sediment` (updated excess sediment [t Δt⁻¹])
+- `erosion` (river erosion [tdt⁻¹])
+- `excess_sediment` (updated excess sediment [tdt⁻¹])
 - `store` (updated sediment store [t])
 """
 function river_erosion_store(excess_sediment, store)

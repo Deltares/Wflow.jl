@@ -2,9 +2,9 @@ abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
 @with_kw struct GlacierVariables
-    # Water within the glacier [mm]
+    # Water within the glacier [mm => m]
     glacier_store::Vector{Float64}
-    # Glacier melt [mm Δt⁻¹]
+    # Glacier melt [mm dt⁻¹ => m s⁻¹]
     glacier_melt::Vector{Float64}
 end
 
@@ -34,21 +34,21 @@ end
 
 "Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
 @with_kw struct SnowStateBC
-    # Snow storage [mm]
+    # Snow storage [mm => m]
     snow_storage::Vector{Float64}
 end
 
 "Struct for storing glacier HBV model parameters"
 @with_kw struct GlacierHbvParameters
-    # Threshold temperature for glacier melt [ᵒC]
+    # Threshold temperature for glacier melt [ᵒC => K]
     g_ttm::Vector{Float64}
-    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    # Degree-day factor [mm ᵒC⁻¹ dt⁻¹ => m K⁻¹ s⁻¹] for glacier
     g_cfmax::Vector{Float64}
-    # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
+    # Fraction of the snowpack on top of the glacier converted into ice [dt⁻¹ => s⁻¹]
     g_sifrac::Vector{Float64}
     # Fraction covered by a glacier [-]
     glacier_frac::Vector{Float64}
-    # Maximum snow to glacier conversion rate [mm Δt⁻¹]
+    # Maximum snow to glacier conversion rate [mm dt⁻¹ => m s⁻¹]
     max_snow_to_glacier::Float64
 end
 
@@ -135,7 +135,11 @@ function GlacierHbvModel(
 end
 
 "Update glacier HBV model for a single timestep"
-function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update!(
+    model::GlacierHbvModel,
+    atmospheric_forcing::AtmosphericForcing,
+    dt::Number,
+)
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = model.variables
     (; snow_storage) = model.boundary_conditions
@@ -153,12 +157,13 @@ function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing
             g_cfmax[i],
             g_sifrac[i],
             max_snow_to_glacier,
+            dt,
         )
     end
     return nothing
 end
 
-function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
+function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing, dt::Number)
     return nothing
 end
 

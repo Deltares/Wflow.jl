@@ -2,7 +2,7 @@
 @with_kw struct VegetationParameters
     # Leaf area index [m² m⁻²]
     leaf_area_index::Union{Vector{Float64}, Nothing}
-    # Storage woody part of vegetation [mm]
+    # Storage woody part of vegetation [mm => m]
     storage_wood::Union{Vector{Float64}, Nothing}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
     kext::Union{Vector{Float64}, Nothing}
@@ -10,7 +10,7 @@
     storage_specific_leaf::Union{Vector{Float64}, Nothing}
     # Canopy gap fraction [-]
     canopygapfraction::Vector{Float64}
-    # Maximum canopy storage [mm]
+    # Maximum canopy storage [mm => m]
     cmax::Vector{Float64}
     # Rooting depth [mm]
     rootingdepth::Vector{Float64}

@@ -235,7 +235,7 @@ end
 to_SI(x, unit::Unit; kwargs...) = x
 
 """
-Convert an array of values to the values in the corresponding SI unit in-place.
+Convert an array of values to the values in the corresponding SI unit in-place
 """
 function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
@@ -253,6 +253,18 @@ function from_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = 
     else
         x / to_SI_factor(unit; dt_val)
     end
+end
+
+"""
+Convert the given values of the SI equivalent of the given unit to the values in the given unit in-place
+"""
+function from_SI!(
+    x::Union{AbstractArray},
+    unit::Unit;
+    dt_val::Union{Nothing, Number} = nothing,
+)
+    unit_ref = Ref(unit)
+    @. x = from_SI(x, unit_ref; dt_val)
 end
 
 """

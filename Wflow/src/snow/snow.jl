@@ -8,13 +8,13 @@ abstract type AbstractSnowModel end
     snow_water::Vector{Float64}
     # Snow water equivalent (SWE) [mm => m]
     swe::Vector{Float64}
-    # Snow melt [mm Δt⁻¹ => m s⁻¹]
+    # Snow melt [mm dt⁻¹ => m s⁻¹]
     snow_melt::Vector{Float64}
-    # Runoff from snowpack [mm Δt⁻¹ => m s⁻¹]
+    # Runoff from snowpack [mm dt⁻¹ => m s⁻¹]
     runoff::Vector{Float64}
-    # Lateral snow (SWE) transport from upstreams cells [mm Δt⁻¹ => m s⁻¹]
+    # Lateral snow (SWE) transport from upstreams cells [mm dt⁻¹ => m s⁻¹]
     snow_in::Vector{Float64}
-    # Lateral snow (SWE) transport out of a cell [mm Δt⁻¹ => m s⁻¹]
+    # Lateral snow (SWE) transport out of a cell [mm dt⁻¹ => m s⁻¹]
     snow_out::Vector{Float64}
 end
 
@@ -33,11 +33,11 @@ end
 
 "Struct for storing snow model boundary conditions"
 @with_kw struct SnowBC
-    # Effective precipitation [mm Δt⁻¹]
+    # Effective precipitation [mm dt⁻¹]
     effective_precip::Vector{Float64}
-    # Snow precipitation [mm Δt⁻¹]
+    # Snow precipitation [mm dt⁻¹]
     snow_precip::Vector{Float64}
-    # Liquid precipitation [mm Δt⁻¹]
+    # Liquid precipitation [mm dt⁻¹]
     liquid_precip::Vector{Float64}
 end
 
@@ -52,13 +52,13 @@ end
 
 "Struct for storing snow HBV model parameters"
 @with_kw struct SnowHbvParameters
-    # Degree-day factor [mm °C⁻¹ Δt⁻¹]
+    # Degree-day factor [mm °C⁻¹ dt⁻¹ => m K⁻¹ s⁻¹]
     cfmax::Vector{Float64}
-    # Threshold temperature for snowfall [°C]
+    # Threshold temperature for snowfall [°C => K]
     tt::Vector{Float64}
-    # Threshold temperature interval length [°C]
+    # Threshold temperature interval length [°C => K]
     tti::Vector{Float64}
-    # Threshold temperature for snowmelt [°C]
+    # Threshold temperature for snowmelt [°C => K]
     ttm::Vector{Float64}
     # Water holding capacity as fraction of current snow pack [-]
     whc::Vector{Float64}

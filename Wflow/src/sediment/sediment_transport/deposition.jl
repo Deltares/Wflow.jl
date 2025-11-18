@@ -12,8 +12,8 @@
 Deposition of sediment in reservoirs from Camp 1945.
 
 # Arguments
-- `input` (sediment input [t Δt⁻¹ = kg s⁻¹])
-- `q` (discharge [m³ Δt⁻¹ => m³ s⁻¹])
+- `input` (sediment input [tdt⁻¹ = kg s⁻¹])
+- `q` (discharge [m³dt⁻¹ => m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `res_area` (reservoir area [m²])
 - `res_trapping_efficiency` (reservoir trapping efficiency [-])
@@ -21,7 +21,7 @@ Deposition of sediment in reservoirs from Camp 1945.
 - `slope` (slope [-])
 
 # Output
-- `deposition` (deposition [t Δt⁻¹ => kg s⁻¹])
+- `deposition` (deposition [tdt⁻¹ => kg s⁻¹])
 """
 function reservoir_deposition_camp(
     input,

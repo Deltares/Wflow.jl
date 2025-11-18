@@ -64,6 +64,7 @@ function initialize_subsurface_flow(
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
 
     # cold state for groundwater head based on water table depth zi
+    # [m] = [m] - [m]
     initial_head = elevation .- soil.variables.zi
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if config.model.constanthead__flag
@@ -90,6 +91,7 @@ function initialize_subsurface_flow(
         @. total_soilwater_storage = satwaterdepth
     end
 
+    # [m] = [m] - [m]
     bottom = elevation .- soil.parameters.soilthickness
     conductance = zeros(Float64, connectivity.nconnection)
     aquifer = UnconfinedAquifer(
@@ -107,12 +109,7 @@ function initialize_subsurface_flow(
     gwf_river = GwfRiver(dataset, config, river.network.indices, river.network.land_indices)
 
     # recharge boundary of unconfined aquifer
-    gwf_recharge = Recharge(
-        fill(MISSING_VALUE, n_cells),
-        zeros(n_cells),
-        zeros(n_cells),
-        collect(1:n_cells),
-    )
+    gwf_recharge = Recharge(; n = n_cells)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
