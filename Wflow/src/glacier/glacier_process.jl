@@ -33,23 +33,32 @@ function glacier_hbv(
     cfmax,
     g_sifrac,
     max_snow_to_glacier,
+    dt,
 )
 
     # Fraction of the snow transformed into ice (HBV-light model)
-    snow_to_glacier = g_sifrac * snow
-    snow_to_glacier = glacierfrac > 0.0 ? snow_to_glacier : 0.0
+    # [m s⁻¹]
+    snow_to_glacier = if glacierfrac > 0.0
+        # [s⁻¹] * [m]
+        g_sifrac * snow
+    else
+        0.0
+    end
 
     # Restrict snow_to_glacier conversion
     snow_to_glacier = min(snow_to_glacier, max_snow_to_glacier)
 
-    snow -= snow_to_glacier * glacierfrac
+    # [m] = [m s⁻¹] * [-] * [s]
+    snow -= snow_to_glacier * glacierfrac * dt
     glacierstore += snow_to_glacier
 
     # Potential snow melt, based on temperature
-    potmelt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
+    # [m s⁻¹] = [m K⁻¹ s⁻¹] * [K]
+    potmelt = (temperature > ttm) ? cfmax * (temperature - ttm) : 0.0
 
     # actual Glacier melt
-    glaciermelt = snow < 10.0 ? min(potmelt, glacierstore) : 0.0
+    # [m] = [m s⁻¹] * [s]
+    glaciermelt = (snow < 10.0) ? min(potmelt * dt, glacierstore) : 0.0
     glacierstore -= glaciermelt
 
     return snow, snow_to_glacier, glacierstore, glaciermelt

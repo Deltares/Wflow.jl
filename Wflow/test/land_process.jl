@@ -1,5 +1,6 @@
 @testitem "vertical processes" begin
     using Dates
+    using Wflow: to_SI, Unit
     @test all(
         isapprox.(
             Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, 4.0),
@@ -13,9 +14,9 @@
         ),
     )
     @test Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0) ≈ -90.6299820833844
-    @test Wflow.feddes_h3(-300.0, -600.0, 3.5, 86400.0) ≈ -412.5
-    @test Wflow.feddes_h3(-300.0, -600.0, 0.5, 86400.0) == -600.0
-    @test Wflow.feddes_h3(-300.0, -600.0, 6.0, 86400.0) == -300.0
+    @test Wflow.feddes_h3(-300.0, -600.0, to_SI(3.5, Unit(; mm = 1, d = -1))) ≈ -412.5
+    @test Wflow.feddes_h3(-300.0, -600.0, to_SI(0.5, Unit(; mm = 1, d = -1))) == -600.0
+    @test Wflow.feddes_h3(-300.0, -600.0, to_SI(6.0, Unit(; mm = 1, d = -1))) == -300.0
     @test Wflow.rwu_reduction_feddes(0.0, -10.0, -100.0, -300.0, -15000.0, 0.0) == 0.0
     @test Wflow.rwu_reduction_feddes(0.0, -10.0, -100.0, -300.0, -15000.0, 1.0) == 1.0
     @test Wflow.rwu_reduction_feddes(-90.0, -10.0, -100.0, -412.5, -15000.0, 0.0) ≈

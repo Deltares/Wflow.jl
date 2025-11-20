@@ -176,21 +176,19 @@ function transport_capacity_yalin(
 )
     sinslope = sin(atan(slope)) #slope in radians
     # Transport capacity from Yalin without particle differentiation
-    delta =
-        max((waterlevel * sinslope / (d50 * 0.001 * (density / 1000 - 1)) / 0.06 - 1), 0.0)
-    alphay = delta * 2.45 / (0.001 * density)^0.4 * 0.06^(0.5)
+    delta = max((waterlevel * sinslope / (d50 * (density - 1)) / 0.06 - 1), 0.0)
+    alphay = delta * 2.45 / (density)^0.4 * sqrt(0.06)
     if q > 0.0 && alphay != 0.0
         TC = (
             width / q *
             (density - 1000) *
             d50 *
-            0.001 *
-            (9.81 * waterlevel * sinslope) *
+            (g_gravity * waterlevel * sinslope) *
             0.635 *
             delta *
             (1 - log(1 + alphay) / (alphay))
         ) # [kg/m3]
-        transport_capacity = TC * q * dt * 1e-3 #[ton]
+        transport_capacity = TC * q * dt
     else
         transport_capacity = 0.0
     end
@@ -298,16 +296,16 @@ function transport_capacity_yalin_differentiation(
     sinslope = sin(atan(slope)) #slope in radians
     # Transport capacity from Yalin with particle differentiation
     # Delta parameter of Yalin for the specific particle class
-    delta = waterlevel * sinslope / (1e-6 * (density / 1000 - 1)) / 0.06
+    delta = waterlevel * sinslope / (1e-6 * (density - 1)) / 0.06
     d_part = max(1 / dm * delta - 1, 0.0)
 
     if q > 0.0
-        TCa = width / q * (density - 1000) * 1e-6 * (9.81 * waterlevel * sinslope)
+        TCa = width / q * (density - 1) * 1e-6 * (g_gravity * waterlevel * sinslope)
     else
         TCa = 0.0
     end
 
-    TCb = 2.45 / (0.001 * density)^0.4 * 0.06^0.5
+    TCb = 2.45 * 0.06^0.5 / density^0.4
 
     if dtot != 0.0 && d_part != 0.0
         TC =
@@ -315,7 +313,7 @@ function transport_capacity_yalin_differentiation(
             0.635 *
             d_part *
             (1 - log(1 + d_part * TCb) / d_part * TCb) # [kg/m3]
-        transport_capacity = TC * q * dt * 1e-3 #[ton]
+        transport_capacity = TC * q * dt
     else
         transport_capacity = 0.0
     end
@@ -403,7 +401,7 @@ function transport_capacity_engelund(q, waterlevel, density, d50, width, length,
     if waterlevel > 0.0
         # Hydraulic radius of the river [m] (rectangular channel)
         hydrad = waterlevel * width / (width + 2 * waterlevel)
-        vshear = sqrt(9.81 * hydrad * slope)
+        vshear = sqrt(g_gravity * hydrad * slope)
 
         # Flow velocity [m/s]
         velocity = (q / (waterlevel * width))
@@ -411,7 +409,7 @@ function transport_capacity_engelund(q, waterlevel, density, d50, width, length,
         # Concentration by weight
         cw =
             density / 1000 * 0.05 * velocity * vshear^3 /
-            ((density / 1000 - 1)^2 * 9.81^2 * d50 * hydrad)
+            ((density / 1000 - 1)^2 * g_gravity^2 * d50 * hydrad)
         cw = min(1.0, cw)
 
         # Transport capacity [tons/m3]
@@ -536,7 +534,7 @@ function transport_capacity_yang(q, waterlevel, density, d50, width, length, slo
     # Hydraulic radius of the river [m] (rectangular channel)
     hydrad = waterlevel * width / (width + 2 * waterlevel)
     # Critical shear stress velocity
-    vshear = sqrt(9.81 * hydrad * slope)
+    vshear = sqrt(g_gravity * hydrad * slope)
     var1 = vshear * d50 / 1000 / (1.16 * 1e-6)
     var2 = omegas * d50 / 1000 / (1.16 * 1e-6)
     vcr = ifelse(var1 >= 70.0, 2.05 * omegas, omegas * (2.5 / (log10(var1) - 0.06) + 0.66))
@@ -620,7 +618,7 @@ function transport_capacity_molinas(q, waterlevel, density, d50, width, length, 
         psi = (
             velocity^3 / (
                 (density / 1000 - 1) *
-                9.81 *
+                g_gravity *
                 waterlevel *
                 omegas *
                 log10(1000 * waterlevel / d50)^2

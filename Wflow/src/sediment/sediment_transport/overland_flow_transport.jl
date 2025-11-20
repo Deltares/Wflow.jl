@@ -2,9 +2,9 @@ abstract type AbstractSedimentLandTransportModel end
 
 "Struct to store total sediment flux in overland flow model variables"
 @with_kw struct SedimentLandTransportVariables
-    # Total sediment rate [t dt-1]
+    # Total sediment rate [t dt⁻¹ => kg s⁻¹]
     amount::Vector{Float64}
-    # Total sediment deposition rate [t dt-1]
+    # Total sediment deposition rate [t dt⁻¹ => kg s⁻¹]
     deposition::Vector{Float64}
 end
 
@@ -19,9 +19,9 @@ end
 
 "Struct to store total sediment flux in overland flow model boundary conditions"
 @with_kw struct SedimentLandTransportBC
-    # Erosion rate material [t dt-1]
+    # Erosion rate material [t dt⁻¹ => kg s⁻¹]
     erosion::Vector{Float64}
-    # Transport capacity [t dt-1]
+    # Transport capacity [t dt⁻¹ => kg s⁻¹]
     transport_capacity::Vector{Float64}
 end
 
@@ -75,54 +75,54 @@ end
 "Struct to store differentiated sediment flux in overland flow model variables"
 @with_kw struct SedimentLandTransportDifferentiationVariables
     n::Int
-    # Total sediment rate [t dt-1]
+    # Total sediment rate [t dt⁻¹ => kg s⁻¹]
     amount::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Deposition rate [t dt-1]
+    # Deposition rate [t dt⁻¹ => kg s⁻¹]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Clay rate [t dt-1]
+    # Clay rate [t dt⁻¹ => kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Deposition clay rate [t dt-1]
+    # Deposition clay rate [t dt⁻¹ => kg s⁻¹]
     deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt rate [t dt-1]
+    # Silt rate [t dt⁻¹ => kg s⁻¹]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Deposition silt rate [t dt-1]
+    # Deposition silt rate [t dt⁻¹ => kg s⁻¹]
     deposition_silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand rate [t dt-1]
+    # Sand rate [t dt⁻¹ => kg s⁻¹]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Deposition sand rate [t dt-1]
+    # Deposition sand rate [t dt⁻¹ => kg s⁻¹]
     deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates rate [t dt-1]
+    # Small aggregates rate [t dt⁻¹ => kg s⁻¹]
     sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Deposition rate small aggregates [t dt-1]
+    # Deposition rate small aggregates [t dt⁻¹ => kg s⁻¹]
     deposition_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates rate [t dt-1]
+    # Large aggregates rate [t dt⁻¹ => kg s⁻¹]
     lagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Deposition rate large aggregates [t dt-1]
+    # Deposition rate large aggregates [t dt⁻¹ => kg s⁻¹]
     deposition_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment flux in overland flow model boundary conditions"
 @with_kw struct SedimentLandTransportDifferentiationBC
     n::Int
-    # Erosion rate clay [t dt-1]
+    # Erosion rate clay [t dt⁻¹ => kg s⁻¹]
     erosion_clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Erosion rate silt [t dt-1]
+    # Erosion rate silt [t dt⁻¹ => kg s⁻¹]
     erosion_silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Erosion rate sand [t dt-1]
+    # Erosion rate sand [t dt⁻¹ => kg s⁻¹]
     erosion_sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Erosion rate small aggregates [t dt-1]
+    # Erosion rate small aggregates [t dt⁻¹ => kg s⁻¹]
     erosion_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Erosion large aggregates [t dt-1]
+    # Erosion large aggregates [t dt⁻¹ => kg s⁻¹]
     erosion_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity clay [t dt-1]
+    # Transport capacity clay [t dt⁻¹ => kg s⁻¹]
     transport_capacity_clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity silt [t dt-1]
+    # Transport capacity silt [t dt⁻¹ => kg s⁻¹]
     transport_capacity_silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity sand [t dt-1]
+    # Transport capacity sand [t dt⁻¹ => kg s⁻¹]
     transport_capacity_sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity small aggregates [t dt-1]
+    # Transport capacity small aggregates [t dt⁻¹ => kg s⁻¹]
     transport_capacity_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity large aggregates [t dt-1]
+    # Transport capacity large aggregates [t dt⁻¹ => kg s⁻¹]
     transport_capacity_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 

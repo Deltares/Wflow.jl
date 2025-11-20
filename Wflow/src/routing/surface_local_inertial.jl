@@ -36,7 +36,8 @@ function LocalInertialRiverFlowParameters(
     riverlength_bc = ncread(
         dataset,
         config,
-        "model_boundary_condition_river__length";
+        "model_boundary_condition_river__length",
+        Routing;
         sel = pit_indices,
         defaults = 1.0e04,
         type = Float64,
@@ -44,7 +45,8 @@ function LocalInertialRiverFlowParameters(
     bankfull_elevation_2d = ncread(
         dataset,
         config,
-        "river_bank_water__elevation";
+        "river_bank_water__elevation",
+        Routing;
         optional = false,
         type = Float64,
         fill = 0,
@@ -52,7 +54,8 @@ function LocalInertialRiverFlowParameters(
     bankfull_depth_2d = ncread(
         dataset,
         config,
-        "river_bank_water__depth";
+        "river_bank_water__depth",
+        Routing;
         optional = false,
         type = Float64,
         fill = 0,
@@ -64,7 +67,8 @@ function LocalInertialRiverFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "river_water_flow__manning_n_parameter";
+        "river_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.036,
         type = Float64,
@@ -125,8 +129,8 @@ end
 @with_kw struct LocalInertialRiverFlowVariables
     q::Vector{Float64}                        # river discharge at edge (subgrid channel) [m³ s⁻¹]
     q0::Vector{Float64}                       # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
-    q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
-    q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
+    q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestepdt)
+    q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestepdt)
     h::Vector{Float64}                        # water depth [m]
     zs_max::Vector{Float64}                   # maximum water elevation at edge [m]
     zs_src::Vector{Float64}                   # water elevation of source node of edge [m]
@@ -149,7 +153,8 @@ function LocalInertialRiverFlowVariables(
     riverdepth_bc = ncread(
         dataset,
         config,
-        "model_boundary_condition_river_bank_water__depth";
+        "model_boundary_condition_river_bank_water__depth",
+        Routing;
         sel = pit_indices,
         defaults = 0.0,
         type = Float64,
@@ -253,7 +258,7 @@ get_inflow_reservoir(
 ) = model.variables.q_av[inds] .+ model.variables.to_river[inds]
 
 get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    (model.variables.ssf[inds] .+ model.variables.to_river[inds]) ./ tosecond(BASETIMESTEP)
+    (model.variables.ssf[inds] .+ model.variables.to_river[inds])
 
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
@@ -309,7 +314,7 @@ function local_inertial_river_update!(
         # limit q in case water is not available
         river_v.q[i] = ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
         river_v.q[i] = ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
-        # average river discharge (here accumulated for model timestep Δt)
+        # average river discharge (here accumulated for model timestepdt)
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if !isnothing(model.floodplain)
@@ -406,7 +411,7 @@ function local_inertial_river_update!(
 
             floodplain_v.q[i] =
                 ifelse(floodplain_v.q[i] * river_v.q[i] < 0.0, 0.0, floodplain_v.q[i])
-            # average floodplain discharge (here accumulated for model timestep Δt)
+            # average floodplain discharge (here accumulated for model timestepdt)
             floodplain_v.q_av[i] += floodplain_v.q[i] * dt
         end
     end
@@ -437,7 +442,7 @@ function local_inertial_river_update!(
             q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v] + _inflow
         update!(reservoir, v, net_inflow, dt, dt_forcing)
         river_v.q[i] = reservoir.variables.outflow[v]
-        # average river discharge (here accumulated for model timestep Δt)
+        # average river discharge (here accumulated for model timestepdt)
         river_v.q_av[i] += river_v.q[i] * dt
     end
     if update_h
@@ -524,8 +529,6 @@ function update!(
         local_inertial_river_update!(model, domain, dt_s, dt, update_h)
         t += dt_s
     end
-    average_flow_vars!(model, dt)
-    average_reservoir_vars!(reservoir, dt)
 
     if !isnothing(model.floodplain)
         model.floodplain.variables.q_av ./= dt
@@ -542,9 +545,9 @@ end
     qy0::Vector{Float64}              # flow in y direction at edge at previous time step [m³ s⁻¹]
     qx0::Vector{Float64}              # flow in x direction at edge at previous time step [m³ s⁻¹]
     qx::Vector{Float64}               # flow in x direction at egde [m³ s⁻¹]
-    qx_av::Vector{Float64}            # average flow in x direction at egde [m³ s⁻¹] for model timestep Δt
+    qx_av::Vector{Float64}            # average flow in x direction at egde [m³ s⁻¹] for model timestepdt
     qy::Vector{Float64}               # flow in y direction at edge [m³ s⁻¹]
-    qy_av::Vector{Float64}            # average flow in y direction at egde [m³ s⁻¹] for model timestep Δt
+    qy_av::Vector{Float64}            # average flow in y direction at egde [m³ s⁻¹] for model timestepdt
     storage::Vector{Float64}          # total storage of cell [m³] (including river storage for river cells)
     error::Vector{Float64}            # error storage [m³]
     h::Vector{Float64}                # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
@@ -600,7 +603,8 @@ function LocalInertialOverlandFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "land_surface_water_flow__manning_n_parameter";
+        "land_surface_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.072,
         type = Float64,
@@ -608,7 +612,8 @@ function LocalInertialOverlandFlowParameters(
     elevation_2d = ncread(
         dataset,
         config,
-        "land_surface_water_flow__ground_elevation";
+        "land_surface_water_flow__ground_elevation",
+        Routing;
         optional = false,
         type = Float64,
         fill = 0,
@@ -746,7 +751,7 @@ function update_boundary_conditions!(
     river_indices = domain.river.network.land_indices
 
     @. model.boundary_conditions.runoff =
-        net_runoff / 1000.0 * area / dt + net_runoff_river * area * 0.001 / dt
+        net_runoff / 1000.0 * area / dt + net_runoff_river * area / dt
     model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
     return nothing
@@ -779,17 +784,6 @@ function set_flow_vars!(model::LocalInertialOverlandFlow)
     (; qx_av, qy_av) = model.variables
     qx_av .= 0.0
     qy_av .= 0.0
-    return nothing
-end
-
-"""
-Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
-This is done at the end of each simulation timestep.
-"""
-function average_flow_vars!(model::LocalInertialOverlandFlow, dt::Float64)
-    (; qx_av, qy_av) = model.variables
-    qx_av ./= dt
-    qy_av ./= dt
     return nothing
 end
 
@@ -829,9 +823,6 @@ function update!(
 
         t += dt_s
     end
-    average_flow_vars!(river, dt)
-    average_flow_vars!(land, dt)
-    average_reservoir_vars!(reservoir, dt)
 
     return nothing
 end
@@ -1089,7 +1080,8 @@ function FloodPlainProfile(
     storage = ncread(
         dataset,
         config,
-        "floodplain_water__sum_of_volume_per_depth";
+        "floodplain_water__sum_of_volume_per_depth",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -1197,7 +1189,8 @@ function FloodPlainParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "floodplain_water_flow__manning_n_parameter";
+        "floodplain_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
         defaults = 0.072,
         type = Float64,
@@ -1231,7 +1224,7 @@ end
     hf::Vector{Float64}             # water depth at edge [m]
     q0::Vector{Float64}             # discharge at edge at previous time step
     q::Vector{Float64}              # discharge at edge  [m³ s⁻¹]
-    q_av::Vector{Float64}           # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
+    q_av::Vector{Float64}           # average river discharge at edge  [m³ s⁻¹] for model timestepdt
     hf_index::Vector{Int}           # edge index with `hf` [-] above depth threshold
 end
 

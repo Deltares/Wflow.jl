@@ -44,7 +44,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     area = ncread(
         dataset,
         config,
-        "reservoir_surface__area";
+        "reservoir_surface__area",
+        Routing;
         optional = false,
         sel = indices_outlet,
         type = Float64,
@@ -53,7 +54,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     waterlevel = ncread(
         dataset,
         config,
-        "reservoir_water_surface__initial_elevation";
+        "reservoir_water_surface__initial_elevation",
+        Routing;
         optional = false,
         sel = indices_outlet,
         type = Float64,
@@ -62,7 +64,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     storfunc = ncread(
         dataset,
         config,
-        "reservoir_water__storage_curve_type_count";
+        "reservoir_water__storage_curve_type_count",
+        Routing;
         optional = false,
         sel = indices_outlet,
         type = Int,
@@ -71,7 +74,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     outflowfunc = ncread(
         dataset,
         config,
-        "reservoir_water__rating_curve_type_count";
+        "reservoir_water__rating_curve_type_count",
+        Routing;
         optional = false,
         sel = indices_outlet,
         type = Int,
@@ -80,7 +84,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     linked_reslocs = ncread(
         dataset,
         config,
-        "reservoir_lower_location__count";
+        "reservoir_lower_location__count",
+        Routing;
         sel = indices_outlet,
         defaults = 0,
         type = Int,
@@ -91,7 +96,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     reslocs = ncread(
         dataset,
         config,
-        "reservoir_location__count";
+        "reservoir_location__count",
+        Routing;
         optional = false,
         sel = indices_outlet,
         type = Int,
@@ -105,7 +111,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         threshold = ncread(
             dataset,
             config,
-            "reservoir_water_flow_threshold_level__elevation";
+            "reservoir_water_flow_threshold_level__elevation",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -114,7 +121,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         b = ncread(
             dataset,
             config,
-            "reservoir_water__rating_curve_coefficient";
+            "reservoir_water__rating_curve_coefficient",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -123,7 +131,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         e = ncread(
             dataset,
             config,
-            "reservoir_water__rating_curve_exponent";
+            "reservoir_water__rating_curve_exponent",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -134,7 +143,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         demand = ncread(
             dataset,
             config,
-            "reservoir_water_demand__required_downstream_volume_flow_rate";
+            "reservoir_water_demand__required_downstream_volume_flow_rate",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -143,7 +153,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         maxrelease = ncread(
             dataset,
             config,
-            "reservoir_water_release_below_spillway__max_volume_flow_rate";
+            "reservoir_water_release_below_spillway__max_volume_flow_rate",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -152,7 +163,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         maxstorage = ncread(
             dataset,
             config,
-            "reservoir_water__max_volume";
+            "reservoir_water__max_volume",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -161,7 +173,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         targetfullfrac = ncread(
             dataset,
             config,
-            "reservoir_water__target_full_volume_fraction";
+            "reservoir_water__target_full_volume_fraction",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -170,7 +183,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         targetminfrac = ncread(
             dataset,
             config,
-            "reservoir_water__target_min_volume_fraction";
+            "reservoir_water__target_min_volume_fraction",
+            Routing;
             optional = false,
             sel = indices_outlet,
             type = Float64,
@@ -232,11 +246,11 @@ end
     storage::Vector{Float64}
     # outflow from reservoir [m³ s⁻¹]
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
+    # average outflow from reservoir [m³ s⁻¹] for model timestepdt
     outflow_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # observed outflow from reservoir [m³ s⁻¹]
     outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # average actual evaporation for reservoir area [mm Δt⁻¹]
+    # average actual evaporation for reservoir area [mm dt⁻¹]
     actevap::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
 end
 
@@ -253,7 +267,8 @@ function ReservoirVariables(
     outflow_obs = ncread(
         dataset,
         config,
-        "reservoir_water__outgoing_observed_volume_flow_rate";
+        "reservoir_water__outgoing_observed_volume_flow_rate",
+        Routing;
         sel = indices_outlet,
         defaults = MISSING_VALUE,
         type = Float64,
@@ -271,11 +286,11 @@ end
 @with_kw struct ReservoirBC
     inflow_subsurface::Vector{Float64}    # inflow from subsurface flow into reservoir [m³ s⁻¹]
     inflow_overland::Vector{Float64}      # inflow from overland flow into reservoir [m³ s⁻¹]
-    inflow::Vector{Float64}               # total inflow into reservoir [m³ s⁻¹] for model timestep Δt
+    inflow::Vector{Float64}               # total inflow into reservoir [m³ s⁻¹] for model timestepdt
     external_inflow::Vector{Float64}      # external inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64}  # actual abstraction from external negative inflow [m³ s⁻¹]
-    precipitation::Vector{Float64}        # average precipitation for reservoir area [mm Δt⁻¹]
-    evaporation::Vector{Float64}          # average potential evaporation for reservoir area [mm Δt⁻¹]
+    precipitation::Vector{Float64}        # average precipitation for reservoir area [mm dt⁻¹]
+    evaporation::Vector{Float64}          # average potential evaporation for reservoir area [mm dt⁻¹]
 end
 
 "Initialize reservoir model boundary conditions"
@@ -284,7 +299,8 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
     external_inflow = ncread(
         dataset,
         config,
-        "reservoir_water__external_inflow_volume_flow_rate";
+        "reservoir_water__external_inflow_volume_flow_rate",
+        Routing;
         sel = indices_outlet,
         defaults = 0.0,
         type = Float64,
@@ -570,9 +586,9 @@ function update!(
     res_v = model.variables
 
     # limit reservoir evaporation based on total available volume [m³]
-    precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
+    precipitation = res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
     available_storage = res_v.storage[i] + inflow * dt + precipitation
-    evap = 0.001 * res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
+    evap = res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
     actevap = min(available_storage, evap) # [m³/dt]
 
     boundary_vars = (; precipitation, actevap, inflow)
@@ -601,10 +617,10 @@ function update!(
     res_v.waterlevel[i] = waterlevel
     res_v.outflow[i] = outflow
 
-    # average variables (here accumulated for model timestep Δt)
+    # average variables (here accumulated for model timestepdt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt
-    res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
+    res_v.actevap[i] += actevap / res_p.area[i]
 
     return nothing
 end
