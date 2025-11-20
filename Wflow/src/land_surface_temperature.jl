@@ -160,7 +160,7 @@ function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Fl
     end
     #TODO:run the snow module assimilate soil temperature
     # allowing a better estimate for G, currently G is daytime proportional to (0.1 nighttime, 0.5 daytime)
-    G = 0.15 * net_radiation
+    G = 0.1 * net_radiation
     sensible_heat_flux = net_radiation - latent_heat_flux - G
     return sensible_heat_flux
 end
@@ -234,7 +234,7 @@ function wind_and_aero_resistance(
         f_h = log((813 / canopy_height) - 5.45)
         ku = 0.305 / (f_h * (f_h + 2.3))
         ga = ku * wind_speed_ref
-        ra = (1 / ga) / 10.0
+        ra = 1 / ga
     end
 
     # Ensure positive aerodynamic resistance
