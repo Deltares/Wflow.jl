@@ -159,8 +159,8 @@ function set_states!(
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
             (; lens, unit) = standard_name_map(land)[state]
-            @info "Setting initial state from netCDF."
-            to_table(; ncpath = instate_path, ncvarname = ncname, state, unit)
+            @info "Setting initial state from netCDF." *
+                  to_table(; ncpath = instate_path, ncvarname = ncname, state, unit)
             sel = active_indices(domain, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
@@ -273,8 +273,8 @@ function ncread(
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set parameter."
-        to_table(; parameter, unit)
+        @info "Set parameter." *
+              to_table(; parameter, unit)
         @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -310,8 +310,8 @@ function ncread(
     variable_info(var)
 
     if !isnothing(value)
-        @info "Set parameter using uniform value from TOML file."
-        to_table(; parameter, value, unit)
+        @info "Set parameter using uniform value from TOML file." *
+              to_table(; parameter, value, unit)
         A = if isnothing(dimname)
             # set to one uniform value
             Base.fill(only(value), length(sel))
@@ -326,8 +326,8 @@ function ncread(
         return to_SI!(A, unit; dt_val = config.time.timestepsecs)
     else
         if logging
-            @info "Set parameter using netCDF variable."
-            to_table(; parameter, var, unit)
+            @info "Set parameter using netCDF variable." *
+                  to_table(; parameter, var, unit)
         end
         A = read_standardized(nc, variable_name(var), dim_sel)
         if !isnothing(layer)
@@ -984,5 +984,7 @@ end
 function to_table(; column_labels = [:option, :value], kwargs...)
     parameter_names = collect(keys(kwargs))
     values = [kwargs[label] for label in parameter_names]
-    pretty_table(hcat(parameter_names, values); column_labels, alignment = :l)
+    io = IOBuffer()
+    pretty_table(io, hcat(parameter_names, values); column_labels, alignment = :l)
+    return "\n" * String(take!(io))
 end

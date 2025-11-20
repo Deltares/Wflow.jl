@@ -16,16 +16,16 @@ function Model(config::Config, type::SbmGwfModel)
     reader = NCReader(config)
     clock = Clock(config, reader)
 
-    @info "General model settings"
-    to_table(;
-        snow = config.model.snow__flag,
-        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
-        glacier = config.model.glacier__flag,
-        reservoirs = config.model.reservoir__flag,
-        drains = config.model.drain__flag,
-        constanthead = config.model.constanthead__flag,
-        water_demand = do_water_demand(config),
-    )
+    @info "General model settings." *
+          to_table(;
+              snow = config.model.snow__flag,
+              gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
+              glacier = config.model.glacier__flag,
+              reservoirs = config.model.reservoir__flag,
+              drains = config.model.drain__flag,
+              constanthead = config.model.constanthead__flag,
+              water_demand = do_water_demand(config),
+          )
 
     domain = Domain(dataset, config, type)
 
