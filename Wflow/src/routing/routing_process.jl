@@ -204,18 +204,17 @@ function kinematic_wave_ssf(
                 if zi > d
                     ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
                 end
-                exfilt += min(zi, 0.0) * -theta_e / its
+                exfilt += min(zi, 0.0) * -theta_e
+                zi = clamp(zi, 0.0, d)
                 ssf_ += ssf
                 ssf_prev = ssf
                 zi_prev = zi
             end
+            ssf = ssf_ / its
         else
             exfilt = min(zi, 0.0) * -theta_e
             zi = clamp(zi, 0.0, d)
-            ssf_ = ssf
         end
-
-        ssf = ssf_ / max(its, 1)
 
         return ssf, zi, exfilt
     end
