@@ -187,12 +187,14 @@ function kinematic_wave_ssf(
         if zi > d
             ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
         end
+        exfilt = min(zi, 0.0) * -theta_e
+        zi = clamp(zi, 0.0, d)
 
         its = Int(cld(abs(max(zi, 0.0) - zi_prev), 0.1))
         if its > 1
             dt_s = dt / its
-            ssf_ = 0.0
-            exfilt = 0.0
+            ssf_sum = 0.0
+            exfilt_sum = 0.0
             for _ in 1:its
                 Cn = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
                 c = (dt_s / dx) * ssfin + (1.0 / Cn) * ssf_prev + r / its
@@ -204,16 +206,14 @@ function kinematic_wave_ssf(
                 if zi > d
                     ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
                 end
-                exfilt += min(zi, 0.0) * -theta_e
+                exfilt_sum += min(zi, 0.0) * -theta_e
                 zi = clamp(zi, 0.0, d)
-                ssf_ += ssf
+                ssf_sum += ssf
                 ssf_prev = ssf
                 zi_prev = zi
             end
-            ssf = ssf_ / its
-        else
-            exfilt = min(zi, 0.0) * -theta_e
-            zi = clamp(zi, 0.0, d)
+            ssf = ssf_sum / its
+            exfilt = exfilt_sum
         end
 
         return ssf, zi, exfilt
