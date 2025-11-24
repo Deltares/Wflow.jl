@@ -15,7 +15,7 @@
 /dev/
 /Wflow/test/data/
 /tmp/
-# Wflow/test/sbm_piave_config-debug.toml
+/Wflow/test/sbm_piave_config-debug.toml
 
 # Build files
 /build/create_binaries/wflow_bundle/
