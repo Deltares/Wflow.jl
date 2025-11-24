@@ -391,15 +391,16 @@ const tan80 = tan(80 / 360 * 2π)
 Lateral snow transport. Transports snow downhill. Mutates `snow_storage` and `snow_water` of
 a `snow` model.
 """
-function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
+function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt::Number)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
     # [m]
     snow_storage_max = 10.0
     # [-] = min([-], [-]) * min([-], [m] / [m])
     snowflux_frac = @. min(0.5, slope / tan80) * min(1.0, snow_storage / snow_storage_max)
-    # [??????]
-    maxflux = snowflux_frac .* snow_storage
+    # [m s⁻¹] = [-] * [m] / [s]
+    maxflux = snowflux_frac .* snow_storage / dt
+    # [m s⁻¹]
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
     snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)
     flux_in!(snow_in, snow_out, domain.network)
@@ -426,14 +427,18 @@ function local_inertial_flow(
     froude_limit,
     dt,
 )
+    # [-] = ([m] - [m]) / [m]
     slope = (zs1 - zs0) / length
-    pow_R = cbrt(R * R * R * R)
+    # [m^4/3]
+    pow_R = cbrt(R^4)
     unit = one(hf)
+    # [m³ s⁻¹] = ([m³ s⁻¹] - [m s⁻²] * [m²] * [s] * [-]) / ([-] + [m s⁻²] * [s] * [(s m-1/3)²] * [m³ s⁻¹] / ([m^4/3] * [m²]))
     q = (
         (q0 - g * A * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_R * A))
     )
 
     # if froude number > 1.0, limit flow
+    # [-] = (([m³ s⁻¹] / [m²]) / ([m s⁻²] * [m])^1/2) * [-]
     fr = ((q / A) / sqrt(g * hf)) * froude_limit
     q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(g * hf) * A, q)
     q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(g * hf) * A, q)
@@ -449,7 +454,7 @@ two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almei
 (2012).
 """
 function local_inertial_flow(
-    theta,
+    theta::T,
     q0,
     qd,
     qu,
@@ -462,18 +467,22 @@ function local_inertial_flow(
     g,
     froude_limit,
     dt,
-)
+) where {T}
+    # [-] = ([m] - [m]) / [m]
     slope = (zs1 - zs0) / length
-    unit = one(theta)
-    half = oftype(theta, 0.5)
-    pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
+    unit = one(T)
+    half = T(0.5)
+    # [m^7/3]
+    pow_hf = cbrt(hf^7)
+
+    # [m³ s⁻¹] = (([-] * [m³ s⁻¹] + [-] * ([-] - [-]) * ([m³ s⁻¹] + [m³ s⁻¹])) - [m s⁻²] * [m] * [m] * [s] * [-]) / ([-] + [m s⁻²] * [s] * [(s m-1/3)²] * [m³ s⁻¹] / ([m^7/3] * [m]))
     q = (
         ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
     )
     # if froude number > 1.0, limit flow
     if froude_limit
-        fr = (q / width / hf) / sqrt(g * hf)
+        fr = (q / (width * hf)) / sqrt(g * hf)
         if abs(fr) > 1.0 && q > 0.0
             q = hf * sqrt(g * hf) * width
         elseif abs(fr) > 1.0 && q < 0.0

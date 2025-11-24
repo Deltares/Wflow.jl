@@ -2,50 +2,33 @@ abstract type AbstractSedimentLandTransportModel end
 
 "Struct to store total sediment flux in overland flow model variables"
 @with_kw struct SedimentLandTransportVariables
+    n::Int
     # Total sediment rate [t dt⁻¹ => kg s⁻¹]
-    amount::Vector{Float64}
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sediment deposition rate [t dt⁻¹ => kg s⁻¹]
-    deposition::Vector{Float64}
-end
-
-"Initialize total sediment flux in overland flow model variables"
-function SedimentLandTransportVariables(
-    n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
-    deposition::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return SedimentLandTransportVariables(; amount = amount, deposition = deposition)
+    deposition::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment flux in overland flow model boundary conditions"
 @with_kw struct SedimentLandTransportBC
+    n::Int
     # Erosion rate material [t dt⁻¹ => kg s⁻¹]
-    erosion::Vector{Float64}
+    erosion::Vector{Float64} = fill(MISSING_VALUE, n)
     # Transport capacity [t dt⁻¹ => kg s⁻¹]
-    transport_capacity::Vector{Float64}
-end
-
-"Initialize total sediment flux in overland flow model boundary conditions"
-function SedimentLandTransportBC(
-    n::Int;
-    erosion::Vector{Float64} = fill(MISSING_VALUE, n),
-    transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return SedimentLandTransportBC(; erosion, transport_capacity)
+    transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment flux in overland flow model"
 @with_kw struct SedimentLandTransportModel <: AbstractSedimentLandTransportModel
-    boundary_conditions::SedimentLandTransportBC
-    variables::SedimentLandTransportVariables
+    n::Int
+    boundary_conditions::SedimentLandTransportBC = SedimentLandTransportBC(; n)
+    variables::SedimentLandTransportVariables = SedimentLandTransportVariables(; n)
 end
 
 "Initialize total sediment flux in overland flow model"
 function SedimentLandTransportModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
-    vars = SedimentLandTransportVariables(n)
-    bc = SedimentLandTransportBC(n)
-    model = SedimentLandTransportModel(; boundary_conditions = bc, variables = vars)
+    model = SedimentLandTransportModel(; n)
     return model
 end
 
@@ -56,19 +39,19 @@ function update_boundary_conditions!(
     transport_capacity_model::AbstractTransportCapacityModel,
 )
     (; erosion, transport_capacity) = model.boundary_conditions
-    (; amount) = erosion_model.variables
-    @. erosion = amount
+    (; sediment_rate) = erosion_model.variables
+    @. erosion = sediment_rate
 
-    (; amount) = transport_capacity_model.variables
-    @. transport_capacity = amount
+    (; sediment_rate) = transport_capacity_model.variables
+    @. transport_capacity = sediment_rate
 end
 
 "Update total sediment flux in overland flow model for a single timestep"
 function update!(model::SedimentLandTransportModel, network::NetworkLand)
     (; erosion, transport_capacity) = model.boundary_conditions
-    (; amount, deposition) = model.variables
+    (; sediment_rate, deposition) = model.variables
 
-    accucapacityflux!(amount, erosion, network, transport_capacity)
+    accucapacityflux!(sediment_rate, erosion, network, transport_capacity)
     deposition .= erosion
 end
 
@@ -76,7 +59,7 @@ end
 @with_kw struct SedimentLandTransportDifferentiationVariables
     n::Int
     # Total sediment rate [t dt⁻¹ => kg s⁻¹]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Deposition rate [t dt⁻¹ => kg s⁻¹]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
     # Clay rate [t dt⁻¹ => kg s⁻¹]
@@ -193,7 +176,7 @@ function update!(model::SedimentLandTransportDifferentiationModel, network::Netw
         transport_capacity_lagg,
     ) = model.boundary_conditions
     (;
-        amount,
+        sediment_rate,
         deposition,
         clay,
         deposition_clay,
@@ -217,7 +200,7 @@ function update!(model::SedimentLandTransportDifferentiationModel, network::Netw
     deposition_sagg .= erosion_sagg
     accucapacityflux!(lagg, erosion_lagg, network, transport_capacity_lagg)
     deposition_lagg .= erosion_lagg
-    amount .= clay .+ silt .+ sand .+ sagg .+ lagg
+    sediment_rate .= clay .+ silt .+ sand .+ sagg .+ lagg
     deposition .=
         deposition_clay .+ deposition_silt .+ deposition_sand .+ deposition_sagg .+
         deposition_lagg

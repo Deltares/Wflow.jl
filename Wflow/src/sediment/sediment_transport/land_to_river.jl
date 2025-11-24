@@ -2,38 +2,29 @@ abstract type AbstractSedimentToRiverModel end
 
 "Struct to store total sediment reaching the river model variables"
 @with_kw struct SedimentToRiverVariables
+    n::Int
     # Total sediment rate to the river [t dt⁻¹ => kg s⁻¹]
-    amount::Vector{Float64}
-end
-
-"Initialize total sediment reaching the river model variables"
-function SedimentToRiverVariables(n::Int; amount::Vector{Float64} = fill(MISSING_VALUE, n))
-    return SedimentToRiverVariables(; amount)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
 @with_kw struct SedimentToRiverBC
+    n::Int
     # Deposition material rate [t dt⁻¹ => kg s⁻¹]
-    deposition::Vector{Float64}
-end
-
-"Initialize total sediment reaching the river model boundary conditions"
-function SedimentToRiverBC(n::Int; deposition::Vector{Float64} = fill(MISSING_VALUE, n))
-    return SedimentToRiverBC(; deposition)
+    deposition::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model"
 @with_kw struct SedimentToRiverModel <: AbstractSedimentToRiverModel
-    boundary_conditions::SedimentToRiverBC
-    variables::SedimentToRiverVariables
+    n::Int
+    boundary_conditions::SedimentToRiverBC = SedimentToRiverBC(; n)
+    variables::SedimentToRiverVariables = SedimentToRiverVariables(; n)
 end
 
 "Initialize total sediment reaching the river model"
 function SedimentToRiverModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
-    vars = SedimentToRiverVariables(n)
-    bc = SedimentToRiverBC(n)
-    model = SedimentToRiverModel(; boundary_conditions = bc, variables = vars)
+    model = SedimentToRiverModel(; n)
     return model
 end
 
@@ -49,17 +40,17 @@ end
 "Update total sediment reaching the river model for a single timestep"
 function update!(model::SedimentToRiverModel, rivers::Vector{Bool})
     (; deposition) = model.boundary_conditions
-    (; amount) = model.variables
+    (; sediment_rate) = model.variables
 
-    zeros = fill(0.0, length(amount))
-    amount .= ifelse.(rivers, deposition, zeros)
+    zeros = fill(0.0, length(sediment_rate))
+    sediment_rate .= ifelse.(rivers, deposition, zeros)
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
 @with_kw struct SedimentToRiverDifferentiationVariables
     n::Int
     # Total sediment rate [t dt⁻¹ => kg s⁻¹]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Clay rate [t dt⁻¹ => kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
     # Silt rate [t dt⁻¹ => kg s⁻¹]
@@ -131,14 +122,14 @@ function update!(model::SedimentToRiverDifferentiationModel, rivers::Vector{Bool
         deposition_sagg,
         deposition_lagg,
     ) = model.boundary_conditions
-    (; amount, clay, silt, sand, sagg, lagg) = model.variables
+    (; sediment_rate, clay, silt, sand, sagg, lagg) = model.variables
 
-    zeros = fill(0.0, length(amount))
+    zeros = fill(0.0, length(sediment_rate))
     clay .= ifelse.(rivers .> 0, deposition_clay, zeros)
     silt .= ifelse.(rivers .> 0, deposition_silt, zeros)
     sand .= ifelse.(rivers .> 0, deposition_sand, zeros)
     sagg .= ifelse.(rivers .> 0, deposition_sagg, zeros)
     lagg .= ifelse.(rivers .> 0, deposition_lagg, zeros)
 
-    amount .= clay .+ silt .+ sand .+ sagg .+ lagg
+    sediment_rate .= clay .+ silt .+ sand .+ sagg .+ lagg
 end

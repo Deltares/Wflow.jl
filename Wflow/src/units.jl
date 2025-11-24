@@ -18,9 +18,10 @@ struct Unit
     # Temperature
     absolute_temperature::Bool # Expected to be first field!
     K::SVector{2, Rational{Int}} # Kelvin, SI standard
-    degC::SVector{2, Rational{Int}} # Degree Celcius
+    degC::SVector{2, Rational{Int}} # degree Celcius
     # Time
     s::SVector{2, Rational{Int}} # second, SI standard
+    h::SVector{2, Rational{Int}} # hour
     d::SVector{2, Rational{Int}} # day
     dt::SVector{2, Rational{Int}} # time step
     # Length
@@ -33,7 +34,7 @@ struct Unit
     g::SVector{2, Rational{Int}} # gram
     t::SVector{2, Rational{Int}} # tonne
     # Energy
-    J::SVector{2, Rational{Int}} # Joules
+    J::SVector{2, Rational{Int}} # joule
     # Fraction
     percentage::SVector{2, Rational{Int}} # percentage, converted to unitless fraction in the SI standard
     function Unit(absolute_temperature, powers_all...)
@@ -150,6 +151,7 @@ const to_SI_data = Dict{Symbol, @NamedTuple{factor::Float64, unit_SI::Unit}}(
     :K => (factor = 1.0, unit_SI = Unit(; K = 1)),
     :degC => (factor = 1.0, unit_SI = Unit(; K = 1)),
     :s => (factor = 1.0, unit_SI = Unit(; s = 1)),
+    :h => (factor = 3600, unit_SI = Unit(; s = 1)),
     :d => (factor = 86400.0, unit_SI = Unit(; s = 1)),
     :dt => (factor = NaN, unit_SI = Unit(; s = 1)),
     :m => (factor = 1.0, unit_SI = Unit(; m = 1)),

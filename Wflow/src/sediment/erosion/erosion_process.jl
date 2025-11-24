@@ -15,51 +15,54 @@
 Rainfall erosion model based on EUROSEM.
 
 # Arguments
-- `precip` (precipitation [mm dt⁻¹])
-- `interception` (interception [mm dt⁻¹])
+- `precip` (precipitation [mm dt⁻¹ => m s⁻¹])
+- `interception` (interception [mm dt⁻¹ => m s⁻¹])
 - `waterlevel` (water level [m])
-- `soil_detachability` (soil detachability [-])
+- `soil_detachability` (soil detachability [g J⁻¹ => kg J⁻¹])
 - `eurosem_exponent` (EUROSEM exponent [-])
 - `canopyheight` (canopy height [m])
 - `canopygapfraction` (canopy gap fraction [-])
 - `soilcover_fraction` (soil cover fraction [-])
-- `area` (area [m2])
-- `dt` (timestep [seconds])
+- `area` (area [m²])
+- `dt` (timestep [s])
 
 # Output
-- `rainfall_erosion` (soil loss [tdt⁻¹])
+- `rainfall_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
 """
 function rainfall_erosion_eurosem(
-    precip,
-    interception,
-    waterlevel,
-    soil_detachability,
-    eurosem_exponent,
-    canopyheight,
-    canopygapfraction,
-    soilcover_fraction,
-    area,
-    dt,
+    precip::Float64,
+    interception::Float64,
+    waterlevel::Float64,
+    soil_detachability::Float64,
+    eurosem_exponent::Float64,
+    canopyheight::Float64,
+    canopygapfraction::Float64,
+    soilcover_fraction::Float64,
+    area::Float64,
+    dt::Float64,
 )
-    # calculate rainfall intensity [mm/h]
-    rintnsty = precip / (dt / 3600)
-    # Kinetic energy of direct throughfall [J/m2/mm]
-    # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
-    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
-    # Kinetic energy of leaf drainage [J/m2/mm]
+    # Precipitation expressed in unit expected by model
+    rainfall_intensity = from_SI(precip, Unit(; mm = 1, h = -1))
+    # Kinetic energy of direct throughfall [J m⁻² mm⁻¹]
+    # E_kin_direct = max(11.87 + 8.73 * log10(max(0.0001, rainfall_intensity)),0.0) #basis used in USLE
+    E_kin_direct = max(8.95 + 8.44 * log10(max(0.0001, rainfall_intensity)), 0.0) #variant used in most distributed models
+    # Kinetic energy of leaf drainage [J m⁻² mm⁻¹]
     pheff = 0.5 * canopyheight
-    keleaf = max((15.8 * pheff^0.5) - 5.87, 0.0)
+    E_kin_leaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
 
-    #Depths of rainfall (total, leaf drianage, direct) [mm]
-    rdtot = precip
-    rdleaf = rdtot * 0.1 * canopygapfraction #stemflow
-    rddir = max(rdtot - rdleaf - interception, 0.0) #throughfall
+    # Depths of rainfall (total, leaf drainage, direct) [mm]
+    rainfall_depth_total = rainfall_intensity * from_SI(dt, Unit(; h = 1))
+    rainfall_depth_leaf = rainfall_depth_total * 0.1 * canopygapfraction # stemflow
+    intercepted = from_SI(interception * dt, Unit(; mm = 1))
+    rainfall_depth_direct =
+        max(rainfall_depth_total - rainfall_depth_leaf - intercepted, 0.0) # throughfall
 
-    #Total kinetic energy by rainfall [J/m2]
-    ketot = rddir * kedir + rdleaf * keleaf
-    # Rainfall / splash erosion [g/m2]
-    rainfall_erosion = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
-    rainfall_erosion *= area * 1e-6 # ton/cell
+    # Total kinetic energy by rainfall [J m⁻²]
+    E_kin_tot = rainfall_depth_direct * E_kin_direct + rainfall_depth_leaf * E_kin_leaf
+    # Rainfall / splash erosion [g m⁻²]
+    # [kg] = [m²] * [kg J⁻¹] * [J m⁻²] * exp([m⁻¹] * [m])
+    rainfall_erosion =
+        area * soil_detachability * E_kin_tot * exp(-eurosem_exponent * waterlevel)
 
     # Remove the impervious area
     rainfall_erosion *= 1.0 - soilcover_fraction
@@ -89,7 +92,14 @@ Rainfall erosion model based on ANSWERS.
 # Output
 - `rainfall_erosion` (soil loss [tdt⁻¹])
 """
-function rainfall_erosion_answers(precip, usle_k, usle_c, answers_rainfall_factor, area, dt)
+function rainfall_erosion_answers(
+    precip::Float64,
+    usle_k::Float64,
+    usle_c::Float64,
+    answers_rainfall_factor::Float64,
+    area::Float64,
+    dt::Float64,
+)
     # calculate rainfall intensity [mm/min]
     rintnsty = precip / (dt / 60)
     # splash erosion [kg/min]
@@ -137,9 +147,9 @@ function overland_flow_erosion_answers(
     dt,
 )
     # Overland flow rate [m2/min]
-    qr_land = overland_flow * 60 / (area .^ 0.5)
+    qr_land = overland_flow * 60 / sqrt.(area)
     # Sine of the slope
-    sinslope = sin(atan(slope))
+    sinslope = slope / sqrt(1 + slope^2)
 
     # Overland flow erosion [kg/min]
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant
@@ -226,8 +236,8 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 - `dt` (timestep [seconds])
 
 # Output
-- `bed` (potential river erosion [tdt⁻¹])
-- `bank` (potential bank erosion [tdt⁻¹])
+- `bed` (potential river erosion [tdt⁻¹ => kg s⁻¹])
+- `bank` (potential bank erosion [tdt⁻¹ => kg s⁻¹])
 """
 function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
     if waterlevel > 0.0
@@ -240,8 +250,8 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
             (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E)))
         TCrbank = TCrbed
         # kd from Hanson & Simon 2001
-        kdbank = 0.2 * TCrbank^(-0.5) * 1e-6
-        kdbed = 0.2 * TCrbed^(-0.5) * 1e-6
+        kdbank = 0.2 * inv(sqrt(TCrbank)) * 1e-6
+        kdbed = 0.2 * inv(sqrt(TCrbed)) * 1e-6
 
         # Hydraulic radius of the river [m] (rectangular channel)
         hydrad = waterlevel * width / (width + 2 * waterlevel)
@@ -283,13 +293,13 @@ end
 River erosion of the previously deposited sediment.
 
 # Arguments
-- `excess_sediment` (excess sediment [tdt⁻¹])
-- `store` (sediment store [t])
+- `excess_sediment` (excess sediment [tdt⁻¹ => kg s⁻¹])
+- `store` (sediment store [t => kg])
 
 # Output
-- `erosion` (river erosion [tdt⁻¹])
-- `excess_sediment` (updated excess sediment [tdt⁻¹])
-- `store` (updated sediment store [t])
+- `erosion` (river erosion [tdt⁻¹ => kg s⁻¹])
+- `excess_sediment` (updated excess sediment [tdt⁻¹ => kg s⁻¹])
+- `store` (updated sediment store [t => kg])
 """
 function river_erosion_store(excess_sediment, store)
     # River erosion of the previously deposited sediment

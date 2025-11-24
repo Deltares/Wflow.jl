@@ -11,7 +11,7 @@
     zb_max::Vector{Float64}                 # maximum channel bed elevation [m]
     bankfull_storage::Vector{Float64}       # bankfull storage [m³]
     bankfull_depth::Vector{Float64}         # bankfull depth [m]
-    mannings_n_sq::Vector{Float64}          # Manning's roughness squared at edge [(s m-1/3)2]
+    mannings_n_sq::Vector{Float64}          # Manning's roughness squared at edge [(s m-1/3)²]
     mannings_n::Vector{Float64}             # Manning's roughness [s m-1/3] at node
     flow_length_at_edge::Vector{Float64}    # flow (river) length at edge [m]
     flow_width_at_edge::Vector{Float64}     # flow (river) width at edge [m]
