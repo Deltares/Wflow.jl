@@ -177,13 +177,13 @@ function kinematic_wave_ssf(
         # initial estimate
         ssf = (ssf_prev + ssfin) / 2.0
         Cn = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r
+        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r * dt
 
         ssf = kw_ssf_newton_raphson(ssf, c, Cn, dt, dx)
 
         # constrain the lateral flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
-        zi = zi_prev - (ssfin * dt + r * dx - ssf * dt) / (dw * dx) / theta_e
+        zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
             ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
         end
@@ -197,12 +197,12 @@ function kinematic_wave_ssf(
             exfilt_sum = 0.0
             for _ in 1:its
                 Cn = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-                c = (dt_s / dx) * ssfin + (1.0 / Cn) * ssf_prev + r / its
+                c = (dt_s / dx) * ssfin + (1.0 / Cn) * ssf_prev + r * dt_s
                 ssf = kw_ssf_newton_raphson(ssf_prev, c, Cn, dt_s, dx)
                 ssf = min(ssf, (ssfmax * dw))
                 zi =
                     zi_prev -
-                    (ssfin * dt_s + r / its * dx - ssf * dt_s) / (dw * dx) / theta_e
+                    (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
                 if zi > d
                     ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
                 end
@@ -252,7 +252,7 @@ function kinematic_wave_ssf(
         # celerity (Cn)
         Cn = (slope * kh_profile.kh[i]) / theta_e
         # constant term of the continuity equation for Newton-Raphson
-        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r
+        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r * dt
 
         ssf = kw_ssf_newton_raphson(ssf_prev, c, Cn, dt, dx)
 
@@ -260,7 +260,7 @@ function kinematic_wave_ssf(
         ssf = min(ssf, (ssfmax * dw))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level
         # above surface (saturation excess conditions), then rest = negative
-        zi = zi_prev - (ssfin * dt + r * dx - ssf * dt) / (dw * dx) / theta_e
+        zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
             ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
         end
