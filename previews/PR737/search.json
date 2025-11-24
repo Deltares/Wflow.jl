@@ -950,7 +950,18 @@
     "href": "changelog.html#unreleased",
     "title": "Changelog",
     "section": "Unreleased",
-    "text": "Unreleased\n\nFixed\n\nIntroduced in v1.0.0-rc2, fixed initialization of no-demand fields of struct Demand.\nIntroduced in v1.0.0-rc2, fix units water mass balance computations for subsurface flow concepts LateralSSF and UnconfinedAquifer at sub-daily model time step.\nIntroduced in v1.0.0-rc2, as part of refactoring SimpleReservoir and Lake structs, missing values were allowed for static input, but not for dynamic (cyclic and forcing) input. For consistency between static and dynamic input no missing values for reservoir input parameters are allowed, except for parameter lower_reservoir_ind.\n\n\n\nChanged\n\n\nAdded",
+    "text": "Unreleased\n\nFixed\n\nIntroduced in v1.0.0-rc2, as part of refactoring SimpleReservoir and Lake structs, missing values were allowed for static input, but not for dynamic (cyclic and forcing) input. For consistency between static and dynamic input no missing values for reservoir input parameters are allowed, except for parameter lower_reservoir_ind.\n\n\n\nChanged\n\n\nAdded",
+    "crumbs": [
+      "Home",
+      "Changelog"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v1.0.0-rc3---2025-11-11",
+    "href": "changelog.html#v1.0.0-rc3---2025-11-11",
+    "title": "Changelog",
+    "section": "v1.0.0-rc3 - 2025-11-11",
+    "text": "v1.0.0-rc3 - 2025-11-11\n\nFixed\n\nIntroduced in v1.0.0-rc2, fixed initialization of no-demand fields of struct Demand.\nIntroduced in v1.0.0-rc2, fix units water mass balance computations for subsurface flow concepts LateralSSF and UnconfinedAquifer at sub-daily model time step.\nIntroduced in v1.0.0-rc1, optional parameter soil_root__length_density_fraction only read as cyclic input and not as static input. This should be only static input.",
     "crumbs": [
       "Home",
       "Changelog"
@@ -1623,7 +1634,7 @@
     "href": "user_guide/model_config.html#enabling-floodplain-routing",
     "title": "Different model configurations",
     "section": "Enabling floodplain routing",
-    "text": "Enabling floodplain routing\nAs part of the local inertial model for river flow.\n\n1D floodplains\n[model]\nriver_routing = \"local_inertial\"\nfloodplain_1d__flag = true\n\n[input.static]\nfloodplain_water__sum_of_volume-per-depth = \"floodplain_volume\"\nfloodplain_water_flow__manning_n_parameter = \"floodplain_n\"\n\n[state.variables]\nfloodplain_water__instantaneous_volume_flow_rate = \"q_floodplain\"\nfloodplain_water__depth = \"h_floodplain\"\n\n\n2D floodplains\n[model]\nriver_routing = \"local_inertial\"\nland_routing = \"local_inertial\"\n\n[input.static]\nriver_bank_water__elevation = \"RiverZ\"\nland_surface_water_flow__ground_elevation = \"FloodplainZ\"\n\n[state.variables]\nland_surface_water__depth = \"h_land\"\nland_surface_water__x_component_of_instantaneous_volume_flow_rate = \"qx_land\"\nland_surface_water__y_component_of_instantaneous_volume_flow_rate = \"qy_land\"",
+    "text": "Enabling floodplain routing\nAs part of the local inertial model for river flow.\n\n1D floodplains\n[model]\nriver_routing = \"local_inertial\"\nfloodplain_1d__flag = true\n\n[input.static]\nfloodplain_water__sum_of_volume_per_depth = \"floodplain_volume\"\nfloodplain_water_flow__manning_n_parameter = \"floodplain_n\"\n\n[state.variables]\nfloodplain_water__instantaneous_volume_flow_rate = \"q_floodplain\"\nfloodplain_water__depth = \"h_floodplain\"\n\n\n2D floodplains\n[model]\nriver_routing = \"local_inertial\"\nland_routing = \"local_inertial\"\n\n[input.static]\nriver_bank_water__elevation = \"RiverZ\"\nland_surface_water_flow__ground_elevation = \"FloodplainZ\"\n\n[state.variables]\nland_surface_water__depth = \"h_land\"\nland_surface_water__x_component_of_instantaneous_volume_flow_rate = \"qx_land\"\nland_surface_water__y_component_of_instantaneous_volume_flow_rate = \"qy_land\"",
     "crumbs": [
       "User guide",
       "Supported options",
