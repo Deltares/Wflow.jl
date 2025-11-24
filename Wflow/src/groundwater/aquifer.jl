@@ -26,7 +26,7 @@ Sᵢ * (ϕᵢᵗ⁺¹ - ϕᵢᵗ) /dt = -Cᵢ₋₁ * (ϕᵢ₋₁ - ϕᵢ) -C�
 with:
 * ᵢ as cell index
 * ᵗ as time index
-*dt as step size
+* dt as step size
 * Cᵢ₋₁ as the intercell conductance between cell i-1 and i
 * Cᵢ as the intercell conductance between cell i and i+1
 
@@ -43,7 +43,7 @@ using the properties of two cells. See the documentation below.
 
 There is only one unknown, ϕᵢᵗ⁺¹. Reshuffling terms:
 
-ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) *dt / Sᵢ
+ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) * dt / Sᵢ
 
 This can be generalized to two dimensions, for both regular and irregular cell
 connectivity.
@@ -99,8 +99,8 @@ end
     conductance::Vector{Float64}            # conductance [m² d⁻¹ => m² s⁻¹]
     storage::Vector{Float64}                # total storage of water that can be released [m³]
     q_net::Vector{Float64} = zeros(n)       # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
-    q_in_av::Vector{Float64} = zeros(n)     # average groundwater (lateral) inflow for model timestepdt [m³ d⁻¹ => m³ s⁻¹]
-    q_out_av::Vector{Float64} = zeros(n)    # average groundwater (lateral) outflow for model timestepdt [m³ d⁻¹ => m³ s⁻¹]
+    q_in_av::Vector{Float64} = zeros(n)     # average groundwater (lateral) inflow for model timestep dt [m³ d⁻¹ => m³ s⁻¹]
+    q_out_av::Vector{Float64} = zeros(n)    # average groundwater (lateral) outflow for model timestep dt [m³ d⁻¹ => m³ s⁻¹]
     exfiltwater::Vector{Float64} = zeros(n) # Exfiltration [mdt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 

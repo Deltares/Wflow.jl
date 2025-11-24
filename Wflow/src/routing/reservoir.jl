@@ -246,7 +246,7 @@ end
     storage::Vector{Float64}
     # outflow from reservoir [m³ s⁻¹]
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # average outflow from reservoir [m³ s⁻¹] for model timestepdt
+    # average outflow from reservoir [m³ s⁻¹] for model timestep dt
     outflow_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # observed outflow from reservoir [m³ s⁻¹]
     outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
@@ -286,7 +286,7 @@ end
 @with_kw struct ReservoirBC
     inflow_subsurface::Vector{Float64}    # inflow from subsurface flow into reservoir [m³ s⁻¹]
     inflow_overland::Vector{Float64}      # inflow from overland flow into reservoir [m³ s⁻¹]
-    inflow::Vector{Float64}               # total inflow into reservoir [m³ s⁻¹] for model timestepdt
+    inflow::Vector{Float64}               # total inflow into reservoir [m³ s⁻¹] for model timestep dt
     external_inflow::Vector{Float64}      # external inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64}  # actual abstraction from external negative inflow [m³ s⁻¹]
     precipitation::Vector{Float64}        # average precipitation for reservoir area [mm dt⁻¹]
@@ -617,7 +617,7 @@ function update!(
     res_v.waterlevel[i] = waterlevel
     res_v.outflow[i] = outflow
 
-    # average variables (here accumulated for model timestepdt)
+    # average variables (here accumulated for model timestep dt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt
     res_v.actevap[i] += actevap / res_p.area[i]

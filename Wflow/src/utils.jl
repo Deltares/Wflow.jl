@@ -273,8 +273,7 @@ function ncread(
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set parameter." *
-              to_table(; parameter, unit)
+        @info "Set parameter." * to_table(; parameter, unit)
         @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -326,8 +325,7 @@ function ncread(
         return to_SI!(A, unit; dt_val = config.time.timestepsecs)
     else
         if logging
-            @info "Set parameter using netCDF variable." *
-                  to_table(; parameter, var, unit)
+            @info "Set parameter using netCDF variable." * to_table(; parameter, var, unit)
         end
         A = read_standardized(nc, variable_name(var), dim_sel)
         if !isnothing(layer)
@@ -981,6 +979,10 @@ function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0):
     return z
 end
 
+"""
+Convert the specified values in a table of 2 colums of names and values.
+The default headers of these columns are "option" and "value" respectively.
+"""
 function to_table(; column_labels = [:option, :value], kwargs...)
     parameter_names = collect(keys(kwargs))
     values = [kwargs[label] for label in parameter_names]

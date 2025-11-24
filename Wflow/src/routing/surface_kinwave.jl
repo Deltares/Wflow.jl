@@ -4,8 +4,8 @@
     q::Vector{Float64} = zeros(Float64, n)            # Discharge [m³ s⁻¹]
     qlat::Vector{Float64} = zeros(Float64, n)         # Lateral inflow per unit length [m² s⁻¹]
     qin::Vector{Float64} = zeros(Float64, n)          # Inflow from upstream cells [m³ s⁻¹]
-    qin_av::Vector{Float64} = zeros(Float64, n)       # Average inflow from upstream cells  [m³ s⁻¹] for model timestepdt
-    q_av::Vector{Float64} = zeros(Float64, n)         # Average discharge [m³ s⁻¹] for model timestepdt
+    qin_av::Vector{Float64} = zeros(Float64, n)       # Average inflow from upstream cells  [m³ s⁻¹] for model timestep dt
+    q_av::Vector{Float64} = zeros(Float64, n)         # Average discharge [m³ s⁻¹] for model timestep dt
     storage::Vector{Float64} = zeros(Float64, n)      # Kinematic wave storage [m³] (based on water depth h)
     h::Vector{Float64} = zeros(Float64, n)            # Water depth [m]
 end

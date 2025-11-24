@@ -82,15 +82,15 @@ end
 Rainfall erosion model based on ANSWERS.
 
 # Arguments
-- `precip` (precipitation [mm dt⁻¹])
-- `usle_k` (USLE soil erodibility [t ha-1 mm-1])
+- `precip` (precipitation [mm dt⁻¹ => m s⁻¹])
+- `usle_k` (USLE soil erodibility [t ha-1 mm-1] ?????)
 - `usle_c` (USLE cover and management factor [-])
 - `answers_rainfall_factor` (ANSWERS rainfall erosion factor [-])
 - `area` (area [m2])
 - `dt` (timestep [seconds])
 
 # Output
-- `rainfall_erosion` (soil loss [tdt⁻¹])
+- `rainfall_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
 """
 function rainfall_erosion_answers(
     precip::Float64,
@@ -125,17 +125,17 @@ end
 Overland flow erosion model based on ANSWERS.
 
 # Arguments
-- `overland_flow` (overland flow [m3 s-1])
+- `overland_flow` (overland flow [m3 s⁻¹])
 - `waterlevel` (water level [m])
-- `usle_k` (USLE soil erodibility [t ha-1 mm-1])
+- `usle_k` (USLE soil erodibility [t ha-1 mm-1] ???)
 - `usle_c` (USLE cover and management factor [-])
 - `answers_overland_flow_factor` (ANSWERS overland flow factor [-])
 - `slope` (slope [-])
-- `area` (area [m2])
+- `area` (area [m²])
 - `dt` (timestep [seconds])
 
 # Output
-- `overland_flow_erosion` (soil loss [tdt⁻¹])
+- `overland_flow_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
 """
 function overland_flow_erosion_answers(
     overland_flow,
@@ -173,8 +173,8 @@ end
 Calculate total soil erosion and particle differentiation.
 
 # Arguments
-- `rainfall_erosion` (soil loss from rainfall erosion [tdt⁻¹])
-- `overland_flow_erosion` (soil loss from overland flow erosion [tdt⁻¹])
+- `rainfall_erosion` (soil loss from rainfall erosion [t dt⁻¹ => kg s⁻¹])
+- `overland_flow_erosion` (soil loss from overland flow erosion [t dt⁻¹ => kg s⁻¹])
 - `clay_fraction` (clay fraction [-])
 - `silt_fraction` (silt fraction [-])
 - `sand_fraction` (sand fraction [-])
@@ -182,12 +182,12 @@ Calculate total soil erosion and particle differentiation.
 - `lagg_fraction` (large aggregates fraction [-])
 
 # Output
-- `soil_erosion` (total soil loss [tdt⁻¹])
-- `clay_erosion` (clay loss [tdt⁻¹])
-- `silt_erosion` (silt loss [tdt⁻¹])
-- `sand_erosion` (sand loss [tdt⁻¹])
-- `sagg_erosion` (small aggregates loss [tdt⁻¹])
-- `lagg_erosion` (large aggregates loss [tdt⁻¹])
+- `soil_erosion` (total soil loss [t dt⁻¹ => kg s⁻¹])
+- `clay_erosion` (clay loss [t dt⁻¹ => kg s⁻¹])
+- `silt_erosion` (silt loss [t dt⁻¹ => kg s⁻¹])
+- `sand_erosion` (sand loss [t dt⁻¹ => kg s⁻¹])
+- `sagg_erosion` (small aggregates loss [t dt⁻¹ => kg s⁻¹])
+- `lagg_erosion` (large aggregates loss [t dt⁻¹ => kg s⁻¹])
 """
 function total_soil_erosion(
     rainfall_erosion,
