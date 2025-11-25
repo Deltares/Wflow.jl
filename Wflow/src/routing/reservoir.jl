@@ -48,7 +48,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         optional = false,
         sel = indices_outlet,
         type = Float64,
-        fill = 0,
     )
     waterlevel = ncread(
         dataset,
@@ -57,7 +56,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         optional = false,
         sel = indices_outlet,
         type = Float64,
-        fill = 0,
     )
     storfunc = ncread(
         dataset,
@@ -66,7 +64,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         optional = false,
         sel = indices_outlet,
         type = Int,
-        fill = 0,
     )
     outflowfunc = ncread(
         dataset,
@@ -75,7 +72,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         optional = false,
         sel = indices_outlet,
         type = Int,
-        fill = 0,
     )
     linked_reslocs = ncread(
         dataset,
@@ -95,7 +91,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         optional = false,
         sel = indices_outlet,
         type = Int,
-        fill = 0,
     )
     @info "Read `$n_reservoirs` reservoir locations."
 
@@ -109,7 +104,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
         b = ncread(
             dataset,
@@ -118,7 +112,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
         e = ncread(
             dataset,
@@ -127,7 +120,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
     end
     if 4 in outflowfunc
@@ -138,7 +130,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
         maxrelease = ncread(
             dataset,
@@ -147,7 +138,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
         maxstorage = ncread(
             dataset,
@@ -156,7 +146,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
         targetfullfrac = ncread(
             dataset,
@@ -165,7 +154,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
         targetminfrac = ncread(
             dataset,
@@ -174,7 +162,6 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             optional = false,
             sel = indices_outlet,
             type = Float64,
-            fill = 0,
         )
     end
 
