@@ -386,7 +386,7 @@ end
 const tan80 = tan(80 / 360 * 2π)
 
 """
-    lateral_snow_transport!(snow, slope, network)
+    lateral_snow_transport!(snow, domain, dt)
 
 Lateral snow transport. Transports snow downhill. Mutates `snow_storage` and `snow_water` of
 a `snow` model.
@@ -406,7 +406,7 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt
     flux_in!(snow_in, snow_out, domain.network)
 end
 
-lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
+lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Number) = nothing
 
 """
     local_inertial_flow(q0, zs0, zs1, hf, A, R, length, mannings_n, g, froude_limit, dt)

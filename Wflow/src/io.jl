@@ -16,6 +16,7 @@ end
 function get_at(
     ds::CFDataset,
     var::InputEntry,
+    unit::Unit,
     times::AbstractVector{<:TimeType},
     t::TimeType,
     dt::Second,
@@ -24,16 +25,16 @@ function get_at(
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at(ds, var, i, dt)
+    return get_at(ds, var, unit, i, dt)
 end
 
-function get_at(ds::CFDataset, var::InputEntry, i::Int, dt::Second)
+function get_at(ds::CFDataset, var::InputEntry, unit::Unit, i::Int, dt::Second)
     (; scale, offset) = var
     data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
     if scale != 1.0 || offset != 0.0
         data .= data .* scale .+ offset
     end
-    return to_SI!(data, var.unit; dt_val = Dates.value(dt))
+    return to_SI!(data, unit; dt_val = Dates.value(dt))
 end
 
 function get_param_res(model)
@@ -127,7 +128,8 @@ function update_forcing!(model)
         variable_name(ncvar) === nothing && continue
 
         time = convert(eltype(dataset_times), clock.time)
-        data = get_at(dataset, ncvar, dataset_times, time, model.clock.dt)
+        unit = get_unit(par)
+        data = get_at(dataset, ncvar, unit, dataset_times, time, model.clock.dt)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -193,13 +195,14 @@ function update_cyclic!(model)
     is_first_timestep = clock.iteration == 1
 
     for (par, ncvar) in cyclic_parameters
+        unit = get_unit(par)
         if is_first_timestep || (month_day in cyclic_times[par])
             # time for an update of the cyclic forcing
             i = findlast(t -> monthday_passed(month_day, t), cyclic_times[par])
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar, i, clock.dt)
+            data = get_at(cyclic_dataset, ncvar, unit, i, clock.dt)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -560,7 +563,7 @@ function NCReader(config)
         ncname = variable_name(var)
         variable_info(var)
         @info "Set parameter using netCDF variable as forcing parameter." *
-              to_table(; parameter = par, netCDF_variable = ncname, var.unit)
+              to_table(; parameter = par, netCDF_variable = ncname, unit = get_unit(par))
     end
 
     # create map from internal location to netCDF variable name for cyclic parameters and
@@ -581,7 +584,7 @@ function NCReader(config)
                 parameter = par,
                 netCDF_variable = ncname,
                 n_timesteps = length(cyclic_nc_times),
-                var.unit,
+                unit = get_unit(par),
             )
         end
     else

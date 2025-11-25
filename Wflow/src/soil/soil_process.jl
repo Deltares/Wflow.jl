@@ -146,7 +146,7 @@ Return soil water pressure head `h3` of Feddes root water uptake reduction funct
 """
 function feddes_h3(h3_high, h3_low, tpot_SI)
     # value of h3 is a function of potential transpiration [mm/d]
-    tpot_daily = from_SI(tpot_SI, Unit(; mm = 1, d = -1))
+    tpot_daily = from_SI(tpot_SI, MM_PER_DAY)
     return if tpot_daily <= 1.0
         h3_low
     elseif tpot_daily < 5.0
@@ -226,8 +226,8 @@ Otherwise, `f_infiltration_reduction` is set to 1.0.
 function infiltration_reduction_factor(
     tsoil,
     cf_soil;
-    modelsnow = false,
-    soil_infiltration_reduction = false,
+    modelsnow=false,
+    soil_infiltration_reduction=false,
 )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)

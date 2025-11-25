@@ -1,3 +1,5 @@
+const PowersType = SVector{2,Rational{Int}}
+
 """
 Store a unit as a product of powers, for instance:
 m/s -> Unit(; m = 1, s = -1)
@@ -17,83 +19,117 @@ Adding support for a new unit is easy:
 struct Unit
     # Temperature
     absolute_temperature::Bool # Expected to be first field!
-    K::SVector{2, Rational{Int}} # Kelvin, SI standard
-    degC::SVector{2, Rational{Int}} # degree Celcius
+    K::PowersType # Kelvin, SI standard
+    degC::PowersType # degree Celcius
     # Time
-    s::SVector{2, Rational{Int}} # second, SI standard
-    h::SVector{2, Rational{Int}} # hour
-    d::SVector{2, Rational{Int}} # day
-    dt::SVector{2, Rational{Int}} # time step
+    s::PowersType # second, SI standard
+    h::PowersType # hour
+    d::PowersType # day
+    dt::PowersType # time step
     # Length
-    m::SVector{2, Rational{Int}} # meter, SI standard
-    cm::SVector{2, Rational{Int}} # centimeter
-    mm::SVector{2, Rational{Int}} # millimeter
-    μm::SVector{2, Rational{Int}} # micrometer
+    m::PowersType # meter, SI standard
+    cm::PowersType # centimeter
+    mm::PowersType # millimeter
+    μm::PowersType # micrometer
     # Mass
-    kg::SVector{2, Rational{Int}} # kilogram, SI standard
-    g::SVector{2, Rational{Int}} # gram
-    t::SVector{2, Rational{Int}} # tonne
+    kg::PowersType # kilogram, SI standard
+    g::PowersType # gram
+    t::PowersType # tonne
     # Energy
-    J::SVector{2, Rational{Int}} # joule
+    J::PowersType # joule
     # Fraction
-    percentage::SVector{2, Rational{Int}} # percentage, converted to unitless fraction in the SI standard
-    function Unit(absolute_temperature, powers_all...)
-        for (unit_name, powers) in zip(Units, powers_all)
-            @assert all(≥(0), powers) "Expected non-negative input, got $powers for $unit_name."
-        end
-        return new(absolute_temperature, powers_all...)
-    end
+    percentage::PowersType # percentage, converted to unitless fraction in the SI standard
+    # Factor for converting a value in this unit to the above mentioned standard SI units (apart from dt)
+    to_SI_factor_without_dt::Float64 # Expected to be last field!
 end
 
-const Units = fieldnames(Unit)[2:end]
+const STANDARD_UNITS = [:K, :s, :m, :kg]
 
-function Unit(; absolute_temperature = false, kwargs...)
-    out = Dict(unit => SVector(0 // 1, 0 // 1) for unit in Units)
-    for (unit, val) in pairs(kwargs)
-        @assert unit ∈ fieldnames(Unit) "Unrecognized unit $unit."
-        powers = if val isa Number
-            val > 0 ? (0, val) : (-val, 0)
-        else
-            val
+const to_SI_data = [
+    (factor=1.0, unit_SI=Unit(; K=1)), # K
+    (factor=1.0, unit_SI=Unit(; K=1)), # degC
+    (factor=1.0, unit_SI=Unit(; s=1)), # s
+    (factor=3600, unit_SI=Unit(; s=1)), # h
+    (factor=86400.0, unit_SI=Unit(; s=1)), # d
+    (factor=NaN, unit_SI=Unit(; s=1)), # dt
+    (factor=1.0, unit_SI=Unit(; m=1)), # m
+    (factor=1e-2, unit_SI=Unit(; m=1)), # cm
+    (factor=1e-3, unit_SI=Unit(; m=1)), # mm
+    (factor=1e-6, unit_SI=Unit(; m=1)), # μm
+    (factor=1.0, unit_SI=Unit(; kg=1)), # kg
+    (factor=1e-3, unit_SI=Unit(; kg=1)), # g
+    (factor=1e3, unit_SI=Unit(; kg=1)), # t
+    (factor=1.0, unit_SI=Unit(; kg=1, m=2, s=-2)), # J
+    (factor=1e-2, unit_SI=Unit()), # percentage
+]
+
+function Unit(absolute_temperature, powers_all...)
+    to_SI_factor_without_dt = 1.0
+    for (i, powers) in enumerate(powers_all)
+        unit = Units[i]
+        (unit == :dt) && continue
+        @assert all(≥(0), powers) "Expected non-negative input, got $powers for $unit."
+        net_power = powers[2] - powers[1]
+        if (unit ∉ STANDARD_UNITS) && !iszero(net_power)
+            factor = to_SI_data[i].factor
+            to_SI_factor_without_dt *= factor^net_power
         end
-        out[unit] = powers
     end
-    return Unit(
-        absolute_temperature,
-        ntuple(i -> SVector{2, Rational{Int}}(out[Units[i]]), Val(length(Units)))...,
+    return Unit(absolute_temperature, powers_all..., to_SI_factor_without_dt)
+end
+
+const Units = fieldnames(Unit)[2:(end-1)]
+const N_UNITS = length(Units)
+
+# Get a tuple of all power values
+@generated function get_powers_tuple(unit::Unit)
+    exprs = [:(getfield(unit, $(i + 1))) for i in 1:N_UNITS]  # +1 to skip absolute_temperature
+    return :(tuple($(exprs...)))
+end
+
+function Unit(; absolute_temperature=false, kwargs...)
+    powers = ntuple(
+        i -> begin
+            unit = Units[i]
+            powers = return if unit in keys(kwargs)
+                val = kwargs[unit]
+
+                if val isa Number
+                    val > 0 ? (0, val) : (-val, 0)
+                else
+                    val
+                end
+            else
+                (0 // 1, 0 // 1)
+            end
+            PowersType(powers)
+        end,
+        N_UNITS,
     )
+    return Unit(absolute_temperature, powers...)
 end
 
 function Base.:*(u1::Unit, u2::Unit)
-    # Multiply units by adding their powers
-    Unit(
-        u1.absolute_temperature || u2.absolute_temperature,
-        ntuple(
-            i -> getfield(u1, Units[i]) .+ getfield(u2, Units[i]),
-            Val(length(Units)),
-        )...,
-    )
+    absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature
+    powers1 = get_powers_tuple(u1)
+    powers2 = get_powers_tuple(u2)
+    powers_new = ntuple(i -> powers1[i] + powers2[i], N_UNITS)
+    return Unit(absolute_temperature_new, powers_new...)
 end
 
 function Base.:^(u::Unit, n::Rational{Int})
-    # Raise unit to a power by multiplying all powers by n
-    # Raising to a negative power swaps the order of the powers
-    Unit(
-        u.absolute_temperature,
-        ntuple(i -> begin
-            powers = getfield(u, Units[i])
-            if n > 0
-                powers * n
-            else
-                reverse(powers) * abs(n)
-            end
-        end, Val(length(Units)))...,
-    )
+    powers = get_powers_tuple(u)
+    powers_new = if (n > 0)
+        ntuple(i -> powers[i] * n, N_UNITS)
+    else
+        ntuple(i -> reverse(powers[i] * -n), N_UNITS)
+    end
+    return Unit(u.absolute_temperature, powers_new...)
 end
 
 # Unit strings that are not the same as their field name in
 # the Unit struct
-const UnitStrings = Dict{Symbol, String}(:degC => "°C", :percentage => "%")
+const UnitStrings = Dict{Symbol,String}(:degC => "°C", :percentage => "%")
 
 function power_string(power::Rational{Int}, BMI_standard::Bool)
     (; num, den) = power
@@ -116,7 +152,7 @@ Represent the Unit as a string,
 following the BMI standard if `BMI_standard = true`:
 https://bmi.csdms.io/en/stable/bmi.var_funcs.html#get-var-units
 """
-function to_string(unit::Unit; BMI_standard = false)
+function to_string(unit::Unit; BMI_standard=false)
     n_units = length(Units)
     symbols = ntuple(i -> get(UnitStrings, Units[i], String(Units[i])), Val(n_units))
     powers = ntuple(i -> getfield(unit, Units[i]), Val(n_units))
@@ -147,85 +183,43 @@ end
 Base.string(unit::Unit) = to_string(unit)
 Base.show(io::IO, unit::Unit) = print(io, to_string(unit))
 
-const to_SI_data = Dict{Symbol, @NamedTuple{factor::Float64, unit_SI::Unit}}(
-    :K => (factor = 1.0, unit_SI = Unit(; K = 1)),
-    :degC => (factor = 1.0, unit_SI = Unit(; K = 1)),
-    :s => (factor = 1.0, unit_SI = Unit(; s = 1)),
-    :h => (factor = 3600, unit_SI = Unit(; s = 1)),
-    :d => (factor = 86400.0, unit_SI = Unit(; s = 1)),
-    :dt => (factor = NaN, unit_SI = Unit(; s = 1)),
-    :m => (factor = 1.0, unit_SI = Unit(; m = 1)),
-    :cm => (factor = 1e-2, unit_SI = Unit(; m = 1)),
-    :mm => (factor = 1e-3, unit_SI = Unit(; m = 1)),
-    :μm => (factor = 1e-6, unit_SI = Unit(; m = 1)),
-    :kg => (factor = 1.0, unit_SI = Unit(; kg = 1)),
-    :g => (factor = 1e-3, unit_SI = Unit(; kg = 1)),
-    :t => (factor = 1e3, unit_SI = Unit(; kg = 1)),
-    :J => (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)),
-    :percentage => (factor = 1e-2, unit_SI = Unit()),
-)
-
 """
-Obtain the conversion factor from an Unit into
-SI units, e.g.:
-mm/dt -> 1e-3 / dt_val
+Convert a general unit to an SI standard unit
 """
-function to_SI_factor(unit::Unit; dt_val::Union{Nothing, Number} = nothing)
-    # Model dependent units
-    (; dt) = unit
+function to_SI(unit::Unit)
+    powers_all = get_powers_tuple(unit)
+    unit_new =
+        Unit(unit.absolute_temperature, ntuple(Returns(SVector(0 // 1, 0 // 1)), N_UNITS))
 
-    if isnothing(dt_val)
-        if !all(iszero(dt))
-            throw(ArgumentError("Unit depends on `dt` but `dt_val` was not passed."))
-        else
-            dt_val = 1.0
+    for (i, powers) in enumerate(powers_all)
+        net_power = powers[2] - powers[1]
+        if !iszero(net_power)
+            unit_new *= to_SI_data[i]^net_power
         end
     end
 
-    factor = 1.0
+    return unit_new
+end
 
-    for base_unit in Units
-        factor_unit = to_SI_data[base_unit].factor
-        if isnan(factor_unit)
-            # Model dependent conversion factors
-            factor_unit = if base_unit == :dt
-                dt_val
-            end
-        end
-        powers = getfield(unit, base_unit)::SVector{2, Rational{Int}}
-        factor *= factor_unit^(powers[2] - powers[1])
+const ABSOLUTE_DEGREES = Unit(; degC=1, absolute_temperature=true)
+const MM_PER_DAY = Unit(; mm=1, d=-1)
+
+function to_SI_factor(unit::Unit; dt_val::Union{Nothing,Number}=nothing)
+    powers_dt = unit.dt
+    net_power_dt = powers_dt[2] - powers_dt[1]
+    factor = unit.to_SI_factor_without_dt
+    if !iszero(net_power_dt)
+        isnothing(dt_val) && "Unit $unit depends on dt but dt_val was not supplied."
+        factor *= dt_val^net_power_dt
     end
     return factor
 end
 
 """
-Convert a general unit to an SI standard unit
-"""
-function to_SI(unit::Unit)
-    # Start with unitless
-    unit_SI = Unit()
-
-    # Convert each unit field using to_SI_data
-    for unit_field in Units
-        powers = getfield(unit, unit_field)
-        # Get the SI equivalent for this unit
-        si_info = to_SI_data[unit_field]
-        # Calculate net power (positive - negative)
-        net_power = powers[2] - powers[1]
-        # Raise the SI unit to the net power and multiply
-        unit_contribution = si_info.unit_SI^net_power
-        unit_SI = unit_SI * unit_contribution
-    end
-
-    @assert to_SI_factor(unit_SI) |> isone
-    return unit_SI
-end
-
-"""
 Convert the given value of the given unit to the value of the corresponding standard SI unit
 """
-function to_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
-    return if unit == Unit(; degC = 1, absolute_temperature = true)
+function to_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing,Number}=nothing)
+    return if unit == ABSOLUTE_DEGREES
         # Special case for absolute temperatures in °C
         x + 273.15
     else
@@ -239,7 +233,7 @@ to_SI(x, unit::Unit; kwargs...) = x
 """
 Convert an array of values to the values in the corresponding SI unit in-place
 """
-function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
+function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing,Number}=nothing)
     unit_ref = Ref(unit)
     @. x = to_SI(x, unit_ref; dt_val)
     return x
@@ -248,8 +242,8 @@ end
 """
 Convert the given value of the SI equivalent of the given unit to the value in the given unit
 """
-function from_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
-    return if unit == Unit(; degC = 1, absolute_temperature = true)
+function from_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing,Number}=nothing)
+    return if unit == ABSOLUTE_DEGREES
         # Special case for absolute temperatures in °C
         x - 273.15
     else
@@ -263,7 +257,7 @@ Convert the given values of the SI equivalent of the given unit to the values in
 function from_SI!(
     x::Union{AbstractArray},
     unit::Unit;
-    dt_val::Union{Nothing, Number} = nothing,
+    dt_val::Union{Nothing,Number}=nothing,
 )
     unit_ref = Ref(unit)
     @. x = from_SI(x, unit_ref; dt_val)

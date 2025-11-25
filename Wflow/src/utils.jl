@@ -298,9 +298,9 @@ function ncread(
     end
 
     if var isa Number
-        var = InputEntry(; value = var, unit)
+        var = InputEntry(; value = var)
     elseif var isa String
-        var = InputEntry(; external_name = var, unit)
+        var = InputEntry(; external_name = var)
     else
         @assert var isa InputEntry
     end

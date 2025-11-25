@@ -18,7 +18,7 @@ For configuration files we use TOML.
 @enumx ReducerType maximum minimum mean median sum first last only
 
 abstract type AbstractConfigSection end
-const PropertyDictType = PropertyDict{String,Any,Dict{String,Any}}
+const PropertyDictType = PropertyDict{String, Any, Dict{String, Any}}
 
 ###
 ### Time section
@@ -27,10 +27,10 @@ const PropertyDictType = PropertyDict{String,Any,Dict{String,Any}}
 # Time related configurations
 @kwdef mutable struct TimeSection <: AbstractConfigSection
     calendar::CalendarType.T = CalendarType.standard
-    starttime::Union{Nothing,DateTime} = nothing # default from forcing netCDF
-    endtime::Union{Nothing,DateTime} = nothing   # default from forcing netCDF
+    starttime::Union{Nothing, DateTime} = nothing # default from forcing netCDF
+    endtime::Union{Nothing, DateTime} = nothing   # default from forcing netCDF
     time_units::String = CFTime.DEFAULT_TIME_UNITS
-    timestepsecs::Union{Nothing,Float64} = nothing # default from forcing netCDF
+    timestepsecs::Union{Nothing, Float64} = nothing # default from forcing netCDF
 end
 
 ###
@@ -105,7 +105,7 @@ end
     land_transport::LandTransportType.T = LandTransportType.yalin
     river_transport::RiverTransportType.T = RiverTransportType.bagnold
     # Water demand
-    water_demand::WaterDemandSubSection = WaterDemandSubSection(; _was_specified=false)
+    water_demand::WaterDemandSubSection = WaterDemandSubSection(; _was_specified = false)
 end
 
 ###
@@ -114,10 +114,10 @@ end
 
 # State configurations
 @kwdef mutable struct StateSection <: AbstractConfigSection
-    path_input::Union{Nothing,String} = nothing
-    path_output::Union{Nothing,String} = nothing
+    path_input::Union{Nothing, String} = nothing
+    path_output::Union{Nothing, String} = nothing
     # Variable name mapping
-    variables::PropertyDictType = PropertyDict(Dict{String,Any}())
+    variables::PropertyDictType = PropertyDict(Dict{String, Any}())
 end
 
 ###
@@ -125,29 +125,29 @@ end
 ###
 
 @kwdef mutable struct InputEntry <: AbstractConfigSection
-    unit::Unit
     # Option 1
-    netcdf_variable_name::Union{Nothing,String} = nothing
+    netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
     offset::Vector{Float64} = [0.0]
-    layer::Union{Nothing,Vector{Int}} = nothing
+    layer::Union{Nothing, Vector{Int}} = nothing
     # Option 2
     value::Any = nothing
     # Option 3
-    external_name::Union{Nothing,String} = nothing
+    external_name::Union{Nothing, String} = nothing
 end
 
 variable_name(var::InputEntry) =
     isnothing(var.netcdf_variable_name) ? var.external_name : var.netcdf_variable_name
 
 @kwdef mutable struct InputEntries <: AbstractConfigSection
-    dict::Dict{String,InputEntry} = Dict()
+    dict::Dict{String, InputEntry} = Dict()
 end
 
 Base.haskey(input_entries::InputEntries, key) = haskey(input_entries.dict, key)
 Base.getindex(input_entries::InputEntries, key) = input_entries.dict[key]
-Base.setindex!(input_entries::InputEntries, value::InputEntry, key::AbstractString) = (input_entries.dict[key] = value)
-Base.setindex!(input_entries::InputEntries, value, key::AbstractString) = (input_entries.dict[key] = InputEntry(; value, unit=get_unit(key)))
+Base.setindex!(input_entries::InputEntries, value, key) = (input_entries.dict[key] = value)
+Base.setindex!(input_entries::InputEntries, value::AbstractDict, key) =
+    (input_entries.dict[key] = init_config_section(InputEntry, value))
 Base.keys(input_entries::InputEntries) = keys(input_entries.dict)
 Base.iterate(input_entries::InputEntries) = iterate(input_entries.dict)
 Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, state)
@@ -158,10 +158,10 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     path_forcing::String
     path_static::String
     basin__local_drain_direction::String
-    basin_pit_location__mask::Union{Nothing,String} = nothing
+    basin_pit_location__mask::Union{Nothing, String} = nothing
     river_location__mask::String
-    reservoir_area__count::Union{Nothing,String} = nothing
-    reservoir_location__count::Union{Nothing,String} = nothing
+    reservoir_area__count::Union{Nothing, String} = nothing
+    reservoir_location__count::Union{Nothing, String} = nothing
     subbasin_location__count::String
     # Variable name mappings
     forcing::InputEntries
@@ -182,20 +182,20 @@ const input_field_names = String.(fieldnames(Wflow.InputSection))
 end
 
 @kwdef mutable struct IndexSection <: AbstractConfigSection
-    i::Union{Nothing,Int} = nothing
-    x::Union{Nothing,Int} = nothing
-    y::Union{Nothing,Int} = nothing
+    i::Union{Nothing, Int} = nothing
+    x::Union{Nothing, Int} = nothing
+    y::Union{Nothing, Int} = nothing
     _was_specified::Bool = true
 end
 
 @kwdef mutable struct CSVColumn <: AbstractConfigSection
     header::String
     parameter::String
-    reducer::Union{Nothing,ReducerType.T} = nothing
-    layer::Union{Nothing,Int} = nothing
-    index::IndexSection = IndexSection(; _was_specified=false)
-    map::Union{Nothing,String} = nothing
-    coordinate::Union{Nothing,CoordinateSection} = nothing
+    reducer::Union{Nothing, ReducerType.T} = nothing
+    layer::Union{Nothing, Int} = nothing
+    index::IndexSection = IndexSection(; _was_specified = false)
+    map::Union{Nothing, String} = nothing
+    coordinate::Union{Nothing, CoordinateSection} = nothing
 end
 
 @kwdef mutable struct CSVSection <: AbstractConfigSection
@@ -207,12 +207,12 @@ end
 @kwdef mutable struct NetCDFScalarVariable <: AbstractConfigSection
     name::String
     parameter::String
-    reducer::Union{Nothing,ReducerType.T} = nothing
-    layer::Union{Nothing,Int} = nothing
-    index::IndexSection = IndexSection(; _was_specified=false)
-    map::Union{Nothing,String} = nothing
-    coordinate::Union{Nothing,CoordinateSection} = nothing
-    location::Union{Nothing,String} = nothing
+    reducer::Union{Nothing, ReducerType.T} = nothing
+    layer::Union{Nothing, Int} = nothing
+    index::IndexSection = IndexSection(; _was_specified = false)
+    map::Union{Nothing, String} = nothing
+    coordinate::Union{Nothing, CoordinateSection} = nothing
+    location::Union{Nothing, String} = nothing
     _location_dim::String
 end
 
@@ -225,15 +225,15 @@ end
 @kwdef mutable struct NetCDFGridSection <: AbstractConfigSection
     path::String
     compressionlevel::Int = 0
-    variables::PropertyDictType = PropertyDict(Dict{String,Any}())
+    variables::PropertyDictType = PropertyDict(Dict{String, Any}())
     _was_specified::Bool = true
 end
 
 @kwdef mutable struct OutputSection <: AbstractConfigSection
-    csv::CSVSection = CSVSection(; _was_specified=false, path="")
+    csv::CSVSection = CSVSection(; _was_specified = false, path = "")
     netcdf_scalar::NetCDFScalarSection =
-        NetCDFScalarSection(; _was_specified=false, path="")
-    netcdf_grid::NetCDFGridSection = NetCDFGridSection(; _was_specified=false, path="")
+        NetCDFScalarSection(; _was_specified = false, path = "")
+    netcdf_grid::NetCDFGridSection = NetCDFGridSection(; _was_specified = false, path = "")
 end
 
 ###
@@ -261,6 +261,6 @@ end
     state::StateSection = StateSection()
     input::InputSection
     output::OutputSection = OutputSection()
-    API::APISection = APISection(; _was_specified=false)
+    API::APISection = APISection(; _was_specified = false)
     path::String  # path to the TOML file
 end

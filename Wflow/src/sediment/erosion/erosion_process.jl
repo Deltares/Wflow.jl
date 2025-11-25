@@ -102,7 +102,8 @@ function rainfall_erosion_answers(
 )
     # calculate rainfall intensity [mm/min]
     rintnsty = precip / (dt / 60)
-    # splash erosion [kg/min]
+    # splash erosion
+    # [???] = 1e-1 / 60 * [-] * [-] * [kg m⁻² min⁻¹ J⁻¹ mm⁻¹] * [m²] * [(m min⁻¹)²]
     rainfall_erosion = answers_rainfall_factor * usle_c * usle_k * area * rintnsty^2
     # [ton/timestep]
     rainfall_erosion = rainfall_erosion * (dt / 60) * 1e-3
