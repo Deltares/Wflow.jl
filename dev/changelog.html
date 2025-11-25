@@ -480,7 +480,10 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="unreleased">Unreleased</h2>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
-<p>Introduced in v1.0.0-rc3, reading parameter <code>soil_root__length_density_fraction</code> (the parameter was not defined in the code).</p>
+<ul>
+<li>Introduced in v1.0.0-rc2, as part of refactoring <code>SimpleReservoir</code> and <code>Lake</code> structs, missing values were allowed for static input, but not for dynamic (cyclic and forcing) input. For consistency between static and dynamic input no missing values for reservoir input parameters are allowed, except for parameter <code>lower_reservoir_ind</code>.</li>
+<li>Introduced in v1.0.0-rc3, reading parameter <code>soil_root__length_density_fraction</code> (the parameter was not defined in the code).</li>
+</ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
