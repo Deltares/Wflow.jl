@@ -950,7 +950,7 @@
     "href": "changelog.html#unreleased",
     "title": "Changelog",
     "section": "Unreleased",
-    "text": "Unreleased\n\nFixed\n\n\nChanged\n\n\nAdded",
+    "text": "Unreleased\n\nFixed\nIntroduced in v1.0.0-rc3, reading parameter soil_root__length_density_fraction (the parameter was not defined in the code).\n\n\nChanged\n\n\nAdded",
     "crumbs": [
       "Home",
       "Changelog"
