@@ -13,7 +13,7 @@ Deposition of sediment in reservoirs from Camp 1945.
 
 # Arguments
 - `input` (sediment input [tdt⁻¹ = kg s⁻¹])
-- `q` (discharge [m³dt⁻¹ => m³ s⁻¹])
+- `q` (discharge [m³ dt⁻¹ => m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `res_area` (reservoir area [m²])
 - `res_trapping_efficiency` (reservoir trapping efficiency [-])
@@ -33,12 +33,13 @@ function reservoir_deposition_camp(
     slope,
 )
     # Compute critical velocity
+    # [m s⁻¹] = [m³ s⁻¹] / [m²]
     vcres = q / res_area
     DCres = 411 / 3600 / vcres
     # Natural deposition
     deposition = input * min(1.0, (DCres * dm^2))
 
-    # Check if particles are travelling in suspension or bed load using Rouse number
+    # Check if particles are traveling in suspension or bed load using Rouse number
     dsuspf = sqrt(1.2 * 3600 * 0.41 / 411 * sqrt(g_gravity * waterlevel * slope))
     # If bed load, we have extra deposition depending on the reservoir type
     if dm > dsuspf

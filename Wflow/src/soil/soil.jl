@@ -769,12 +769,12 @@ function infiltration_reduction_factor!(
 end
 
 """
-    infiltration!(model::SbmSoilModel)
+    infiltration!(model::SbmSoilModel, dt::Number)
 
 Update the infiltration rate `infiltsoilpath` and infiltration excess water rate
 `infiltexcess` of the SBM soil model for a single timestep.
 """
-function infiltration!(model::SbmSoilModel)
+function infiltration!(model::SbmSoilModel, dt::Number)
     v = model.variables
     p = model.parameters
     (; water_flux_surface) = model.boundary_conditions
@@ -788,6 +788,7 @@ function infiltration!(model::SbmSoilModel)
             p.infiltcappath[i],
             v.ustorecapacity[i],
             v.f_infiltration_reduction[i],
+            dt,
         )
     end
     return nothing
@@ -1151,6 +1152,7 @@ function update!(
     (; water_flux_surface) = model.boundary_conditions
     v = model.variables
     p = model.parameters
+    dt = config.time.timestepsecs
 
     # mainly required for external state changes (e.g. through BMI)
     update_diagnostic_vars!(model)
@@ -1161,7 +1163,7 @@ function update!(
         modelsnow = config.model.snow__flag,
         soil_infiltration_reduction = config.model.soil_infiltration_reduction__flag,
     )
-    infiltration!(model)
+    infiltration!(model, dt)
     # unsaturated zone flow
     unsaturated_zone_flow!(model)
     # soil evaporation and transpiration

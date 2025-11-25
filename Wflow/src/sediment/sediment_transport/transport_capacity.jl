@@ -140,9 +140,9 @@ end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityYalinParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Particle mean diameter [mm]
+    # Particle mean diameter [mm => m]
     d50::Vector{Float64}
 end
 
@@ -538,7 +538,7 @@ function TransportCapacityBagnoldModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = TransportCapacityModelVariables(n)
+    vars = TransportCapacityModelVariables(; n)
     params = TransportCapacityBagnoldParameters(dataset, config, indices)
     bc = TransportCapacityBC(; n)
     model = TransportCapacityBagnoldModel(;
@@ -589,7 +589,7 @@ function TransportCapacityEngelundModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = TransportCapacityModelVariables(n)
+    vars = TransportCapacityModelVariables(; n)
     params = TransportCapacityRiverParameters(dataset, config, indices)
     bc = TransportCapacityBC(; n)
     model = TransportCapacityEngelundModel(;

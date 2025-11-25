@@ -108,7 +108,7 @@ function RainfallErosionEurosemModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = RainfallErosionModelVariables(n)
+    vars = RainfallErosionModelVariables(; n)
     params = RainfallErosionEurosemParameters(dataset, config, indices)
     bc = RainfallErosionEurosemBC(; n)
     model = RainfallErosionEurosemModel(;
@@ -242,7 +242,7 @@ function RainfallErosionAnswersModel(
 )
     n = length(indices)
     bc = RainfallErosionAnswersBC(n)
-    vars = RainfallErosionModelVariables(n)
+    vars = RainfallErosionModelVariables(; n)
     params = RainfallErosionAnswersParameters(dataset, config, indices)
     model = RainfallErosionAnswersModel(;
         boundary_conditions = bc,
@@ -280,7 +280,6 @@ function update!(
             usle_c[i],
             answers_rainfall_factor[i],
             parameters.area[i],
-            dt,
         )
     end
 end

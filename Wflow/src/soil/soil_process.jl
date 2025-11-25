@@ -20,16 +20,24 @@ function infiltration(
     infiltcappath,
     ustorecapacity,
     f_infiltration_reduction,
+    dt,
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and paved areas (path).
+    # [m s⁻¹] = [m s⁻¹] * [-]
     soilinf = potential_infiltration * (1.0 - pathfrac)
     pathinf = potential_infiltration * pathfrac
 
+    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
     max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
-    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
-    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
+    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
+    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
+
+    # [m s⁻¹] = min([m s⁻¹] + [m s⁻¹], max(0.0, [m] / [s]))
+    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity / dt))
+
+    # [m s⁻¹] = ([m s⁻¹] - [m s⁻¹]) + ([m s⁻¹] - [m s⁻¹])
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
     return infiltsoilpath, infiltexcess
@@ -50,7 +58,9 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     # Excess soil water:
     # first transfer soil water > maximum soil water capacity layer (iteration is not
     # required because of steady theta (usd))
+
     st_sat = max(0.0, usd - l_sat)
+    # TODO: [performance] it can be known whether the result is 1.0 without computing it
     st = kv_z * min(pow(usd / l_sat, c), 1.0)
     sum_ast = min(st, st_sat)
     usd -= sum_ast
@@ -60,6 +70,7 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     remainder = min(st - sum_ast, usd)
     its = Int(cld(remainder, 0.2))
     for _ in 1:its
+        # TODO: [performance] it can be known whether the result is 1.0 without computing it
         st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
         ast = min(st, usd)
         usd -= ast
@@ -226,8 +237,8 @@ Otherwise, `f_infiltration_reduction` is set to 1.0.
 function infiltration_reduction_factor(
     tsoil,
     cf_soil;
-    modelsnow=false,
-    soil_infiltration_reduction=false,
+    modelsnow = false,
+    soil_infiltration_reduction = false,
 )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)

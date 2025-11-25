@@ -290,7 +290,7 @@ function update_boundary_conditions!(
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Transport capacity
-    @. transport_capacity = transport_capacity_model.variables.sediment_flux
+    @. transport_capacity = transport_capacity_model.variables.sediment_transport_capacity
     # Input from soil erosion
     (; clay, silt, sand, sagg, lagg) = to_river_model.variables
     @. erosion_land_clay = clay[indices_riv]

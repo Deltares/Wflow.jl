@@ -79,7 +79,7 @@ function OverlandFlowErosionAnswersModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = OverlandFlowErosionVariables(n)
+    vars = OverlandFlowErosionVariables(; n)
     params = OverlandFlowErosionAnswersParameters(dataset, config, indices)
     bc = OverlandFlowErosionBC(n)
     model = OverlandFlowErosionAnswersModel(;
@@ -119,7 +119,6 @@ function update!(
             answers_overland_flow_factor[i],
             geometry.slope[i],
             geometry.area[i],
-            dt,
         )
     end
 end
