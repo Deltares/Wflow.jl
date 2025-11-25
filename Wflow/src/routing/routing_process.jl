@@ -67,30 +67,6 @@ function kin_wave!(q, graph, toposort, q_prev, q_lat, alpha, beta, flow_length, 
     return q
 end
 
-"Return water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `KhExponential`"
-function ssf_water_table_depth(ssf, slope, d, dw, kh_profile::KhExponential, i)
-    (; f, kh_0) = kh_profile
-    zi = log((f[i] * ssf) / (dw * kh_0[i] * slope) + exp(-f[i] * d)) / -f[i]
-    return zi
-end
-
-"Return water table depth `zi` based on lateral subsurface flow `ssf` and hydraulic conductivity profile `KhExponentialConstant`"
-function ssf_water_table_depth(ssf, slope, d, dw, kh_profile::KhExponentialConstant, i)
-    (; z_exp) = kh_profile
-    (; kh_0, f) = kh_profile.exponential
-    ssf_constant = kh_0[i] * slope * exp(-f[i] * z_exp[i]) * (d - z_exp[i]) * dw
-    if ssf > ssf_constant
-        zi =
-            log(
-                (f[i] * (ssf - ssf_constant)) / (dw * kh_0[i] * slope) +
-                exp(-f[i] * z_exp[i]),
-            ) / -f[i]
-    else
-        zi = d - ssf / (dw * kh_0[i] * slope * exp(-f[i] * z_exp[i]))
-    end
-    return zi
-end
-
 "Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity profile `KhExponential`"
 function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponential, i)
     (; kh_0, f) = kh_profile
