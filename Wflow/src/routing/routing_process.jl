@@ -24,37 +24,36 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
 end
 
 "Kinematic wave flow rate for a single cell and timestep"
-function kinematic_wave(Qin, Qold, q, alpha, beta, dt, dx)
-    epsilon = 1.0e-12
-    max_iters = 3000
-
-    if Qin + Qold + q ≈ 0.0
+function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
+    if q_in + q_prev + q_lat ≈ 0.0
         return 0.0
     else
-        # common terms
-        ab_pQ = alpha * beta * pow(((Qold + Qin) / 2.0), (beta - 1.0))
-        dtx = dt / dx
-        C = dtx * Qin + alpha * pow(Qold, beta) + dt * q
-
-        Qkx = (dtx * Qin + Qold * ab_pQ + dt * q) / (dtx + ab_pQ)
-        if isnan(Qkx)
-            Qkx = 0.0
+        # initial estimate using linear scheme
+        ab_pq = alpha * beta * pow(((q_prev + q_in) / 2.0), (beta - 1.0))
+        q = (dt / dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt / dx + ab_pq)
+        if isnan(q)
+            q = 0.0
         end
-        Qkx = max(Qkx, 1.0e-30)
-        count = 1
-
+        q = max(q, 1.0e-30)
+        # Newton Raphson
+        max_iters = 3000
+        epsilon = 1.0e-12
+        count = 0
+        constant_term = dt / dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
         while true
-            fQkx = dtx * Qkx + alpha * pow(Qkx, beta) - C
-            dfQkx = dtx + alpha * beta * pow(Qkx, (beta - 1.0))
-            Qkx -= fQkx / dfQkx
-            Qkx = max(Qkx, 1.0e-30)
-            if (abs(fQkx) <= epsilon) || (count >= max_iters)
+            f_q = dt / dx * q + alpha * pow(q, beta) - constant_term
+            df_q = dt / dx + alpha * beta * pow(q, (beta - 1.0))
+            q -= (f_q / df_q)
+            if isnan(q)
+                q = 0.0
+            end
+            q = max(q, 1.0e-30)
+            if (abs(f_q) <= epsilon) || (count >= max_iters)
                 break
             end
             count += 1
         end
-
-        return Qkx
+        return q
     end
 end
 
@@ -114,20 +113,7 @@ end
 function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
     epsilon = 1.0e-12
     max_iters = 3000
-    count = 1
-
-    # Continuity equation of which solution should be zero
-    f = (dt / dx) * ssf + (1.0 / celerity) * ssf - constant_term
-    # Derivative of the continuity equation
-    df = (dt / dx) + 1.0 / celerity
-    # Update lateral outflow estimate ssf
-    ssf -= (f / df)
-    if isnan(ssf)
-        ssf = 0.0
-    end
-    ssf = max(ssf, 1.0e-30)
-
-    # Start while loop of Newton-Raphson iterations
+    count = 0
     while true
         f = (dt / dx) * ssf + (1.0 / celerity) * ssf - constant_term
         df = (dt / dx) + 1.0 / celerity
@@ -176,10 +162,10 @@ function kinematic_wave_ssf(
     else
         # initial estimate
         ssf = (ssf_prev + ssfin) / 2.0
-        Cn = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r * dt
-
-        ssf = kw_ssf_newton_raphson(ssf, c, Cn, dt, dx)
+        # Newton Raphson
+        celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
+        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
+        ssf = kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 
         # constrain the lateral flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
@@ -196,9 +182,9 @@ function kinematic_wave_ssf(
             ssf_sum = 0.0
             exfilt_sum = 0.0
             for _ in 1:its
-                Cn = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-                c = (dt_s / dx) * ssfin + (1.0 / Cn) * ssf_prev + r * dt_s
-                ssf = kw_ssf_newton_raphson(ssf_prev, c, Cn, dt_s, dx)
+                celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
+                constant_term = (dt_s / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt_s
+                ssf = kw_ssf_newton_raphson(ssf_prev, constant_term, celerity, dt_s, dx)
                 ssf = min(ssf, (ssfmax * dw))
                 zi =
                     zi_prev -
@@ -248,14 +234,11 @@ function kinematic_wave_ssf(
         return 0.0, d, 0.0
     else
         # initial estimate
-        ssf = (ssf_prev + ssfin) / 2.0
-        # celerity (Cn)
-        Cn = (slope * kh_profile.kh[i]) / theta_e
-        # constant term of the continuity equation for Newton-Raphson
-        c = (dt / dx) * ssfin + (1.0 / Cn) * ssf_prev + r * dt
-
-        ssf = kw_ssf_newton_raphson(ssf_prev, c, Cn, dt, dx)
-
+        ssf_ini = (ssf_prev + ssfin) / 2.0
+        # Newton Raphson
+        celerity = (slope * kh_profile.kh[i]) / theta_e
+        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
+        ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # Constrain the lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level
