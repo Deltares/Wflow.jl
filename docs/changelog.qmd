@@ -10,6 +10,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Unreleased
 
 ### Fixed
+- Introduced in v1.0.0-rc2, as part of refactoring `SimpleReservoir` and `Lake` structs,
+  missing values were allowed for static input, but not for dynamic (cyclic and forcing)
+  input. For consistency between static and dynamic input no missing values for reservoir
+  input parameters are allowed, except for parameter `lower_reservoir_ind`.
+- Introduced in v1.0.0-rc3, reading parameter `soil_root__length_density_fraction` (the
+  parameter was not defined in the code).
 
 ### Changed
 

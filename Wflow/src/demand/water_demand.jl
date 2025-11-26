@@ -511,20 +511,11 @@ end
 
 "Struct to store river allocation model variables"
 @with_kw struct AllocationRiverVariables
-    act_surfacewater_abst::Vector{Float64}        # actual surface water abstraction [mm dt⁻¹ => m s⁻¹]
-    act_surfacewater_abst_vol::Vector{Float64}    # actual surface water abstraction [m³ dt⁻¹ => m³ s⁻¹]
-    available_surfacewater::Vector{Float64}       # available surface water [m³]
-    nonirri_returnflow::Vector{Float64}           # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
-end
-
-"Initialize river allocation model variables"
-function AllocationRiverVariables(n::Int)
-    return AllocationRiverVariables(;
-        act_surfacewater_abst = zeros(n),
-        act_surfacewater_abst_vol = zeros(n),
-        available_surfacewater = zeros(n),
-        nonirri_returnflow = zeros(n),
-    )
+    n::Int
+    act_surfacewater_abst::Vector{Float64} = zeros(n)       # actual surface water abstraction [mm dt⁻¹ => m s⁻¹]
+    act_surfacewater_abst_vol::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ dt⁻¹ => m³ s⁻¹]
+    available_surfacewater::Vector{Float64} = zeros(n)      # available surface water [m³]
+    nonirri_returnflow::Vector{Float64} = zeros(n)          # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
 end
 
 "River allocation model"
