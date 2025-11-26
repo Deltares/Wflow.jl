@@ -209,16 +209,18 @@ end
 
     @testset "river" begin
         dt = 1.0
+        n = 2
         parameters = Wflow.GwfRiverParameters(;
-            infiltration_conductance = [100.0, 100.0],
-            exfiltration_conductance = [200.0, 200.0],
-            bottom = [1.0, 1.0],
+            infiltration_conductance = fill(100.0, n),
+            exfiltration_conductance = fill(200.0, n),
+            bottom = fill(1.0, n),
         )
         variables = Wflow.GwfRiverVariables(;
-            stage = [2.0, 2.0],
-            storage = [20.0, 20.0],
-            flux = [0.0, 0.0],
-            flux_av = [0.0, 0.0],
+            n,
+            stage = fill(2.0, n),
+            storage = fill(20.0, n),
+            flux = zeros(n),
+            flux_av = zeros(n),
         )
         river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
         conf_aqf.variables.q_net .= 0.0
@@ -260,12 +262,9 @@ end
 
     @testset "recharge" begin
         dt = 1.0
-        variables = Wflow.RechargeVariables(;
-            rate = [1.0e-3, 1.0e-3, 1.0e-3],
-            flux = [0.0, 0.0, 0.0],
-            flux_av = [0.0, 0.0, 0.0],
-        )
-        recharge = Wflow.Recharge(; variables, index = [1, 2, 3])
+        n = 3
+        variables = Wflow.RechargeVariables(; n, rate = fill(1e-3, n))
+        recharge = Wflow.Recharge(; n, variables, index = [1, 2, 3])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(recharge, conf_aqf, dt)
         @test all(conf_aqf.variables.q_net .== 1.0e-3 * 100.0)

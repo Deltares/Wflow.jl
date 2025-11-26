@@ -390,20 +390,15 @@ end
         config.input.static["snowpack__degree_day_coefficient"] = 2.0
         var_name = "soil__thickness"
         config.input.static[var_name] = Wflow.InputEntry(;
-            unit = get_unit(var_name),
             scale = [3.0],
             offset = [100.0],
             netcdf_variable_name = "SoilThickness",
         )
         var_name = "atmosphere_water__precipitation_volume_flux"
-        config.input.forcing[var_name] = Wflow.InputEntry(;
-            unit = get_unit(var_name),
-            scale = [1.5],
-            netcdf_variable_name = "precip",
-        )
+        config.input.forcing[var_name] =
+            Wflow.InputEntry(; scale = [1.5], netcdf_variable_name = "precip")
         var_name = "soil_layer_water__brooks_corey_exponent"
         config.input.static[var_name] = Wflow.InputEntry(;
-            unit = get_unit(var_name),
             scale = [2.0, 3.0],
             offset = [0.0, 0.0],
             layer = [1, 3],
@@ -551,7 +546,6 @@ end
         # Final run to test error handling during simulation
         tomlpath_error = joinpath(@__DIR__, "sbm_simple-error.toml")
         config.input.static["river__width"] = Wflow.InputEntry(;
-            unit = get_unit("river__width"),
             scale = [0.0],
             offset = [0.0],
             netcdf_variable_name = "wflow_riverwidth",

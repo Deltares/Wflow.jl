@@ -198,13 +198,15 @@ Convert a general unit to an SI standard unit
 """
 function to_SI(unit::Unit)
     powers_all = get_powers_tuple(unit)
-    unit_new =
-        Unit(unit.absolute_temperature, ntuple(Returns(SVector(0 // 1, 0 // 1)), N_UNITS))
+    unit_new = Unit(
+        unit.absolute_temperature,
+        ntuple(Returns(SVector(0 // 1, 0 // 1)), N_UNITS)...,
+    )
 
     for (i, powers) in enumerate(powers_all)
         net_power = powers[2] - powers[1]
         if !iszero(net_power)
-            unit_new *= to_SI_data[i]^net_power
+            unit_new *= to_SI_data[i].unit_SI^net_power
         end
     end
 

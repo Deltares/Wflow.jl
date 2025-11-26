@@ -27,7 +27,7 @@ end
 
 "Struct for storing Gash interception model parameters"
 @with_kw struct GashParameters
-    # ratio [-] of wet canopy [mm dt⁻¹] and the average precipitation intensity [mm dt⁻¹ => m s⁻¹] on a saturated canopy
+    # ratio [-] of wet canopy [mm dt⁻¹ => m s⁻¹] and the average precipitation intensity [mm dt⁻¹ => m s⁻¹] on a saturated canopy
     e_r::Vector{Float64}
     vegetation_parameter_set::VegetationParameters
 end
