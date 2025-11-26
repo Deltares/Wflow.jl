@@ -150,6 +150,13 @@ reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 The complete list of reservoir input parameters that can be provided through the TOML file can be
 found [here](../parameters_routing.qmd#reservoirs).
 
+::: {.callout-note}
+Please note that for reservoir input parameters (except `reservoir_lower_location__count`)
+missing values in the input data are not allowed, even if the parameter is not used by the
+reservoir type. For example, `reservoir_water__rating_curve_exponent` (for rating curve
+types 2 and 3) should also have a value (e.g. -1) for other input reservoir types.
+:::
+
 ### Storage and rating cuves from data
 Storage and rating curves from field measurement can be supplied to wflow via CSV files
 supplied in the same folder of the TOML file. Naming of the files uses the ID of the
@@ -168,20 +175,21 @@ H,  S
 ```
 
 The rating curve uses level and discharge data depending on the Julian day of the year
-(JDOY). The first line contains `H` for the first column. The other lines contain the water
-level and the corresponding discharges for the different JDOY (1-365), see also the example
-below, that shows part of a CSV file (first 4 Julian days). The volume above the maximum
-water level of the rating curve is assumed to flow instantaneously out of the reservoir
-(overflow).
+(JDOY). The first line contains `H` for the first column, and values ranging from 1 to 365
+for the other columns, representing the Julian days of the year. The other lines contain the
+water level and the corresponding discharges for the different JDOY (1-365), see also the
+example below, that shows part of a CSV file (first 4 Julian days and Julian day 365). The
+volume above the maximum water level of the rating curve is assumed to flow instantaneously
+out of the reservoir (overflow).
 
 ```bash
-H
-394,    43,     43,     43,     43
-394.01, 44.838, 44.838, 44.838, 44.838
-394.02, 46.671, 46.671, 46.671, 46.671
-394.03, 48.509, 48.509, 48.509, 48.509
-394.04, 50.347, 50.347, 50.347, 50.347
-394.05, 52.179, 52.179, 52.179, 52.179
+H,      1,      2,      3,      4,      ..., 365
+394,    43,     43,     43,     43,     ..., 43
+394.01, 44.838, 44.838, 44.838, 44.838, ..., 44.838
+394.02, 46.671, 46.671, 46.671, 46.671, ..., 46.671
+394.03, 48.509, 48.509, 48.509, 48.509, ..., 48.509
+394.04, 50.347, 50.347, 50.347, 50.347, ..., 50.347
+394.05, 52.179, 52.179, 52.179, 52.179, ..., 52.179
 ```
 
 ::: {.callout-note}
