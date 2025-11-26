@@ -171,9 +171,9 @@ The rating curve uses level and discharge data depending on the Julian day of th
 (JDOY). The first line contains `H` for the first column, and values ranging from 1 to 365
 for the other columns, representing the Julian days of the year. The other lines contain the
 water level and the corresponding discharges for the different JDOY (1-365), see also the
-example below, that shows part of a CSV file (first 4 Julian days). The volume above the
-maximum water level of the rating curve is assumed to flow instantaneously out of the
-reservoir (overflow).
+example below, that shows part of a CSV file (first 4 Julian days and Julian day 365). The
+volume above the maximum water level of the rating curve is assumed to flow instantaneously
+out of the reservoir (overflow).
 
 ```bash
 H,      1,      2,      3,      4,      ..., 365
