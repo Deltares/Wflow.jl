@@ -16,8 +16,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   input parameters are allowed, except for parameter `lower_reservoir_ind`.
 - Introduced in v1.0.0-rc3, reading parameter `soil_root__length_density_fraction` (the
   parameter was not defined in the code).
+- Computation of kinematic wave celerity of subsurface flow for `KhExponentialConstant`
+  depth profile. For the exponential part the kinematic wave celerity was overestimated, as
+  the kinematic wave celerity for the constant depth profile was added. This addition has
+  been removed.
 
 ### Changed
+- Solving the kinematic wave subsurface flow for `KhExponential` and `KhExponentialConstant`
+  depth profiles. Using a maximum allowed water table depth change (0.1 m) per iteration is
+  more accurate (kinematic wave celerity is a function of depth), than the previous solution
+  which is similar to using an average kinematic wave celerity for the water table depth
+  change.
 
 ### Added
 
