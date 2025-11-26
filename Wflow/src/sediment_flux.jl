@@ -53,12 +53,14 @@ function OverlandFlowSediment(
         indices,
     )
 
+    n = length(indices)
+
     if do_river || land_transport == LandTransportType.yalinpart
-        sediment_flux = SedimentLandTransportDifferentiationModel(indices)
-        to_river = SedimentToRiverDifferentiationModel(indices)
+        sediment_flux = SedimentLandTransportDifferentiationModel(; n)
+        to_river = SedimentToRiverDifferentiationModel(; n)
     else
-        sediment_flux = SedimentLandTransportModel(indices)
-        to_river = SedimentToRiverModel(indices)
+        sediment_flux = SedimentLandTransportModel(; n)
+        to_river = SedimentToRiverModel(; n)
     end
 
     overland_flow_sediment = OverlandFlowSediment(;

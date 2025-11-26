@@ -21,13 +21,6 @@ end
     variables::SedimentToRiverVariables = SedimentToRiverVariables(; n)
 end
 
-"Initialize total sediment reaching the river model"
-function SedimentToRiverModel(indices::Vector{CartesianIndex{2}})
-    n = length(indices)
-    model = SedimentToRiverModel(; n)
-    return model
-end
-
 "Update total sediment reaching the river model boundary conditions"
 function update_boundary_conditions!(
     model::SedimentToRiverModel,
@@ -80,18 +73,11 @@ end
 
 "Struct to store differentiated sediment reaching the river model"
 @with_kw struct SedimentToRiverDifferentiationModel <: AbstractSedimentToRiverModel
-    boundary_conditions::SedimentToRiverDifferentiationBC
-    variables::SedimentToRiverDifferentiationVariables
-end
-
-"Initialize differentiated sediment reaching the river model"
-function SedimentToRiverDifferentiationModel(indices::Vector{CartesianIndex{2}})
-    n = length(indices)
-    vars = SedimentToRiverDifferentiationVariables(; n)
-    bc = SedimentToRiverDifferentiationBC(; n)
-    model =
-        SedimentToRiverDifferentiationModel(; boundary_conditions = bc, variables = vars)
-    return model
+    n::Int
+    boundary_conditions::SedimentToRiverDifferentiationBC =
+        SedimentToRiverDifferentiationBC(; n)
+    variables::SedimentToRiverDifferentiationVariables =
+        SedimentToRiverDifferentiationVariables(; n)
 end
 
 "Update differentiated sediment reaching the river model boundary conditions"

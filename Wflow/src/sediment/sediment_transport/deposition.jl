@@ -1,3 +1,12 @@
+const STOKES_FACTOR = 411 / 3600
+
+"""
+Compute the sediment fall velocity [m s⁻¹] given the mean sediment diameter d50 [m]
+Based on Stokes' law and assuming 22 °C and sediment density 1.2 t m⁻³
+Eq. 7:2.2.24 in https://swat.tamu.edu/media/99192/swat2009-theory.pdf
+"""
+fall_velocity(d50) = STOKES_FACTOR * from_SI(d50, MM)^2
+
 """
     reservoir_deposition_camp(
         input,
@@ -15,7 +24,7 @@ Deposition of sediment in reservoirs from Camp 1945.
 - `input` (sediment input [tdt⁻¹ = kg s⁻¹])
 - `q` (discharge [m³ dt⁻¹ => m³ s⁻¹])
 - `waterlevel` (water level [m])
-- `res_area` (reservoir area [m²])
+- `reservoir_area` (reservoir area [m²])
 - `res_trapping_efficiency` (reservoir trapping efficiency [-])
 - `dm` (mean diameter [m])
 - `slope` (slope [-])
@@ -27,20 +36,22 @@ function reservoir_deposition_camp(
     input,
     q,
     waterlevel,
-    res_area,
+    reservoir_area,
     res_trapping_efficiency,
     dm,
     slope,
 )
     # Compute critical velocity
     # [m s⁻¹] = [m³ s⁻¹] / [m²]
-    vcres = q / res_area
-    DCres = 411 / 3600 / vcres
+    reservoir_critical_velocity = q / reservoir_area
+    DCres = STOKES_FACTOR / reservoir_critical_velocity
     # Natural deposition
+    # [kg s⁻¹]
     deposition = input * min(1.0, (DCres * dm^2))
 
     # Check if particles are traveling in suspension or bed load using Rouse number
-    dsuspf = sqrt(1.2 * 3600 * 0.41 / 411 * sqrt(g_gravity * waterlevel * slope))
+    # [m]
+    dsuspf = sqrt(1.2 * 0.41 * sqrt(g_gravity * waterlevel * slope) / STOKES_FACTOR)
     # If bed load, we have extra deposition depending on the reservoir type
     if dm > dsuspf
         deposition = max(deposition, res_trapping_efficiency * input)

@@ -31,7 +31,7 @@ end
     beta::Float64 = 0.6                                              # constant in Manning's equation [-]
     slope::Vector{Float64}                                           # Slope [m m⁻¹]
     mannings_n::Vector{Float64}                                      # Manning's roughness [s m⁻⅓]
-    alpha_pow::Float64 = (2 // 3) * 0.6                                # Used in the power part of alpha [-]
+    alpha_pow::Float64 = (2 // 3) * 0.6                              # Used in the power part of alpha [-]
     alpha_term::Vector{Float64} = fill(MISSING_VALUE, length(slope)) # Term used in computation of alpha [s^3/5 m^-1/5]
     alpha::Vector{Float64} = fill(MISSING_VALUE, length(slope))      # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s^3/5 m^1/5]
 end

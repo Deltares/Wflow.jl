@@ -212,7 +212,7 @@ end
     config = Wflow.Config(tomlpath)
     model = Wflow.Model(config)
 
-    @profview Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
     precip = copy(model.land.atmospheric_forcing.precipitation)

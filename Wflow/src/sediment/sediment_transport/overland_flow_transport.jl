@@ -25,13 +25,6 @@ end
     variables::SedimentLandTransportVariables = SedimentLandTransportVariables(; n)
 end
 
-"Initialize total sediment flux in overland flow model"
-function SedimentLandTransportModel(indices::Vector{CartesianIndex{2}})
-    n = length(indices)
-    model = SedimentLandTransportModel(; n)
-    return model
-end
-
 "Update total sediment flux in overland flow model boundary conditions"
 function update_boundary_conditions!(
     model::SedimentLandTransportModel,
@@ -112,20 +105,11 @@ end
 "Struct to store differentiated sediment flux in overland flow model"
 @with_kw struct SedimentLandTransportDifferentiationModel <:
                 AbstractSedimentLandTransportModel
-    boundary_conditions::SedimentLandTransportDifferentiationBC
-    variables::SedimentLandTransportDifferentiationVariables
-end
-
-"Initialize differentiated sediment flux in overland flow model"
-function SedimentLandTransportDifferentiationModel(indices::Vector{CartesianIndex{2}})
-    n = length(indices)
-    vars = SedimentLandTransportDifferentiationVariables(; n)
-    bc = SedimentLandTransportDifferentiationBC(; n)
-    model = SedimentLandTransportDifferentiationModel(;
-        boundary_conditions = bc,
-        variables = vars,
-    )
-    return model
+    n::Int
+    boundary_conditions::SedimentLandTransportDifferentiationBC =
+        SedimentLandTransportDifferentiationBC(; n)
+    variables::SedimentLandTransportDifferentiationVariables =
+        SedimentLandTransportDifferentiationVariables(; n)
 end
 
 "Update differentiated sediment flux in overland flow model boundary conditions"

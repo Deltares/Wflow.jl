@@ -71,7 +71,7 @@ function NonIrrigationDemand(
     demand = PrescibedDemand(; demand_gross, demand_net)
     vars = NonIrrigationDemandVariables(;
         returnflow_fraction = returnflow_f,
-        returnflow = fill(Float64(0), n),
+        returnflow = zeros(n),
     )
     non_irrigation_demand = NonIrrigationDemand(; demand, variables = vars)
 
@@ -80,7 +80,8 @@ end
 
 "Struct to store non-paddy irrigation model variables"
 @with_kw struct NonPaddyVariables
-    demand_gross::Vector{Float64}     # irrigation gross demand [mm dt⁻¹ => m s⁻¹]
+    n::Int
+    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n)   # irrigation gross demand [mm dt⁻¹ => m s⁻¹]
 end
 
 "Struct to store non-paddy irrigation model parameters"
@@ -142,7 +143,8 @@ function NonPaddy(dataset::NCDataset, config::Config, indices::Vector{CartesianI
         irrigation_areas = areas,
         irrigation_trigger,
     )
-    vars = NonPaddyVariables(; demand_gross = fill(MISSING_VALUE, length(indices)))
+    n = length(indices)
+    vars = NonPaddyVariables(; n)
 
     nonpaddy = NonPaddy(; variables = vars, parameters = params)
 
@@ -247,9 +249,10 @@ update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
 
 "Struct to store paddy irrigation model variables"
 @with_kw struct PaddyVariables
-    demand_gross::Vector{Float64}     # irrigation gross demand [mm dt⁻¹ => m s⁻¹]
-    h::Vector{Float64}                # actual water depth in rice field [mm => m]
-    evaporation::Vector{Float64}      # evaporation rate [mm dt⁻¹ => m s⁻¹]
+    n::Int
+    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n) # irrigation gross demand [mm dt⁻¹ => m s⁻¹]
+    h::Vector{Float64} = zeros(n)                          # actual water depth in rice field [mm => m]
+    evaporation::Vector{Float64} = zeros(n)                # evaporation rate [mm dt⁻¹ => m s⁻¹]
 end
 
 "Struct to store paddy irrigation model parameters"
@@ -344,11 +347,7 @@ function Paddy(dataset::NCDataset, config::Config, indices::Vector{CartesianInde
         h_opt,
         irrigation_areas = areas,
     )
-    vars = PaddyVariables(;
-        demand_gross = fill(MISSING_VALUE, n),
-        h = fill(0.0, n),
-        evaporation = fill(0.0, n),
-    )
+    vars = PaddyVariables(; n)
     paddy = Paddy(; parameters = params, variables = vars)
     return paddy
 end
@@ -530,18 +529,12 @@ end
 
 "River allocation model"
 @with_kw struct AllocationRiver <: AbstractAllocationModel
-    variables::AllocationRiverVariables
+    n::Int
+    variables::AllocationRiverVariables = AllocationRiverVariables(; n)
 end
 
 get_nonirrigation_returnflow(model::AllocationRiver) = model.variables.nonirri_returnflow
 get_nonirrigation_returnflow(model::NoAllocationRiver) = Zeros(model.n)
-
-"Initialize water allocation for the river domain"
-function AllocationRiver(n::Int)
-    vars = AllocationRiverVariables(n)
-    allocation = AllocationRiver(; variables = vars)
-    return allocation
-end
 
 "Struct to store land allocation allocation model parameters"
 @with_kw struct AllocationLandParameters
@@ -594,8 +587,7 @@ function AllocationLand(
     )
 
     n = length(indices)
-
-    parameters = AllocationLandParameters(; areas = areas, frac_sw_used = frac_sw_used)
+    parameters = AllocationLandParameters(; areas, frac_sw_used)
     variables = AllocationLandVariables(; n)
     return AllocationLand(; parameters, variables)
 end

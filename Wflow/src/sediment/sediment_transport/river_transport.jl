@@ -614,23 +614,17 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 # Particle fall velocity [m s⁻¹] from Stokes
                 xs =
                     ifelse(q[v] > 0.0, 1.055 * flow_length[v] / (q[v] / flow_width[v]), 0.0)
-                xclay =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_clay[v] / 1000)^2 / 3600)))
+                xclay = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_clay[v])))
                 deposition_clay = xclay * (input_clay + erosion_clay)
-                xsilt =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_silt[v] / 1000)^2 / 3600)))
+                xsilt = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_silt[v])))
                 deposition_silt = xsilt * (input_silt + erosion_silt)
-                xsand =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_sand[v] / 1000)^2 / 3600)))
+                xsand = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_sand[v])))
                 deposition_sand = xsand * (input_sand + erosion_sand)
-                xsagg =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_sagg[v] / 1000)^2 / 3600)))
+                xsagg = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_sagg[v])))
                 deposition_sagg = xsagg * (input_sagg + erosion_sagg)
-                xlagg =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_lagg[v] / 1000)^2 / 3600)))
+                xlagg = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_lagg[v])))
                 deposition_lagg = xlagg * (input_lagg + erosion_lagg)
-                xgrav =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_gravel[v] / 1000)^2 / 3600)))
+                xgrav = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_gravel[v])))
                 deposition_gravel = xgrav * (input_gravel + erosion_gravel)
             end
         end
