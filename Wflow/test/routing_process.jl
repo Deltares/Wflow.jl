@@ -49,7 +49,7 @@
 end
 
 @testitem "kinematic wave subsurface flow" begin
-    kh_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
+    kh_exp_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
     @test all(
         isapprox.(
             Wflow.kinematic_wave_ssf(
@@ -64,10 +64,31 @@ end
                 651.0959333549443,
                 926.1824194767788,
                 0.07651841216556145,
-                kh_profile,
+                kh_exp_profile,
                 1,
             ),
             (65.87716383769195, 0.039430950039165864, 0.0),
+        ),
+    )
+    kh_exp_const_profile = Wflow.KhExponentialConstant(kh_exp_profile, [0.2])
+    @test all(
+        isapprox.(
+            Wflow.kinematic_wave_ssf(
+                726.5698548296821,
+                540.095599334873,
+                0.2989648788074234,
+                0.6,
+                0.08617263287305832,
+                0.3281228095293045,
+                2.0,
+                1.0,
+                1100.0330152617341,
+                499.09766763570804,
+                2.223399526492016,
+                kh_exp_const_profile,
+                1,
+            ),
+            (543.4872124727707, 0.2942848053422706, 0.0),
         ),
     )
 end
