@@ -12,26 +12,17 @@ end
 check_flux(flux::Float64, aquifer::ConfinedAquifer, index::Int) = flux
 
 @with_kw struct GwfRiverParameters
-    infiltration_conductance::Vector{Float64} # [m² d⁻¹]
-    exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
+    infiltration_conductance::Vector{Float64} # [m² d⁻¹ => m² s⁻¹]
+    exfiltration_conductance::Vector{Float64} # [m² d⁻¹ => m² s⁻¹]
     bottom::Vector{Float64} # [m]
 end
 
 @with_kw struct GwfRiverVariables
-    stage::Vector{Float64} # [m]
-    storage::Vector{Float64} # [m³]
-    flux::Vector{Float64}  # [m³ d⁻¹]
-    flux_av::Vector{Float64}  # [m³ d⁻¹]
-end
-
-function GwfRiverVariables(n::Int)
-    variables = GwfRiverVariables(;
-        stage = fill(MISSING_VALUE, n),
-        storage = fill(MISSING_VALUE, n),
-        flux = fill(MISSING_VALUE, n),
-        flux_av = fill(MISSING_VALUE, n),
-    )
-    return variables
+    n::Int
+    stage::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
+    storage::Vector{Float64} = fill(MISSING_VALUE, n) # [m³]
+    flux::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹ => m³ s⁻¹]
+    flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹ => m³ s⁻¹]
 end
 
 @with_kw struct GwfRiver <: AquiferBoundaryCondition
@@ -49,7 +40,8 @@ function GwfRiver(
     infiltration_conductance = ncread(
         dataset,
         config,
-        "river_water__infiltration_conductance";
+        "river_water__infiltration_conductance",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -57,7 +49,8 @@ function GwfRiver(
     exfiltration_conductance = ncread(
         dataset,
         config,
-        "river_water__exfiltration_conductance";
+        "river_water__exfiltration_conductance",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -65,7 +58,8 @@ function GwfRiver(
     bottom = ncread(
         dataset,
         config,
-        "river_bottom__elevation";
+        "river_bottom__elevation",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -74,7 +68,7 @@ function GwfRiver(
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
     n = length(indices)
-    variables = GwfRiverVariables(n)
+    variables = GwfRiverVariables(; n)
     river = GwfRiver(parameters, variables, index)
     return river
 end
@@ -103,12 +97,12 @@ end
 
 @with_kw struct DrainageParameters
     elevation::Vector{Float64} # [m]
-    conductance::Vector{Float64} # [m² d⁻¹]
+    conductance::Vector{Float64} # [m² d⁻¹ => m² s⁻¹]
 end
 
 @with_kw struct DrainageVariables
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    flux::Vector{Float64} # [m³ d⁻¹ => m³ s⁻¹]
+    flux_av::Vector{Float64} # [m³ d⁻¹ => m³ s⁻¹]
 end
 
 @with_kw struct Drainage <: AquiferBoundaryCondition
@@ -126,7 +120,8 @@ function Drainage(
     drain_elevation = ncread(
         dataset,
         config,
-        "land_drain__elevation";
+        "land_drain__elevation",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -135,7 +130,8 @@ function Drainage(
     drain_conductance = ncread(
         dataset,
         config,
-        "land_drain__conductance";
+        "land_drain__conductance",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -194,14 +190,16 @@ function flux!(headboundary::HeadBoundary, aquifer::Aquifer, dt::Float64)
 end
 
 @with_kw struct RechargeVariables
-    rate::Vector{Float64} # [m d⁻¹]
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    n::Int
+    rate::Vector{Float64} = fill(MISSING_VALUE, n) # [m d⁻¹ => m s⁻¹]
+    flux::Vector{Float64} = zeros(n) # [m³ d⁻¹ => m³ s⁻¹]
+    flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹ => m³ s⁻¹]
 end
 
 @with_kw struct Recharge <: AquiferBoundaryCondition
-    variables::RechargeVariables
-    index::Vector{Int}  # [-]
+    n::Int
+    variables::RechargeVariables = RechargeVariables(; n)
+    index::Vector{Int} = collect(1:n)  # [-]
 end
 
 function Recharge(

@@ -13,37 +13,63 @@ function rainfall_interception_gash(
     precipitation,
     canopystorage,
     maxevap,
+    dt,
 )
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
-    pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
-    pfrac = 1.0 - canopygapfraction - pt
-    p_sat = (-cmax / e_r) * log(1.0 - min((e_r / pfrac), 1.0))
-    p_sat = isinf(p_sat) ? 0.0 : p_sat
+    # [-]
+    fraction_stemflow = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
+    fraction_interception = 1.0 - canopygapfraction - fraction_stemflow
+
+    # [m s⁻¹] (from cmax / dt)
+    precipitation_saturation = if fraction_interception > e_r
+        (-cmax / e_r) * log(1.0 - e_r / fraction_interception) / dt
+    else
+        0.0
+    end
 
     # large storms P > P_sat
-    largestorms = precipitation > p_sat
+    largestorms = precipitation > precipitation_saturation
 
-    iwet = largestorms ? (pfrac * p_sat) - cmax : precipitation * pfrac
-    isat = largestorms ? (e_r) * (precipitation - p_sat) : 0.0
-    idry = largestorms ? cmax : 0.0
-    itrunc = 0.0
+    # I_wet: Interception during wetting up of the canopy
+    # I_sat: Evaporation during canopy saturation
+    # I_dry: Evaporation after rainfall stops
+    # [m s⁻¹]
+    if largestorms
+        I_wet = fraction_interception * precipitation_saturation - cmax / dt
+        I_sat = e_r * (precipitation - precipitation_saturation)
+        I_dry = cmax / dt
+    else
+        I_wet = precipitation * fraction_interception
+        I_sat = 0.0
+        I_dry = 0.0
+    end
 
-    stemflow = pt * precipitation
+    I_trunc = 0.0
 
-    throughfall = precipitation - iwet - idry - isat - itrunc - stemflow
-    interception = iwet + idry + isat + itrunc
+    # [m s⁻¹] = [-] * [m s⁻¹]
+    stemflow = fraction_stemflow * precipitation
+
+    throughfall = precipitation - I_wet - I_dry - I_sat - I_trunc - stemflow
+    interception = I_wet + I_dry + I_sat + I_trunc
 
     # Now corect for area without any Interception (say open water Cmax -- zero)
-    cmaxzero = cmax <= 0.0
-    throughfall = cmaxzero ? precipitation : throughfall
-    interception = cmaxzero ? 0.0 : interception
-    stemflow = cmaxzero ? 0.0 : stemflow
+    cmaxzero = (cmax <= 0.0)
+
+    if cmaxzero
+        throughfall = precipitation
+        interception = 0.0
+        stemflow = 0.0
+    end
 
     # Now corect for maximum potential evap
-    canopy_drainage = interception > maxevap ? interception - maxevap : 0.0
-    interception = min(interception, maxevap)
+    if interception > maxevap
+        canopy_drainage = interception - maxevap
+        interception = maxevap
+    else
+        canopy_drainage = 0
+    end
 
     # Add surpluss to the throughfall
     throughfall += canopy_drainage
@@ -60,36 +86,54 @@ is no drainage below `cmax`.
 function rainfall_interception_modrut(
     precipitation,
     potential_evaporation,
-    canopystorage,
+    canopy_storage,
     canopygapfraction,
     cmax,
+    dt,
 )
 
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopygapfraction)
-    pt = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
+    fraction_stemflow = min(0.1 * canopygapfraction, 1.0 - canopygapfraction)
 
-    # Amount of p that falls on the canopy
-    precip_canopy = (1.0 - canopygapfraction - pt) * precipitation
-
-    # Canopystorage cannot be larger than cmax, no gravity drainage below that. This check
-    # is required because cmax can change over time
-    canopy_drainage1 = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage -= canopy_drainage1
-
-    # Add the precipitation that falls on the canopy to the store
-    canopystorage += precip_canopy
-
-    # Evaporation, make sure the store does not get negative
-    canopy_evap = min(canopystorage, potential_evaporation) # interception rate
-    canopystorage -= canopy_evap
-
-    # Drain the canopystorage again if needed
-    canopy_drainage2 = canopystorage > cmax ? canopystorage - cmax : 0.0
-    canopystorage -= canopy_drainage2
+    # Amount of precipitation that falls on the canopy
+    # [m s⁻¹] = [-] * [m s⁻¹]
+    precipitation_canopy = (1.0 - canopygapfraction - fraction_stemflow) * precipitation
 
     # Calculate throughfall and stemflow
-    throughfall = canopy_drainage1 + canopy_drainage2 + canopygapfraction * precipitation
-    stemflow = precipitation * pt
+    # [m s⁻¹] = [-] * [m s⁻¹]
+    throughfall = canopygapfraction * precipitation
+    stemflow = fraction_stemflow * precipitation
 
-    return throughfall, canopy_evap, stemflow, canopystorage
+    # Canopy storage cannot be larger than cmax, no gravity drainage below that. This check
+    # is required because cmax can change over time
+    if canopy_storage > cmax
+        # [m]
+        canopystorage_excess = canopy_storage - cmax
+        canopy_storage = cmax
+
+        # [m s⁻¹] = [m] / [s]
+        throughfall += canopystorage_excess / dt
+    end
+
+    # Add the precipitation that falls on the canopy to the store
+    # [m] += [m s⁻¹] * [s]
+    canopy_storage += precipitation_canopy * dt
+
+    # Evaporation, make sure the store does not get negative
+    # [m s⁻¹] = min([m] / [s], [m s⁻¹])
+    canopy_evaporation = min(canopy_storage / dt, potential_evaporation) # interception rate
+    # [m] -= [m s⁻¹] * [s]
+    canopy_storage -= canopy_evaporation * dt
+
+    # Drain the canopystorage again if needed
+    if canopy_storage > cmax
+        # [m]
+        canopystorage_excess = canopy_storage - cmax
+        canopy_storage = cmax
+
+        # [m s⁻¹] = [m] / [s]
+        throughfall += canopy_storage_excess / dt
+    end
+
+    return throughfall, canopy_evaporation, stemflow, canopy_storage
 end

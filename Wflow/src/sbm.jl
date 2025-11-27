@@ -1,5 +1,11 @@
+abstract type AbstractDemandModel end
+abstract type AbstractIrrigationModel end
+abstract type AbstractAllocationModel end
+abstract type AbstractIrrigationDemandModel <: AbstractDemandModel end
+
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D, A} <: AbstractLandModel
+@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+                AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -29,7 +35,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     do_snow = config.model.snow__flag
     do_glacier = config.model.glacier__flag
     if do_snow
-        snow = SnowHbvModel(dataset, config, indices, dt)
+        snow = SnowHbvModel(dataset, config, indices)
     else
         snow = NoSnowModel(n)
     end
@@ -53,14 +59,13 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
 
     if do_water_demand(config)
         allocation = AllocationLand(dataset, config, indices)
-        demand = Demand(dataset, config, indices, dt)
+        demand = Demand(dataset, config, indices)
     else
         allocation = NoAllocationLand(n)
         demand = NoDemand(; n)
     end
 
-    args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
+    return LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -71,7 +76,6 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand,
         allocation,
     )
-    return land_hydrology_model
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
@@ -86,15 +90,15 @@ function update!(
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         model
 
-    update!(interception, atmospheric_forcing)
+    update!(interception, atmospheric_forcing, dt)
 
     update_boundary_conditions!(snow, (; interception))
-    update!(snow, atmospheric_forcing)
+    update!(snow, atmospheric_forcing, dt)
     if config.model.snow_gravitational_transport__flag
-        lateral_snow_transport!(snow, domain.land)
+        lateral_snow_transport!(snow, domain.land, dt)
     end
 
-    update!(glacier, atmospheric_forcing)
+    update!(glacier, atmospheric_forcing, dt)
 
     update_boundary_conditions!(
         runoff,
@@ -108,7 +112,7 @@ function update!(
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)
-        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
+        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration)
     end
     update_water_demand!(demand, soil)
     update_water_allocation!(allocation, demand, routing, domain, dt)
@@ -118,9 +122,10 @@ function update!(
         soil,
         atmospheric_forcing,
         (; interception, runoff, demand, allocation),
+        dt,
     )
 
-    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config)
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end

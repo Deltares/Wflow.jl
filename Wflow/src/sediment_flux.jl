@@ -1,5 +1,9 @@
 "Sediment transport in overland flow model"
-@with_kw struct OverlandFlowSediment{TT, SF, TR} <: AbstractOverlandFlowModel
+@with_kw struct OverlandFlowSediment{
+    TT <: AbstractTransportCapacityModel,
+    SF <: AbstractSedimentLandTransportModel,
+    TR <: AbstractSedimentToRiverModel,
+} <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TT
     sediment_flux::SF
@@ -49,19 +53,17 @@ function OverlandFlowSediment(
         indices,
     )
 
+    n = length(indices)
+
     if do_river || land_transport == LandTransportType.yalinpart
-        sediment_flux = SedimentLandTransportDifferentiationModel(indices)
-        to_river = SedimentToRiverDifferentiationModel(indices)
+        sediment_flux = SedimentLandTransportDifferentiationModel(; n)
+        to_river = SedimentToRiverDifferentiationModel(; n)
     else
-        sediment_flux = SedimentLandTransportModel(indices)
-        to_river = SedimentToRiverModel(indices)
+        sediment_flux = SedimentLandTransportModel(; n)
+        to_river = SedimentToRiverModel(; n)
     end
 
-    overland_flow_sediment = OverlandFlowSediment{
-        typeof(transport_capacity),
-        typeof(sediment_flux),
-        typeof(to_river),
-    }(;
+    overland_flow_sediment = OverlandFlowSediment(;
         hydrological_forcing,
         transport_capacity,
         sediment_flux,
@@ -98,12 +100,13 @@ end
 
 ### River ###
 "Sediment transport in river model"
-@with_kw struct RiverSediment{TTR, ER, SFR, CR} <: AbstractRiverFlowModel
+@with_kw struct RiverSediment{TTR <: AbstractTransportCapacityModel} <:
+                AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TTR
-    potential_erosion::ER
-    sediment_flux::SFR
-    concentrations::CR
+    potential_erosion::RiverErosionJulianTorresModel
+    sediment_flux::SedimentRiverTransportModel
+    concentrations::SedimentConcentrationsRiverModel
 end
 
 const river_transport_method =
@@ -141,12 +144,7 @@ function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
     # Concentrations
     concentrations = SedimentConcentrationsRiverModel(dataset, config, indices)
 
-    river_sediment = RiverSediment{
-        typeof(transport_capacity),
-        typeof(potential_erosion),
-        typeof(sediment_flux),
-        typeof(concentrations),
-    }(;
+    river_sediment = RiverSediment(;
         hydrological_forcing,
         transport_capacity,
         potential_erosion,

@@ -16,23 +16,25 @@ end
 function get_at(
     ds::CFDataset,
     var::InputEntry,
+    unit::Unit,
     times::AbstractVector{<:TimeType},
     t::TimeType,
+    dt::Second,
 )
     # this behaves like a backward fill interpolation
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at(ds, var, i)
+    return get_at(ds, var, unit, i, dt)
 end
 
-function get_at(ds::CFDataset, var::InputEntry, i)
+function get_at(ds::CFDataset, var::InputEntry, unit::Unit, i::Int, dt::Second)
     (; scale, offset) = var
     data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
     if scale != 1.0 || offset != 0.0
         data .= data .* scale .+ offset
     end
-    return data
+    return to_SI!(data, unit; dt_val = Dates.value(dt))
 end
 
 function get_param_res(model)
@@ -126,7 +128,8 @@ function update_forcing!(model)
         variable_name(ncvar) === nothing && continue
 
         time = convert(eltype(dataset_times), clock.time)
-        data = get_at(dataset, ncvar, dataset_times, time)
+        unit = get_unit(par)
+        data = get_at(dataset, ncvar, unit, dataset_times, time, model.clock.dt)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -192,13 +195,14 @@ function update_cyclic!(model)
     is_first_timestep = clock.iteration == 1
 
     for (par, ncvar) in cyclic_parameters
+        unit = get_unit(par)
         if is_first_timestep || (month_day in cyclic_times[par])
             # time for an update of the cyclic forcing
             i = findlast(t -> monthday_passed(month_day, t), cyclic_times[par])
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar, i)
+            data = get_at(cyclic_dataset, ncvar, unit, i, clock.dt)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -558,7 +562,8 @@ function NCReader(config)
     for (par, var) in config.input.forcing
         ncname = variable_name(var)
         variable_info(var)
-        @info "Set `$par` using netCDF variable `$ncname` as forcing parameter."
+        @info "Set parameter using netCDF variable as forcing parameter." *
+              to_table(; parameter = par, netCDF_variable = ncname, unit = get_unit(par))
     end
 
     # create map from internal location to netCDF variable name for cyclic parameters and
@@ -575,7 +580,12 @@ function NCReader(config)
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[par] = timecycles(cyclic_nc_times)
             variable_info(var)
-            @info "Set `$par` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
+            @info "Set parameter using netCDF variable as cyclic parameter." * to_table(;
+                parameter = par,
+                netCDF_variable = ncname,
+                n_timesteps = length(cyclic_nc_times),
+                unit = get_unit(par),
+            )
         end
     else
         cyclic_dataset = nothing
@@ -597,7 +607,8 @@ function locations_map(ds, mapname, config)
     map_2d = ncread(
         ds,
         config,
-        mapname;
+        mapname,
+        Writer;
         optional = false,
         type = Union{Int, Missing},
         allow_missing = true,
@@ -1033,13 +1044,18 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         map_2d = ncread(
             dataset,
             config,
-            map;
+            map,
+            Writer;
             type = Union{Int, Missing},
             allow_missing = true,
             logging = false,
         )
-        @info "Adding scalar output for a map with a reducer function." fileformat param =
-            parameter mapname = map reducer_name = String(nameof(f))
+        @info "Adding scalar output for a map with a reducer function." * to_table(;
+            fileformat,
+            param = parameter,
+            mapname = map,
+            reducer_name = String(nameof(f)),
+        )
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
@@ -1059,21 +1075,23 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
     elseif !isnothing(reducer)
         # reduce over all active cells
         # needs to be behind the map if statement, because it also can use a reducer
-        @info "Adding scalar output of all active cells with reducer function." fileformat param =
-            parameter reducer_name = String(nameof(f))
+        @info "Adding scalar output of all active cells with reducer function." *
+              to_table(; fileformat, param = parameter, reducer_name = String(nameof(f)))
         return function_map[reducer]
     elseif do_index(index)
         if !isnothing(index.i)
             # linear index into the internal vector of active cells
             # this one mostly makes sense for debugging, or for vectors of only a few elements
-            @info "Adding scalar output for linear index." fileformat param = parameter index
+            @info "Adding scalar output for linear index." *
+                  to_table(; fileformat, param = parameter, index)
             return x -> getindex(x, index.i)
         else
             # index into the 2D input/output arrays
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
             ind = rev_inds[index.x, index.y]
-            @info "Adding scalar output for 2D index." fileformat param = parameter index
+            @info "Adding scalar output for 2D index." *
+                  to_table(; fileformat, param = parameter, index)
             iszero(ind) && error("inactive loc specified for output")
             return A -> getindex(A, ind)
         end
@@ -1084,7 +1102,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         _, ix = findmin(abs.(x_nc .- x))
         I = CartesianIndex(ix, iy)
         i = rev_inds[I]
-        @info "Adding scalar output for coordinate." fileformat param = parameter x y
+        @info "Adding scalar output for coordinate." *
+              to_table(; fileformat, param = parameter, x, y)
         iszero(i) && error("inactive coordinate specified for output")
         return A -> getindex(A, i)
     else
@@ -1113,6 +1132,14 @@ function write_csv_row(model)
             v = reducer(getindex.(A, i))
         else
             v = reducer(A)
+        end
+        # Convert to proper unit
+        unit = get_unit(parameter)
+        dt_val = Dates.value(clock.dt)
+        v = if v isa Number
+            from_SI(v, unit; dt_val)
+        else
+            from_SI!(collect(v), unit; dt_val)
         end
         # numbers are also iterable
         for el in v

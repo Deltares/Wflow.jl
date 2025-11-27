@@ -14,9 +14,6 @@ const PCR_DIR = [
 
 const MISSING_VALUE = Float64(NaN)
 
-# timestep that the parameter units are defined in
-const BASETIMESTEP = Second(Day(1))
-
 """
     scurve(x, a, b, c)
 
@@ -161,8 +158,9 @@ function set_states!(
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
-            @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
-                ncname state
+            (; lens, unit) = standard_name_map(land)[state]
+            @info "Setting initial state from netCDF." *
+                  to_table(; ncpath = instate_path, ncvarname = ncname, state, unit)
             sel = active_indices(domain, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
@@ -187,8 +185,7 @@ function set_states!(
                     end
                 end
                 # set state in model object
-                lens = get_lens(state, land)
-                lens(model) .= svectorscopy(A, Val{size(A)[1]}())
+                lens(model) .= svectorscopy(to_SI!(A, unit), Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
@@ -202,7 +199,7 @@ function set_states!(
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
                 lens = get_lens(state, land)
-                lens(model)[1:n] .= A
+                lens(model)[1:n] .= to_SI!(A, unit)
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -234,7 +231,7 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
 end
 
 """
-    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString, model_type; <keyword arguments>)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
 model `parameter` (standard name) specified in the TOML configuration file. Supports various
@@ -260,21 +257,23 @@ values.
 function ncread(
     nc,
     config::Config,
-    parameter::AbstractString;
+    parameter::AbstractString,
+    model_type::Type;
+    type = nothing,
     optional = true,
     sel = nothing,
     defaults = nothing,
-    type = nothing,
     allow_missing = false,
     fill = nothing,
     dimname = nothing,
     logging = true,
 )
     var = get_var(config, parameter; optional)
+    unit = get_unit(parameter, model_type)
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
+        @info "Set parameter." * to_table(; parameter, unit)
         @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -298,26 +297,35 @@ function ncread(
         error("Unrecognized dimension name $dimname")
     end
 
-    var = convert(InputEntry, var)
+    if var isa Number
+        var = InputEntry(; value = var)
+    elseif var isa String
+        var = InputEntry(; external_name = var)
+    else
+        @assert var isa InputEntry
+    end
+
     (; value, layer, scale, offset) = var
     variable_info(var)
 
     if !isnothing(value)
-        @info "Set `$parameter` using uniform value `$value` from TOML file."
-        if isnothing(dimname)
+        @info "Set parameter using uniform value from TOML file." *
+              to_table(; parameter, value, unit)
+        A = if isnothing(dimname)
             # set to one uniform value
-            return Base.fill(only(value), length(sel))
+            Base.fill(only(value), length(sel))
         elseif length(value) == 1
             # set to one uniform value (parameter with third dimension of size 1)
-            return Base.fill(only(value), (nc.dim[String(dimname)], length(sel)))
+            Base.fill(only(value), (nc.dim[String(dimname)], length(sel)))
         elseif length(value) > 1
             # set to multiple uniform values (parameter with third dimension of size > 1)
             @assert length(value) == nc.dim[String(dimname)]
-            return repeat(value, 1, length(sel))
+            repeat(value, 1, length(sel))
         end
+        return to_SI!(A, unit; dt_val = config.time.timestepsecs)
     else
         if logging
-            @info "Set `$parameter` using netCDF variable `$var`."
+            @info "Set parameter using netCDF variable." * to_table(; parameter, var, unit)
         end
         A = read_standardized(nc, variable_name(var), dim_sel)
         if !isnothing(layer)
@@ -363,7 +371,7 @@ function ncread(
         end
     end
 
-    return A
+    return to_SI!(A, unit; dt_val = config.time.timestepsecs)
 end
 
 """
@@ -455,23 +463,12 @@ end
 "Faster method for exponentiation"
 pow(x::Real, y::Real)::Real = exp(y * log(x))
 
-"Return the sum of the array `A` at indices `inds`"
 function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
-    v = zero(eltype(A))
-    for i in inds
-        v += A[i]
-    end
-    return v
+    mapreduce(i -> A[i], +, inds; init = zero(T))
 end
 
-"Return the sum of the function `f` at indices `inds`"
-function sum_at(f::Function, inds::AbstractVector{Int}, T::Type)::T
-    v = zero(T)
-    for i in inds
-        v += f(i)
-    end
-    return v
-end
+sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
+    mapreduce(f, +, inds; init = zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
 function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
@@ -766,7 +763,6 @@ function kh_layered_profile!(
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
 
-    t_factor = (tosecond(BASETIMESTEP) / dt)
     for i in eachindex(kh)
         m = nlayers[i]
 
@@ -780,12 +776,10 @@ function kh_layered_profile!(
                 transmissivity += act_thickl[i][n] * kv_profile.kv[i][n]
                 n += 1
             end
-            # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
-            # [mm] and zi [mm])
-            kh[i] =
-                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+
+            kh[i] = (transmissivity / (soilthickness[i] - zi[i])) * khfrac[i] / dt
         else
-            kh[i] = 0.001 * kv_profile.kv[i][m] * t_factor * khfrac[i]
+            kh[i] = kv_profile.kv[i][m] * t_factor * khfrac[i]
         end
     end
     return nothing
@@ -802,7 +796,6 @@ function kh_layered_profile!(
     (; n_unsatlayers, zi) = soil.variables
     (; kh) = subsurface.parameters.kh_profile
     (; khfrac) = subsurface.parameters
-    t_factor = (tosecond(BASETIMESTEP) / dt)
 
     for i in eachindex(kh)
         m = nlayers[i]
@@ -833,21 +826,13 @@ function kh_layered_profile!(
                 end
                 n += 1
             end
-            # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
-            # [mm] and zi [mm])
-            kh[i] =
-                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+            kh[i] = (transmissivity / (soilthickness[i] - zi[i])) * khfrac[i] / dt
         else
             if zi[i] >= z_layered[i]
                 j = nlayers_kv[i]
-                kh[i] =
-                    0.001 *
-                    kv[i][j] *
-                    exp(-f[i] * (zi[i] - z_layered[i])) *
-                    khfrac[i] *
-                    t_factor
+                kh[i] = kv[i][j] * exp(-f[i] * (zi[i] - z_layered[i])) * khfrac[i] / dt
             else
-                kh[i] = 0.001 * kv[i][m] * t_factor * khfrac[i]
+                kh[i] = kv[i][m] * khfrac[i] / dt
             end
         end
     end
@@ -943,7 +928,7 @@ function initialize_lateral_ssf!(
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
-        kh_max *= khfrac[i] * 0.001 * 0.001
+        kh_max *= khfrac[i]
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
@@ -977,7 +962,7 @@ function initialize_lateral_ssf!(
                 break
             end
         end
-        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+        kh_max = kh_max * khfrac[i]
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
@@ -992,4 +977,31 @@ Otherwise return a `default` value.
 function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
     z = y > 0.0 ? min(x / y, max) : default
     return z
+end
+
+"""
+    bounded_power(base, power)
+
+Computes min(base^power, 1) without computing the power
+if the result is known to be larger than 1.
+Assumes base, power > 0
+"""
+function bounded_power(base::T, power) where {T}
+    return if base > 1
+        one(T)
+    else
+        pow(base, power)
+    end
+end
+
+"""
+Convert the specified values in a table of 2 colums of names and values.
+The default headers of these columns are "option" and "value" respectively.
+"""
+function to_table(; column_labels = [:option, :value], kwargs...)
+    parameter_names = collect(keys(kwargs))
+    values = [kwargs[label] for label in parameter_names]
+    io = IOBuffer()
+    pretty_table(io, hcat(parameter_names, values); column_labels, alignment = :l)
+    return "\n" * String(take!(io))
 end

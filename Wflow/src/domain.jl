@@ -161,10 +161,12 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
         min_streamorder_land = config.model.land_streamorder__min_count
         min_streamorder_river = config.model.river_streamorder__min_count
         if river_routing == RoutingType.kinematic_wave
-            @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
+            @info "Parallel execution of kinematic wave." *
+                  to_table(; min_streamorder_land, min_streamorder_river)
         elseif land_routing == RoutingType.kinematic_wave ||
                subsurface_routing(config) == RoutingType.kinematic_wave
-            @info "Parallel execution of kinematic wave" min_streamorder_land
+            @info "Parallel execution of kinematic wave." *
+                  to_table(; min_streamorder_land)
         end
     end
 
@@ -259,7 +261,8 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
     flow_length = ncread(
         dataset,
         config,
-        "river__length";
+        "river__length",
+        Domain;
         optional = false,
         sel = indices,
         type = Float64,
@@ -269,7 +272,8 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
     flow_width = ncread(
         dataset,
         config,
-        "river__width";
+        "river__width",
+        Domain;
         optional = false,
         sel = indices,
         type = Float64,
@@ -279,7 +283,8 @@ function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiv
     slope = ncread(
         dataset,
         config,
-        "river__slope";
+        "river__slope",
+        Domain;
         optional = false,
         sel = indices,
         type = Float64,
@@ -314,7 +319,8 @@ function get_water_fraction(
     water_fraction = ncread(
         dataset,
         config,
-        "land_water_covered__area_fraction";
+        "land_water_covered__area_fraction",
+        Domain;
         sel = network.indices,
         defaults = 0.0,
         type = Float64,
@@ -334,7 +340,8 @@ function get_river_fraction(
     river_width_2d = ncread(
         dataset,
         config,
-        "river__width";
+        "river__width",
+        Domain;
         optional = false,
         type = Float64,
         fill = 0,
@@ -345,7 +352,8 @@ function get_river_fraction(
     river_length_2d = ncread(
         dataset,
         config,
-        "river__length";
+        "river__length",
+        Domain;
         optional = false,
         type = Float64,
         fill = 0,
@@ -382,7 +390,8 @@ function get_landsurface_slope(dataset::NCDataset, config::Config, network::Netw
     slope = ncread(
         dataset,
         config,
-        "land_surface__slope";
+        "land_surface__slope",
+        Domain;
         optional = false,
         sel = network.indices,
         type = Float64,
@@ -396,7 +405,8 @@ function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
     river_2d = ncread(
         dataset,
         config,
-        "river_location__mask";
+        "river_location__mask",
+        Domain;
         optional = false,
         type = Bool,
         fill = false,
@@ -417,7 +427,8 @@ function reservoir_mask(
         reservoirs = ncread(
             dataset,
             config,
-            "reservoir_$(region)__count";
+            "reservoir_$(region)__count",
+            Domain;
             optional = false,
             sel = network.indices,
             type = Float64,
@@ -443,7 +454,8 @@ function get_allocation_area_indices(dataset::NCDataset, config::Config, domain:
     areas = ncread(
         dataset,
         config,
-        "land_water_allocation_area__count";
+        "land_water_allocation_area__count",
+        Domain;
         sel = indices,
         defaults = 1,
         type = Int,
