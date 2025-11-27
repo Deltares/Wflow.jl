@@ -9,7 +9,7 @@ listed in the Table below:
 |  model  | TOML configuration file |
 |:--------------- | ------------------|
 | wflow\_sbm + kinematic wave | [sbm_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_config.toml) |
-| wflow\_sbm + groundwater flow | [sbm\_gwf\_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_gwf_config.toml) |
+| wflow\_sbm + groundwater flow | [sbm\_gwf\_piave\_demand\_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_gwf_piave_demand_config.toml) |
 | wflow_sediment | [sediment_config.toml](https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sediment_config.toml) |
 
 The associated Model files (input static, forcing and state files) can easily be downloaded and
@@ -21,9 +21,9 @@ and [Command Line Interface](./running_wflow.qmd#using-the-command-line-interfac
 ```julia
 # urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_config.toml"
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.3.1/staticmaps-moselle.nc"
-forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.6/forcing-moselle.nc"
-instates = "https://github.com/visr/wflow-artifacts/releases/download/v0.3.1/instates-moselle.nc"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle.nc"
+forcing = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle.nc"
+instates = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle.nc"
 
 # create a "data/input" directory in the current directory
 testdir = @__DIR__
@@ -40,20 +40,22 @@ download(toml_url, toml_path)
 
 ## wflow\_sbm + groundwater flow
 ```julia
-# urls to TOML and netCDF of the Moselle example model
-toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_gwf_config.toml"
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/staticmaps-sbm-groundwater.nc"
-forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.1/forcing-sbm-groundwater.nc"
+# urls to TOML and netCDF of the Piave example model
+toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sbm_gwf_piave_demand_config.toml"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-piave.nc"
+forcing = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-piave.nc"
+instates = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-piave-gwf.nc"
 
 # create a "data/input" directory in the current directory
 testdir = @__DIR__
 inputdir = joinpath(testdir, "data/input")
 isdir(inputdir) || mkpath(inputdir)
-toml_path = joinpath(@testdir, "sbm_gwf_config.toml")
+toml_path = joinpath(@testdir, "sbm_gwf_piave_demand_config.toml")
 
 # download resources to current and data dirs
-download(staticmaps, joinpath(inputdir, "staticmaps-sbm-groundwater.nc"))
-download(forcing, joinpath(inputdir, "forcing-sbm-groundwater.nc"))
+download(staticmaps, joinpath(inputdir, "staticmaps-piave.nc"))
+download(forcing, joinpath(inputdir, "forcing-piave.nc"))
+download(instates, joinpath(inputdir, "instates-piave-gwf.nc"))
 download(toml_url, toml_path)
 ```
 
@@ -61,9 +63,9 @@ download(toml_url, toml_path)
 ```julia
 # urls to TOML and netCDF of the Moselle example model
 toml_url = "https://raw.githubusercontent.com/Deltares/Wflow.jl/master/Wflow/test/sediment_config.toml"
-staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v0.3.0/staticmaps-moselle-sed.nc"
-forcing = "https://github.com/visr/wflow-artifacts/releases/download/v0.2.3/forcing-moselle-sed.nc"
-instates = "https://github.com/visr/wflow-artifacts/releases/download/v0.3.0/instates-moselle-sed.nc"
+staticmaps = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/staticmaps-moselle-sed.nc"
+forcing = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/forcing-moselle-sed.nc"
+instates = "https://github.com/visr/wflow-artifacts/releases/download/v1.0.0/instates-moselle-sed.nc"
 
 # create a "data/input" directory in the current directory
 testdir = @__DIR__
