@@ -70,45 +70,6 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
 end
 
 """
-    unsatzone_flow_sbm(
-        ustorelayerdepth,
-        soilwatercapacity,
-        satwaterdepth,
-        kv_z,
-        usl,
-        theta_s,
-        theta_r,
-    )
-
-The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store
-`satwaterdepth` is controlled by the vertical saturated hydraulic conductivity `kv_z` at the
-water table and the ratio between `ustorelayerdepth` and the saturation deficit
-(`soilwatercapacity` minus `satwaterdepth`). This is the original Topog_SBM vertical
-transfer formulation.
-
-"""
-function unsatzone_flow_sbm(
-    ustorelayerdepth,
-    soilwatercapacity,
-    satwaterdepth,
-    kv_z,
-    usl,
-    theta_s,
-    theta_r,
-)
-    sd = soilwatercapacity - satwaterdepth
-    if sd <= 0.00001
-        ast = 0.0
-    else
-        st = kv_z * min(ustorelayerdepth, usl * (theta_s - theta_r)) / sd
-        ast = min(st, ustorelayerdepth)
-        ustorelayerdepth = ustorelayerdepth - ast
-    end
-
-    return ustorelayerdepth, ast
-end
-
-"""
     vwc_brooks_corey(h, hb, theta_s, theta_r, c)
 
 Return volumetric water content based on the Brooks-Corey soil hydraulic model.
