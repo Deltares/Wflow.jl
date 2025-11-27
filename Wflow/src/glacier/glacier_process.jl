@@ -9,11 +9,11 @@ occurs if the snow storage < 10 mm.
 
 # Arguments
 - `glacierFrac` fraction covered by glaciers [-]
-- `glacierstore` volume of the glacier [mm] w.e.
-- `snow_storage` snow storage on top of glacier [mm]
-- `temperature` air temperature [°C]
-- `ttm` temperature threshold for ice melting [°C]
-- `cfmax` ice degree-day factor in [mm/(°C/day)]
+- `glacierstore` volume of the glacier [mm => m] w.e.
+- `snow_storage` snow storage on top of glacier [mm => m]
+- `temperature` air temperature [°C => K]
+- `ttm` temperature threshold for ice melting [°C => K]
+- `cfmax` ice degree-day factor in [mm °C⁻¹ dt⁻¹ => m K⁻¹ s⁻¹]
 - `g_sifrac` fraction of the snow turned into ice [-]
 - `max_snow_to_glacier` maximum snow to glacier conversion rate
 
@@ -25,9 +25,9 @@ occurs if the snow storage < 10 mm.
 
 """
 function glacier_hbv(
-    glacierfrac,
-    glacierstore,
-    snow,
+    glacier_frac,
+    glacier_store,
+    snow_storage,
     temperature,
     ttm,
     cfmax,
@@ -38,28 +38,30 @@ function glacier_hbv(
 
     # Fraction of the snow transformed into ice (HBV-light model)
     # [m s⁻¹]
-    snow_to_glacier = if glacierfrac > 0.0
-        # [s⁻¹] * [m]
-        g_sifrac * snow
+    snow_to_glacier = if glacier_frac > 0.0
+        # [-] * [m] / [s]
+        g_sifrac * snow_storage / dt
     else
         0.0
     end
 
     # Restrict snow_to_glacier conversion
+    # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])
     snow_to_glacier = min(snow_to_glacier, max_snow_to_glacier)
 
     # [m] = [m s⁻¹] * [-] * [s]
-    snow -= snow_to_glacier * glacierfrac * dt
-    glacierstore += snow_to_glacier
+    snow_storage -= snow_to_glacier * glacier_frac * dt
+    glacier_store += snow_to_glacier * dt
 
     # Potential snow melt, based on temperature
     # [m s⁻¹] = [m K⁻¹ s⁻¹] * [K]
-    potmelt = (temperature > ttm) ? cfmax * (temperature - ttm) : 0.0
+    potential_melt = (temperature > ttm) ? cfmax * (temperature - ttm) : 0.0
 
     # actual Glacier melt
-    # [m] = [m s⁻¹] * [s]
-    glaciermelt = (snow < 10.0) ? min(potmelt * dt, glacierstore) : 0.0
-    glacierstore -= glaciermelt
+    # [m s⁻¹] = min([m s⁻¹], [m] / [s])
+    glacier_melt = (snow_storage < 1e-2) ? min(potential_melt, glacier_store / dt) : 0.0
+    # [m] -= [m s⁻¹] * [s]
+    glacier_store -= glacier_melt * dt
 
-    return snow, snow_to_glacier, glacierstore, glaciermelt
+    return snow_storage, snow_to_glacier, glacier_store, glacier_melt
 end

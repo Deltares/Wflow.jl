@@ -980,6 +980,21 @@ function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0):
 end
 
 """
+    bounded_power(base, power)
+
+Computes min(base^power, 1) without computing the power
+if the result is known to be larger than 1.
+Assumes base, power > 0
+"""
+function bounded_power(base::T, power) where {T}
+    return if base > 1
+        one(T)
+    else
+        pow(base, power)
+    end
+end
+
+"""
 Convert the specified values in a table of 2 colums of names and values.
 The default headers of these columns are "option" and "value" respectively.
 """

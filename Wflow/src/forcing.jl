@@ -3,7 +3,7 @@
     n::Int
     # Precipitation [mm dt⁻¹ => m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential reference evapotranspiration [m s⁻¹]
+    # Potential reference evapotranspiration [mm dt⁻¹ => m s⁻¹]
     potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Temperature [°C => K]
     temperature::Vector{Float64} = fill(MISSING_VALUE, n)

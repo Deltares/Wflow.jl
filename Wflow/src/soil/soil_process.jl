@@ -51,33 +51,45 @@ is controlled by the vertical saturated hydraulic conductivity `kv_z` (bottom la
 table), the effective saturation degree of the layer (ratio `usd` and `l_sat`), and a
 Brooks-Corey power coefficient `c`.
 """
-function unsatzone_flow_layer(usd, kv_z, l_sat, c)
-    if usd <= 0.0
+function unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, c, dt)
+    if ustorelayerdepth <= 0.0
         return 0.0, 0.0
     end
     # Excess soil water:
     # first transfer soil water > maximum soil water capacity layer (iteration is not
-    # required because of steady theta (usd))
+    # required because of steady theta (ustorelayerdepth))
 
-    st_sat = max(0.0, usd - l_sat)
-    # TODO: [performance] it can be known whether the result is 1.0 without computing it
-    st = kv_z * min(pow(usd / l_sat, c), 1.0)
-    sum_ast = min(st, st_sat)
-    usd -= sum_ast
+    # [m] = max(0, [m] - [m])
+    st_sat = max(0.0, ustorelayerdepth - l_sat)
+
+    # [m s⁻¹] = [m s⁻¹] * [-]
+    st = kv_z * bounded_power(ustorelayerdepth / l_sat, c)
+    # [m s⁻¹] = min([m s⁻¹], [m] / [s])
+    sum_ast = min(st, st_sat / dt)
+    # [m] -= [m s⁻¹] * [s]
+    ustorelayerdepth -= sum_ast * dt
+
+    # [m s⁻¹] = [m] / [s]
+    max_flow = ustorelayerdepth / dt
 
     # number of iterations (to reduce "overshooting") based on fixed maximum change in soil
     # water per iteration step (0.2 mm / model timestep)
-    remainder = min(st - sum_ast, usd)
-    its = Int(cld(remainder, 0.2))
+    # [m] = min([m s⁻¹] * [s], [m])
+    remainder = min((st - sum_ast) * dt, ustorelayerdepth)
+    # [-]
+    its = Int(cld(remainder, 2e-4))
     for _ in 1:its
-        # TODO: [performance] it can be known whether the result is 1.0 without computing it
-        st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
-        ast = min(st, usd)
-        usd -= ast
+        # [m s⁻¹] = ([m s⁻¹] / [-]) * [-]
+        st = (kv_z / its) * bounded_power(ustorelayerdepth / l_sat, c)
+        # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])
+        ast = min(st, max_flow)
+        # [m] -= [m]
+        ustorelayerdepth -= ast * dt
+        # [m s⁻¹] += [m s⁻¹]
         sum_ast += ast
     end
 
-    return usd, sum_ast
+    return ustorelayerdepth, sum_ast
 end
 
 """
@@ -89,6 +101,7 @@ end
         usl,
         theta_s,
         theta_r,
+        dt,
     )
 
 The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store
@@ -106,14 +119,19 @@ function unsatzone_flow_sbm(
     usl,
     theta_s,
     theta_r,
+    dt,
 )
+    # [m] = [m] - [m]
     sd = soilwatercapacity - satwaterdepth
-    if sd <= 0.00001
+    if sd <= 1e-8 # [m]
         ast = 0.0
     else
+        # [m s⁻¹] = [m s⁻¹] * min([m], [m] * [-]) / [m]
         st = kv_z * min(ustorelayerdepth, usl * (theta_s - theta_r)) / sd
-        ast = min(st, ustorelayerdepth)
-        ustorelayerdepth = ustorelayerdepth - ast
+        # [m s⁻¹] = min([m s⁻¹], [m] / [s])
+        ast = min(st, ustorelayerdepth / dt)
+        # [m] -= [m s⁻¹] * [s]
+        ustorelayerdepth -= ast * dt
     end
 
     return ustorelayerdepth, ast
@@ -142,9 +160,11 @@ end
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    # [-]
     par_lambda = 2.0 / (c - 3.0)
     # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
     # part of the numerical vwc calculation
+    # [m] = [m] / (([-] / [-])^inv([-]))
     h = hb / (pow(((vwc) / (theta_s - theta_r)), inv(par_lambda)))
     h = min(h, hb)
     return h
@@ -156,7 +176,7 @@ end
 Return soil water pressure head `h3` of Feddes root water uptake reduction function.
 """
 function feddes_h3(h3_high, h3_low, tpot_SI)
-    # value of h3 is a function of potential transpiration [mm/d]
+    # value of h3 is a function of potential transpiration [mm d⁻¹]
     tpot_daily = from_SI(tpot_SI, MM_PER_DAY)
     return if tpot_daily <= 1.0
         h3_low
@@ -174,36 +194,20 @@ Root water uptake reduction factor based on Feddes.
 """
 function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
-    if iszero(alpha_h1)
-        condition_h1 = (h > h1)
-        condition_h4 = (h > h4)
-        if !condition_h4 || condition_h1
-            return 0.0
-        end
-
-        condition_h2 = (h > h2)
-        if condition_h2 && !condition_h1
-            return (h - h1) / (h2 - h1)
-        end
-
-        condition_h3 = (h > h3)
-        if !condition_h3 && !condition_h2
-            return 1.0
+    return if h < h4
+        0.0
+    elseif h < h3
+        (h - h4) / (h3 - h4)
+    elseif iszero(alpha_h1)
+        if h < h2
+            1.0
+        elseif h < h1
+            (h1 - h) / (h1 - h2)
         else
-            return (h - h4) / (h3 - h4)
+            0.0
         end
     else
-        condition_h4 = (h > h4)
-        if !condition_h4
-            return 0.0
-        end
-
-        condition_h3 = (h > h3)
-        if !condition_h3
-            return 1.0
-        else
-            return (h - h4) / (h3 - h4)
-        end
+        1.0
     end
 end
 

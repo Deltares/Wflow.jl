@@ -62,7 +62,11 @@ function GashInterceptionModel(
 end
 
 "Update Gash interception model for a single timestep"
-function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+function update!(
+    model::GashInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+    dt::Float64,
+)
     (; leaf_area_index, canopygapfraction, cmax, kc) =
         model.parameters.vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
@@ -90,6 +94,7 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
                 precipitation[i],
                 canopy_storage[i],
                 canopy_potevap[i],
+                dt,
             )
     end
     return nothing

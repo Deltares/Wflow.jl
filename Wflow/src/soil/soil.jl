@@ -114,7 +114,7 @@ end
     cap_hmax::Vector{Float64}
     # Coefficient [-] controlling capillary rise
     cap_n::Vector{Float64}
-    # Brooks-Corey power coefﬁcient [-] for each soil layer
+    # Brooks-Corey power coefficient [-] for each soil layer
     c::Vector{SVector{N, Float64}}
     # Soil temperature smooth factor [-]
     w_soil::Vector{Float64}
@@ -802,7 +802,7 @@ Update unsaturated storage `ustorelayerdepth` and the `transfer` of water from t
 to the saturated store of the SBM soil model for a single timestep, based on the Brooks-Corey
 approach.
 """
-function unsaturated_zone_flow!(model::SbmSoilModel)
+function unsaturated_zone_flow!(model::SbmSoilModel, dt)
     v = model.variables
     p = model.parameters
 
@@ -821,7 +821,7 @@ function unsaturated_zone_flow!(model::SbmSoilModel)
                     v.ustorelayerdepth[i][m] + flow_rate
                 end
                 ustorelayerdepth, flow_rate =
-                    unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, p.c[i][m])
+                    unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, p.c[i][m], dt)
                 v.ustorelayerdepth[i] = setindex(v.ustorelayerdepth[i], ustorelayerdepth, m)
             end
             v.transfer[i] = flow_rate
@@ -1166,7 +1166,7 @@ function update!(
     )
     infiltration!(model, dt)
     # unsaturated zone flow
-    unsaturated_zone_flow!(model)
+    unsaturated_zone_flow!(model, dt)
     # soil evaporation and transpiration
     soil_evaporation!(model)
     transpiration!(model)
