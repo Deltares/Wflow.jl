@@ -483,10 +483,14 @@ window.Quarto = {
 <ul>
 <li>Introduced in v1.0.0-rc2, as part of refactoring <code>SimpleReservoir</code> and <code>Lake</code> structs, missing values were allowed for static input, but not for dynamic (cyclic and forcing) input. For consistency between static and dynamic input no missing values for reservoir input parameters are allowed, except for parameter <code>lower_reservoir_ind</code>.</li>
 <li>Introduced in v1.0.0-rc3, reading parameter <code>soil_root__length_density_fraction</code> (the parameter was not defined in the code).</li>
+<li>Computation of kinematic wave celerity of subsurface flow for <code>KhExponentialConstant</code> depth profile. For the exponential part the kinematic wave celerity was overestimated, as the kinematic wave celerity for the constant depth profile was added. This addition has been removed.</li>
 </ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<ul>
+<li>Solving the kinematic wave subsurface flow for <code>KhExponential</code> and <code>KhExponentialConstant</code> depth profiles. Using a maximum allowed water table depth change (0.1 m) per iteration is more accurate (kinematic wave celerity is a function of depth), than the previous solution which is similar to using an average kinematic wave celerity for the water table depth change.</li>
+</ul>
 </section>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
