@@ -654,8 +654,7 @@ window.Quarto = {
 \]</span></p>
 <p>where celerity <span class="math inline">\(c\)</span> is calculated as follows: <span class="math display">\[
     c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
-    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
-    + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} &amp; \text{if $\subtext{z}{ssf,watertable} &lt; \subtext{z}{ssf,exp}$}\\
+    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}} &amp; \text{if $\subtext{z}{ssf,watertable} &lt; \subtext{z}{ssf,exp}$}\\
     \\
     e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} &amp; \text{if $\subtext{z}{ssf,watertable} \ge \subtext{z}{ssf,exp}$}.
     \end{cases}
@@ -668,7 +667,7 @@ window.Quarto = {
 <p><span class="math display">\[
     c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_r}.
 \]</span></p>
-<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
+<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method. For the <code>exponential</code> and <code>exponential_constant</code> profiles, the kinematic wave celerity <span class="math inline">\(c\)</span> is a function of the water table depth <span class="math inline">\(\SIb{\subtext{z}{ssf, watertable}}\)</span> and for these profiles the kinematic wave equation is solved using Newton’s method with an iteration criterion set to a maximum allowed water table depth change of <span class="math inline">\(\SI{0.1}{m}\)</span>. This iteration criterion is applied to each model cell independently to compute and route subsurface flow for each model timestep (routing is not done at an internal timestep, see also the note below).</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
