@@ -151,8 +151,7 @@ $$
 where celerity $c$ is calculated as follows:
 $$
     c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
-    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
-    + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} & \text{if $\subtext{z}{ssf,watertable} < \subtext{z}{ssf,exp}$}\\
+    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}} & \text{if $\subtext{z}{ssf,watertable} < \subtext{z}{ssf,exp}$}\\
     \\
     e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} & \text{if $\subtext{z}{ssf,watertable} \ge \subtext{z}{ssf,exp}$}.
     \end{cases}
