@@ -383,7 +383,7 @@ function flux_in!(flux_in, flux, network)
     return nothing
 end
 
-const tan80 = tan(80 / 360 * 2π)
+const tan80 = 5.67
 
 """
     lateral_snow_transport!(snow, domain, dt)

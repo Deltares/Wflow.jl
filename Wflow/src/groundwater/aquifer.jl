@@ -85,22 +85,35 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 transmissivity).
 """
 @with_kw struct ConfinedAquiferParameters
-    k::Vector{Float64}                    # horizontal conductivity [m d⁻¹ => m s⁻¹]
-    top::Vector{Float64}                  # top of groundwater layer [m]
-    bottom::Vector{Float64}               # bottom of groundwater layer [m]
-    area::Vector{Float64}                 # area of cell [m²]
-    specific_storage::Vector{Float64}     # [m m⁻¹ m⁻¹]
-    storativity::Vector{Float64}          # [m m⁻¹]
+    # horizontal conductivity [m d⁻¹ => m s⁻¹]
+    k::Vector{Float64}
+    # top of groundwater layer [m]
+    top::Vector{Float64}
+    # bottom of groundwater layer [m]
+    bottom::Vector{Float64}
+    # area of cell [m²]
+    area::Vector{Float64}
+    # [m m⁻¹ m⁻¹]
+    specific_storage::Vector{Float64}
+    # [m m⁻¹]
+    storativity::Vector{Float64}
 end
 
 @with_kw struct AquiferVariables
-    head::Vector{Float64}                                 # hydraulic head [m]
-    conductance::Vector{Float64}                          # conductance [m² d⁻¹ => m² s⁻¹]
-    storage::Vector{Float64}                              # total storage of water that can be released [m³]
-    q_net::Vector{Float64} = zeros(length(storage))       # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
-    q_in_av::Vector{Float64} = zeros(length(storage))     # average groundwater (lateral) inflow for model timestep dt [m³ d⁻¹ => m³ s⁻¹]
-    q_out_av::Vector{Float64} = zeros(length(storage))    # average groundwater (lateral) outflow for model timestep dt [m³ d⁻¹ => m³ s⁻¹]
-    exfiltwater::Vector{Float64} = zeros(length(storage)) # Exfiltration [mdt⁻¹] (groundwater above surface level, saturated excess conditions)
+    # hydraulic head [m]
+    head::Vector{Float64}
+    # conductance [m² d⁻¹ => m² s⁻¹]
+    conductance::Vector{Float64}
+    # total storage of water that can be released [m³]
+    storage::Vector{Float64}
+    # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
+    q_net::Vector{Float64} = zeros(length(storage))
+    # cumulative groundwater (lateral) inflow for model time step dt [m³]
+    q_in_av::AverageVector = AverageVector(; n = length(storage))
+    # average groundwater (lateral) outflow for model time step dt [m³ d⁻¹ => m³ s⁻¹]
+    q_out_av::AverageVector = AverageVector(; n = length(storage))
+    # Exfiltration [m dt⁻¹ => m s⁻¹] (groundwater above surface level, saturated excess conditions)
+    exfiltwater::Vector{Float64} = zeros(length(storage))
 end
 
 @with_kw struct ConfinedAquifer <: Aquifer
@@ -387,9 +400,9 @@ function flux!(
             flow = cond * delta_head
             aquifer.variables.q_net[i] -= flow
             if flow > 0.0
-                aquifer.variables.q_out_av[i] += flow * dt
+                add_to_cumulative!(aquifer.variables.q_out_av, i, flow * dt)
             else
-                aquifer.variables.q_in_av[i] -= flow * dt
+                add_to_cumulative!(aquifer.variables.q_in_av, i, -flow * dt)
             end
         end
     end
@@ -530,11 +543,11 @@ function update!(
 ) where {A <: Aquifer}
     (; cfl) = gwf.timestepping
     for boundary in gwf.boundaries
-        boundary.variables.flux_av .= 0.0
+        zero!(boundary.variables.flux_av)
     end
-    gwf.aquifer.variables.exfiltwater .= 0.0
-    gwf.aquifer.variables.q_in_av .= 0.0
-    gwf.aquifer.variables.q_out_av .= 0.0
+    gwf.aquifer.variables.exfiltwater .= 0
+    zero!(gwf.aquifer.variables.q_in_av)
+    zero!(gwf.aquifer.variables.q_out_av)
     t = 0.0
     while t < dt
         gwf.aquifer.variables.q_net .= 0.0
@@ -545,10 +558,10 @@ function update!(
         t += dt_s
     end
     for boundary in gwf.boundaries
-        boundary.variables.flux_av ./= dt
+        average!(boundary.variables.flux_av, dt)
     end
-    gwf.aquifer.variables.q_in_av ./= dt
-    gwf.aquifer.variables.q_out_av ./= dt
+    average!(gwf.aquifer.variables.q_in_av, dt)
+    average!(gwf.aquifer.variables.q_out_av, dt)
     return nothing
 end
 
@@ -563,7 +576,7 @@ function get_flux_to_river(
     inds::Vector{Int},
 ) where {A <: UnconfinedAquifer}
     (; river) = subsurface_flow.boundaries
-    flux = -river.variables.flux_av
+    flux = -river.variables.flux_av.average
     return flux
 end
 

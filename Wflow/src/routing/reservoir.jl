@@ -1,17 +1,21 @@
+# Explicit integers added because the enumerators are 0-based by default
+@enumx ReservoirProfileType linear = 1 interpolation = 2
+@enumx ReservoirOutflowType rating_curve = 1 free_weir = 2 modified_puls = 3 simple = 4
+
 "Struct for storing reservoir model parameters"
 @with_kw struct ReservoirParameters
     # reservoir location id
     id::Vector{Int}
     # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and
     # interpolation
-    storfunc::Vector{Int}
+    storfunc::Vector{ReservoirProfileType.T}
     # type of reservoir rating curve, 1: Q = f(H) from reservoir data and interpolation, 2:
     # General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)², 4: Simple reservoir
-    outflowfunc::Vector{Int}
+    outflowfunc::Vector{ReservoirOutflowType.T}
     # reservoir area [m²]
     area::Vector{Float64}
     # index of lower reservoir (linked reservoirs) [-]
-    lower_reservoir_ind::Vector{Int} = fill(0, length(area))
+    lower_reservoir_ind::Vector{Int} = zeros(Int, length(area))
     # reservoir maximum storage for rating curve types 1 and 4 [m³]
     maxstorage::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # water level threshold H₀ [m] below that level outflow is zero
@@ -71,6 +75,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         type = Int,
         fill = 0,
     )
+    storfunc = to_enumx.(ReservoirProfileType.T, storfunc)
     outflowfunc = ncread(
         dataset,
         config,
@@ -81,6 +86,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         type = Int,
         fill = 0,
     )
+    outflowfunc = to_enumx.(ReservoirOutflowType.T, outflowfunc)
     linked_reslocs = ncread(
         dataset,
         config,
@@ -107,7 +113,8 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 
     parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
 
-    if 2 in outflowfunc || 3 in outflowfunc
+    if ReservoirOutflowType.free_weir in outflowfunc ||
+       ReservoirOutflowType.modified_puls in outflowfunc
         threshold = ncread(
             dataset,
             config,
@@ -139,7 +146,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             fill = 0,
         )
     end
-    if 4 in outflowfunc
+    if ReservoirOutflowType.simple in outflowfunc
         demand = ncread(
             dataset,
             config,
@@ -197,38 +204,40 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     for i in 1:n_reservoirs
         resloc = reslocs[i]
         if linked_reslocs[i] > 0
-            @reset parameters.lower_reservoir_ind[i] =
+            parameters.lower_reservoir_ind[i] =
                 only(findall(x -> x == linked_reslocs[i], reslocs))
         end
 
-        if storfunc[i] == 2
+        if storfunc[i] == ReservoirProfileType.interpolation
             csv_path = joinpath(path, "reservoir_sh_$resloc.csv")
             @info(
                 "Read a storage curve from CSV file `$csv_path`, for reservoir location `$resloc`"
             )
-            @reset parameters.sh[i] = read_sh_csv(csv_path)
+            parameters.sh[i] = read_sh_csv(csv_path)
         end
 
-        if outflowfunc[i] == 1
+        if outflowfunc[i] == ReservoirOutflowType.rating_curve
             csv_path = joinpath(path, "reservoir_hq_$resloc.csv")
             @info(
                 "Read a rating curve from CSV file `$csv_path`, for reservoir location `$resloc`"
             )
-            @reset parameters.hq[i] = read_hq_csv(csv_path)
-            @reset parameters.maxstorage[i] = maximum_storage(parameters, i)
-        elseif outflowfunc[i] == 2 || outflowfunc[i] == 3
-            @reset parameters.threshold[i] = threshold[i]
-            @reset parameters.b[i] = b[i]
-            @reset parameters.e[i] = e[i]
-        elseif outflowfunc[i] == 4
-            @reset parameters.demand[i] = demand[i]
-            @reset parameters.maxrelease[i] = maxrelease[i]
-            @reset parameters.maxstorage[i] = maxstorage[i]
-            @reset parameters.targetfullfrac[i] = targetfullfrac[i]
-            @reset parameters.targetminfrac[i] = targetminfrac[i]
+            parameters.hq[i] = read_hq_csv(csv_path)
+            parameters.maxstorage[i] = maximum_storage(parameters, i)
+        elseif outflowfunc[i] == ReservoirOutflowType.free_weir ||
+               outflowfunc[i] == ReservoirOutflowType.modified_puls
+            parameters.threshold[i] = threshold[i]
+            parameters.b[i] = b[i]
+            parameters.e[i] = e[i]
+        elseif outflowfunc[i] == ReservoirOutflowType.simple
+            parameters.demand[i] = demand[i]
+            parameters.maxrelease[i] = maxrelease[i]
+            parameters.maxstorage[i] = maxstorage[i]
+            parameters.targetfullfrac[i] = targetfullfrac[i]
+            parameters.targetminfrac[i] = targetminfrac[i]
         end
 
-        if outflowfunc[i] == 3 && storfunc[i] != 1
+        if outflowfunc[i] == ReservoirOutflowType.modified_puls &&
+           storfunc[i] != ReservoirProfileType.linear
             @warn(
                 "For the modified puls approach (outflowfunc = 3) the storfunc should be 1"
             )
@@ -247,11 +256,11 @@ end
     # outflow from reservoir [m³ s⁻¹]
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average outflow from reservoir [m³ s⁻¹] for model timestep dt
-    outflow_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    outflow_av::AverageVector = AverageVector(; n = length(waterlevel))
     # observed outflow from reservoir [m³ s⁻¹]
     outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
-    # average actual evaporation for reservoir area [mm dt⁻¹]
-    actevap::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    # average actual evaporation for reservoir area [mm dt⁻¹ => m s⁻¹]
+    actevap::AverageVector = AverageVector(; n = length(waterlevel))
 end
 
 "Initialize reservoir model variables"
@@ -284,13 +293,21 @@ end
 
 "Struct for storing reservoir model boundary conditions"
 @with_kw struct ReservoirBC
-    inflow_subsurface::Vector{Float64}    # inflow from subsurface flow into reservoir [m³ s⁻¹]
-    inflow_overland::Vector{Float64}      # inflow from overland flow into reservoir [m³ s⁻¹]
-    inflow::Vector{Float64}               # total inflow into reservoir [m³ s⁻¹] for model timestep dt
-    external_inflow::Vector{Float64}      # external inflow (abstraction/supply/demand) [m³ s⁻¹]
-    actual_external_abstraction_av::Vector{Float64}  # actual abstraction from external negative inflow [m³ s⁻¹]
-    precipitation::Vector{Float64}        # average precipitation for reservoir area [mm dt⁻¹]
-    evaporation::Vector{Float64}          # average potential evaporation for reservoir area [mm dt⁻¹]
+    n::Int
+    # inflow from subsurface flow into reservoir [m³ s⁻¹]
+    inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n)
+    # inflow from overland flow into reservoir [m³ s⁻¹]
+    inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n)
+    # total inflow into reservoir [m³ s⁻¹] for model timestep dt
+    inflow::AverageVector = AverageVector(; n)
+    # external inflow (abstraction/supply/demand) [m³ s⁻¹]
+    external_inflow::Vector{Float64} = zeros(n)
+    # cumulative actual abstraction from external negative inflow [m³]
+    actual_external_abstraction_av::AverageVector = AverageVector(; n)
+    # average precipitation for reservoir area [mm dt⁻¹ => m s⁻¹]
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
+    # average potential evaporation for reservoir area [mm dt⁻¹ => m s⁻¹]
+    evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Initialize reservoir model boundary conditions"
@@ -306,15 +323,7 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         type = Float64,
     )
     n = length(indices_outlet)
-    bc = ReservoirBC(;
-        inflow_subsurface = fill(MISSING_VALUE, n),
-        inflow_overland = fill(MISSING_VALUE, n),
-        inflow = fill(MISSING_VALUE, n),
-        external_inflow,
-        actual_external_abstraction_av = zeros(Float64, n),
-        precipitation = fill(MISSING_VALUE, n),
-        evaporation = fill(MISSING_VALUE, n),
-    )
+    bc = ReservoirBC(; n, external_inflow)
     return bc
 end
 
@@ -336,10 +345,15 @@ function Reservoir(dataset::NCDataset, config::Config, network::NetworkReservoir
 end
 
 "Determine the water level depending on the storage function"
-function waterlevel(storfunc::Int, area::Float64, storage::Float64, sh::Union{SH, Missing})
-    if storfunc == 1
+function waterlevel(
+    storfunc::ReservoirProfileType.T,
+    area::Float64,
+    storage::Float64,
+    sh::Union{SH, Missing},
+)
+    if storfunc == ReservoirProfileType.linear
         waterlevel = storage / area
-    else
+    else # storfunc == ReservoirProfileType.interpolation
         waterlevel = interpolate_linear(storage, sh.S, sh.H)
     end
     return waterlevel
@@ -350,9 +364,9 @@ function maximum_storage(parameters::ReservoirParameters, i::Int)
     (; storfunc, hq, sh, area) = parameters
 
     # maximum storage is based on the maximum water level (H) value in the H-Q table
-    if storfunc[i] == 2
+    if storfunc[i] == ReservoirProfileType.interpolation
         maxstorage = interpolate_linear(maximum(hq[i].H), sh[i].H, sh[i].S)
-    else
+    else # storfunc[i] == ReservoirProfileType. linear
         maxstorage = area[i] * maximum(hq[i].H)
     end
 
@@ -361,16 +375,16 @@ end
 
 "Determine the initial storage depending on the storage function"
 function initialize_storage(
-    storfunc::Vector{Int},
+    storfunc::Vector{ReservoirProfileType.T},
     area::Vector{Float64},
     waterlevel::Vector{Float64},
     sh::Vector{Union{SH, Missing}},
 )
     storage = similar(area)
     for i in eachindex(storage)
-        if storfunc[i] == 1
+        if storfunc[i] == ReservoirProfileType.linear
             storage[i] = area[i] * waterlevel[i]
-        else
+        else # storfunc[i] == ReservoirProfileType.interpolation
             storage[i] = interpolate_linear(waterlevel[i], sh[i].H, sh[i].S)
         end
     end
@@ -394,7 +408,7 @@ end
 "Update the column index of reservoir rating curve HQ data"
 function update_index_hq!(reservoir::Reservoir, clock::Clock)
     (; outflowfunc, col_index_hq) = reservoir.parameters
-    if 1 in outflowfunc
+    if ReservoirOutflowType.rating_curve in outflowfunc
         col_index_hq[1] = julian_day(clock.time - clock.dt)
     end
     return nothing
@@ -408,26 +422,33 @@ function update_reservoir_simple(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
-    res_v = model.variables
-    (; precipitation, actevap, inflow) = boundary_vars
+    (; maxstorage, targetminfrac, targetfullfrac, demand, maxrelease) = model.parameters
+    (; storage) = model.variables
+    (; precipitation, evaporation, inflow) = boundary_vars
 
-    storage = res_v.storage[i] + (inflow * dt) + precipitation - actevap
+    # [m³] = [m³] + ([m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]) * [s]
+    storage = storage[i] + (inflow + precipitation - evaporation) * dt
     storage = max(storage, 0.0)
 
-    percfull = storage / res_p.maxstorage[i]
+    # [-] = [m³] / [m³]
+    fill_fraction = storage / maxstorage[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = scurve(percfull, res_p.targetminfrac[i], 1.0, 30.0)
-    demandrelease = min(fac * res_p.demand[i] * dt, storage)
-    storage -= demandrelease
-
-    wantrel = max(0.0, storage - (res_p.maxstorage[i] * res_p.targetfullfrac[i]))
+    fac = scurve(fill_fraction, targetminfrac[i], 1.0, 30.0)
+    # [m³ s⁻¹] = min([-] * [m³ s⁻¹], [m³] / [s])
+    demand_release = min(fac * demand[i], storage / dt)
+    # [m³] -= [m³ s⁻¹] * [s]
+    storage -= demand_release * dt
+    # [m³ s⁻¹] = max([m³ s⁻¹], ([m³] - [m³] * [-]) / [s])
+    release_wanted = max(0.0, (storage - maxstorage[i] * targetfullfrac[i]) / dt)
     # Assume extra maximum Q if spilling
-    overflow_q = max((storage - res_p.maxstorage[i]), 0.0)
-    torelease = min(wantrel, overflow_q + res_p.maxrelease[i] * dt - demandrelease)
-    storage -= torelease
-    outflow = torelease + demandrelease
-    outflow /= dt
+    # [m³ s⁻¹] = max([m³ s⁻¹], ([m³] - [m³]) / [s])
+    overflow_q = max(0.0, (storage - maxstorage[i]) / dt)
+    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹] + [m³ s⁻¹] - [m³ s⁻¹])
+    release_realized = min(release_wanted, overflow_q + maxrelease[i] - demand_release)
+    # [m³] -= [m³ s⁻¹] * [s]
+    storage -= release_realized * dt
+    # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹]
+    outflow = release_realized + demand_release
 
     return outflow, storage
 end
@@ -442,27 +463,33 @@ function update_reservoir_modified_puls(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
-    res_v = model.variables
-    (; precipitation, actevap, inflow) = boundary_vars
+    (; area, threshold, b) = model.parameters
+    (; storage) = model.variables
+    (; precipitation, evaporation, inflow) = boundary_vars
 
-    res_factor = res_p.area[i] / (dt * pow(res_p.b[i], 0.5))
-    si_factor = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    # [m³ᐟ² s⁻¹ᐟ²] = [m²] / ([s] * sqrt([m s⁻¹]))
+    res_factor = area[i] / (dt * sqrt(b[i]))
+    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
+    si_factor = storage[i] / dt + precipitation - evaporation + inflow
     # Adjust si_factor for reservoir threshold != 0
-    si_factor_adj = si_factor - res_p.area[i] * res_p.threshold[i] / dt
+    # [m³ s⁻¹] = [m³ s⁻¹] - [m²] * [m] / [s]
+    si_factor_adj = si_factor - area[i] * threshold[i] / dt
     # Calculate the new reservoir outflow/waterlevel/storage
     if si_factor_adj > 0.0
-        quadratic_sol_term =
-            -res_factor + pow((pow(res_factor, 2.0) + 4.0 * si_factor_adj), 0.5)
+        # [m³ᐟ² s⁻¹ᐟ²] = -[m³ᐟ² s⁻¹ᐟ²] + sqrt([m³ᐟ² s⁻¹ᐟ²]^2 + [-] * [m³ s⁻¹])
+        quadratic_sol_term = -res_factor + sqrt((res_factor^2 + 4 * si_factor_adj))
         if quadratic_sol_term > 0.0
-            outflow = pow(0.5 * quadratic_sol_term, 2.0)
+            # [m³ s⁻¹] = [-] * [m³ᐟ² s⁻¹ᐟ²]^2
+            outflow = 0.25 * quadratic_sol_term^2
         else
             outflow = 0.0
         end
     else
         outflow = 0.0
     end
+    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
     outflow = min(outflow, si_factor)
+    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * dt
     storage = (si_factor - outflow) * dt
     return outflow, storage
 end
@@ -474,22 +501,22 @@ function update_reservoir_hq(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
-    res_v = model.variables
-    (; precipitation, actevap, inflow) = boundary_vars
+    (; hq, col_index_hq, maxstorage) = model.parameters
+    (; storage, waterlevel) = model.variables
+    (; precipitation, evaporation, inflow) = boundary_vars
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
-    outflow = interpolate_linear(
-        res_v.waterlevel[i],
-        res_p.hq[i].H,
-        res_p.hq[i].Q[:, res_p.col_index_hq[1]],
-    )
+    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
+    storage_input = storage[i] / dt + precipitation - evaporation + inflow
+    # [m³ s⁻¹]
+    outflow = interpolate_linear(waterlevel[i], hq[i].H, hq[i].Q[:, col_index_hq[1]])
+    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
     outflow = min(outflow, storage_input)
-
+    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
     storage = (storage_input - outflow) * dt
 
-    overflow = max(0.0, (storage - res_p.maxstorage[i]) / dt)
-    storage = min(storage, res_p.maxstorage[i])
+    # [m³ s⁻¹] = max([m³ s⁻¹], ([m³] - [m³]) / [s])
+    overflow = max(0.0, (storage - maxstorage[i]) / dt)
+    storage = min(storage, maxstorage[i])
     outflow += overflow
 
     return outflow, storage
@@ -502,52 +529,67 @@ function update_reservoir_free_weir(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
+    (; threshold, b, e, area, storfunc, sh, lower_reservoir_ind) = model.parameters
     res_v = model.variables
-    (; precipitation, actevap, inflow) = boundary_vars
+    (; waterlevel) = res_v
+    (; precipitation, evaporation, inflow) = boundary_vars
 
-    lo = res_p.lower_reservoir_ind[i]
-    has_lower_res = lo != 0
-    diff_wl = has_lower_res ? res_v.waterlevel[i] - res_v.waterlevel[lo] : 0.0
+    # [-]
+    lo = lower_reservoir_ind[i]
+    has_lower_res = (lo != 0)
+    # [m]
+    diff_wl = has_lower_res ? waterlevel[i] - waterlevel[lo] : 0.0
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
+    storage_input = res_v.storage[i] / dt + precipitation - evaporation + inflow
 
     if diff_wl >= 0.0
-        if res_v.waterlevel[i] > res_p.threshold[i]
-            dh = res_v.waterlevel[i] - res_p.threshold[i]
-            outflow = res_p.b[i] * pow(dh, res_p.e[i])
-            maxflow = (dh * res_p.area[i]) / dt
+        if res_v.waterlevel[i] > threshold[i]
+            # [m]
+            dh = waterlevel[i] - threshold[i]
+            # [m³ s⁻¹] = [m³⁻ᵉ s⁻¹] * [m]ᵉ
+            outflow = b[i] * pow(dh, e[i])
+            # [m³ s⁻¹] = [m] * [m²] / [s]
+            maxflow = dh * area[i] / dt
+            # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
             outflow = min(outflow, maxflow)
         else
-            outflow = Float64(0)
+            outflow = 0.0
         end
     else
-        if res_v.waterlevel[lo] > res_p.threshold[i]
-            dh = res_v.waterlevel[lo] - res_p.threshold[i]
-            outflow = -1.0 * res_p.b[i] * pow(dh, res_p.e[i])
-            maxflow = (dh * res_p.area[lo]) / dt
+        if waterlevel[lo] > threshold[i]
+            # [m]
+            dh = waterlevel[lo] - threshold[i]
+            # [m³ s⁻¹] = -[m³⁻ᵉ s⁻¹] * [m]ᵉ
+            outflow = -b[i] * pow(dh, e[i])
+            # [m³ s⁻¹] = [m] * [m²] / [s]
+            maxflow = dh * area[lo] / dt
+            # [m³ s⁻¹] = max([m³ s⁻¹], [m³ s⁻¹])
             outflow = max(outflow, -maxflow)
         else
-            outflow = Float64(0)
+            outflow = 0.0
         end
     end
+    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
     storage = (storage_input - outflow) * dt
 
     # update lower reservoir (linked reservoirs) in case flow from lower reservoir to upper reservoir occurs
     if diff_wl < 0.0
+        # [m³] = [m³] + [m³ s⁻¹] * [s]
         lower_res_storage = res_v.storage[lo] + outflow * dt
-
-        lower_res_waterlevel = if res_p.storfunc[lo] == 1
-            res_v.waterlevel[lo] + (lower_res_storage - res_v.storage[lo]) / res_p.area[lo]
-        else
-            interpolate_linear(lower_res_storage, res_p.sh[lo].S, res_p.sh[lo].H)
+        # [m]
+        lower_res_waterlevel = if storfunc[lo] == ReservoirProfileType.linear
+            # [m] + ([m³] - [m³]) / [m²]
+            waterlevel[lo] + (lower_res_storage - storage[lo]) / area[lo]
+        else # ReservoirProfileType.interpolation
+            interpolate_linear(lower_res_storage, sh[lo].S, sh[lo].H)
         end
 
         # update values for the lower reservoir in place
         res_v.outflow[lo] = -outflow
-        res_v.outflow_av[lo] += -outflow * dt
+        add_to_cumulative!(res_v.outflow_av, lo, -outflow * dt)
         res_v.storage[lo] = lower_res_storage
-        res_v.waterlevel[lo] = lower_res_waterlevel
+        waterlevel[lo] = lower_res_waterlevel
     end
     return outflow, storage
 end
@@ -559,11 +601,13 @@ function update_reservoir_outflow_obs(
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_v = model.variables
-    (; precipitation, actevap, inflow) = boundary_vars
-
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
-    outflow = min(res_v.outflow_obs[i], storage_input)
+    (; storage, outflow_obs) = model.variables
+    (; precipitation, evaporation, inflow) = boundary_vars
+    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
+    storage_input = storage[i] / dt + precipitation - evaporation + inflow
+    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
+    outflow = min(outflow_obs[i], storage_input)
+    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
     storage = (storage_input - outflow) * dt
     return outflow, storage
 end
@@ -574,40 +618,38 @@ Update a single reservoir at position `i`.
 This is called from within the river routing scheme, therefore updating only for a single
 element rather than all at once.
 """
-function update!(
-    model::Reservoir,
-    i::Int,
-    inflow::Float64,
-    dt::Float64,
-    dt_forcing::Float64,
-)
+function update!(model::Reservoir, i::Int, inflow::Float64, dt::Float64)
     res_bc = model.boundary_conditions
     res_p = model.parameters
     res_v = model.variables
 
     # limit reservoir evaporation based on total available volume [m³]
-    precipitation = res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
-    available_storage = res_v.storage[i] + inflow * dt + precipitation
-    evap = res_bc.evaporation[i] * (dt / dt_forcing) * res_p.area[i]
-    actevap = min(available_storage, evap) # [m³/dt]
+    # [m³ s⁻¹] = [m s⁻¹] * [m²]
+    precipitation = res_bc.precipitation[i] * res_p.area[i]
+    # [m³] = [m³] + ([m³ s⁻¹] + [m³ s⁻¹]) * [s]
+    available_storage = res_v.storage[i] + (inflow + precipitation) * dt
+    # [m³ s⁻¹] = [m s⁻¹] * [m²]
+    potential_evaporation = res_bc.evaporation[i] * res_p.area[i]
+    # [m³ s⁻¹] = min([m³] / [s], [m³ s⁻¹])
+    evaporation = min(available_storage / dt, potential_evaporation)
 
-    boundary_vars = (; precipitation, actevap, inflow)
-
+    boundary_vars = (; precipitation, evaporation, inflow)
+    update_reservoir_args = (model, i, boundary_vars, dt)
     if !isnan(res_v.outflow_obs[i])
-        outflow, storage = update_reservoir_outflow_obs(model, i, boundary_vars, dt)
-    elseif res_p.outflowfunc[i] == 1
-        outflow, storage = update_reservoir_hq(model, i, boundary_vars, dt)
-    elseif res_p.outflowfunc[i] == 2
-        outflow, storage = update_reservoir_free_weir(model, i, boundary_vars, dt)
-    elseif res_p.outflowfunc[i] == 3
-        outflow, storage = update_reservoir_modified_puls(model, i, boundary_vars, dt)
-    elseif res_p.outflowfunc[i] == 4
-        outflow, storage = update_reservoir_simple(model, i, boundary_vars, dt)
+        outflow, storage = update_reservoir_outflow_obs(update_reservoir_args...)
+    elseif res_p.outflowfunc[i] == ReservoirOutflowType.rating_curve
+        outflow, storage = update_reservoir_hq(update_reservoir_args...)
+    elseif res_p.outflowfunc[i] == ReservoirOutflowType.free_weir
+        outflow, storage = update_reservoir_free_weir(update_reservoir_args...)
+    elseif res_p.outflowfunc[i] == ReservoirOutflowType.modified_puls
+        outflow, storage = update_reservoir_modified_puls(update_reservoir_args...)
+    elseif res_p.outflowfunc[i] == ReservoirOutflowType.simple
+        outflow, storage = update_reservoir_simple(update_reservoir_args...)
     end
 
-    waterlevel = if res_p.storfunc[i] == 1
+    waterlevel = if res_p.storfunc[i] == ReservoirProfileType.linear
         res_v.waterlevel[i] + (storage - res_v.storage[i]) / res_p.area[i]
-    else
+    else # res_p.storfunc[i] == ReservoirProfileType.interpolation
         interpolate_linear(storage, res_p.sh[i].S, res_p.sh[i].H)
     end
 
@@ -618,10 +660,9 @@ function update!(
     res_v.outflow[i] = outflow
 
     # average variables (here accumulated for model timestep dt)
-    res_bc.inflow[i] += inflow * dt
-    res_v.outflow_av[i] += outflow * dt
-    res_v.actevap[i] += actevap / res_p.area[i]
-
+    add_to_cumulative!(res_bc.inflow, i, inflow * dt)
+    add_to_cumulative!(res_v.outflow_av, i, outflow * dt)
+    add_to_cumulative!(res_v.actevap, i, evaporation * dt / res_p.area[i])
     return nothing
 end
 

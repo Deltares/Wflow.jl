@@ -910,7 +910,7 @@ function write_netcdf_timestep(model, dataset, parameters)
             # ensure no other information is written
             fill!(buffer, missing)
             # cut off possible boundary conditions/ ghost points with [1:length(sel)]
-            buffer[sel] .= vector[1:length(sel)]
+            buffer[sel] .= collect(vector)[1:length(sel)]
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
@@ -1131,7 +1131,7 @@ function write_csv_row(model)
             i = only(col.layer)
             v = reducer(getindex.(A, i))
         else
-            v = reducer(A)
+            v = reducer(collect(A))
         end
         # Convert to proper unit
         unit = get_unit(parameter)

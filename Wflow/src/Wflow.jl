@@ -130,6 +130,27 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+"""
+The AverageVector is a struct for computing averages of a some quantity with unit [u]
+over a timestep dt [s].
+"""
+@with_kw struct AverageVector
+    n::Int
+    # Cumulative value [u]
+    cumulative::Vector{Float64} = zeros(n)
+    # Average value [u s⁻¹]
+    average::Vector{Float64} = zeros(n)
+end
+
+add_to_cumulative!(v::AverageVector, i::Int, val::Number) = (v.cumulative[i] += val)
+average!(v::AverageVector, dt::Number) = (@. v.average = v.cumulative / dt)
+zero!(v::AverageVector) = (v.cumulative .= 0)
+Base.eltype(::AverageVector) = Float64
+Base.iterate(v::AverageVector) = iterate(v.average)
+Base.iterate(v::AverageVector, state) = iterate(v.average, state)
+Base.length(v::AverageVector) = length(v.average)
+Base.collect(v::AverageVector) = v.average
+
 include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")

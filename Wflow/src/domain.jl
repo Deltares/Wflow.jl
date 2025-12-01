@@ -106,7 +106,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
 
     if river_routing == RoutingType.kinematic_wave
         @reset network_river.upstream_nodes =
-            filter_upsteam_nodes(network_river.graph, pits[network_river.indices])
+            filter_upstream_nodes(network_river.graph, pits[network_river.indices])
     elseif river_routing == RoutingType.local_inertial
         nodes_at_edge, index_pit = NodesAtEdge(network_river)
         @reset network_river.nodes_at_edge = nodes_at_edge
@@ -117,7 +117,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     if land_routing == RoutingType.kinematic_wave ||
        subsurface_routing(config) == RoutingType.kinematic_wave
         @reset network_land.upstream_nodes =
-            filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
+            filter_upstream_nodes(network_land.graph, pits[network_land.indices])
     end
     if land_routing == RoutingType.local_inertial
         @reset network_land.edge_indices = EdgeConnectivity(network_land)
@@ -165,8 +165,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
                   to_table(; min_streamorder_land, min_streamorder_river)
         elseif land_routing == RoutingType.kinematic_wave ||
                subsurface_routing(config) == RoutingType.kinematic_wave
-            @info "Parallel execution of kinematic wave." *
-                  to_table(; min_streamorder_land)
+            @info "Parallel execution of kinematic wave." * to_table(; min_streamorder_land)
         end
     end
 
