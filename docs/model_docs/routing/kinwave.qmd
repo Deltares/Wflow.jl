@@ -151,8 +151,7 @@ $$
 where celerity $c$ is calculated as follows:
 $$
     c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
-    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
-    + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} & \text{if $\subtext{z}{ssf,watertable} < \subtext{z}{ssf,exp}$}\\
+    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}} & \text{if $\subtext{z}{ssf,watertable} < \subtext{z}{ssf,exp}$}\\
     \\
     e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} & \text{if $\subtext{z}{ssf,watertable} \ge \subtext{z}{ssf,exp}$}.
     \end{cases}
@@ -174,7 +173,13 @@ $$
 $$
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
-method.
+method. For the `exponential` and `exponential_constant` profiles, the kinematic wave
+celerity $c$ is a function of the water table depth $\SIb{\subtext{z}{ssf, watertable}}$ and
+for these profiles the kinematic wave equation is solved using Newton's method with an
+iteration criterion set to a maximum allowed water table depth change of $\SI{0.1}{m}$. This
+iteration criterion is applied to each model cell independently to compute and route
+subsurface flow for each model timestep (routing is not done at an internal timestep, see
+also the note below).
 
 ::: {.callout-note}
 For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain
