@@ -17,7 +17,7 @@ function testdata(filename)
         println("- $filename already exists")
     else
         Downloads.download(url, target_path)
-        println("- $filename")
+        println("- $filename downloaded")
     end
     return target_path
 end
