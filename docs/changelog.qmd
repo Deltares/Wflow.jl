@@ -7,88 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-
-### Fixed
-- Introduced in v1.0.0-rc2, as part of refactoring `SimpleReservoir` and `Lake` structs,
-  missing values were allowed for static input, but not for dynamic (cyclic and forcing)
-  input. For consistency between static and dynamic input no missing values for reservoir
-  input parameters are allowed, except for parameter `lower_reservoir_ind`.
-- Introduced in v1.0.0-rc3, reading parameter `soil_root__length_density_fraction` (the
-  parameter was not defined in the code).
-- Computation of kinematic wave celerity of subsurface flow for `KhExponentialConstant`
-  depth profile. For the exponential part the kinematic wave celerity was overestimated, as
-  the kinematic wave celerity for the constant depth profile was added. This addition has
-  been removed.
-
-### Changed
-- Solving the kinematic wave subsurface flow for `KhExponential` and `KhExponentialConstant`
-  depth profiles. Using a maximum allowed water table depth change (0.1 m) per iteration is
-  more accurate (kinematic wave celerity is a function of depth), than the previous solution
-  which is similar to using an average kinematic wave celerity for the water table depth
-  change.
-
-### Added
-
-## v1.0.0-rc3 - 2025-11-11
-
-### Fixed
-- Introduced in v1.0.0-rc2, fixed initialization of no-demand fields of struct `Demand`.
-- Introduced in v1.0.0-rc2, fix units water mass balance computations for subsurface flow
-  concepts `LateralSSF` and `UnconfinedAquifer` at sub-daily model time step.
-- Introduced in v1.0.0-rc1, optional parameter `soil_root__length_density_fraction` only
-  read as cyclic input and not as static input. This should be only static input.
-
-## v1.0.0-rc2 - 2025-10-16
-
-### Fixed
-- Introduced in v1.0.0-rc1, fixed unit conversion model parameter `kv_0` to `kh_0` for
-  sub-daily model timestep.
-- Introduced in v1.0.0-rc1, fixed Rutter interception by correctly extracting the vegetation
-  parameters.
-- Introduced in v1.0.0-rc1, fixed computation of exfiltration rate for `GroundwaterFlow`.
-  Before the exfiltration rate was computed (function `get_exfiltwater`), the maximum
-  groundwater head was adjusted to the surface level (function `get_water_depth`), resulting
-  in zero exfiltration rates. The exfiltration rate computation has been moved to the
-  `update_head!` function of `GroundwaterFlow`.
-- Fixed soil model `SbmSoilModel` cold states for model type `sbm_gwf`. `GroundwaterFlow`
-  can have constant head boundary cells, and for river cells the initial head is set equal
-  to the surface elevation. `SbmSoilModel` cold states and depending variables are now
-  corrected based on the `GroundwaterFlow` initial head values.
-
-### Changed
-- Refactor `SimpleReservoir` and `Lake` structs by introducing a `Reservoir` struct that
-  combines data and functionality of both structs. For the simple reservoir a rating curve
-  type (4) has been added. To represent reservoirs, (natural) lakes or other water storage
-  features that can be represented by the available functionality the common name
-  `reservoir` is used, also for the standard names of associated model variables and
-  parameters.
-- The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25
-  as recommended by Chu and Willis (1984). This has been changed to a configurable model
-  setting (`subsurface_water_flow__alpha_coefficient`), so this can be lowered easily in
-  case of numerical instabilities. Additionally, internal timestepping for groundwater flow
-  is now supported.
-- For scalar NetCDF output files, when using the same output map (gauge or subcatchment map)
-  multiple times, each variable that uses these IDs are now sharing the same dimension
-  (instead of creating a new dimension for each variable). The name of this dimension is
-  based on the name of the map defined in the .toml file.
-- Change default value of weighting factor `theta` (adjusts the amount of artificial
-  numerical diffusion) from 0.8 to 1.0 for local inertial overland flow routing. This
-  results in smaller water balance errors.
-- Introduced in v1.0.0-rc1 (except for average water depth `h_av` routing), stop supporting
-  time averaged storage variables as these are not required for typical applications and
-  users. Additionally, rename standard names of instantaneous storage variables by removing
-  `instantaneous` from the name.
-- Allow static input of river external inflow.
-
-### Added
-- Support external inflow at reservoir locations.
-- Include a SBOM in build distributions (#669).
-- Support use of reservoir observed outflow data for the reservoir water balance
-  computation.
-- Support water mass balance computations (error and relative error).
-
-## v1.0.0-rc1 - 2025-06-23
+## v1.0.0
 
 ### Fixed
 - Initialization of `LateralSSF` variables `ssf` and `ssfmax` with vertical hydraulic
@@ -114,6 +33,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Limit external negative inflow for local inertial routing (maximum of 80% of river volume).
 - Abstraction from lakes as part of water demand and allocation computations was skipped
   because of an incorrect if-statement.
+- Fixed soil model `SbmSoilModel` cold states for model type `sbm_gwf`. `GroundwaterFlow`
+  can have constant head boundary cells, and for river cells the initial head is set equal
+  to the surface elevation. `SbmSoilModel` cold states and depending variables are now
+  corrected based on the `GroundwaterFlow` initial head values.
+- Computation of kinematic wave celerity of subsurface flow for `KhExponentialConstant`
+  depth profile. For the exponential part the kinematic wave celerity was overestimated, as
+  the kinematic wave celerity for the constant depth profile was added. This addition has
+  been removed.
 
 ### Changed
 - Removed vertical concepts `HBV` and `FLEXTopo`.
@@ -192,12 +119,41 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a reservoir or lake is updated as part of the river routing. Order of computations has
   been changed to: 1) overland flow routing, 2) reservoir or lake inflow and 3) river
   routing.
+- Refactor `SimpleReservoir` and `Lake` structs by introducing a `Reservoir` struct that
+  combines data and functionality of both structs. For the simple reservoir a rating curve
+  type (4) has been added. To represent reservoirs, (natural) lakes or other water storage
+  features that can be represented by the available functionality the common name
+  `reservoir` is used, also for the standard names of associated model variables and
+  parameters.
+- The numerical stability coefficient for groundwater flow was set at a fixed value of 0.25
+  as recommended by Chu and Willis (1984). This has been changed to a configurable model
+  setting (`subsurface_water_flow__alpha_coefficient`), so this can be lowered easily in
+  case of numerical instabilities. Additionally, internal timestepping for groundwater flow
+  is now supported.
+- For scalar NetCDF output files, when using the same output map (gauge or subcatchment map)
+  multiple times, each variable that uses these IDs are now sharing the same dimension
+  (instead of creating a new dimension for each variable). The name of this dimension is
+  based on the name of the map defined in the .toml file.
+- Change default value of weighting factor `theta` (adjusts the amount of artificial
+  numerical diffusion) from 0.8 to 1.0 for local inertial overland flow routing. This
+  results in smaller water balance errors.
+- Allow static input of river external inflow.
+- Solving the kinematic wave subsurface flow for `KhExponential` and `KhExponentialConstant`
+  depth profiles. Using a maximum allowed water table depth change (0.1 m) per iteration is
+  more accurate (kinematic wave celerity is a function of depth), than the previous solution
+  which is similar to using an average kinematic wave celerity for the water table depth
+  change.
 
 ### Added
 - Support direct output of snow and glacier melt, and add computation of snow water
   equivalent (SWE).
 - Support computation and output of actual river water abstraction based on external
   negative inflow.
+- Support external inflow at reservoir locations.
+- Include a SBOM in build distributions (#669).
+- Support use of reservoir observed outflow data for the reservoir water balance
+  computation.
+- Support water mass balance computations (error and relative error).
 
 ## v0.x releases
 
