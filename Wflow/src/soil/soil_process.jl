@@ -20,16 +20,24 @@ function infiltration(
     infiltcappath,
     ustorecapacity,
     f_infiltration_reduction,
+    dt,
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and paved areas (path).
+    # [m s⁻¹] = [m s⁻¹] * [-]
     soilinf = potential_infiltration * (1.0 - pathfrac)
     pathinf = potential_infiltration * pathfrac
 
+    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
     max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
-    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
-    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
+    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
+    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
+
+    # [m s⁻¹] = min([m s⁻¹] + [m s⁻¹], max(0.0, [m] / [s]))
+    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity / dt))
+
+    # [m s⁻¹] = ([m s⁻¹] - [m s⁻¹]) + ([m s⁻¹] - [m s⁻¹])
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
     return infiltsoilpath, infiltexcess
@@ -43,30 +51,45 @@ is controlled by the vertical saturated hydraulic conductivity `kv_z` (bottom la
 table), the effective saturation degree of the layer (ratio `usd` and `l_sat`), and a
 Brooks-Corey power coefficient `c`.
 """
-function unsatzone_flow_layer(usd, kv_z, l_sat, c)
-    if usd <= 0.0
+function unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, c, dt)
+    if ustorelayerdepth <= 0.0
         return 0.0, 0.0
     end
     # Excess soil water:
     # first transfer soil water > maximum soil water capacity layer (iteration is not
-    # required because of steady theta (usd))
-    st_sat = max(0.0, usd - l_sat)
-    st = kv_z * min(pow(usd / l_sat, c), 1.0)
-    sum_ast = min(st, st_sat)
-    usd -= sum_ast
+    # required because of steady theta (ustorelayerdepth))
+
+    # [m] = max(0, [m] - [m])
+    st_sat = max(0.0, ustorelayerdepth - l_sat)
+
+    # [m s⁻¹] = [m s⁻¹] * [-]
+    st = kv_z * bounded_power(ustorelayerdepth / l_sat, c)
+    # [m s⁻¹] = min([m s⁻¹], [m] / [s])
+    sum_ast = min(st, st_sat / dt)
+    # [m] -= [m s⁻¹] * [s]
+    ustorelayerdepth -= sum_ast * dt
+
+    # [m s⁻¹] = [m] / [s]
+    max_flow = ustorelayerdepth / dt
 
     # number of iterations (to reduce "overshooting") based on fixed maximum change in soil
     # water per iteration step (0.2 mm / model timestep)
-    remainder = min(st - sum_ast, usd)
-    its = Int(cld(remainder, 0.2))
+    # [m] = min([m s⁻¹] * [s], [m])
+    remainder = min((st - sum_ast) * dt, ustorelayerdepth)
+    # [-]
+    its = Int(cld(remainder, 2e-4))
     for _ in 1:its
-        st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
-        ast = min(st, usd)
-        usd -= ast
+        # [m s⁻¹] = ([m s⁻¹] / [-]) * [-]
+        st = (kv_z / its) * bounded_power(ustorelayerdepth / l_sat, c)
+        # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])
+        ast = min(st, max_flow)
+        # [m] -= [m]
+        ustorelayerdepth -= ast * dt
+        # [m s⁻¹] += [m s⁻¹]
         sum_ast += ast
     end
 
-    return usd, sum_ast
+    return ustorelayerdepth, sum_ast
 end
 
 """
@@ -75,13 +98,15 @@ end
 Return volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
 function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
-    if h < hb
+    return if h < hb
+        # [-] = [-] / [-]
         par_lambda = 2.0 / (c - 3.0)
-        vwc = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
+        # [-] = [-] * ([-] / [-])^[-] + [-]
+        (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
     else
-        vwc = theta_s
+        # [-]
+        theta_s
     end
-    return vwc
 end
 
 """
@@ -90,30 +115,31 @@ end
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    # [-]
     par_lambda = 2.0 / (c - 3.0)
     # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
     # part of the numerical vwc calculation
-    h = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))
+    # [m] = [m] / (([-] / [-])^inv([-]))
+    h = hb / (pow(((vwc) / (theta_s - theta_r)), inv(par_lambda)))
     h = min(h, hb)
     return h
 end
 
 """
-    feddes_h3(h3_high, h3_low, tpot, Δt)
+    feddes_h3(h3_high, h3_low, tpot,dt)
 
 Return soil water pressure head `h3` of Feddes root water uptake reduction function.
 """
-function feddes_h3(h3_high, h3_low, tpot, Δt)
-    # value of h3 is a function of potential transpiration [mm/d]
-    tpot_daily = tpot * (tosecond(BASETIMESTEP) / Δt)
-    if (tpot_daily >= 0.0) && (tpot_daily <= 1.0)
-        h3 = h3_low
-    elseif (tpot_daily > 1.0) && (tpot_daily < 5.0)
-        h3 = h3_high + ((h3_low - h3_high) * (5.0 - tpot_daily)) / (5.0 - 1.0)
+function feddes_h3(h3_high, h3_low, tpot_SI)
+    # value of h3 is a function of potential transpiration [mm d⁻¹]
+    tpot_daily = from_SI(tpot_SI, MM_PER_DAY)
+    return if tpot_daily <= 1.0
+        h3_low
+    elseif tpot_daily < 5.0
+        h3_low + (h3_high - h3_low) * (tpot_daily - 1.0) / (5.0 - 1.0)
     else
-        h3 = h3_high
+        h3_high
     end
-    return h3
 end
 
 """
@@ -123,26 +149,21 @@ Root water uptake reduction factor based on Feddes.
 """
 function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
-    if alpha_h1 == 0.0
-        if (h <= h4) || (h > h1)
-            alpha = 0.0
-        elseif (h > h2) && (h <= h1)
-            alpha = (h - h1) / (h2 - h1)
-        elseif (h >= h3) && (h <= h2)
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
+    return if h < h4
+        0.0
+    elseif h < h3
+        (h - h4) / (h3 - h4)
+    elseif iszero(alpha_h1)
+        if h < h2
+            1.0
+        elseif h < h1
+            (h1 - h) / (h1 - h2)
+        else
+            0.0
         end
     else
-        if h <= h4
-            alpha = 0.0
-        elseif h >= h3
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
-        end
+        1.0
     end
-    return alpha
 end
 
 """

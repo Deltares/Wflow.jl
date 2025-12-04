@@ -1,28 +1,26 @@
-abstract type AbstractSedimentRiverTransportModel end
-
 "Struct to store river sediment transport model variables"
 @with_kw struct SedimentRiverTransportVariables
     n::Int
-    # Sediment flux [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Sediment flux [t dt⁻¹ => kg s⁻¹]
+    sediment_flux::Vector{Float64} = fill(MISSING_VALUE, n)
     clay::Vector{Float64} = zeros(n)
     silt::Vector{Float64} = zeros(n)
     sand::Vector{Float64} = zeros(n)
     sagg::Vector{Float64} = zeros(n)
     lagg::Vector{Float64} = zeros(n)
     gravel::Vector{Float64} = zeros(n)
-    # Total Sediment deposition rate [t dt-1]
+    # Total Sediment deposition rate [t dt⁻¹ => kg s⁻¹]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total sediment erosion rate (from store + direct river bed/bank) [t dt-1]
+    # Total sediment erosion rate (from store + direct river bed/bank) [t dt⁻¹ => kg s⁻¹]
     erosion::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sediment / particle left in the cell [t] - states
+    # Sediment / particle left in the cell [t => kg] - states
     leftover_clay::Vector{Float64} = zeros(n)
     leftover_silt::Vector{Float64} = zeros(n)
     leftover_sand::Vector{Float64} = zeros(n)
     leftover_sagg::Vector{Float64} = zeros(n)
     leftover_lagg::Vector{Float64} = zeros(n)
     leftover_gravel::Vector{Float64} = zeros(n)
-    # Sediment / particle stored on the river bed after deposition [t] -states
+    # Sediment / particle stored on the river bed after deposition [t => kg] -states
     store_clay::Vector{Float64} = zeros(n)
     store_silt::Vector{Float64} = zeros(n)
     store_sand::Vector{Float64} = zeros(n)
@@ -38,15 +36,15 @@ end
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity of the flow [t dt-1]
+    # Transport capacity of the flow [t dt⁻¹ => kg s⁻¹]
     transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sediment input rate from land erosion [t dt-1]
+    # Sediment input rate from land erosion [t dt⁻¹ => kg s⁻¹]
     erosion_land_clay::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_silt::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_sand::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sediment erosion rate from direct river erosion [t dt-1]
+    # Sediment erosion rate from direct river erosion [t dt⁻¹ => kg s⁻¹]
     potential_erosion_river_bed::Vector{Float64} = fill(MISSING_VALUE, n)
     potential_erosion_river_bank::Vector{Float64} = fill(MISSING_VALUE, n)
 end
@@ -61,17 +59,17 @@ end
     sand_fraction::Vector{Float64}
     # River bed/bank content gravel [-]
     gravel_fraction::Vector{Float64}
-    # Clay mean diameter [µm]
+    # Clay mean diameter [µm => m]
     dm_clay::Vector{Float64}
-    # Silt mean diameter [µm]
+    # Silt mean diameter [µm => m]
     dm_silt::Vector{Float64}
-    # Sand mean diameter [µm]
+    # Sand mean diameter [µm => m]
     dm_sand::Vector{Float64}
-    # Small aggregates mean diameter [µm]
+    # Small aggregates mean diameter [µm => m]
     dm_sagg::Vector{Float64}
-    # Large aggregates mean diameter [µm]
+    # Large aggregates mean diameter [µm => m]
     dm_lagg::Vector{Float64}
-    # Gravel mean diameter [µm]
+    # Gravel mean diameter [µm => m]
     dm_gravel::Vector{Float64}
     # Reservoir outlets [-]
     reservoir_outlet::Vector{Bool}
@@ -91,7 +89,8 @@ function SedimentRiverTransportParameters(
     clay_fraction = ncread(
         dataset,
         config,
-        "river_bottom_and_bank_clay__mass_fraction";
+        "river_bottom_and_bank_clay__mass_fraction",
+        SoilLoss;
         sel = indices,
         defaults = 0.15,
         type = Float64,
@@ -99,7 +98,8 @@ function SedimentRiverTransportParameters(
     silt_fraction = ncread(
         dataset,
         config,
-        "river_bottom_and_bank_silt__mass_fraction";
+        "river_bottom_and_bank_silt__mass_fraction",
+        SoilLoss;
         sel = indices,
         defaults = 0.65,
         type = Float64,
@@ -107,7 +107,8 @@ function SedimentRiverTransportParameters(
     sand_fraction = ncread(
         dataset,
         config,
-        "river_bottom_and_bank_sand__mass_fraction";
+        "river_bottom_and_bank_sand__mass_fraction",
+        SoilLoss;
         sel = indices,
         defaults = 0.15,
         type = Float64,
@@ -115,7 +116,8 @@ function SedimentRiverTransportParameters(
     gravel_fraction = ncread(
         dataset,
         config,
-        "river_bottom_and_bank_gravel__mass_fraction";
+        "river_bottom_and_bank_gravel__mass_fraction",
+        SoilLoss;
         sel = indices,
         defaults = 0.05,
         type = Float64,
@@ -128,7 +130,8 @@ function SedimentRiverTransportParameters(
     dm_clay = ncread(
         dataset,
         config,
-        "clay__mean_diameter";
+        "clay__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 2.0,
         type = Float64,
@@ -136,7 +139,8 @@ function SedimentRiverTransportParameters(
     dm_silt = ncread(
         dataset,
         config,
-        "silt__mean_diameter";
+        "silt__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 10.0,
         type = Float64,
@@ -144,7 +148,8 @@ function SedimentRiverTransportParameters(
     dm_sand = ncread(
         dataset,
         config,
-        "sand__mean_diameter";
+        "sand__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 200.0,
         type = Float64,
@@ -152,7 +157,8 @@ function SedimentRiverTransportParameters(
     dm_sagg = ncread(
         dataset,
         config,
-        "sediment_small_aggregates__mean_diameter";
+        "sediment_small_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 30.0,
         type = Float64,
@@ -160,7 +166,8 @@ function SedimentRiverTransportParameters(
     dm_lagg = ncread(
         dataset,
         config,
-        "sediment_large_aggregates__mean_diameter";
+        "sediment_large_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 500.0,
         type = Float64,
@@ -168,7 +175,8 @@ function SedimentRiverTransportParameters(
     dm_gravel = ncread(
         dataset,
         config,
-        "gravel__mean_diameter";
+        "gravel__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 2000.0,
         type = Float64,
@@ -179,7 +187,8 @@ function SedimentRiverTransportParameters(
         reservoir_outlet = ncread(
             dataset,
             config,
-            "reservoir_location__count";
+            "reservoir_location__count",
+            SoilLoss;
             sel = indices,
             type = Float64,
             fill = 0,
@@ -187,7 +196,8 @@ function SedimentRiverTransportParameters(
         reservoir_area = ncread(
             dataset,
             config,
-            "reservoir_surface__area";
+            "reservoir_surface__area",
+            SoilLoss;
             optional = false,
             sel = indices,
             type = Float64,
@@ -196,16 +206,17 @@ function SedimentRiverTransportParameters(
         reservoir_trapping_efficiency = ncread(
             dataset,
             config,
-            "reservoir_water_sediment__bedload_trapping_efficiency";
+            "reservoir_water_sediment__bedload_trapping_efficiency",
+            SoilLoss;
             sel = indices,
             type = Float64,
             defaults = 1.0,
             fill = 0.0,
         )
     else
-        reservoir_outlet = zeros(Float64, n)
-        reservoir_area = zeros(Float64, n)
-        reservoir_trapping_efficiency = zeros(Float64, n)
+        reservoir_outlet = zeros(n)
+        reservoir_area = zeros(n)
+        reservoir_trapping_efficiency = zeros(n)
     end
 
     river_parameters = SedimentRiverTransportParameters(;
@@ -228,10 +239,11 @@ function SedimentRiverTransportParameters(
 end
 
 "Struct to store river sediment transport model"
-@with_kw struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
-    boundary_conditions::SedimentRiverTransportBC
+@with_kw struct SedimentRiverTransportModel
+    n::Int
+    boundary_conditions::SedimentRiverTransportBC = SedimentRiverTransportBC(; n)
     parameters::SedimentRiverTransportParameters
-    variables::SedimentRiverTransportVariables
+    variables::SedimentRiverTransportVariables = SedimentRiverTransportVariables(; n)
 end
 
 "Initialize river sediment transport model"
@@ -241,14 +253,8 @@ function SedimentRiverTransportModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = SedimentRiverTransportVariables(; n)
-    params = SedimentRiverTransportParameters(dataset, config, indices)
-    bc = SedimentRiverTransportBC(; n)
-    model = SedimentRiverTransportModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = SedimentRiverTransportParameters(dataset, config, indices)
+    model = SedimentRiverTransportModel(; n, parameters)
     return model
 end
 
@@ -258,7 +264,7 @@ function update_boundary_conditions!(
     hydrological_forcing::HydrologicalForcing,
     transport_capacity_model::AbstractTransportCapacityModel,
     to_river_model::SedimentToRiverDifferentiationModel,
-    potential_erosion_model::AbstractRiverErosionModel,
+    potential_erosion_model::RiverErosionJulianTorresModel,
     indices_riv::Vector{Int},
 )
     (;
@@ -279,14 +285,14 @@ function update_boundary_conditions!(
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Transport capacity
-    @. transport_capacity = transport_capacity_model.variables.amount
+    @. transport_capacity = transport_capacity_model.variables.sediment_transport_capacity
     # Input from soil erosion
     (; clay, silt, sand, sagg, lagg) = to_river_model.variables
-    @. erosion_land_clay = clay[indices_riv]
-    @. erosion_land_silt = silt[indices_riv]
-    @. erosion_land_sand = sand[indices_riv]
-    @. erosion_land_sagg = sagg[indices_riv]
-    @. erosion_land_lagg = lagg[indices_riv]
+    map!(i -> clay[i], erosion_land_clay, indices_riv)
+    map!(i -> silt[i], erosion_land_silt, indices_riv)
+    map!(i -> sand[i], erosion_land_sand, indices_riv)
+    map!(i -> sagg[i], erosion_land_sagg, indices_riv)
+    map!(i -> lagg[i], erosion_land_lagg, indices_riv)
     # Maximum direct river bed/bank erosion
     @. potential_erosion_river_bed = potential_erosion_model.variables.bed
     @. potential_erosion_river_bank = potential_erosion_model.variables.bank
@@ -322,7 +328,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         reservoir_trapping_efficiency,
     ) = model.parameters
     (;
-        amount,
+        sediment_flux,
         clay,
         silt,
         sand,
@@ -395,7 +401,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
 
         # Direct erosion from the river bed/bank
         if sediment_need > store_sediment
-            # Effective sediment needed fom river bed and bank erosion [ton]
+            # Effective sediment needed from river bed and bank erosion [t]
             effsediment_need = sediment_need - store_sediment
             # Relative potential erosion rates of the bed and the bank [-]
             if (potential_erosion_river_bank[v] + potential_erosion_river_bed[v] > 0.0)
@@ -428,48 +434,48 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             erosion_lagg = 0.0
         end
 
-        # Erosion/degradation of the previously deposited sediment (from clay to gravel) [ton]
+        # Erosion/degradation of the previously deposited sediment (from clay to gravel) [t]
         if sediment_need > 0.0
             # Erosion in priority of the smaller particles
             # Clay
             if store_clay[v] > 0.0
                 erosion_store_clay, sediment_need, store_clay[v] =
-                    river_erosion_store(sediment_need, store_clay[v])
+                    river_erosion_store(sediment_need, store_clay[v], dt)
                 # Update the clay erosion
                 erosion_clay += erosion_store_clay
             end
             # Silt
             if store_silt[v] > 0.0
                 erosion_store_silt, sediment_need, store_silt[v] =
-                    river_erosion_store(sediment_need, store_silt[v])
+                    river_erosion_store(sediment_need, store_silt[v], dt)
                 # Update the silt erosion
                 erosion_silt += erosion_store_silt
             end
             # Small aggregates
             if store_sagg[v] > 0.0
                 erosion_store_sagg, sediment_need, store_sagg[v] =
-                    river_erosion_store(sediment_need, store_sagg[v])
+                    river_erosion_store(sediment_need, store_sagg[v], dt)
                 # Update the sagg erosion
                 erosion_sagg += erosion_store_sagg
             end
             # Sand
             if store_sand[v] > 0.0
                 erosion_store_sand, sediment_need, store_sand[v] =
-                    river_erosion_store(sediment_need, store_sand[v])
+                    river_erosion_store(sediment_need, store_sand[v], dt)
                 # Update the sand erosion
                 erosion_sand += erosion_store_sand
             end
             # Large aggregates
             if store_lagg[v] > 0.0
                 erosion_store_lagg, sediment_need, store_lagg[v] =
-                    river_erosion_store(sediment_need, store_lagg[v])
+                    river_erosion_store(sediment_need, store_lagg[v], dt)
                 # Update the lagg erosion
                 erosion_lagg += erosion_store_lagg
             end
             # Gravel
             if store_gravel[v] > 0.0
                 erosion_store_gravel, sediment_need, store_gravel[v] =
-                    river_erosion_store(sediment_need, store_gravel[v])
+                    river_erosion_store(sediment_need, store_gravel[v], dt)
                 # Update the gravel erosion
                 erosion_gravel += erosion_store_gravel
             end
@@ -555,7 +561,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             # From transport capacity exceedance
             excess_sediment = max(input_sediment - transport_capacity[v], 0.0)
             if excess_sediment > 0.0
-                # Sediment deposited in the channel (from gravel to clay) [ton]
+                # Sediment deposited in the channel (from gravel to clay) [t]
                 # Gravel
                 deposition_gravel = ifelse(
                     excess_sediment > (input_gravel + erosion_gravel),
@@ -600,26 +606,20 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 excess_sediment = max(excess_sediment - deposition_clay, 0.0)
             else
                 # Natural deposition from Einstein's formula (density controlled)
-                # Particle fall velocity [m/s] from Stokes
+                # Particle fall velocity [m s⁻¹] from Stokes
                 xs =
                     ifelse(q[v] > 0.0, 1.055 * flow_length[v] / (q[v] / flow_width[v]), 0.0)
-                xclay =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_clay[v] / 1000)^2 / 3600)))
+                xclay = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_clay[v])))
                 deposition_clay = xclay * (input_clay + erosion_clay)
-                xsilt =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_silt[v] / 1000)^2 / 3600)))
+                xsilt = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_silt[v])))
                 deposition_silt = xsilt * (input_silt + erosion_silt)
-                xsand =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_sand[v] / 1000)^2 / 3600)))
+                xsand = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_sand[v])))
                 deposition_sand = xsand * (input_sand + erosion_sand)
-                xsagg =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_sagg[v] / 1000)^2 / 3600)))
+                xsagg = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_sagg[v])))
                 deposition_sagg = xsagg * (input_sagg + erosion_sagg)
-                xlagg =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_lagg[v] / 1000)^2 / 3600)))
+                xlagg = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_lagg[v])))
                 deposition_lagg = xlagg * (input_lagg + erosion_lagg)
-                xgrav =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_gravel[v] / 1000)^2 / 3600)))
+                xgrav = min(1.0, 1.0 - exp(-xs * fall_velocity(dm_gravel[v])))
                 deposition_gravel = xgrav * (input_gravel + erosion_gravel)
             end
         end
@@ -642,7 +642,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             deposition_gravel
 
         ### Output loads ###
-        # Sediment transported out of the cell during the timestep [ton]
+        # Sediment transported out of the cell during the timestep [t]
         # 0 in case all sediment are deposited in the cell
         # Reduce the fraction so that there is still some sediment staying in the river cell
         if waterlevel[v] > 0.0
@@ -658,10 +658,10 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         lagg[v] = fwaterout * (input_lagg + erosion_lagg - deposition_lagg)
         gravel[v] = fwaterout * (input_gravel + erosion_gravel - deposition_gravel)
 
-        amount[v] = clay[v] + silt[v] + sand[v] + sagg[v] + lagg[v] + gravel[v]
+        sediment_flux[v] = clay[v] + silt[v] + sand[v] + sagg[v] + lagg[v] + gravel[v]
 
         ### Leftover / mass balance ###
-        # Sediment left in the cell [ton]
+        # Sediment left in the cell [t]
         leftover_clay[v] = input_clay + erosion_clay - deposition_clay - clay[v]
         leftover_silt[v] = input_silt + erosion_silt - deposition_silt - silt[v]
         leftover_sand[v] = input_sand + erosion_sand - deposition_sand - sand[v]
@@ -671,16 +671,14 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
     end
 end
 
-abstract type AbstractSedimentConcentrationsRiverModel end
-
 "Struct to store river sediment concentrations model variables"
 @with_kw struct SedimentConcentrationsRiverVariables
     n::Int
-    # Total sediment concentration in the river [g m-3]
+    # Total sediment concentration in the river [g m⁻³ => kg m⁻³]
     total::Vector{Float64} = fill(MISSING_VALUE, n)
-    # suspended sediemnt concentration in the river [g m-3]
+    # suspended sediment concentration in the river [g m⁻³ => kg m⁻³]
     suspended::Vector{Float64} = fill(MISSING_VALUE, n)
-    # bed load sediment concentration in the river [g m-3]
+    # bed load sediment concentration in the river [g m⁻³ => kg m⁻³]
     bed::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -690,33 +688,33 @@ end
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
-    # Clay load [g m-3]
+    # Clay load [g m⁻³ => kg m⁻³]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt load [g m-3]
+    # Silt load [g m⁻³ => kg m⁻³]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand load [g m-3]
+    # Sand load [g m⁻³ => kg m⁻³]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates load [g m-3]
+    # Small aggregates load [g m⁻³ => kg m⁻³]
     sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates load [g m-3]
+    # Large aggregates load [g m⁻³ => kg m⁻³]
     lagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Gravel load [g m-3]
+    # Gravel load [g m⁻³ => kg m⁻³]
     gravel::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store river sediment concentrations model parameters"
 @with_kw struct SedimentConcentrationsRiverParameters
-    # Clay mean diameter [µm]
+    # Clay mean diameter [µm => m]
     dm_clay::Vector{Float64}
-    # Silt mean diameter [µm]
+    # Silt mean diameter [µm => m]
     dm_silt::Vector{Float64}
-    # Sand mean diameter [µm]
+    # Sand mean diameter [µm => m]
     dm_sand::Vector{Float64}
-    # Small aggregates mean diameter [µm]
+    # Small aggregates mean diameter [µm => m]
     dm_sagg::Vector{Float64}
-    # Large aggregates mean diameter [µm]
+    # Large aggregates mean diameter [µm => m]
     dm_lagg::Vector{Float64}
-    # Gravel mean diameter [µm]
+    # Gravel mean diameter [µm => m]
     dm_gravel::Vector{Float64}
 end
 
@@ -729,7 +727,8 @@ function SedimentConcentrationsRiverParameters(
     dm_clay = ncread(
         dataset,
         config,
-        "clay__mean_diameter";
+        "clay__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 2.0,
         type = Float64,
@@ -737,7 +736,8 @@ function SedimentConcentrationsRiverParameters(
     dm_silt = ncread(
         dataset,
         config,
-        "silt__mean_diameter";
+        "silt__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 10.0,
         type = Float64,
@@ -745,7 +745,8 @@ function SedimentConcentrationsRiverParameters(
     dm_sand = ncread(
         dataset,
         config,
-        "sand__mean_diameter";
+        "sand__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 200.0,
         type = Float64,
@@ -753,7 +754,8 @@ function SedimentConcentrationsRiverParameters(
     dm_sagg = ncread(
         dataset,
         config,
-        "sediment_small_aggregates__mean_diameter";
+        "sediment_small_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 30.0,
         type = Float64,
@@ -761,7 +763,8 @@ function SedimentConcentrationsRiverParameters(
     dm_lagg = ncread(
         dataset,
         config,
-        "sediment_large_aggregates__mean_diameter";
+        "sediment_large_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 500.0,
         type = Float64,
@@ -769,7 +772,8 @@ function SedimentConcentrationsRiverParameters(
     dm_gravel = ncread(
         dataset,
         config,
-        "gravel__mean_diameter";
+        "gravel__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 2000.0,
         type = Float64,
@@ -787,10 +791,12 @@ function SedimentConcentrationsRiverParameters(
 end
 
 "Struct to store river sediment concentrations model"
-@with_kw struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
-    boundary_conditions::SedimentConcentrationsRiverBC
+@with_kw struct SedimentConcentrationsRiverModel
+    n::Int
+    boundary_conditions::SedimentConcentrationsRiverBC = SedimentConcentrationsRiverBC(; n)
     parameters::SedimentConcentrationsRiverParameters
-    variables::SedimentConcentrationsRiverVariables
+    variables::SedimentConcentrationsRiverVariables =
+        SedimentConcentrationsRiverVariables(; n)
 end
 
 "Initialize river sediment concentrations model"
@@ -800,14 +806,8 @@ function SedimentConcentrationsRiverModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = SedimentConcentrationsRiverVariables(; n)
-    params = SedimentConcentrationsRiverParameters(dataset, config, indices)
-    bc = SedimentConcentrationsRiverBC(; n)
-    model = SedimentConcentrationsRiverModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = SedimentConcentrationsRiverParameters(dataset, config, indices)
+    model = SedimentConcentrationsRiverModel(; n, parameters)
     return model
 end
 
@@ -815,7 +815,7 @@ end
 function update_boundary_conditions!(
     model::SedimentConcentrationsRiverModel,
     hydrological_forcing::HydrologicalForcing,
-    sediment_flux_model::AbstractSedimentRiverTransportModel,
+    sediment_flux_model::SedimentRiverTransportModel,
 )
     (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) = model.boundary_conditions
     # Hydrological forcing
@@ -831,6 +831,16 @@ function update_boundary_conditions!(
     @. gravel = sediment_flux_model.variables.gravel
 end
 
+function suspended_solid(dm, dsuspf, dbedf, substance)
+    return if dm <= dsuspf
+        substance
+    elseif dm <= dbedf
+        substance / 2
+    else
+        0.0
+    end
+end
+
 "Update river sediment concentrations model for a single timestep"
 function update!(
     model::SedimentConcentrationsRiverModel,
@@ -842,35 +852,33 @@ function update!(
     (; total, suspended, bed) = model.variables
     (; slope) = parameters
 
-    zeros = fill(0.0, length(q))
-    # Conversion from load [ton] to concentration for rivers [mg/L]
-    toconc = ifelse.(q .> 0.0, 1e6 ./ (q .* dt), zeros)
+    for (i, flow) in enumerate(q)
+        if flow > 0
+            # Differentiation of bed and suspended load using Rouse number for suspension
+            # threshold diameter between bed load and mixed load using Rouse number
+            common_term = 0.41 * sqrt(g_gravity * waterlevel[i] * slope[i]) / STOKES_FACTOR
+            dbedf = sqrt(2.5 * common_term)
+            # # threshold diameter between suspended load and mixed load using Rouse number
+            dsuspf = sqrt(1.2 * common_term)
 
-    # Differentiation of bed and suspended load using Rouse number for suspension
-    # threshold diameter between bed load and mixed load using Rouse number
-    dbedf =
-        1e3 .* (2.5 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* slope) .^ 0.5) .^ 0.5
-    # threshold diameter between suspended load and mixed load using Rouse number
-    dsuspf =
-        1e3 .* (1.2 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* slope) .^ 0.5) .^ 0.5
+            # Rouse with diameter
+            SSclay = suspended_solid(dm_clay[i], dsuspf, dbedf, clay[i])
+            SSsilt = suspended_solid(dm_silt[i], dsuspf, dbedf, silt[i])
+            SSsand = suspended_solid(dm_sand[i], dsuspf, dbedf, sand[i])
+            SSsagg = suspended_solid(dm_sagg[i], dsuspf, dbedf, sagg[i])
+            SSlagg = suspended_solid(dm_lagg[i], dsuspf, dbedf, lagg[i])
+            SSgrav = suspended_solid(dm_gravel[i], dsuspf, dbedf, gravel[i])
 
-    # Rouse with diameter
-    SSclay = ifelse.(dm_clay .<= dsuspf, clay, ifelse.(dm_clay .<= dbedf, clay ./ 2, zeros))
-    SSsilt = ifelse.(dm_silt .<= dsuspf, silt, ifelse.(dm_silt .<= dbedf, silt ./ 2, zeros))
-    SSsand = ifelse.(dm_sand .<= dsuspf, sand, ifelse.(dm_sand .<= dbedf, sand ./ 2, zeros))
-    SSsagg = ifelse.(dm_sagg .<= dsuspf, sagg, ifelse.(dm_sagg .<= dbedf, sagg ./ 2, zeros))
-    SSlagg = ifelse.(dm_lagg .<= dsuspf, lagg, ifelse.(dm_lagg .<= dbedf, lagg ./ 2, zeros))
-    SSgrav =
-        ifelse.(
-            dm_gravel .<= dsuspf,
-            gravel,
-            ifelse.(dm_gravel .<= dbedf, gravel ./ 2, zeros),
-        )
+            total_ = clay[i] + silt[i] + sagg[i] + sand[i] + lagg[i] + gravel[i]
+            total[i] = total_
 
-    SS = SSclay .+ SSsilt .+ SSsagg .+ SSsand .+ SSlagg .+ SSgrav
-    Bedload = (clay .+ silt .+ sagg .+ sand .+ lagg .+ gravel) .- SS
-
-    @. suspended = SS .* toconc
-    @. bed = Bedload .* toconc
-    @. total = (clay .+ silt .+ sagg .+ sand .+ lagg .+ gravel) .* toconc
+            SS = SSclay + SSsilt + SSsand + SSsagg + SSlagg + SSgrav
+            suspended[i] = SS
+            bed[i] = total_ - SS
+        else
+            suspended[i] = 0.0
+            bed[i] = 0.0
+            total[i] = 0.0
+        end
+    end
 end

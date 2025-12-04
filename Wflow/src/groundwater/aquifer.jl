@@ -21,12 +21,12 @@ with:
 The simplest finite difference formulation is forward in time, central in space,
 and can be written as:
 
-Sᵢ * (ϕᵢᵗ⁺¹ - ϕᵢᵗ) / Δt = -Cᵢ₋₁ * (ϕᵢ₋₁ - ϕᵢ) -Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ
+Sᵢ * (ϕᵢᵗ⁺¹ - ϕᵢᵗ) /dt = -Cᵢ₋₁ * (ϕᵢ₋₁ - ϕᵢ) -Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ
 
 with:
 * ᵢ as cell index
 * ᵗ as time index
-* Δt as step size
+* dt as step size
 * Cᵢ₋₁ as the intercell conductance between cell i-1 and i
 * Cᵢ as the intercell conductance between cell i and i+1
 
@@ -43,7 +43,7 @@ using the properties of two cells. See the documentation below.
 
 There is only one unknown, ϕᵢᵗ⁺¹. Reshuffling terms:
 
-ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) * Δt / Sᵢ
+ϕᵢᵗ⁺¹ = ϕᵢᵗ + (Cᵢ₋₁ * (ϕᵢ - ϕᵢ₋₁) + Cᵢ * (ϕᵢ₊₁ - ϕᵢ) + Qᵢ) * dt / Sᵢ
 
 This can be generalized to two dimensions, for both regular and irregular cell
 connectivity.
@@ -85,22 +85,35 @@ NOTA BENE: **specific** storage is per m of aquifer (conf. specific weight).
 transmissivity).
 """
 @with_kw struct ConfinedAquiferParameters
-    k::Vector{Float64}                    # horizontal conductivity [m d⁻¹]
-    top::Vector{Float64}                  # top of groundwater layer [m]
-    bottom::Vector{Float64}               # bottom of groundwater layer [m]
-    area::Vector{Float64}                 # area of cell [m²]
-    specific_storage::Vector{Float64}     # [m m⁻¹ m⁻¹]
-    storativity::Vector{Float64}          # [m m⁻¹]
+    # horizontal conductivity [m d⁻¹ => m s⁻¹]
+    k::Vector{Float64}
+    # top of groundwater layer [m]
+    top::Vector{Float64}
+    # bottom of groundwater layer [m]
+    bottom::Vector{Float64}
+    # area of cell [m²]
+    area::Vector{Float64}
+    # [m m⁻¹ m⁻¹]
+    specific_storage::Vector{Float64}
+    # [m m⁻¹]
+    storativity::Vector{Float64}
 end
 
 @with_kw struct AquiferVariables
-    head::Vector{Float64}               # hydraulic head [m]
-    conductance::Vector{Float64}        # conductance [m² d⁻¹]
-    storage::Vector{Float64}            # total storage of water that can be released [m³]
-    q_net::Vector{Float64}              # net flow (groundwater and boundaries) [m³ d⁻¹]
-    q_in_av::Vector{Float64}            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
-    q_out_av::Vector{Float64}           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
-    exfiltwater::Vector{Float64}        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    # hydraulic head [m]
+    head::Vector{Float64}
+    # conductance [m² d⁻¹ => m² s⁻¹]
+    conductance::Vector{Float64}
+    # total storage of water that can be released [m³]
+    storage::Vector{Float64}
+    # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
+    q_net::Vector{Float64} = zeros(length(storage))
+    # cumulative groundwater (lateral) inflow for model time step dt [m³]
+    q_in_av::AverageVector = AverageVector(; n = length(storage))
+    # average groundwater (lateral) outflow for model time step dt [m³ d⁻¹ => m³ s⁻¹]
+    q_out_av::AverageVector = AverageVector(; n = length(storage))
+    # Exfiltration [m dt⁻¹ => m s⁻¹] (groundwater above surface level, saturated excess conditions)
+    exfiltwater::Vector{Float64} = zeros(length(storage))
 end
 
 @with_kw struct ConfinedAquifer <: Aquifer
@@ -120,7 +133,7 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
 (Johnson, 1967).
 """
 @with_kw struct UnconfinedAquiferParameters
-    k::Vector{Float64}                # reference horizontal conductivity [m d⁻¹]
+    k::Vector{Float64}                # reference horizontal conductivity [m d⁻¹ => m s⁻¹]
     top::Vector{Float64}              # top of groundwater layer [m]
     bottom::Vector{Float64}           # bottom of groundwater layer [m]
     area::Vector{Float64}             # area of cell [m²]
@@ -141,7 +154,8 @@ function UnconfinedAquiferParameters(
     k = ncread(
         dataset,
         config,
-        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity";
+        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -149,7 +163,8 @@ function UnconfinedAquiferParameters(
     specific_yield = ncread(
         dataset,
         config,
-        "subsurface_water__specific_yield";
+        "subsurface_water__specific_yield",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -159,7 +174,8 @@ function UnconfinedAquiferParameters(
         f = ncread(
             dataset,
             config,
-            "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter";
+            "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
+            Routing;
             optional = false,
             sel = indices,
             type = Float64,
@@ -188,14 +204,7 @@ function UnconfinedAquifer(
 )
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
-    n = length(storage)
-    q_net = zeros(n)
-    exfiltwater = zeros(n)
-    q_in_av = zeros(n)
-    q_out_av = zeros(n)
-    exfiltwater = zeros(n)
-    variables =
-        AquiferVariables(head, conductance, storage, q_net, q_in_av, q_out_av, exfiltwater)
+    variables = AquiferVariables(; head, conductance, storage)
     aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end
@@ -391,9 +400,9 @@ function flux!(
             flow = cond * delta_head
             aquifer.variables.q_net[i] -= flow
             if flow > 0.0
-                aquifer.variables.q_out_av[i] += flow * dt
+                add_to_cumulative!(aquifer.variables.q_out_av, i, flow * dt)
             else
-                aquifer.variables.q_in_av[i] -= flow * dt
+                add_to_cumulative!(aquifer.variables.q_in_av, i, -flow * dt)
             end
         end
     end
@@ -417,7 +426,8 @@ function ConstantHead(
     constanthead = ncread(
         dataset,
         config,
-        "model_constant_boundary_condition__hydraulic_head";
+        "model_constant_boundary_condition__hydraulic_head",
+        Routing;
         optional = false,
         sel = indices,
         type = Float64,
@@ -528,16 +538,16 @@ end
 
 function update!(
     gwf::GroundwaterFlow{A},
-    dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T,
+    dt::Float64,
 ) where {A <: Aquifer}
     (; cfl) = gwf.timestepping
     for boundary in gwf.boundaries
-        boundary.variables.flux_av .= 0.0
+        zero!(boundary.variables.flux_av)
     end
-    gwf.aquifer.variables.exfiltwater .= 0.0
-    gwf.aquifer.variables.q_in_av .= 0.0
-    gwf.aquifer.variables.q_out_av .= 0.0
+    gwf.aquifer.variables.exfiltwater .= 0
+    zero!(gwf.aquifer.variables.q_in_av)
+    zero!(gwf.aquifer.variables.q_out_av)
     t = 0.0
     while t < dt
         gwf.aquifer.variables.q_net .= 0.0
@@ -548,10 +558,10 @@ function update!(
         t += dt_s
     end
     for boundary in gwf.boundaries
-        boundary.variables.flux_av ./= dt
+        average!(boundary.variables.flux_av, dt)
     end
-    gwf.aquifer.variables.q_in_av ./= dt
-    gwf.aquifer.variables.q_out_av ./= dt
+    average!(gwf.aquifer.variables.q_in_av, dt)
+    average!(gwf.aquifer.variables.q_out_av, dt)
     return nothing
 end
 
@@ -566,7 +576,7 @@ function get_flux_to_river(
     inds::Vector{Int},
 ) where {A <: UnconfinedAquifer}
     (; river) = subsurface_flow.boundaries
-    flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+    flux = -river.variables.flux_av.average
     return flux
 end
 

@@ -1,28 +1,15 @@
-abstract type AbstractOverlandFlowErosionModel end
-
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
-    # Total soil erosion rate [t dt-1] from overland flow
-    amount::Vector{Float64}
-end
-
-"Initialize overland flow erosion model variables"
-function OverlandFlowErosionVariables(
-    n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return OverlandFlowErosionVariables(; amount)
+    n::Int
+    # Total soil erosion rate [t dt⁻¹ => kg s⁻¹] from overland flow
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
-    # Overland flow [m3 s-1]
-    q::Vector{Float64}
-end
-
-"Initialize overland flow erosion model boundary conditions"
-function OverlandFlowErosionBC(n::Int; q::Vector{Float64} = fill(MISSING_VALUE, n))
-    return OverlandFlowErosionBC(; q)
+    n::Int
+    # Overland flow [m³ s⁻¹]
+    q::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
@@ -44,7 +31,8 @@ function OverlandFlowErosionAnswersParameters(
     usle_k = ncread(
         dataset,
         config,
-        "soil_erosion__usle_k_factor";
+        "soil_erosion__usle_k_factor",
+        SoilLoss;
         sel = indices,
         defaults = 0.1,
         type = Float64,
@@ -52,7 +40,8 @@ function OverlandFlowErosionAnswersParameters(
     usle_c = ncread(
         dataset,
         config,
-        "soil_erosion__usle_c_factor";
+        "soil_erosion__usle_c_factor",
+        SoilLoss;
         sel = indices,
         defaults = 0.01,
         type = Float64,
@@ -60,7 +49,8 @@ function OverlandFlowErosionAnswersParameters(
     answers_overland_flow_factor = ncread(
         dataset,
         config,
-        "soil_erosion__answers_overland_flow_factor";
+        "soil_erosion__answers_overland_flow_factor",
+        SoilLoss;
         sel = indices,
         defaults = 0.9,
         type = Float64,
@@ -72,10 +62,11 @@ function OverlandFlowErosionAnswersParameters(
 end
 
 "ANSWERS overland flow erosion model"
-@with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
-    boundary_conditions::OverlandFlowErosionBC
+@with_kw struct OverlandFlowErosionAnswersModel
+    n::Int
+    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n)
     parameters::OverlandFlowErosionAnswersParameters
-    variables::OverlandFlowErosionVariables
+    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n)
 end
 
 "Initialize ANSWERS overland flow erosion model"
@@ -85,14 +76,8 @@ function OverlandFlowErosionAnswersModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = OverlandFlowErosionVariables(n)
-    params = OverlandFlowErosionAnswersParameters(dataset, config, indices)
-    bc = OverlandFlowErosionBC(n)
-    model = OverlandFlowErosionAnswersModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
+    model = OverlandFlowErosionAnswersModel(; n, parameters)
     return model
 end
 
@@ -114,18 +99,17 @@ function update!(
 )
     (; q) = model.boundary_conditions
     (; usle_k, usle_c, answers_overland_flow_factor) = model.parameters
-    (; amount) = model.variables
+    (; soil_erosion_rate) = model.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
-        amount[i] = overland_flow_erosion_answers(
+        soil_erosion_rate[i] = overland_flow_erosion_answers(
             q[i],
             usle_k[i],
             usle_c[i],
             answers_overland_flow_factor[i],
             geometry.slope[i],
             geometry.area[i],
-            dt,
         )
     end
 end
