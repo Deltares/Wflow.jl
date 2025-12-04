@@ -12,15 +12,14 @@ function Model(config::Config, type::SbmModel)
     reader = NCReader(config)
     clock = Clock(config, reader)
 
-    @info "General model settings." *
-          to_table(;
-              snow = config.model.snow__flag,
-              gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
-              glacier = config.model.glacier__flag,
-              reservoirs = config.model.reservoir__flag,
-              pits = config.model.pit__flag,
-              water_demand = do_water_demand(config),
-          )
+    @info "General model settings." * to_table(;
+        snow = config.model.snow__flag,
+        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
+        glacier = config.model.glacier__flag,
+        reservoirs = config.model.reservoir__flag,
+        pits = config.model.pit__flag,
+        water_demand = do_water_demand(config),
+    )
 
     domain = Domain(dataset, config, type)
 
@@ -64,12 +63,13 @@ function update!(model::AbstractModel{<:SbmModel})
     (; kv_profile) = land.soil.parameters
 
     update_until_recharge!(model)
-    # exchange of recharge between SBM soil model and subsurface flow domain
+    # exchange of recharge [mm dt⁻¹ => m s⁻¹] between SBM soil model and subsurface flow domain
     routing.subsurface_flow.boundary_conditions.recharge .= land.soil.variables.recharge
     if do_water_demand(config)
         @. routing.subsurface_flow.boundary_conditions.recharge -=
             land.allocation.variables.act_groundwater_abst
     end
+    # unit conversions
     routing.subsurface_flow.boundary_conditions.recharge .*=
         domain.land.parameters.flow_width
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi

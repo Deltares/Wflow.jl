@@ -22,7 +22,7 @@ end
 "Struct for storing lateral subsurface flow model boundary conditions"
 @with_kw struct LateralSsfBC
     n::Int
-    recharge::Vector{Float64} = fill(MISSING_VALUE, n) # Net recharge to saturated store [m² dt⁻¹ => m² s⁻¹]
+    recharge::Vector{Float64} = fill(MISSING_VALUE, n) # Net recharge to saturated store [m² d⁻¹ => m² s⁻¹]
 end
 
 "Lateral subsurface flow model"

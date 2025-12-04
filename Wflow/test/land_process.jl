@@ -107,35 +107,8 @@
     )
     @test all(
         isapprox.(
-            Wflow.unsatzone_flow_layer(
-                to_SI(43.5, MM),
-                to_SI(256.0, MM_PER_DT; dt_val = dt),
-                to_SI(135.0, MM),
-                12.6,
-                dt,
-            ),
-            (
-                to_SI(43.49983744545384, MM),
-                to_SI(0.00016255454615829025, MM_PER_DT; dt_val = dt),
-            ),
-        ),
-    )
-    @test all(
-        isapprox.(
-            Wflow.unsatzone_flow_sbm(
-                to_SI(67.0, MM),
-                to_SI(950.0, MM),
-                to_SI(600.0, MM),
-                to_SI(250.0, MM_PER_DT; dt_val = dt),
-                to_SI(200.0, MM),
-                0.6,
-                0.1,
-                dt,
-            ),
-            (
-                to_SI(19.142857142857146, MM),
-                to_SI(47.857142857142854, MM_PER_DT; dt_val = dt),
-            ),
+            Wflow.precipitation_hbv(30.1, 0.54, 2.0, 0.0),
+            (6.923, 23.177000000000003),
         ),
     )
     @test all(

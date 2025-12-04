@@ -1203,7 +1203,7 @@ end
 function read_hq_csv(path)
     data = readdlm(path, ',', Float64; skipstart = 1)
     # Q is a matrix with 365 columns, one for each day in the year
-    return (H = data[:, 1], Q = data[:, 2:end])
+    return (H = data[:, 1], Q = data[:, 2:366])
 end
 
 # these represent the type of the rating curve and specific storage data

@@ -53,7 +53,7 @@
         dest = zeros(Float64, size(model.land.soil.variables.zi))
         var_name = "soil_water_saturated_zone_top__depth"
         BMI.get_value(model, var_name, dest)
-        @test mean(dest) ≈ to_SI(276.16325589542333, get_unit(var_name))
+        @test mean(dest) ≈ to_SI(276.17231195770916, get_unit(var_name))
         @test BMI.get_value_at_indices(
             model,
             "soil_layer_1_water__volume_fraction",
@@ -69,7 +69,7 @@
         var_name = "river_water__instantaneous_volume_flow_rate"
         @test BMI.get_value_at_indices(model, var_name, zeros(Float64, 3), [1, 100, 5617]) ≈
               to_SI!(
-            [0.6525634030110335, 7.493560511070567, 0.023197145979653312],
+            [0.6993473042794766, 7.472314290028742, 0.023195645317842416],
             get_unit(var_name),
         )
         var_name = "soil_water_saturated_zone_top__depth"
