@@ -114,7 +114,7 @@ function update!(
         potential_transpiration .= get_potential_transpiration(interception)
         @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration)
     end
-    update_water_demand!(demand, soil)
+    update_water_demand!(demand, soil, dt)
     update_water_allocation!(allocation, demand, routing, domain, dt)
 
     soil_fraction!(soil, glacier, parameters)
@@ -156,9 +156,10 @@ function update_total_water_storage!(
 
     # Burn the river routing values
     for (i, index_river) in enumerate(domain.river.network.land_indices)
+        # [m] = [m] * [m] * [m] / [m²]
         total_storage[index_river] = (
             (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
-            (area[index_river]) * 1000 # Convert to mm
+            (area[index_river])
         )
     end
 

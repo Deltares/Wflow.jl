@@ -400,8 +400,8 @@ at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 function set_layerthickness(
     reference_depth::Real,
     cum_depth::SVector,
-    thickness::SVector,
-)::SVector
+    thickness::SVector{N, Float64},
+)::SVector{N, Float64} where {N}
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
         if reference_depth > cum_depth[i + 1]

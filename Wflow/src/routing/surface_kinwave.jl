@@ -634,8 +634,8 @@ function update_lateral_inflow!(
 
     if config.model.drain__flag
         (; drain) = subsurface_flow.boundaries
-        for (i, index) in drain.index
-            inwater[index] -= drain_variables.flux[i]
+        for (i, index) in enumerate(drain.index)
+            inwater[index] -= drain.variables.flux[i]
         end
     end
     return nothing

@@ -563,7 +563,7 @@ function SbmSoilParameters(
         n = length(indices)
         (; rootingdepth) = vegetation_parameter_set
         # default root fraction
-        rootfraction = zeros(Float64, maxlayers, n)
+        rootfraction = zeros(maxlayers, n)
         for i in 1:n
             if rootingdepth[i] > 0.0
                 for k in 1:maxlayers

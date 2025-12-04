@@ -97,6 +97,7 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
     max_iters = 3000
     count = 0
     C = dt / dx
+    celerity_inv = inv(celerity)
     while true
         f = C * ssf + ssf / celerity - constant_term
         df = C + celerity_inv

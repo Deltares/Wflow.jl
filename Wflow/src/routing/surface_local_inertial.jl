@@ -759,8 +759,7 @@ function update_boundary_conditions!(
     (; area) = domain.land.parameters
     river_indices = domain.river.network.land_indices
 
-    @. model.boundary_conditions.runoff =
-        net_runoff / 1000.0 * area / dt + net_runoff_river * area / dt
+    @. model.boundary_conditions.runoff = (net_runoff + net_runoff_river) * area
     model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
     return nothing

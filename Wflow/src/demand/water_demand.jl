@@ -167,7 +167,7 @@ zone of the SBM soil model. Irrigation brings the root zone back to field capaci
 by the infiltration capacity, taking into account limited irrigation efficiency and limited
 by a maximum irrigation rate.
 """
-function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
+function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel, dt::Number)
     (; hb, theta_s, theta_r, c, sumlayers, pathfrac, infiltcapsoil) = soil.parameters
     (;
         h3,
@@ -187,7 +187,7 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
     for i in eachindex(irrigation_areas)
         if irrigation_areas[i] && irrigation_trigger[i]
             # [m]
-            irri_dem_gross = 0.0
+            irri_dem_gross_depth = 0.0
             for k in 1:n_unsatlayers[i]
                 # compute water demand only for root zone through root fraction per layer
                 # [-] = [m] / [m]
@@ -219,20 +219,20 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
                     (model.variables.demand_gross[i] == maximum_irrigation_rate[i])
                 if depletion >= raw # start irrigation
                     # [m]
-                    irri_dem_gross += depletion
+                    irri_dem_gross_depth += depletion
                     # add depletion to irrigation gross demand when the maximum irrigation rate has been
                     # applied at the previous time step (to get volumetric water content at field capacity)
                 elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
                     # [m]
-                    irri_dem_gross += depletion
+                    irri_dem_gross_depth += depletion
                 end
             end
             # limit irrigation demand to infiltration capacity
             # [m s⁻¹] = [-] * [-] * [m s⁻¹]
             infiltration_capacity =
                 f_infiltration_reduction[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
-            # [m]
-            irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
+            # [m s⁻¹] = min([m] / [s], [m s⁻¹])
+            irri_dem_gross = min(irri_dem_gross_depth / dt, infiltration_capacity)
             # [m] = [m] / [-]
             irri_dem_gross /= irrigation_efficiency[i]
             # limit irrigation demand to the maximum irrigation rate
@@ -245,7 +245,7 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
     end
     return nothing
 end
-update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
+update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel, dt::Number) = nothing
 
 "Struct to store paddy irrigation model variables"
 @with_kw struct PaddyVariables
@@ -412,7 +412,7 @@ is `true` (`on`) and when the paddy water depth `h` reaches below the minimum wa
 `h_min`. Irrigation is the amount required to reach the optimal paddy water depth `h_opt`,
 taking into account limited irrigation efficiency and limited by a maximum irrigation rate.
 """
-function update_demand_gross!(model::Paddy)
+function update_demand_gross!(model::Paddy, dt::Number)
     (;
         irrigation_areas,
         irrigation_trigger,
@@ -436,10 +436,10 @@ function update_demand_gross!(model::Paddy)
                 0.0
             end
             # [m] = [m] / [-]
-            irri_dem_gross = irr_depth_paddy / irrigation_efficiency[i]
+            irri_dem_gross_depth = irr_depth_paddy / irrigation_efficiency[i]
             # limit irrigation demand to the maximum irrigation rate
-            # [m] = min([m], [])
-            irri_dem_gross = min(irri_dem_gross, maximum_irrigation_rate[i])
+            # [m s⁻¹] = min([m] / [s], [m s⁻¹])
+            irri_dem_gross = min(irri_dem_gross_depth / dt, maximum_irrigation_rate[i])
         else
             irri_dem_gross = 0.0
         end
@@ -1057,18 +1057,18 @@ Update the return flow fraction `returnflow_fraction` of `industry`, `domestic` 
 total gross water demand, total irrigation gross water demand and total non-irrigation gross
 water demand as part of the water `demand` model.
 """
-function update_water_demand!(model::Demand, soil::SbmSoilModel)
+function update_water_demand!(model::Demand, soil::SbmSoilModel, dt::Number)
     (; nonpaddy, paddy, domestic, industry, livestock) = model
 
     return_flow_fraction!(industry)
     return_flow_fraction!(domestic)
     return_flow_fraction!(livestock)
 
-    update_demand_gross!(nonpaddy, soil)
-    update_demand_gross!(paddy)
+    update_demand_gross!(nonpaddy, soil, dt)
+    update_demand_gross!(paddy, dt)
     update_demand_gross!(model)
 
     return nothing
 end
 
-update_water_demand!(model::NoDemand, soil::SbmSoilModel) = nothing
+update_water_demand!(model::NoDemand, soil::SbmSoilModel, dt::Number) = nothing
