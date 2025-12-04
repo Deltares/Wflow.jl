@@ -2,8 +2,9 @@ abstract type AbstractSoilModel end
 
 "Struct for storing SBM soil model variables"
 @with_kw struct SbmSoilVariables{N}
+    n::Int
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
-    h3::Vector{Float64}
+    h3::Vector{Float64} = fill(MISSING_VALUE, n)
     # Unsaturated store capacity [mm => m]
     ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm => m]
@@ -17,69 +18,69 @@ abstract type AbstractSoilModel end
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int}
     # Transpiration [mm dt⁻¹ => m s⁻¹]
-    transpiration::Vector{Float64}
+    transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual evaporation from unsaturated store [mm dt⁻¹ => m s⁻¹]
-    ae_ustore::Vector{Float64}
+    ae_ustore::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil evaporation from unsaturated and saturated store [mm dt⁻¹ => m s⁻¹]
-    soilevap::Vector{Float64}
+    soilevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil evaporation from saturated store [mm dt⁻¹ => m s⁻¹]
-    soilevapsat::Vector{Float64}
+    soilevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual capillary rise [mm dt⁻¹ => m s⁻¹]
-    actcapflux::Vector{Float64}
+    actcapflux::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual transpiration from saturated store [mm dt⁻¹ => m s⁻¹]
-    actevapsat::Vector{Float64}
+    actevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total actual evapotranspiration [mm dt⁻¹ => m s⁻¹]
-    actevap::Vector{Float64}
+    actevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration into the unsaturated zone [mm dt⁻¹ => m s⁻¹]
-    actinfilt::Vector{Float64}
+    actinfilt::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration non-compacted fraction [mm dt⁻¹ => m s⁻¹]
-    actinfiltsoil::Vector{Float64}
+    actinfiltsoil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration compacted fraction [mm dt⁻¹ => m s⁻¹]
-    actinfiltpath::Vector{Float64}
+    actinfiltpath::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration (compacted and the non-compacted areas) [mm dt⁻¹ => m s⁻¹]
-    infiltsoilpath::Vector{Float64}
+    infiltsoilpath::Vector{Float64} = fill(MISSING_VALUE, n)
     # Infiltration excess water [mm dt⁻¹ => m s⁻¹]
-    infiltexcess::Vector{Float64}
+    infiltexcess::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm dt⁻¹ => m s⁻¹]
-    excesswater::Vector{Float64}
+    excesswater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water exfiltrating during saturation excess conditions [mm dt⁻¹ => m s⁻¹]
-    exfiltsatwater::Vector{Float64}
+    exfiltsatwater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water exfiltrating from unsaturated store because of change in water table [mm dt⁻¹ => m s⁻¹]
-    exfiltustore::Vector{Float64}
+    exfiltustore::Vector{Float64} = fill(MISSING_VALUE, n)
     # Excess water for non-compacted fraction [mm dt⁻¹ => m s⁻¹]
-    excesswatersoil::Vector{Float64}
+    excesswatersoil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Excess water for compacted fraction [mm dt⁻¹ => m s⁻¹]
-    excesswaterpath::Vector{Float64}
+    excesswaterpath::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm dt⁻¹ => m s⁻¹]
-    runoff::Vector{Float64}
+    runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Net surface runoff (surface runoff - actual open water evaporation) [mm dt⁻¹ => m s⁻¹]
-    net_runoff::Vector{Float64}
+    net_runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
     vwc::Vector{SVector{N, Float64}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
     vwc_perc::Vector{SVector{N, Float64}}
     # Root water storage [mm => m] in unsaturated and saturated zone (excluding theta_r)
-    rootstore::Vector{Float64}
+    rootstore::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
-    vwc_root::Vector{Float64}
+    vwc_root::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
-    vwc_percroot::Vector{Float64}
+    vwc_percroot::Vector{Float64} = fill(MISSING_VALUE, n)
     # Amount of available water in the unsaturated zone [mm => m]
-    ustoredepth::Vector{Float64}
+    ustoredepth::Vector{Float64} = zeros(n)
     # Downward flux from unsaturated to saturated zone [mm dt⁻¹ => m s⁻¹]
-    transfer::Vector{Float64}
+    transfer::Vector{Float64} = fill(MISSING_VALUE, n)
     # Net recharge to saturated store [mm dt⁻¹ => m s⁻¹]
-    recharge::Vector{Float64}
+    recharge::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual leakage from saturated store [mm dt⁻¹ => m s⁻¹]
-    actleakage::Vector{Float64}
+    actleakage::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total water storage (excluding floodplain volume and reservoirs) [mm => m]
-    total_storage::Vector{Float64}
+    total_storage::Vector{Float64} = zeros(Float64, n)
     # Total soil water storage [mm => m]
     total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
-    tsoil::Vector{Float64}
+    tsoil::Vector{Float64} = fill(10.0, n)
     # Soil infiltration reduction factor (when soil is frozen) [-]
-    f_infiltration_reduction::Vector{Float64}
+    f_infiltration_reduction::Vector{Float64} = ones(n)
 end
 
 "Struct for storing SBM soil model parameters"
@@ -168,44 +169,15 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
     total_soilwater_storage = satwaterdepth .+ ustoredepth
 
     vars = SbmSoilVariables(;
+        n,
         ustorelayerdepth = zero(act_thickl),
         ustorecapacity = soilwatercapacity .- satwaterdepth,
         ustorelayerthickness,
-        ustoredepth = zeros(n),
         satwaterdepth,
         zi,
         n_unsatlayers,
-        transpiration = fill(MISSING_VALUE, n),
-        h3 = fill(MISSING_VALUE, n),
-        ae_ustore = fill(MISSING_VALUE, n),
-        soilevap = fill(MISSING_VALUE, n),
-        soilevapsat = fill(MISSING_VALUE, n),
-        actcapflux = fill(MISSING_VALUE, n),
-        actevapsat = fill(MISSING_VALUE, n),
-        actevap = fill(MISSING_VALUE, n),
-        f_infiltration_reduction = fill(1.0, n),
-        actinfilt = fill(MISSING_VALUE, n),
-        actinfiltsoil = fill(MISSING_VALUE, n),
-        actinfiltpath = fill(MISSING_VALUE, n),
-        infiltsoilpath = fill(MISSING_VALUE, n),
-        infiltexcess = fill(MISSING_VALUE, n),
-        excesswater = fill(MISSING_VALUE, n),
-        exfiltsatwater = fill(MISSING_VALUE, n),
-        exfiltustore = fill(MISSING_VALUE, n),
-        excesswatersoil = fill(MISSING_VALUE, n),
-        excesswaterpath = fill(MISSING_VALUE, n),
-        runoff = fill(MISSING_VALUE, n),
-        net_runoff = fill(MISSING_VALUE, n),
         vwc = svectorscopy(vwc, Val{maxlayers}()),
         vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
-        rootstore = fill(MISSING_VALUE, n),
-        vwc_root = fill(MISSING_VALUE, n),
-        vwc_percroot = fill(MISSING_VALUE, n),
-        transfer = fill(MISSING_VALUE, n),
-        recharge = fill(MISSING_VALUE, n),
-        actleakage = fill(MISSING_VALUE, n),
-        tsoil = fill(10.0, n),
-        total_storage = zeros(Float64, n),
         total_soilwater_storage,
     )
     return vars
@@ -1147,13 +1119,13 @@ function update!(
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
     config::Config,
+    dt::Number,
 )
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
     (; water_flux_surface) = model.boundary_conditions
     v = model.variables
     p = model.parameters
-    dt = config.time.timestepsecs
 
     # mainly required for external state changes (e.g. through BMI)
     update_diagnostic_vars!(model)

@@ -51,7 +51,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     else
         glacier = NoGlacierModel(n)
     end
-    runoff = OpenWaterRunoff(n)
+    runoff = OpenWaterRunoff(; n)
 
     soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt)
     @. vegetation_parameters.rootingdepth =
@@ -106,7 +106,7 @@ function update!(
         routing,
         domain.river.network,
     )
-    update!(runoff, atmospheric_forcing, parameters)
+    update!(runoff, atmospheric_forcing, parameters, dt)
 
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
@@ -125,7 +125,7 @@ function update!(
         dt,
     )
 
-    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config)
+    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end

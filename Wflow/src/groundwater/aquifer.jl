@@ -538,8 +538,8 @@ end
 
 function update!(
     gwf::GroundwaterFlow{A},
-    dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T,
+    dt::Float64,
 ) where {A <: Aquifer}
     (; cfl) = gwf.timestepping
     for boundary in gwf.boundaries

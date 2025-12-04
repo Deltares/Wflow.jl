@@ -109,6 +109,12 @@ function rainfall_erosion_answers(
     return to_SI(rainfall_erosion, KG_PER_MIN)
 end
 
+"""T
+he sine of the slope in radians;
+sin(arctan(x)) = x / √(1 + x²)
+"""
+sin_slope(slope) = slope / sqrt(1 + slope^2)
+
 """
     overland_flow_erosion_answers(
         overland_flow,
@@ -147,8 +153,7 @@ function overland_flow_erosion_answers(
 )
     # Overland flow rate [m² min⁻¹]
     qr_land = from_SI(overland_flow, M3_PER_MIN) / sqrt(area)
-    # Sine of the slope
-    sinslope = slope / sqrt(1 + slope^2)
+    sinslope = sin_slope(slope)
 
     # Overland flow erosion [kg min⁻¹]
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant

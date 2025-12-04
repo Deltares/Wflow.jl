@@ -28,26 +28,31 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0
     else
+        C = dt / dx
+        exponent = beta - 1.0
+        product = alpha * beta
         # initial estimate using linear scheme
-        ab_pq = alpha * beta * pow(((q_prev + q_in) / 2.0), (beta - 1.0))
-        q = (dt / dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt / dx + ab_pq)
+        ab_pq = product * pow((q_prev + q_in) / 2, exponent)
+        q = (C * q_in + q_prev * ab_pq + dt * q_lat) / (C + ab_pq)
         if isnan(q)
-            q = 0.0
+            q = 1e-30
+        else
+            q = max(q, 1e-30)
         end
-        q = max(q, 1.0e-30)
         # newton-raphson
         max_iters = 3000
         epsilon = 1.0e-12
         count = 0
-        constant_term = dt / dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
+        constant_term = C * q_in + alpha * pow(q_prev, beta) + dt * q_lat
         while true
-            f_q = dt / dx * q + alpha * pow(q, beta) - constant_term
-            df_q = dt / dx + alpha * beta * pow(q, (beta - 1.0))
+            f_q = C * q + alpha * pow(q, beta) - constant_term
+            df_q = C + product * pow(q, exponent)
             q -= (f_q / df_q)
             if isnan(q)
-                q = 0.0
+                q = 1e-30
+            else
+                q = max(q, 1.0e-30)
             end
-            q = max(q, 1.0e-30)
             if (abs(f_q) <= epsilon) || (count >= max_iters)
                 break
             end
@@ -91,9 +96,10 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
     epsilon = 1.0e-12
     max_iters = 3000
     count = 0
+    C = dt / dx
     while true
-        f = (dt / dx) * ssf + (1.0 / celerity) * ssf - constant_term
-        df = (dt / dx) + 1.0 / celerity
+        f = C * ssf + ssf / celerity - constant_term
+        df = C + celerity_inv
         ssf -= (f / df)
         if isnan(ssf)
             ssf = 0.0
@@ -141,7 +147,7 @@ function kinematic_wave_ssf(
         ssf = (ssf_prev + ssfin) / 2.0
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
+        constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
         ssf = kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 
         # constrain maximum lateral subsurface flow rate ssf
@@ -165,10 +171,10 @@ function kinematic_wave_ssf(
             exfilt_sum = 0.0
             for _ in 1:its
                 celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-                constant_term = (dt_s / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt_s
+                constant_term = (dt_s / dx) * ssfin + ssf_prev / celerity + r * dt_s
                 ssf = kw_ssf_newton_raphson(ssf_prev, constant_term, celerity, dt_s, dx)
                 # constrain maximum lateral subsurface flow rate ssf
-                ssf = min(ssf, (ssfmax * dw))
+                ssf = min(ssf, ssfmax * dw)
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
                 zi =
@@ -222,10 +228,10 @@ function kinematic_wave_ssf(
         ssf_ini = (ssf_prev + ssfin) / 2.0
         # newton-raphson
         celerity = (slope * kh_profile.kh[i]) / theta_e
-        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
+        constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # constrain maximum lateral subsurface flow rate ssf
-        ssf = min(ssf, (ssfmax * dw))
+        ssf = min(ssf, ssfmax * dw)
         # estimate water table depth zi, exfiltration rate and constrain zi and lower
         # boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
@@ -286,13 +292,13 @@ network is expected to hold a graph and order field, where the graph implements 
 interface, and the order is a valid topological ordering such as that returned by
 `Graphs.topological_sort_by_dfs`.
 """
-function accucapacityflux!(flux, material, network, capacity)
+function accucapacityflux!(flux, material, network, capacity, dt)
     (; graph, order) = network
     for v in order
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)
-        flux_val = min(material[v], capacity[v])
-        material[v] -= flux_val
+        flux_val = min(material[v] / dt, capacity[v])
+        material[v] -= flux_val * dt
         flux[v] = flux_val
         if n == 0
             # pit: material is transported out of the map if a capacity is set,
@@ -311,9 +317,9 @@ end
 
 Non mutating version of `accucapacityflux!`.
 """
-function accucapacityflux(material, network, capacity)
+function accucapacityflux(material, network, capacity, dt)
     flux = zero(material)
-    accucapacityflux!(flux, material, network, capacity)
+    accucapacityflux!(flux, material, network, capacity, dt)
     return flux
 end
 
@@ -355,8 +361,9 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt
     # [m s⁻¹] = [-] * [m] / [s]
     maxflux = snowflux_frac .* snow_storage / dt
     # [m s⁻¹]
-    snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
-    snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)
+    snow_out .= accucapacityflux(snow_storage, domain.network, maxflux, dt)
+    snow_out .+=
+        accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac, dt)
     flux_in!(snow_in, snow_out, domain.network)
 end
 

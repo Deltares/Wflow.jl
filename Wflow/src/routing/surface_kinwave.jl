@@ -35,12 +35,18 @@ end
 
 "Struct for storing Manning flow parameters"
 @with_kw struct ManningFlowParameters
-    beta::Float64 = 0.6                                              # constant in Manning's equation [-]
-    slope::Vector{Float64}                                           # Slope [m m⁻¹]
-    mannings_n::Vector{Float64}                                      # Manning's roughness [s m⁻⅓]
-    alpha_pow::Float64 = (2 // 3) * 0.6                              # Used in the power part of alpha [-]
-    alpha_term::Vector{Float64} = fill(MISSING_VALUE, length(slope)) # Term used in computation of alpha [s^3/5 m^-1/5]
-    alpha::Vector{Float64} = fill(MISSING_VALUE, length(slope))      # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s^3/5 m^1/5]
+    # constant in Manning's equation [-]
+    beta::Float64 = 0.6
+    # Slope [m m⁻¹]
+    slope::Vector{Float64}
+    # Manning's roughness [s m⁻⅓]
+    mannings_n::Vector{Float64}
+    # Used in the power part of alpha [-]
+    alpha_pow::Float64 = (2 // 3) * 0.6
+    # Term used in computation of alpha [s^3/5 m^-1/5]
+    alpha_term::Vector{Float64} = fill(MISSING_VALUE, length(slope))
+    # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s^3/5 m^1/5]
+    alpha::Vector{Float64} = fill(MISSING_VALUE, length(slope))
 end
 
 "Struct for storing river flow model parameters"
@@ -500,7 +506,7 @@ end
 Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
+function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock, dt::Number)
     (; reservoir, inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) = model.parameters
     (; slope, flow_width, flow_length) = domain.river.parameters
@@ -520,7 +526,6 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
 
-    dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
         dt_s =
@@ -623,16 +628,16 @@ function update_lateral_inflow!(
     (; net_runoff) = soil.variables
     (; inwater) = model.boundary_conditions
 
-    if config.model.drain__flag
-        drain = subsurface_flow.boundaries.drain
-        drainflux = zeros(length(net_runoff))
-        drainflux[drain.index] = -drain.variables.flux
-    else
-        drainflux = 0.0
-    end
     nonirrigation_returnflow = get_nonirrigation_returnflow(allocation)
-    @. inwater = (net_runoff + nonirrigation_returnflow) * area / dt + drainflux
+    # [m³ s⁻¹] = ([m s⁻¹] + [m s⁻¹]) * [m²]
+    @. inwater = (net_runoff + nonirrigation_returnflow) * area
 
+    if config.model.drain__flag
+        (; drain) = subsurface_flow.boundaries
+        for (i, index) in drain.index
+            inwater[index] -= drain_variables.flux[i]
+        end
+    end
     return nothing
 end
 

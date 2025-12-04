@@ -20,14 +20,14 @@ end
 
 "Struct to store non-irrigation water demand variables"
 @with_kw struct NonIrrigationDemandVariables
-    returnflow::Vector{Float64}               # return flow [mm dt⁻¹ => m³ s⁻¹]
+    returnflow::Vector{Float64}               # return flow [mm dt⁻¹ => m s⁻¹]
     returnflow_fraction::Vector{Float64}      # return flow fraction [-]
 end
 
 "Struct to store prescribed water demand variables"
 @with_kw struct PrescibedDemand
-    demand_gross::Vector{Float64}     # gross water demand [mm dt⁻¹ => m³ s⁻¹]
-    demand_net::Vector{Float64}       # net water demand [mm dt⁻¹ => m³ s⁻¹]
+    demand_gross::Vector{Float64}     # gross water demand [mm dt⁻¹ => m s⁻¹]
+    demand_net::Vector{Float64}       # net water demand [mm dt⁻¹ => m s⁻¹]
 end
 
 "Non-irrigation water demand model"
@@ -200,7 +200,7 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
                 )
                 # vwc_f and vwc_h3 can be precalculated.
                 # [-]
-                vwc_fc = vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
+                vwc_fc = vwc_brooks_corey(-1.0, hb[i], theta_s[i], theta_r[i], c[i][k])
                 # [-]
                 vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
                 # [m] = ([-] * [m]) - ([m] + [-] * [m])
@@ -536,15 +536,24 @@ end
 "Struct to store land allocation model variables"
 @with_kw struct AllocationLandVariables
     n::Int
-    surfacewater_alloc::Vector{Float64} = zeros(n)           # allocation from surface water [mm dt⁻¹ => m s⁻¹]
-    act_groundwater_abst::Vector{Float64} = zeros(n)         # actual groundwater abstraction [mm dt⁻¹ => m s⁻¹]
-    act_groundwater_abst_vol::Vector{Float64} = zeros(n)     # actual groundwater abstraction [m³dt⁻¹ => m³ s⁻¹]
-    available_groundwater::Vector{Float64} = zeros(n)        # available groundwater [m³]
-    groundwater_alloc::Vector{Float64} = zeros(n)            # allocation from groundwater [mm dt⁻¹ => m s⁻¹]
-    irri_alloc::Vector{Float64} = zeros(n)                   # allocated water for irrigation [mm dt⁻¹ => m s⁻¹]
-    nonirri_alloc::Vector{Float64} = zeros(n)                # allocated water for non-irrigation [mm dt⁻¹ => m s⁻¹]
-    total_alloc::Vector{Float64} = zeros(n)                  # total allocated water [mm dt⁻¹ => m s⁻¹]
-    nonirri_returnflow::Vector{Float64} = zeros(n)           # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
+    # allocation from surface water [mm dt⁻¹ => m s⁻¹]
+    surfacewater_alloc::Vector{Float64} = zeros(n)
+    # actual groundwater abstraction [mm dt⁻¹ => m s⁻¹]
+    act_groundwater_abst::Vector{Float64} = zeros(n)
+    # actual groundwater abstraction [m³dt⁻¹ => m³ s⁻¹]
+    act_groundwater_abst_vol::Vector{Float64} = zeros(n)
+    # available groundwater [m³]
+    available_groundwater::Vector{Float64} = zeros(n)
+    # allocation from groundwater [mm dt⁻¹ => m s⁻¹]
+    groundwater_alloc::Vector{Float64} = zeros(n)
+    # allocated water for irrigation [mm dt⁻¹ => m s⁻¹]
+    irri_alloc::Vector{Float64} = zeros(n)
+    # allocated water for non-irrigation [mm dt⁻¹ => m s⁻¹]
+    nonirri_alloc::Vector{Float64} = zeros(n)
+    # total allocated water [mm dt⁻¹ => m s⁻¹]
+    total_alloc::Vector{Float64} = zeros(n)
+    # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
+    nonirri_returnflow::Vector{Float64} = zeros(n)
 end
 
 "Land allocation model"

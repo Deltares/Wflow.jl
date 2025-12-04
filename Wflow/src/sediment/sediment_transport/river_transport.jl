@@ -401,7 +401,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
 
         # Direct erosion from the river bed/bank
         if sediment_need > store_sediment
-            # Effective sediment needed fom river bed and bank erosion [t]
+            # Effective sediment needed from river bed and bank erosion [t]
             effsediment_need = sediment_need - store_sediment
             # Relative potential erosion rates of the bed and the bank [-]
             if (potential_erosion_river_bank[v] + potential_erosion_river_bed[v] > 0.0)
@@ -676,7 +676,7 @@ end
     n::Int
     # Total sediment concentration in the river [g m⁻³ => kg m⁻³]
     total::Vector{Float64} = fill(MISSING_VALUE, n)
-    # suspended sediemnt concentration in the river [g m⁻³ => kg m⁻³]
+    # suspended sediment concentration in the river [g m⁻³ => kg m⁻³]
     suspended::Vector{Float64} = fill(MISSING_VALUE, n)
     # bed load sediment concentration in the river [g m⁻³ => kg m⁻³]
     bed::Vector{Float64} = fill(MISSING_VALUE, n)

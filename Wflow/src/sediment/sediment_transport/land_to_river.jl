@@ -31,7 +31,7 @@ function update_boundary_conditions!(
 end
 
 "Update total sediment reaching the river model for a single timestep"
-function update!(model::SedimentToRiverModel, rivers::Vector{Bool})
+function update!(model::SedimentToRiverModel, rivers::Vector{Bool}, dt::Number)
     (; deposition) = model.boundary_conditions
     (; sediment_rate) = model.variables
 
@@ -101,7 +101,11 @@ function update_boundary_conditions!(
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
-function update!(model::SedimentToRiverDifferentiationModel, rivers::Vector{Bool})
+function update!(
+    model::SedimentToRiverDifferentiationModel,
+    rivers::Vector{Bool},
+    dt::Number,
+)
     (;
         deposition_clay,
         deposition_silt,

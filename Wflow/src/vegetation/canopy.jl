@@ -115,7 +115,11 @@ function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters,
 end
 
 "Update Rutter interception model for a single timestep"
-function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+function update!(
+    model::RutterInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+    dt::Number,
+)
     (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         model.variables

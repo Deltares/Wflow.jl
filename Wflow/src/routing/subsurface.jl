@@ -1,22 +1,34 @@
 "Struct for storing lateral subsurface flow model variables"
 @with_kw struct LateralSsfVariables
     n::Int
-    zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
-    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m dt⁻¹ => m s⁻¹] (groundwater above surface level, saturated excess conditions)
-    ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹ => m³ s⁻¹]
-    ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹ => m³ s⁻¹]
-    ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)       # Maximum subsurface flow [m² d⁻¹ => m² s⁻¹]
-    to_river::Vector{Float64} = zeros(n)                   # Part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
-    storage::Vector{Float64}                               # Subsurface storage [m³]
+    # Pseudo-water table depth [m] (top of the saturated zone)
+    zi::Vector{Float64}
+    # Exfiltration [m dt⁻¹ => m s⁻¹] (groundwater above surface level, saturated excess conditions)
+    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Subsurface flow [m³ d⁻¹ => m³ s⁻¹]
+    ssf::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Inflow from upstream cells [m³ d⁻¹ => m³ s⁻¹]
+    ssfin::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Maximum subsurface flow [m² d⁻¹ => m² s⁻¹]
+    ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
+    to_river::Vector{Float64} = zeros(n)
+    # Subsurface storage [m³]
+    storage::Vector{Float64}
 end
 
 "Struct for storing lateral subsurface flow model parameters"
 @with_kw struct LateralSsfParameters{Kh}
-    kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]
-    khfrac::Vector{Float64}             # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
-    soilthickness::Vector{Float64}      # Soil thickness [m]
-    theta_s::Vector{Float64}            # Saturated water content (porosity) [-]
-    theta_r::Vector{Float64}            # Residual water content [-]
+    # Horizontal hydraulic conductivity profile type [-]
+    kh_profile::Kh
+    # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
+    khfrac::Vector{Float64}
+    # Soil thickness [m]
+    soilthickness::Vector{Float64}
+    # Saturated water content (porosity) [-]
+    theta_s::Vector{Float64}
+    # Residual water content [-]
+    theta_r::Vector{Float64}
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"

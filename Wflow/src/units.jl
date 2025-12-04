@@ -23,6 +23,7 @@ struct Unit
     degC::PowersType # degree Celcius
     # Time
     s::PowersType # second, SI standard
+    ms::PowersType # millisecond
     min::PowersType # minute
     h::PowersType # hour
     d::PowersType # day
@@ -101,6 +102,7 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
     (factor = 1.0, unit_SI = Unit(; K = 1)), # K
     (factor = 1.0, unit_SI = Unit(; K = 1)), # degC
     (factor = 1.0, unit_SI = Unit(; s = 1)), # s
+    (factor = 1e-3, unit_SI = Unit(; s = 1)), # ms
     (factor = 60.0, unit_SI = Unit(; s = 1)), # min
     (factor = 3600, unit_SI = Unit(; s = 1)), # h
     (factor = 86400.0, unit_SI = Unit(; s = 1)), # d

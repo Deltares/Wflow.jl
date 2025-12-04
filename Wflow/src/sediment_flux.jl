@@ -90,12 +90,12 @@ function update!(
         model.transport_capacity,
     )
     # Compute transport
-    update!(model.sediment_flux, domain.network)
+    update!(model.sediment_flux, domain.network, dt)
 
     # Update boundary conditions before computing sediment reaching the river
     update_boundary_conditions!(model.to_river, model.sediment_flux)
     # Compute sediment reaching the river
-    update!(model.to_river, domain.parameters.river_location)
+    update!(model.to_river, domain.parameters.river_location, dt)
 end
 
 ### River ###

@@ -40,11 +40,11 @@ function update_boundary_conditions!(
 end
 
 "Update total sediment flux in overland flow model for a single timestep"
-function update!(model::SedimentLandTransportModel, network::NetworkLand)
+function update!(model::SedimentLandTransportModel, network::NetworkLand, dt::Number)
     (; erosion, transport_capacity) = model.boundary_conditions
     (; sediment_rate, deposition) = model.variables
 
-    accucapacityflux!(sediment_rate, erosion, network, transport_capacity)
+    accucapacityflux!(sediment_rate, erosion, network, transport_capacity, dt)
     deposition .= erosion
 end
 
@@ -146,7 +146,11 @@ function update_boundary_conditions!(
 end
 
 "Update differentiated sediment flux in overland flow model for a single timestep"
-function update!(model::SedimentLandTransportDifferentiationModel, network::NetworkLand)
+function update!(
+    model::SedimentLandTransportDifferentiationModel,
+    network::NetworkLand,
+    dt::Number,
+)
     (;
         erosion_clay,
         erosion_silt,
@@ -174,15 +178,15 @@ function update!(model::SedimentLandTransportDifferentiationModel, network::Netw
         deposition_lagg,
     ) = model.variables
 
-    accucapacityflux!(clay, erosion_clay, network, transport_capacity_clay)
+    accucapacityflux!(clay, erosion_clay, network, transport_capacity_clay, dt)
     deposition_clay .= erosion_clay
-    accucapacityflux!(silt, erosion_silt, network, transport_capacity_silt)
+    accucapacityflux!(silt, erosion_silt, network, transport_capacity_silt, dt)
     deposition_silt .= erosion_silt
-    accucapacityflux!(sand, erosion_sand, network, transport_capacity_sand)
+    accucapacityflux!(sand, erosion_sand, network, transport_capacity_sand, dt)
     deposition_sand .= erosion_sand
-    accucapacityflux!(sagg, erosion_sagg, network, transport_capacity_sagg)
+    accucapacityflux!(sagg, erosion_sagg, network, transport_capacity_sagg, dt)
     deposition_sagg .= erosion_sagg
-    accucapacityflux!(lagg, erosion_lagg, network, transport_capacity_lagg)
+    accucapacityflux!(lagg, erosion_lagg, network, transport_capacity_lagg, dt)
     deposition_lagg .= erosion_lagg
     @. sediment_rate = clay + silt + sand + sagg + lagg
     @. deposition =

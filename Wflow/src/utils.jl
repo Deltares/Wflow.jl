@@ -795,7 +795,7 @@ function kh_layered_profile!(
 
             kh[i] = (transmissivity / (soilthickness[i] - zi[i])) * khfrac[i] / dt
         else
-            kh[i] = kv_profile.kv[i][m] * t_factor * khfrac[i]
+            kh[i] = kv_profile.kv[i][m] * khfrac[i] / dt
         end
     end
     return nothing

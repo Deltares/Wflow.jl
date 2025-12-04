@@ -118,7 +118,7 @@ function transport_capacity_govers(
     dt,
 )
     # Transport capacity from govers 1990
-    sinslope = slope / sqrt(1 + slope^2) #slope in radians
+    sinslope = sin_slope(slope)
     if waterlevel > 0
         # [m s⁻¹] = [m³ s⁻¹] / ([m] * [m])
         velocity = q / (width * waterlevel)
@@ -178,7 +178,7 @@ function transport_capacity_yalin(
     rivers,
     dt,
 )
-    sinslope = slope / sqrt(1 + slope^2) #slope in radians
+    sinslope = sin_slope(slope)
     # Transport capacity from Yalin without particle differentiation
     delta =
         max((waterlevel * sinslope / (from_SI(d50, MM) * (density - 1)) / 0.06 - 1), 0.0)
@@ -205,7 +205,7 @@ function transport_capacity_yalin(
     return transport_capacity
 end
 
-const WATER_DENSITY = 1e3 # [kg m⁻¹]
+const WATER_DENSITY = 1e3 # [kg m⁻³]
 const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
 
 """
@@ -245,7 +245,7 @@ function transportability_yalin_differentiation(
     dm_lagg,
     slope,
 )
-    sinslope = slope / sqrt(1 + slope^2) #slope in radians
+    sinslope = sin_slope(slope)
 
     delta = waterlevel * sinslope / (1e-6 * (density / WATER_DENSITY - 1)) / 0.06
     dclay = max(delta / dm_clay - 1, 0.0)
@@ -286,7 +286,7 @@ Transport capacity for a specific grain size based on Yalin with particle differ
 - `rivers` (rivers mask [-])
 - `dtot` (total flow transportability [t dt⁻¹ => kg s⁻¹])
 - `dt` (time step [s])
-I
+
 # Output
 - `transport_capacity` (total sediment transport capacity [t dt⁻¹])
 """
@@ -302,7 +302,7 @@ function transport_capacity_yalin_differentiation(
     dtot,
     dt,
 )
-    sinslope = sin(atan(slope)) #slope in radians
+    sinslope = sin_slope(slope)
     # Transport capacity from Yalin with particle differentiation
     # Delta parameter of Yalin for the specific particle class
     delta = waterlevel * sinslope / (1e-6 * (density - 1)) / 0.06
