@@ -108,9 +108,10 @@ end
 
 "Total soil erosion with differentiation model"
 @with_kw struct SoilErosionModel
-    boundary_conditions::SoilErosionBC
+    n::Int
+    boundary_conditions::SoilErosionBC = SoilErosionBC(; n)
     parameters::SoilErosionParameters
-    variables::SoilErosionModelVariables
+    variables::SoilErosionModelVariables = SoilErosionModelVariables(; n)
 end
 
 "Initialize soil erosion model"
@@ -120,11 +121,8 @@ function SoilErosionModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = SoilErosionModelVariables(; n)
-    params = SoilErosionParameters(dataset, config, indices)
-    bc = SoilErosionBC(; n)
-    model =
-        SoilErosionModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    parameters = SoilErosionParameters(dataset, config, indices)
+    model = SoilErosionModel(; n, parameters)
     return model
 end
 

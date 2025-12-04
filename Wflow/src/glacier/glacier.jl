@@ -2,10 +2,11 @@ abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
 @with_kw struct GlacierVariables
+    n::Int
     # Water within the glacier [mm => m]
     glacier_store::Vector{Float64}
     # Glacier melt [mm dt⁻¹ => m s⁻¹]
-    glacier_melt::Vector{Float64}
+    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Initialize glacier model variables"
@@ -25,10 +26,7 @@ function GlacierVariables(
         fill = 0.0,
     )
     n = length(glacier_store)
-    vars = GlacierVariables(;
-        glacier_store = glacier_store,
-        glacier_melt = fill(MISSING_VALUE, n),
-    )
+    vars = GlacierVariables(; n, glacier_store = glacier_store)
     return vars
 end
 

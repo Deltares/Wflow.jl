@@ -121,9 +121,12 @@ end
 end
 
 @testitem "local inertial long channel MacDonald (1997)" begin
+    using Wflow: Unit, to_SI
     using QuadGK: quadgk
     using Graphs: DiGraph, add_edge!, ne
     using Statistics: mean
+
+    CM = Unit(; cm = 1)
 
     g = 9.80665
     L = 1000.0
@@ -217,29 +220,11 @@ end
         froude_limit,
     )
 
-    variables = Wflow.LocalInertialRiverFlowVariables(;
-        q0 = zeros(_ne),
-        q = zeros(_ne),
-        q_av = zeros(_ne),
-        q_channel_av = zeros(_ne),
-        h = h_init,
-        zs_max = zeros(_ne),
-        zs_src = zeros(_ne),
-        zs_dst = zeros(_ne),
-        hf = zeros(_ne),
-        a = zeros(_ne),
-        r = zeros(_ne),
-        storage = fill(0.0, n),
-        error = zeros(n),
-    )
+    variables =
+        Wflow.LocalInertialRiverFlowVariables(; n_cells = n, n_edges = _ne, h = h_init)
 
-    boundary_conditions = Wflow.RiverFlowBC(;
-        external_inflow = zeros(n),
-        actual_external_abstraction_av = zeros(n),
-        abstraction = zeros(n),
-        inwater = zeros(n),
-        reservoir = nothing,
-    )
+    boundary_conditions =
+        Wflow.RiverFlowBC(; external_inflow = zeros(n), reservoir = nothing)
 
     sw_river = Wflow.LocalInertialRiverFlow(;
         timestepping,
@@ -251,7 +236,7 @@ end
     )
 
     # run until steady state is reached
-    epsilon = 1.0e-12
+    epsilon = 1e-12
     (; flow_length) = domain_river.parameters
     while true
         sw_river.boundary_conditions.inwater[1] = 20.0
@@ -265,5 +250,5 @@ end
     end
 
     # test for mean absolute error [cm]
-    @test mean(abs.(sw_river.variables.h .- h_a)) * 100.0 ≈ 1.873574206931199
+    @test mean(abs.(sw_river.variables.h .- h_a)) ≈ to_SI(1.873574206931199, CM)
 end

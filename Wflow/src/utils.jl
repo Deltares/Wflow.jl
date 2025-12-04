@@ -165,7 +165,8 @@ function set_states!(
     type = nothing,
     dimname = nothing,
 )::Nothing
-    (; domain, land, config) = model
+    (; domain, land, config, clock) = model
+    dt = tosecond(clock.dt)
 
     # Check if required states are covered
     state_ncnames = check_states(config)
@@ -214,7 +215,7 @@ function set_states!(
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
                 lens = get_lens(state, land)
-                lens(model)[1:n] .= to_SI!(A, unit)
+                lens(model)[1:n] .= to_SI!(A, unit; dt_val = dt)
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",

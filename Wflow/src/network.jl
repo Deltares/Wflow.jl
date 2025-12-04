@@ -23,10 +23,11 @@ The edges are defined as follows:
   neighboring node (`CartesianIndex(0,-2)` direction).
 """
 @with_kw struct EdgeConnectivity
-    xu::Vector{Int} = Int[]
-    xd::Vector{Int} = Int[]
-    yu::Vector{Int} = Int[]
-    yd::Vector{Int} = Int[]
+    n::Int
+    xu::Vector{Int} = zeros(Int, n)
+    xd::Vector{Int} = zeros(Int, n)
+    yu::Vector{Int} = zeros(Int, n)
+    yd::Vector{Int} = zeros(Int, n)
 end
 
 "Struct for storing source `src` node and destination `dst` node of an edge."
@@ -68,7 +69,7 @@ end
     # maps from the land domain to the river domain excluding reservoir locations
     river_inds_excl_reservoir::Vector{Int} = Int[]
     # 2D staggered grid edge indices
-    edge_indices::EdgeConnectivity = EdgeConnectivity()
+    edge_indices::EdgeConnectivity = EdgeConnectivity(; n = 1)
     # maps `order_subdomain` to traversion order of the complete domain
     subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
     # upstream nodes (directed graph)
@@ -133,8 +134,7 @@ end
 function EdgeConnectivity(network::NetworkLand)
     (; modelsize, indices, reverse_indices) = network
     n = length(indices)
-    edge_indices =
-        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+    edge_indices = EdgeConnectivity(; n)
 
     nrow, ncol = modelsize
     for (v, i) in enumerate(indices)

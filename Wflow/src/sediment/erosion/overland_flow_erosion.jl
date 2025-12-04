@@ -7,13 +7,9 @@ end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
+    n::Int
     # Overland flow [m³ s⁻¹]
-    q::Vector{Float64}
-end
-
-"Initialize overland flow erosion model boundary conditions"
-function OverlandFlowErosionBC(n::Int; q::Vector{Float64} = fill(MISSING_VALUE, n))
-    return OverlandFlowErosionBC(; q)
+    q::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
@@ -67,9 +63,10 @@ end
 
 "ANSWERS overland flow erosion model"
 @with_kw struct OverlandFlowErosionAnswersModel
-    boundary_conditions::OverlandFlowErosionBC
+    n::Int
+    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n)
     parameters::OverlandFlowErosionAnswersParameters
-    variables::OverlandFlowErosionVariables
+    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n)
 end
 
 "Initialize ANSWERS overland flow erosion model"
@@ -79,14 +76,8 @@ function OverlandFlowErosionAnswersModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = OverlandFlowErosionVariables(; n)
-    params = OverlandFlowErosionAnswersParameters(dataset, config, indices)
-    bc = OverlandFlowErosionBC(n)
-    model = OverlandFlowErosionAnswersModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
+    model = OverlandFlowErosionAnswersModel(; n, parameters)
     return model
 end
 

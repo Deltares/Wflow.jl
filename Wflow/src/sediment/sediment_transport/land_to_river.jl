@@ -35,8 +35,9 @@ function update!(model::SedimentToRiverModel, rivers::Vector{Bool})
     (; deposition) = model.boundary_conditions
     (; sediment_rate) = model.variables
 
-    zeros = fill(0.0, length(sediment_rate))
-    sediment_rate .= ifelse.(rivers, deposition, zeros)
+    for (i, river) in enumerate(rivers)
+        sediment_rate[i] = river ? deposition : 0.0
+    end
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
@@ -110,12 +111,20 @@ function update!(model::SedimentToRiverDifferentiationModel, rivers::Vector{Bool
     ) = model.boundary_conditions
     (; sediment_rate, clay, silt, sand, sagg, lagg) = model.variables
 
-    zeros = fill(0.0, length(sediment_rate))
-    clay .= ifelse.(rivers .> 0, deposition_clay, zeros)
-    silt .= ifelse.(rivers .> 0, deposition_silt, zeros)
-    sand .= ifelse.(rivers .> 0, deposition_sand, zeros)
-    sagg .= ifelse.(rivers .> 0, deposition_sagg, zeros)
-    lagg .= ifelse.(rivers .> 0, deposition_lagg, zeros)
-
-    sediment_rate .= clay .+ silt .+ sand .+ sagg .+ lagg
+    for (i, river) in enumerate(rivers)
+        if river
+            clay[i] = deposition_clay[i]
+            silt[i] = deposition_silt[i]
+            sand[i] = deposition_sand[i]
+            sagg[i] = deposition_sagg[i]
+            lagg[i] = deposition_lagg[i]
+        else
+            clay[i] = 0.0
+            silt[i] = 0.0
+            sand[i] = 0.0
+            sagg[i] = 0.0
+            lagg[i] = 0.0
+        end
+    end
+    @. sediment_rate = clay + silt + sand + sagg + lagg
 end

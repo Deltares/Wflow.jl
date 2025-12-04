@@ -899,10 +899,12 @@ function write_netcdf_timestep(model, dataset, parameters)
     (; clock, domain) = model
 
     time_index = add_time(dataset, clock.time)
+    dt = tosecond(clock.dt)
 
     buffer = zeros(Union{Float64, Missing}, domain.land.network.modelsize)
     for (key, val) in parameters
         (; par, vector) = val
+        unit = get_unit(key)
         sel = active_indices(domain, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
@@ -911,6 +913,7 @@ function write_netcdf_timestep(model, dataset, parameters)
             fill!(buffer, missing)
             # cut off possible boundary conditions/ ghost points with [1:length(sel)]
             buffer[sel] .= collect(vector)[1:length(sel)]
+            from_SI!(buffer, unit; dt_val = dt)
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
@@ -918,6 +921,7 @@ function write_netcdf_timestep(model, dataset, parameters)
                 # ensure no other information is written
                 fill!(buffer, missing)
                 buffer[sel] .= getindex.(vector, i)
+                from_SI!(buffer, unit)
                 dataset[key][:, :, i, time_index] = buffer
             end
         else

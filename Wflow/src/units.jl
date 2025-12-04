@@ -23,6 +23,7 @@ struct Unit
     degC::PowersType # degree Celcius
     # Time
     s::PowersType # second, SI standard
+    min::PowersType # minute
     h::PowersType # hour
     d::PowersType # day
     dt::PowersType # time step
@@ -31,6 +32,8 @@ struct Unit
     cm::PowersType # centimeter
     mm::PowersType # millimeter
     μm::PowersType # micrometer
+    # Volume
+    L::PowersType # liter
     # Mass
     kg::PowersType # kilogram, SI standard
     g::PowersType # gram
@@ -39,6 +42,7 @@ struct Unit
     J::PowersType # joule
     # Fraction
     percentage::PowersType # percentage, converted to unitless fraction in the SI standard
+    ppm::PowersType # parts per million, converted to unitless fraction in the SI standard
     # Factor for converting a value in this unit to the above mentioned standard SI units (apart from dt)
     to_SI_factor_without_dt::Float64 # Expected to be last field!
 end
@@ -87,6 +91,9 @@ function Unit(; absolute_temperature = false, kwargs...)
         end,
         N_UNITS,
     )
+    for unit in keys(kwargs)
+        (unit ∉ Units) && argument_error("Unrecognized unit $unit.")
+    end
     return Unit(absolute_temperature, powers...)
 end
 
@@ -94,6 +101,7 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
     (factor = 1.0, unit_SI = Unit(; K = 1)), # K
     (factor = 1.0, unit_SI = Unit(; K = 1)), # degC
     (factor = 1.0, unit_SI = Unit(; s = 1)), # s
+    (factor = 60.0, unit_SI = Unit(; s = 1)), # min
     (factor = 3600, unit_SI = Unit(; s = 1)), # h
     (factor = 86400.0, unit_SI = Unit(; s = 1)), # d
     (factor = NaN, unit_SI = Unit(; s = 1)), # dt
@@ -101,11 +109,13 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
     (factor = 1e-2, unit_SI = Unit(; m = 1)), # cm
     (factor = 1e-3, unit_SI = Unit(; m = 1)), # mm
     (factor = 1e-6, unit_SI = Unit(; m = 1)), # μm
+    (factor = 1e-3, unit_SI = Unit(; m = 3)), # L
     (factor = 1.0, unit_SI = Unit(; kg = 1)), # kg
     (factor = 1e-3, unit_SI = Unit(; kg = 1)), # g
     (factor = 1e3, unit_SI = Unit(; kg = 1)), # t
     (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # J
     (factor = 1e-2, unit_SI = Unit()), # percentage
+    (factor = 1e-6, unit_SI = Unit()), # ppm
 ]
 
 # Predefined units used within the code
@@ -118,6 +128,10 @@ const MM = Unit(; mm = 1)
 const KG_PER_MIN = Unit(; kg = 1, min = -1)
 const M3_PER_MIN = Unit(; m = 3, min = -1)
 const TON_PER_DT = Unit(; t = 1, dt = -1)
+const GRAM_PER_L = Unit(; g = 1, L = 1)
+const CM_PER_S = Unit(; cm = 1, s = -1)
+const TON_PER_M3 = Unit(; t = 1, m = -3)
+const PPM = Unit(; ppm = 1)
 
 function Base.:*(u1::Unit, u2::Unit)
     absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature
@@ -260,6 +274,9 @@ function from_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = 
         x / to_SI_factor(unit; dt_val)
     end
 end
+
+# Fallback method for non-Floats, e.g. nothing, missing, Bool, Int
+from_SI(x, unit::Unit; kwargs...) = x
 
 """
 Convert the given values of the SI equivalent of the given unit to the values in the given unit in-place

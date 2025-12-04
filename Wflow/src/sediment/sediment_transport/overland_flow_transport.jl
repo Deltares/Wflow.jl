@@ -184,8 +184,11 @@ function update!(model::SedimentLandTransportDifferentiationModel, network::Netw
     deposition_sagg .= erosion_sagg
     accucapacityflux!(lagg, erosion_lagg, network, transport_capacity_lagg)
     deposition_lagg .= erosion_lagg
-    sediment_rate .= clay .+ silt .+ sand .+ sagg .+ lagg
-    deposition .=
-        deposition_clay .+ deposition_silt .+ deposition_sand .+ deposition_sagg .+
+    @. sediment_rate = clay + silt + sand + sagg + lagg
+    @. deposition =
+        deposition_clay +
+        deposition_silt +
+        deposition_sand +
+        deposition_sagg +
         deposition_lagg
 end

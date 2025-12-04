@@ -145,12 +145,12 @@ function overland_flow_erosion_answers(
     slope,
     area,
 )
-    # Overland flow rate [m²/min]
-    qr_land = from_SI(overland_flow, M3_PER_MIN) / sqrt.(area)
+    # Overland flow rate [m² min⁻¹]
+    qr_land = from_SI(overland_flow, M3_PER_MIN) / sqrt(area)
     # Sine of the slope
     sinslope = slope / sqrt(1 + slope^2)
 
-    # Overland flow erosion [kg/min]
+    # Overland flow erosion [kg min⁻¹]
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant
     erosion = answers_overland_flow_factor * usle_c * usle_k * area * sinslope * qr_land
     return to_SI(erosion, KG_PER_MIN)
@@ -242,10 +242,10 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
     if waterlevel > 0.0
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
         E_ = (2.65 - 1) * g_gravity
-        E = d50 * cbrt(E_) * 1e4
+        E = d50 * cbrt(E_) * 1e-4
         TCrbed =
             E_ *
-            d50 *
+            (1e3 * d50) *
             (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E)))
         TCrbank = TCrbed
         # kd from Hanson & Simon 2001

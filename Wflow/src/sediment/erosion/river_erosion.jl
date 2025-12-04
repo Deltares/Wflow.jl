@@ -22,9 +22,10 @@ end
 
 "Julian and Torres river erosion model"
 @with_kw struct RiverErosionJulianTorresModel
-    boundary_conditions::RiverErosionBC
+    n::Int
+    boundary_conditions::RiverErosionBC = RiverErosionBC(; n)
     parameters::RiverErosionParameters
-    variables::RiverErosionModelVariables
+    variables::RiverErosionModelVariables = RiverErosionModelVariables(; n)
 end
 
 "Initialize Julian and Torres river erosion parameters"
@@ -54,14 +55,8 @@ function RiverErosionJulianTorresModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = RiverErosionModelVariables(; n)
-    params = RiverErosionParameters(dataset, config, indices)
-    bc = RiverErosionBC(; n)
-    model = RiverErosionJulianTorresModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = RiverErosionParameters(dataset, config, indices)
+    model = RiverErosionJulianTorresModel(; n, parameters)
     return model
 end
 

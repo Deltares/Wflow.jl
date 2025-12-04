@@ -96,9 +96,10 @@ end
 
 "EUROSEM rainfall erosion model"
 @with_kw struct RainfallErosionEurosemModel <: AbstractRainfallErosionModel
-    boundary_conditions::RainfallErosionEurosemBC
+    n::Int
+    boundary_conditions::RainfallErosionEurosemBC = RainfallErosionEurosemBC(; n)
     parameters::RainfallErosionEurosemParameters
-    variables::RainfallErosionModelVariables
+    variables::RainfallErosionModelVariables = RainfallErosionModelVariables(; n)
 end
 
 "Initialize EUROSEM rainfall erosion model"
@@ -108,14 +109,8 @@ function RainfallErosionEurosemModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = RainfallErosionModelVariables(; n)
-    params = RainfallErosionEurosemParameters(dataset, config, indices)
-    bc = RainfallErosionEurosemBC(; n)
-    model = RainfallErosionEurosemModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = RainfallErosionEurosemParameters(dataset, config, indices)
+    model = RainfallErosionEurosemModel(; n, parameters)
     return model
 end
 
@@ -166,16 +161,9 @@ end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionAnswersBC
-    # precipitation [mm dt⁻¹]
-    precipitation::Vector{Float64}
-end
-
-"Initialize ANSWERS rainfall erosion model boundary conditions"
-function RainfallErosionAnswersBC(
-    n::Int;
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return RainfallErosionAnswersBC(; precipitation)
+    n::Int
+    # precipitation [mm dt⁻¹ => m s⁻¹]
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
@@ -229,9 +217,10 @@ end
 
 "ANSWERS rainfall erosion model"
 @with_kw struct RainfallErosionAnswersModel <: AbstractRainfallErosionModel
-    boundary_conditions::RainfallErosionAnswersBC
+    n::Int
+    boundary_conditions::RainfallErosionAnswersBC = RainfallErosionAnswersBC(; n)
     parameters::RainfallErosionAnswersParameters
-    variables::RainfallErosionModelVariables
+    variables::RainfallErosionModelVariables = RainfallErosionModelVariables(; n)
 end
 
 "Initialize ANSWERS rainfall erosion model"
@@ -241,14 +230,8 @@ function RainfallErosionAnswersModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    bc = RainfallErosionAnswersBC(n)
-    vars = RainfallErosionModelVariables(; n)
-    params = RainfallErosionAnswersParameters(dataset, config, indices)
-    model = RainfallErosionAnswersModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = RainfallErosionAnswersParameters(dataset, config, indices)
+    model = RainfallErosionAnswersModel(; n, parameters)
     return model
 end
 

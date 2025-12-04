@@ -1,3 +1,4 @@
+# [m s⁻¹ mm⁻²]
 const STOKES_FACTOR = 411 / 3600
 
 """
@@ -21,7 +22,7 @@ fall_velocity(d50) = STOKES_FACTOR * from_SI(d50, MM)^2
 Deposition of sediment in reservoirs from Camp 1945.
 
 # Arguments
-- `input` (sediment input [tdt⁻¹ = kg s⁻¹])
+- `input` (sediment input [t dt⁻¹ = kg s⁻¹])
 - `q` (discharge [m³ dt⁻¹ => m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `reservoir_area` (reservoir area [m²])
@@ -44,10 +45,9 @@ function reservoir_deposition_camp(
     # Compute critical velocity
     # [m s⁻¹] = [m³ s⁻¹] / [m²]
     reservoir_critical_velocity = q / reservoir_area
-    DCres = STOKES_FACTOR / reservoir_critical_velocity
     # Natural deposition
-    # [kg s⁻¹]
-    deposition = input * min(1.0, (DCres * dm^2))
+    # [kg s⁻¹] = [kg s⁻¹] * min([-], [m s⁻¹] / [m s⁻¹])
+    deposition = input * min(1.0, fall_velocity(dm) / reservoir_critical_velocity)
 
     # Check if particles are traveling in suspension or bed load using Rouse number
     # [m]

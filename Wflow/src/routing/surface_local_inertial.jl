@@ -136,7 +136,7 @@ end
     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model time step dt)
     q_av::AverageVector = AverageVector(; n = n_edges)
     # average river channel discharge at edge [m³ s⁻¹] (for model time step dt)
-    q_channel_av::AverageVector
+    q_channel_av::AverageVector = AverageVector(; n = n_edges)
     # water depth [m]
     h::Vector{Float64}
     # maximum water elevation at edge [m]
