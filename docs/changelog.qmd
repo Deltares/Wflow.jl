@@ -7,6 +7,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+- Introduced in v1.0.0-rc2, as part of refactoring `SimpleReservoir` and `Lake` structs,
+  missing values were allowed for static input, but not for dynamic (cyclic and forcing)
+  input. For consistency between static and dynamic input no missing values for reservoir
+  input parameters are allowed, except for parameter `lower_reservoir_ind`.
+- Introduced in v1.0.0-rc3, reading parameter `soil_root__length_density_fraction` (the
+  parameter was not defined in the code).
+- Computation of kinematic wave celerity of subsurface flow for `KhExponentialConstant`
+  depth profile. For the exponential part the kinematic wave celerity was overestimated, as
+  the kinematic wave celerity for the constant depth profile was added. This addition has
+  been removed.
+
+### Changed
+- Solving the kinematic wave subsurface flow for `KhExponential` and `KhExponentialConstant`
+  depth profiles. Using a maximum allowed water table depth change (0.1 m) per iteration is
+  more accurate (kinematic wave celerity is a function of depth), than the previous solution
+  which is similar to using an average kinematic wave celerity for the water table depth
+  change.
+
+### Added
+
 ## v1.0.0-rc3 - 2025-11-11
 
 ### Fixed

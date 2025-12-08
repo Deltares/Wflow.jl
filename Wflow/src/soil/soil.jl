@@ -571,11 +571,12 @@ function SbmSoilParameters(
     end
 
     # optional root fraction
-    if haskey(config.input.static, "soil_root__length_density_fraction")
+    rootfraction_name = "soil_root__length_density_fraction"
+    if haskey(config.input.static, rootfraction_name)
         rootfraction = ncread(
             dataset,
             config,
-            par_name;
+            rootfraction_name;
             optional = false,
             sel = indices,
             type = Float64,

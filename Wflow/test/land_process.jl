@@ -33,12 +33,6 @@
     )
     @test all(
         isapprox.(
-            Wflow.unsatzone_flow_sbm(67.0, 950.0, 600.0, 250.0, 200.0, 0.6, 0.1),
-            (19.142857142857146, 47.857142857142854),
-        ),
-    )
-    @test all(
-        isapprox.(
             Wflow.precipitation_hbv(30.1, 0.54, 2.0, 0.0),
             (6.923, 23.177000000000003),
         ),
