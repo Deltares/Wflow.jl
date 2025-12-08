@@ -1187,6 +1187,44 @@ function update!(
     return nothing
 end
 
+function update_ustorelayerdepth!(soil, zi_prev, zi, i)
+    v = soil.variables
+    p = soil.parameters
+
+    n_unsatlayers_prev = v.n_unsatlayers[i]
+    ustorelayerthickness_prev = v.ustorelayerthickness[i]
+    ustorelayerthickness = set_layerthickness(zi, p.sumlayers[i], p.act_thickl[i])
+    n_unsatlayers = number_of_active_layers(ustorelayerthickness)
+    ustorelayerdepth = v.ustorelayerdepth[i]
+    if zi < zi_prev
+        for k in n_unsatlayers:n_unsatlayers_prev
+            k == 0 && continue
+            if isnan(ustorelayerthickness[k])
+                ustorelayerdepth = setindex(ustorelayerdepth, 0.0, k)
+            else
+                f = ustorelayerthickness[k] / ustorelayerthickness_prev[k]
+                ustorelayerdepth = setindex(ustorelayerdepth, f * ustorelayerdepth[k], k)
+            end
+        end
+    else
+        for k in n_unsatlayers_prev:n_unsatlayers
+            k == 0 && continue
+            thickness_prev =
+                isnan(ustorelayerthickness_prev[k]) ? 0.0 : ustorelayerthickness_prev[k]
+            delta_thickness = ustorelayerthickness[k] - thickness_prev
+            ustorelayerdepth = setindex(
+                ustorelayerdepth,
+                ustorelayerdepth[k] + delta_thickness * (p.theta_fc[i] - p.theta_r[i]),
+                k,
+            )
+        end
+    end
+    v.n_unsatlayers[i] = n_unsatlayers
+    v.ustorelayerdepth[i] = ustorelayerdepth
+    v.ustorelayerthickness[i] = ustorelayerthickness
+    v.zi[i] = zi
+end
+
 """
     update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
 
@@ -1203,42 +1241,8 @@ function update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
 
     n = length(model.variables.zi)
     threaded_foreach(1:n; basesize = 1000) do i
-        ustorelayerthickness = set_layerthickness(zi[i], p.sumlayers[i], p.act_thickl[i])
-        n_unsatlayers = number_of_active_layers(ustorelayerthickness)
-
         zi_prev = model.variables.zi[i]
-        n_unsatlayers_prev = model.variables.n_unsatlayers[i]
-        ustorelayerthickness_prev = model.variables.ustorelayerthickness[i]
-        ustorelayerdepth = v.ustorelayerdepth[i]
-
-        if zi[i] < zi_prev
-            for k in n_unsatlayers:n_unsatlayers_prev
-                k == 0 && continue
-                if isnan(ustorelayerthickness[k])
-                    ustorelayerdepth = setindex(ustorelayerdepth, 0.0, k)
-                else
-                    f = ustorelayerthickness[k] / ustorelayerthickness_prev[k]
-                    ustorelayerdepth =
-                        setindex(ustorelayerdepth, f * ustorelayerdepth[k], k)
-                end
-            end
-        else
-            for k in n_unsatlayers_prev:n_unsatlayers
-                k == 0 && continue
-                thickness_prev =
-                    isnan(ustorelayerthickness_prev[k]) ? 0.0 : ustorelayerthickness_prev[k]
-                delta_thickness = ustorelayerthickness[k] - thickness_prev
-                ustorelayerdepth = setindex(
-                    ustorelayerdepth,
-                    ustorelayerdepth[k] + delta_thickness * (p.theta_fc[i] - p.theta_r[i]),
-                    k,
-                )
-            end
-        end
-        v.n_unsatlayers[i] = n_unsatlayers
-        v.ustorelayerdepth[i] = ustorelayerdepth
-        v.ustorelayerthickness[i] = ustorelayerthickness
-        v.zi[i] = zi[i]
+        update_ustorelayerdepth!(model, zi_prev, zi[i], i)
     end
 end
 

@@ -147,9 +147,6 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
     (; ssfin, ssf, to_river, zi, exfiltwater, ssfmax, storage) = model.variables
     (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) = model.parameters
 
-    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
-    (; theta_s, theta_r) = soil.parameters
-
     ns = length(order_of_subdomains)
     for k in 1:ns
         threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
@@ -182,17 +179,13 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
                     flow_width[v],
                     ssfmax[v],
                     kh_profile,
-                    n_unsatlayers[v],
-                    ustorelayerthickness[v],
-                    ustorelayerdepth[v],
-                    theta_s[v] - theta_r[v],
+                    soil,
                     v,
                 )
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
         end
     end
-    update_ustorelayerdepth!(soil, model)
     return nothing
 end
 
