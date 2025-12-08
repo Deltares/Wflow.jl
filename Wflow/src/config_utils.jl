@@ -30,9 +30,6 @@ remove_leading_underscore(s::String) = (first(s) == '_') ? s[2:end] : s
 option_names(::Type{T}) where {T <: EnumX.Enum} =
     remove_leading_underscore.(String.(Symbol.(instances(T))))
 
-# Account for the dashes in the routing type names, which cannot be present in the enum
-option_names(::Type{RoutingType.T}) = ("kinematic-wave", "local-inertial")
-
 get_something_type(::Type{T}) where {T} = last(Base.uniontypes(T))
 
 # Pretty printing AbstractConfigurationSection instances
