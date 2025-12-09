@@ -12,7 +12,7 @@ platforms = ["win-64", "linux-64"]
 [tasks]
 # Installation
 # Julia
-install-julia = "juliaup add 1.11.3 && juliaup override set 1.11.3"
+install-julia = "juliaup add 1.11.7 && juliaup override set 1.11.7"
 # Pre-commit
 install-pre-commit = "pre-commit install"
 # Clear SSL_CERT_DIR to avoid Julia warnings, see https://github.com/JuliaLang/Downloads.jl/issues/244
