@@ -134,6 +134,7 @@ const GRAM_PER_L = Unit(; g = 1, L = 1)
 const CM_PER_S = Unit(; cm = 1, s = -1)
 const TON_PER_M3 = Unit(; t = 1, m = -3)
 const PPM = Unit(; ppm = 1)
+const M3_PER_DAY = Unit(; m = 3, d = -1)
 
 function Base.:*(u1::Unit, u2::Unit)
     absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature

@@ -45,7 +45,7 @@ end
     alpha_pow::Float64 = (2 // 3) * 0.6
     # Term used in computation of alpha [s^3/5 m^-1/5]
     alpha_term::Vector{Float64} = fill(MISSING_VALUE, length(slope))
-    # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s^3/5 m^1/5]
+    # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s³ᐟ⁵ m¹ᐟ⁵]
     alpha::Vector{Float64} = fill(MISSING_VALUE, length(slope))
 end
 
@@ -316,7 +316,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
                 add_to_cumulative!(
                     to_river,
                     v,
-                    sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]),
+                    sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt,
                 )
                 if surface_flow_width[v] > 0.0
                     # [m³ s⁻¹] = ∑ [m³ s⁻¹] * [-]
@@ -347,8 +347,8 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
                 # average flow
-                add_to_cumulative!(q_av, v, q[v])
-                add_to_cumulative!(qin_av, v, qin[v])
+                add_to_cumulative!(q_av, v, q[v] * dt)
+                add_to_cumulative!(qin_av, v, qin[v] * dt)
             end
         end
     end
@@ -453,13 +453,17 @@ function kinwave_river_update!(model::KinWaveRiverFlow, domain::DomainRiver, dt:
                     i = reservoir_indices[v]
                     # If external_inflow < 0, abstraction is limited
                     if res_bc.external_inflow[i] < 0.0
-                        # [?] = min([m³ s⁻¹], [m³] / [s])
+                        # [m³ s⁻¹] = min([m³ s⁻¹], [m³] / [s] * [-])
                         _abstraction = min(
                             -res_bc.external_inflow[i],
                             (reservoir.variables.storage[i] / dt) * 0.98,
                         )
 
-                        res_bc.actual_external_abstraction_av[i] += _abstraction
+                        add_to_cumulative!(
+                            res_bc.actual_external_abstraction_av,
+                            i,
+                            _abstraction * dt,
+                        )
                         _inflow = -_abstraction
                     else
                         _inflow = res_bc.external_inflow[i]
@@ -495,8 +499,8 @@ function kinwave_river_update!(model::KinWaveRiverFlow, domain::DomainRiver, dt:
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
 
                 # average variables
-                add_to_cumulative!(q_av, v, q[v])
-                add_to_cumulative!(qin_av, v, qin[v])
+                add_to_cumulative!(q_av, v, q[v] * dt)
+                add_to_cumulative!(qin_av, v, qin[v] * dt)
             end
         end
     end
@@ -566,8 +570,9 @@ function stable_timestep(
     for i in 1:n
         if q[i] > 0.0
             k += 1
-            # [s^-1/5 m^-7/5] = ([s^3/5 m^1/5] * [-] * [m³ s⁻¹] ^ 2/5)⁻¹ ??
+            # [m s⁻¹] = ([s³ᐟ⁵ m¹ᐟ⁵] * [-] * [m³ s⁻¹]⁻²ᐟ⁵)⁻¹
             c = inv(alpha[i] * beta * pow(q[i], (beta - 1.0)))
+            # [s] = [m] / [m s⁻¹]
             stable_timesteps[k] = (flow_length[i] / c)
         end
     end

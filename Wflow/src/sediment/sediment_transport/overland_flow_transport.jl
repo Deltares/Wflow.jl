@@ -35,8 +35,8 @@ function update_boundary_conditions!(
     (; sediment_rate) = erosion_model.variables
     @. erosion = sediment_rate
 
-    (; sediment_rate) = transport_capacity_model.variables
-    @. transport_capacity = sediment_rate
+    (; sediment_transport_capacity) = transport_capacity_model.variables
+    @. transport_capacity = sediment_transport_capacity
 end
 
 "Update total sediment flux in overland flow model for a single timestep"

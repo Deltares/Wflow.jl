@@ -20,7 +20,7 @@
     maxstorage::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # water level threshold H₀ [m] below that level outflow is zero
     threshold::Vector{Float64} = fill(MISSING_VALUE, length(area))
-    # rating curve coefficient [m3/2 s-1] (if e=3/2)
+    # rating curve coefficient [m³⁻ᵉ s⁻¹]
     b::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # rating curve exponent [-]
     e::Vector{Float64} = fill(MISSING_VALUE, length(area))
@@ -423,11 +423,11 @@ function update_reservoir_simple(
     dt::Float64,
 )
     (; maxstorage, targetminfrac, targetfullfrac, demand, maxrelease) = model.parameters
-    (; storage) = model.variables
+    res_v = model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
     # [m³] = [m³] + ([m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]) * [s]
-    storage = storage[i] + (inflow + precipitation - evaporation) * dt
+    storage = res_v.storage[i] + (inflow + precipitation - evaporation) * dt
     storage = max(storage, 0.0)
 
     # [-] = [m³] / [m³]

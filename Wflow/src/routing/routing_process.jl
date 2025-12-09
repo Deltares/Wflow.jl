@@ -23,35 +23,46 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
     return graph
 end
 
+const MIN_FLOW = 1e-30 # [m s⁻¹]
+
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0
     else
+        # [s m⁻¹] = [s] / [m]
         C = dt / dx
+        # [-] (generally -2/5)
         exponent = beta - 1.0
+        # [s³ᐟ⁵ m¹ᐟ⁵] = [s³ᐟ⁵ m¹ᐟ⁵] * [-]
         product = alpha * beta
         # initial estimate using linear scheme
+        # [s m⁻¹] = [s³ᐟ⁵ m¹ᐟ⁵] * (([m³ s⁻¹] + [m³ s⁻¹])/[-])⁻²ᐟ⁵
         ab_pq = product * pow((q_prev + q_in) / 2, exponent)
+        # [m³ s⁻¹] = ([s m⁻¹] * [m³ s⁻¹] + [m³ s⁻¹] * [s m⁻¹] + [s] * [m² s⁻¹])/([s m⁻¹] + [s m⁻¹])
         q = (C * q_in + q_prev * ab_pq + dt * q_lat) / (C + ab_pq)
         if isnan(q)
-            q = 1e-30
+            q = MIN_FLOW
         else
-            q = max(q, 1e-30)
+            q = max(q, MIN_FLOW)
         end
         # newton-raphson
         max_iters = 3000
         epsilon = 1.0e-12
         count = 0
+        # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵ + [s] * [m² s⁻¹]
         constant_term = C * q_in + alpha * pow(q_prev, beta) + dt * q_lat
         while true
+            # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵ - [m²]
             f_q = C * q + alpha * pow(q, beta) - constant_term
+            # [s m⁻¹] = [s m⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵
             df_q = C + product * pow(q, exponent)
+            # [m³ s⁻¹] -= [m²] / [s m⁻¹]
             q -= (f_q / df_q)
             if isnan(q)
-                q = 1e-30
+                q = MIN_FLOW
             else
-                q = max(q, 1.0e-30)
+                q = max(q, MIN_FLOW)
             end
             if (abs(f_q) <= epsilon) || (count >= max_iters)
                 break
@@ -75,6 +86,7 @@ end
 "Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity profile `KhExponential`"
 function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponential, i)
     (; kh_0, f) = kh_profile
+    # [m s⁻¹] = ([m s⁻¹] * exp(- [m⁻¹] * [m]) * [-]) / [-]
     celerity = (kh_0[i] * exp(-f[i] * zi) * slope) / theta_e
     return celerity
 end
@@ -84,9 +96,12 @@ function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponentialConstant, i)
     (; z_exp) = kh_profile
     (; kh_0, f) = kh_profile.exponential
     z = zi < z_exp[i] ? zi : z_exp[i]
+    # [m s⁻¹] = ([m s⁻¹] * exp(- [m⁻¹] * [m]) * [-]) / [-]
     celerity = (kh_0[i] * exp(-f[i] * z) * slope) / theta_e
     return celerity
 end
+
+const MIN_SSF = to_SI(1e-30, M3_PER_DAY)
 
 """
 Return kinematic wave subsurface flow `ssf` for a single cell and timestep using the Newton-
@@ -96,16 +111,18 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
     epsilon = 1.0e-12
     max_iters = 3000
     count = 0
-    C = dt / dx
-    celerity_inv = inv(celerity)
+    # [s m⁻¹] = [s] / [m] + inv([m s⁻¹])
+    df = dt / dx + inv(celerity)
     while true
-        f = C * ssf + ssf / celerity - constant_term
-        df = C + celerity_inv
+        # [m²] = [m³ s⁻¹] * ([s m⁻¹] + [s m⁻¹]) - [m²]
+        f = ssf * df - constant_term
+        # [m³ s⁻¹] -= [m²] / [s m⁻¹]
         ssf -= (f / df)
         if isnan(ssf)
-            ssf = 0.0
+            ssf = MIN_SSF
+        else
+            ssf = max(ssf, MIN_SSF)
         end
-        ssf = max(ssf, 1.0e-30)
         if (abs(f) <= epsilon) || (count >= max_iters)
             break
         end
@@ -145,19 +162,27 @@ function kinematic_wave_ssf(
         return 0.0, d, 0.0
     else
         # initial estimate
+        # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
         ssf = (ssf_prev + ssfin) / 2.0
         # newton-raphson
+        # [m s⁻¹]
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
+        # [m²] = ([s] / [m]) * [m³ s⁻¹] + [m³ s⁻¹] / [m s⁻¹] + [m² s⁻¹] * [s]
         constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
+        # [m³ s⁻¹]
         ssf = kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 
         # constrain maximum lateral subsurface flow rate ssf
+        # [m³ s⁻¹] = min([m³ s⁻¹], ([m² s⁻¹] * [m]))
         ssf = min(ssf, (ssfmax * dw))
         # estimate water table depth zi, exfiltration rate and constrain zi and
         # lower boundary ssf
+        # [m] = [m] - ([m³ s⁻¹] * [s] + [m² s⁻¹] * [s] * [m] - [m³ s⁻¹] * [s]) / ([m] * [m]) / [-]
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+            # TODO: I'm not completely sure of the correctness of the dt division here
+            # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s])
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d) / dt, 1.0e-30)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -171,18 +196,25 @@ function kinematic_wave_ssf(
             ssf_sum = 0.0
             exfilt_sum = 0.0
             for _ in 1:its
+                # [m s⁻¹]
                 celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
+                # [m²] = ([s] / [m]) * [m³ s⁻¹] + [m³ s⁻¹] / [m s⁻¹] + [m² s⁻¹] * [s]
                 constant_term = (dt_s / dx) * ssfin + ssf_prev / celerity + r * dt_s
+                # [m³ s⁻¹]
                 ssf = kw_ssf_newton_raphson(ssf_prev, constant_term, celerity, dt_s, dx)
                 # constrain maximum lateral subsurface flow rate ssf
+                # [m³ s⁻¹] = min([m³ s⁻¹], [m² s⁻¹] * [s])
                 ssf = min(ssf, ssfmax * dw)
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
+                # [m] = [m] - ([m³ s⁻¹] * [s] + [m² s⁻¹] * [s] * [m] - [m³ s⁻¹] * [s]) / ([m] * [m]) / [-]
                 zi =
                     zi_prev -
                     (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
                 if zi > d
-                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+                    # TODO: I'm not completely sure of the correctness of the dt division here
+                    # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s], [m³ s⁻¹])
+                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d) / dt, MIN_SSF)
                 end
                 exfilt_sum += min(zi, 0.0) * -theta_e
                 zi = clamp(zi, 0.0, d)
@@ -226,18 +258,26 @@ function kinematic_wave_ssf(
         return 0.0, d, 0.0
     else
         # initial estimate
+        # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
         ssf_ini = (ssf_prev + ssfin) / 2.0
         # newton-raphson
+        # [m s⁻¹] = ([-] * [m s⁻¹]) / [-]
         celerity = (slope * kh_profile.kh[i]) / theta_e
+        # [m²] = ([s] / [m]) * [m³ s⁻¹] + [m³ s⁻¹] / [m s⁻¹] + [m² s⁻¹] * [s]
         constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
+        # [m³ s⁻¹]
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # constrain maximum lateral subsurface flow rate ssf
+        # [m³ s⁻¹] = min([m³ s⁻¹], [m² s⁻¹] * [m])
         ssf = min(ssf, ssfmax * dw)
         # estimate water table depth zi, exfiltration rate and constrain zi and lower
         # boundary ssf
+        # [m] = [m] - ([m³ s⁻¹] * [s] + [m² s⁻¹] * [s] * [m] - [m³ s⁻¹] * [s]) / ([m] * [m]) / [-]
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+            # TODO: I'm not completely sure of the correctness of the dt division here
+            # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s], [m³ s⁻¹])
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), MIN_SSF)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -298,8 +338,12 @@ function accucapacityflux!(flux, material, network, capacity, dt)
     for v in order
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)
+        # Let [u] be the unit of material
+        # [u s⁻¹] = min([u] / [s], [u s⁻¹])
         flux_val = min(material[v] / dt, capacity[v])
+        # [u] -= [u s⁻¹] * [s]
         material[v] -= flux_val * dt
+        # [u s⁻¹]
         flux[v] = flux_val
         if n == 0
             # pit: material is transported out of the map if a capacity is set,
@@ -364,7 +408,7 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt
     # [m s⁻¹]
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux, dt)
     snow_out .+=
-        accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac, dt)
+        accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac / dt, dt)
     flux_in!(snow_in, snow_out, domain.network)
 end
 
@@ -444,11 +488,14 @@ function local_inertial_flow(
     )
     # if froude number > 1.0, limit flow
     if froude_limit
+        # [-] = ([m³ s⁻¹] / ([m] * [m])) / sqrt([m s⁻²] * [m])
         fr = (q / (width * hf)) / sqrt(g * hf)
-        if abs(fr) > 1.0 && q > 0.0
-            q = hf * sqrt(g * hf) * width
-        elseif abs(fr) > 1.0 && q < 0.0
-            q = -hf * sqrt(g * hf) * width
+        if abs(fr) > 1.0
+            if q > 0
+                q = hf * sqrt(g * hf) * width
+            else
+                q = -hf * sqrt(g * hf) * width
+            end
         end
     end
 

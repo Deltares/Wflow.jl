@@ -201,7 +201,7 @@ function flux!(headboundary::HeadBoundary, aquifer::Aquifer, dt::Float64)
         delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
         flux = check_flux(cond * delta_head, aquifer, index)
         headboundary.variables.flux[i] = flux
-        headboundary.variables.flux_av[i] += dt * flux
+        add_to_cumulative!(headboundary.variables.flux_av, i, dt * flux)
         aquifer.variables.q_net[index] += flux
     end
     return nothing
@@ -257,7 +257,7 @@ function flux!(well::Well, aquifer::Aquifer, dt::Float64)
     for (i, index) in enumerate(well.index)
         flux = check_flux(well.variables.volumetric_rate[i], aquifer, index)
         well.variables.flux[i] = flux
-        well.variables.flux_av[i] += dt * flux
+        add_to_cumulative!(well.variables.flux_av, i, dt * flux)
         aquifer.variables.q_net[index] += flux
     end
     return nothing

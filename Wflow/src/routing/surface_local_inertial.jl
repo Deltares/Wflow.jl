@@ -75,7 +75,7 @@ function LocalInertialRiverFlowParameters(
     )
 
     n = length(indices)
-    index_pit = findall(x -> x == 5, local_drain_direction)
+    index_pit = findall(==(5), local_drain_direction)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell.
     append!(flow_length, riverlength_bc)
@@ -95,7 +95,7 @@ function LocalInertialRiverFlowParameters(
         dst_node = nodes_at_edge.dst[i]
         zb_max[i] = max(zb[src_node], zb[dst_node])
         width_at_edge[i] = min(flow_width[src_node], flow_width[dst_node])
-        length_at_edge[i] = 0.5 * (flow_length[dst_node] + flow_length[src_node])
+        length_at_edge[i] = (flow_length[dst_node] + flow_length[src_node]) / 2
         mannings_n_i =
             (
                 mannings_n[dst_node] * flow_length[dst_node] +
@@ -103,7 +103,7 @@ function LocalInertialRiverFlowParameters(
             ) / (flow_length[dst_node] + flow_length[src_node])
         mannings_n_sq[i] = mannings_n_i * mannings_n_i
     end
-    active_index = findall(x -> x == 0, reservoir_outlet)
+    active_index = findall(==(0), reservoir_outlet)
 
     parameters = LocalInertialRiverFlowParameters(;
         n,
@@ -295,7 +295,7 @@ function local_inertial_river_update!(
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
         river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,

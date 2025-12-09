@@ -12,8 +12,10 @@ const routing_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.subsurface_flow.aquifer.parameters.specific_yield),
         unit = Unit(),
     ),
-    "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
-        (lens = @optic(_.routing.subsurface_flow.aquifer.parameters.f), unit = Unit()),
+    "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" => (
+        lens = @optic(_.routing.subsurface_flow.aquifer.parameters.f),
+        unit = Unit(; m = -1),
+    ),
     "model_constant_boundary_condition__hydraulic_head" => (
         lens = @optic(_.routing.subsurface_flow.constanthead.variables.head),
         unit = Unit(; m = 1),

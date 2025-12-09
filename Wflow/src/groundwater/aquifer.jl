@@ -203,6 +203,7 @@ function UnconfinedAquifer(
     head::Vector{Float64},
 )
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
+    # [m³] = (min([m], [m]) - [m]) * [m²] * [-]
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
     variables = AquiferVariables(; head, conductance, storage)
     aquifer = UnconfinedAquifer(parameters, variables)
@@ -228,6 +229,7 @@ Refer to:
 """
 function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     if (kH1 * kH2) > 0.0
+        # [m² s⁻¹] = [m] * [m² s⁻¹] * [m² s⁻¹] / ([m² s⁻¹] * [m] + [m² s⁻¹] * [m])
         return width * kH1 * kH2 / (kH1 * l2 + kH2 * l1)
     else
         return 0.0
@@ -266,14 +268,23 @@ function horizontal_conductance(
     aquifer::A,
     connectivity::Connectivity,
 ) where {A <: Aquifer}
+    # [m s⁻¹]
     k1 = aquifer.parameters.k[i]
+    # [m s⁻¹]
     k2 = aquifer.parameters.k[j]
+    # [m] = [m] - [m]
     H1 = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
+    # [m] = [m] - [m]
     H2 = aquifer.parameters.top[j] - aquifer.parameters.bottom[j]
+    # [m]
     length1 = connectivity.length1[nzi]
+    # [m]
     length2 = connectivity.length2[nzi]
+    # [m]
     width = connectivity.width[nzi]
+    # [m² s⁻¹]
     kH1 = k1 * H1
+    # [m² s⁻¹]
     kH2 = k2 * H2
     return harmonicmean_conductance(kH1, kH2, length1, length2, width)
 end
@@ -346,11 +357,17 @@ function conductance(
 )
     if conductivity_profile == GwfConductivityProfileType.exponential
         # Extract required variables
+        # [m] = [m] - [m]
         zi1 = aquifer.parameters.top[i] - aquifer.variables.head[i]
+        # [m] = [m] - [m]
         zi2 = aquifer.parameters.top[j] - aquifer.variables.head[j]
+        # [m] = [m] - [m]
         thickness1 = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
+        # [m] = [m] - [m]
         thickness2 = aquifer.parameters.top[j] - aquifer.parameters.bottom[j]
         # calculate conductivity values corrected for depth of water table
+        # TODO: Only when the parameter f is assumed unitless does this work out, but f has unit [m⁻¹]
+        # [m s⁻¹] = ([m s⁻¹] / [-]) * ([-] - [-])
         k1 =
             (aquifer.parameters.k[i] / aquifer.parameters.f[i]) * (
                 exp(-aquifer.parameters.f[i] * zi1) -
@@ -372,14 +389,17 @@ function conductance(
         head_i = aquifer.variables.head[i]
         head_j = aquifer.variables.head[j]
         if head_i >= head_j
+            # [-] = [m] / ([m] - [m])
             saturation =
                 saturated_thickness(aquifer, i) /
                 (aquifer.parameters.top[i] - aquifer.parameters.bottom[i])
         else
+            # [-] = [m] / ([m] - [m])
             saturation =
                 saturated_thickness(aquifer, j) /
                 (aquifer.parameters.top[j] - aquifer.parameters.bottom[j])
         end
+        # [-] * [m² s⁻¹]
         return saturation * aquifer.variables.conductance[nzi]
     end
 end
@@ -395,9 +415,13 @@ function flux!(
         for nzi in connections(connectivity, i)
             # connection from i -> j
             j = connectivity.rowval[nzi]
+            # [m] = [m] - [m]
             delta_head = aquifer.variables.head[i] - aquifer.variables.head[j]
+            # [m² s⁻¹]
             cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
+            # [m³ s⁻¹] = [m² s⁻¹] * [m]
             flow = cond * delta_head
+            # [m³ s⁻¹] -= [m³ s⁻¹]
             aquifer.variables.q_net[i] -= flow
             if flow > 0.0
                 add_to_cumulative!(aquifer.variables.q_out_av, i, flow * dt)
@@ -458,17 +482,21 @@ function stable_timestep(
     dt_min = Inf
     for i in eachindex(aquifer.variables.head)
         if conductivity_profile == GwfConductivityProfileType.exponential
+            # [m] = [m] - [m]
             zi = aquifer.parameters.top[i] - aquifer.variables.head[i]
+            # [m] = [m] - [m]
             thickness = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
+            # [m² s⁻¹] = ([m s⁻¹] / [m⁻¹]) * ([-] - [-])
             value =
                 (aquifer.parameters.k[i] / aquifer.parameters.f[i]) * (
                     exp(-aquifer.parameters.f[i] * zi) -
                     exp(-aquifer.parameters.f[i] * thickness)
                 )
         elseif conductivity_profile == GwfConductivityProfileType.uniform
+            # [m² s⁻¹] = [m s⁻¹] * [m]
             value = aquifer.parameters.k[i] * saturated_thickness(aquifer, i)
         end
-
+        # [s] = [m²] * [-] / [m² s⁻¹]
         dt = aquifer.parameters.area[i] * storativity(aquifer)[i] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
@@ -515,21 +543,27 @@ function update_fluxes!(
 end
 
 function update_head!(gwf::GroundwaterFlow{A}, dt::Float64) where {A <: Aquifer}
+    # [m] += [m³ s⁻¹] / [m²] * [s] / [-]
     gwf.aquifer.variables.head .+= (
         gwf.aquifer.variables.q_net ./ gwf.aquifer.parameters.area .* dt ./
         storativity(gwf.aquifer)
     )
     # Set constant head (dirichlet) boundaries
+    # [m] = [m]
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
+    # [m] = [m]
     gwf.aquifer.variables.head .= minimum_head(gwf.aquifer)
     # Compute exfiltration rate and make sure head is not above surface for unconfined aquifer
+    # [m s⁻¹] += ([m] - [m]) * [-] / [s]
     gwf.aquifer.variables.exfiltwater .+=
         (gwf.aquifer.variables.head .- maximum_head(gwf.aquifer)) .*
-        storativity(gwf.aquifer)
+        storativity(gwf.aquifer) ./ dt
+    # [m] = [m]
     gwf.aquifer.variables.head .= maximum_head(gwf.aquifer)
     # Adjust exfiltration rate for constant head boundaries
     gwf.aquifer.variables.exfiltwater[gwf.constanthead.index] .= 0.0
+    # [m³] = [m] * [m²] * [-]
     gwf.aquifer.variables.storage .=
         saturated_thickness(gwf.aquifer) .* gwf.aquifer.parameters.area .*
         storativity(gwf.aquifer)
