@@ -8,7 +8,7 @@ abstract type AbstractInterceptionModel end
     # Interception loss by evaporation [mm Δt⁻¹]
     interception_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Canopy storage [mm]
-    canopy_storage::Vector{Float64} = fill(MISSING_VALUE, n)
+    canopy_storage::Vector{Float64} = zeros(n)
     # Stemflow [mm Δt⁻¹]
     stemflow::Vector{Float64} = fill(MISSING_VALUE, n)
     # Throughfall [mm Δt⁻¹]

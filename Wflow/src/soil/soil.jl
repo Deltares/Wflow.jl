@@ -173,7 +173,6 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         ustorelayerdepth = zero(act_thickl),
         ustorecapacity = soilwatercapacity .- satwaterdepth,
         ustorelayerthickness,
-        ustoredepth = zeros(n),
         satwaterdepth,
         zi,
         n_unsatlayers,
