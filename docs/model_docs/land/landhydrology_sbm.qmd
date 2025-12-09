@@ -764,7 +764,7 @@ Four different saturated hydraulic conductivity depth profiles
 `saturated_hydraulic_conductivity_profile` can be specified in the TOML file as follows:
 
 ```toml
-[input.static]
+[model]
 saturated_hydraulic_conductivity_profile = "exponential_constant" # optional, one of ("exponential", "exponential_constant", "layered", "layered_exponential"), default is "exponential"
 ```
 
