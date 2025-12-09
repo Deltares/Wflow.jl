@@ -36,3 +36,70 @@ end
     @test Wflow.bounded_divide(1.0, 0.5; max = 0.75) == 0.75
     @test Wflow.bounded_divide(1.0, 2.0) == 0.5
 end
+
+@testitem "Lenses" begin
+    get_fieldname(::PropertyLens{T}) where {T} = T
+
+    function valid_lens(lens; type::Type = Wflow.Model, verbose::Bool = false)
+        if isabstracttype(type) || (type isa Union)
+            # If the type is abstract, search all subtypes
+            sub_types = isabstracttype(type) ? subtypes(type) : Base.uniontypes(type)
+            valid = false
+            for subtype in sub_types
+                if valid_lens(lens; type = subtype, verbose)
+                    valid = true
+                    break
+                end
+            end
+            return valid
+        else
+            if lens isa ComposedFunction
+                # If the lens is nested
+                (; inner, outer) = lens
+            else
+                # If we are at a leaf
+                inner = lens
+                outer = nothing
+            end
+
+            # Find the field with the expected name
+            fieldname = get_fieldname(inner)
+            field_index = findfirst(==(fieldname), fieldnames(type))
+            return if isnothing(field_index)
+                # If the field does not exist, the lens is invalid
+                if verbose
+                    println("type $type has no field $fieldname.")
+                end
+                false
+            else
+                if isnothing(outer)
+                    true
+                else
+                    # Recursion
+                    field_types = fieldtypes(type)
+                    if Any in field_types
+                        error("$type has an unbound type parameter.")
+                    end
+                    valid_lens(outer; type = field_types[field_index], verbose)
+                end
+            end
+        end
+    end
+
+    for (map_name, standard_name_map) in (
+        ("sbm", Wflow.sbm_standard_name_map),
+        ("sediment", Wflow.sediment_standard_name_map),
+    )
+        @testset "Test lenses: $map_name" begin
+            invalid = String[]
+            for (name, value) in standard_name_map
+                (; lens) = value
+                if !valid_lens(lens)
+                    push!(invalid, name)
+                    @error "Invalid lens" lens name
+                end
+            end
+            @test isempty(invalid)
+        end
+    end
+end

@@ -474,21 +474,28 @@ maximum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
 maximum_head(aquifer::UnconfinedAquifer) =
     min.(aquifer.variables.head, aquifer.parameters.top)
 
-@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
+@kwdef struct AquiferBoundaries{D <: Union{Nothing, Vector{Float64}}}
+    recharge::Vector{Float64}
+    river::Vector{Float64}
+    drain::D = nothing
+end
+
+@kwdef struct GroundwaterFlow{A <: Aquifer, B <: AquiferBoundaries} <:
+              AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
-    boundaries::NamedTuple
+    boundaries::B
     function GroundwaterFlow(
         timestepping::TimeStepping,
         aquifer::A,
         connectivity::Connectivity,
         constanthead::ConstantHead,
-        boundaries::NamedTuple,
-    ) where {A <: Aquifer}
+        boundaries::B,
+    ) where {A <: Aquifer, B <: AquiferBoundaries}
         initialize_conductance!(aquifer, connectivity)
-        new{A}(timestepping, aquifer, connectivity, constanthead, boundaries)
+        new{A, B}(timestepping, aquifer, connectivity, constanthead, boundaries)
     end
 end
 

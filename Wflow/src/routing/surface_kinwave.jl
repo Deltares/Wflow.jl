@@ -107,7 +107,7 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
 end
 
 "Struct for storing river flow model boundary conditions"
-@with_kw struct RiverFlowBC{R}
+@with_kw struct RiverFlowBC{R <: Union{Reservoir, Nothing}}
     inwater::Vector{Float64}                # Lateral inflow [m³ s⁻¹]
     external_inflow::Vector{Float64}                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64}  # Actual abstraction from external negative inflow [m³ s⁻¹]
@@ -143,9 +143,10 @@ function RiverFlowBC(
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlow{R, A} <: AbstractRiverFlowModel
+@with_kw struct KinWaveRiverFlow{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
+                AbstractRiverFlowModel
     timestepping::TimeStepping
-    boundary_conditions::RiverFlowBC{R}
+    boundary_conditions::R
     parameters::RiverFlowParameters
     variables::FlowVariables
     allocation::A   # Water allocation

@@ -271,8 +271,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.demand.paddy.parameters.irrigation_trigger),
         unit = "mm dt-1",
     ),
-    "irrigated_paddy__gross_water_demand_volume_flux" =>
-        (lens = @optic(_.land.demand.paddy.variables.demand_gross), unit = "mm dt-1"),
+    "irrigated_paddy__gross_water_demand_volume_flux" => (
+        lens = @optic(_.land.demand.paddy.variables.demand.demand_gross),
+        unit = "mm dt-1",
+    ),
     "irrigated_non_paddy__irrigation_trigger_flag" => (
         lens = @optic(_.land.demand.nonpaddy.parameters.irrigation_trigger),
         unit = "mm dt-1",

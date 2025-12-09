@@ -1,6 +1,4 @@
 abstract type AbstractIrrigationModel end
-abstract type AbstractAllocationModel end
-abstract type AbstractDemandModel end
 
 struct NoIrrigationPaddy <: AbstractIrrigationModel
     n::Int
@@ -455,7 +453,14 @@ function DemandVariables(n::Int)
 end
 
 "Water demand model"
-@with_kw struct Demand{D, I, L, P, NP, V} <: AbstractDemandModel
+@with_kw struct Demand{
+    D <: AbstractDemandModel,
+    I <: AbstractDemandModel,
+    L <: AbstractDemandModel,
+    P <: AbstractDemandModel,
+    NP <: AbstractDemandModel,
+    V <: AbstractDemandModel,
+} <: AbstractDemandModel
     domestic::D
     industry::I
     livestock::L
