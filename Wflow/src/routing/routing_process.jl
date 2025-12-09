@@ -108,13 +108,10 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh_0, slope, theta_e, f, d, dt, dx, dw, ssfmax, z_exp, ksat_profile)
+    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, theta_e, d, dt, dx, dw, ssfmax, kh_profile, i)
 
-Kinematic wave for lateral subsurface flow for a single cell and timestep. An exponential
-decline of hydraulic conductivity at the soil surface `kh_0`, controllled by parameter `f`,
-is assumed. The hydraulic conductivity profile `ksat_profile` is either `exponential` or
-`exponential_constant`, with `z_exp` the depth from the soil surface for which the
-exponential decline of `kh_0` is valid.
+Kinematic wave for lateral subsurface flow for a single cell and timestep. The hydraulic
+conductivity profile `kh_profile` is either `KhExponential` or `KhExponentialConstant`.
 
 Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
 `exfilt`.
@@ -192,13 +189,12 @@ function kinematic_wave_ssf(
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, kh, slope, theta_e, d, dt, dx, dw, ssfmax)
+    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, theta_e, d, dt, dx, dw, ssfmax, kh_profile, i)
 
-Kinematic wave for lateral subsurface flow for a single cell and timestep, based on
-(average) hydraulic conductivity `kh`.
+Kinematic wave for lateral subsurface flow for a single cell and timestep with a `KhLayered`
+conductivity profile, using (average) hydraulic conductivity `kh`.
 
-Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
-`exfilt`.
+Return lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate `exfilt`.
 """
 function kinematic_wave_ssf(
     ssfin,
