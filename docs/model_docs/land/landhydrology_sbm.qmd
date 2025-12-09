@@ -733,14 +733,14 @@ $$
     S_\mathrm{deficit} = (\theta_s-\theta_r) z_\mathrm{soil} - S_\mathrm{sat}.
 $$
 
-All infiltrating water enters the unsaturated store first. The soil bucket can be split-up
-in different layers, by providing the thickness $\SIb{}{mm}$ of the layers in the TOML file.
-The following example specifies three layers (from top to bottom) of $100$, $300$ and $800$
-$\SI{}{mm}$:
+All infiltrating water enters the unsaturated store first. The soil bucket is split-up in
+different layers, by providing the thickness $\SIb{}{mm}$ of the layers in the TOML file.
+The following example specifies four layers (from top to bottom) of $50$, $50$, $300$ and
+$800$ $\SI{}{mm}$:
 
 ```toml
 [model]
-soil_layer__thickness = [100, 300, 800]
+soil_layer__thickness = [50, 50, 300, 800] # optional, default is [100, 300, 800]
 ```
 
 The code checks for each grid cell the specified layers against the soil thickness
