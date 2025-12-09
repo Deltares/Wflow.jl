@@ -94,13 +94,14 @@ transmissivity).
 end
 
 @with_kw struct AquiferVariables
-    head::Vector{Float64}               # hydraulic head [m]
-    conductance::Vector{Float64}        # conductance [m² d⁻¹]
-    storage::Vector{Float64}            # total storage of water that can be released [m³]
-    q_net::Vector{Float64}              # net flow (groundwater and boundaries) [m³ d⁻¹]
-    q_in_av::Vector{Float64}            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
-    q_out_av::Vector{Float64}           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
-    exfiltwater::Vector{Float64}        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    n::Int
+    head::Vector{Float64}                          # hydraulic head [m]
+    conductance::Vector{Float64}                   # conductance [m² d⁻¹]
+    storage::Vector{Float64}                       # total storage of water that can be released [m³]
+    q_net::Vector{Float64} = zeros(n)              # net flow (groundwater and boundaries) [m³ d⁻¹]
+    q_in_av::Vector{Float64} = zeros(n)            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
+    q_out_av::Vector{Float64} = zeros(n)           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
+    exfiltwater::Vector{Float64} = zeros(n)        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 
 @with_kw struct ConfinedAquifer <: Aquifer
@@ -189,13 +190,7 @@ function UnconfinedAquifer(
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
     n = length(storage)
-    q_net = zeros(n)
-    exfiltwater = zeros(n)
-    q_in_av = zeros(n)
-    q_out_av = zeros(n)
-    exfiltwater = zeros(n)
-    variables =
-        AquiferVariables(head, conductance, storage, q_net, q_in_av, q_out_av, exfiltwater)
+    variables = AquiferVariables(; n, head, conductance, storage)
     aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end

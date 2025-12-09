@@ -90,7 +90,7 @@ function initialize_subsurface_flow(
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
-    conductance = zeros(Float64, connectivity.nconnection)
+    conductance = zeros(connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
         config,
@@ -106,12 +106,7 @@ function initialize_subsurface_flow(
     gwf_river = GwfRiver(dataset, config, river.network.indices, river.network.land_indices)
 
     # recharge boundary of unconfined aquifer
-    gwf_recharge = Recharge(
-        fill(MISSING_VALUE, n_cells),
-        zeros(n_cells),
-        zeros(n_cells),
-        collect(1:n_cells),
-    )
+    gwf_recharge = Recharge(; n = n_cells)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
