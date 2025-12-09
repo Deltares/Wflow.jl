@@ -3,15 +3,15 @@ abstract type AbstractRainfallErosionModel end
 "Struct for storing rainfall erosion model variables"
 @with_kw struct RainfallErosionModelVariables
     # Total soil erosion rate [t dt-1] from rainfall (splash)
-    amount::Vector{Float64}
+    soil_erosion_rate::Vector{Float64}
 end
 
 "Initialize rainfall erosion model variables"
 function RainfallErosionModelVariables(
     n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n),
 )
-    return RainfallErosionModelVariables(; amount)
+    return RainfallErosionModelVariables(; soil_erosion_rate)
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"

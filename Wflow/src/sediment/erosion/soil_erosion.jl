@@ -4,7 +4,7 @@ abstract type AbstractSoilErosionModel end
 @with_kw struct SoilErosionModelVariables
     n::Int
     # Total soil erosion rate [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total clay erosion rate [t dt-1]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total silt erosion rate [t dt-1]

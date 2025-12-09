@@ -3,12 +3,15 @@ abstract type AbstractSedimentToRiverModel end
 "Struct to store total sediment reaching the river model variables"
 @with_kw struct SedimentToRiverVariables
     # Total sediment rate to the river [t dt-1]
-    amount::Vector{Float64}
+    sediment_rate::Vector{Float64}
 end
 
 "Initialize total sediment reaching the river model variables"
-function SedimentToRiverVariables(n::Int; amount::Vector{Float64} = fill(MISSING_VALUE, n))
-    return SedimentToRiverVariables(; amount)
+function SedimentToRiverVariables(
+    n::Int;
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n),
+)
+    return SedimentToRiverVariables(; sediment_rate)
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
@@ -59,7 +62,7 @@ end
 @with_kw struct SedimentToRiverDifferentiationVariables
     n::Int
     # Total sediment rate [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Clay rate [t dt-1]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
     # Silt rate [t dt-1]

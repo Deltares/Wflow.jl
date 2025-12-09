@@ -3,7 +3,7 @@ abstract type AbstractSedimentLandTransportModel end
 "Struct to store total sediment flux in overland flow model variables"
 @with_kw struct SedimentLandTransportVariables
     # Total sediment rate [t dt-1]
-    amount::Vector{Float64}
+    sediment_rate::Vector{Float64}
     # Total sediment deposition rate [t dt-1]
     deposition::Vector{Float64}
 end
@@ -11,10 +11,10 @@ end
 "Initialize total sediment flux in overland flow model variables"
 function SedimentLandTransportVariables(
     n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n),
     deposition::Vector{Float64} = fill(MISSING_VALUE, n),
 )
-    return SedimentLandTransportVariables(; amount = amount, deposition = deposition)
+    return SedimentLandTransportVariables(; sediment_rate, deposition = deposition)
 end
 
 "Struct to store total sediment flux in overland flow model boundary conditions"
@@ -76,7 +76,7 @@ end
 @with_kw struct SedimentLandTransportDifferentiationVariables
     n::Int
     # Total sediment rate [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Deposition rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
     # Clay rate [t dt-1]

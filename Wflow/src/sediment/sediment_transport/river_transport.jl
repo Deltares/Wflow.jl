@@ -4,7 +4,7 @@ abstract type AbstractSedimentRiverTransportModel end
 @with_kw struct SedimentRiverTransportVariables
     n::Int
     # Sediment flux [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_flux::Vector{Float64} = fill(MISSING_VALUE, n)
     clay::Vector{Float64} = zeros(n)
     silt::Vector{Float64} = zeros(n)
     sand::Vector{Float64} = zeros(n)

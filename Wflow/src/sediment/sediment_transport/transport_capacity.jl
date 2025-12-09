@@ -3,15 +3,15 @@ abstract type AbstractTransportCapacityModel end
 "Struct to store total transport capacity model variables"
 @with_kw struct TransportCapacityModelVariables
     # Total sediment transport capacity [t dt-1]
-    amount::Vector{Float64}
+    sediment_transport_capacity::Vector{Float64}
 end
 
 "Initialize total transport capacity model variables"
 function TransportCapacityModelVariables(
     n::Int;
-    amount::Vector{Float64} = fill(MISSING_VALUE, n),
+    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n),
 )
-    return TransportCapacityModelVariables(; amount)
+    return TransportCapacityModelVariables(; sediment_transport_capacity)
 end
 
 "Struct to store total transport capacity model boundary conditions"
@@ -235,7 +235,7 @@ end
 @with_kw struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
     # Total sediment transport capacity [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
     # Transport capacity clay [t dt-1]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
     # Transport capacity silt [t dt-1]

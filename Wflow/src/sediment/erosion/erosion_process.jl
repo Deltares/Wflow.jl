@@ -30,16 +30,16 @@ Rainfall erosion model based on EUROSEM.
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
 function rainfall_erosion_eurosem(
-    precip,
-    interception,
-    waterlevel,
-    soil_detachability,
-    eurosem_exponent,
-    canopyheight,
-    canopygapfraction,
-    soilcover_fraction,
-    area,
-    dt,
+    precip::Float64,
+    interception::Float64,
+    waterlevel::Float64,
+    soil_detachability::Float64,
+    eurosem_exponent::Float64,
+    canopyheight::Float64,
+    canopygapfraction::Float64,
+    soilcover_fraction::Float64,
+    area::Float64,
+    dt::Float64,
 )
     # calculate rainfall intensity [mm/h]
     rintnsty = precip / (dt / 3600)
@@ -89,7 +89,14 @@ Rainfall erosion model based on ANSWERS.
 # Output
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
-function rainfall_erosion_answers(precip, usle_k, usle_c, answers_rainfall_factor, area, dt)
+function rainfall_erosion_answers(
+    precip::Float64,
+    usle_k::Float64,
+    usle_c::Float64,
+    answers_rainfall_factor::Float64,
+    area::Float64,
+    dt::Float64,
+)
     # calculate rainfall intensity [mm/min]
     rintnsty = precip / (dt / 60)
     # splash erosion [kg/min]
