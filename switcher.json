@@ -10,6 +10,11 @@
         "href": "https://deltares.github.io/Wflow.jl/stable/"
     },
     {
+        "name": "v1.0",
+        "version": "1.0.0",
+        "href": "https://deltares.github.io/Wflow.jl/v1.0.0/"
+    },
+    {
         "name": "v0.8",
         "version": "0.8.1",
         "href": "https://deltares.github.io/Wflow.jl/v0.8.1/"
