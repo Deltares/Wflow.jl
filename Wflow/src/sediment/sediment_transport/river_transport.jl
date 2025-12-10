@@ -871,12 +871,13 @@ function update!(
             SSlagg = suspended_solid(dm_lagg[i], dsuspf, dbedf, lagg[i])
             SSgrav = suspended_solid(dm_gravel[i], dsuspf, dbedf, gravel[i])
 
+            to_conc = 1e6 / (q[i] * dt)
             total_ = clay[i] + silt[i] + sagg[i] + sand[i] + lagg[i] + gravel[i]
-            total[i] = total_
+            total[i] = total_ * to_conc
 
             SS = SSclay + SSsilt + SSsand + SSsagg + SSlagg + SSgrav
-            suspended[i] = SS
-            bed[i] = total_ - SS
+            suspended[i] = SS * to_conc
+            bed[i] = (total_ - SS) * to_conc
         else
             suspended[i] = 0.0
             bed[i] = 0.0

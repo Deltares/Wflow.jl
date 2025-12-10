@@ -73,7 +73,7 @@ const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
-g_gravity = 9.81 # m s⁻²
+const g_gravity = 9.81 # m s⁻²
 
 mutable struct Clock{T}
     time::T

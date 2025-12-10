@@ -8,17 +8,17 @@
 
     @testset "initial default states" begin
         river = model.routing.river_flow
-        mean(river.sediment_flux.variables.store_clay) == 0.0
-        mean(river.sediment_flux.variables.leftover_clay) == 0.0
-        mean(river.sediment_flux.variables.clay) == 0.0
+        @test mean(river.sediment_flux.variables.store_clay) == 0.0
+        @test mean(river.sediment_flux.variables.leftover_clay) == 0.0
+        @test mean(river.sediment_flux.variables.clay) == 0.0
 
-        mean(river.sediment_flux.variables.store_silt) == 0.0
-        mean(river.sediment_flux.variables.leftover_silt) == 0.0
-        mean(river.sediment_flux.variables.silt) == 0.0
+        @test mean(river.sediment_flux.variables.store_silt) == 0.0
+        @test mean(river.sediment_flux.variables.leftover_silt) == 0.0
+        @test mean(river.sediment_flux.variables.silt) == 0.0
 
-        mean(river.sediment_flux.variables.store_sand) == 0.0
-        mean(river.sediment_flux.variables.leftover_sand) == 0.0
-        mean(river.sediment_flux.variables.sand) == 0.0
+        @test mean(river.sediment_flux.variables.store_sand) == 0.0
+        @test mean(river.sediment_flux.variables.leftover_sand) == 0.0
+        @test mean(river.sediment_flux.variables.sand) == 0.0
     end
 
     Wflow.run_timestep!(model)
@@ -81,7 +81,7 @@
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
               0.4458019733090582
-        @test mean(river.potential_erosion.variables.bed) ≈ 307.18492138827116
+        @test mean(river.potential_erosion.variables.bed) ≈ 307.4164241177143
 
         @test sum(river.sediment_flux.boundary_conditions.erosion_land_clay) ≈
               114.42704329506047
@@ -89,12 +89,12 @@
               1289.417324985034
         @test mean(river.sediment_flux.boundary_conditions.transport_capacity) ≈
               0.4458019733090582
-        @test mean(river.sediment_flux.variables.sediment_flux) ≈ 0.43330815120929567
-        @test mean(river.sediment_flux.variables.erosion) ≈ 0.018944871787785745
-        @test mean(river.sediment_flux.variables.deposition) ≈ 0.6939704797633529
+        @test mean(river.sediment_flux.variables.sediment_flux) ≈ 0.43330810531561187
+        @test mean(river.sediment_flux.variables.erosion) ≈ 0.01894491899394169
+        @test mean(river.sediment_flux.variables.deposition) ≈ 0.6939705269695089
         @test river.sediment_flux.variables.clay[5649] ≈ 2.840979764480952e-9
 
-        @test mean(river.concentrations.variables.suspended) ≈ 0.8261173586131326
+        @test mean(river.concentrations.variables.suspended) ≈ 0.8261052400882295
     end
 
     Wflow.close_files(model)
@@ -108,17 +108,17 @@ end
     model = Wflow.Model(config)
     @testset "initial warm states" begin
         river = model.routing.river_flow
-        mean(river.sediment_flux.variables.store_clay) ≈ 0.06881654169660432
-        mean(river.sediment_flux.variables.leftover_clay) ≈ 1.8985203566870876e-7
-        mean(river.sediment_flux.variables.clay) ≈ 0.761820269217149
+        @test mean(river.sediment_flux.variables.store_clay) ≈ 0.06881654169660432
+        @test mean(river.sediment_flux.variables.leftover_clay) ≈ 1.8985203566870876e-7
+        @test mean(river.sediment_flux.variables.clay) ≈ 0.761820269217149
 
-        mean(river.sediment_flux.variables.store_silt) ≈ 0.13222698520947598
-        mean(river.sediment_flux.variables.leftover_silt) ≈ 3.0309355418150914e-9
-        mean(river.sediment_flux.variables.silt) ≈ 0.4054607471933968
+        @test mean(river.sediment_flux.variables.store_silt) ≈ 0.13222698520947598
+        @test mean(river.sediment_flux.variables.leftover_silt) ≈ 3.0309355418150914e-9
+        @test mean(river.sediment_flux.variables.silt) ≈ 0.4054607471933968
 
-        mean(river.sediment_flux.variables.store_sand) ≈ 0.6762573229681987
-        mean(river.sediment_flux.variables.leftover_sand) ≈ 7.890080963256109e-10
-        mean(river.sediment_flux.variables.sand) ≈ 0.005085932599331321
+        @test mean(river.sediment_flux.variables.store_sand) ≈ 0.6762573229681987
+        @test mean(river.sediment_flux.variables.leftover_sand) ≈ 7.890080963256109e-10
+        @test mean(river.sediment_flux.variables.sand) ≈ 0.005085932599331321
     end
 
     Wflow.close_files(model)
@@ -165,7 +165,7 @@ end
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
               0.14184859055736687
 
-        @test mean(river.concentrations.variables.suspended) ≈ 0.2478754835662198
+        @test mean(river.concentrations.variables.suspended) ≈ 0.24787504877603125
     end
 
     Wflow.close_files(model)
@@ -278,7 +278,7 @@ end
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
               30.332588671299625
 
-        @test mean(river.concentrations.variables.suspended) ≈ 54.75538040430725
+        @test mean(river.concentrations.variables.suspended) ≈ 54.7559835316139
     end
 
     Wflow.close_files(model)
@@ -305,7 +305,7 @@ end
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
               350.6483600591209
 
-        @test mean(river.concentrations.variables.suspended) ≈ 884.4794354416674
+        @test mean(river.concentrations.variables.suspended) ≈ 884.5109007079852
     end
 
     Wflow.close_files(model)
