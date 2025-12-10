@@ -279,7 +279,7 @@ function update_boundary_conditions!(
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Transport capacity
-    @. transport_capacity = transport_capacity_model.variables.amount
+    @. transport_capacity = transport_capacity_model.variables.sediment_transport_capacity
     # Input from soil erosion
     (; clay, silt, sand, sagg, lagg) = to_river_model.variables
     @. erosion_land_clay = clay[indices_riv]
@@ -322,7 +322,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         reservoir_trapping_efficiency,
     ) = model.parameters
     (;
-        amount,
+        sediment_flux,
         clay,
         silt,
         sand,
@@ -658,7 +658,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         lagg[v] = fwaterout * (input_lagg + erosion_lagg - deposition_lagg)
         gravel[v] = fwaterout * (input_gravel + erosion_gravel - deposition_gravel)
 
-        amount[v] = clay[v] + silt[v] + sand[v] + sagg[v] + lagg[v] + gravel[v]
+        sediment_flux[v] = clay[v] + silt[v] + sand[v] + sagg[v] + lagg[v] + gravel[v]
 
         ### Leftover / mass balance ###
         # Sediment left in the cell [ton]

@@ -330,12 +330,18 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.hydrological_forcing.waterlevel_land), unit = "m"),
     "vegetation_canopy_water__interception_volume_flux" =>
         (lens = @optic(_.land.hydrological_forcing.interception), unit = "mm dt-1"),
-    "rainfall_soil_erosion__mass_flow_rate" =>
-        (lens = @optic(_.land.rainfall_erosion.variables.amount), unit = "t dt-1"),
-    "overland_flow_soil_erosion__mass_flow_rate" =>
-        (lens = @optic(_.land.overland_flow_erosion.variables.amount), unit = "t dt-1"),
-    "soil_erosion__mass_flow_rate" =>
-        (lens = @optic(_.land.soil_erosion.variables.amount), unit = "t dt-1"),
+    "rainfall_soil_erosion__mass_flow_rate" => (
+        lens = @optic(_.land.rainfall_erosion.variables.soil_erosion_rate),
+        unit = "t dt-1",
+    ),
+    "overland_flow_soil_erosion__mass_flow_rate" => (
+        lens = @optic(_.land.overland_flow_erosion.variables.soil_erosion_rate),
+        unit = "t dt-1",
+    ),
+    "soil_erosion__mass_flow_rate" => (
+        lens = @optic(_.land.soil_erosion.variables.soil_erosion_rate),
+        unit = "t dt-1",
+    ),
     "soil_erosion_clay__mass_flow_rate" =>
         (lens = @optic(_.land.soil_erosion.variables.clay), unit = "t dt-1"),
     "soil_erosion_silt__mass_flow_rate" =>
@@ -347,11 +353,13 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
     "soil_erosion_large_aggregates__mass_flow_rate" =>
         (lens = @optic(_.land.soil_erosion.variables.lagg), unit = "t dt-1"),
     "land_surface_water_sediment_transport_capacity__mass_flow_rate" => (
-        lens = @optic(_.routing.overland_flow.transport_capacity.variables.amount),
+        lens = @optic(
+            _.routing.overland_flow.transport_capacity.variables.sediment_transport_capacity
+        ),
         unit = "t dt-1",
     ),
     "land_surface_water_sediment__to_river_mass_flow_rate" => (
-        lens = @optic(_.routing.overland_flow.to_river.variables.amount),
+        lens = @optic(_.routing.overland_flow.to_river.variables.sediment_rate),
         unit = "t dt-1",
     ),
     "land_surface_water_clay__to_river_mass_flow_rate" => (

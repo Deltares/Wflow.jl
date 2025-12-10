@@ -52,10 +52,10 @@ end
 "Update total sediment reaching the river model for a single timestep"
 function update!(model::SedimentToRiverModel, rivers::Vector{Bool})
     (; deposition) = model.boundary_conditions
-    (; amount) = model.variables
+    (; sediment_rate) = model.variables
 
-    zeros = fill(0.0, length(amount))
-    amount .= ifelse.(rivers, deposition, zeros)
+    zeros = fill(0.0, length(sediment_rate))
+    sediment_rate .= ifelse.(rivers, deposition, zeros)
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
@@ -134,14 +134,14 @@ function update!(model::SedimentToRiverDifferentiationModel, rivers::Vector{Bool
         deposition_sagg,
         deposition_lagg,
     ) = model.boundary_conditions
-    (; amount, clay, silt, sand, sagg, lagg) = model.variables
+    (; sediment_rate, clay, silt, sand, sagg, lagg) = model.variables
 
-    zeros = fill(0.0, length(amount))
+    zeros = fill(0.0, length(sediment_rate))
     clay .= ifelse.(rivers .> 0, deposition_clay, zeros)
     silt .= ifelse.(rivers .> 0, deposition_silt, zeros)
     sand .= ifelse.(rivers .> 0, deposition_sand, zeros)
     sagg .= ifelse.(rivers .> 0, deposition_sagg, zeros)
     lagg .= ifelse.(rivers .> 0, deposition_lagg, zeros)
 
-    amount .= clay .+ silt .+ sand .+ sagg .+ lagg
+    sediment_rate .= clay .+ silt .+ sand .+ sagg .+ lagg
 end

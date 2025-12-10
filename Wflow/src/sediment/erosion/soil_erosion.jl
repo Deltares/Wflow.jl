@@ -131,8 +131,8 @@ function update_boundary_conditions!(
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::AbstractOverlandFlowErosionModel,
 )
-    re = rainfall_erosion.variables.amount
-    ole = overland_flow_erosion.variables.amount
+    re = rainfall_erosion.variables.soil_erosion_rate
+    ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     @. rainfall_erosion = re
     @. overland_flow_erosion = ole
@@ -143,18 +143,19 @@ function update!(model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
         model.parameters
-    (; amount, clay, silt, sand, sagg, lagg) = model.variables
+    (; soil_erosion_rate, clay, silt, sand, sagg, lagg) = model.variables
 
     n = length(rainfall_erosion)
     threaded_foreach(1:n; basesize = 1000) do i
-        amount[i], clay[i], silt[i], sand[i], sagg[i], lagg[i] = total_soil_erosion(
-            rainfall_erosion[i],
-            overland_flow_erosion[i],
-            clay_fraction[i],
-            silt_fraction[i],
-            sand_fraction[i],
-            sagg_fraction[i],
-            lagg_fraction[i],
-        )
+        soil_erosion_rate[i], clay[i], silt[i], sand[i], sagg[i], lagg[i] =
+            total_soil_erosion(
+                rainfall_erosion[i],
+                overland_flow_erosion[i],
+                clay_fraction[i],
+                silt_fraction[i],
+                sand_fraction[i],
+                sagg_fraction[i],
+                lagg_fraction[i],
+            )
     end
 end
