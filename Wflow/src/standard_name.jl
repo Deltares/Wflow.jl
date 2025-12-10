@@ -232,9 +232,9 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     "glacier_ice__melt_volume_flux" =>
         (lens = @optic(_.land.glacier.variables.glacier_melt), unit = "mm dt-1"),
     "land_surface_water__instantaneous_volume_flow_rate" =>
-        (lens = @optic(_.routing.overland_flow.variables.flow.q), unit = "m3 s-1"),
+        (lens = @optic(_.routing.overland_flow.variables.q), unit = "m3 s-1"),
     "land_surface_water__volume_flow_rate" =>
-        (lens = @optic(_.routing.overland_flow.variables.flow.q_av), unit = "m3 s-1"),
+        (lens = @optic(_.routing.overland_flow.variables.q_av), unit = "m3 s-1"),
     "land_surface_water__to_river_volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.to_river), unit = "m3 s-1"),
     "land_surface_water__depth" =>
