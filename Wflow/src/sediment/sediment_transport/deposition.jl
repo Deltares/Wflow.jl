@@ -39,7 +39,7 @@ function reservoir_deposition_camp(
     deposition = input * min(1.0, (DCres * (dm / 1000)^2))
 
     # Check if particles are travelling in suspension or bed load using Rouse number
-    dsuspf = 1e3 * (1.2 * 3600 * 0.41 / 411 * (9.81 * waterlevel * slope)^0.5)^0.5
+    dsuspf = 1e3 * sqrt(1.2 * 3600 * 0.41 / 411 * sqrt(g_gravity * waterlevel * slope))
     # If bed load, we have extra deposition depending on the reservoir type
     if dm > dsuspf
         deposition = max(deposition, res_trapping_efficiency * input)

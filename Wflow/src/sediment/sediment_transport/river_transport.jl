@@ -282,11 +282,11 @@ function update_boundary_conditions!(
     @. transport_capacity = transport_capacity_model.variables.sediment_transport_capacity
     # Input from soil erosion
     (; clay, silt, sand, sagg, lagg) = to_river_model.variables
-    @. erosion_land_clay = clay[indices_riv]
-    @. erosion_land_silt = silt[indices_riv]
-    @. erosion_land_sand = sand[indices_riv]
-    @. erosion_land_sagg = sagg[indices_riv]
-    @. erosion_land_lagg = lagg[indices_riv]
+    map!(i -> clay[i], erosion_land_clay, indices_riv)
+    map!(i -> silt[i], erosion_land_silt, indices_riv)
+    map!(i -> sand[i], erosion_land_sand, indices_riv)
+    map!(i -> sagg[i], erosion_land_sagg, indices_riv)
+    map!(i -> lagg[i], erosion_land_lagg, indices_riv)
     # Maximum direct river bed/bank erosion
     @. potential_erosion_river_bed = potential_erosion_model.variables.bed
     @. potential_erosion_river_bank = potential_erosion_model.variables.bank
@@ -831,6 +831,16 @@ function update_boundary_conditions!(
     @. gravel = sediment_flux_model.variables.gravel
 end
 
+function suspended_solid(dm, dsuspf, dbedf, substance)
+    return if dm <= dsuspf
+        substance
+    elseif dm <= dbedf
+        substance / 2
+    else
+        0.0
+    end
+end
+
 "Update river sediment concentrations model for a single timestep"
 function update!(
     model::SedimentConcentrationsRiverModel,
@@ -842,35 +852,33 @@ function update!(
     (; total, suspended, bed) = model.variables
     (; slope) = parameters
 
-    zeros = fill(0.0, length(q))
-    # Conversion from load [ton] to concentration for rivers [mg/L]
-    toconc = ifelse.(q .> 0.0, 1e6 ./ (q .* dt), zeros)
+    for (i, flow) in enumerate(q)
+        if flow > 0
+            # Differentiation of bed and suspended load using Rouse number for suspension
+            # threshold diameter between bed load and mixed load using Rouse number
+            common_term = 0.41 * sqrt(g_gravity * waterlevel[i] * slope[i]) / STOKES_FACTOR
+            dbedf = sqrt(2.5 * common_term)
+            # # threshold diameter between suspended load and mixed load using Rouse number
+            dsuspf = sqrt(1.2 * common_term)
 
-    # Differentiation of bed and suspended load using Rouse number for suspension
-    # threshold diameter between bed load and mixed load using Rouse number
-    dbedf =
-        1e3 .* (2.5 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* slope) .^ 0.5) .^ 0.5
-    # threshold diameter between suspended load and mixed load using Rouse number
-    dsuspf =
-        1e3 .* (1.2 .* 3600 .* 0.41 ./ 411 .* (9.81 .* waterlevel .* slope) .^ 0.5) .^ 0.5
+            # Rouse with diameter
+            SSclay = suspended_solid(dm_clay[i], dsuspf, dbedf, clay[i])
+            SSsilt = suspended_solid(dm_silt[i], dsuspf, dbedf, silt[i])
+            SSsand = suspended_solid(dm_sand[i], dsuspf, dbedf, sand[i])
+            SSsagg = suspended_solid(dm_sagg[i], dsuspf, dbedf, sagg[i])
+            SSlagg = suspended_solid(dm_lagg[i], dsuspf, dbedf, lagg[i])
+            SSgrav = suspended_solid(dm_gravel[i], dsuspf, dbedf, gravel[i])
 
-    # Rouse with diameter
-    SSclay = ifelse.(dm_clay .<= dsuspf, clay, ifelse.(dm_clay .<= dbedf, clay ./ 2, zeros))
-    SSsilt = ifelse.(dm_silt .<= dsuspf, silt, ifelse.(dm_silt .<= dbedf, silt ./ 2, zeros))
-    SSsand = ifelse.(dm_sand .<= dsuspf, sand, ifelse.(dm_sand .<= dbedf, sand ./ 2, zeros))
-    SSsagg = ifelse.(dm_sagg .<= dsuspf, sagg, ifelse.(dm_sagg .<= dbedf, sagg ./ 2, zeros))
-    SSlagg = ifelse.(dm_lagg .<= dsuspf, lagg, ifelse.(dm_lagg .<= dbedf, lagg ./ 2, zeros))
-    SSgrav =
-        ifelse.(
-            dm_gravel .<= dsuspf,
-            gravel,
-            ifelse.(dm_gravel .<= dbedf, gravel ./ 2, zeros),
-        )
+            total_ = clay[i] + silt[i] + sagg[i] + sand[i] + lagg[i] + gravel[i]
+            total[i] = total_
 
-    SS = SSclay .+ SSsilt .+ SSsagg .+ SSsand .+ SSlagg .+ SSgrav
-    Bedload = (clay .+ silt .+ sagg .+ sand .+ lagg .+ gravel) .- SS
-
-    @. suspended = SS .* toconc
-    @. bed = Bedload .* toconc
-    @. total = (clay .+ silt .+ sagg .+ sand .+ lagg .+ gravel) .* toconc
+            SS = SSclay + SSsilt + SSsand + SSsagg + SSlagg + SSgrav
+            suspended[i] = SS
+            bed[i] = total_ - SS
+        else
+            suspended[i] = 0.0
+            bed[i] = 0.0
+            total[i] = 0.0
+        end
+    end
 end

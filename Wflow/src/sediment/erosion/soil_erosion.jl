@@ -89,7 +89,7 @@ function SoilErosionParameters(
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction
-    if any(abs.(soil_fractions .- 1.0) .> 1e-3)
+    if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
         error("Particle fractions in the soil must sum to 1")
     end
     soil_parameters = SoilErosionParameters(;
