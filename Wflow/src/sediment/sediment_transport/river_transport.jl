@@ -859,9 +859,9 @@ function update!(
             # Differentiation of bed and suspended load using Rouse number for suspension
             # threshold diameter between bed load and mixed load using Rouse number
             common_term = 0.41 * sqrt(g_gravity * waterlevel[i] * slope[i]) / STOKES_FACTOR
-            dbedf = sqrt(2.5 * common_term)
+            dbedf = 1e3 * sqrt(2.5 * common_term)
             # # threshold diameter between suspended load and mixed load using Rouse number
-            dsuspf = sqrt(1.2 * common_term)
+            dsuspf = 1e3 * sqrt(1.2 * common_term)
 
             # Rouse with diameter
             SSclay = suspended_solid(dm_clay[i], dsuspf, dbedf, clay[i])

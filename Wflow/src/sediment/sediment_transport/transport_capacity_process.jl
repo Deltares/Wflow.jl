@@ -637,7 +637,7 @@ function transport_capacity_molinas(q, waterlevel, density, d50, width, length, 
             )
         )
         # Concentration by weight
-        cw = 1430 * (0.86 + sqrt(psi)) * cbrt(psi^2) / (0.016 + psi) * 1e-6
+        cw = 1430 * (0.86 + sqrt(psi)) * sqrt(psi^3) / (0.016 + psi) * 1e-6
         # Transport capacity [tons/m3]
         transport_capacity =
             cw / (cw + (1 - cw) * density / WATER_DENSITY) * density / WATER_DENSITY
