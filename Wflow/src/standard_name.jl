@@ -232,9 +232,9 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     "glacier_ice__melt_volume_flux" =>
         (lens = @optic(_.land.glacier.variables.glacier_melt), unit = "mm dt-1"),
     "land_surface_water__instantaneous_volume_flow_rate" =>
-        (lens = @optic(_.routing.overland_flow.variables.q), unit = "m3 s-1"),
+        (lens = @optic(_.routing.overland_flow.variables.flow.q), unit = "m3 s-1"),
     "land_surface_water__volume_flow_rate" =>
-        (lens = @optic(_.routing.overland_flow.variables.q_av), unit = "m3 s-1"),
+        (lens = @optic(_.routing.overland_flow.variables.flow.q_av), unit = "m3 s-1"),
     "land_surface_water__to_river_volume_flow_rate" =>
         (lens = @optic(_.routing.overland_flow.variables.to_river), unit = "m3 s-1"),
     "land_surface_water__depth" =>
@@ -271,10 +271,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.land.demand.paddy.parameters.irrigation_trigger),
         unit = "mm dt-1",
     ),
-    "irrigated_paddy__gross_water_demand_volume_flux" => (
-        lens = @optic(_.land.demand.paddy.variables.demand.demand_gross),
-        unit = "mm dt-1",
-    ),
+    "irrigated_paddy__gross_water_demand_volume_flux" =>
+        (lens = @optic(_.land.demand.paddy.variables.demand_gross), unit = "mm dt-1"),
     "irrigated_non_paddy__irrigation_trigger_flag" => (
         lens = @optic(_.land.demand.nonpaddy.parameters.irrigation_trigger),
         unit = "mm dt-1",
