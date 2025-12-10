@@ -538,7 +538,7 @@ Total sediment transport capacity based on Yang sand and gravel equations.
 """
 function transport_capacity_yang(q, waterlevel, density, d50, width, length, slope, dt)
     # Transport capacity from Yang
-    omegas = 411 * d50^2 / 3600
+    omegas = STOKES_FACTOR * d50^2
     # Hydraulic radius of the river [m] (rectangular channel)
     hydrad = waterlevel * width / (width + 2 * waterlevel)
     # Critical shear stress velocity
@@ -624,7 +624,7 @@ function transport_capacity_molinas(q, waterlevel, density, d50, width, length, 
     if waterlevel > 0.0
         # Flow velocity [m/s]
         velocity = (q / (waterlevel * width))
-        omegas = 411 * d50^2 / 3600
+        omegas = STOKES_FACTOR * d50^2
 
         # PSI parameter
         psi = (

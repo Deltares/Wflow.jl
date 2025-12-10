@@ -604,22 +604,24 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 xs =
                     ifelse(q[v] > 0.0, 1.055 * flow_length[v] / (q[v] / flow_width[v]), 0.0)
                 xclay =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_clay[v] / 1000)^2 / 3600)))
+                    min(1.0, 1.0 - 1.0 / exp(xs * (STOKES_FACTOR * (dm_clay[v] / 1000)^2)))
                 deposition_clay = xclay * (input_clay + erosion_clay)
                 xsilt =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_silt[v] / 1000)^2 / 3600)))
+                    min(1.0, 1.0 - 1.0 / exp(xs * (STOKES_FACTOR * (dm_silt[v] / 1000)^2)))
                 deposition_silt = xsilt * (input_silt + erosion_silt)
                 xsand =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_sand[v] / 1000)^2 / 3600)))
+                    min(1.0, 1.0 - 1.0 / exp(xs * (STOKES_FACTOR * (dm_sand[v] / 1000)^2)))
                 deposition_sand = xsand * (input_sand + erosion_sand)
                 xsagg =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_sagg[v] / 1000)^2 / 3600)))
+                    min(1.0, 1.0 - 1.0 / exp(xs * (STOKES_FACTOR * (dm_sagg[v] / 1000)^2)))
                 deposition_sagg = xsagg * (input_sagg + erosion_sagg)
                 xlagg =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_lagg[v] / 1000)^2 / 3600)))
+                    min(1.0, 1.0 - 1.0 / exp(xs * (STOKES_FACTOR * (dm_lagg[v] / 1000)^2)))
                 deposition_lagg = xlagg * (input_lagg + erosion_lagg)
-                xgrav =
-                    min(1.0, 1.0 - 1.0 / exp(xs * (411.0 * (dm_gravel[v] / 1000)^2 / 3600)))
+                xgrav = min(
+                    1.0,
+                    1.0 - 1.0 / exp(xs * (STOKES_FACTOR * (dm_gravel[v] / 1000)^2)),
+                )
                 deposition_gravel = xgrav * (input_gravel + erosion_gravel)
             end
         end
