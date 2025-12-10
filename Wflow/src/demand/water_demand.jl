@@ -457,16 +457,15 @@ end
     D <: AbstractDemandModel,
     I <: AbstractDemandModel,
     L <: AbstractDemandModel,
-    P <: AbstractDemandModel,
-    NP <: AbstractDemandModel,
-    V <: AbstractDemandModel,
+    P <: AbstractIrrigationModel,
+    NP <: AbstractIrrigationModel,
 } <: AbstractDemandModel
     domestic::D
     industry::I
     livestock::L
     paddy::P
     nonpaddy::NP
-    variables::V
+    variables::DemandVariables
 end
 
 @with_kw struct NoDemand <: AbstractDemandModel

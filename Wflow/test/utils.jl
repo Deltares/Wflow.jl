@@ -38,6 +38,9 @@ end
 end
 
 @testitem "Lenses" begin
+    using Accessors: PropertyLens
+    using InteractiveUtils: subtypes
+
     get_fieldname(::PropertyLens{T}) where {T} = T
 
     function valid_lens(lens; type::Type = Wflow.Model, verbose::Bool = false)

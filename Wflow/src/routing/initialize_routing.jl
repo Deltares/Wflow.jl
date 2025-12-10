@@ -122,8 +122,7 @@ function initialize_subsurface_flow(
             drain = gwf_drain,
         )
     else
-        aquifer_boundaries =
-            AquiferBoundaryCondition(; recharge = gwf_recharge, river = gwf_river)
+        aquifer_boundaries = AquiferBoundaries(; recharge = gwf_recharge, river = gwf_river)
     end
 
     cfl = config.model.subsurface_water_flow__alpha_coefficient
