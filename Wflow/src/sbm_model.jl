@@ -12,14 +12,14 @@ function Model(config::Config, type::SbmModel)
     reader = NCReader(config)
     clock = Clock(config, reader)
 
-    @info "General model settings" (;
+    @info "General model settings." * to_table(;
         snow = config.model.snow__flag,
         gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
         glacier = config.model.glacier__flag,
         reservoirs = config.model.reservoir__flag,
         pits = config.model.pit__flag,
         water_demand = do_water_demand(config),
-    )...
+    )
 
     domain = Domain(dataset, config, type)
 
