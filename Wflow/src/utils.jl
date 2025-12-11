@@ -34,6 +34,21 @@ function scurve(x::Real, a::Real, b::Real, c::Real)::Real
     return s
 end
 
+function to_enumx(T, i::Int)
+    options = instances(T)
+    n_options = length(options)
+    if 1 ≤ i ≤ n_options
+        return options[i]
+    else
+        options_repr = repr(MIME("text/plain"), T)
+        throw(
+            error(
+                "Cannot convert $i to $T, there are only $n_options options:\n$options_repr.",
+            ),
+        )
+    end
+end
+
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
 function set_pit_ldd(
     pits_2d::AbstractMatrix{Bool},
