@@ -197,17 +197,6 @@ end
     index::Vector{Int} = collect(1:n)  # [-]
 end
 
-function Recharge(
-    rate::Vector{Float64},
-    flux::Vector{Float64},
-    flux_av::Vector{Float64},
-    index::Vector{Int},
-)
-    variables = RechargeVariables(rate, flux, flux_av)
-    recharge = Recharge(variables, index)
-    return recharge
-end
-
 function flux!(recharge::Recharge, aquifer::Aquifer, dt::Float64)
     for (i, index) in enumerate(recharge.index)
         flux = check_flux(

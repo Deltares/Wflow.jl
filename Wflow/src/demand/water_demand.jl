@@ -532,8 +532,9 @@ end
 
 "Land allocation model"
 @with_kw struct AllocationLand <: AbstractAllocationModel
+    n::Int
     parameters::AllocationLandParameters
-    variables::AllocationLandVariables
+    variables::AllocationLandVariables = AllocationLandVariables(; n)
 end
 
 "Initialize water allocation for the land domain"
@@ -562,8 +563,7 @@ function AllocationLand(
     n = length(indices)
 
     parameters = AllocationLandParameters(; areas, frac_sw_used)
-    variables = AllocationLandVariables(; n)
-    allocation = AllocationLand(; parameters, variables)
+    allocation = AllocationLand(; n, parameters)
     return allocation
 end
 
