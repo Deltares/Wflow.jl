@@ -194,19 +194,19 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             @info(
                 "Read a rating curve from CSV file `$csv_path`, for reservoir location `$resloc`"
             )
-            @reset parameters.hq[i] = read_hq_csv(csv_path)
-            @reset parameters.maxstorage[i] = maximum_storage(parameters, i)
+            parameters.hq[i] = read_hq_csv(csv_path)
+            parameters.maxstorage[i] = maximum_storage(parameters, i)
         elseif outflowfunc[i] == ReservoirOutflowType.free_weir ||
                outflowfunc[i] == ReservoirOutflowType.modified_puls
-            @reset parameters.threshold[i] = threshold[i]
-            @reset parameters.b[i] = b[i]
-            @reset parameters.e[i] = e[i]
+            parameters.threshold[i] = threshold[i]
+            parameters.b[i] = b[i]
+            parameters.e[i] = e[i]
         elseif outflowfunc[i] == ReservoirOutflowType.simple
-            @reset parameters.demand[i] = demand[i]
-            @reset parameters.maxrelease[i] = maxrelease[i]
-            @reset parameters.maxstorage[i] = maxstorage[i]
-            @reset parameters.targetfullfrac[i] = targetfullfrac[i]
-            @reset parameters.targetminfrac[i] = targetminfrac[i]
+            parameters.demand[i] = demand[i]
+            parameters.maxrelease[i] = maxrelease[i]
+            parameters.maxstorage[i] = maxstorage[i]
+            parameters.targetfullfrac[i] = targetfullfrac[i]
+            parameters.targetminfrac[i] = targetminfrac[i]
         end
 
         if outflowfunc[i] == ReservoirOutflowType.modified_puls &&
