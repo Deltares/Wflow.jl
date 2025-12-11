@@ -3,6 +3,7 @@ using Downloads
 const source_url = "https://github.com/visr/wflow-artifacts/releases/download"
 const version = v"1.0.0"
 const testdir = normpath(@__DIR__, "../Wflow/test")
+const max_fails = 5
 
 # ensure test data is present
 const datadir = joinpath(testdir, "data")
@@ -16,8 +17,21 @@ function testdata(filename)
     if isfile(target_path)
         println("- $filename already exists")
     else
-        Downloads.download(url, target_path)
-        println("- $filename downloaded")
+        fails = 0
+        success = false
+        for _ in 1:max_fails
+            try
+                Downloads.download(url, target_path)
+                println("- $filename downloaded")
+                success = true
+                break
+            catch
+                fails += 1
+                println("  fail #$fails to download $filename...")
+                sleep(1)
+            end
+            !success && error("Failed to download $filename")
+        end
     end
     return target_path
 end
