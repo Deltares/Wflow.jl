@@ -1,17 +1,68 @@
-@testitem "vertical processes" begin
-    using Dates
-    @test all(
-        isapprox.(
-            Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, 4.0),
-            (13.568000000000001, 4.0, 0.432, 1.5),
-        ),
-    )
+@testitem "unit: rainfall_intercepiton_gash" begin
+    # Case cmax == 0
+    cmax = 0
+    e_r = 0.11
+    canopy_gap_fraction = 0.24
+    precipitation = 18.0
+    canopy_storage_in = 1.5
+    max_evaporation = 4.0
+    throughfall, interception, stem_flow, canopy_storage_out =
+        Wflow.rainfall_interception_gash(
+            cmax,
+            e_r,
+            canopy_gap_fraction,
+            precipitation,
+            canopy_storage_in,
+            max_evaporation,
+        )
+    @test throughfall == precipitation
+    @test interception == 0.0
+    @test stem_flow == 0.0
+    @test canopy_storage_in == canopy_storage_out
+
+    # Case cmax > 0, large_storms == true, interception > max_evaporation
+    cmax = 3.0
+    throughfall, interception, stem_flow, canopy_storage_out =
+        Wflow.rainfall_interception_gash(
+            cmax,
+            e_r,
+            canopy_gap_fraction,
+            precipitation,
+            canopy_storage_in,
+            max_evaporation,
+        )
+    @test throughfall ≈ 13.568
+    @test interception ≈ 4.0
+    @test stem_flow ≈ 0.432
+    @test canopy_storage_in == canopy_storage_out
+
+    # Case cmax > 0, large_storms == false, interception > max_evaporation
+    precipitation = 1.0
+    throughfall, interception, stem_flow, canopy_storage_out =
+        Wflow.rainfall_interception_gash(
+            cmax,
+            e_r,
+            canopy_gap_fraction,
+            precipitation,
+            canopy_storage_in,
+            max_evaporation,
+        )
+    @test throughfall ≈ 0.24
+    @test interception ≈ 0.736
+    @test stem_flow ≈ 0.024
+    @test canopy_storage_in == canopy_storage_out
+end
+
+@testitem "unit: rainfall_interception_modrut" begin
     @test all(
         isapprox.(
             Wflow.rainfall_interception_modrut(8.6, 3.8, 1.5, 0.45, 2.8),
             (3.87, 3.8, 0.387, 2.043),
         ),
     )
+end
+
+@testitem "unit: other" begin
     @test Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0) ≈ -90.6299820833844
     @test Wflow.feddes_h3(-300.0, -600.0, 3.5, 86400.0) ≈ -412.5
     @test Wflow.feddes_h3(-300.0, -600.0, 0.5, 86400.0) == -600.0

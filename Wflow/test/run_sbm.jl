@@ -107,7 +107,7 @@
         @test snow.variables.snow_storage[5] ≈ 3.843412524052313
         @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949
         @test sbm.variables.total_storage[50063] ≈ 560.0149494639334
-        @test sbm.variables.total_storage[429] ≈ 622.1363198024551  # river cell
+        @test sbm.variables.total_storage[429] ≈ 622.1362987891963  # river cell
     end
 
     @testset "subsurface flow" begin
@@ -120,7 +120,7 @@
 
     @testset "overland flow" begin
         q = model.routing.overland_flow.variables.q_av
-        @test sum(q) ≈ 314.73789861714124
+        @test sum(q) ≈ 314.741198746849
         @test q[26625] ≈ 0.0
         @test q[39308] ≈ 0.0
         @test q[domain.land.network.order[end]] ≈ 1.0e-30
@@ -128,10 +128,10 @@
 
     @testset "river flow" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4008.641694237684
+        @test sum(q) ≈ 4008.677559055443
         @test q[1622] ≈ 0.0007514610172927175
-        @test q[43] ≈ 12.461379467470296
-        @test q[domain.river.network.order[end]] ≈ 0.04418585641867657
+        @test q[43] ≈ 12.461519962766971
+        @test q[domain.river.network.order[end]] ≈ 0.044185855675805324
     end
 
     @testset "reservoir simple" begin
@@ -201,7 +201,7 @@ end
         q = model.routing.river_flow.variables.q_av
         @test q[4009] ≈ 8.530643058728762 # pit/ outlet, CartesianIndex(141, 228)
         @test q[4020] ≈ 0.006777421086873858 # downstream of pit 4009, CartesianIndex(141, 229)
-        @test q[2508] ≈ 157.62957314333133 # pit/ outlet
+        @test q[2508] ≈ 157.6294069290832 # pit/ outlet
         @test q[5808] ≈ 0.12315549758606258 # pit/ outlet
     end
 end
@@ -268,7 +268,7 @@ end
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_av[44] ≈ 11.030804046206692
+        @test model.routing.river_flow.variables.q_av[44] ≈ 11.030921948867109
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
         @test reservoir.boundary_conditions.inflow[2] ≈ -0.9035234172311934
@@ -292,7 +292,7 @@ end
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_av[44] ≈ 10.987794338462843
+        @test model.routing.river_flow.variables.q_av[44] ≈ 10.987911262675107
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
         @test reservoir.boundary_conditions.inflow[2] ≈ -0.9071990860050005
@@ -313,12 +313,12 @@ end
         @test actual_external_abstraction_av[44] ≈ 1.5917366378548994
         @test q_av[44] ≈ 1.4268379750882592
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 5.897013049729002
-        @test q_av[44] ≈ 4.411051526983172
+        @test actual_external_abstraction_av[44] ≈ 5.897084936750898
+        @test q_av[44] ≈ 4.411102496561638
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 9.888457277647309
+        @test actual_external_abstraction_av[44] ≈ 9.88845478770378
         @test external_inflow[44] == -10.0
-        @test q_av[44] ≈ 9.119110873669891
+        @test q_av[44] ≈ 9.119011690849286
     end
 end
 
@@ -366,14 +366,14 @@ end
 
     @testset "river flow and depth (local inertial)" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4023.4237822073214
+        @test sum(q) ≈ 4023.463089917688
         @test q[1622] ≈ 7.305420942239252e-5
-        @test q[43] ≈ 12.226974688244404
-        @test q[501] ≈ 3.559547687688846
+        @test q[43] ≈ 12.227111504291534
+        @test q[501] ≈ 3.5596018870537005
         h = model.routing.river_flow.variables.h
         @test h[1622] ≈ 0.0019178476211440523
-        @test h[43] ≈ 0.4662282150685506
-        @test h[501] ≈ 0.4032968034589142
+        @test h[43] ≈ 0.46623080604271827
+        @test h[501] ≈ 0.40330103034623044
         q_channel = model.routing.river_flow.variables.q_channel_av
         @test q ≈ q_channel
     end
@@ -392,12 +392,12 @@ end
         @test actual_external_abstraction_av[44] ≈ 3.0004703792497187
         @test q_av[44] ≈ 0.0007093332901777312
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 9.766312836238553
-        @test q_av[44] ≈ 0.514378791308521
+        @test actual_external_abstraction_av[44] ≈ 9.766319710190723
+        @test q_av[44] ≈ 0.5144867118255273
         Wflow.run_timestep!(model)
         @test actual_external_abstraction_av[44] ≈ 10.0
         @test external_inflow[44] == -10.0
-        @test q_av[44] ≈ 8.91270329923288
+        @test q_av[44] ≈ 8.912610453149107
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -537,16 +537,16 @@ end
 
     @testset "river flow (local inertial) with floodplain schematization simulation" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4011.214708633483
+        @test sum(q) ≈ 4011.253519842328
         @test q[1622] ≈ 7.30542094892652e-5
-        @test q[43] ≈ 12.226974688244372
-        @test q[501] ≈ 3.483944682420048
-        @test q[5808] ≈ 0.0022244700238177426
+        @test q[43] ≈ 12.227111504291566
+        @test q[501] ≈ 3.483992293969125
+        @test q[5808] ≈ 0.00222446932521652
         h = model.routing.river_flow.variables.h
         @test h[1622] ≈ 0.0019178476210430521
-        @test h[43] ≈ 0.466228215068555
-        @test h[501] ≈ 0.39619634579736773
-        @test h[5808] ≈ 0.007339463284325669
+        @test h[43] ≈ 0.4662308060427189
+        @test h[501] ≈ 0.396200203779590
+        @test h[5808] ≈ 0.007339460139543548
     end
 
     # set boundary condition local inertial routing from netCDF file
@@ -558,15 +558,15 @@ end
 
     @testset "change boundary condition for local inertial routing (including floodplain)" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4011.4040496594744
+        @test sum(q) ≈ 4011.442860865541
         @test q[1622] ≈ 7.30542094892652e-5
-        @test q[43] ≈ 12.226974688244372
-        @test q[501] ≈ 3.483944682420048
-        @test q[5808] ≈ 0.055297346320022915
+        @test q[43] ≈ 12.227111504291566
+        @test q[501] ≈ 3.483992293969125
+        @test q[5808] ≈ 0.05529734283146744
         h = model.routing.river_flow.variables.h
         @test h[1622] ≈ 0.0019178476210430521
-        @test h[43] ≈ 0.466228215068555
-        @test h[501] ≈ 0.39619634579736773
+        @test h[43] ≈ 0.4662308060427189
+        @test h[501] ≈ 0.3962002037795904
         @test h[5808] ≈ 2.000025759267394
     end
     Wflow.close_files(model; delete_output = false)
@@ -663,9 +663,9 @@ end
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
             q = model.routing.river_flow.variables.q_av
-            @test sum(q) ≈ 3299.1174916381046
+            @test sum(q) ≈ 3299.1553479068707
             @test q[1622] ≈ 0.0006989466706737165
-            @test q[43] ≈ 9.661448841687085
+            @test q[43] ≈ 9.661643730608544
         end
 
         Wflow.close_files(model; delete_output = false)
