@@ -36,3 +36,42 @@ end
     @test Wflow.bounded_divide(1.0, 0.5; max = 0.75) == 0.75
     @test Wflow.bounded_divide(1.0, 2.0) == 0.5
 end
+
+@testitem "Lenses" begin
+    models = Wflow.Model[]
+    # Initialize the first model with mass balance
+    do_mass_balance = true
+    for file_name in readdir()
+        !endswith(file_name, ".toml") && continue
+        config = Wflow.Config(normpath(@__DIR__, file_name))
+        if do_mass_balance
+            config.model.water_mass_balance__flag = true
+            global do_mass_balance = false
+        end
+        push!(models, Wflow.Model(config))
+    end
+
+    for (map_name, standard_name_map) in (
+        ("sbm", Wflow.sbm_standard_name_map),
+        ("sediment", Wflow.sediment_standard_name_map),
+    )
+        @testset "Test lenses: $map_name" begin
+            invalid = String[]
+            for (name, data) in standard_name_map
+                (; lens) = data
+                valid = false
+                for model in models
+                    try
+                        lens(model)
+                        valid = true
+                        break
+                    catch
+                        nothing
+                    end
+                end
+                valid || push!(invalid, name)
+            end
+            @test isempty(invalid)
+        end
+    end
+end

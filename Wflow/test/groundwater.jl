@@ -292,13 +292,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
     conductivity_profile = Wflow.GwfConductivityProfileType.uniform
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
 
@@ -322,13 +316,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
     conductivity_profile = Wflow.GwfConductivityProfileType.exponential
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
 
@@ -393,13 +381,7 @@ end
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
 
     time = 20.0
     t = 0.0
@@ -470,13 +452,7 @@ end
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
 
     time = 20.0
     t = 0.0
@@ -560,7 +536,7 @@ end
         aquifer,
         connectivity,
         constanthead,
-        boundaries = (; well,),
+        boundaries = Wflow.AquiferBoundaries(; well),
     )
 
     time = 20.0
