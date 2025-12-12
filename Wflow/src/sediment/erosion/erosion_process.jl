@@ -15,51 +15,54 @@
 Rainfall erosion model based on EUROSEM.
 
 # Arguments
-- `precip` (precipitation [mm Δt⁻¹])
-- `interception` (interception [mm Δt⁻¹])
+- `precip` (precipitation [mm dt⁻¹ => m s⁻¹])
+- `interception` (interception [mm dt⁻¹ => m s⁻¹])
 - `waterlevel` (water level [m])
-- `soil_detachability` (soil detachability [-])
+- `soil_detachability` (soil detachability [g J⁻¹ => kg J⁻¹])
 - `eurosem_exponent` (EUROSEM exponent [-])
 - `canopyheight` (canopy height [m])
 - `canopygapfraction` (canopy gap fraction [-])
 - `soilcover_fraction` (soil cover fraction [-])
-- `area` (area [m2])
-- `dt` (timestep [seconds])
+- `area` (area [m²])
+- `dt` (timestep [s])
 
 # Output
-- `rainfall_erosion` (soil loss [t Δt⁻¹])
+- `rainfall_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
 """
 function rainfall_erosion_eurosem(
-    precip,
-    interception,
-    waterlevel,
-    soil_detachability,
-    eurosem_exponent,
-    canopyheight,
-    canopygapfraction,
-    soilcover_fraction,
-    area,
-    dt,
+    precip::Float64,
+    interception::Float64,
+    waterlevel::Float64,
+    soil_detachability::Float64,
+    eurosem_exponent::Float64,
+    canopyheight::Float64,
+    canopygapfraction::Float64,
+    soilcover_fraction::Float64,
+    area::Float64,
+    dt::Float64,
 )
-    # calculate rainfall intensity [mm/h]
-    rintnsty = precip / (dt / 3600)
-    # Kinetic energy of direct throughfall [J/m2/mm]
-    # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
-    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
-    # Kinetic energy of leaf drainage [J/m2/mm]
+    # Precipitation expressed in unit expected by model
+    rainfall_intensity = from_SI(precip, MM_PER_HOUR)
+    # Kinetic energy of direct throughfall [J m⁻² mm⁻¹]
+    # E_kin_direct = max(11.87 + 8.73 * log10(max(0.0001, rainfall_intensity)),0.0) #basis used in USLE
+    E_kin_direct = max(8.95 + 8.44 * log10(max(0.0001, rainfall_intensity)), 0.0) #variant used in most distributed models
+    # Kinetic energy of leaf drainage [J m⁻² mm⁻¹]
     pheff = 0.5 * canopyheight
-    keleaf = max((15.8 * pheff^0.5) - 5.87, 0.0)
+    E_kin_leaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
 
-    #Depths of rainfall (total, leaf drianage, direct) [mm]
-    rdtot = precip
-    rdleaf = rdtot * 0.1 * canopygapfraction #stemflow
-    rddir = max(rdtot - rdleaf - interception, 0.0) #throughfall
+    # Depths of rainfall (total, leaf drainage, direct) [mm]
+    rainfall_depth_total = rainfall_intensity * from_SI(dt, HOUR)
+    rainfall_depth_leaf = rainfall_depth_total * 0.1 * canopygapfraction # stemflow
+    intercepted = from_SI(interception * dt, MM)
+    rainfall_depth_direct =
+        max(rainfall_depth_total - rainfall_depth_leaf - intercepted, 0.0) # throughfall
 
-    #Total kinetic energy by rainfall [J/m2]
-    ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
-    # Rainfall / splash erosion [g/m2]
-    rainfall_erosion = soil_detachability * ketot * exp(-eurosem_exponent * waterlevel)
-    rainfall_erosion *= area * 1e-6 # ton/cell
+    # Total kinetic energy by rainfall [J m⁻²]
+    E_kin_tot = rainfall_depth_direct * E_kin_direct + rainfall_depth_leaf * E_kin_leaf
+    # Rainfall / splash erosion [g m⁻²]
+    # [kg] = [m²] * [kg J⁻¹] * [J m⁻²] * exp([m⁻¹] * [m])
+    rainfall_erosion =
+        area * soil_detachability * E_kin_tot * exp(-eurosem_exponent * waterlevel)
 
     # Remove the impervious area
     rainfall_erosion *= 1.0 - soilcover_fraction
@@ -79,25 +82,38 @@ end
 Rainfall erosion model based on ANSWERS.
 
 # Arguments
-- `precip` (precipitation [mm Δt⁻¹])
-- `usle_k` (USLE soil erodibility [t ha-1 mm-1])
+- `precip` (precipitation [mm dt⁻¹ => m s⁻¹])
+- `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha-1 h-1 MJ-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
-- `answers_rainfall_factor` (ANSWERS rainfall erosion factor [-])
-- `area` (area [m2])
-- `dt` (timestep [seconds])
+- `answers_rainfall_factor` (ANSWERS rainfall erosion factor [-], treated as unitless but could have units)
+- `area` (area [m²])
+- `dt` (timestep [s])
 
 # Output
-- `rainfall_erosion` (soil loss [t Δt⁻¹])
+- `rainfall_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
 """
-function rainfall_erosion_answers(precip, usle_k, usle_c, answers_rainfall_factor, area, dt)
-    # calculate rainfall intensity [mm/min]
-    rintnsty = precip / (dt / 60)
-    # splash erosion [kg/min]
-    rainfall_erosion = answers_rainfall_factor * usle_c * usle_k * area * rintnsty^2
-    # [ton/timestep]
-    rainfall_erosion = rainfall_erosion * (dt / 60) * 1e-3
-    return rainfall_erosion
+function rainfall_erosion_answers(
+    precip::Float64,
+    usle_k::Float64,
+    usle_c::Float64,
+    answers_rainfall_factor::Float64,
+    area::Float64,
+)
+    # calculate rainfall intensity
+    rainfall_intensity = from_SI(precip, MM_PER_MIN)
+    # splash erosion [kg min⁻¹]
+    # The units here are hard to track because these equations are derived
+    # empirically
+    rainfall_erosion =
+        answers_rainfall_factor * usle_c * usle_k * area * rainfall_intensity^2
+    return to_SI(rainfall_erosion, KG_PER_MIN)
 end
+
+"""T
+he sine of the slope in radians;
+sin(arctan(x)) = x / √(1 + x²)
+"""
+sin_slope(slope) = slope / sqrt(1 + slope^2)
 
 """
     overland_flow_erosion_answers(
@@ -115,17 +131,17 @@ end
 Overland flow erosion model based on ANSWERS.
 
 # Arguments
-- `overland_flow` (overland flow [m3 s-1])
+- `overland_flow` (overland flow [m³ s⁻¹])
 - `waterlevel` (water level [m])
-- `usle_k` (USLE soil erodibility [t ha-1 mm-1])
+- `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha-1 h-1 MJ-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
-- `answers_overland_flow_factor` (ANSWERS overland flow factor [-])
+- `answers_overland_flow_factor` (ANSWERS overland flow factor [-], treated as unitless but could have units)
 - `slope` (slope [-])
-- `area` (area [m2])
-- `dt` (timestep [seconds])
+- `area` (area [m²])
+- `dt` (timestep [s])
 
 # Output
-- `overland_flow_erosion` (soil loss [t Δt⁻¹])
+- `overland_flow_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
 """
 function overland_flow_erosion_answers(
     overland_flow,
@@ -134,19 +150,15 @@ function overland_flow_erosion_answers(
     answers_overland_flow_factor,
     slope,
     area,
-    dt,
 )
-    # Overland flow rate [m2/min]
-    qr_land = overland_flow * 60 / (area .^ 0.5)
-    # Sine of the slope
-    sinslope = sin(atan(slope))
+    # Overland flow rate [m² min⁻¹]
+    qr_land = from_SI(overland_flow, M3_PER_MIN) / sqrt(area)
+    sinslope = sin_slope(slope)
 
-    # Overland flow erosion [kg/min]
+    # Overland flow erosion [kg min⁻¹]
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant
     erosion = answers_overland_flow_factor * usle_c * usle_k * area * sinslope * qr_land
-    # [ton/timestep]
-    erosion = erosion * (dt / 60) * 1e-3
-    return erosion
+    return to_SI(erosion, KG_PER_MIN)
 end
 
 """
@@ -163,8 +175,8 @@ end
 Calculate total soil erosion and particle differentiation.
 
 # Arguments
-- `rainfall_erosion` (soil loss from rainfall erosion [t Δt⁻¹])
-- `overland_flow_erosion` (soil loss from overland flow erosion [t Δt⁻¹])
+- `rainfall_erosion` (soil loss from rainfall erosion [t dt⁻¹ => kg s⁻¹])
+- `overland_flow_erosion` (soil loss from overland flow erosion [t dt⁻¹ => kg s⁻¹])
 - `clay_fraction` (clay fraction [-])
 - `silt_fraction` (silt fraction [-])
 - `sand_fraction` (sand fraction [-])
@@ -172,12 +184,12 @@ Calculate total soil erosion and particle differentiation.
 - `lagg_fraction` (large aggregates fraction [-])
 
 # Output
-- `soil_erosion` (total soil loss [t Δt⁻¹])
-- `clay_erosion` (clay loss [t Δt⁻¹])
-- `silt_erosion` (silt loss [t Δt⁻¹])
-- `sand_erosion` (sand loss [t Δt⁻¹])
-- `sagg_erosion` (small aggregates loss [t Δt⁻¹])
-- `lagg_erosion` (large aggregates loss [t Δt⁻¹])
+- `soil_erosion` (total soil loss [t dt⁻¹ => kg s⁻¹])
+- `clay_erosion` (clay loss [t dt⁻¹ => kg s⁻¹])
+- `silt_erosion` (silt loss [t dt⁻¹ => kg s⁻¹])
+- `sand_erosion` (sand loss [t dt⁻¹ => kg s⁻¹])
+- `sagg_erosion` (small aggregates loss [t dt⁻¹ => kg s⁻¹])
+- `lagg_erosion` (large aggregates loss [t dt⁻¹ => kg s⁻¹])
 """
 function total_soil_erosion(
     rainfall_erosion,
@@ -189,8 +201,10 @@ function total_soil_erosion(
     lagg_fraction,
 )
     # Total soil erosion
+    # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
     soil_erosion = rainfall_erosion + overland_flow_erosion
     # Particle differentiation
+    # [kg s⁻¹] = # [kg s⁻¹] * [-]
     clay_erosion = soil_erosion * clay_fraction
     silt_erosion = soil_erosion * silt_fraction
     sand_erosion = soil_erosion * sand_fraction
@@ -226,22 +240,22 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 - `dt` (timestep [seconds])
 
 # Output
-- `bed` (potential river erosion [t Δt⁻¹])
-- `bank` (potential bank erosion [t Δt⁻¹])
+- `bed` (potential river erosion [tdt⁻¹ => kg s⁻¹])
+- `bank` (potential bank erosion [tdt⁻¹ => kg s⁻¹])
 """
 function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
     if waterlevel > 0.0
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
-        E_ = (2.65 - 1) * 9.81
-        E = (E_ * (d50 * 1e-3)^3 / 1e-12)^0.33
+        E_ = (2.65 - 1) * g_gravity
+        E = d50 * cbrt(E_) * 1e-4
         TCrbed =
             E_ *
-            d50 *
+            (1e3 * d50) *
             (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E)))
         TCrbank = TCrbed
         # kd from Hanson & Simon 2001
-        kdbank = 0.2 * TCrbank^(-0.5) * 1e-6
-        kdbed = 0.2 * TCrbed^(-0.5) * 1e-6
+        kdbank = 0.2 * inv(sqrt(TCrbank)) * 1e-6
+        kdbed = 0.2 * inv(sqrt(TCrbed)) * 1e-6
 
         # Hydraulic radius of the river [m] (rectangular channel)
         hydrad = waterlevel * width / (width + 2 * waterlevel)
@@ -250,9 +264,9 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
         SFbank = exp(-3.23 * log10(width / waterlevel + 3) + 6.146)
         # Effective shear stress on river bed and banks [N/m2]
         TEffbank =
-            1000 * 9.81 * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
+            g_gravity * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
         TEffbed =
-            1000 * 9.81 * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
+            g_gravity * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
 
         # Potential erosion rates of the bed and bank [t/cell/timestep]
         #(assuming only one bank is eroding)
@@ -271,7 +285,7 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
         bank = 0.0
     end
 
-    return bed, bank
+    return to_SI(bed, TON_PER_DT; dt_val = dt), to_SI(bank, TON_PER_DT; dt_val = dt)
 end
 
 """
@@ -283,19 +297,24 @@ end
 River erosion of the previously deposited sediment.
 
 # Arguments
-- `excess_sediment` (excess sediment [t Δt⁻¹])
-- `store` (sediment store [t])
+- `excess_sediment` (excess sediment [tdt⁻¹ => kg s⁻¹])
+- `store` (sediment store [t => kg])
+- `dt` (timestep [s])
 
 # Output
-- `erosion` (river erosion [t Δt⁻¹])
-- `excess_sediment` (updated excess sediment [t Δt⁻¹])
-- `store` (updated sediment store [t])
+- `erosion` (river erosion [t dt⁻¹ => kg s⁻¹])
+- `excess_sediment` (updated excess sediment [tdt⁻¹ => kg s⁻¹])
+- `store` (updated sediment store [t => kg])
 """
-function river_erosion_store(excess_sediment, store)
+function river_erosion_store(excess_sediment, store, dt)
     # River erosion of the previously deposited sediment
-    erosion = min(store, excess_sediment)
+
+    # [kg s⁻¹] = min([kg] / [s], [kg s⁻¹])
+    erosion = min(store / dt, excess_sediment)
     # Update the excess sediment and the sediment store
+    # [kg s⁻¹] -= [kg s⁻¹]
     excess_sediment -= erosion
-    store -= erosion
+    # [kg] -= [kg s⁻¹] * [s]
+    store -= erosion * dt
     return erosion, excess_sediment, store
 end

@@ -2,6 +2,7 @@
     import ZMQ, JSON3, StructTypes, Wflow
     using Statistics: mean
     using Logging: with_logger, NullLogger
+    using Wflow: to_SI, MM
 
     # start Wflow ZMQ server (@async)
     @async begin
@@ -97,9 +98,9 @@
             name = "soil_water_saturated_zone_top__depth",
             dest = fill(0.0, zi_size),
         )
-        @test mean(request(msg)["value"]) ≈ 277.88881025600784
+        @test mean(request(msg)["value"]) ≈ to_SI(277.88881025600784, MM)
         msg = (fn = "get_value_ptr", name = "soil_water_root_zone__depth")
-        @test mean(request(msg)["value_ptr"]) ≈ 28.89577387100501
+        @test mean(request(msg)["value_ptr"]) ≈ to_SI(28.89577387100501, MM)
         msg = (
             fn = "get_value_at_indices",
             name = "river_water__instantaneous_volume_flow_rate",
