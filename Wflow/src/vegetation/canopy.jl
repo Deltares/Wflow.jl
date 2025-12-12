@@ -2,27 +2,17 @@ abstract type AbstractInterceptionModel end
 
 "Struct for storing interception model variables"
 @with_kw struct InterceptionVariables
+    n::Int
     # Canopy potential evaporation [mm dt⁻¹ => m s⁻¹]
-    canopy_potevap::Vector{Float64}
+    canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Interception loss by evaporation [mm dt⁻¹ => m s⁻¹]
-    interception_rate::Vector{Float64}
+    interception_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Canopy storage [mm => m]
-    canopy_storage::Vector{Float64}
+    canopy_storage::Vector{Float64} = zeros(n)
     # Stemflow [mm dt⁻¹ => m s⁻¹]
-    stemflow::Vector{Float64}
+    stemflow::Vector{Float64} = fill(MISSING_VALUE, n)
     # Throughfall [mm dt⁻¹ => m s⁻¹]
-    throughfall::Vector{Float64}
-end
-
-"Initialize interception model variables"
-function InterceptionVariables(n::Int)
-    return InterceptionVariables(;
-        canopy_potevap = fill(MISSING_VALUE, n),
-        interception_rate = fill(MISSING_VALUE, n),
-        canopy_storage = zeros(n),
-        stemflow = fill(MISSING_VALUE, n),
-        throughfall = fill(MISSING_VALUE, n),
-    )
+    throughfall::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing Gash interception model parameters"
@@ -34,8 +24,9 @@ end
 
 "Gash interception model"
 @with_kw struct GashInterceptionModel <: AbstractInterceptionModel
+    n::Int
     parameters::GashParameters
-    variables::InterceptionVariables
+    variables::InterceptionVariables = InterceptionVariables(; n)
 end
 
 "Initialize Gash interception model"
@@ -55,9 +46,8 @@ function GashInterceptionModel(
         type = Float64,
     )
     n = length(indices)
-    params = GashParameters(; e_r, vegetation_parameter_set)
-    vars = InterceptionVariables(n)
-    model = GashInterceptionModel(; parameters = params, variables = vars)
+    parameters = GashParameters(; e_r, vegetation_parameter_set)
+    model = GashInterceptionModel(; n, parameters)
     return model
 end
 

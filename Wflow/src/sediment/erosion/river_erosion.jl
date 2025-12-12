@@ -1,3 +1,5 @@
+abstract type AbstractRiverErosionModel end
+
 "Struct for storing river bed and bank erosion model variables"
 @with_kw struct RiverErosionModelVariables
     n::Int
@@ -21,7 +23,7 @@ end
 end
 
 "Julian and Torres river erosion model"
-@with_kw struct RiverErosionJulianTorresModel
+@with_kw struct RiverErosionJulianTorresModel <: AbstractRiverErosionModel
     n::Int
     boundary_conditions::RiverErosionBC = RiverErosionBC(; n)
     parameters::RiverErosionParameters

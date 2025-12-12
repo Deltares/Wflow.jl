@@ -234,9 +234,10 @@ end
 
     @testset "drainage" begin
         dt = 1.0
+        n = 2
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
-        variables = Wflow.DrainageVariables(; flux = [0.0, 0.0], flux_av = [0.0, 0.0])
+        variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
         drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(drainage, conf_aqf, dt)
@@ -370,6 +371,7 @@ end
     xc = collect(range(0.0; stop = aquifer_length - cellsize, step = cellsize))
 
     variables = Wflow.AquiferVariables(;
+        n = ncell,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
@@ -447,6 +449,7 @@ end
     xc = collect(range(0.0; stop = aquifer_length - cellsize, step = cellsize))
 
     variables = Wflow.AquiferVariables(;
+        n = ncell,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
@@ -535,6 +538,7 @@ end
         storativity = fill(storativity, ncell),
     )
     variables = Wflow.AquiferVariables(;
+        n = ncell,
         head = fill(startinghead, ncell),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),

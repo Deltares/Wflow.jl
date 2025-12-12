@@ -1,3 +1,5 @@
+abstract type AbstractSoilErosionModel end
+
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
     n::Int
@@ -107,7 +109,7 @@ function SoilErosionParameters(
 end
 
 "Total soil erosion with differentiation model"
-@with_kw struct SoilErosionModel
+@with_kw struct SoilErosionModel <: AbstractSoilErosionModel
     n::Int
     boundary_conditions::SoilErosionBC = SoilErosionBC(; n)
     parameters::SoilErosionParameters

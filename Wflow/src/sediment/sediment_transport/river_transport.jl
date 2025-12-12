@@ -1,3 +1,6 @@
+abstract type AbstractSedimentRiverTransportModel end
+abstract type AbstractSedimentConcentrationsRiverModel end
+
 "Struct to store river sediment transport model variables"
 @with_kw struct SedimentRiverTransportVariables
     n::Int
@@ -239,7 +242,7 @@ function SedimentRiverTransportParameters(
 end
 
 "Struct to store river sediment transport model"
-@with_kw struct SedimentRiverTransportModel
+@with_kw struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
     n::Int
     boundary_conditions::SedimentRiverTransportBC = SedimentRiverTransportBC(; n)
     parameters::SedimentRiverTransportParameters
@@ -791,7 +794,7 @@ function SedimentConcentrationsRiverParameters(
 end
 
 "Struct to store river sediment concentrations model"
-@with_kw struct SedimentConcentrationsRiverModel
+@with_kw struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
     n::Int
     boundary_conditions::SedimentConcentrationsRiverBC = SedimentConcentrationsRiverBC(; n)
     parameters::SedimentConcentrationsRiverParameters

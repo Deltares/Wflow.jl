@@ -1,4 +1,3 @@
-
 @testitem "BMI functions" begin
     import BasicModelInterface as BMI
     using Statistics: mean
@@ -57,7 +56,7 @@
         @test BMI.get_value_at_indices(
             model,
             "soil_layer_1_water__volume_fraction",
-            zeros(Float64, 3),
+            zeros(3),
             [1, 2, 3],
         ) ≈ getindex.(model.land.soil.variables.vwc, 1)[1:3]
         BMI.set_value_at_indices(
@@ -102,12 +101,10 @@
         @test BMI.get_grid_size(model, 2) == 5809
         @test BMI.get_grid_size(model, 3) == 50063
         @test BMI.get_grid_size(model, 4) == 50063
-        @test minimum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈ 5.426666666666667
-        @test maximum(BMI.get_grid_x(model, 5, zeros(Float64, 50063))) ≈ 7.843333333333344
-        @test BMI.get_grid_x(model, 0, zeros(Float64, 2)) ≈
-              [5.760000000000002, 5.918333333333336]
-        @test BMI.get_grid_y(model, 0, zeros(Float64, 2)) ≈
-              [48.92583333333333, 49.909166666666664]
+        @test minimum(BMI.get_grid_x(model, 5, zeros(50063))) ≈ 5.426666666666667
+        @test maximum(BMI.get_grid_x(model, 5, zeros(50063))) ≈ 7.843333333333344
+        @test BMI.get_grid_x(model, 0, zeros(2)) ≈ [5.760000000000002, 5.918333333333336]
+        @test BMI.get_grid_y(model, 0, zeros(2)) ≈ [48.92583333333333, 49.909166666666664]
         @test BMI.get_grid_node_count(model, 0) == 2
         @test BMI.get_grid_edge_count(model, 3) == 5808
         @test BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 5808))[1:6] ==

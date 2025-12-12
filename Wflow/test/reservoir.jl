@@ -156,6 +156,7 @@ end
             sh,
         ),
     )
+    n = 2
     res_bc = Wflow.ReservoirBC(;
         n = 2,
         precipitation = [

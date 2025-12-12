@@ -100,6 +100,7 @@ transmissivity).
 end
 
 @with_kw struct AquiferVariables
+    n::Int
     # hydraulic head [m]
     head::Vector{Float64}
     # conductance [m² d⁻¹ => m² s⁻¹]
@@ -107,13 +108,13 @@ end
     # total storage of water that can be released [m³]
     storage::Vector{Float64}
     # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
-    q_net::Vector{Float64} = zeros(length(storage))
+    q_net::Vector{Float64} = zeros(n)
     # cumulative groundwater (lateral) inflow for model time step dt [m³]
-    q_in_av::AverageVector = AverageVector(; n = length(storage))
+    q_in_av::AverageVector = AverageVector(; n)
     # average groundwater (lateral) outflow for model time step dt [m³ d⁻¹ => m³ s⁻¹]
-    q_out_av::AverageVector = AverageVector(; n = length(storage))
+    q_out_av::AverageVector = AverageVector(; n)
     # Exfiltration [m dt⁻¹ => m s⁻¹] (groundwater above surface level, saturated excess conditions)
-    exfiltwater::Vector{Float64} = zeros(length(storage))
+    exfiltwater::Vector{Float64} = zeros(n)
 end
 
 @with_kw struct ConfinedAquifer <: Aquifer
@@ -205,7 +206,8 @@ function UnconfinedAquifer(
     parameters = UnconfinedAquiferParameters(dataset, config, indices, top, bottom, area)
     # [m³] = (min([m], [m]) - [m]) * [m²] * [-]
     storage = @. (min(top, head) - bottom) * area * parameters.specific_yield
-    variables = AquiferVariables(; head, conductance, storage)
+    n = length(storage)
+    variables = AquiferVariables(; n, head, conductance, storage)
     aquifer = UnconfinedAquifer(parameters, variables)
     return aquifer
 end

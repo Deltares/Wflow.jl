@@ -98,8 +98,9 @@ end
 
 "Non-paddy (other crops than flooded rice) irrigation model"
 @with_kw struct NonPaddy <: AbstractIrrigationModel
+    n::Int
     parameters::NonPaddyParameters
-    variables::NonPaddyVariables
+    variables::NonPaddyVariables = NonPaddyVariables(; n)
 end
 
 "Initialize non-paddy irrigation model"
@@ -141,16 +142,14 @@ function NonPaddy(dataset::NCDataset, config::Config, indices::Vector{CartesianI
         type = Float64,
     )
 
-    params = NonPaddyParameters(;
+    parameters = NonPaddyParameters(;
         maximum_irrigation_rate = max_irri_rate,
         irrigation_efficiency = efficiency,
         irrigation_areas = areas,
         irrigation_trigger,
     )
     n = length(indices)
-    vars = NonPaddyVariables(; n)
-
-    nonpaddy = NonPaddy(; variables = vars, parameters = params)
+    nonpaddy = NonPaddy(; n, parameters)
 
     return nonpaddy
 end
@@ -272,8 +271,9 @@ end
 
 "Paddy (flooded rice) irrigation model"
 @with_kw struct Paddy <: AbstractIrrigationModel
+    n::Int
     parameters::PaddyParameters
-    variables::PaddyVariables
+    variables::PaddyVariables = PaddyVariables(; n)
 end
 
 "Initialize paddy irrigation model"
@@ -342,7 +342,7 @@ function Paddy(dataset::NCDataset, config::Config, indices::Vector{CartesianInde
         type = Float64,
     )
     n = length(indices)
-    params = PaddyParameters(;
+    parameters = PaddyParameters(;
         irrigation_efficiency = efficiency,
         maximum_irrigation_rate = max_irri_rate,
         irrigation_trigger,
@@ -351,8 +351,7 @@ function Paddy(dataset::NCDataset, config::Config, indices::Vector{CartesianInde
         h_opt,
         irrigation_areas = areas,
     )
-    vars = PaddyVariables(; n)
-    paddy = Paddy(; parameters = params, variables = vars)
+    paddy = Paddy(; n, parameters)
     return paddy
 end
 
@@ -562,8 +561,9 @@ end
 
 "Land allocation model"
 @with_kw struct AllocationLand <: AbstractAllocationModel
+    n::Int
     parameters::AllocationLandParameters
-    variables::AllocationLandVariables
+    variables::AllocationLandVariables = AllocationLandVariables(; n)
 end
 
 "Initialize water allocation for the land domain"
@@ -592,8 +592,7 @@ function AllocationLand(
 
     n = length(indices)
     parameters = AllocationLandParameters(; areas, frac_sw_used)
-    variables = AllocationLandVariables(; n)
-    return AllocationLand(; parameters, variables)
+    return AllocationLand(; n, parameters)
 end
 
 # wrapper methods

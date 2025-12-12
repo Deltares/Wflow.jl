@@ -96,15 +96,15 @@ end
 
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R}
+    n::Int
     # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     external_inflow::Vector{Float64}
     # Lateral inflow [m³ s⁻¹]
-    inwater::Vector{Float64} = zeros(length(external_inflow))
+    inwater::Vector{Float64} = zeros(n)
     # Actual abstraction from external negative inflow [m³ s⁻¹]
-    actual_external_abstraction_av::AverageVector =
-        AverageVector(; n = length(external_inflow))
+    actual_external_abstraction_av::AverageVector = AverageVector(; n)
     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    abstraction::Vector{Float64} = zeros(length(external_inflow))
+    abstraction::Vector{Float64} = zeros(n)
     # Reservoir model struct of arrays
     reservoir::R
 end
@@ -126,7 +126,8 @@ function RiverFlowBC(
         defaults = 0.0,
         type = Float64,
     )
-    bc = RiverFlowBC(; external_inflow, reservoir)
+    n = length(indices)
+    bc = RiverFlowBC(; n, external_inflow, reservoir)
     return bc
 end
 
@@ -197,10 +198,11 @@ end
 
 "Overland flow model using the kinematic wave method and the Manning flow{ equation"
 @with_kw struct KinWaveOverlandFlow <: AbstractOverlandFlowModel
+    n::Int
     timestepping::TimeStepping
-    boundary_conditions::LandFlowBC
+    boundary_conditions::LandFlowBC = LandFlowBC(; n)
     parameters::ManningFlowParameters
-    variables::OverLandFlowVariables
+    variables::OverLandFlowVariables = OverLandFlowVariables(; n)
 end
 
 "Initialize Overland flow model `KinWaveOverlandFlow`"
@@ -219,13 +221,8 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
 
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
-
-    variables = OverLandFlowVariables(; n)
     parameters = ManningFlowParameters(; mannings_n, slope)
-    boundary_conditions = LandFlowBC(; n)
-
-    overland_flow =
-        KinWaveOverlandFlow(; timestepping, boundary_conditions, variables, parameters)
+    overland_flow = KinWaveOverlandFlow(; n, timestepping, parameters)
 
     return overland_flow
 end

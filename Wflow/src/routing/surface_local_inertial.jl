@@ -1,20 +1,35 @@
 "Struct for storing local inertial river flow model parameters"
 @with_kw struct LocalInertialRiverFlowParameters
-    n::Int                                  # number of cells [-]
-    ne::Int                                 # number of edges [-]
-    active_n::Vector{Int}                   # active nodes [-]
-    active_e::Vector{Int}                   # active edges [-]
-    g::Float64                              # acceleration due to gravity [m s⁻²]
-    froude_limit::Bool                      # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
-    h_thresh::Float64                       # depth threshold for calculating flow [m]
-    zb::Vector{Float64}                     # river bed elevation [m]
-    zb_max::Vector{Float64}                 # maximum channel bed elevation [m]
-    bankfull_storage::Vector{Float64}       # bankfull storage [m³]
-    bankfull_depth::Vector{Float64}         # bankfull depth [m]
-    mannings_n_sq::Vector{Float64}          # Manning's roughness squared at edge [(s m-1/3)²]
-    mannings_n::Vector{Float64}             # Manning's roughness [s m-1/3] at node
-    flow_length_at_edge::Vector{Float64}    # flow (river) length at edge [m]
-    flow_width_at_edge::Vector{Float64}     # flow (river) width at edge [m]
+    # number of cells [-]
+    n::Int
+    # number of edges [-]
+    ne::Int
+    # active nodes [-]
+    active_n::Vector{Int}
+    # active edges [-]
+    active_e::Vector{Int}
+    # acceleration due to gravity [m s⁻²]
+    g::Float64
+    # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
+    froude_limit::Bool
+    # depth threshold for calculating flow [m]
+    h_thresh::Float64
+    # river bed elevation [m]
+    zb::Vector{Float64}
+    # maximum channel bed elevation [m]
+    zb_max::Vector{Float64}
+    # bankfull storage [m³]
+    bankfull_storage::Vector{Float64}
+    # bankfull depth [m]
+    bankfull_depth::Vector{Float64}
+    # Manning's roughness squared at edge [(s m-1/3)²]
+    mannings_n_sq::Vector{Float64}
+    # Manning's roughness [s m-1/3] at node
+    mannings_n::Vector{Float64}
+    # flow (river) length at edge [m]
+    flow_length_at_edge::Vector{Float64}
+    # flow (river) width at edge [m]
+    flow_width_at_edge::Vector{Float64}
 end
 
 "Initialize local inertial river flow model parameters"
@@ -1116,10 +1131,10 @@ function FloodPlainProfile(
     pushfirst!(flood_depths, 0.0)
     n_depths = length(flood_depths)
 
-    p = zeros(Float64, n_depths, n)
-    a = zeros(Float64, n_depths, n)
-    segment_storage = zeros(Float64, n_depths, n)
-    width = zeros(Float64, n_depths, n)
+    p = zeros(n_depths, n)
+    a = zeros(n_depths, n)
+    segment_storage = zeros(n_depths, n)
+    width = zeros(n_depths, n)
     width[1, :] = flow_width[1:n]
 
     # determine flow area (a), width and wetted perimeter (p) FloodPlain

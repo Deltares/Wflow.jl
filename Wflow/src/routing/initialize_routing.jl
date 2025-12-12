@@ -93,7 +93,7 @@ function initialize_subsurface_flow(
 
     # [m] = [m] - [m]
     bottom = elevation .- soil.parameters.soilthickness
-    conductance = zeros(Float64, connectivity.nconnection)
+    conductance = zeros(connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
         config,

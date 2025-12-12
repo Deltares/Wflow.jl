@@ -8,7 +8,7 @@ abstract type AbstractSoilModel end
     # Unsaturated store capacity [mm => m]
     ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm => m]
-    ustorelayerdepth::Vector{SVector{N, Float64}}
+    ustorelayerdepth::Vector{SVector{N, Float64}} = zeros(n)
     # Thickness of unsaturated zone, per layer [mm => m]
     ustorelayerthickness::Vector{SVector{N, Float64}}
     # Saturated store [mm => m]
@@ -159,7 +159,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         theta_r,
     ) = parameters
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
-    ustoredepth = zeros(Float64, n)
+    ustoredepth = zeros(n)
     zi = @. max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
@@ -630,7 +630,8 @@ end
 
 "SBM soil model"
 @with_kw struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
-    boundary_conditions::SbmSoilBC
+    n::Int
+    boundary_conditions::SbmSoilBC = SbmSoilBC(; n)
     parameters::SbmSoilParameters{N, M, Kv}
     variables::SbmSoilVariables{N}
 end
@@ -644,10 +645,9 @@ function SbmSoilModel(
     dt::Second,
 )
     n = length(indices)
-    params = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
-    vars = SbmSoilVariables(n, params)
-    bc = SbmSoilBC(; n)
-    model = SbmSoilModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
+    variables = SbmSoilVariables(n, parameters)
+    model = SbmSoilModel(; n, parameters, variables)
     return model
 end
 

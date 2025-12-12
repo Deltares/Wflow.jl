@@ -664,9 +664,10 @@ end
 
 "Kodatie river transport capacity model"
 @with_kw struct TransportCapacityKodatieModel <: AbstractTransportCapacityModel
-    boundary_conditions::TransportCapacityBC
+    n::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
     parameters::TransportCapacityKodatieParameters
-    variables::TransportCapacityModelVariables
 end
 
 "Initialize Kodatie river transport capacity model"
@@ -676,14 +677,8 @@ function TransportCapacityKodatieModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = TransportCapacityModelVariables(n)
-    params = TransportCapacityKodatieParameters(dataset, config, indices)
-    bc = TransportCapacityBC(; n)
-    model = TransportCapacityKodatieModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = TransportCapacityKodatieParameters(dataset, config, indices)
+    model = TransportCapacityKodatieModel(; n, parameters)
     return model
 end
 

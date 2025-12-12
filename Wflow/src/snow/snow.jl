@@ -46,9 +46,10 @@ end
 
 "Snow HBV model"
 @with_kw struct SnowHbvModel <: AbstractSnowModel
-    boundary_conditions::SnowBC
+    n::Int
+    boundary_conditions::SnowBC = SnowBC(; n)
     parameters::SnowHbvParameters
-    variables::SnowVariables
+    variables::SnowVariables = SnowVariables(; n)
 end
 
 struct NoSnowModel <: AbstractSnowModel
@@ -117,10 +118,8 @@ function SnowHbvModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    params = SnowHbvParameters(dataset, config, indices)
-    vars = SnowVariables(; n)
-    bc = SnowBC(; n)
-    model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    parameters = SnowHbvParameters(dataset, config, indices)
+    model = SnowHbvModel(; n, parameters)
     return model
 end
 

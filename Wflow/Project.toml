@@ -1,7 +1,7 @@
 name = "Wflow"
 uuid = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 authors = ["Deltares and contributors"]
-version = "1.0.0-dev"
+version = "1.1.0-dev"
 
 [deps]
 Accessors = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
