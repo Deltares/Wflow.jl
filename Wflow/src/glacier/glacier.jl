@@ -2,10 +2,11 @@ abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
 @with_kw struct GlacierVariables
+    n::Int
     # Water within the glacier [mm]
     glacier_store::Vector{Float64}
     # Glacier melt [mm Δt⁻¹]
-    glacier_melt::Vector{Float64}
+    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Initialize glacier model variables"
@@ -24,10 +25,7 @@ function GlacierVariables(
         fill = 0.0,
     )
     n = length(glacier_store)
-    vars = GlacierVariables(;
-        glacier_store = glacier_store,
-        glacier_melt = fill(MISSING_VALUE, n),
-    )
+    vars = GlacierVariables(; n, glacier_store)
     return vars
 end
 
@@ -119,12 +117,11 @@ function GlacierHbvModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
     dt::Second,
-    bc::SnowStateBC,
+    boundary_conditions::SnowStateBC,
 )
-    params = GlacierHbvParameters(dataset, config, indices, dt)
-    vars = GlacierVariables(dataset, config, indices)
-    model =
-        GlacierHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    parameters = GlacierHbvParameters(dataset, config, indices, dt)
+    variables = GlacierVariables(dataset, config, indices)
+    model = GlacierHbvModel(; boundary_conditions, parameters, variables)
     return model
 end
 
