@@ -141,12 +141,7 @@ function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
     # Concentrations
     concentrations = SedimentConcentrationsRiverModel(dataset, config, indices)
 
-    river_sediment = RiverSediment{
-        typeof(transport_capacity),
-        typeof(potential_erosion),
-        typeof(sediment_flux),
-        typeof(concentrations),
-    }(;
+    river_sediment = RiverSediment(;
         hydrological_forcing,
         transport_capacity,
         potential_erosion,

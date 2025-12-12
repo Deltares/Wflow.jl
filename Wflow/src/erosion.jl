@@ -28,11 +28,7 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     # Total soil erosion and particle differentiation
     soil_erosion = SoilErosionModel(dataset, config, indices)
 
-    soil_loss = SoilLoss{
-        typeof(rainfall_erosion),
-        typeof(overland_flow_erosion),
-        typeof(soil_erosion),
-    }(;
+    soil_loss = SoilLoss(;
         atmospheric_forcing,
         hydrological_forcing,
         rainfall_erosion,
