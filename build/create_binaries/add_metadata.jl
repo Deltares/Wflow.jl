@@ -45,9 +45,13 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
         version = TOML.parsefile(normpath(git_repo, "Wflow/Project.toml"))["version"]
         repo = GitRepo(git_repo)
         branch = LibGit2.head(repo)
-        commit = LibGit2.peel(LibGit2.GitCommit, branch)
         short_name = LibGit2.shortname(branch)
-        short_commit = string(LibGit2.GitShortHash(LibGit2.GitHash(commit), 10))
+        try
+            commit = LibGit2.peel(LibGit2.GitCommit, branch)
+            short_commit = string(LibGit2.GitShortHash(LibGit2.GitHash(commit), 10))
+        catch
+            short_commit = "unknown"
+        end
 
         # get the release from the current tag, like `git describe --tags`
         # if it is a commit after a tag, it will be <tag>-g<short-commit>
