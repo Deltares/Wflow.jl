@@ -1,6 +1,8 @@
 @testitem "Update reservoir simple" begin
     # Simple reservoir (outflowfunc = 4)
+    n = 1
     res_bc = Wflow.ReservoirBC(;
+        n,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],
@@ -59,7 +61,9 @@ end
 
 @testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
     # Reservoir Modified Puls approach (outflowfunc = 3)
+    n = 1
     res_bc = Wflow.ReservoirBC(;
+        n,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],
@@ -148,7 +152,9 @@ end
             sh,
         ),
     )
+    n = 2
     res_bc = Wflow.ReservoirBC(;
+        n,
         inflow = [0.0, 0.0],
         external_inflow = [0.0, 0.0],
         actual_external_abstraction_av = [0.0, 0.0],
@@ -188,7 +194,9 @@ end
 @testitem "Overflowing reservoir with SH and HQ" begin
     using Accessors: @reset
     datadir = joinpath(@__DIR__, "data")
+    n = 1
     res_bc = Wflow.ReservoirBC(;
+        n,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],

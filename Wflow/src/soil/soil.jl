@@ -2,12 +2,13 @@ abstract type AbstractSoilModel end
 
 "Struct for storing SBM soil model variables"
 @with_kw struct SbmSoilVariables{N}
+    n::Int
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
-    h3::Vector{Float64}
+    h3::Vector{Float64} = fill(MISSING_VALUE, n)
     # Unsaturated store capacity [mm]
     ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N, Float64}}
+    ustorelayerdepth::Vector{SVector{N, Float64}} = zeros(n)
     # Thickness of unsaturated zone, per layer [mm]
     ustorelayerthickness::Vector{SVector{N, Float64}}
     # Saturated store [mm]
@@ -17,67 +18,67 @@ abstract type AbstractSoilModel end
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int}
     # Transpiration [mm Δt⁻¹]
-    transpiration::Vector{Float64}
+    transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
-    ae_ustore::Vector{Float64}
+    ae_ustore::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil evaporation from unsaturated and saturated store [mm Δt⁻¹]
-    soilevap::Vector{Float64}
+    soilevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Soil evaporation from saturated store [mm Δt⁻¹]
-    soilevapsat::Vector{Float64}
+    soilevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual capillary rise [mm Δt⁻¹]
-    actcapflux::Vector{Float64}
+    actcapflux::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual transpiration from saturated store [mm Δt⁻¹]
-    actevapsat::Vector{Float64}
+    actevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total actual evapotranspiration [mm Δt⁻¹]
-    actevap::Vector{Float64}
+    actevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
-    actinfilt::Vector{Float64}
+    actinfilt::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration non-compacted fraction [mm Δt⁻¹]
-    actinfiltsoil::Vector{Float64}
+    actinfiltsoil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration compacted fraction [mm Δt⁻¹]
-    actinfiltpath::Vector{Float64}
+    actinfiltpath::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration (compacted and the non-compacted areas) [mm Δt⁻¹]
-    infiltsoilpath::Vector{Float64}
+    infiltsoilpath::Vector{Float64} = fill(MISSING_VALUE, n)
     # Infiltration excess water [mm Δt⁻¹]
-    infiltexcess::Vector{Float64}
+    infiltexcess::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
-    excesswater::Vector{Float64}
+    excesswater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
-    exfiltsatwater::Vector{Float64}
+    exfiltsatwater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Excess water for non-compacted fraction [mm Δt⁻¹]
-    excesswatersoil::Vector{Float64}
+    excesswatersoil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Excess water for compacted fraction [mm Δt⁻¹]
-    excesswaterpath::Vector{Float64}
+    excesswaterpath::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
-    runoff::Vector{Float64}
+    runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
-    net_runoff::Vector{Float64}
+    net_runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
     vwc::Vector{SVector{N, Float64}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
     vwc_perc::Vector{SVector{N, Float64}}
     # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
-    rootstore::Vector{Float64}
+    rootstore::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
-    vwc_root::Vector{Float64}
+    vwc_root::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
-    vwc_percroot::Vector{Float64}
+    vwc_percroot::Vector{Float64} = fill(MISSING_VALUE, n)
     # Amount of available water in the unsaturated zone [mm]
-    ustoredepth::Vector{Float64}
+    ustoredepth::Vector{Float64} = zeros(n)
     # Downward flux from unsaturated to saturated zone [mm Δt⁻¹]
-    transfer::Vector{Float64}
+    transfer::Vector{Float64} = fill(MISSING_VALUE, n)
     # Net recharge to saturated store [mm Δt⁻¹]
-    recharge::Vector{Float64}
+    recharge::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual leakage from saturated store [mm Δt⁻¹]
-    actleakage::Vector{Float64}
+    actleakage::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total water storage (excluding floodplain volume and reservoirs) [mm]
-    total_storage::Vector{Float64}
+    total_storage::Vector{Float64} = zeros(n)
     # Total soil water storage [mm]
     total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
-    tsoil::Vector{Float64}
+    tsoil::Vector{Float64} = fill(10.0, n)
     # Soil infiltration reduction factor (when soil is frozen) [-]
-    f_infiltration_reduction::Vector{Float64}
+    f_infiltration_reduction::Vector{Float64} = ones(n)
 end
 
 "Struct for storing SBM soil model parameters"
@@ -158,7 +159,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         theta_r,
     ) = parameters
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
-    ustoredepth = zeros(Float64, n)
+    ustoredepth = zeros(n)
     zi = @. max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
@@ -168,43 +169,15 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
     total_soilwater_storage = satwaterdepth .+ ustoredepth
 
     vars = SbmSoilVariables(;
+        n,
         ustorelayerdepth = zero(act_thickl),
         ustorecapacity = soilwatercapacity .- satwaterdepth,
         ustorelayerthickness,
-        ustoredepth = zeros(n),
         satwaterdepth,
         zi,
         n_unsatlayers,
-        transpiration = fill(MISSING_VALUE, n),
-        h3 = fill(MISSING_VALUE, n),
-        ae_ustore = fill(MISSING_VALUE, n),
-        soilevap = fill(MISSING_VALUE, n),
-        soilevapsat = fill(MISSING_VALUE, n),
-        actcapflux = fill(MISSING_VALUE, n),
-        actevapsat = fill(MISSING_VALUE, n),
-        actevap = fill(MISSING_VALUE, n),
-        f_infiltration_reduction = fill(1.0, n),
-        actinfilt = fill(MISSING_VALUE, n),
-        actinfiltsoil = fill(MISSING_VALUE, n),
-        actinfiltpath = fill(MISSING_VALUE, n),
-        infiltsoilpath = fill(MISSING_VALUE, n),
-        infiltexcess = fill(MISSING_VALUE, n),
-        excesswater = fill(MISSING_VALUE, n),
-        exfiltsatwater = fill(MISSING_VALUE, n),
-        excesswatersoil = fill(MISSING_VALUE, n),
-        excesswaterpath = fill(MISSING_VALUE, n),
-        runoff = fill(MISSING_VALUE, n),
-        net_runoff = fill(MISSING_VALUE, n),
         vwc = svectorscopy(vwc, Val{maxlayers}()),
         vwc_perc = svectorscopy(vwc_perc, Val{maxlayers}()),
-        rootstore = fill(MISSING_VALUE, n),
-        vwc_root = fill(MISSING_VALUE, n),
-        vwc_percroot = fill(MISSING_VALUE, n),
-        transfer = fill(MISSING_VALUE, n),
-        recharge = fill(MISSING_VALUE, n),
-        actleakage = fill(MISSING_VALUE, n),
-        tsoil = fill(10.0, n),
-        total_storage = zeros(Float64, n),
         total_soilwater_storage,
     )
     return vars
@@ -586,7 +559,7 @@ function SbmSoilParameters(
         n = length(indices)
         (; rootingdepth) = vegetation_parameter_set
         # default root fraction
-        rootfraction = zeros(Float64, maxlayers, n)
+        rootfraction = zeros(maxlayers, n)
         for i in 1:n
             if rootingdepth[i] > 0.0
                 for k in 1:maxlayers
@@ -654,7 +627,8 @@ end
 
 "SBM soil model"
 @with_kw struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
-    boundary_conditions::SbmSoilBC
+    n::Int
+    boundary_conditions::SbmSoilBC = SbmSoilBC(; n)
     parameters::SbmSoilParameters{N, M, Kv}
     variables::SbmSoilVariables{N}
 end
@@ -668,10 +642,9 @@ function SbmSoilModel(
     dt::Second,
 )
     n = length(indices)
-    params = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
-    vars = SbmSoilVariables(n, params)
-    bc = SbmSoilBC(; n)
-    model = SbmSoilModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
+    variables = SbmSoilVariables(n, parameters)
+    model = SbmSoilModel(; n, parameters, variables)
     return model
 end
 

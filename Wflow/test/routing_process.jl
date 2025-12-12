@@ -275,6 +275,8 @@ end
     )
 
     variables = Wflow.LocalInertialRiverFlowVariables(;
+        n,
+        n_edges = _ne,
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
@@ -290,13 +292,7 @@ end
         error = zeros(n),
     )
 
-    boundary_conditions = Wflow.RiverFlowBC(;
-        external_inflow = zeros(n),
-        actual_external_abstraction_av = zeros(n),
-        abstraction = zeros(n),
-        inwater = zeros(n),
-        reservoir = nothing,
-    )
+    boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
 
     sw_river = Wflow.LocalInertialRiverFlow(;
         timestepping,

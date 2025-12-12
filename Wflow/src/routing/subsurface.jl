@@ -1,12 +1,13 @@
 "Struct for storing lateral subsurface flow model variables"
 @with_kw struct LateralSsfVariables
-    zi::Vector{Float64}             # Pseudo-water table depth [m] (top of the saturated zone)
-    exfiltwater::Vector{Float64}    # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    ssf::Vector{Float64}            # Subsurface flow [m³ d⁻¹]
-    ssfin::Vector{Float64}          # Inflow from upstream cells [m³ d⁻¹]
-    ssfmax::Vector{Float64}         # Maximum subsurface flow [m² d⁻¹]
-    to_river::Vector{Float64}       # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    storage::Vector{Float64}        # Subsurface storage that can be released [m³]
+    n::Int
+    zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
+    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹]
+    ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹]
+    ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)       # Maximum subsurface flow [m² d⁻¹]
+    to_river::Vector{Float64} = zeros(n)                   # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    storage::Vector{Float64}                               # Subsurface storage that can be released [m³]
 end
 
 "Struct for storing lateral subsurface flow model parameters"
@@ -108,15 +109,7 @@ function LateralSsfVariables(
 )
     n = length(zi)
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * area
-    variables = LateralSsfVariables(;
-        zi,
-        exfiltwater = fill(MISSING_VALUE, n),
-        ssf = fill(MISSING_VALUE, n),
-        ssfin = fill(MISSING_VALUE, n),
-        ssfmax = fill(MISSING_VALUE, n),
-        to_river = zeros(n),
-        storage,
-    )
+    variables = LateralSsfVariables(; n, zi, storage)
     return variables
 end
 

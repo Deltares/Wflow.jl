@@ -207,12 +207,14 @@ end
 
     @testset "river" begin
         dt = 1.0
+        n = 2
         parameters = Wflow.GwfRiverParameters(;
             infiltration_conductance = [100.0, 100.0],
             exfiltration_conductance = [200.0, 200.0],
             bottom = [1.0, 1.0],
         )
         variables = Wflow.GwfRiverVariables(;
+            n,
             stage = [2.0, 2.0],
             storage = [20.0, 20.0],
             flux = [0.0, 0.0],
@@ -230,9 +232,10 @@ end
 
     @testset "drainage" begin
         dt = 1.0
+        n = 2
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
-        variables = Wflow.DrainageVariables(; flux = [0.0, 0.0], flux_av = [0.0, 0.0])
+        variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
         drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(drainage, conf_aqf, dt)
@@ -258,12 +261,14 @@ end
 
     @testset "recharge" begin
         dt = 1.0
+        n = 3
         variables = Wflow.RechargeVariables(;
+            n,
             rate = [1.0e-3, 1.0e-3, 1.0e-3],
             flux = [0.0, 0.0, 0.0],
             flux_av = [0.0, 0.0, 0.0],
         )
-        recharge = Wflow.Recharge(; variables, index = [1, 2, 3])
+        recharge = Wflow.Recharge(; n, variables, index = [1, 2, 3])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(recharge, conf_aqf, dt)
         @test all(conf_aqf.variables.q_net .== 1.0e-3 * 100.0)
@@ -331,6 +336,7 @@ end
     xc = collect(range(0.0; stop = aquifer_length - cellsize, step = cellsize))
 
     variables = Wflow.AquiferVariables(;
+        n = ncell,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
@@ -432,6 +438,7 @@ end
     xc = collect(range(0.0; stop = aquifer_length - cellsize, step = cellsize))
 
     variables = Wflow.AquiferVariables(;
+        n = ncell,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
@@ -543,6 +550,7 @@ end
         storativity = fill(storativity, ncell),
     )
     variables = Wflow.AquiferVariables(;
+        n = ncell,
         head = fill(startinghead, ncell),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),

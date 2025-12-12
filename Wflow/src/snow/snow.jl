@@ -2,52 +2,32 @@ abstract type AbstractSnowModel end
 
 "Struct for storing snow model variables"
 @with_kw struct SnowVariables
+    n::Int
     # Snow storage [mm]
-    snow_storage::Vector{Float64}
+    snow_storage::Vector{Float64} = zeros(n)
     # Liquid water content in the snow pack [mm]
-    snow_water::Vector{Float64}
+    snow_water::Vector{Float64} = zeros(n)
     # Snow water equivalent (SWE) [mm]
-    swe::Vector{Float64}
+    swe::Vector{Float64} = fill(MISSING_VALUE, n)
     # Snow melt [mm Δt⁻¹]
-    snow_melt::Vector{Float64}
+    snow_melt::Vector{Float64} = fill(MISSING_VALUE, n)
     # Runoff from snowpack [mm Δt⁻¹]
-    runoff::Vector{Float64}
+    runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Lateral snow (SWE) transport from upstreams cells [mm Δt⁻¹]
-    snow_in::Vector{Float64}
+    snow_in::Vector{Float64} = zeros(n)
     # Lateral snow (SWE) transport out of a cell [mm Δt⁻¹]
-    snow_out::Vector{Float64}
-end
-
-"Initialize snow model variables"
-function SnowVariables(n::Int)
-    return SnowVariables(;
-        snow_storage = fill(0.0, n),
-        snow_water = fill(0.0, n),
-        swe = fill(MISSING_VALUE, n),
-        runoff = fill(MISSING_VALUE, n),
-        snow_melt = fill(MISSING_VALUE, n),
-        snow_in = fill(0.0, n),
-        snow_out = fill(0.0, n),
-    )
+    snow_out::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing snow model boundary conditions"
 @with_kw struct SnowBC
+    n::Int
     # Effective precipitation [mm Δt⁻¹]
-    effective_precip::Vector{Float64}
+    effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
     # Snow precipitation [mm Δt⁻¹]
-    snow_precip::Vector{Float64}
+    snow_precip::Vector{Float64} = fill(MISSING_VALUE, n)
     # Liquid precipitation [mm Δt⁻¹]
-    liquid_precip::Vector{Float64}
-end
-
-"Initialize snow model boundary conditions"
-function SnowBC(n::Int)
-    return SnowBC(;
-        effective_precip = fill(MISSING_VALUE, n),
-        snow_precip = fill(MISSING_VALUE, n),
-        liquid_precip = fill(MISSING_VALUE, n),
-    )
+    liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing snow HBV model parameters"
@@ -66,9 +46,10 @@ end
 
 "Snow HBV model"
 @with_kw struct SnowHbvModel <: AbstractSnowModel
-    boundary_conditions::SnowBC
+    n::Int
+    boundary_conditions::SnowBC = SnowBC(; n)
     parameters::SnowHbvParameters
-    variables::SnowVariables
+    variables::SnowVariables = SnowVariables(; n)
 end
 
 struct NoSnowModel <: AbstractSnowModel
@@ -135,10 +116,8 @@ function SnowHbvModel(
     dt::Second,
 )
     n = length(indices)
-    params = SnowHbvParameters(dataset, config, indices, dt)
-    vars = SnowVariables(n)
-    bc = SnowBC(n)
-    model = SnowHbvModel(; boundary_conditions = bc, parameters = params, variables = vars)
+    parameters = SnowHbvParameters(dataset, config, indices, dt)
+    model = SnowHbvModel(; n, parameters)
     return model
 end
 

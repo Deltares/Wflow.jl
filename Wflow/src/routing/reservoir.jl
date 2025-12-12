@@ -256,13 +256,14 @@ end
 
 "Struct for storing reservoir model boundary conditions"
 @with_kw struct ReservoirBC
-    inflow_subsurface::Vector{Float64}    # inflow from subsurface flow into reservoir [m³ s⁻¹]
-    inflow_overland::Vector{Float64}      # inflow from overland flow into reservoir [m³ s⁻¹]
-    inflow::Vector{Float64}               # total inflow into reservoir [m³ s⁻¹] for model timestep Δt
-    external_inflow::Vector{Float64}      # external inflow (abstraction/supply/demand) [m³ s⁻¹]
-    actual_external_abstraction_av::Vector{Float64}  # actual abstraction from external negative inflow [m³ s⁻¹]
-    precipitation::Vector{Float64}        # average precipitation for reservoir area [mm Δt⁻¹]
-    evaporation::Vector{Float64}          # average potential evaporation for reservoir area [mm Δt⁻¹]
+    n::Int
+    inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n)    # inflow from subsurface flow into reservoir [m³ s⁻¹]
+    inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n)      # inflow from overland flow into reservoir [m³ s⁻¹]
+    inflow::Vector{Float64} = fill(MISSING_VALUE, n)               # total inflow into reservoir [m³ s⁻¹] for model timestep Δt
+    external_inflow::Vector{Float64}                               # external inflow (abstraction/supply/demand) [m³ s⁻¹]
+    actual_external_abstraction_av::Vector{Float64} = zeros(n)  # actual abstraction from external negative inflow [m³ s⁻¹]
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)        # average precipitation for reservoir area [mm Δt⁻¹]
+    evaporation::Vector{Float64} = fill(MISSING_VALUE, n)          # average potential evaporation for reservoir area [mm Δt⁻¹]
 end
 
 "Initialize reservoir model boundary conditions"
@@ -277,15 +278,7 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         type = Float64,
     )
     n = length(indices_outlet)
-    bc = ReservoirBC(;
-        inflow_subsurface = fill(MISSING_VALUE, n),
-        inflow_overland = fill(MISSING_VALUE, n),
-        inflow = fill(MISSING_VALUE, n),
-        external_inflow,
-        actual_external_abstraction_av = zeros(Float64, n),
-        precipitation = fill(MISSING_VALUE, n),
-        evaporation = fill(MISSING_VALUE, n),
-    )
+    bc = ReservoirBC(; n, external_inflow)
     return bc
 end
 
