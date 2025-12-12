@@ -18,14 +18,23 @@ function rainfall_interception_gash(
     # TODO: include subdaily Gash model
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
     if cmax > 0.0
-        pt = min(0.1 * canopy_gap_fraction, 1.0 - canopy_gap_fraction)
-        pfrac = 1.0 - canopy_gap_fraction - pt
-        p_sat = (-cmax / e_r) * log(1.0 - min((e_r / pfrac), 1.0))
-        p_sat = isinf(p_sat) ? 0.0 : p_sat
+        if canopy_gap_fraction < inv(1.1)
+            pt = 0.1 * canopy_gap_fraction
+            pfrac = 1.0 - 1.1 * canopy_gap_fraction # > 0
+
+            if e_r > pfrac
+                p_sat = 0.0
+            else
+                p_sat = -cmax / e_r * log(1.0 - e_r / pfrac)
+            end
+        else
+            pt = 1.0 - canopy_gap_fraction
+            pfrac = 0
+            p_sat = 0
+        end
 
         # large storms P > P_sat
         large_storms = precipitation > p_sat
-        @show large_storms
 
         if large_storms
             iwet = pfrac * p_sat - cmax
@@ -41,7 +50,6 @@ function rainfall_interception_gash(
         throughfall = precipitation - interception - stem_flow
 
         if interception > max_evaporation
-            @show "yeet"
             canopy_drainage = interception - max_evaporation
             interception = max_evaporation
             throughfall += canopy_drainage
