@@ -34,6 +34,21 @@ function scurve(x::Real, a::Real, b::Real, c::Real)::Real
     return s
 end
 
+function to_enumx(T, i::Int)
+    options = instances(T)
+    n_options = length(options)
+    if 1 ≤ i ≤ n_options
+        return options[i]
+    else
+        options_repr = repr(MIME("text/plain"), T)
+        throw(
+            error(
+                "Cannot convert $i to $T, there are only $n_options options:\n$options_repr.",
+            ),
+        )
+    end
+end
+
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
 function set_pit_ldd(
     pits_2d::AbstractMatrix{Bool},
@@ -161,8 +176,8 @@ function set_states!(
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
-            @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
-                ncname state
+            @info "Setting initial state from netCDF." *
+                  to_table(; ncpath = instate_path, ncvarname = ncname, state)
             sel = active_indices(domain, state)
             n = length(sel)
             dims = length(dimnames(ds[ncname]))
@@ -274,7 +289,7 @@ function ncread(
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
+        @info "Set parameter." * to_table(; parameter, defaults)
         @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
@@ -303,7 +318,8 @@ function ncread(
     variable_info(var)
 
     if !isnothing(value)
-        @info "Set `$parameter` using uniform value `$value` from TOML file."
+        @info "Set parameter using uniform value from TOML file." *
+              to_table(; parameter, value)
         if isnothing(dimname)
             # set to one uniform value
             return Base.fill(only(value), length(sel))
@@ -317,7 +333,7 @@ function ncread(
         end
     else
         if logging
-            @info "Set `$parameter` using netCDF variable `$var`."
+            @info "Set parameter using netCDF variable." * to_table(; parameter, var)
         end
         A = read_standardized(nc, variable_name(var), dim_sel)
         if !isnothing(layer)
@@ -455,23 +471,12 @@ end
 "Faster method for exponentiation"
 pow(x::Real, y::Real)::Real = exp(y * log(x))
 
-"Return the sum of the array `A` at indices `inds`"
 function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
-    v = zero(eltype(A))
-    for i in inds
-        v += A[i]
-    end
-    return v
+    mapreduce(i -> A[i], +, inds; init = zero(T))
 end
 
-"Return the sum of the function `f` at indices `inds`"
-function sum_at(f::Function, inds::AbstractVector{Int}, T::Type)::T
-    v = zero(T)
-    for i in inds
-        v += f(i)
-    end
-    return v
-end
+sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
+    mapreduce(f, +, inds; init = zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
 function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
@@ -992,4 +997,16 @@ Otherwise return a `default` value.
 function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
     z = y > 0.0 ? min(x / y, max) : default
     return z
+end
+
+"""
+Convert the specified values in a table of 2 colums of names and values.
+The default headers of these columns are "option" and "value" respectively.
+"""
+function to_table(; column_labels = [:option, :value], kwargs...)
+    parameter_names = collect(keys(kwargs))
+    values = [kwargs[label] for label in parameter_names]
+    io = IOBuffer()
+    pretty_table(io, hcat(parameter_names, values); column_labels, alignment = :l)
+    return "\n" * String(take!(io))
 end

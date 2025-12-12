@@ -145,13 +145,9 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
                 ssfin[v] = sum_at(
                     i -> ssf[i] * (1.0 - flow_fraction_to_river[i]),
                     upstream_nodes[n],
-                    eltype(ssfin),
                 )
-                to_river[v] = sum_at(
-                    i -> ssf[i] * flow_fraction_to_river[i],
-                    upstream_nodes[n],
-                    eltype(to_river),
-                )
+                to_river[v] =
+                    sum_at(i -> ssf[i] * flow_fraction_to_river[i], upstream_nodes[n])
                 ssf[v], zi[v], exfiltwater[v] = kinematic_wave_ssf(
                     ssfin[v],
                     ssf[v],
