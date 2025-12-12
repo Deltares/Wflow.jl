@@ -110,6 +110,11 @@ td, th {
 
 ## Soil
 ### Input
+Note that the input parameter water content at field capacity
+(`soil_water__field_capacity_volume_fraction`) is optional. When not provided the water
+content is computed at a pressure head of -100 cm using the Brooks and Corey water retention
+model.
+
 | Standard Name | Description | Unit | Default |
 | ----- | ----- | - | - |
 | `soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth` |  Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an `exponential_constant` saturated hydraulic conductivity profile is used | mm | - |
@@ -119,6 +124,7 @@ td, th {
 | `soil_surface_water__infiltration_reduction_parameter` | Controls soil infiltration reduction factor when soil is frozen | - | 0.038 |
 | `soil_water__saturated_volume_fraction` | Saturated water content | - | - |
 | `soil_water__residual_volume_fraction` | Residual water content | - | - |
+| `soil_water__field_capacity_volume_fraction` | Field capacity (water content) | - | - |
 | `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm Δt⁻¹ | - |
 | `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth | mm⁻¹ | - |
 | `soil_water__air_entry_pressure_head` | Air entry pressure head of soil | cm | -10.0 |
