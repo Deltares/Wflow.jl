@@ -2,27 +2,16 @@ abstract type AbstractOverlandFlowErosionModel end
 
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
+    n::Int
     # Total soil erosion rate [t dt-1] from overland flow
-    soil_erosion_rate::Vector{Float64}
-end
-
-"Initialize overland flow erosion model variables"
-function OverlandFlowErosionVariables(
-    n::Int;
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return OverlandFlowErosionVariables(; soil_erosion_rate)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
+    n::Int
     # Overland flow [m3 s-1]
-    q::Vector{Float64}
-end
-
-"Initialize overland flow erosion model boundary conditions"
-function OverlandFlowErosionBC(n::Int; q::Vector{Float64} = fill(MISSING_VALUE, n))
-    return OverlandFlowErosionBC(; q)
+    q::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
@@ -73,9 +62,10 @@ end
 
 "ANSWERS overland flow erosion model"
 @with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
-    boundary_conditions::OverlandFlowErosionBC
+    n::Int
+    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n)
     parameters::OverlandFlowErosionAnswersParameters
-    variables::OverlandFlowErosionVariables
+    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n)
 end
 
 "Initialize ANSWERS overland flow erosion model"
@@ -85,14 +75,8 @@ function OverlandFlowErosionAnswersModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = OverlandFlowErosionVariables(n)
-    params = OverlandFlowErosionAnswersParameters(dataset, config, indices)
-    bc = OverlandFlowErosionBC(n)
-    model = OverlandFlowErosionAnswersModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
+    model = OverlandFlowErosionAnswersModel(; n, parameters)
     return model
 end
 

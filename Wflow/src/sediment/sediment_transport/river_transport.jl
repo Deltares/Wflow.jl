@@ -203,9 +203,9 @@ function SedimentRiverTransportParameters(
             fill = 0.0,
         )
     else
-        reservoir_outlet = zeros(Float64, n)
-        reservoir_area = zeros(Float64, n)
-        reservoir_trapping_efficiency = zeros(Float64, n)
+        reservoir_outlet = zeros(n)
+        reservoir_area = zeros(n)
+        reservoir_trapping_efficiency = zeros(n)
     end
 
     river_parameters = SedimentRiverTransportParameters(;
@@ -229,9 +229,10 @@ end
 
 "Struct to store river sediment transport model"
 @with_kw struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
-    boundary_conditions::SedimentRiverTransportBC
+    n::Int
+    boundary_conditions::SedimentRiverTransportBC = SedimentRiverTransportBC(; n)
     parameters::SedimentRiverTransportParameters
-    variables::SedimentRiverTransportVariables
+    variables::SedimentRiverTransportVariables = SedimentRiverTransportVariables(; n)
 end
 
 "Initialize river sediment transport model"
@@ -241,14 +242,9 @@ function SedimentRiverTransportModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = SedimentRiverTransportVariables(; n)
-    params = SedimentRiverTransportParameters(dataset, config, indices)
-    bc = SedimentRiverTransportBC(; n)
-    model = SedimentRiverTransportModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+
+    parameters = SedimentRiverTransportParameters(dataset, config, indices)
+    model = SedimentRiverTransportModel(; n, parameters)
     return model
 end
 
@@ -790,9 +786,11 @@ end
 
 "Struct to store river sediment concentrations model"
 @with_kw struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
-    boundary_conditions::SedimentConcentrationsRiverBC
+    n::Int
+    boundary_conditions::SedimentConcentrationsRiverBC = SedimentConcentrationsRiverBC(; n)
     parameters::SedimentConcentrationsRiverParameters
-    variables::SedimentConcentrationsRiverVariables
+    variables::SedimentConcentrationsRiverVariables =
+        SedimentConcentrationsRiverVariables(; n)
 end
 
 "Initialize river sediment concentrations model"
@@ -802,14 +800,8 @@ function SedimentConcentrationsRiverModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = SedimentConcentrationsRiverVariables(; n)
-    params = SedimentConcentrationsRiverParameters(dataset, config, indices)
-    bc = SedimentConcentrationsRiverBC(; n)
-    model = SedimentConcentrationsRiverModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = SedimentConcentrationsRiverParameters(dataset, config, indices)
+    model = SedimentConcentrationsRiverModel(; n, parameters)
     return model
 end
 

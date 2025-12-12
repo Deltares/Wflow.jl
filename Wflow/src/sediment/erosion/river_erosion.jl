@@ -2,30 +2,18 @@ abstract type AbstractRiverErosionModel end
 
 "Struct for storing river bed and bank erosion model variables"
 @with_kw struct RiverErosionModelVariables
+    n::Int
     # Potential river bed erosion rate [t dt-1]
-    bed::Vector{Float64}
+    bed::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential river bank erosion rate [t dt-1]
-    bank::Vector{Float64}
-end
-
-"Initialize river bed and bank erosion model variables"
-function RiverErosionModelVariables(
-    n::Int;
-    bed::Vector{Float64} = fill(MISSING_VALUE, n),
-    bank::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return RiverErosionModelVariables(; bed = bed, bank = bank)
+    bank::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing river erosion model boundary conditions"
 @with_kw struct RiverErosionBC
+    n::Int
     # Waterlevel [m]
-    waterlevel::Vector{Float64}
-end
-
-"Initialize river erosion model boundary conditions"
-function RiverErosionBC(n::Int; waterlevel::Vector{Float64} = fill(MISSING_VALUE, n))
-    return RiverErosionBC(; waterlevel = waterlevel)
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing river erosion model parameters"
@@ -36,9 +24,10 @@ end
 
 "Julian and Torres river erosion model"
 @with_kw struct RiverErosionJulianTorresModel <: AbstractRiverErosionModel
-    boundary_conditions::RiverErosionBC
+    n::Int
+    boundary_conditions::RiverErosionBC = RiverErosionBC(; n)
     parameters::RiverErosionParameters
-    variables::RiverErosionModelVariables
+    variables::RiverErosionModelVariables = RiverErosionModelVariables(; n)
 end
 
 "Initialize Julian and Torres river erosion parameters"
@@ -55,7 +44,7 @@ function RiverErosionParameters(
         defaults = 0.1,
         type = Float64,
     )
-    river_parameters = RiverErosionParameters(; d50 = d50)
+    river_parameters = RiverErosionParameters(; d50)
 
     return river_parameters
 end
@@ -67,14 +56,8 @@ function RiverErosionJulianTorresModel(
     indices::Vector{CartesianIndex{2}},
 )
     n = length(indices)
-    vars = RiverErosionModelVariables(n)
-    params = RiverErosionParameters(dataset, config, indices)
-    bc = RiverErosionBC(n)
-    model = RiverErosionJulianTorresModel(;
-        boundary_conditions = bc,
-        parameters = params,
-        variables = vars,
-    )
+    parameters = RiverErosionParameters(dataset, config, indices)
+    model = RiverErosionJulianTorresModel(; n, parameters)
     return model
 end
 

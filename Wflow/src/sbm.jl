@@ -45,7 +45,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     else
         glacier = NoGlacierModel(n)
     end
-    runoff = OpenWaterRunoff(n)
+    runoff = OpenWaterRunoff(; n)
 
     soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt)
     @. vegetation_parameters.rootingdepth =
@@ -59,8 +59,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand = NoDemand(; n)
     end
 
-    args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
