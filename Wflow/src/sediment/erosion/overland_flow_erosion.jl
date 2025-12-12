@@ -4,7 +4,7 @@ abstract type AbstractOverlandFlowErosionModel end
 @with_kw struct OverlandFlowErosionVariables
     n::Int
     # Total soil erosion rate [t dt-1] from overland flow
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
@@ -98,11 +98,11 @@ function update!(
 )
     (; q) = model.boundary_conditions
     (; usle_k, usle_c, answers_overland_flow_factor) = model.parameters
-    (; amount) = model.variables
+    (; soil_erosion_rate) = model.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
-        amount[i] = overland_flow_erosion_answers(
+        soil_erosion_rate[i] = overland_flow_erosion_answers(
             q[i],
             usle_k[i],
             usle_c[i],

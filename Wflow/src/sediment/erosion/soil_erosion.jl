@@ -4,7 +4,7 @@ abstract type AbstractSoilErosionModel end
 @with_kw struct SoilErosionModelVariables
     n::Int
     # Total soil erosion rate [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total clay erosion rate [t dt-1]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total silt erosion rate [t dt-1]
@@ -89,7 +89,7 @@ function SoilErosionParameters(
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction
-    if any(abs.(soil_fractions .- 1.0) .> 1e-3)
+    if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
         error("Particle fractions in the soil must sum to 1")
     end
     soil_parameters = SoilErosionParameters(;
@@ -129,8 +129,8 @@ function update_boundary_conditions!(
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::AbstractOverlandFlowErosionModel,
 )
-    re = rainfall_erosion.variables.amount
-    ole = overland_flow_erosion.variables.amount
+    re = rainfall_erosion.variables.soil_erosion_rate
+    ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     @. rainfall_erosion = re
     @. overland_flow_erosion = ole
@@ -141,18 +141,19 @@ function update!(model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
         model.parameters
-    (; amount, clay, silt, sand, sagg, lagg) = model.variables
+    (; soil_erosion_rate, clay, silt, sand, sagg, lagg) = model.variables
 
     n = length(rainfall_erosion)
     threaded_foreach(1:n; basesize = 1000) do i
-        amount[i], clay[i], silt[i], sand[i], sagg[i], lagg[i] = total_soil_erosion(
-            rainfall_erosion[i],
-            overland_flow_erosion[i],
-            clay_fraction[i],
-            silt_fraction[i],
-            sand_fraction[i],
-            sagg_fraction[i],
-            lagg_fraction[i],
-        )
+        soil_erosion_rate[i], clay[i], silt[i], sand[i], sagg[i], lagg[i] =
+            total_soil_erosion(
+                rainfall_erosion[i],
+                overland_flow_erosion[i],
+                clay_fraction[i],
+                silt_fraction[i],
+                sand_fraction[i],
+                sagg_fraction[i],
+                lagg_fraction[i],
+            )
     end
 end
