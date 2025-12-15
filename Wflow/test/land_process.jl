@@ -240,18 +240,74 @@ end
     @test liquid_precip == 0.0
 end
 
-@testitem "unit: other" begin
-    @test all(
-        isapprox.(
-            Wflow.snowpack_hbv(201.5, 15.0, 6.923, 23.177, 0.54, 0.0, 2.5, 0.10),
-            (207.073, 20.707300000000004, 227.7803, 1.35, 18.819699999999997),
-        ),
+@testitem "unit: snowpack_hbv" begin
+    snow_storage = 201.5
+    snow_water = 15.0
+    snow_precip = 6.923
+    liquid_precip = 23.177
+    temperature = 0.54
+    ttm = 0.0
+    cfmax = 2.5
+    whc = 0.10
+    # Case temperature > ttm
+    snow_storage_new, snow_water, snow_water_equivalent, snow_melt, runoff =
+        Wflow.snowpack_hbv(
+            snow_storage,
+            snow_water,
+            snow_precip,
+            liquid_precip,
+            temperature,
+            ttm,
+            cfmax,
+            whc,
+        )
+    @test snow_storage_new ≈ 207.073
+    @test snow_water ≈ 20.7073
+    @test snow_water_equivalent ≈ 227.7803
+    @test snow_melt ≈ 1.35
+    @test runoff ≈ 18.8197
+
+    # Case temperature < ttm
+    temperature = -0.5
+    snow_storage_new, snow_water, snow_water_equivalent, snow_melt, runoff =
+        Wflow.snowpack_hbv(
+            snow_storage,
+            snow_water,
+            snow_precip,
+            liquid_precip,
+            temperature,
+            ttm,
+            cfmax,
+            whc,
+        )
+    @test snow_storage_new ≈ 208.4855
+    @test snow_water ≈ 20.84855
+    @test snow_water_equivalent ≈ 229.33405
+    @test snow_melt ≈ 0.0
+    @test runoff ≈ 22.97325
+end
+
+@testitem "unit: glacier_hbv" begin
+    glacier_frac = 0.35
+    glacier_store = 500.0
+    snow_storage = 9.5
+    temperature = 5.0
+    ttm = 0.0
+    cfmax = 3.4
+    g_sifrac = 0.2
+    max_snow_to_glacier = 8.0
+    snow_storage, snow_to_glacier, glacier_storage, glacier_melt = Wflow.glacier_hbv(
+        glacier_frac,
+        glacier_store,
+        snow_storage,
+        temperature,
+        ttm,
+        cfmax,
+        g_sifrac,
+        max_snow_to_glacier,
     )
-    @test Wflow.scurve(2.0, 0.0, 3.0, 2.5) ≈ 0.3325863502664285
-    @test all(
-        isapprox.(
-            Wflow.glacier_hbv(0.35, 500.0, 9.5, 5.0, 0.0, 3.4, 0.2, 8.0),
-            (8.835, 1.9, 484.9, 17.0),
-        ),
-    )
+    @test snow_storage ≈ 8.835
+    @test snow_to_glacier ≈ 1.9
+    @test glacier_storage ≈ 484.9
+    @test glacier_melt ≈ 17.0
 end

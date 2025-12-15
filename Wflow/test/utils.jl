@@ -36,3 +36,16 @@ end
     @test Wflow.bounded_divide(1.0, 0.5; max = 0.75) == 0.75
     @test Wflow.bounded_divide(1.0, 2.0) == 0.5
 end
+
+@testitem "scurve" begin
+    a = 0.0
+    b = 3.0
+    c = 2.5
+
+    x = 2.0
+    out = Wflow.scurve(x, a, b, c)
+    @test out ≈ 0.3325863502664285
+
+    f = π
+    @test f * Wflow.scurve(x, a + log(f) / c, f * b, c) ≈ out
+end
