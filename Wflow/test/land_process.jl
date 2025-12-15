@@ -53,13 +53,40 @@
     @test canopy_storage_in == canopy_storage_out
 end
 
-@testitem "unit: rainfall_interception_modrut" begin
-    @test all(
-        isapprox.(
-            Wflow.rainfall_interception_modrut(8.6, 3.8, 1.5, 0.45, 2.8),
-            (3.87, 3.8, 0.387, 2.043),
-        ),
+@testitem "unit: rainfall_interception_modrut (modified Rutter)" begin
+    # Case: canopy_gap_fraction < inv(1.1), potential_evaporation < canopy_storage (after precipitation)
+    precipitation = 8.6
+    potential_evaporation = 3.8
+    canopy_storage = 1.5
+    canopy_gap_fraction = 0.45
+    cmax = 2.8
+    throughfall, canopy_evap, stemflow, canopy_storage = Wflow.rainfall_interception_modrut(
+        precipitation,
+        potential_evaporation,
+        canopy_storage,
+        canopy_gap_fraction,
+        cmax,
     )
+    @test throughfall ≈ 3.87
+    @test canopy_evap ≈ 3.8
+    @test stemflow ≈ 0.387
+    @test canopy_storage ≈ 2.043
+
+    # Case: canopy_gap_fraction > inv(1.1), potential_evaporation > canopy_storage
+    precipitation = 1.0
+    canopy_gap_fraction = 0.95
+    throughfall, canopy_evap, stemflow, canopy_storage = Wflow.rainfall_interception_modrut(
+        precipitation,
+        potential_evaporation,
+        canopy_storage,
+        canopy_gap_fraction,
+        cmax,
+    )
+    @test throughfall ≈ 0.95
+    @test canopy_evap ≈ 2.043
+    @test stemflow ≈ 0.05
+    @test canopy_storage ≈ 0.0
+end
 end
 
 @testitem "unit: other" begin
