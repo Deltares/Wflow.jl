@@ -90,11 +90,14 @@ end
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
-    par_lambda = 2.0 / (c - 3.0)
-    # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
-    # part of the numerical vwc calculation
-    h = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))
-    h = min(h, hb)
+    par_lambda = 2 / (c - 3.0)
+    h = if par_lambda > 0
+        # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
+        # part of the numerical vwc calculation
+        hb / pow(vwc / (theta_s - theta_r), inv(par_lambda))
+    else
+        hb
+    end
     return h
 end
 

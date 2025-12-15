@@ -87,10 +87,26 @@ end
     @test stemflow ≈ 0.05
     @test canopy_storage ≈ 0.0
 end
+
+@testitem "unit: Brooks-Corey soil hydraulic model" begin
+    # Case par_lambda > 0
+    vwc = 0.25
+    theta_s = 0.6
+    theta_r = 0.15
+    c = 10.5
+    hb = -10.0
+    h = Wflow.head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    @test h ≈ -90.6299820833844
+    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ vwc + theta_r
+
+    # Case par_lambda < 0
+    c = 2.0
+    h = Wflow.head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    @test h == hb
+    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ theta_s
 end
 
 @testitem "unit: other" begin
-    @test Wflow.head_brooks_corey(0.25, 0.6, 0.15, 10.5, -10.0) ≈ -90.6299820833844
     @test Wflow.feddes_h3(-300.0, -600.0, 3.5, 86400.0) ≈ -412.5
     @test Wflow.feddes_h3(-300.0, -600.0, 0.5, 86400.0) == -600.0
     @test Wflow.feddes_h3(-300.0, -600.0, 6.0, 86400.0) == -300.0
