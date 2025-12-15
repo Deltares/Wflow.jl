@@ -267,7 +267,7 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
     # exclude recharge from computing total incoming and outgoing boundary fluxes for
     # groundwaterflow, other boundaries are required for the total soil water balance.
     boundaries_flow_in, boundaries_flow_out =
-        sum_boundary_fluxes(subsurface_flow; exclude = Recharge)
+        sum_boundary_fluxes(subsurface_flow; exclude = :recharge)
 
     for i in eachindex(storage_prev)
         f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)
