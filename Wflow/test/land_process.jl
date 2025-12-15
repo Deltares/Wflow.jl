@@ -88,131 +88,6 @@ end
     @test canopy_storage ≈ 0.0
 end
 
-@testitem "unit: Brooks-Corey soil hydraulic model" begin
-    # Case par_lambda > 0
-    vwc = 0.25
-    theta_s = 0.6
-    theta_r = 0.15
-    c = 10.5
-    hb = -10.0
-    h = Wflow.head_brooks_corey(vwc, theta_s, theta_r, c, hb)
-    @test h ≈ -90.6299820833844
-    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ vwc + theta_r
-
-    # Case par_lambda < 0
-    c = 2.0
-    h = Wflow.head_brooks_corey(vwc, theta_s, theta_r, c, hb)
-    @test h == hb
-    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ theta_s
-end
-
-@testitem "unit: Feddes root water uptake" begin
-    h3_high = -300.0
-    h3_low = -600.0
-    dt = 86400.0
-
-    # Case tpot_daily < 1.0
-    tpot = 0.5
-    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) == h3_low
-
-    # Case 1.0 < tpot_daily < 5.0
-    tpot = 3.0
-    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) ≈ (h3_high + h3_low) / 2
-
-    # Case tpot_daily > 5.0
-    tpot = 7.5
-    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) ≈ h3_high
-
-    h1 = -10.0
-    h2 = -100.0
-    h3 = -300.0
-    h4 = -15000.0
-
-    ## Case alpha == 0.0
-    alpha = 0.0
-
-    # Case h < h4
-    h = -16000.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
-
-    # Case h3 < h < h4
-    h = -1000.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.4 / 1.47
-
-    # Case h2 < h < h3
-    h = -150.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
-
-    # Case h1 < h < h2
-    h = -50.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 4 / 9
-
-    # Case h > h1
-    h = -5.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
-
-    ## Case alpha ≠ 0.0
-    alpha = 0.5
-
-    # Case h < h4
-    h = -16000.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
-
-    # Case h3 < h < h4
-    h = -1000.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.4 / 1.47
-
-    # Case h2 < h < h3
-    h = -150.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
-
-    # Case h1 < h < h2
-    h = -50.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
-
-    # Case h > h1
-    h = -5.0
-    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
-end
-
-@testitem "unit: infiltration" begin
-    potential_infiltration = 27.5
-    pathfrac = 0.2
-    infiltcapsoil = 50.0
-    infiltcappath = 5.0
-    ustorecapacity = 23.5
-    f_infilt_reduction = 1.0
-
-    infiltsoilpath, infiltexcess = Wflow.infiltration(
-        potential_infiltration,
-        pathfrac,
-        infiltcapsoil,
-        infiltcappath,
-        ustorecapacity,
-        f_infilt_reduction,
-    )
-    @test infiltsoilpath == ustorecapacity
-    @test infiltexcess ≈ 0.5
-end
-
-@testitem "unit: unsatzone_flow_layer" begin
-    kv_z = 256.0
-    l_sat = 135.0
-    c = 12.6
-
-    # Case usd > 0
-    usd = 43.5
-    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
-    usd_new = 43.49983744545384
-    sum_ast = 0.00016255454615829025
-
-    # Case usd == 0
-    usd = 0
-    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
-    @test usd_new == 0.0
-    @test sum_ast == 0.0
-end
-
 @testitem "unit: precipitation_hbv" begin
     ## Case tti > 0.0
     precipitation = 30.1
@@ -310,4 +185,263 @@ end
     @test snow_to_glacier ≈ 1.9
     @test glacier_storage ≈ 484.9
     @test glacier_melt ≈ 17.0
+end
+
+@testitem "unit: infiltration" begin
+    potential_infiltration = 27.5
+    pathfrac = 0.2
+    infiltcapsoil = 50.0
+    infiltcappath = 5.0
+    ustorecapacity = 23.5
+    f_infilt_reduction = 1.0
+
+    infiltsoilpath, infiltexcess = Wflow.infiltration(
+        potential_infiltration,
+        pathfrac,
+        infiltcapsoil,
+        infiltcappath,
+        ustorecapacity,
+        f_infilt_reduction,
+    )
+    @test infiltsoilpath == ustorecapacity
+    @test infiltexcess ≈ 0.5
+end
+
+@testitem "unit: unsatzone_flow_layer" begin
+    kv_z = 256.0
+    l_sat = 135.0
+    c = 12.6
+
+    # Case usd > 0
+    usd = 43.5
+    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    usd_new = 43.49983744545384
+    sum_ast = 0.00016255454615829025
+
+    # Case usd == 0
+    usd = 0
+    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    @test usd_new == 0.0
+    @test sum_ast == 0.0
+end
+
+@testitem "unit: Brooks-Corey soil hydraulic model" begin
+    # Case par_lambda > 0
+    vwc = 0.25
+    theta_s = 0.6
+    theta_r = 0.15
+    c = 10.5
+    hb = -10.0
+    h = Wflow.head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    @test h ≈ -90.6299820833844
+    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ vwc + theta_r
+
+    # Case par_lambda < 0
+    c = 2.0
+    h = Wflow.head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    @test h == hb
+    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ theta_s
+end
+
+@testitem "unit: Feddes root water uptake" begin
+    h3_high = -300.0
+    h3_low = -600.0
+    dt = 86400.0
+
+    # Case tpot_daily < 1.0
+    tpot = 0.5
+    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) == h3_low
+
+    # Case 1.0 < tpot_daily < 5.0
+    tpot = 3.0
+    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) ≈ (h3_high + h3_low) / 2
+
+    # Case tpot_daily > 5.0
+    tpot = 7.5
+    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) ≈ h3_high
+
+    h1 = -10.0
+    h2 = -100.0
+    h3 = -300.0
+    h4 = -15000.0
+
+    ## Case alpha == 0.0
+    alpha = 0.0
+
+    # Case h < h4
+    h = -16000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
+
+    # Case h3 < h < h4
+    h = -1000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.4 / 1.47
+
+    # Case h2 < h < h3
+    h = -150.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+
+    # Case h1 < h < h2
+    h = -50.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 4 / 9
+
+    # Case h > h1
+    h = -5.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
+
+    ## Case alpha ≠ 0.0
+    alpha = 0.5
+
+    # Case h < h4
+    h = -16000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
+
+    # Case h3 < h < h4
+    h = -1000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.4 / 1.47
+
+    # Case h2 < h < h3
+    h = -150.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+
+    # Case h1 < h < h2
+    h = -50.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+
+    # Case h > h1
+    h = -5.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+end
+
+@testitem "unit: soil_temperature" begin
+    tsoil_prev = 1.0
+    w_soil = 2.0
+    temperature = 1.5
+    @test Wflow.soil_temperature(tsoil_prev, w_soil, temperature) ≈ 2.0
+end
+
+@testitem "unit: infiltration_reduction_factor" begin
+    tsoil = 0.1
+    cf_soil = 0.3
+
+    # Case model_snow && soil_infiltration_reduction
+    modelsnow = true
+    soil_infiltration_reduction = true
+    @test Wflow.infiltration_reduction_factor(
+        tsoil,
+        cf_soil;
+        modelsnow,
+        soil_infiltration_reduction,
+    ) ≈ 0.8325096069489968
+
+    # Case !(model_snow && soil_infiltration_reduction)
+    soil_infiltration_reduction = false
+    @test Wflow.infiltration_reduction_factor(
+        tsoil,
+        cf_soil;
+        modelsnow,
+        soil_infiltration_reduction,
+    ) == 1.0
+end
+
+@testitem "unit: soil_evaporation_unsaturated_store" begin
+    potential_soilevaporation = 0.302
+    ustorelayerdepth = 1.23
+    ustorelayerthickness = 100.0
+    zi = 300.0
+    theta_effective = 0.241
+
+    # Case n_unsatlayers == 0
+    n_unsatlayers = 0
+    @test Wflow.soil_evaporation_unsatured_store(
+        potential_soilevaporation,
+        ustorelayerdepth,
+        ustorelayerthickness,
+        n_unsatlayers,
+        zi,
+        theta_effective,
+    ) == 0.0
+
+    # case n_unsatlayers == 1
+    n_unsatlayers = 1
+    @test Wflow.soil_evaporation_unsatured_store(
+        potential_soilevaporation,
+        ustorelayerdepth,
+        ustorelayerthickness,
+        n_unsatlayers,
+        zi,
+        theta_effective,
+    ) ≈ 0.005137759336099585
+
+    # Case n_unsatlayers > 1
+    n_unsatlayers = 2
+    @test Wflow.soil_evaporation_unsatured_store(
+        potential_soilevaporation,
+        ustorelayerdepth,
+        ustorelayerthickness,
+        n_unsatlayers,
+        zi,
+        theta_effective,
+    ) ≈ 0.015413278008298757
+end
+
+@testitem "unit: soil_evaporation_saturated_store" begin
+    potential_soilevaporation = 0.125
+    layerthickness = 100.0
+    zi = 300.0
+    theta_effective = 0.32205961644649506
+
+    # Case n_unsatlayers ∈ (0, 1)
+    n_unsatlayers = 0
+    @test Wflow.soil_evaporation_satured_store(
+        potential_soilevaporation,
+        n_unsatlayers,
+        layerthickness,
+        zi,
+        theta_effective,
+    ) ≈ -64.41192328929901
+
+    # Case n_unsatlayers ∉ (0, 1)
+    n_unsatlayers = 2
+    @test Wflow.soil_evaporation_satured_store(
+        potential_soilevaporation,
+        n_unsatlayers,
+        layerthickness,
+        zi,
+        theta_effective,
+    ) == 0.0
+end
+
+@testitem "unit: actual_infiltration_soil_path" begin
+    potential_infiltration = 1.627
+    actinfilt = 1.627
+    pathfrac = 0.1
+    infiltcapsoil = 228.596
+    infiltcappath = 5.0
+    f_infiltration_reduction = 0.9
+
+    # Case actinfilt > 0
+    actinfilt = 1.627
+    actinfiltsoil, actinfiltpath = Wflow.actual_infiltration_soil_path(
+        potential_infiltration,
+        actinfilt,
+        pathfrac,
+        infiltcapsoil,
+        infiltcappath,
+        f_infiltration_reduction,
+    )
+    @test actinfiltsoil ≈ 1.4643
+    @test actinfiltpath ≈ 0.1627
+
+    # Case actinfilt == 0
+    actinfilt = 0
+    actinfiltsoil, actinfiltpath = Wflow.actual_infiltration_soil_path(
+        potential_infiltration,
+        actinfilt,
+        pathfrac,
+        infiltcapsoil,
+        infiltcappath,
+        f_infiltration_reduction,
+    )
+    @test actinfiltsoil == 0.0
+    @test actinfiltpath == 0.0
 end
