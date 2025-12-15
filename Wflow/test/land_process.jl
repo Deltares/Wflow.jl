@@ -54,7 +54,7 @@
 end
 
 @testitem "unit: rainfall_interception_modrut (modified Rutter)" begin
-    # Case: canopy_gap_fraction < inv(1.1), potential_evaporation < canopy_storage (after precipitation)
+    # Case canopy_gap_fraction < inv(1.1), potential_evaporation < canopy_storage (after precipitation)
     precipitation = 8.6
     potential_evaporation = 3.8
     canopy_storage = 1.5
@@ -72,7 +72,7 @@ end
     @test stemflow ≈ 0.387
     @test canopy_storage ≈ 2.043
 
-    # Case: canopy_gap_fraction > inv(1.1), potential_evaporation > canopy_storage
+    # Case canopy_gap_fraction > inv(1.1), potential_evaporation > canopy_storage
     precipitation = 1.0
     canopy_gap_fraction = 0.95
     throughfall, canopy_evap, stemflow, canopy_storage = Wflow.rainfall_interception_modrut(
@@ -106,31 +106,141 @@ end
     @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ theta_s
 end
 
+@testitem "unit: Feddes root water uptake" begin
+    h3_high = -300.0
+    h3_low = -600.0
+    dt = 86400.0
+
+    # Case tpot_daily < 1.0
+    tpot = 0.5
+    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) == h3_low
+
+    # Case 1.0 < tpot_daily < 5.0
+    tpot = 3.0
+    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) ≈ (h3_high + h3_low) / 2
+
+    # Case tpot_daily > 5.0
+    tpot = 7.5
+    @test Wflow.feddes_h3(h3_high, h3_low, tpot, dt) ≈ h3_high
+
+    h1 = -10.0
+    h2 = -100.0
+    h3 = -300.0
+    h4 = -15000.0
+
+    ## Case alpha == 0.0
+    alpha = 0.0
+
+    # Case h < h4
+    h = -16000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
+
+    # Case h3 < h < h4
+    h = -1000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.4 / 1.47
+
+    # Case h2 < h < h3
+    h = -150.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+
+    # Case h1 < h < h2
+    h = -50.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 4 / 9
+
+    # Case h > h1
+    h = -5.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
+
+    ## Case alpha ≠ 0.0
+    alpha = 0.5
+
+    # Case h < h4
+    h = -16000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 0.0
+
+    # Case h3 < h < h4
+    h = -1000.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.4 / 1.47
+
+    # Case h2 < h < h3
+    h = -150.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+
+    # Case h1 < h < h2
+    h = -50.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+
+    # Case h > h1
+    h = -5.0
+    @test Wflow.rwu_reduction_feddes(h, h1, h2, h3, h4, alpha) ≈ 1.0
+end
+
+@testitem "unit: infiltration" begin
+    potential_infiltration = 27.5
+    pathfrac = 0.2
+    infiltcapsoil = 50.0
+    infiltcappath = 5.0
+    ustorecapacity = 23.5
+    f_infilt_reduction = 1.0
+
+    infiltsoilpath, infiltexcess = Wflow.infiltration(
+        potential_infiltration,
+        pathfrac,
+        infiltcapsoil,
+        infiltcappath,
+        ustorecapacity,
+        f_infilt_reduction,
+    )
+    @test infiltsoilpath == ustorecapacity
+    @test infiltexcess ≈ 0.5
+end
+
+@testitem "unit: unsatzone_flow_layer" begin
+    kv_z = 256.0
+    l_sat = 135.0
+    c = 12.6
+
+    # Case usd > 0
+    usd = 43.5
+    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    usd_new = 43.49983744545384
+    sum_ast = 0.00016255454615829025
+
+    # Case usd == 0
+    usd = 0
+    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    @test usd_new == 0.0
+    @test sum_ast == 0.0
+end
+
+@testitem "unit: precipitation_hbv" begin
+    ## Case tti > 0.0
+    precipitation = 30.1
+    temperature = 0.54
+    tti = 2.0
+    tt = 0.0
+    snow_precip, liquid_precip =
+        Wflow.precipitation_hbv(precipitation, temperature, tti, tt)
+    @test snow_precip ≈ 6.923
+    @test liquid_precip ≈ 23.177
+
+    ## Case tti == 0
+    # Case temperature > tt
+    tti = 0.0
+    snow_precip, liquid_precip =
+        Wflow.precipitation_hbv(precipitation, temperature, tti, tt)
+    @test snow_precip == 0.0
+    @test liquid_precip == precipitation
+
+    # Case temperate < tt
+    temperature = -1.0
+    snow_precip, liquid_precip =
+        Wflow.precipitation_hbv(precipitation, temperature, tti, tt)
+    @test snow_precip == precipitation
+    @test liquid_precip == 0.0
+end
+
 @testitem "unit: other" begin
-    @test Wflow.feddes_h3(-300.0, -600.0, 3.5, 86400.0) ≈ -412.5
-    @test Wflow.feddes_h3(-300.0, -600.0, 0.5, 86400.0) == -600.0
-    @test Wflow.feddes_h3(-300.0, -600.0, 6.0, 86400.0) == -300.0
-    @test Wflow.rwu_reduction_feddes(0.0, -10.0, -100.0, -300.0, -15000.0, 0.0) == 0.0
-    @test Wflow.rwu_reduction_feddes(0.0, -10.0, -100.0, -300.0, -15000.0, 1.0) == 1.0
-    @test Wflow.rwu_reduction_feddes(-90.0, -10.0, -100.0, -412.5, -15000.0, 0.0) ≈
-          0.8888888888888888
-    @test Wflow.rwu_reduction_feddes(-350.0, -10.0, -100.0, -412.5, -15000.0, 0.0) == 1.0
-    @test Wflow.rwu_reduction_feddes(-12000.0, -10.0, -100.0, -412.5, -15000.0, 0.0) ≈
-          0.20565552699228792
-    @test Wflow.rwu_reduction_feddes(-16000.0, -10.0, -100.0, -412.5, -15000.0, 0.0) == 0.0
-    @test all(isapprox.(Wflow.infiltration(27.5, 0.2, 50.0, 5.0, 23.5, 1.0), (23.5, 0.5)))
-    @test all(
-        isapprox.(
-            Wflow.unsatzone_flow_layer(43.5, 256.0, 135.0, 12.6),
-            (43.49983744545384, 0.00016255454615829025),
-        ),
-    )
-    @test all(
-        isapprox.(
-            Wflow.precipitation_hbv(30.1, 0.54, 2.0, 0.0),
-            (6.923, 23.177000000000003),
-        ),
-    )
     @test all(
         isapprox.(
             Wflow.snowpack_hbv(201.5, 15.0, 6.923, 23.177, 0.54, 0.0, 2.5, 0.10),
