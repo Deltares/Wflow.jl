@@ -473,6 +473,9 @@ window.Quarto = {
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<ul>
+<li>Drainable porosity or specific yield, defined as the difference between <code>theta_s</code> (saturated water content) and <code>theta_fc</code> (water content at field capacity) is now used to compute the change of a falling water table for subsurface flow concepts <code>LateralSSF</code> and <code>UnconfinedAquifer</code>. For the change of a rising water table of these concepts a dynamic fillable porosity (based on <code>theta_s</code> and the water content of unsaturated soil layers) is used. This results in a better integration of the <code>SBM</code> soil model (unsaturated zone) with these subsurface flow concepts as specific yield is typically represented by drainable porosity for these concepts and not by the effective porosity (difference between saturated and residual water content) of the previous implementation. Water content at field capacity <code>theta_fc</code> is a new optional input parameter, when this parameter is not provided <code>theta_fc</code> is computed as the water content at a pressure head of -100 cm using the Brooks and Corey water retention model.</li>
+</ul>
 </section>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>

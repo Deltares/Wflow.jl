@@ -950,7 +950,7 @@
     "href": "changelog.html#unreleased",
     "title": "Changelog",
     "section": "Unreleased",
-    "text": "Unreleased\n\nFixed\n\n\nChanged\n\n\nAdded",
+    "text": "Unreleased\n\nFixed\n\n\nChanged\n\nDrainable porosity or specific yield, defined as the difference between theta_s (saturated water content) and theta_fc (water content at field capacity) is now used to compute the change of a falling water table for subsurface flow concepts LateralSSF and UnconfinedAquifer. For the change of a rising water table of these concepts a dynamic fillable porosity (based on theta_s and the water content of unsaturated soil layers) is used. This results in a better integration of the SBM soil model (unsaturated zone) with these subsurface flow concepts as specific yield is typically represented by drainable porosity for these concepts and not by the effective porosity (difference between saturated and residual water content) of the previous implementation. Water content at field capacity theta_fc is a new optional input parameter, when this parameter is not provided theta_fc is computed as the water content at a pressure head of -100 cm using the Brooks and Corey water retention model.\n\n\n\nAdded",
     "crumbs": [
       "Home",
       "Changelog"
