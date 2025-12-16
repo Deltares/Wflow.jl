@@ -90,11 +90,14 @@ end
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
-    par_lambda = 2.0 / (c - 3.0)
-    # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
-    # part of the numerical vwc calculation
-    h = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))
-    h = min(h, hb)
+    par_lambda = 2 / (c - 3.0)
+    h = if par_lambda > 0
+        # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
+        # part of the numerical vwc calculation
+        hb / pow(vwc / (theta_s - theta_r), inv(par_lambda))
+    else
+        hb
+    end
     return h
 end
 
@@ -103,17 +106,16 @@ end
 
 Return soil water pressure head `h3` of Feddes root water uptake reduction function.
 """
-function feddes_h3(h3_high, h3_low, tpot, Δt)
-    # value of h3 is a function of potential transpiration [mm/d]
-    tpot_daily = tpot * (tosecond(BASETIMESTEP) / Δt)
-    if (tpot_daily >= 0.0) && (tpot_daily <= 1.0)
-        h3 = h3_low
-    elseif (tpot_daily > 1.0) && (tpot_daily < 5.0)
-        h3 = h3_high + ((h3_low - h3_high) * (5.0 - tpot_daily)) / (5.0 - 1.0)
+function feddes_h3(h3_high, h3_low, tpot, dt)
+    # value of h3 is a function of potential transpiration [mm d⁻¹]
+    tpot_daily = tpot * (tosecond(BASETIMESTEP) / dt)
+    return if tpot_daily <= 1.0
+        h3_low
+    elseif tpot_daily < 5.0
+        h3_low + (h3_high - h3_low) * (tpot_daily - 1.0) / (5.0 - 1.0)
     else
-        h3 = h3_high
+        h3_high
     end
-    return h3
 end
 
 """
@@ -123,26 +125,21 @@ Root water uptake reduction factor based on Feddes.
 """
 function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
-    if alpha_h1 == 0.0
-        if (h <= h4) || (h > h1)
-            alpha = 0.0
-        elseif (h > h2) && (h <= h1)
-            alpha = (h - h1) / (h2 - h1)
-        elseif (h >= h3) && (h <= h2)
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
+    return if h < h4
+        0.0
+    elseif h < h3
+        (h - h4) / (h3 - h4)
+    elseif iszero(alpha_h1)
+        if h < h2
+            1.0
+        elseif h < h1
+            (h1 - h) / (h1 - h2)
+        else
+            0.0
         end
     else
-        if h <= h4
-            alpha = 0.0
-        elseif h >= h3
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
-        end
+        1.0
     end
-    return alpha
 end
 
 """
@@ -219,7 +216,7 @@ function soil_evaporation_satured_store(
     zi,
     theta_effective,
 )
-    if n_unsatlayers == 0 || n_unsatlayers == 1
+    if n_unsatlayers in (0, 1)
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
         soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_effective)
