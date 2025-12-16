@@ -41,8 +41,15 @@ end
     models = Wflow.Model[]
     # Initialize the first model with mass balance
     do_mass_balance = true
-    for file_name in readdir()
-        !endswith(file_name, ".toml") && continue
+    for file_name in [
+        "sbm_config.toml",
+        "sbm_gwf_config.toml",
+        "sbm_river-floodplain-local-inertial_config.toml",
+        "sbm_river-land-local-inertial_config.toml",
+        "sbm_gwf_piave_demand_config.toml",
+        "sediment_config.toml",
+        "sediment_eurosem_engelund_config.toml",
+    ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         if do_mass_balance
             config.model.water_mass_balance__flag = true
