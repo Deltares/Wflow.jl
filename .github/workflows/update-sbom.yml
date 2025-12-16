@@ -23,7 +23,7 @@ jobs:
           pixi run generate-sbom
         env:
           JULIA_PKG_PRECOMPILE_AUTO: "0"
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.CI_PR_PAT }}
           branch: update/sbom
