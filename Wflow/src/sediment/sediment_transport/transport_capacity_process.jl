@@ -164,15 +164,15 @@ Total sediment transport capacity based on Yalin.
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
 function transport_capacity_yalin(
-    q,
-    waterlevel,
-    density,
-    d50,
-    slope,
-    width,
-    reservoirs,
-    rivers,
-    dt,
+    q::Float64,
+    waterlevel::Float64,
+    density::Float64,
+    d50::Float64,
+    slope::Float64,
+    width::Float64,
+    reservoirs::Bool,
+    rivers::Bool,
+    dt::Float64,
 )
     sinslope = sin_slope(slope) #slope in radians
     # Transport capacity from Yalin without particle differentiation
@@ -234,14 +234,14 @@ Total flow transportability based on Yalin with particle differentiation.
 - `dtot` (total transportability of the flow [-])
 """
 function transportability_yalin_differentiation(
-    waterlevel,
-    density,
-    dm_clay,
-    dm_silt,
-    dm_sand,
-    dm_sagg,
-    dm_lagg,
-    slope,
+    waterlevel::Float64,
+    density::Float64,
+    dm_clay::Float64,
+    dm_silt::Float64,
+    dm_sand::Float64,
+    dm_sagg::Float64,
+    dm_lagg::Float64,
+    slope::Float64,
 )
     sinslope = sin_slope(slope) #slope in radians
     # Delta parameter of Yalin for each particle class
@@ -289,16 +289,16 @@ Transport capacity for a specific grain size based on Yalin with particle differ
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
 function transport_capacity_yalin_differentiation(
-    q,
-    waterlevel,
-    density,
-    dm,
-    slope,
-    width,
-    reservoirs,
-    rivers,
-    dtot,
-    dt,
+    q::Float64,
+    waterlevel::Float64,
+    density::Float64,
+    dm::Float64,
+    slope::Float64,
+    width::Float64,
+    reservoirs::Bool,
+    rivers::Bool,
+    dtot::Float64,
+    dt::Float64,
 )
     sinslope = sin_slope(slope) #slope in radians
     # Transport capacity from Yalin with particle differentiation
@@ -332,7 +332,7 @@ function transport_capacity_yalin_differentiation(
 end
 
 """
-    function trasnport_capacity_bagnold(
+    function transport_capacity_bagnold(
         q,
         waterlevel,
         c_bagnold,
@@ -356,7 +356,15 @@ Total sediment transport capacity based on Bagnold.
 # Output
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
-function transport_capacity_bagnold(q, waterlevel, c_bagnold, e_bagnold, width, length, dt)
+function transport_capacity_bagnold(
+    q::Float64,
+    waterlevel::Float64,
+    c_bagnold::Float64,
+    e_bagnold::Float64,
+    width::Float64,
+    length::Float64,
+    dt::Float64,
+)
     # Transport capacity from Bagnold
     if waterlevel > 0.0
         # Transport capacity [tons/m3]
@@ -403,7 +411,16 @@ Total sediment transport capacity based on Engelund and Hansen.
 # Output
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
-function transport_capacity_engelund(q, waterlevel, density, d50, width, length, slope, dt)
+function transport_capacity_engelund(
+    q::Float64,
+    waterlevel::Float64,
+    density::Float64,
+    d50::Float64,
+    width::Float64,
+    length::Float64,
+    slope::Float64,
+    dt::Float64,
+)
     # Transport capacity from Engelund and Hansen
     if waterlevel > 0.0
         # Hydraulic radius of the river [m] (rectangular channel)
@@ -536,7 +553,16 @@ Total sediment transport capacity based on Yang sand and gravel equations.
 # Output
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
-function transport_capacity_yang(q, waterlevel, density, d50, width, length, slope, dt)
+function transport_capacity_yang(
+    q::Float64,
+    waterlevel::Float64,
+    density::Float64,
+    d50::Float64,
+    width::Float64,
+    length::Float64,
+    slope::Float64,
+    dt::Float64,
+)
     # Transport capacity from Yang
     omegas = STOKES_FACTOR * d50^2
     # Hydraulic radius of the river [m] (rectangular channel)

@@ -28,13 +28,13 @@ Deposition of sediment in reservoirs from Camp 1945.
 - `deposition` (deposition [t Δt⁻¹])
 """
 function reservoir_deposition_camp(
-    input,
-    q,
-    waterlevel,
-    res_area,
-    res_trapping_efficiency,
-    dm,
-    slope,
+    input::Float64,
+    q::Float64,
+    waterlevel::Float64,
+    res_area::Float64,
+    res_trapping_efficiency::Float64,
+    dm::Float64,
+    slope::Float64,
 )
     # Compute critical velocity
     vcres = q / res_area
