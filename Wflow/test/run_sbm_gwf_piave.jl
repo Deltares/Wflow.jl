@@ -1,9 +1,12 @@
 @testitem "Piave water demand and allocation (sbm_gwf model)" begin
     using Statistics: mean
+    using Wflow: to_SI, Unit
+    MM_PER_DT = Unit(; mm = 1, dt = -1)
     tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
+    dt = Wflow.tosecond(model.clock.dt)
 
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
     (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
@@ -15,8 +18,8 @@
     @testset "piave water demand and allocation first timestep" begin
         sum_total_alloc = sum(total_alloc)
         @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1747.401299613164
-        @test sum(act_groundwater_abst) ≈ 392.3593761085565
+        @test sum(surfacewater_alloc) ≈ to_SI(1747.401299613164, MM_PER_DT; dt_val = dt)
+        @test sum(act_groundwater_abst) ≈ to_SI(392.3593761085565, MM_PER_DT; dt_val = dt)
         @test paddy.variables.h[[25, 42, 45]] ≈ [42.968584878704704, 0.0, 33.2318007065323]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 25.0, 0.0]
