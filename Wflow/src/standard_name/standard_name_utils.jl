@@ -7,3 +7,10 @@ standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
 get_lens(name::AbstractString, model) = get_lens(name, typeof(model))
 get_lens(name::AbstractString, L::Type) = standard_name_map(L)[name].lens
+
+@kwdef struct VariableMetadata{L, D}
+    lens::L = nothing
+    unit::Unit = EMPTY_UNIT
+    default::D = missing
+    description::String
+end

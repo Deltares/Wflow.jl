@@ -121,6 +121,7 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
 ]
 
 # Predefined units used within the code
+const EMPTY_UNIT = Unit()
 const ABSOLUTE_DEGREES = Unit(; degC = 1, absolute_temperature = true)
 const MM_PER_MIN = Unit(; mm = 1, min = -1)
 const MM_PER_DAY = Unit(; mm = 1, d = -1)

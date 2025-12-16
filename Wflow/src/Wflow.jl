@@ -68,8 +68,8 @@ using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 
-const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
-const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
+const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
+const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
@@ -142,10 +142,10 @@ Composite type that represents all different aspects of a Wflow Model, such as t
 parameters, clock, configuration and input and output.
 """
 struct Model{
-    R<:Routing,
-    L<:AbstractLandModel,
-    M<:AbstractMassBalance,
-    T<:AbstractModelType,
+    R <: Routing,
+    L <: AbstractLandModel,
+    M <: AbstractMassBalance,
+    T <: AbstractModelType,
 } <: AbstractModel{T}
     config::Config                  # all configuration options
     domain::Domain                  # domain connectivity (network) and shared parameters
@@ -223,11 +223,11 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
+include("standard_name/standard_name_utils.jl")
 include("standard_name/standard_name_domain.jl")
 include("standard_name/standard_name_routing.jl")
 include("standard_name/standard_name_sbm.jl")
 include("standard_name/standard_name_sediment.jl")
-include("standard_name/standard_name_utils.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")
@@ -252,7 +252,7 @@ This makes it easier to start a run from the command line without having to esca
 
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run(tomlpath::AbstractString; silent=nothing)
+function run(tomlpath::AbstractString; silent = nothing)
     config = Config(tomlpath)
     # if the silent kwarg is not set, check if it is set in the TOML
     if isnothing(silent)
@@ -288,7 +288,7 @@ function run(config::Config)
     return model
 end
 
-function run_timestep!(model::Model; update_func=update!, write_model_output=true)
+function run_timestep!(model::Model; update_func = update!, write_model_output = true)
     (; mass_balance) = model
     advance!(model.clock)
     load_dynamic_input!(model)
@@ -301,7 +301,7 @@ function run_timestep!(model::Model; update_func=update!, write_model_output=tru
     return nothing
 end
 
-function run!(model::Model; close_files=true)
+function run!(model::Model; close_files = true)
     (; config, writer, clock) = model
 
     model_type = config.model.type
@@ -310,7 +310,7 @@ function run!(model::Model; close_files=true)
     starttime = clock.time
     dt = clock.dt
     endtime = cftime(config.time.endtime, config.time.calendar)
-    times = range(starttime + dt, endtime; step=dt)
+    times = range(starttime + dt, endtime; step = dt)
 
     @info "Run information" model_type = String(Symbol(model_type)) starttime dt endtime nthreads()
     runstart_time = now()
@@ -331,7 +331,7 @@ function run!(model::Model; close_files=true)
     # option to support running function twice without re-initializing
     # and thus opening the netCDF files
     if close_files
-        Wflow.close_files(model; delete_output=false)
+        Wflow.close_files(model; delete_output = false)
     end
 
     # copy TOML to dir_output, to archive what settings were used
@@ -340,7 +340,7 @@ function run!(model::Model; close_files=true)
         dst = output_path(config, basename(src))
         if src != dst
             @debug "Copying TOML file." src dst
-            cp(src, dst; force=true)
+            cp(src, dst; force = true)
         end
     end
     return nothing
