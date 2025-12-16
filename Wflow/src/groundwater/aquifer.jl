@@ -68,7 +68,7 @@ abstract type AbstractAquiferBoundaryCondition end
 
 struct NoAquiferBoundaryCondition <: AbstractAquiferBoundaryCondition end
 
-@with_kw struct GroundwaterFlowBC{R, RI, D, W}
+@with_kw struct AquiferBC{R, RI, D, W}
     active::Vector{Symbol} = Symbol[]
     recharge::R = NoAquiferBoundaryCondition()
     river::RI = NoAquiferBoundaryCondition()
@@ -76,21 +76,21 @@ struct NoAquiferBoundaryCondition <: AbstractAquiferBoundaryCondition end
     well::W = NoAquiferBoundaryCondition()
 end
 
-function flux!(boundaries::GroundwaterFlowBC, aquifer, dt)
+function flux!(boundaries::AquiferBC, aquifer, dt)
     for boundary_type in boundaries.active
         boundary = getfield(boundaries, boundary_type)
         flux!(boundary, aquifer, dt)
     end
 end
 
-function set_flux_vars!(boundaries::GroundwaterFlowBC)
+function set_flux_vars!(boundaries::AquiferBC)
     for boundary_type in boundaries.active
         boundary = getfield(boundaries, boundary_type)
         boundary.variables.flux_av .= 0.0
     end
 end
 
-function average_flux_vars!(boundaries::GroundwaterFlowBC, dt::Float64)
+function average_flux_vars!(boundaries::AquiferBC, dt::Float64)
     for boundary_type in boundaries.active
         boundary = getfield(boundaries, boundary_type)
         boundary.variables.flux_av ./= dt
@@ -508,13 +508,13 @@ end
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
-    boundaries::GroundwaterFlowBC
+    boundaries::AquiferBC
     function GroundwaterFlow(
         timestepping::TimeStepping,
         aquifer::A,
         connectivity::Connectivity,
         constanthead::ConstantHead,
-        boundaries::GroundwaterFlowBC,
+        boundaries::AquiferBC,
     ) where {A <: AbstractAquifer}
         initialize_conductance!(aquifer, connectivity)
         new{A}(timestepping, aquifer, connectivity, constanthead, boundaries)

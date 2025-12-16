@@ -300,7 +300,7 @@ end
         aquifer,
         connectivity,
         constanthead,
-        boundaries = Wflow.GroundwaterFlowBC(),
+        boundaries = Wflow.AquiferBC(),
     )
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
@@ -365,7 +365,7 @@ end
         aquifer,
         connectivity,
         constanthead,
-        boundaries = Wflow.GroundwaterFlowBC(),
+        boundaries = Wflow.AquiferBC(),
     )
 
     maxlayers = 1
@@ -467,7 +467,7 @@ end
         aquifer,
         connectivity,
         constanthead,
-        boundaries = Wflow.GroundwaterFlowBC(),
+        boundaries = Wflow.AquiferBC(),
     )
 
     maxlayers = 1
@@ -570,7 +570,7 @@ end
         Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0], flux_av = [0.0])
     well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
     active = [:well]
-    boundaries = Wflow.GroundwaterFlowBC(; active, well)
+    boundaries = Wflow.AquiferBC(; active, well)
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
     gwf = Wflow.GroundwaterFlow(;
         timestepping,

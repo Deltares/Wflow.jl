@@ -96,7 +96,7 @@
         )
         model = Wflow.Model(config)
         @test model.routing.subsurface_flow.boundaries.active == [:recharge, :river]
-        @test model.routing.subsurface_flow.boundaries isa Wflow.GroundwaterFlowBC{
+        @test model.routing.subsurface_flow.boundaries isa Wflow.AquiferBC{
             Wflow.Recharge,
             Wflow.GwfRiver,
             Wflow.NoAquiferBoundaryCondition,
