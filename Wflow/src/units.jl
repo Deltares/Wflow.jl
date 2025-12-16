@@ -158,17 +158,31 @@ end
 # the Unit struct
 const UnitStrings = Dict{Symbol, String}(:degC => "°C", :percentage => "%")
 
+const SUPERSCRIPT_NUMBERS = (
+    '0' => '⁰',
+    '1' => '¹',
+    '2' => '²',
+    '3' => '³',
+    '4' => '⁴',
+    '5' => '⁵',
+    '6' => '⁶',
+    '7' => '⁷',
+    '8' => '⁸',
+    '9' => '⁹',
+    '-' => '⁻',
+)
+
 function power_string(power::Rational{Int}, BMI_standard::Bool)
     (; num, den) = power
     return if isinteger(power)
         n = string(Int(power))
-        BMI_standard ? n : Subscripts.super(n)
+        BMI_standard ? n : replace(n, SUPERSCRIPT_NUMBERS...)
     else
         if BMI_standard
             "$num/$den"
         else
-            num_str = Subscripts.super(string(num))
-            den_str = Subscripts.super(string(den))
+            num_str = replace(string(num), SUPERSCRIPT_NUMBERS...)
+            den_str = replace(string(den), SUPERSCRIPT_NUMBERS...)
             "$(num_str)ᐟ$den_str"
         end
     end
