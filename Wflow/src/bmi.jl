@@ -152,8 +152,8 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
-    nt = standard_name_map(land)[name]
-    return nt.unit
+    (; unit) = standard_name_map(land)[name]
+    return to_string(to_SI(unit); BMI_standard = true)
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)
