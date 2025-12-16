@@ -263,7 +263,6 @@ function ncread(
     parameter::AbstractString;
     optional = true,
     sel = nothing,
-    defaults = nothing,
     type = nothing,
     allow_missing = false,
     fill = nothing,
@@ -271,18 +270,19 @@ function ncread(
     logging = true,
 )
     var = get_var(config, parameter; optional)
+    (; default) = get_metadata(parameter)
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
-        @assert !isnothing(defaults) parameter
+        @info "Set `$parameter` using default value `$default`."
+        @assert !isnothing(default) parameter
         if !isnothing(type)
-            defaults = convert(type, defaults)
+            default = convert(type, default)
         end
         if isnothing(dimname)
-            return Base.fill(defaults, length(sel))
+            return Base.fill(default, length(sel))
         else
-            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
+            return Base.fill(default, (nc.dim[String(dimname)], length(sel)))
         end
     end
 
