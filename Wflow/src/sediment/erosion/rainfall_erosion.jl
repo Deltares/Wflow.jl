@@ -41,43 +41,18 @@ function RainfallErosionEurosemParameters(
     soil_detachability = ncread(
         dataset,
         config,
-        "soil_erosion__rainfall_soil_detachability_factor";
+        "soil_erosion__rainfall_soil_detachability_factor",
+        SoilLoss;
         sel = indices,
-        defaults = 0.6,
-        type = Float64,
     )
-    eurosem_exponent = ncread(
-        dataset,
-        config,
-        "soil_erosion__eurosem_exponent";
-        sel = indices,
-        defaults = 2.0,
-        type = Float64,
-    )
-    canopyheight = ncread(
-        dataset,
-        config,
-        "vegetation_canopy__height";
-        sel = indices,
-        defaults = 0.5,
-        type = Float64,
-    )
-    canopygapfraction = ncread(
-        dataset,
-        config,
-        "vegetation_canopy__gap_fraction";
-        sel = indices,
-        defaults = 0.1,
-        type = Float64,
-    )
-    soilcover_fraction = ncread(
-        dataset,
-        config,
-        "compacted_soil__area_fraction";
-        sel = indices,
-        defaults = 0.01,
-        type = Float64,
-    )
+    eurosem_exponent =
+        ncread(dataset, config, "soil_erosion__eurosem_exponent", SoilLoss; sel = indices)
+    canopyheight =
+        ncread(dataset, config, "vegetation_canopy__height", SoilLoss; sel = indices)
+    canopygapfraction =
+        ncread(dataset, config, "vegetation_canopy__gap_fraction", SoilLoss; sel = indices)
+    soilcover_fraction =
+        ncread(dataset, config, "compacted_soil__area_fraction", SoilLoss; sel = indices)
 
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability,
@@ -177,29 +152,14 @@ function RainfallErosionAnswersParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    usle_k = ncread(
-        dataset,
-        config,
-        "soil_erosion__usle_k_factor";
-        sel = indices,
-        defaults = 0.1,
-        type = Float64,
-    )
-    usle_c = ncread(
-        dataset,
-        config,
-        "soil_erosion__usle_c_factor";
-        sel = indices,
-        defaults = 0.01,
-        type = Float64,
-    )
+    usle_k = ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLoss; sel = indices)
+    usle_c = ncread(dataset, config, "soil_erosion__usle_c_factor", SoilLoss; sel = indices)
     answers_rainfall_factor = ncread(
         dataset,
         config,
-        "soil_erosion__answers_rainfall_factor";
+        "soil_erosion__answers_rainfall_factor",
+        SoilLoss;
         sel = indices,
-        defaults = 0.108,
-        type = Float64,
     )
 
     answers_parameters =

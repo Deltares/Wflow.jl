@@ -597,10 +597,9 @@ function locations_map(ds, mapname, config)
     map_2d = ncread(
         ds,
         config,
-        mapname;
-        optional = false,
-        type = Union{Int, Missing},
-        allow_missing = true,
+        mapname,
+        Writer;
+        metadata = ParameterMetadata(; type = Int, allow_missing = true),
     )
     ids = unique(skipmissing(map_2d))
     return ids
@@ -1033,10 +1032,10 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         map_2d = ncread(
             dataset,
             config,
-            map;
-            type = Union{Int, Missing},
-            allow_missing = true,
+            map,
+            Writer;
             logging = false,
+            metadata = ParameterMetadata(; allow_missing = true, type = Int),
         )
         @info "Adding scalar output for a map with a reducer function." fileformat param =
             parameter mapname = map reducer_name = String(nameof(f))

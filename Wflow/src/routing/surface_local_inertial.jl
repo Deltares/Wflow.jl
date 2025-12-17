@@ -36,27 +36,12 @@ function LocalInertialRiverFlowParameters(
     riverlength_bc = ncread(
         dataset,
         config,
-        "model_boundary_condition_river__length";
+        "model_boundary_condition_river__length",
+        Routing;
         sel = pit_indices,
-        defaults = 1.0e04,
-        type = Float64,
     )
-    bankfull_elevation_2d = ncread(
-        dataset,
-        config,
-        "river_bank_water__elevation";
-        optional = false,
-        type = Float64,
-        fill = 0,
-    )
-    bankfull_depth_2d = ncread(
-        dataset,
-        config,
-        "river_bank_water__depth";
-        optional = false,
-        type = Float64,
-        fill = 0,
-    )
+    bankfull_elevation_2d = ncread(dataset, config, "river_bank_water__elevation", Routing)
+    bankfull_depth_2d = ncread(dataset, config, "river_bank_water__depth", Routing)
     bankfull_depth = bankfull_depth_2d[indices]
     zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
 
@@ -64,10 +49,9 @@ function LocalInertialRiverFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "river_water_flow__manning_n_parameter";
+        "river_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
-        defaults = 0.036,
-        type = Float64,
     )
 
     n = length(indices)
@@ -151,10 +135,9 @@ function LocalInertialRiverFlowVariables(
     riverdepth_bc = ncread(
         dataset,
         config,
-        "model_boundary_condition_river_bank_water__depth";
+        "model_boundary_condition_river_bank_water__depth",
+        Routing;
         sel = pit_indices,
-        defaults = 0.0,
-        type = Float64,
     )
 
     n = length(indices)
@@ -579,19 +562,12 @@ function LocalInertialOverlandFlowParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "land_surface_water_flow__manning_n_parameter";
+        "land_surface_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
-        defaults = 0.072,
-        type = Float64,
     )
-    elevation_2d = ncread(
-        dataset,
-        config,
-        "land_surface_water_flow__ground_elevation";
-        optional = false,
-        type = Float64,
-        fill = 0,
-    )
+    elevation_2d =
+        ncread(dataset, config, "land_surface_water_flow__ground_elevation", Routing)
     elevation = elevation_2d[indices]
     n = length(domain.land.network.indices)
 
@@ -1063,11 +1039,9 @@ function FloodPlainProfile(
     storage = ncread(
         dataset,
         config,
-        "floodplain_water__sum_of_volume_per_depth";
-        optional = false,
+        "floodplain_water__sum_of_volume_per_depth",
+        Routing;
         sel = indices,
-        type = Float64,
-        dimname = :flood_depth,
     )
     n = length(indices)
 
@@ -1171,10 +1145,9 @@ function FloodPlainParameters(
     mannings_n = ncread(
         dataset,
         config,
-        "floodplain_water_flow__manning_n_parameter";
+        "floodplain_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
-        defaults = 0.072,
-        type = Float64,
     )
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes

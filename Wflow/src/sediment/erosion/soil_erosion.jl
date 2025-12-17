@@ -46,45 +46,25 @@ function SoilErosionParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    clay_fraction = ncread(
-        dataset,
-        config,
-        "soil_clay__mass_fraction";
-        sel = indices,
-        defaults = 0.4,
-        type = Float64,
-    )
-    silt_fraction = ncread(
-        dataset,
-        config,
-        "soil_silt__mass_fraction";
-        sel = indices,
-        defaults = 0.3,
-        type = Float64,
-    )
-    sand_fraction = ncread(
-        dataset,
-        config,
-        "soil_sand__mass_fraction";
-        sel = indices,
-        defaults = 0.3,
-        type = Float64,
-    )
+    clay_fraction =
+        ncread(dataset, config, "soil_clay__mass_fraction", SoilLoss; sel = indices)
+    silt_fraction =
+        ncread(dataset, config, "soil_silt__mass_fraction", SoilLoss; sel = indices)
+    sand_fraction =
+        ncread(dataset, config, "soil_sand__mass_fraction", SoilLoss; sel = indices)
     sagg_fraction = ncread(
         dataset,
         config,
-        "soil_small_aggregates__mass_fraction";
+        "soil_small_aggregates__mass_fraction",
+        SoilLoss;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     lagg_fraction = ncread(
         dataset,
         config,
-        "soil_large_aggregates__mass_fraction";
+        "soil_large_aggregates__mass_fraction",
+        SoilLoss;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     # Check that soil fractions sum to 1
     soil_fractions =

@@ -80,13 +80,7 @@ Initialize `NetworkLand` fields related to catchment (active indices model domai
 drainage network.
 """
 function NetworkLand(dataset::NCDataset, config::Config)
-    subcatch_2d = ncread(
-        dataset,
-        config,
-        "subbasin_location__count";
-        optional = false,
-        allow_missing = true,
-    )
+    subcatch_2d = ncread(dataset, config, "subbasin_location__count", Domain)
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
     graph, local_drain_direction =
@@ -157,24 +151,10 @@ function get_drainage_network(
     do_pits::Bool = false,
     logging::Bool = true,
 )
-    ldd_2d = ncread(
-        dataset,
-        config,
-        "basin__local_drain_direction";
-        optional = false,
-        allow_missing = true,
-        logging,
-    )
+    ldd_2d = ncread(dataset, config, "basin__local_drain_direction", Domain; logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        pits_2d = ncread(
-            dataset,
-            config,
-            "basin_pit_location__mask";
-            optional = false,
-            type = Bool,
-            fill = false,
-        )
+        pits_2d = ncread(dataset, config, "basin_pit_location__mask", Domain)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
     graph = flowgraph(ldd, indices, PCR_DIR)
@@ -227,15 +207,8 @@ function NetworkRiver(
     network::NetworkLand;
     do_pits = false,
 )
-    river_location_2d = ncread(
-        dataset,
-        config,
-        "river_location__mask";
-        optional = false,
-        type = Bool,
-        fill = false,
-        logging = false,
-    )
+    river_location_2d =
+        ncread(dataset, config, "river_location__mask", Domain; logging = false)
     indices, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction =
         get_drainage_network(dataset, config, indices; do_pits, logging = false)
@@ -312,26 +285,11 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     logging = false
     # allow reservoir only in river cells
     # note that these locations are only the reservoir outlet pixels
-    locs = ncread(
-        dataset,
-        config,
-        "reservoir_location__count";
-        optional = false,
-        sel = indices,
-        type = Int,
-        fill = 0,
-        logging,
-    )
+    locs =
+        ncread(dataset, config, "reservoir_location__count", Domain; sel = indices, logging)
 
     # this holds the same ids as locs, but covers the entire reservoir
-    coverage_2d = ncread(
-        dataset,
-        config,
-        "reservoir_area__count";
-        optional = false,
-        allow_missing = true,
-        logging,
-    )
+    coverage_2d = ncread(dataset, config, "reservoir_area__count", Domain; logging)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]
     rev_inds = zeros(Int, size(coverage_2d))
@@ -387,14 +345,7 @@ function NetworkDrain(
     surface_flow_width::Vector{Float64},
 )
     n_cells = length(indices)
-    drain_2d = ncread(
-        dataset,
-        config,
-        "land_drain_location__mask";
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    drain_2d = ncread(dataset, config, "land_drain_location__mask", Domain)
     drain = drain_2d[indices]
 
     # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)

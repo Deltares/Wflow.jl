@@ -73,7 +73,7 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio" =>
         ParameterMetadata(;
             lens = @optic(_.land.interception.parameters.e_r),
-            default = 0.25,
+            default = 0.1,
             description = "Evaporation to precipitation ratio",
         ),
     "vegetation_water__storage_capacity" => ParameterMetadata(;
@@ -369,13 +369,13 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     "vegetation_root__feddes_critical_pressure_head_h1" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.h1),
         unit = Unit(; cm = 1),
-        default = -10.0,
+        default = 0.0,
         description = "Feddes critical pressure head h1",
     ),
     "vegetation_root__feddes_critical_pressure_head_h2" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.h2),
         unit = Unit(; cm = 1),
-        default = -25.0,
+        default = -100.0,
         description = "Feddes critical pressure head h2",
     ),
     "vegetation_root__feddes_critical_pressure_head_h3_high" => ParameterMetadata(;
@@ -393,7 +393,7 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     "vegetation_root__feddes_critical_pressure_head_h4" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.h4),
         unit = Unit(; cm = 1),
-        default = -15849.0,
+        default = -16000.0,
         description = "Feddes critical pressure head h4",
     ),
     "vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient" =>
@@ -424,12 +424,14 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
         lens = @optic(_.land.soil.parameters.c),
         default = 10.0,
         description = "Brooks-Corey exponent",
+        dimname = :layer,
     ),
     "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor" =>
         ParameterMetadata(;
             lens = @optic(_.land.soil.parameters.kvfrac),
             default = 1.0,
             description = "Vertical saturated hydraulic conductivity factor",
+            dimname = :layer,
         ),
     "compacted_soil__area_fraction" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.pathfrac),
@@ -458,6 +460,7 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
         lens = @optic(_.land.soil.parameters.rootfraction),
         default = 1.0,
         description = "Root length density fraction",
+        dimname = :layer,
     ),
     "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
@@ -469,6 +472,7 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
         ParameterMetadata(;
             lens = nothing,
             unit = Unit(; mm = 1, dt = -1),
+            dimname = :layer,
             description = "Layer vertical saturated hydraulic conductivity",
         ),
     "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth" =>
@@ -637,18 +641,22 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     "glacier_ice__initial_leq_depth" => ParameterMetadata(;
         lens = @optic(_.land.glacier.variables.glacier_store),
         unit = Unit(; mm = 1),
+        default = 5500.0,
+        fill = 0.0,
         description = "Initial glacier ice storage depth",
     ),
     "glacier_ice__melting_temperature_threshold" => ParameterMetadata(;
         lens = @optic(_.land.glacier.parameters.g_ttm),
         unit = Unit(; degC = 1, absolute_temperature = true),
         default = 0.0,
+        fill = 0.0,
         description = "Glacier ice melting temperature threshold",
     ),
     "glacier_ice__degree_day_coefficient" => ParameterMetadata(;
         lens = @optic(_.land.glacier.parameters.g_cfmax),
         unit = Unit(; mm = 1, degC = -1, dt = -1),
         default = 3.0,
+        fill = 0.0,
         description = "Glacier ice degree-day coefficient",
     ),
     "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction" =>
@@ -656,11 +664,13 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
             lens = @optic(_.land.glacier.parameters.g_sifrac),
             unit = Unit(; dt = -1),
             default = 0.001,
+            fill = 0.0,
             description = "Firn accumulation fraction",
         ),
     "glacier_surface__area_fraction" => ParameterMetadata(;
         lens = @optic(_.land.glacier.parameters.glacier_frac),
         default = 0.0,
+        fill = 0.0,
         description = "Glacier surface area fraction",
     ),
     "land_surface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
@@ -717,72 +727,87 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     "domestic__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.domestic.demand.demand_gross),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Domestic gross water demand flux",
     ),
     "domestic__net_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.domestic.demand.demand_net),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Domestic net water demand flux",
     ),
     "industry__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.industry.demand.demand_gross),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Industry gross water demand flux",
     ),
     "industry__net_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.industry.demand.demand_net),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Industry net water demand flux",
     ),
     "livestock__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.livestock.demand.demand_gross),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Livestock gross water demand flux",
     ),
     "livestock__net_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.livestock.demand.demand_net),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Livestock net water demand flux",
     ),
     "irrigated_paddy__min_depth" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.h_min),
         unit = Unit(; mm = 1),
+        default = 20.0,
         description = "Minimum paddy water depth",
     ),
     "irrigated_paddy__optimal_depth" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.h_opt),
         unit = Unit(; mm = 1),
+        default = 50.0,
         description = "Optimal paddy water depth",
     ),
     "irrigated_paddy__max_depth" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.h_max),
         unit = Unit(; mm = 1),
+        default = 80.0,
         description = "Maximum paddy water depth",
     ),
     "irrigated_paddy__irrigation_efficiency" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.irrigation_efficiency),
+        default = 1.0,
         description = "Paddy irrigation efficiency",
     ),
     "irrigated_paddy_area__count" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.irrigation_areas),
+        type = Int,
         description = "Number of paddy irrigation areas",
     ),
     "irrigated_paddy__irrigation_trigger_flag" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.irrigation_trigger),
+        type = Bool,
         description = "Paddy irrigation trigger flag",
     ),
     "irrigated_paddy__max_irrigation_rate" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.maximum_irrigation_rate),
         unit = Unit(; mm = 1, dt = -1),
+        default = 25.0,
         description = "Maximum paddy irrigation rate",
     ),
     "irrigated_paddy__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.variables.demand_gross),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Paddy gross water demand flux",
     ),
     "irrigated_non_paddy__irrigation_efficiency" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.parameters.irrigation_efficiency),
+        default = 1.0,
         description = "Non-paddy irrigation efficiency",
     ),
     "irrigated_non_paddy_area__count" => ParameterMetadata(;
@@ -791,16 +816,19 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     ),
     "irrigated_non_paddy__irrigation_trigger_flag" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.parameters.irrigation_trigger),
+        type = Bool,
         description = "Non-paddy irrigation trigger flag",
     ),
     "irrigated_non_paddy__max_irrigation_rate" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.parameters.maximum_irrigation_rate),
         unit = Unit(; mm = 1, dt = -1),
+        default = 25.0,
         description = "Maximum non-paddy irrigation rate",
     ),
     "irrigated_non_paddy__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.variables.demand_gross),
         unit = Unit(; mm = 1, dt = -1),
+        default = 0.0,
         description = "Non-paddy gross water demand flux",
     ),
     "land__allocated_irrigation_water_volume_flux" => ParameterMetadata(;
@@ -811,6 +839,7 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     "land__allocated_non_irrigation_water_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.allocation.variables.nonirri_alloc),
         unit = Unit(; mm = 1, dt = -1),
+        default = 25.0,
         description = "Allocated non-irrigation water flux",
     ),
     "subsurface_water__abstraction_volume_flux" => ParameterMetadata(;
@@ -846,10 +875,12 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
     ),
     "land_surface_water__withdrawal_fraction" => ParameterMetadata(;
         lens = @optic(_.land.allocation.parameters.frac_sw_used),
+        default = 1.0,
         description = "Surface water withdrawal fraction",
     ),
     "land_water_allocation_area__count" => ParameterMetadata(;
         lens = @optic(_.land.allocation.parameters.areas),
+        default = 1,
         description = "Number of water allocation areas",
     ),
 )

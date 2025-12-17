@@ -27,6 +27,7 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
     "model_constant_boundary_condition__hydraulic_head" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.constanthead.variables.head),
         unit = Unit(; m = 1),
+        fill = MISSING_VALUE,
         description = "Head of the boundary",
     ),
 
@@ -53,11 +54,13 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
     "land_drain__elevation" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.boundaries.drain.parameters.elevation),
         unit = Unit(; m = 1),
+        fill = MISSING_VALUE,
         description = "Drain elevation",
     ),
     "land_drain__conductance" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.boundaries.drain.parameters.conductance),
         unit = Unit(; m = 2, d = -1),
+        fill = MISSING_VALUE,
         description = "Drain conductance",
     ),
 
@@ -81,14 +84,17 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.parameters.outflowfunc
         ),
+        type = Int,
         description = "Type of reservoir rating curve",
     ),
     "reservoir_lower_location__count" => ParameterMetadata(;
         default = 0,
+        fill = 0,
         description = "Index of lower reservoir (linked reservoir)",
     ),
     "reservoir_location__count" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.id),
+        type = Int,
         description = "Outlet of the reservoirs in which each reservoir has a unique id",
     ),
     "reservoir_water_flow_threshold_level__elevation" => ParameterMetadata(;
@@ -123,6 +129,8 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
             _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_obs
         ),
         unit = Unit(; m = 3, s = -1),
+        default = MISSING_VALUE,
+        fill = MISSING_VALUE,
         description = "Observed outflow reservoir",
     ),
     "reservoir_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
@@ -130,6 +138,7 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
             _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.external_inflow
         ),
         unit = Unit(; m = 3, s = -1),
+        default = 0.0,
         description = "External inflow reservoir (negative for abstractions)",
     ),
 
@@ -141,12 +150,14 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
     ),
     "river_bank_water__elevation" => ParameterMetadata(;
         unit = Unit(; m = 1),
+        fill = 0.0,
         description = "Bankfull elevation of the river",
     ),
     "river_bank_water__depth" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.parameters.bankfull_depth),
         unit = Unit(; m = 1),
         default = 1.0,
+        fill = 0.0,
         description = "Bankfull river depth",
     ),
     "model_boundary_condition_river_bank_water__depth" => ParameterMetadata(;
@@ -176,6 +187,7 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
     ),
     "land_surface_water_flow__ground_elevation" => ParameterMetadata(;
         unit = Unit(; m = 1),
+        fill = 0.0,
         description = "Elevation of each cell",
     ),
     "land_surface__elevation" => ParameterMetadata(;
@@ -184,6 +196,7 @@ const routing_standard_name_map = Dict{String, ParameterMetadata}(
     ),
     "floodplain_water__sum_of_volume_per_depth" => ParameterMetadata(;
         unit = Unit(; m = 3),
+        dimname = :flood_depth,
         description = "Floodplain profile (cumulative volume per flood depth)",
     ),
     "floodplain_water_flow__manning_n_parameter" => ParameterMetadata(;

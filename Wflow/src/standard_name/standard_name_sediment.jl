@@ -145,11 +145,13 @@ const sediment_standard_name_map = Dict{String, ParameterMetadata}(
     ),
     "reservoir_location__count" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.sediment_flux.parameters.reservoir_outlet),
+        fill = 0,
         description = "Reservoir location ids",
     ),
     "reservoir_surface__area" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.sediment_flux.parameters.reservoir_area),
         unit = Unit(; m = 2),
+        fill = 0.0,
         description = "Reservoir surface area",
     ),
     "reservoir_water_sediment__bedload_trapping_efficiency" => ParameterMetadata(;
@@ -157,6 +159,7 @@ const sediment_standard_name_map = Dict{String, ParameterMetadata}(
             _.routing.river_flow.sediment_flux.parameters.reservoir_trapping_efficiency
         ),
         default = 1.0,
+        fill = 0.0,
         description = "Reservoir sediment bedload trapping efficiency",
     ),
     "river_water__volume_flow_rate" => ParameterMetadata(;

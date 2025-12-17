@@ -142,28 +142,20 @@ function UnconfinedAquiferParameters(
     k = ncread(
         dataset,
         config,
-        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity";
-        optional = false,
+        "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
+        Routing;
         sel = indices,
-        type = Float64,
     )
-    specific_yield = ncread(
-        dataset,
-        config,
-        "subsurface_water__specific_yield";
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    specific_yield =
+        ncread(dataset, config, "subsurface_water__specific_yield", Routing; sel = indices)
 
     if config.model.conductivity_profile == GwfConductivityProfileType.exponential
         f = ncread(
             dataset,
             config,
-            "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter";
-            optional = false,
+            "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
+            Routing;
             sel = indices,
-            type = Float64,
         )
     else
         f = Float64[]
@@ -412,11 +404,9 @@ function ConstantHead(
     constanthead = ncread(
         dataset,
         config,
-        "model_constant_boundary_condition__hydraulic_head";
-        optional = false,
+        "model_constant_boundary_condition__hydraulic_head",
+        Routing;
         sel = indices,
-        type = Float64,
-        fill = MISSING_VALUE,
     )
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)

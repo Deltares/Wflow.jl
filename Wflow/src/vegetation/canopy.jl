@@ -38,10 +38,9 @@ function GashInterceptionModel(
     e_r = ncread(
         dataset,
         config,
-        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio";
+        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 0.1,
-        type = Float64,
     )
     n = length(indices)
     parameters = GashParameters(; e_r, vegetation_parameter_set)

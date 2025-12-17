@@ -52,19 +52,17 @@ function NonIrrigationDemand(
         ncread(
             dataset,
             config,
-            "$(sector)__gross_water_demand_volume_flux";
+            "$(sector)__gross_water_demand_volume_flux",
+            LandHydrologySBM;
             sel = indices,
-            defaults = 0.0,
-            type = Float64,
         ) .* (dt / BASETIMESTEP)
     demand_net =
         ncread(
             dataset,
             config,
-            "$(sector)__net_water_demand_volume_flux";
+            "$(sector)__net_water_demand_volume_flux",
+            LandHydrologySBM;
             sel = indices,
-            defaults = 0.0,
-            type = Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
@@ -109,35 +107,31 @@ function NonPaddy(
     efficiency = ncread(
         dataset,
         config,
-        "irrigated_non_paddy__irrigation_efficiency";
+        "irrigated_non_paddy__irrigation_efficiency",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 1.0,
-        type = Float64,
     )
     areas = ncread(
         dataset,
         config,
-        "irrigated_non_paddy_area__count";
-        optional = false,
+        "irrigated_non_paddy_area__count",
+        LandHydrologySBM;
         sel = indices,
-        type = Int,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
-        "irrigated_non_paddy__irrigation_trigger_flag";
-        optional = false,
+        "irrigated_non_paddy__irrigation_trigger_flag",
+        LandHydrologySBM;
         sel = indices,
-        type = Bool,
     )
     max_irri_rate =
         ncread(
             dataset,
             config,
-            "irrigated_non_paddy__max_irrigation_rate";
+            "irrigated_non_paddy__max_irrigation_rate",
+            LandHydrologySBM;
             sel = indices,
-            defaults = 25.0,
-            type = Float64,
         ) .* (dt / BASETIMESTEP)
 
     parameters = NonPaddyParameters(;
@@ -272,59 +266,52 @@ function Paddy(
     h_min = ncread(
         dataset,
         config,
-        "irrigated_paddy__min_depth";
+        "irrigated_paddy__min_depth",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 20.0,
-        type = Float64,
     )
     h_opt = ncread(
         dataset,
         config,
-        "irrigated_paddy__optimal_depth";
+        "irrigated_paddy__optimal_depth",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 50.0,
-        type = Float64,
     )
     h_max = ncread(
         dataset,
         config,
-        "irrigated_paddy__max_depth";
+        "irrigated_paddy__max_depth",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 80.0,
-        type = Float64,
     )
     efficiency = ncread(
         dataset,
         config,
-        "irrigated_paddy__irrigation_efficiency";
+        "irrigated_paddy__irrigation_efficiency",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 1.0,
-        type = Float64,
     )
     areas = ncread(
         dataset,
         config,
-        "irrigated_paddy_area__count";
-        optional = false,
+        "irrigated_paddy_area__count",
+        LandHydrologySBM;
         sel = indices,
-        type = Bool,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
-        "irrigated_paddy__irrigation_trigger_flag";
-        optional = false,
+        "irrigated_paddy__irrigation_trigger_flag",
+        LandHydrologySBM;
         sel = indices,
-        type = Bool,
     )
     max_irri_rate =
         ncread(
             dataset,
             config,
-            "irrigated_paddy__max_irrigation_rate";
+            "irrigated_paddy__max_irrigation_rate",
+            LandHydrologySBM;
             sel = indices,
-            defaults = 25.0,
-            type = Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
     parameters = PaddyParameters(;
@@ -546,18 +533,16 @@ function AllocationLand(
     frac_sw_used = ncread(
         dataset,
         config,
-        "land_surface_water__withdrawal_fraction";
+        "land_surface_water__withdrawal_fraction",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 1,
-        type = Float64,
     )
     areas = ncread(
         dataset,
         config,
-        "land_water_allocation_area__count";
+        "land_water_allocation_area__count",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 1,
-        type = Int,
     )
 
     n = length(indices)

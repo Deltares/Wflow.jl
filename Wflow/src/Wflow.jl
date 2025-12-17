@@ -183,6 +183,8 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+const MISSING_VALUE = Float64(NaN)
+
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
