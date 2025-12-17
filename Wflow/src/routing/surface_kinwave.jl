@@ -97,7 +97,7 @@ end
 @with_kw struct RiverFlowBC{R}
     n::Int
     inwater::Vector{Float64} = zeros(n)                         # Lateral inflow [m³ s⁻¹]
-    external_inflow::Vector{Float64} = zeros(n)                          # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    external_inflow::Vector{Float64} = zeros(n)                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64} = zeros(n)  # Actual abstraction from external negative inflow [m³ s⁻¹]
     abstraction::Vector{Float64} = zeros(n)                     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     reservoir::R                                                # Reservoir model struct of arrays
@@ -125,9 +125,10 @@ function RiverFlowBC(
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlow{R, A} <: AbstractRiverFlowModel
+@with_kw struct KinWaveRiverFlow{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
+                AbstractRiverFlowModel
     timestepping::TimeStepping
-    boundary_conditions::RiverFlowBC{R}
+    boundary_conditions::R
     parameters::RiverFlowParameters
     variables::FlowVariables
     allocation::A   # Water allocation

@@ -231,3 +231,5 @@ function flux!(well::Well, aquifer::AbstractAquifer, dt::Float64)
     end
     return nothing
 end
+
+flux!(::Nothing, ::AbstractAquifer, ::Float64) = nothing

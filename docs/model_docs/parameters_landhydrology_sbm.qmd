@@ -169,7 +169,6 @@ model.
 | `soil_surface_water__net_runoff_volume_flux` | Net surface runoff (after open water evaporation) | mm Δt⁻¹ |
 | `compacted_soil_surface_water__excess_volume_flux` | Excess water for compacted soil fraction | mm Δt⁻¹ |
 | `non_compacted_soil_surface_water__excess_volume_flux` | Excess water for non-compacted soil fraction | mm Δt⁻¹ |
-| `soil_surface_water_unsaturated_zone__exfiltration_volume_flux` | Water exfiltrating from unsaturated store because of rising water table | mm Δt⁻¹ |
 | `soil_surface_water_saturated_zone__exfiltration_volume_flux` | Water exfiltrating from saturated store during saturation excess conditions | mm Δt⁻¹ |
 | `soil_layer_water__volume_fraction` | Volumetric water content per soil layer (including residual water content and saturated zone) | - |
 | `soil_layer_water__volume_percentage` | Volumetric water content per soil layer (including residual water content and saturated zone) | % |

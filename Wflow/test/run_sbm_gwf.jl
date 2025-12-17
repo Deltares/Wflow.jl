@@ -95,13 +95,8 @@
             "land_drain_water__to_subsurface_volume_flow_rate",
         )
         model = Wflow.Model(config)
-        @test model.routing.subsurface_flow.boundaries.active == [:recharge, :river]
-        @test model.routing.subsurface_flow.boundaries isa Wflow.AquiferBC{
-            Wflow.Recharge,
-            Wflow.GwfRiver,
-            Wflow.NoAquiferBoundaryCondition,
-            Wflow.NoAquiferBoundaryCondition,
-        }
+        @test typeof.(Wflow.get_boundaries(model.routing.subsurface_flow.boundaries)) ==
+              (Wflow.Recharge, Wflow.GwfRiver, Nothing, Nothing)
     end
 
     Wflow.close_files(model; delete_output = false)

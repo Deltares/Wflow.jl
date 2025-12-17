@@ -28,7 +28,10 @@ end
 Water mass balance error results (balance error and relative error) for river, overland,
 subsurface and reservoir flow routing.
 """
-@with_kw struct FlowRoutingMassBalance{R, RT} <: AbstractMassBalance
+@with_kw struct FlowRoutingMassBalance{
+    R <: AbstractMassBalance,
+    RT <: AbstractMassBalance,
+} <: AbstractMassBalance
     river_water_balance::R
     reservoir_water_balance::RT
     overland_water_balance::MassBalance
@@ -267,7 +270,7 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
     # exclude recharge from computing total incoming and outgoing boundary fluxes for
     # groundwaterflow, other boundaries are required for the total soil water balance.
     boundaries_flow_in, boundaries_flow_out =
-        sum_boundary_fluxes(subsurface_flow; exclude = :recharge)
+        sum_boundary_fluxes(subsurface_flow; exclude = Recharge)
 
     for i in eachindex(storage_prev)
         f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)

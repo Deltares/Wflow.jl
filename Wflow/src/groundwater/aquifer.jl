@@ -66,37 +66,6 @@ abstract type AbstractAquifer end
 
 abstract type AbstractAquiferBoundaryCondition end
 
-struct NoAquiferBoundaryCondition <: AbstractAquiferBoundaryCondition end
-
-@with_kw struct AquiferBC{R, RI, D, W}
-    active::Vector{Symbol} = Symbol[]
-    recharge::R = NoAquiferBoundaryCondition()
-    river::RI = NoAquiferBoundaryCondition()
-    drain::D = NoAquiferBoundaryCondition()
-    well::W = NoAquiferBoundaryCondition()
-end
-
-function flux!(boundaries::AquiferBC, aquifer, dt)
-    for boundary_type in boundaries.active
-        boundary = getfield(boundaries, boundary_type)
-        flux!(boundary, aquifer, dt)
-    end
-end
-
-function set_flux_vars!(boundaries::AquiferBC)
-    for boundary_type in boundaries.active
-        boundary = getfield(boundaries, boundary_type)
-        boundary.variables.flux_av .= 0.0
-    end
-end
-
-function average_flux_vars!(boundaries::AquiferBC, dt::Float64)
-    for boundary_type in boundaries.active
-        boundary = getfield(boundaries, boundary_type)
-        boundary.variables.flux_av ./= dt
-    end
-end
-
 """
     ConfinedAquifer <: AbstractAquifer
 
@@ -503,21 +472,45 @@ function stable_timestep(
     return dt_min
 end
 
-@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
+minimum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
+minimum_head(aquifer::UnconfinedAquifer) =
+    max.(aquifer.variables.head, aquifer.parameters.bottom)
+
+maximum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
+maximum_head(aquifer::UnconfinedAquifer) =
+    min.(aquifer.variables.head, aquifer.parameters.top)
+
+@kwdef struct AquiferBoundaries{
+    Re <: Union{Nothing, AbstractAquiferBoundaryCondition},
+    Ri <: Union{Nothing, AbstractAquiferBoundaryCondition},
+    D <: Union{Nothing, AbstractAquiferBoundaryCondition},
+    W <: Union{Nothing, AbstractAquiferBoundaryCondition},
+}
+    recharge::Re = nothing
+    river::Ri = nothing
+    drain::D = nothing
+    well::W = nothing
+end
+
+get_boundaries(boundaries::AquiferBoundaries) =
+    (boundaries.recharge, boundaries.river, boundaries.drain, boundaries.well)
+
+@kwdef struct GroundwaterFlow{A <: AbstractAquifer, B <: AquiferBoundaries} <:
+              AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
-    boundaries::AquiferBC
+    boundaries::B = AquiferBoundaries()
     function GroundwaterFlow(
         timestepping::TimeStepping,
         aquifer::A,
         connectivity::Connectivity,
         constanthead::ConstantHead,
-        boundaries::AquiferBC,
-    ) where {A <: AbstractAquifer}
+        boundaries::B,
+    ) where {A <: AbstractAquifer, B <: AquiferBoundaries}
         initialize_conductance!(aquifer, connectivity)
-        new{A}(timestepping, aquifer, connectivity, constanthead, boundaries)
+        new{A, B}(timestepping, aquifer, connectivity, constanthead, boundaries)
     end
 end
 
@@ -527,11 +520,13 @@ function update_fluxes!(
     dt::Float64,
 ) where {A <: AbstractAquifer}
     flux!(gwf.aquifer, gwf.connectivity, conductivity_profile, dt)
-    flux!(gwf.boundaries, gwf.aquifer, dt)
+    for boundary in get_boundaries(gwf.boundaries)
+        flux!(boundary, gwf.aquifer, dt)
+    end
     return nothing
 end
 
-function update_head!(gwf::GroundwaterFlow{A}, dt::Float64) where {A <: ConfinedAquifer}
+function update_head!(gwf::GroundwaterFlow{A}, dt::Float64) where {A <: AbstractAquifer}
     gwf.aquifer.variables.head .+= (
         gwf.aquifer.variables.q_net ./ gwf.aquifer.parameters.area .* dt ./
         storativity(gwf.aquifer)
@@ -586,6 +581,28 @@ function update_head!(
     return nothing
 end
 
+function set_flux_vars!(gwf::GroundwaterFlow{A}) where {A <: AbstractAquifer}
+    for boundary in get_boundaries(gwf.boundaries)
+        !isnothing(boundary) && (boundary.variables.flux_av .= 0.0)
+    end
+    gwf.aquifer.variables.exfiltwater .= 0.0
+    gwf.aquifer.variables.q_in_av .= 0.0
+    gwf.aquifer.variables.q_out_av .= 0.0
+    return nothing
+end
+
+function average_flux_vars!(
+    gwf::GroundwaterFlow{A},
+    dt::Float64,
+) where {A <: AbstractAquifer}
+    for boundary in get_boundaries(gwf.boundaries)
+        !isnothing(boundary) && (boundary.variables.flux_av ./= dt)
+    end
+    gwf.aquifer.variables.q_in_av ./= dt
+    gwf.aquifer.variables.q_out_av ./= dt
+    return nothing
+end
+
 function update!(
     gwf::GroundwaterFlow{A},
     soil::SbmSoilModel,
@@ -596,10 +613,7 @@ function update!(
     (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
     (; theta_s, theta_r) = soil.parameters
 
-    set_flux_vars!(gwf.boundaries)
-    gwf.aquifer.variables.exfiltwater .= 0.0
-    gwf.aquifer.variables.q_in_av .= 0.0
-    gwf.aquifer.variables.q_out_av .= 0.0
+    set_flux_vars!(gwf)
     t = 0.0
     while t < dt
         gwf.aquifer.variables.q_net .= 0.0
@@ -618,9 +632,7 @@ function update!(
         update_ustorelayerdepth!(soil, gwf)
         t += dt_s
     end
-    average_flux_vars!(gwf.boundaries, dt)
-    gwf.aquifer.variables.q_in_av ./= dt
-    gwf.aquifer.variables.q_out_av ./= dt
+    average_flux_vars!(gwf, dt)
     return nothing
 end
 
@@ -631,10 +643,7 @@ function update!(
 ) where {A <: ConfinedAquifer}
     (; cfl) = gwf.timestepping
 
-    set_flux_vars!(gwf.boundaries)
-    gwf.aquifer.variables.exfiltwater .= 0.0
-    gwf.aquifer.variables.q_in_av .= 0.0
-    gwf.aquifer.variables.q_out_av .= 0.0
+    set_flux_vars!(gwf)
     t = 0.0
     while t < dt
         gwf.aquifer.variables.q_net .= 0.0
@@ -644,9 +653,7 @@ function update!(
         update_head!(gwf, dt_s)
         t += dt_s
     end
-    average_flux_vars!(gwf.boundaries, dt)
-    gwf.aquifer.variables.q_in_av ./= dt
-    gwf.aquifer.variables.q_out_av ./= dt
+    average_flux_vars!(gwf, dt)
     return nothing
 end
 
@@ -673,9 +680,9 @@ function sum_boundary_fluxes(
     n = length(gwf.aquifer.variables.storage)
     flux_in = zeros(n)
     flux_out = zeros(n)
-    for boundary_type in boundaries.active
-        boundary_type == exclude && continue
-        boundary = getfield(boundaries, boundary_type)
+    for boundary in get_boundaries(boundaries)
+        isnothing(boundary) && continue
+        typeof(boundary) == exclude && continue
         for (i, index) in enumerate(boundary.index)
             flux = boundary.variables.flux_av[i]
             if flux > 0.0
