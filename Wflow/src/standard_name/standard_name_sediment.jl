@@ -34,7 +34,7 @@ const sediment_standard_name_map = Dict{String, ParameterMetadata}(
         description = "Soil content large aggregates",
     ),
     "river_bottom_and_bank_sediment__median_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.potential_erosion.parameters.d50),
+        lens = @optic(_.routing.river_flow.potential_erosion.parameters.d50),
         unit = Unit(; mm = 1),
         default = 0.1,
         description = "Median diameter in the river bed/bank",

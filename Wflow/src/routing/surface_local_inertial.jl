@@ -1,3 +1,5 @@
+abstract type AbstractFloodPlain end
+
 "Struct for storing local inertial river flow model parameters"
 @with_kw struct LocalInertialRiverFlowParameters
     n::Int                                  # number of cells [-]
@@ -158,9 +160,13 @@ function LocalInertialRiverFlowVariables(
 end
 
 "Shallow water river flow model using the local inertial method"
-@with_kw struct LocalInertialRiverFlow{R, F, A} <: AbstractRiverFlowModel
+@with_kw struct LocalInertialRiverFlow{
+    R <: RiverFlowBC,
+    F <: Union{AbstractFloodPlain, Nothing},
+    A <: AbstractAllocationModel,
+} <: AbstractRiverFlowModel
     timestepping::TimeStepping
-    boundary_conditions::RiverFlowBC{R}
+    boundary_conditions::R
     parameters::LocalInertialRiverFlowParameters
     variables::LocalInertialRiverFlowVariables
     floodplain::F                                       # Floodplain (1D) schematization
@@ -1191,7 +1197,7 @@ function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
 end
 
 "Floodplain flow model"
-@with_kw struct FloodPlain{P}
+@with_kw struct FloodPlain{P} <: AbstractFloodPlain
     parameters::FloodPlainParameters{P}
     variables::FloodPlainVariables
 end

@@ -459,21 +459,37 @@ maximum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
 maximum_head(aquifer::UnconfinedAquifer) =
     min.(aquifer.variables.head, aquifer.parameters.top)
 
-@kwdef struct GroundwaterFlow{A} <: AbstractSubsurfaceFlowModel
+@kwdef struct AquiferBoundaries{
+    Re <: Union{Nothing, AquiferBoundaryCondition},
+    Ri <: Union{Nothing, AquiferBoundaryCondition},
+    D <: Union{Nothing, AquiferBoundaryCondition},
+    W <: Union{Nothing, AquiferBoundaryCondition},
+}
+    recharge::Re = nothing
+    river::Ri = nothing
+    drain::D = nothing
+    well::W = nothing
+end
+
+get_boundaries(boundaries::AquiferBoundaries) =
+    (boundaries.recharge, boundaries.river, boundaries.drain, boundaries.well)
+
+@kwdef struct GroundwaterFlow{A <: Aquifer, B <: AquiferBoundaries} <:
+              AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
-    boundaries::NamedTuple
+    boundaries::B = AquiferBoundaries()
     function GroundwaterFlow(
         timestepping::TimeStepping,
         aquifer::A,
         connectivity::Connectivity,
         constanthead::ConstantHead,
-        boundaries::NamedTuple,
-    ) where {A <: Aquifer}
+        boundaries::B,
+    ) where {A <: Aquifer, B <: AquiferBoundaries}
         initialize_conductance!(aquifer, connectivity)
-        new{A}(timestepping, aquifer, connectivity, constanthead, boundaries)
+        new{A, B}(timestepping, aquifer, connectivity, constanthead, boundaries)
     end
 end
 
@@ -483,7 +499,7 @@ function update_fluxes!(
     dt::Float64,
 ) where {A <: Aquifer}
     flux!(gwf.aquifer, gwf.connectivity, conductivity_profile, dt)
-    for boundary in gwf.boundaries
+    for boundary in get_boundaries(gwf.boundaries)
         flux!(boundary, gwf.aquifer, dt)
     end
     return nothing
@@ -517,8 +533,8 @@ function update!(
     conductivity_profile::GwfConductivityProfileType.T,
 ) where {A <: Aquifer}
     (; cfl) = gwf.timestepping
-    for boundary in gwf.boundaries
-        boundary.variables.flux_av .= 0.0
+    for boundary in get_boundaries(gwf.boundaries)
+        !isnothing(boundary) && (boundary.variables.flux_av .= 0.0)
     end
     gwf.aquifer.variables.exfiltwater .= 0.0
     gwf.aquifer.variables.q_in_av .= 0.0
@@ -532,8 +548,8 @@ function update!(
         update_head!(gwf, dt_s)
         t += dt_s
     end
-    for boundary in gwf.boundaries
-        boundary.variables.flux_av ./= dt
+    for boundary in get_boundaries(gwf.boundaries)
+        !isnothing(boundary) && (boundary.variables.flux_av ./= dt)
     end
     gwf.aquifer.variables.q_in_av ./= dt
     gwf.aquifer.variables.q_out_av ./= dt
@@ -563,7 +579,8 @@ function sum_boundary_fluxes(
     n = length(gwf.aquifer.variables.storage)
     flux_in = zeros(n)
     flux_out = zeros(n)
-    for boundary in boundaries
+    for boundary in get_boundaries(boundaries)
+        isnothing(boundary) && continue
         typeof(boundary) == exclude && continue
         for (i, index) in enumerate(boundary.index)
             flux = boundary.variables.flux_av[i]

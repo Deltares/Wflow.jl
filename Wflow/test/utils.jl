@@ -62,3 +62,64 @@ end
 
     @test_throws Exception Unit(; foo = 42)
 end
+
+@testitem "Lenses" begin
+    configs = Wflow.Config[]
+
+    # Initialize the first model with mass balance
+    config = Wflow.Config(normpath(@__DIR__, "sbm_config.toml"))
+    config.model.water_mass_balance__flag = true
+    push!(configs, config)
+
+    for file_name in [
+        "sbm_gwf_config.toml",
+        "sbm_river-floodplain-local-inertial_config.toml",
+        "sbm_river-land-local-inertial_config.toml",
+        "sbm_gwf_piave_demand_config.toml",
+        "sediment_config.toml",
+        "sediment_eurosem_engelund_config.toml",
+    ]
+        push!(configs, Wflow.Config(normpath(@__DIR__, file_name)))
+    end
+
+    for transport_method in ("kodatie", "govers", "yalin")
+        config = Wflow.Config(normpath(@__DIR__, "sediment_eurosem_engelund_config.toml"))
+        config.dir_output = normpath(@__DIR__, "data", "output", transport_method) # Avoid file permission problems
+        if transport_method == "kodatie"
+            config.model.river_transport = transport_method
+        else
+            config.model.run_river_model__flag = false
+            config.model.land_transport = transport_method
+        end
+        push!(configs, config)
+    end
+
+    models = Wflow.Model.(configs)
+
+    for (map_name, standard_name_map) in (
+        ("sbm", Wflow.sbm_standard_name_map),
+        ("sediment", Wflow.sediment_standard_name_map),
+        ("domain", Wflow.domain_standard_name_map),
+        ("routing", Wflow.routing_standard_name_map),
+    )
+        @testset "Test lenses: $map_name" begin
+            invalid = String[]
+            for (name, data) in standard_name_map
+                (; lens) = data
+                isnothing(lens) && continue
+                valid = false
+                for model in models
+                    try
+                        lens(model)
+                        valid = true
+                        break
+                    catch
+                        nothing
+                    end
+                end
+                valid || push!(invalid, name)
+            end
+            @test isempty(invalid)
+        end
+    end
+end
