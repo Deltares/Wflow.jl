@@ -16,7 +16,10 @@ end
 Water mass balance error results (balance error and relative error) for river, overland,
 subsurface and reservoir flow routing.
 """
-@with_kw struct FlowRoutingMassBalance{R, RT} <: AbstractMassBalance
+@with_kw struct FlowRoutingMassBalance{
+    R <: AbstractMassBalance,
+    RT <: AbstractMassBalance,
+} <: AbstractMassBalance
     river_water_balance::R
     reservoir_water_balance::RT
     overland_water_balance::MassBalance

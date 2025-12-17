@@ -1,6 +1,4 @@
 abstract type AbstractIrrigationModel end
-abstract type AbstractAllocationModel end
-abstract type AbstractDemandModel end
 
 struct NoIrrigationPaddy <: AbstractIrrigationModel
     n::Int
@@ -444,13 +442,19 @@ update_demand_gross!(model::NoIrrigationPaddy) = nothing
 end
 
 "Water demand model"
-@with_kw struct Demand{D, I, L, P, NP, V} <: AbstractDemandModel
+@with_kw struct Demand{
+    D <: AbstractDemandModel,
+    I <: AbstractDemandModel,
+    L <: AbstractDemandModel,
+    P <: AbstractIrrigationModel,
+    NP <: AbstractIrrigationModel,
+} <: AbstractDemandModel
     domestic::D
     industry::I
     livestock::L
     paddy::P
     nonpaddy::NP
-    variables::V
+    variables::DemandVariables
 end
 
 @with_kw struct NoDemand <: AbstractDemandModel
