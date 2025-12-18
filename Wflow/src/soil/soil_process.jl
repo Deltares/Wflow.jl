@@ -104,16 +104,15 @@ end
 Return soil water pressure head `h3` of Feddes root water uptake reduction function.
 """
 function feddes_h3(h3_high, h3_low, tpot, Δt)
-    # value of h3 is a function of potential transpiration [mm/d]
+    # value of h3 is a function of potential transpiration [mm d⁻¹]
     tpot_daily = tpot * (tosecond(BASETIMESTEP) / Δt)
-    if (tpot_daily >= 0.0) && (tpot_daily <= 1.0)
-        h3 = h3_low
-    elseif (tpot_daily > 1.0) && (tpot_daily < 5.0)
-        h3 = h3_high + ((h3_low - h3_high) * (5.0 - tpot_daily)) / (5.0 - 1.0)
+    return if tpot_daily <= 1.0
+        h3_low
+    elseif tpot_daily < 5.0
+        h3_low + (h3_high - h3_low) * (tpot_daily - 1.0) / (5.0 - 1.0)
     else
-        h3 = h3_high
+        h3_high
     end
-    return h3
 end
 
 """
@@ -123,26 +122,21 @@ Root water uptake reduction factor based on Feddes.
 """
 function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
-    if alpha_h1 == 0.0
-        if (h <= h4) || (h > h1)
-            alpha = 0.0
-        elseif (h > h2) && (h <= h1)
-            alpha = (h - h1) / (h2 - h1)
-        elseif (h >= h3) && (h <= h2)
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
+    return if h < h4
+        0.0
+    elseif h < h3
+        (h - h4) / (h3 - h4)
+    elseif iszero(alpha_h1)
+        if h < h2
+            1.0
+        elseif h < h1
+            (h1 - h) / (h1 - h2)
+        else
+            0.0
         end
     else
-        if h <= h4
-            alpha = 0.0
-        elseif h >= h3
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
-        end
+        1.0
     end
-    return alpha
 end
 
 """

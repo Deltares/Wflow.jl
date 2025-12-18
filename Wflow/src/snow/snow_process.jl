@@ -22,8 +22,8 @@ The refreezing efficiency factor `cfr` is set to 0.05.
 - `runoff`
 """
 function snowpack_hbv(
-    snow,
-    snowwater,
+    snow_storage,
+    snow_water,
     snow_precip,
     liquid_precip,
     temperature,
@@ -32,24 +32,28 @@ function snowpack_hbv(
     whc;
     cfr = 0.05,
 )
-    # potential snow melt, based on temperature
-    potsnowmelt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
-    # potential refreezing, based on temperature
-    potrefreezing = temperature < ttm ? cfmax * cfr * (ttm - temperature) : 0.0
-    # actual refreezing
-    refreezing = temperature < ttm ? min(potrefreezing, snowwater) : 0.0
+    if temperature > ttm
+        potential_snow_melt = cfmax * (temperature - ttm)
+        snow_melt = min(potential_snow_melt, snow_storage)
+        snow_storage -= snow_melt
+        snow_water += snow_melt
+    else
+        snow_melt = 0.0
+        potential_refreezing = cfmax * cfr * (ttm - temperature)
+        refreezing = min(potential_refreezing, snow_water)
+        snow_storage += refreezing
+        snow_water -= refreezing
+    end
 
-    # no landuse correction here
-    snowmelt = min(potsnowmelt, snow)  # actual snow melt
-    snow += snow_precip + refreezing - snowmelt  # dry snow content
-    snowwater -= refreezing  # free water content in snow
-    maxsnowwater = snow * whc  # max water in the snow
-    snowwater += snowmelt + liquid_precip  # add all water and potentially supersaturate the snowpack
-    runoff = max(snowwater - maxsnowwater, 0.0)  # rain + surpluss snowwater
-    snowwater -= runoff
-    swe = snowwater + snow # snow water equivalent
+    snow_storage += snow_precip
+    snow_water += liquid_precip
 
-    return snow, snowwater, swe, snowmelt, runoff
+    max_snow_water = snow_storage * whc
+    runoff = max(snow_water - max_snow_water, 0)
+    snow_water -= runoff
+    snow_water_equivalent = snow_water + snow_storage
+
+    return snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff
 end
 
 """
