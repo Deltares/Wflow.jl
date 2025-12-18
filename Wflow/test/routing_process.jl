@@ -49,46 +49,82 @@
 end
 
 @testitem "kinematic wave subsurface flow" begin
-    kh_exp_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
+    using StaticArrays: SVector
+    kh_exp_profile = Wflow.KhExponential([205.5965576171875], [1.0141291422769427])
+
+    ustorelayerthickness = fill(SVector{4}([100.0, 300.0, 119.83408703759733, NaN]), 1)
+    ustorelayerdepth = fill(
+        SVector{4}([0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0]),
+        1,
+    )
+    n_unsatlayers = fill(3, 1)
+    zi = fill(519.8340870375973, 1)
+    theta_s = fill(0.48642662167549133, 1)
+    theta_fc = fill(0.28219206182657536, 1)
+    theta_r = fill(0.11939866840839386, 1)
+    sumlayers = fill(SVector{5}([0.0, 100.0, 400.0, 1200.0, 2000.0]), 1)
+    act_thickl = fill(SVector{4}([100.0, 300.0, 800.0, 800.0]), 1)
+
+    variables = (; ustorelayerthickness, ustorelayerdepth, n_unsatlayers, zi)
+    parameters = (; theta_s, theta_fc, theta_r, sumlayers, act_thickl)
+    soil = (; parameters, variables)
+
     @test all(
         isapprox.(
             Wflow.kinematic_wave_ssf(
-                151.93545317754274,
-                66.13838493935127,
-                0.037300947928732966,
-                -0.4682469020507169,
-                0.0058632562868297,
-                0.1703555408323154,
+                0.0,
+                25953.147860945584,
+                0.5198340870375974,
+                0.4346106913943182,
+                0.4522336721420288,
+                0.20423455984891598,
                 2.0,
                 1.0,
-                651.0959333549443,
-                926.1824194767788,
-                0.07651841216556145,
+                1117.0150713112287,
+                517.495693771673,
+                79.62016166711079,
                 kh_exp_profile,
+                soil,
                 1,
             ),
-            (65.87716383769195, 0.039430950039165864, 0.0),
+            (23675.53215503045, 0.7162637030758906, 0.0, 0.20423455984891598),
         ),
     )
     kh_exp_const_profile = Wflow.KhExponentialConstant(kh_exp_profile, [0.2])
+    ustorelayerthickness = fill(SVector{4}([100.0, 300.0, 348.31246153148595, NaN]), 1)
+    ustorelayerdepth =
+        fill(SVector{4}([0.1909439890049523, 16.27933934181815, 58.42501219303608, 0.0]), 1)
+    n_unsatlayers = fill(3, 1)
+    zi = fill(758.8905603985703, 1)
+    theta_s = fill(0.48642662167549133, 1)
+    theta_fc = fill(0.28219206182657536, 1)
+    theta_r = fill(0.11939866840839386, 1)
+    sumlayers = fill(SVector{5}([0.0, 100.0, 400.0, 1200.0, 2000.0]), 1)
+    act_thickl = fill(SVector{4}([100.0, 300.0, 800.0, 800.0]), 1)
+
+    variables = (; ustorelayerthickness, ustorelayerdepth, n_unsatlayers, zi)
+    parameters = (; theta_s, theta_fc, theta_r, sumlayers, act_thickl)
+    soil = (; parameters, variables)
+
     @test all(
         isapprox.(
             Wflow.kinematic_wave_ssf(
-                726.5698548296821,
-                540.095599334873,
-                0.2989648788074234,
-                0.6,
-                0.08617263287305832,
-                0.3281228095293045,
+                0.0,
+                54175.65003911068,
+                0.7588905603985703,
+                0.6928420612599803,
+                0.4522336721420288,
+                0.20423455984891598,
                 2.0,
                 1.0,
-                1100.0330152617341,
-                499.09766763570804,
-                2.223399526492016,
+                1117.0150713112287,
+                517.495693771673,
+                153.46698446681825,
                 kh_exp_const_profile,
+                soil,
                 1,
             ),
-            (543.4872124727707, 0.2942848053422706, 0.0),
+            (48524.884193017664, 1.163361369433857, 0.0, 0.20423455984891598),
         ),
     )
 end
