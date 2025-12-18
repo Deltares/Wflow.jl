@@ -1,8 +1,9 @@
+# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
 of type `SoilLoss`. The `lens` allows access to a nested model variable.
 """
-const sediment_standard_name_map = Dict{String, ParameterMetadata}(
+const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "atmosphere_water__precipitation_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.atmospheric_forcing.precipitation),
         unit = Unit(; mm = 1, dt = -1),

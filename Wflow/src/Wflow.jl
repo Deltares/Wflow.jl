@@ -59,6 +59,7 @@ using LoggingExtras:
     Warn,
     with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress

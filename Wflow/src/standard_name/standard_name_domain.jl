@@ -1,4 +1,5 @@
-const domain_standard_name_map = Dict{String, ParameterMetadata}(
+# NOTE: The order of the entries determines the order in the docs tables
+const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "subbasin_location__count" => ParameterMetadata(;
         type = Int,
         description = "Subbasin ids",
@@ -13,13 +14,6 @@ const domain_standard_name_map = Dict{String, ParameterMetadata}(
         ParameterMetadata(; fill = false, description = "Pit location mask"),
     "river_location__mask" =>
         ParameterMetadata(; fill = false, description = "River mask (0-1)"),
-    "reservoir_location__count" =>
-        ParameterMetadata(; fill = 0, description = "Reservoir location ids"),
-    "reservoir_area__count" => ParameterMetadata(;
-        type = Int,
-        allow_missing = true,
-        description = "Reservoir area ids",
-    ),
     "land_water_allocation_area__count" =>
         ParameterMetadata(; default = 1, description = "Water allocation area ids"),
     "land_surface__slope" => ParameterMetadata(;
@@ -27,18 +21,6 @@ const domain_standard_name_map = Dict{String, ParameterMetadata}(
         unit = Unit(; m = (1, 1)),
         description = "Land slope",
     ),
-    "river__width" => ParameterMetadata(;
-        unit = Unit(; m = 1),
-        fill = 0.0,
-        description = "River width",
-    ),
-    "river__length" => ParameterMetadata(;
-        unit = Unit(; m = 1),
-        fill = 0.0,
-        description = "River length",
-    ),
-    "river__slope" =>
-        ParameterMetadata(; unit = Unit(; m = (1, 1)), description = "River slope"),
     "land_water_covered__area_fraction" => ParameterMetadata(;
         default = 0.0,
         description = "Land water covered area fraction",

@@ -285,11 +285,17 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     logging = false
     # allow reservoir only in river cells
     # note that these locations are only the reservoir outlet pixels
-    locs =
-        ncread(dataset, config, "reservoir_location__count", Domain; sel = indices, logging)
+    locs = ncread(
+        dataset,
+        config,
+        "reservoir_location__count",
+        Routing;
+        sel = indices,
+        logging,
+    )
 
     # this holds the same ids as locs, but covers the entire reservoir
-    coverage_2d = ncread(dataset, config, "reservoir_area__count", Domain; logging)
+    coverage_2d = ncread(dataset, config, "reservoir_area__count", Routing; logging)
     # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]
     rev_inds = zeros(Int, size(coverage_2d))

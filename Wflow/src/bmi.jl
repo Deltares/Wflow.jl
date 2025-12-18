@@ -166,8 +166,7 @@ function BMI.get_var_nbytes(model::Model, name::String)
 end
 
 function BMI.get_var_location(model::Model, name::String)
-    (; land) = model
-    lens = standard_name_map(land)[name].lens
+    (; lens) = get_metadata(name)
     element_type = grid_element_type(model, lens)
     return element_type
 end
@@ -204,19 +203,19 @@ function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
 end
 
 function BMI.get_value_ptr(model::Model, name::String)
-    (; land, domain) = model
+    (; domain) = model
     n = length(active_indices(domain, name))
 
     if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         name_2d, ind = soil_layer_standard_name(name)
-        lens = standard_name_map(land)[name_2d].lens
+        (; lens) = get_metadata(name_2d)
         model_vals = lens(model)
         el_type = eltype(first(model_vals))
         dim = length(first(model_vals))
         value = reshape(reinterpret(el_type, model_vals), dim, :)
         return @view value[ind, 1:n]
     else
-        lens = standard_name_map(land)[name].lens
+        (; lens) = get_metadata(name)
         return @view(lens(model)[1:n])
     end
 end

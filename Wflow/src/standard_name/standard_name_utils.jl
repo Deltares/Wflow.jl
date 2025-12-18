@@ -1,5 +1,5 @@
 # wrapper methods for standard name mapping
-standard_name_map(model) = standard_name_map(typeof(model))
+standard_name_map(model::T) where {T} = standard_name_map(T)
 standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
 standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
 standard_name_map(::Type{<:Domain}) = domain_standard_name_map
@@ -20,6 +20,7 @@ Metadata associated with parameters and variables.
 - `description`: The description of the parameter/variable provided in the Wflow docs
 - `allow_missing`: Whether the parameter/variable is allowed to have missing entries
 - `dimname`: The name of the third dimension of the parameter/variable if it exists
+- `flags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
 @kwdef struct ParameterMetadata{
     L,
@@ -36,6 +37,7 @@ Metadata associated with parameters and variables.
     description::String = ""
     allow_missing::Bool = false
     dimname::N = nothing
+    flags::Vector{Symbol} = []
     function ParameterMetadata(
         lens::L,
         unit,
@@ -45,6 +47,7 @@ Metadata associated with parameters and variables.
         description,
         allow_missing,
         dimname::N,
+        flags,
     ) where {L, D, F, N}
         if isnothing(type)
             type = if !isnothing(default)
@@ -66,6 +69,7 @@ Metadata associated with parameters and variables.
             description,
             allow_missing,
             dimname,
+            flags,
         )
     end
 end
@@ -74,4 +78,16 @@ get_metadata(name::AbstractString, ::Type{<:Writer}) = ParameterMetadata()
 get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model))
 get_metadata(name::AbstractString, L::Type) = standard_name_map(L)[name]
 
-get_lens(name::AbstractString, model) = get_metadata(name, typeof(model)).lens
+function get_metadata(name::AbstractString, types::Vararg{Type})
+    for type in types
+        metadata = get(standard_name_map(type), name, nothing)
+        !isnothing(metadata) && return metadata
+    end
+    return nothing
+end
+
+get_metadata(name::AbstractString) =
+    get_metadata(name, LandHydrologySBM, Routing, SoilLoss, Domain)
+
+get_lens(name::AbstractString, model::T) where {T} = get_lens(name, T)
+get_lens(name::AbstractString, ::Type{T}) where {T} = get_metadata(name, T).lens

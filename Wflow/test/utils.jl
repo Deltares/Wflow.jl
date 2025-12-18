@@ -64,6 +64,12 @@ end
 end
 
 @testitem "Lenses" begin
+    standard_name_maps = (
+        ("sbm", Wflow.sbm_standard_name_map),
+        ("sediment", Wflow.sediment_standard_name_map),
+        ("domain", Wflow.domain_standard_name_map),
+        ("routing", Wflow.routing_standard_name_map),
+    )
     configs = Wflow.Config[]
 
     # Initialize the first model with mass balance
@@ -95,13 +101,7 @@ end
     end
 
     models = Wflow.Model.(configs)
-
-    for (map_name, standard_name_map) in (
-        ("sbm", Wflow.sbm_standard_name_map),
-        ("sediment", Wflow.sediment_standard_name_map),
-        ("domain", Wflow.domain_standard_name_map),
-        ("routing", Wflow.routing_standard_name_map),
-    )
+    for (map_name, standard_name_map) in standard_name_maps
         @testset "Test lenses: $map_name" begin
             invalid = String[]
             for (name, data) in standard_name_map
@@ -122,4 +122,20 @@ end
             @test isempty(invalid)
         end
     end
+
+    # Find duplicate lenses
+    lenses = vcat(
+        [
+            getfield.(values(standard_name_map), :lens) for
+            (_, standard_name_map) in standard_name_maps
+        ]...,
+    )
+    filter!(!isnothing, lenses)
+    duplicates = []
+    for unique_lens in unique(lenses)
+        if count(==(unique_lens), lenses) > 1
+            push!(duplicates, unique_lens)
+        end
+    end
+    @test isempty(duplicates)
 end

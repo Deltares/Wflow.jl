@@ -37,7 +37,7 @@ function set_pit_ldd(
     pits_2d::AbstractMatrix{Bool},
     ldd::Vector{UInt8},
     indices::Vector{CartesianIndex{2}};
-    pit::Integer = 5,
+    pit::Integer=5,
 )::Vector{UInt8}
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
@@ -73,7 +73,7 @@ represent inactive cells.
 function active_indices(
     subcatch_2d::AbstractMatrix,
     nodata,
-)::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
+)::Tuple{Vector{CartesianIndex{2}},Matrix{Int}}
     A = subcatch_2d
     all_inds = CartesianIndices(size(A))
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
@@ -98,7 +98,7 @@ function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIn
     end
 end
 
-function lattometres(lat::Real)::Tuple{Float64, Float64}
+function lattometres(lat::Real)::Tuple{Float64,Float64}
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
     m3 = 1.175         # latitude calculation term 3
@@ -118,7 +118,7 @@ function cell_lengths(
     y::AbstractVector{<:Real},
     celllength::Real,
     cell_length_in_meter::Bool,
-)::Tuple{Vector{Float64}, Vector{Float64}}
+)::Tuple{Vector{Float64},Vector{Float64}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -148,8 +148,8 @@ and set states in `model` object. Active cells are selected with the correspondi
 function set_states!(
     instate_path::AbstractString,
     model;
-    type = nothing,
-    dimname = nothing,
+    type=nothing,
+    dimname=nothing,
 )::Nothing
     (; domain, land, config) = model
 
@@ -167,7 +167,7 @@ function set_states!(
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
                 if dimname == :layer
-                    dimensions = (x = :, y = :, layer = :, time = 1)
+                    dimensions = (x=:, y=:, layer=:, time=1)
                 else
                     error("Unrecognized dimension name $dimname")
                 end
@@ -189,7 +189,7 @@ function set_states!(
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
-                A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
+                A = read_standardized(ds, ncname, (x=:, y=:, time=1))
                 A = A[sel]
                 A = nomissing(A)
                 # Convert to desired type if needed
@@ -199,7 +199,7 @@ function set_states!(
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = get_lens(state, land)
+                lens = get_metadata(state, typeof(land), Routing).lens
                 lens(model)[1:n] .= A
             else
                 error(
@@ -212,7 +212,7 @@ function set_states!(
     return nothing
 end
 
-function get_var(config::Config, parameter::AbstractString; optional = true)
+function get_var(config::Config, parameter::AbstractString; optional=true)
     if hasfield(InputSection, Symbol(parameter))
         var = getfield(config.input, Symbol(parameter))
     elseif haskey(config.input.location_maps, parameter)
@@ -251,12 +251,12 @@ function ncread(
     config::Config,
     parameter::AbstractString,
     model_type;
-    sel = nothing,
-    logging = true,
-    metadata = get_metadata(parameter, model_type),
+    sel=nothing,
+    logging=true,
+    metadata=get_metadata(parameter, model_type),
 )
     (; default, fill, type, allow_missing, dimname) = metadata
-    var = get_var(config, parameter; optional = !isnothing(default))
+    var = get_var(config, parameter; optional=!isnothing(default))
 
     # for optional parameters default values are used.
     if isnothing(var)
@@ -272,11 +272,11 @@ function ncread(
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :, time = 1)
+        dim_sel = (x=:, y=:, time=1)
     elseif dimname == :layer
-        dim_sel = (x = :, y = :, layer = :, time = 1)
+        dim_sel = (x=:, y=:, layer=:, time=1)
     elseif dimname == :flood_depth
-        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
+        dim_sel = (x=:, y=:, flood_depth=:, time=1)
     else
         error("Unrecognized dimension name $dimname")
     end
@@ -364,7 +364,7 @@ function set_layerthickness(
 )::SVector
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
-        if reference_depth > cum_depth[i + 1]
+        if reference_depth > cum_depth[i+1]
             thicknesslayers = setindex(thicknesslayers, thickness[i], i)
         elseif reference_depth - cum_depth[i] > 0.0
             thicknesslayers = setindex(thicknesslayers, reference_depth - cum_depth[i], i)
@@ -458,10 +458,10 @@ function sum_at(f::Function, inds::AbstractVector{Int}, T::Type)::T
 end
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
-function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
+function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N,T}} where {T,N}
     size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
-    return copy(reinterpret(SVector{N, T}, vec(x)))
+    return copy(reinterpret(SVector{N,T}, vec(x)))
 end
 
 """
@@ -527,8 +527,8 @@ julia> tosecond(Day(1))
 """
 tosecond(x::Hour) = Float64(Dates.value(Second(x)))
 tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
+tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
+tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
 
 """
     adjacent_nodes_at_edge(graph)
@@ -537,9 +537,9 @@ Return the source node `src` and destination node `dst` of each edge of a direct
 """
 function adjacent_nodes_at_edge(
     graph::SimpleDiGraph{Int},
-)::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Int},Vector{Int}}}
     _edges = collect(edges(graph))
-    return (src = src.(_edges), dst = dst.(_edges))
+    return (src=src.(_edges), dst=dst.(_edges))
 end
 
 """
@@ -550,7 +550,7 @@ Return the source edge `src` and destination edge `dst` of each node of a direct
 function adjacent_edges_at_node(
     graph::SimpleDiGraph{Int},
     nodes_at_edge,
-)::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Vector{Int}},Vector{Vector{Int}}}}
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
@@ -558,7 +558,7 @@ function adjacent_edges_at_node(
         push!(src_edge, findall(isequal(nodes[i]), nodes_at_edge.dst))
         push!(dst_edge, findall(isequal(nodes[i]), nodes_at_edge.src))
     end
-    return (src = src_edge, dst = dst_edge)
+    return (src=src_edge, dst=dst_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
@@ -841,7 +841,7 @@ end
 kh_layered_profile!(
     soil::SbmSoilModel,
     subsurface::LateralSSF,
-    kv_profile::Union{KvExponential, KvExponentialConstant},
+    kv_profile::Union{KvExponential,KvExponentialConstant},
     dt,
 ) = nothing
 
@@ -973,7 +973,7 @@ end
 Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
 Otherwise return a `default` value.
 """
-function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
+function bounded_divide(x::Real, y::Real; max::Real=1.0, default::Real=0.0)::Real
     z = y > 0.0 ? min(x / y, max) : default
     return z
 end

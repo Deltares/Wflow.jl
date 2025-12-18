@@ -202,6 +202,9 @@ function to_string(unit::Unit; BMI_standard = false)
 
     # Positive powers
     for (symbol, powers_) in zip(symbols, powers)
+        if (symbol == :dt) && !BMI_standard
+            symbol = :Δt
+        end
         power = powers_[2]
         if !iszero(power)
             term = isone(power) ? symbol : "$symbol$(power_string(power, BMI_standard))"

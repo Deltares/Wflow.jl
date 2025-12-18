@@ -1,8 +1,9 @@
+# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
 of type `LandHydrologySBM`. The `lens` allows access to a nested model variable.
 """
-const sbm_standard_name_map = Dict{String, ParameterMetadata}(
+const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "atmosphere_water__precipitation_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.atmospheric_forcing.precipitation),
         unit = Unit(; mm = 1, dt = -1),
@@ -169,20 +170,10 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "Lateral inflow to river",
     ),
-    "river_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.variables.q),
-        unit = Unit(; m = 3, s = -1),
-        description = "Instantaneous river discharge",
-    ),
     "river_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.variables.q_av),
         unit = Unit(; m = 3, s = -1),
         description = "Average river discharge",
-    ),
-    "river_water__depth" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.variables.h),
-        unit = Unit(; m = 1),
-        description = "River water depth",
     ),
     "river_water__volume" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.variables.storage),
@@ -255,11 +246,6 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
             default = 0.0,
             description = "Maximum release below spillway",
         ),
-    "reservoir_water__volume" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.storage),
-        unit = Unit(; m = 3),
-        description = "Reservoir water volume",
-    ),
     "reservoir_water__outgoing_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_av
@@ -273,39 +259,6 @@ const sbm_standard_name_map = Dict{String, ParameterMetadata}(
         ),
         unit = Unit(; m = 3, s = -1),
         description = "Observed reservoir outgoing flow rate",
-    ),
-    "reservoir_water__incoming_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow
-        ),
-        unit = Unit(; m = 3, s = -1),
-        description = "Reservoir incoming flow rate",
-    ),
-    "reservoir_water__evaporation_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.actevap),
-        unit = Unit(; mm = 1, dt = -1),
-        description = "Reservoir evaporation flux",
-    ),
-    "reservoir_water__precipitation_volume_flux" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation
-        ),
-        unit = Unit(; mm = 1, dt = -1),
-        description = "Reservoir precipitation flux",
-    ),
-    "reservoir_water__potential_evaporation_volume_flux" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation
-        ),
-        unit = Unit(; mm = 1, dt = -1),
-        description = "Reservoir potential evaporation flux",
-    ),
-    "reservoir_water_surface__elevation" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.variables.waterlevel
-        ),
-        unit = Unit(; m = 1),
-        description = "Reservoir water surface elevation",
     ),
     "reservoir_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
