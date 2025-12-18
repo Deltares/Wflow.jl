@@ -92,9 +92,8 @@ end
 
 "Initialize Rutter interception model"
 function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
-    vars = InterceptionVariables(n)
-    model =
-        RutterInterceptionModel(; parameters = vegetation_parameter_set, variables = vars)
+    variables = InterceptionVariables(; n)
+    model = RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
     return model
 end
 
