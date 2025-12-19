@@ -59,6 +59,7 @@ using LoggingExtras:
     Warn,
     with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
@@ -126,6 +127,7 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")
 include("config_init.jl")
@@ -182,6 +184,8 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+const MISSING_VALUE = Float64(NaN)
+
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -222,7 +226,11 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
-include("standard_name.jl")
+include("standard_name/standard_name_utils.jl")
+include("standard_name/standard_name_domain.jl")
+include("standard_name/standard_name_routing.jl")
+include("standard_name/standard_name_sbm.jl")
+include("standard_name/standard_name_sediment.jl")
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

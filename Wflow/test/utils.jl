@@ -37,12 +37,47 @@ end
     @test Wflow.bounded_divide(1.0, 2.0) == 0.5
 end
 
+@testitem "unit: Units" begin
+    using Wflow: Unit, to_SI_factor, to_SI, to_string, ABSOLUTE_DEGREES
+
+    @test to_SI_factor(ABSOLUTE_DEGREES) == 1.0
+    @test to_SI(0.0, ABSOLUTE_DEGREES) == 273.15
+    @test string(ABSOLUTE_DEGREES) == "°C"
+
+    unit = Unit(; degC = 1) # relative degrees
+    @test to_SI_factor(unit) == 1.0
+    @test to_SI(0.0, unit) == 0.0
+
+    dt = 86400.0
+    unit = Unit(; m = 1, dt = -1)
+    @test_throws Exception to_SI(unit, 1.0)
+    @test to_SI_factor(unit; dt_val = dt) == inv(dt)
+    @test string(unit) == "m dt⁻¹"
+    @test to_string(unit; BMI_standard = true) == "m dt-1"
+
+    unit = Unit(; s = 1, m = -1 // 3)
+    @test to_SI_factor(unit) == 1.0
+    @test string(unit) == "s m⁻¹ᐟ³"
+    @test to_string(unit; BMI_standard = true) == "s m-1/3"
+
+    @test_throws Exception Unit(; foo = 42)
+end
+
 @testitem "Lenses" begin
-    models = Wflow.Model[]
+    standard_name_maps = (
+        ("sbm", Wflow.sbm_standard_name_map),
+        ("sediment", Wflow.sediment_standard_name_map),
+        ("domain", Wflow.domain_standard_name_map),
+        ("routing", Wflow.routing_standard_name_map),
+    )
+    configs = Wflow.Config[]
+
     # Initialize the first model with mass balance
-    do_mass_balance = true
+    config = Wflow.Config(normpath(@__DIR__, "sbm_config.toml"))
+    config.model.water_mass_balance__flag = true
+    push!(configs, config)
+
     for file_name in [
-        "sbm_config.toml",
         "sbm_gwf_config.toml",
         "sbm_river-floodplain-local-inertial_config.toml",
         "sbm_river-land-local-inertial_config.toml",
@@ -50,22 +85,28 @@ end
         "sediment_config.toml",
         "sediment_eurosem_engelund_config.toml",
     ]
-        config = Wflow.Config(normpath(@__DIR__, file_name))
-        if do_mass_balance
-            config.model.water_mass_balance__flag = true
-            global do_mass_balance = false
-        end
-        push!(models, Wflow.Model(config))
+        push!(configs, Wflow.Config(normpath(@__DIR__, file_name)))
     end
 
-    for (map_name, standard_name_map) in (
-        ("sbm", Wflow.sbm_standard_name_map),
-        ("sediment", Wflow.sediment_standard_name_map),
-    )
+    for transport_method in ("kodatie", "govers", "yalin")
+        config = Wflow.Config(normpath(@__DIR__, "sediment_eurosem_engelund_config.toml"))
+        config.dir_output = normpath(@__DIR__, "data", "output", transport_method) # Avoid file permission problems
+        if transport_method == "kodatie"
+            config.model.river_transport = transport_method
+        else
+            config.model.run_river_model__flag = false
+            config.model.land_transport = transport_method
+        end
+        push!(configs, config)
+    end
+
+    models = Wflow.Model.(configs)
+    for (map_name, standard_name_map) in standard_name_maps
         @testset "Test lenses: $map_name" begin
             invalid = String[]
             for (name, data) in standard_name_map
                 (; lens) = data
+                isnothing(lens) && continue
                 valid = false
                 for model in models
                     try
@@ -81,4 +122,20 @@ end
             @test isempty(invalid)
         end
     end
+
+    # Find duplicate lenses
+    lenses = vcat(
+        [
+            getfield.(values(standard_name_map), :lens) for
+            (_, standard_name_map) in standard_name_maps
+        ]...,
+    )
+    filter!(!isnothing, lenses)
+    duplicates = []
+    for unique_lens in unique(lenses)
+        if count(==(unique_lens), lenses) > 1
+            push!(duplicates, unique_lens)
+        end
+    end
+    @test isempty(duplicates)
 end

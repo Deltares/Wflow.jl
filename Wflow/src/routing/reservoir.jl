@@ -41,57 +41,39 @@ end
 function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkReservoir)
     (; indices_outlet) = network
 
-    area = ncread(
-        dataset,
-        config,
-        "reservoir_surface__area";
-        optional = false,
-        sel = indices_outlet,
-        type = Float64,
-    )
+    area = ncread(dataset, config, "reservoir_surface__area", Routing; sel = indices_outlet)
     waterlevel = ncread(
         dataset,
         config,
-        "reservoir_water_surface__initial_elevation";
-        optional = false,
+        "reservoir_water_surface__initial_elevation",
+        Routing;
         sel = indices_outlet,
-        type = Float64,
     )
     storfunc = ncread(
         dataset,
         config,
-        "reservoir_water__storage_curve_type_count";
-        optional = false,
+        "reservoir_water__storage_curve_type_count",
+        Routing;
         sel = indices_outlet,
-        type = Int,
     )
     outflowfunc = ncread(
         dataset,
         config,
-        "reservoir_water__rating_curve_type_count";
-        optional = false,
+        "reservoir_water__rating_curve_type_count",
+        Routing;
         sel = indices_outlet,
-        type = Int,
     )
     linked_reslocs = ncread(
         dataset,
         config,
-        "reservoir_lower_location__count";
+        "reservoir_lower_location__count",
+        Routing;
         sel = indices_outlet,
-        defaults = 0,
-        type = Int,
-        fill = 0,
     )
 
     n_reservoirs = length(area)
-    reslocs = ncread(
-        dataset,
-        config,
-        "reservoir_location__count";
-        optional = false,
-        sel = indices_outlet,
-        type = Int,
-    )
+    reslocs =
+        ncread(dataset, config, "reservoir_location__count", Routing; sel = indices_outlet)
     @info "Read `$n_reservoirs` reservoir locations."
 
     parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
@@ -100,68 +82,60 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         threshold = ncread(
             dataset,
             config,
-            "reservoir_water_flow_threshold_level__elevation";
-            optional = false,
+            "reservoir_water_flow_threshold_level__elevation",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
         b = ncread(
             dataset,
             config,
-            "reservoir_water__rating_curve_coefficient";
-            optional = false,
+            "reservoir_water__rating_curve_coefficient",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
         e = ncread(
             dataset,
             config,
-            "reservoir_water__rating_curve_exponent";
-            optional = false,
+            "reservoir_water__rating_curve_exponent",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
     end
     if 4 in outflowfunc
         demand = ncread(
             dataset,
             config,
-            "reservoir_water_demand__required_downstream_volume_flow_rate";
-            optional = false,
+            "reservoir_water_demand__required_downstream_volume_flow_rate",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
         maxrelease = ncread(
             dataset,
             config,
-            "reservoir_water_release_below_spillway__max_volume_flow_rate";
-            optional = false,
+            "reservoir_water_release_below_spillway__max_volume_flow_rate",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
         maxstorage = ncread(
             dataset,
             config,
-            "reservoir_water__max_volume";
-            optional = false,
+            "reservoir_water__max_volume",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
         targetfullfrac = ncread(
             dataset,
             config,
-            "reservoir_water__target_full_volume_fraction";
-            optional = false,
+            "reservoir_water__target_full_volume_fraction",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
         targetminfrac = ncread(
             dataset,
             config,
-            "reservoir_water__target_min_volume_fraction";
-            optional = false,
+            "reservoir_water__target_min_volume_fraction",
+            Routing;
             sel = indices_outlet,
-            type = Float64,
         )
     end
 
@@ -240,11 +214,9 @@ function ReservoirVariables(
     outflow_obs = ncread(
         dataset,
         config,
-        "reservoir_water__outgoing_observed_volume_flow_rate";
+        "reservoir_water__outgoing_observed_volume_flow_rate",
+        Routing;
         sel = indices_outlet,
-        defaults = MISSING_VALUE,
-        type = Float64,
-        fill = MISSING_VALUE,
     )
     variables = ReservoirVariables(;
         waterlevel,
@@ -272,10 +244,9 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
     external_inflow = ncread(
         dataset,
         config,
-        "reservoir_water__external_inflow_volume_flow_rate";
+        "reservoir_water__external_inflow_volume_flow_rate",
+        Routing;
         sel = indices_outlet,
-        defaults = 0.0,
-        type = Float64,
     )
     n = length(indices_outlet)
     bc = ReservoirBC(; n, external_inflow)
