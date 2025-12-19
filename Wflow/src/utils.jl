@@ -993,3 +993,9 @@ function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0):
     z = y > 0.0 ? min(x / y, max) : default
     return z
 end
+
+"""
+The sine of the slope in radians;
+sin(arctan(x)) = x / √(1 + x²)
+"""
+sin_slope(slope) = slope / sqrt(1 + slope^2)
