@@ -10,15 +10,15 @@
         river = model.routing.river_flow
         @test mean(river.sediment_flux.variables.store_clay) == 0.0
         @test mean(river.sediment_flux.variables.leftover_clay) == 0.0
-        @test mean(river.sediment_flux.variables.clay) == 0.0
+        @test mean(river.sediment_flux.variables.clay_flux) == 0.0
 
         @test mean(river.sediment_flux.variables.store_silt) == 0.0
         @test mean(river.sediment_flux.variables.leftover_silt) == 0.0
-        @test mean(river.sediment_flux.variables.silt) == 0.0
+        @test mean(river.sediment_flux.variables.silt_flux) == 0.0
 
         @test mean(river.sediment_flux.variables.store_sand) == 0.0
         @test mean(river.sediment_flux.variables.leftover_sand) == 0.0
-        @test mean(river.sediment_flux.variables.sand) == 0.0
+        @test mean(river.sediment_flux.variables.sand_flux) == 0.0
     end
 
     Wflow.run_timestep!(model)
@@ -49,11 +49,11 @@
         eros = model.land
 
         @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈ 0.07765800489746684
-        @test mean(eros.soil_erosion.variables.clay) ≈ 0.002287480354866626
-        @test mean(eros.soil_erosion.variables.silt) ≈ 0.0036164773521184896
-        @test mean(eros.soil_erosion.variables.sand) ≈ 0.026301393837924607
-        @test mean(eros.soil_erosion.variables.lagg) ≈ 0.022577957752547836
-        @test mean(eros.soil_erosion.variables.sagg) ≈ 0.022874695590802723
+        @test mean(eros.soil_erosion.variables.clay_erosion_rate) ≈ 0.002287480354866626
+        @test mean(eros.soil_erosion.variables.silt_erosion_rate) ≈ 0.0036164773521184896
+        @test mean(eros.soil_erosion.variables.sand_erosion_rate) ≈ 0.026301393837924607
+        @test mean(eros.soil_erosion.variables.lagg_erosion_rate) ≈ 0.022577957752547836
+        @test mean(eros.soil_erosion.variables.sagg_erosion_rate) ≈ 0.022874695590802723
     end
 
     @testset "second timestep sediment model (routing)" begin
@@ -69,8 +69,8 @@
         @test mean(land.transport_capacity.variables.clay) ≈ 1.0992655197016734f6
 
         @test mean(land.to_river.variables.sediment_rate) ≈ 0.07623845927222056
-        @test sum(land.to_river.variables.clay) ≈ 114.42704329506047
-        @test sum(land.to_river.variables.sand) ≈ 1289.411874381068
+        @test sum(land.to_river.variables.clay_rate) ≈ 114.42704329506047
+        @test sum(land.to_river.variables.sand_rate) ≈ 1289.411874381068
         @test mean(land.sediment_flux.variables.clay) ≈ 0.006578791733506439
 
         @test mean(river.hydrological_forcing.q_river) ≈ 0.6975180562953642
@@ -92,7 +92,7 @@
         @test mean(river.sediment_flux.variables.sediment_flux) ≈ 0.43330810531561187
         @test mean(river.sediment_flux.variables.erosion) ≈ 0.01894491899394169
         @test mean(river.sediment_flux.variables.deposition) ≈ 0.6939690338938546
-        @test river.sediment_flux.variables.clay[5649] ≈ 2.840979764480952e-9
+        @test river.sediment_flux.variables.clay_flux[5649] ≈ 2.840979764480952e-9
 
         @test mean(river.concentrations.variables.suspended) ≈ 0.8261052189488919
     end
@@ -110,15 +110,15 @@ end
         river = model.routing.river_flow
         @test mean(river.sediment_flux.variables.store_clay) ≈ 0.06881654169660432
         @test mean(river.sediment_flux.variables.leftover_clay) ≈ 1.8985203566870876e-7
-        @test mean(river.sediment_flux.variables.clay) ≈ 0.761820269217149
+        @test mean(river.sediment_flux.variables.clay_flux) ≈ 0.761820269217149
 
         @test mean(river.sediment_flux.variables.store_silt) ≈ 0.13222698520947598
         @test mean(river.sediment_flux.variables.leftover_silt) ≈ 3.0309355418150914e-9
-        @test mean(river.sediment_flux.variables.silt) ≈ 0.4054607471933968
+        @test mean(river.sediment_flux.variables.silt_flux) ≈ 0.4054607471933968
 
         @test mean(river.sediment_flux.variables.store_sand) ≈ 0.6762573229681987
         @test mean(river.sediment_flux.variables.leftover_sand) ≈ 7.890080963256109e-10
-        @test mean(river.sediment_flux.variables.sand) ≈ 0.005085932599331321
+        @test mean(river.sediment_flux.variables.sand_flux) ≈ 0.005085932599331321
     end
 
     Wflow.close_files(model)
@@ -193,7 +193,7 @@ end
         @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈ 0.0776983847440198
         @test mean(land.transport_capacity.parameters.c_govers) ≈ 0.16393911236592437
         @test mean(land.transport_capacity.variables.sediment_transport_capacity) ≈
-              1.0988158364353527f6
+              1.0990864706347766e6
         @test mean(land.to_river.variables.sediment_rate) ≈ 0.07708434959918917
     end
 

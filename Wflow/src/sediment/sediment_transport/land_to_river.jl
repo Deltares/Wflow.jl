@@ -52,15 +52,15 @@ end
     # Total sediment rate [t dt-1]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Clay rate [t dt-1]
-    clay::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Silt rate [t dt-1]
-    silt::Vector{Float64} = fill(MISSING_VALUE, n)
+    silt_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Sand rate [t dt-1]
-    sand::Vector{Float64} = fill(MISSING_VALUE, n)
+    sand_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Small aggregates rate [t dt-1]
-    sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    sagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Large aggregates rate [t dt-1]
-    lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    lagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
@@ -122,22 +122,23 @@ function update!(model::SedimentToRiverDifferentiationModel, rivers::Vector{Bool
         deposition_sagg,
         deposition_lagg,
     ) = model.boundary_conditions
-    (; sediment_rate, clay, silt, sand, sagg, lagg) = model.variables
+    (; sediment_rate, clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) =
+        model.variables
 
     for (i, river) in enumerate(rivers)
         if river
-            clay[i] = deposition_clay[i]
-            silt[i] = deposition_silt[i]
-            sand[i] = deposition_sand[i]
-            sagg[i] = deposition_sagg[i]
-            lagg[i] = deposition_lagg[i]
+            clay_rate[i] = deposition_clay[i]
+            silt_rate[i] = deposition_silt[i]
+            sand_rate[i] = deposition_sand[i]
+            sagg_rate[i] = deposition_sagg[i]
+            lagg_rate[i] = deposition_lagg[i]
         else
-            clay[i] = 0.0
-            silt[i] = 0.0
-            sand[i] = 0.0
-            sagg[i] = 0.0
-            lagg[i] = 0.0
+            clay_rate[i] = 0.0
+            silt_rate[i] = 0.0
+            sand_rate[i] = 0.0
+            sagg_rate[i] = 0.0
+            lagg_rate[i] = 0.0
         end
     end
-    @. sediment_rate = clay + silt + sand + sagg + lagg
+    @. sediment_rate = clay_rate + silt_rate + sand_rate + sagg_rate + lagg_rate
 end

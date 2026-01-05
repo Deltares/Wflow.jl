@@ -246,7 +246,7 @@ function river_erosion_julian_torres(
 )
     if waterlevel > 0.0
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
-        E_ = (2.65 - 1) * g_gravity
+        E_ = (2.65 - 1) * GRAVITATIONAL_ACCELERATION
         E = 10 * d50 * cbrt(E_)
         TCrbed =
             E_ *
@@ -264,11 +264,11 @@ function river_erosion_julian_torres(
         SFbank = exp(-3.23 * log10(width / waterlevel + 3) + 6.146)
         # Effective shear stress on river bed and banks [N/m2]
         TEffbank =
-            1000 * g_gravity * hydrad * slope * SFbank / 100 *
+            1000 * GRAVITATIONAL_ACCELERATION * hydrad * slope * SFbank / 100 *
             (1 + width / (2 * waterlevel))
         TEffbed =
             1000 *
-            g_gravity *
+            GRAVITATIONAL_ACCELERATION *
             hydrad *
             slope *
             (1 - SFbank / 100) *

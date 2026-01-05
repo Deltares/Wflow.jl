@@ -681,7 +681,8 @@ function stable_timestep(model::LocalInertialRiverFlow, flow_length::Vector{Floa
     (; n) = model.parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
-        @fastmath @inbounds dt = cfl * flow_length[i] / sqrt(g_gravity * h[i])
+        @fastmath @inbounds dt =
+            cfl * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
@@ -696,7 +697,7 @@ function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParam
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if river_location[i] == 0
-            cfl * min(x_length[i], y_length[i]) / sqrt(g_gravity * h[i])
+            cfl * min(x_length[i], y_length[i]) / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         else
             Inf
         end

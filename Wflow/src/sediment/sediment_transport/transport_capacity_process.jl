@@ -187,7 +187,7 @@ function transport_capacity_yalin(
             (density - 1000) *
             d50 *
             0.001 *
-            (g_gravity * waterlevel * sinslope) *
+            (GRAVITATIONAL_ACCELERATION * waterlevel * sinslope) *
             0.635 *
             delta *
             (1 - log(1 + alphay) / (alphay))
@@ -307,7 +307,11 @@ function transport_capacity_yalin_differentiation(
     d_part = max(1 / dm * delta - 1, 0.0)
 
     if q > 0.0
-        TCa = width / q * (density - 1000) * 1e-6 * (g_gravity * waterlevel * sinslope)
+        TCa =
+            width / q *
+            (density - 1000) *
+            1e-6 *
+            (GRAVITATIONAL_ACCELERATION * waterlevel * sinslope)
     else
         TCa = 0.0
     end
@@ -425,7 +429,7 @@ function transport_capacity_engelund(
     if waterlevel > 0.0
         # Hydraulic radius of the river [m] (rectangular channel)
         hydrad = waterlevel * width / (width + 2 * waterlevel)
-        vshear = sqrt(g_gravity * hydrad * slope)
+        vshear = sqrt(GRAVITATIONAL_ACCELERATION * hydrad * slope)
 
         # Flow velocity [m/s]
         velocity = q / (waterlevel * width)
@@ -433,7 +437,7 @@ function transport_capacity_engelund(
         # Concentration by weight
         cw =
             density / WATER_DENSITY * 0.05 * velocity * vshear^3 /
-            ((density / WATER_DENSITY - 1)^2 * g_gravity^2 * d50 * hydrad)
+            ((density / WATER_DENSITY - 1)^2 * GRAVITATIONAL_ACCELERATION^2 * d50 * hydrad)
         cw = min(1.0, cw)
 
         # Transport capacity [tons/m3]
@@ -568,7 +572,7 @@ function transport_capacity_yang(
     # Hydraulic radius of the river [m] (rectangular channel)
     hydrad = waterlevel * width / (width + 2 * waterlevel)
     # Critical shear stress velocity
-    vshear = sqrt(g_gravity * hydrad * slope)
+    vshear = sqrt(GRAVITATIONAL_ACCELERATION * hydrad * slope)
     var1 = vshear * d50 / 1000 / WATER_KINEMATIC_VISCOSITY
     var2 = omegas * d50 / 1000 / WATER_KINEMATIC_VISCOSITY
     vcr = ifelse(var1 >= 70.0, 2.05 * omegas, omegas * (2.5 / (log10(var1) - 0.06) + 0.66))
@@ -656,7 +660,7 @@ function transport_capacity_molinas(q, waterlevel, density, d50, width, length, 
         psi = (
             velocity^3 / (
                 (density / WATER_DENSITY - 1) *
-                g_gravity *
+                GRAVITATIONAL_ACCELERATION *
                 waterlevel *
                 omegas *
                 log10(1000 * waterlevel / d50)^2

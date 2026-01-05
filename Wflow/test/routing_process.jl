@@ -145,7 +145,7 @@ end
     using QuadGK: quadgk
     using Graphs: DiGraph, add_edge!, ne
     using Statistics: mean
-    using Wflow: g_gravity
+    using Wflow: GRAVITATIONAL_ACCELERATION
 
     L = 1000.0
     dx = 5.0
@@ -154,12 +154,15 @@ end
     # analytical solution MacDonald (1997) for channel with length L of 1000.0 m, Manning's
     # n of 0.03, constant inflow of 20.0 m3/s at upper boundary and channel width of 10.0 m
     # water depth profile h(x)
-    h(x) = cbrt(4 / g_gravity) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2))
+    h(x) = cbrt(4 / GRAVITATIONAL_ACCELERATION) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2))
     # spatial derivative of h(x)
-    h_acc(x) = -cbrt(4 / g_gravity) * 16.0 / L * (x / L - 0.5) * exp(-16 * (x / L - 0.5)^2)
+    h_acc(x) =
+        -cbrt(4 / GRAVITATIONAL_ACCELERATION) * 16.0 / L *
+        (x / L - 0.5) *
+        exp(-16 * (x / L - 0.5)^2)
     # solution for channel slope s(x)
     s(x) =
-        (1.0 - 4.0 / (g_gravity * h(x)^3)) * h_acc(x) +
+        (1.0 - 4.0 / (GRAVITATIONAL_ACCELERATION * h(x)^3)) * h_acc(x) +
         0.36 * (2 * h(x) + 10.0)^(4.0 / 3.0) / ((10.0 * h(x))^(10.0 / 3.0))
 
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
