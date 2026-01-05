@@ -61,7 +61,6 @@ using LoggingExtras:
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
 using Parameters: @with_kw
 using Polyester: @batch
-using PrettyTables: pretty_table
 using ProgressLogging: @progress
 using PropertyDicts: PropertyDict
 using StaticArrays: SVector, pushfirst, setindex
@@ -308,13 +307,7 @@ function run!(model::Model; close_files = true)
     endtime = cftime(config.time.endtime, config.time.calendar)
     times = range(starttime + dt, endtime; step = dt)
 
-    @info "Run information." * to_table(;
-        model_type = String(Symbol(model_type)),
-        starttime,
-        dt,
-        endtime,
-        nthreads = nthreads(),
-    )
+    @info "Run information" model_type = String(Symbol(model_type)) starttime dt endtime nthreads()
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()
