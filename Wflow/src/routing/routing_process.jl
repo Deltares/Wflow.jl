@@ -23,36 +23,36 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
     return graph
 end
 
-const MIN_FLOW = 1e-30 # [m s⁻¹]
+const KIN_WAVE_MIN_VOLUME = 1e-30 # [m]
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0
     else
-        C = dt / dx
+        dt_dx = dt / dx
         exponent = beta - 1.0
         # initial estimate using linear scheme
         alpha_beta = alpha * beta
         ab_pq = alpha_beta * pow(((q_prev + q_in) / 2.0), exponent)
-        q = (C * q_in + q_prev * ab_pq + dt * q_lat) / (C + ab_pq)
+        q = (dt_dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt_dx + ab_pq)
         if isnan(q)
             q = 0.0
         end
-        q = max(q, MIN_FLOW)
+        q = max(q, KIN_WAVE_MIN_VOLUME)
         # newton-raphson
         max_iters = 3000
         epsilon = 1.0e-12
         count = 0
-        constant_term = C * q_in + alpha * pow(q_prev, beta) + dt * q_lat
+        constant_term = dt_dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
         while true
-            f_q = C * q + alpha * pow(q, beta) - constant_term
-            df_q = C + alpha * beta * pow(q, exponent)
+            f_q = dt_dx * q + alpha * pow(q, beta) - constant_term
+            df_q = dt_dx + alpha * beta * pow(q, exponent)
             q -= (f_q / df_q)
             if isnan(q)
                 q = 0.0
             end
-            q = max(q, MIN_FLOW)
+            q = max(q, KIN_WAVE_MIN_VOLUME)
             if (abs(f_q) <= epsilon) || (count >= max_iters)
                 break
             end
@@ -96,16 +96,16 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
     epsilon = 1.0e-12
     max_iters = 3000
     count = 0
-    C = dt / dx
+    dt_dx = dt / dx
     celerity_inv = inv(celerity)
     while true
-        f = C * ssf + celerity_inv * ssf - constant_term
-        df = C + celerity_inv
+        f = dt_dx * ssf + celerity_inv * ssf - constant_term
+        df = dt_dx + celerity_inv
         ssf -= (f / df)
         if isnan(ssf)
             ssf = 0.0
         end
-        ssf = max(ssf, MIN_FLOW)
+        ssf = max(ssf, KIN_WAVE_MIN_VOLUME)
         if (abs(f) <= epsilon) || (count >= max_iters)
             break
         end
@@ -154,7 +154,7 @@ function kinematic_wave_ssf(
         # lower boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), MIN_FLOW)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_VOLUME)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -179,7 +179,7 @@ function kinematic_wave_ssf(
                     zi_prev -
                     (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
                 if zi > d
-                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), MIN_FLOW)
+                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_VOLUME)
                 end
                 exfilt_sum += min(zi, 0.0) * -theta_e
                 zi = clamp(zi, 0.0, d)
@@ -233,7 +233,7 @@ function kinematic_wave_ssf(
         # boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), MIN_FLOW)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_VOLUME)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)

@@ -61,7 +61,7 @@
 end
 
 @testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
-    using Wflow: to_SI, Unit, ReservoirProfileType, ReservoirOutflowType
+    using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Reservoir Modified Puls approach (outflowfunc = 3)
     n = 1
     res_bc = Wflow.ReservoirBC(;
