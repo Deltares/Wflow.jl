@@ -171,107 +171,79 @@ by the infiltration capacity, taking into account limited irrigation efficiency 
 by a maximum irrigation rate.
 """
 function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
-    (; hb, theta_s, theta_r, c, sumlayers, act_thickl, pathfrac, infiltcapsoil) =
-        soil.parameters
-    (;
-        h3,
-        ustorelayerthickness,
-        n_unsatlayers,
-        ustorelayerdepth,
-        f_infiltration_reduction,
-    ) = soil.variables
-    (;
-        irrigation_areas,
-        irrigation_trigger,
-        maximum_irrigation_rate,
-        irrigation_efficiency,
-    ) = model.parameters
+    (; irrigation_areas, irrigation_trigger, maximum_irrigation_rate) = model.parameters
     (; demand_gross) = model.variables
-    rootingdepth = get_rootingdepth(soil)
+    (; n_unsatlayers) = soil.variables
 
-    for (i, args) in enumerate(
-        zip(
-            n_unsatlayers,
-            rootingdepth,
-            sumlayers,
-            ustorelayerthickness,
-            ustorelayerdepth,
-            hb,
-            theta_s,
-            theta_r,
-            c,
-            h3,
-            maximum_irrigation_rate,
-            f_infiltration_reduction,
-            pathfrac,
-            infiltcapsoil,
-            irrigation_efficiency,
-            demand_gross,
-        ),
-    )
-        demand_gross[i] = if (irrigation_areas[i] && irrigation_trigger[i])
-            update_demand_gross(args...)
+    for i in eachindex(irrigation_areas)
+        if irrigation_areas[i] && irrigation_trigger[i]
+            irri_dem_gross = 0.0
+            for k in 1:n_unsatlayers[i]
+                depletion, readily_available_water = water_demand_root_zone(soil, i, k)
+
+                # check if maximum irrigation rate has been applied at the previous time step.
+                max_irri_rate_applied =
+                    model.variables.demand_gross[i] == maximum_irrigation_rate[i]
+                if depletion >= readily_available_water # start irrigation
+                    irri_dem_gross += depletion
+                    # add depletion to irrigation gross demand when the maximum irrigation rate has been
+                    # applied at the previous time step (to get volumetric water content at field capacity)
+                elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
+                    irri_dem_gross += depletion
+                end
+            end
+            demand_gross[i] = apply_infiltration_capacity(model, soil, irri_dem_gross, i)
         else
-            0.0
+            demand_gross[i] = 0.0
         end
     end
     return nothing
 end
 
-function update_demand_gross(
-    n_unsatlayers,
-    rootingdepth,
-    sumlayers,
-    ustorelayerthickness,
-    ustorelayerdepth,
-    hb,
-    theta_s,
-    theta_r,
-    c,
-    h3,
-    maximum_irrigation_rate,
-    f_infiltration_reduction,
-    pathfrac,
-    infiltcapsoil,
-    irrigation_efficiency,
-    demand_gross,
-)
-    irri_dem_gross = 0.0
-    for k in 1:n_unsatlayers
-        # compute water demand only for root zone through root fraction per layer
-        rootfrac =
-            min(1.0, (max(0.0, rootingdepth - sumlayers[k]) / ustorelayerthickness[k]))
-        # vwc_f and vwc_h3 can be precalculated.
-        vwc_fc = vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[k])
-        vwc_h3 = vwc_brooks_corey(h3, hb, theta_s, theta_r, c[k])
-        depletion =
-            (vwc_fc * ustorelayerthickness[k]) -
-            (ustorelayerdepth[k] + theta_r * ustorelayerthickness[k])
-        depletion *= rootfrac
-        raw = (vwc_fc - vwc_h3) * ustorelayerthickness[k] # readily available water
-        raw *= rootfrac
+update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
 
-        # check if maximum irrigation rate has been applied at the previous time step.
-        max_irri_rate_applied = (demand_gross == maximum_irrigation_rate)
-        if depletion >= raw # start irrigation
-            irri_dem_gross += depletion
-            # add depletion to irrigation gross demand when the maximum irrigation rate has been
-            # applied at the previous time step (to get volumetric water content at field capacity)
-        elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
-            irri_dem_gross += depletion
-        end
-    end
-    # limit irrigation demand to infiltration capacity
-    infiltration_capacity = f_infiltration_reduction * (1.0 - pathfrac) * infiltcapsoil
+"Compute water demand only for root zone through root fraction per layer"
+function water_demand_root_zone(soil::SbmSoilModel, i::Int, k::Int)
+    (; sumlayers, hb, theta_s, theta_r, c) = soil.parameters
+    (; ustorelayerthickness, ustorelayerdepth, h3) = soil.variables
+
+    rootingdepth = get_rootingdepth(soil)
+
+    rootfrac =
+        min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / ustorelayerthickness[i][k]))
+    # vwc_f and vwc_h3 can be precalculated.
+    vwc_fc = vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
+    vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
+    depletion =
+        (vwc_fc * ustorelayerthickness[i][k]) -
+        (ustorelayerdepth[i][k] + theta_r[i] * ustorelayerthickness[i][k])
+    depletion *= rootfrac
+    readily_available_water = (vwc_fc - vwc_h3) * ustorelayerthickness[i][k]
+    readily_available_water *= rootfrac
+
+    return depletion, readily_available_water
+end
+
+"Limit irrigation demand to infiltration capacity"
+function apply_infiltration_capacity(
+    model::NonPaddy,
+    soil::SbmSoilModel,
+    irri_dem_gross::Float64,
+    i::Int,
+)
+    (; pathfrac, infiltcapsoil) = soil.parameters
+    (; f_infiltration_reduction) = soil.variables
+    (; irrigation_efficiency, maximum_irrigation_rate) = model.parameters
+
+    infiltration_capacity =
+        f_infiltration_reduction[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
     irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
-    irri_dem_gross /= irrigation_efficiency
+    irri_dem_gross /= irrigation_efficiency[i]
     # limit irrigation demand to the maximum irrigation rate
-    irri_dem_gross = min(irri_dem_gross, maximum_irrigation_rate)
+    irri_dem_gross = min(irri_dem_gross, maximum_irrigation_rate[i])
 
     return irri_dem_gross
 end
-
-update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
 
 "Struct to store paddy irrigation model variables"
 @with_kw struct PaddyVariables
@@ -691,7 +663,6 @@ function surface_water_allocation_local(
     storage,
     dt,
 )
-    @show (surfacewater_demand, area, external_inflow, storage, dt)
     # the available volume is limited by a fixed scaling factor of 0.8 to prevent
     # rivers completely drying out. check for abstraction through negative external
     # inflow first and adjust available volume.

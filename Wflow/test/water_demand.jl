@@ -1,46 +1,70 @@
-@testitem "unit: update_demand_gross (NonPaddy)" begin
-    n_unsatlayers = 1
-    rootingdepth = 396.8680114746094
-    sumlayers = [0.0, 50.0, 150.0, 200.0, 400.0, 1200.0, 2000.0]
-    ustorelayerthickness = [2.3346668393934804, NaN, NaN, NaN, NaN, NaN]
-    ustorelayerdepth = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    hb = -10.0
-    theta_s = 0.4417283535003662
-    theta_r = 0.09082602709531784
-    c = [
-        9.195682525634766,
-        9.297739028930664,
-        9.597416877746582,
-        9.782596588134766,
-        9.974676132202148,
-        9.876368522644043,
-    ]
-    h3 = -934.9109542889025
-    maximum_irrigation_rate = 25.0
-    f_infiltration_reduction = 1.0
-    pathfrac = 0.0
-    infiltcapsoil = 334.45526123046875
-    irrigation_efficiency = 1.0
-    demand_gross = 0.8604076280853505
+@testitem "unit: update_demand_gross! (NonPaddy)" begin
+    using StaticArrays: SVector
+    n = 1
+    model = Wflow.NonPaddy(;
+        parameters = Wflow.NonPaddyParameters(;
+            irrigation_efficiency = [1.0],
+            maximum_irrigation_rate = [25.0],
+            irrigation_areas = [true],
+            irrigation_trigger = [true],
+        ),
+        variables = Wflow.NonPaddyVariables(; n, demand_gross = [0.8604076280853505]),
+    )
+    N = 6
+    soil = Wflow.SbmSoilModel(;
+        n,
+        parameters = Wflow.SbmSoilParameters(;
+            maxlayers = 7,
+            nlayers = [7],
+            theta_s = [0.4417283535003662],
+            theta_r = [0.09082602709531784],
+            kvfrac = SVector{N, Float64}[],
+            hb = [-10.0],
+            act_thickl = SVector{N, Float64}[],
+            sumlayers = [SVector(0.0, 50.0, 150.0, 200.0, 400.0, 1200.0, 2000.0)],
+            infiltcapsoil = [334.45526123046875],
+            c = [
+                SVector(
+                    9.195682525634766,
+                    9.297739028930664,
+                    9.597416877746582,
+                    9.782596588134766,
+                    9.974676132202148,
+                    9.876368522644043,
+                ),
+            ],
+            pathfrac = [0.0],
+            rootfraction = SVector{N, Float64}[],
+            kv_profile = nothing,
+            vegetation_parameter_set = Wflow.VegetationParameters(;
+                rootingdepth = [396.8680114746094],
+            ),
+        ),
+        variables = Wflow.SbmSoilVariables(;
+            n = 1,
+            ustorecapacity = [],
+            ustorelayerthickness = [SVector(2.3346668393934804, NaN, NaN, NaN, NaN, NaN)],
+            ustorelayerdepth = [SVector(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)],
+            zi = [],
+            n_unsatlayers = [3],
+            h3 = [-934.9109542889025],
+            f_infiltration_reduction = [0.8],
+            satwaterdepth = [],
+            vwc = SVector{N, Float64}[],
+            vwc_perc = SVector{N, Float64}[],
+            total_soilwater_storage = [],
+        ),
+    )
 
-    @test Wflow.update_demand_gross(
-        n_unsatlayers,
-        rootingdepth,
-        sumlayers,
-        ustorelayerthickness,
-        ustorelayerdepth,
-        hb,
-        theta_s,
-        theta_r,
-        c,
-        h3,
-        maximum_irrigation_rate,
-        f_infiltration_reduction,
-        pathfrac,
-        infiltcapsoil,
-        irrigation_efficiency,
-        demand_gross,
-    ) ≈ 0.38958813885549093
+    i = 1
+    k = 1
+
+    depletion, readily_available_water = Wflow.water_demand_root_zone(soil, i, k)
+    @test depletion ≈ 0.38958813885549093
+    @test readily_available_water ≈ 0.2002509988361609
+    irri_dem_gross = depletion
+    demand_gross = Wflow.apply_infiltration_capacity(model, soil, irri_dem_gross, i)
+    @test demand_gross ≈ 0.38958813885549093
 end
 
 @testitem "unit: update_demand_gross (Paddy)" begin
