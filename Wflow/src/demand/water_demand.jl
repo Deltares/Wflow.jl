@@ -53,28 +53,28 @@ function NonIrrigationDemand(
             dataset,
             config,
             "$(sector)__gross_water_demand_volume_flux";
-            sel = indices,
-            defaults = 0.0,
-            type = Float64,
+            sel=indices,
+            defaults=0.0,
+            type=Float64,
         ) .* (dt / BASETIMESTEP)
     demand_net =
         ncread(
             dataset,
             config,
             "$(sector)__net_water_demand_volume_flux";
-            sel = indices,
-            defaults = 0.0,
-            type = Float64,
+            sel=indices,
+            defaults=0.0,
+            type=Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
     demand = PrescibedDemand(; demand_gross, demand_net)
     vars = NonIrrigationDemandVariables(;
-        returnflow_fraction = returnflow_f,
-        returnflow = fill(Float64(0), n),
+        returnflow_fraction=returnflow_f,
+        returnflow=fill(Float64(0), n),
     )
-    non_irrigation_demand = NonIrrigationDemand(; demand, variables = vars)
+    non_irrigation_demand = NonIrrigationDemand(; demand, variables=vars)
 
     return non_irrigation_demand
 end
@@ -110,40 +110,40 @@ function NonPaddy(
         dataset,
         config,
         "irrigated_non_paddy__irrigation_efficiency";
-        sel = indices,
-        defaults = 1.0,
-        type = Float64,
+        sel=indices,
+        defaults=1.0,
+        type=Float64,
     )
     areas = ncread(
         dataset,
         config,
         "irrigated_non_paddy_area__count";
-        optional = false,
-        sel = indices,
-        type = Int,
+        optional=false,
+        sel=indices,
+        type=Int,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
         "irrigated_non_paddy__irrigation_trigger_flag";
-        optional = false,
-        sel = indices,
-        type = Bool,
+        optional=false,
+        sel=indices,
+        type=Bool,
     )
     max_irri_rate =
         ncread(
             dataset,
             config,
             "irrigated_non_paddy__max_irrigation_rate";
-            sel = indices,
-            defaults = 25.0,
-            type = Float64,
+            sel=indices,
+            defaults=25.0,
+            type=Float64,
         ) .* (dt / BASETIMESTEP)
 
     parameters = NonPaddyParameters(;
-        maximum_irrigation_rate = max_irri_rate,
-        irrigation_efficiency = efficiency,
-        irrigation_areas = areas,
+        maximum_irrigation_rate=max_irri_rate,
+        irrigation_efficiency=efficiency,
+        irrigation_areas=areas,
         irrigation_trigger,
     )
     n = length(indices)
@@ -281,68 +281,68 @@ function Paddy(
         dataset,
         config,
         "irrigated_paddy__min_depth";
-        sel = indices,
-        defaults = 20.0,
-        type = Float64,
+        sel=indices,
+        defaults=20.0,
+        type=Float64,
     )
     h_opt = ncread(
         dataset,
         config,
         "irrigated_paddy__optimal_depth";
-        sel = indices,
-        defaults = 50.0,
-        type = Float64,
+        sel=indices,
+        defaults=50.0,
+        type=Float64,
     )
     h_max = ncread(
         dataset,
         config,
         "irrigated_paddy__max_depth";
-        sel = indices,
-        defaults = 80.0,
-        type = Float64,
+        sel=indices,
+        defaults=80.0,
+        type=Float64,
     )
     efficiency = ncread(
         dataset,
         config,
         "irrigated_paddy__irrigation_efficiency";
-        sel = indices,
-        defaults = 1.0,
-        type = Float64,
+        sel=indices,
+        defaults=1.0,
+        type=Float64,
     )
     areas = ncread(
         dataset,
         config,
         "irrigated_paddy_area__count";
-        optional = false,
-        sel = indices,
-        type = Bool,
+        optional=false,
+        sel=indices,
+        type=Bool,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
         "irrigated_paddy__irrigation_trigger_flag";
-        optional = false,
-        sel = indices,
-        type = Bool,
+        optional=false,
+        sel=indices,
+        type=Bool,
     )
     max_irri_rate =
         ncread(
             dataset,
             config,
             "irrigated_paddy__max_irrigation_rate";
-            sel = indices,
-            defaults = 25.0,
-            type = Float64,
+            sel=indices,
+            defaults=25.0,
+            type=Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
     parameters = PaddyParameters(;
-        irrigation_efficiency = efficiency,
-        maximum_irrigation_rate = max_irri_rate,
+        irrigation_efficiency=efficiency,
+        maximum_irrigation_rate=max_irri_rate,
         irrigation_trigger,
         h_min,
         h_max,
         h_opt,
-        irrigation_areas = areas,
+        irrigation_areas=areas,
     )
     variables = PaddyVariables(; n)
     paddy = Paddy(; parameters, variables)
@@ -407,49 +407,39 @@ is `true` (`on`) and when the paddy water depth `h` reaches below the minimum wa
 taking into account limited irrigation efficiency and limited by a maximum irrigation rate.
 """
 function update_demand_gross!(model::Paddy)
-    (;
-        irrigation_areas,
-        irrigation_trigger,
-        irrigation_efficiency,
-        maximum_irrigation_rate,
-        h_opt,
-        h_min,
-    ) = model.parameters
-    (; h, demand_gross) = model.variables
-    for (i, args) in enumerate(
-        zip(irrigation_efficiency, maximum_irrigation_rate, h_opt, h_min, h, demand_gross),
-    )
-        demand_gross[i] = if (irrigation_areas[i] && irrigation_trigger[i])
-            update_demand_gross(args...)
+    (; demand_gross) = model.variables
+    (; irrigation_areas, irrigation_trigger, irrigation_efficiency, maximum_irrigation_rate) = model.parameters
+
+    for i in eachindex(irrigation_areas)
+        if irrigation_areas[i] && irrigation_trigger[i]
+            irr_depth_paddy = calc_demand_gross(model, i)
+
+            irri_dem_gross = irr_depth_paddy / irrigation_efficiency[i]
+            # limit irrigation demand to the maximum irrigation rate
+            irri_dem_gross = min(irri_dem_gross, maximum_irrigation_rate[i])
+            demand_gross[i] = irri_dem_gross
         else
-            0.0
+            demand_gross[i] = 0.0
         end
     end
-    return nothing
 end
 
-function update_demand_gross(
-    irrigation_efficiency,
-    maximum_irrigation_rate,
-    h_opt,
-    h_min,
-    h,
-    demand_gross,
-)
-    max_irri_rate_applied = (demand_gross == maximum_irrigation_rate)
+function calc_demand_gross(model::Paddy, i::Int)
+    (; maximum_irrigation_rate, h_min, h_opt) = model.parameters
+    (; demand_gross, h) = model.variables
+
+    # check if maximum irrigation rate has been applied at the previous time step.
+    max_irri_rate_applied = demand_gross[i] == maximum_irrigation_rate[i]
     # start irrigation
-    irr_depth_paddy = if h < h_min
-        h_opt - h
-    elseif h < h_opt && max_irri_rate_applied # continue irrigation
-        h_opt - h
+    irr_depth_paddy = if h[i] < h_min[i]
+        h_opt[i] - h[i]
+    elseif h[i] < h_opt[i] && max_irri_rate_applied # continue irrigation
+        h_opt[i] - h[i]
     else
         0.0
     end
-    irri_dem_gross = irr_depth_paddy / irrigation_efficiency
-    # limit irrigation demand to the maximum irrigation rate
-    irri_dem_gross = min(irri_dem_gross, maximum_irrigation_rate)
 
-    return irri_dem_gross
+    return irr_depth_paddy
 end
 
 update_demand_gross!(model::NoIrrigationPaddy) = nothing
@@ -465,7 +455,7 @@ update_demand_gross!(model::NoIrrigationPaddy) = nothing
 end
 
 "Water demand model"
-@with_kw struct Demand{D, I, L, P, NP, V} <: AbstractDemandModel
+@with_kw struct Demand{D,I,L,P,NP,V} <: AbstractDemandModel
     domestic::D
     industry::I
     livestock::L
@@ -491,7 +481,7 @@ function Demand(
     dt::Second,
 )
     n = length(indices)
-    demand(name; constr = NonIrrigationDemand, constr_triv = NoNonIrrigationDemand) =
+    demand(name; constr=NonIrrigationDemand, constr_triv=NoNonIrrigationDemand) =
         if getfield(config.model.water_demand, Symbol("$(name)__flag"))::Bool
             if constr == NonIrrigationDemand
                 constr(dataset, config, indices, dt, name)
@@ -505,8 +495,8 @@ function Demand(
     domestic = demand("domestic")
     industry = demand("industry")
     livestock = demand("livestock")
-    paddy = demand("paddy"; constr = Paddy, constr_triv = NoIrrigationPaddy)
-    nonpaddy = demand("nonpaddy"; constr = NonPaddy, constr_triv = NoIrrigationNonPaddy)
+    paddy = demand("paddy"; constr=Paddy, constr_triv=NoIrrigationPaddy)
+    nonpaddy = demand("nonpaddy"; constr=NonPaddy, constr_triv=NoIrrigationNonPaddy)
 
     variables = DemandVariables(; n)
     demand = Demand(; domestic, industry, livestock, paddy, nonpaddy, variables)
@@ -568,17 +558,17 @@ function AllocationLand(
         dataset,
         config,
         "land_surface_water__withdrawal_fraction";
-        sel = indices,
-        defaults = 1,
-        type = Float64,
+        sel=indices,
+        defaults=1,
+        type=Float64,
     )
     areas = ncread(
         dataset,
         config,
         "land_water_allocation_area__count";
-        sel = indices,
-        defaults = 1,
-        type = Int,
+        sel=indices,
+        defaults=1,
+        type=Int,
     )
 
     n = length(indices)
