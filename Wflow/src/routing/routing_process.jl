@@ -23,7 +23,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
     return graph
 end
 
-const KIN_WAVE_MIN_VOLUME = 1e-30 # [m]
+const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
@@ -39,7 +39,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
         if isnan(q)
             q = 0.0
         end
-        q = max(q, KIN_WAVE_MIN_VOLUME)
+        q = max(q, KIN_WAVE_MIN_FLOW)
         # newton-raphson
         max_iters = 3000
         epsilon = 1.0e-12
@@ -52,7 +52,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
             if isnan(q)
                 q = 0.0
             end
-            q = max(q, KIN_WAVE_MIN_VOLUME)
+            q = max(q, KIN_WAVE_MIN_FLOW)
             if (abs(f_q) <= epsilon) || (count >= max_iters)
                 break
             end
@@ -105,7 +105,7 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
         if isnan(ssf)
             ssf = 0.0
         end
-        ssf = max(ssf, KIN_WAVE_MIN_VOLUME)
+        ssf = max(ssf, KIN_WAVE_MIN_FLOW)
         if (abs(f) <= epsilon) || (count >= max_iters)
             break
         end
@@ -154,7 +154,7 @@ function kinematic_wave_ssf(
         # lower boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_VOLUME)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -179,7 +179,7 @@ function kinematic_wave_ssf(
                     zi_prev -
                     (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
                 if zi > d
-                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_VOLUME)
+                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
                 end
                 exfilt_sum += min(zi, 0.0) * -theta_e
                 zi = clamp(zi, 0.0, d)
@@ -233,7 +233,7 @@ function kinematic_wave_ssf(
         # boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_VOLUME)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
