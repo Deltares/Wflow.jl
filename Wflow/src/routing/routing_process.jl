@@ -366,7 +366,6 @@ function local_inertial_flow(
     R,
     length,
     mannings_n_sq,
-    g,
     froude_limit,
     dt,
 )
@@ -374,13 +373,15 @@ function local_inertial_flow(
     pow_R = cbrt(R * R * R * R)
     unit = one(hf)
     q = (
-        (q0 - g * A * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_R * A))
+        (q0 - GRAVITATIONAL_ACCELERATION * A * dt * slope) / (
+            unit + GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_R * A)
+        )
     )
 
     # if froude number > 1.0, limit flow
-    fr = ((q / A) / sqrt(g * hf)) * froude_limit
-    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(g * hf) * A, q)
-    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(g * hf) * A, q)
+    fr = ((q / A) / sqrt(GRAVITATIONAL_ACCELERATION * hf)) * froude_limit
+    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
+    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
 
     return q
 end
@@ -403,7 +404,6 @@ function local_inertial_flow(
     width,
     length,
     mannings_n_sq,
-    g,
     froude_limit,
     dt,
 )
@@ -413,15 +413,21 @@ function local_inertial_flow(
     pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     q = (
-        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
+        (
+            (theta * q0 + half * (unit - theta) * (qu + qd)) -
+            GRAVITATIONAL_ACCELERATION * hf * width * dt * slope
+        ) / (
+            unit +
+            GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
+        )
     )
     # if froude number > 1.0, limit flow
     if froude_limit
-        fr = (q / width / hf) / sqrt(g * hf)
+        fr = (q / width / hf) / sqrt(GRAVITATIONAL_ACCELERATION * hf)
         if abs(fr) > 1.0 && q > 0.0
-            q = hf * sqrt(g * hf) * width
+            q = hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
         elseif abs(fr) > 1.0 && q < 0.0
-            q = -hf * sqrt(g * hf) * width
+            q = -hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
         end
     end
 

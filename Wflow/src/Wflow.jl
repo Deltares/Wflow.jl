@@ -73,6 +73,8 @@ const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
+const GRAVITATIONAL_ACCELERATION = 9.80665 # m s⁻²
+
 mutable struct Clock{T}
     time::T
     iteration::Int

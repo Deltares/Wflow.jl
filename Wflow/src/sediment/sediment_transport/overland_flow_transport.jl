@@ -4,7 +4,7 @@ abstract type AbstractSedimentLandTransportModel end
 @with_kw struct SedimentLandTransportVariables
     n::Int
     # Total sediment rate [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sediment deposition rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
 end
@@ -39,19 +39,19 @@ function update_boundary_conditions!(
     transport_capacity_model::AbstractTransportCapacityModel,
 )
     (; erosion, transport_capacity) = model.boundary_conditions
-    (; amount) = erosion_model.variables
-    @. erosion = amount
+    (; soil_erosion_rate) = erosion_model.variables
+    @. erosion = soil_erosion_rate
 
-    (; amount) = transport_capacity_model.variables
-    @. transport_capacity = amount
+    (; sediment_transport_capacity) = transport_capacity_model.variables
+    @. transport_capacity = sediment_transport_capacity
 end
 
 "Update total sediment flux in overland flow model for a single timestep"
 function update!(model::SedimentLandTransportModel, network::NetworkLand)
     (; erosion, transport_capacity) = model.boundary_conditions
-    (; amount, deposition) = model.variables
+    (; sediment_rate, deposition) = model.variables
 
-    accucapacityflux!(amount, erosion, network, transport_capacity)
+    accucapacityflux!(sediment_rate, erosion, network, transport_capacity)
     deposition .= erosion
 end
 
@@ -59,7 +59,7 @@ end
 @with_kw struct SedimentLandTransportDifferentiationVariables
     n::Int
     # Total sediment rate [t dt-1]
-    amount::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Deposition rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
     # Clay rate [t dt-1]
@@ -144,12 +144,18 @@ function update_boundary_conditions!(
         transport_capacity_sagg,
         transport_capacity_lagg,
     ) = model.boundary_conditions
-    (; clay, silt, sand, sagg, lagg) = erosion_model.variables
-    @. erosion_clay = clay
-    @. erosion_silt = silt
-    @. erosion_sand = sand
-    @. erosion_sagg = sagg
-    @. erosion_lagg = lagg
+    (;
+        clay_erosion_rate,
+        silt_erosion_rate,
+        sand_erosion_rate,
+        sagg_erosion_rate,
+        lagg_erosion_rate,
+    ) = erosion_model.variables
+    @. erosion_clay = clay_erosion_rate
+    @. erosion_silt = silt_erosion_rate
+    @. erosion_sand = sand_erosion_rate
+    @. erosion_sagg = sagg_erosion_rate
+    @. erosion_lagg = lagg_erosion_rate
 
     (; clay, silt, sand, sagg, lagg) = transport_capacity_model.variables
     @. transport_capacity_clay = clay
@@ -174,7 +180,7 @@ function update!(model::SedimentLandTransportDifferentiationModel, network::Netw
         transport_capacity_lagg,
     ) = model.boundary_conditions
     (;
-        amount,
+        sediment_rate,
         deposition,
         clay,
         deposition_clay,
@@ -198,8 +204,11 @@ function update!(model::SedimentLandTransportDifferentiationModel, network::Netw
     deposition_sagg .= erosion_sagg
     accucapacityflux!(lagg, erosion_lagg, network, transport_capacity_lagg)
     deposition_lagg .= erosion_lagg
-    amount .= clay .+ silt .+ sand .+ sagg .+ lagg
-    deposition .=
-        deposition_clay .+ deposition_silt .+ deposition_sand .+ deposition_sagg .+
+    @. sediment_rate = clay + silt + sand + sagg + lagg
+    @. deposition =
+        deposition_clay +
+        deposition_silt +
+        deposition_sand +
+        deposition_sagg +
         deposition_lagg
 end
