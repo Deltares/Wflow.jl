@@ -6,17 +6,17 @@ abstract type AbstractSoilModel end
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
     h3::Vector{Float64} = fill(MISSING_VALUE, n)
     # Unsaturated store capacity [mm]
-    ustorecapacity::Vector{Float64} = []
+    ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N, Float64}} = zeros(n)
+    ustorelayerdepth::Vector{SVector{N, Float64}}
     # Thickness of unsaturated zone, per layer [mm]
     ustorelayerthickness::Vector{SVector{N, Float64}}
     # Saturated store [mm]
-    satwaterdepth::Vector{Float64} = []
+    satwaterdepth::Vector{Float64}
     # Pseudo-water table depth [mm] (top of the saturated zone)
-    zi::Vector{Float64} = []
+    zi::Vector{Float64}
     # Number of unsaturated soil layers
-    n_unsatlayers::Vector{Int} = []
+    n_unsatlayers::Vector{Int}
     # Transpiration [mm Δt⁻¹]
     transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
@@ -88,59 +88,59 @@ end
     # Maximum number of soil layers [-]
     maxlayers::Int
     # Number of soil layers [-]
-    nlayers::Vector{Int} = []
+    nlayers::Vector{Int}
     # Saturated water content (porosity) [-]
-    theta_s::Vector{Float64} = []
+    theta_s::Vector{Float64}
     # Residual water content [-]
-    theta_r::Vector{Float64} = []
+    theta_r::Vector{Float64}
     # Soilwater capacity [mm]
-    soilwatercapacity::Vector{Float64} = []
+    soilwatercapacity::Vector{Float64}
     # Muliplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N, Float64}}
     # Air entry pressure [cm] of soil (Brooks-Corey)
-    hb::Vector{Float64} = []
+    hb::Vector{Float64}
     # Soil thickness [mm]
-    soilthickness::Vector{Float64} = []
+    soilthickness::Vector{Float64}
     # Thickness of soil layers [mm]
     act_thickl::Vector{SVector{N, Float64}}
     # Cumulative sum of soil layers [mm], starting at soil surface (0)
     sumlayers::Vector{SVector{M, Float64}}
     # Infiltration capacity of the compacted areas [mm Δt⁻¹]
-    infiltcappath::Vector{Float64} = []
+    infiltcappath::Vector{Float64}
     # Soil infiltration capacity [mm Δt⁻¹]
-    infiltcapsoil::Vector{Float64} = []
+    infiltcapsoil::Vector{Float64}
     # Maximum leakage [mm Δt⁻¹] from saturated zone
-    maxleakage::Vector{Float64} = []
+    maxleakage::Vector{Float64}
     # Parameter [mm] controlling capillary rise
-    cap_hmax::Vector{Float64} = []
+    cap_hmax::Vector{Float64}
     # Coefficient [-] controlling capillary rise
-    cap_n::Vector{Float64} = []
+    cap_n::Vector{Float64}
     # Brooks-Corey power coefﬁcient [-] for each soil layer
     c::Vector{SVector{N, Float64}}
     # Soil temperature smooth factor [-]
-    w_soil::Vector{Float64} = []
+    w_soil::Vector{Float64}
     # Controls soil infiltration reduction factor when soil is frozen [-]
-    cf_soil::Vector{Float64} = []
+    cf_soil::Vector{Float64}
     # Fraction of compacted area  [-]
-    pathfrac::Vector{Float64} = []
+    pathfrac::Vector{Float64}
     # Controls how roots are linked to water table [-]
-    rootdistpar::Vector{Float64} = []
+    rootdistpar::Vector{Float64}
     # Fraction of the root length density in each soil layer [-]
     rootfraction::Vector{SVector{N, Float64}}
     # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
-    h1::Vector{Float64} = []
+    h1::Vector{Float64}
     # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
-    h2::Vector{Float64} = []
+    h2::Vector{Float64}
     # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
-    h3_high::Vector{Float64} = []
+    h3_high::Vector{Float64}
     # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
-    h3_low::Vector{Float64} = []
+    h3_low::Vector{Float64}
     # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
-    h4::Vector{Float64} = []
+    h4::Vector{Float64}
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
-    alpha_h1::Vector{Float64} = []
+    alpha_h1::Vector{Float64}
     # Soil fraction [-]
-    soil_fraction::Vector{Float64} = []
+    soil_fraction::Vector{Float64}
     # Vertical hydraulic conductivity profile type
     kv_profile::Kv
     # Vegetation parameter set

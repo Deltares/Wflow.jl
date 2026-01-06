@@ -1,6 +1,9 @@
 @testitem "unit: update_demand_gross! (NonPaddy)" begin
+    include("testing_utils.jl")
     using StaticArrays: SVector
     n = 1
+    N = 6
+
     model = Wflow.NonPaddy(;
         parameters = Wflow.NonPaddyParameters(;
             irrigation_efficiency = [1.0],
@@ -10,49 +13,37 @@
         ),
         variables = Wflow.NonPaddyVariables(; n, demand_gross = [0.8604076280853505]),
     )
-    N = 6
-    soil = Wflow.SbmSoilModel(;
+
+    soil = simple_soil(
         n,
-        parameters = Wflow.SbmSoilParameters(;
-            maxlayers = 7,
-            nlayers = [7],
-            theta_s = [0.4417283535003662],
-            theta_r = [0.09082602709531784],
-            kvfrac = SVector{N, Float64}[],
-            hb = [-10.0],
-            act_thickl = SVector{N, Float64}[],
-            sumlayers = [SVector(0.0, 50.0, 150.0, 200.0, 400.0, 1200.0, 2000.0)],
-            infiltcapsoil = [334.45526123046875],
-            c = [
-                SVector(
-                    9.195682525634766,
-                    9.297739028930664,
-                    9.597416877746582,
-                    9.782596588134766,
-                    9.974676132202148,
-                    9.876368522644043,
-                ),
-            ],
-            pathfrac = [0.0],
-            rootfraction = SVector{N, Float64}[],
-            kv_profile = nothing,
-            vegetation_parameter_set = Wflow.VegetationParameters(;
-                rootingdepth = [396.8680114746094],
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(2.3346668393934804, NaN, NaN, NaN, NaN, NaN)],
+        ustorelayerdepth = [SVector(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)],
+        n_unsatlayers = [3],
+        h3 = [-934.9109542889025],
+        f_infiltration_reduction = [0.8],
+        # Parameters
+        maxlayers = 7,
+        sumlayers = [SVector(0.0, 50.0, 150.0, 200.0, 400.0, 1200.0, 2000.0)],
+        c = [
+            SVector(
+                9.195682525634766,
+                9.297739028930664,
+                9.597416877746582,
+                9.782596588134766,
+                9.974676132202148,
+                9.876368522644043,
             ),
-        ),
-        variables = Wflow.SbmSoilVariables(;
-            n = 1,
-            ustorecapacity = [],
-            ustorelayerthickness = [SVector(2.3346668393934804, NaN, NaN, NaN, NaN, NaN)],
-            ustorelayerdepth = [SVector(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)],
-            zi = [],
-            n_unsatlayers = [3],
-            h3 = [-934.9109542889025],
-            f_infiltration_reduction = [0.8],
-            satwaterdepth = [],
-            vwc = SVector{N, Float64}[],
-            vwc_perc = SVector{N, Float64}[],
-            total_soilwater_storage = [],
+        ],
+        nlayers = [7],
+        theta_s = [0.4417283535003662],
+        theta_r = [0.09082602709531784],
+        hb = [-10.0],
+        infiltcapsoil = [334.45526123046875],
+        pathfrac = [0.0],
+        vegetation_parameter_set = Wflow.VegetationParameters(;
+            rootingdepth = [396.8680114746094],
         ),
     )
 
@@ -67,22 +58,22 @@
     @test demand_gross ≈ 0.38958813885549093
 end
 
-@testitem "unit: update_demand_gross (Paddy)" begin
-    irrigation_efficiency = 1.0
-    maximum_irrigation_rate = 25.0
-    h_opt = 50.0
-    h_min = 20.0
-    h = 15.0
-    demand_gross = 3.0
+@testitem "unit: update_demand_gross! (Paddy)" begin
+    variables = Wflow.PaddyVariables(; n = 1, h = [15.0])
+    parameters = Wflow.PaddyParameters(;
+        irrigation_efficiency = [1.0],
+        maximum_irrigation_rate = [25.0],
+        irrigation_areas = [true],
+        irrigation_trigger = [true],
+        h_min = [20.0],
+        h_opt = [50.0],
+        h_max = [NaN],
+    )
+    model = Wflow.Paddy(; parameters, variables)
+    @test Wflow.calc_demand_gross(model, 1) ≈ 35.0
 
-    @test Wflow.update_demand_gross(
-        irrigation_efficiency,
-        maximum_irrigation_rate,
-        h_opt,
-        h_min,
-        h,
-        demand_gross,
-    ) ≈ 25.0
+    Wflow.update_demand_gross!(model)
+    @test only(variables.demand_gross) ≈ 25.0
 end
 
 @testitem "unit: surface_water_allocation_local" begin
