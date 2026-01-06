@@ -473,7 +473,7 @@ end
         @test isfile(toml_archive)
         @test isfile(path_log)
         lines = readlines(path_log)
-        @test count(startswith(line, "[ Info: ") for line in lines) > 50
+        @test count(startswith(line, "[ Info: ") for line in lines) == 58
         @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
         # Another run with debug log level and a non-default path_log.

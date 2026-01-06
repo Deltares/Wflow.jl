@@ -25,9 +25,9 @@ occurs if the snow storage < 10 mm.
 
 """
 function glacier_hbv(
-    glacierfrac,
-    glacierstore,
-    snow,
+    glacier_frac,
+    glacier_store,
+    snow_storage,
     temperature,
     ttm,
     cfmax,
@@ -36,21 +36,24 @@ function glacier_hbv(
 )
 
     # Fraction of the snow transformed into ice (HBV-light model)
-    snow_to_glacier = g_sifrac * snow
-    snow_to_glacier = glacierfrac > 0.0 ? snow_to_glacier : 0.0
+    snow_to_glacier = if glacier_frac > 0.0
+        g_sifrac * snow_storage
+    else
+        0.0
+    end
 
     # Restrict snow_to_glacier conversion
     snow_to_glacier = min(snow_to_glacier, max_snow_to_glacier)
 
-    snow -= snow_to_glacier * glacierfrac
-    glacierstore += snow_to_glacier
+    snow_storage -= snow_to_glacier * glacier_frac
+    glacier_store += snow_to_glacier
 
     # Potential snow melt, based on temperature
-    potmelt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
+    potential_melt = temperature > ttm ? cfmax * (temperature - ttm) : 0.0
 
     # actual Glacier melt
-    glaciermelt = snow < 10.0 ? min(potmelt, glacierstore) : 0.0
-    glacierstore -= glaciermelt
+    glacier_melt = snow_storage < 10.0 ? min(potential_melt, glacier_store) : 0.0
+    glacier_store -= glacier_melt
 
-    return snow, snow_to_glacier, glacierstore, glaciermelt
+    return snow_storage, snow_to_glacier, glacier_store, glacier_melt
 end
