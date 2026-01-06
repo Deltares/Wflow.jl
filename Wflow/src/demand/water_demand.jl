@@ -53,28 +53,28 @@ function NonIrrigationDemand(
             dataset,
             config,
             "$(sector)__gross_water_demand_volume_flux";
-            sel=indices,
-            defaults=0.0,
-            type=Float64,
+            sel = indices,
+            defaults = 0.0,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     demand_net =
         ncread(
             dataset,
             config,
             "$(sector)__net_water_demand_volume_flux";
-            sel=indices,
-            defaults=0.0,
-            type=Float64,
+            sel = indices,
+            defaults = 0.0,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
     demand = PrescibedDemand(; demand_gross, demand_net)
     vars = NonIrrigationDemandVariables(;
-        returnflow_fraction=returnflow_f,
-        returnflow=fill(Float64(0), n),
+        returnflow_fraction = returnflow_f,
+        returnflow = fill(Float64(0), n),
     )
-    non_irrigation_demand = NonIrrigationDemand(; demand, variables=vars)
+    non_irrigation_demand = NonIrrigationDemand(; demand, variables = vars)
 
     return non_irrigation_demand
 end
@@ -110,40 +110,40 @@ function NonPaddy(
         dataset,
         config,
         "irrigated_non_paddy__irrigation_efficiency";
-        sel=indices,
-        defaults=1.0,
-        type=Float64,
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
     )
     areas = ncread(
         dataset,
         config,
         "irrigated_non_paddy_area__count";
-        optional=false,
-        sel=indices,
-        type=Int,
+        optional = false,
+        sel = indices,
+        type = Int,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
         "irrigated_non_paddy__irrigation_trigger_flag";
-        optional=false,
-        sel=indices,
-        type=Bool,
+        optional = false,
+        sel = indices,
+        type = Bool,
     )
     max_irri_rate =
         ncread(
             dataset,
             config,
             "irrigated_non_paddy__max_irrigation_rate";
-            sel=indices,
-            defaults=25.0,
-            type=Float64,
+            sel = indices,
+            defaults = 25.0,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
 
     parameters = NonPaddyParameters(;
-        maximum_irrigation_rate=max_irri_rate,
-        irrigation_efficiency=efficiency,
-        irrigation_areas=areas,
+        maximum_irrigation_rate = max_irri_rate,
+        irrigation_efficiency = efficiency,
+        irrigation_areas = areas,
         irrigation_trigger,
     )
     n = length(indices)
@@ -281,68 +281,68 @@ function Paddy(
         dataset,
         config,
         "irrigated_paddy__min_depth";
-        sel=indices,
-        defaults=20.0,
-        type=Float64,
+        sel = indices,
+        defaults = 20.0,
+        type = Float64,
     )
     h_opt = ncread(
         dataset,
         config,
         "irrigated_paddy__optimal_depth";
-        sel=indices,
-        defaults=50.0,
-        type=Float64,
+        sel = indices,
+        defaults = 50.0,
+        type = Float64,
     )
     h_max = ncread(
         dataset,
         config,
         "irrigated_paddy__max_depth";
-        sel=indices,
-        defaults=80.0,
-        type=Float64,
+        sel = indices,
+        defaults = 80.0,
+        type = Float64,
     )
     efficiency = ncread(
         dataset,
         config,
         "irrigated_paddy__irrigation_efficiency";
-        sel=indices,
-        defaults=1.0,
-        type=Float64,
+        sel = indices,
+        defaults = 1.0,
+        type = Float64,
     )
     areas = ncread(
         dataset,
         config,
         "irrigated_paddy_area__count";
-        optional=false,
-        sel=indices,
-        type=Bool,
+        optional = false,
+        sel = indices,
+        type = Bool,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
         "irrigated_paddy__irrigation_trigger_flag";
-        optional=false,
-        sel=indices,
-        type=Bool,
+        optional = false,
+        sel = indices,
+        type = Bool,
     )
     max_irri_rate =
         ncread(
             dataset,
             config,
             "irrigated_paddy__max_irrigation_rate";
-            sel=indices,
-            defaults=25.0,
-            type=Float64,
+            sel = indices,
+            defaults = 25.0,
+            type = Float64,
         ) .* (dt / BASETIMESTEP)
     n = length(indices)
     parameters = PaddyParameters(;
-        irrigation_efficiency=efficiency,
-        maximum_irrigation_rate=max_irri_rate,
+        irrigation_efficiency = efficiency,
+        maximum_irrigation_rate = max_irri_rate,
         irrigation_trigger,
         h_min,
         h_max,
         h_opt,
-        irrigation_areas=areas,
+        irrigation_areas = areas,
     )
     variables = PaddyVariables(; n)
     paddy = Paddy(; parameters, variables)
@@ -408,7 +408,12 @@ taking into account limited irrigation efficiency and limited by a maximum irrig
 """
 function update_demand_gross!(model::Paddy)
     (; demand_gross) = model.variables
-    (; irrigation_areas, irrigation_trigger, irrigation_efficiency, maximum_irrigation_rate) = model.parameters
+    (;
+        irrigation_areas,
+        irrigation_trigger,
+        irrigation_efficiency,
+        maximum_irrigation_rate,
+    ) = model.parameters
 
     for i in eachindex(irrigation_areas)
         if irrigation_areas[i] && irrigation_trigger[i]
@@ -455,7 +460,7 @@ update_demand_gross!(model::NoIrrigationPaddy) = nothing
 end
 
 "Water demand model"
-@with_kw struct Demand{D,I,L,P,NP,V} <: AbstractDemandModel
+@with_kw struct Demand{D, I, L, P, NP, V} <: AbstractDemandModel
     domestic::D
     industry::I
     livestock::L
@@ -481,7 +486,7 @@ function Demand(
     dt::Second,
 )
     n = length(indices)
-    demand(name; constr=NonIrrigationDemand, constr_triv=NoNonIrrigationDemand) =
+    demand(name; constr = NonIrrigationDemand, constr_triv = NoNonIrrigationDemand) =
         if getfield(config.model.water_demand, Symbol("$(name)__flag"))::Bool
             if constr == NonIrrigationDemand
                 constr(dataset, config, indices, dt, name)
@@ -495,8 +500,8 @@ function Demand(
     domestic = demand("domestic")
     industry = demand("industry")
     livestock = demand("livestock")
-    paddy = demand("paddy"; constr=Paddy, constr_triv=NoIrrigationPaddy)
-    nonpaddy = demand("nonpaddy"; constr=NonPaddy, constr_triv=NoIrrigationNonPaddy)
+    paddy = demand("paddy"; constr = Paddy, constr_triv = NoIrrigationPaddy)
+    nonpaddy = demand("nonpaddy"; constr = NonPaddy, constr_triv = NoIrrigationNonPaddy)
 
     variables = DemandVariables(; n)
     demand = Demand(; domestic, industry, livestock, paddy, nonpaddy, variables)
@@ -558,17 +563,17 @@ function AllocationLand(
         dataset,
         config,
         "land_surface_water__withdrawal_fraction";
-        sel=indices,
-        defaults=1,
-        type=Float64,
+        sel = indices,
+        defaults = 1,
+        type = Float64,
     )
     areas = ncread(
         dataset,
         config,
         "land_water_allocation_area__count";
-        sel=indices,
-        defaults=1,
-        type=Int,
+        sel = indices,
+        defaults = 1,
+        type = Int,
     )
 
     n = length(indices)
@@ -614,73 +619,47 @@ availability.
 """
 function surface_water_allocation_local!(
     model::AllocationLand,
-    demand::Demand,
+    demand_variables::DemandVariables,
     river::AbstractRiverFlowModel,
     domain::DomainLand,
     dt::Float64,
 )
     (; surfacewater_alloc) = model.variables
-    (; surfacewater_demand) = demand.variables
+    (; surfacewater_demand) = demand_variables
     (; act_surfacewater_abst_vol, act_surfacewater_abst, available_surfacewater) =
         river.allocation.variables
     (; external_inflow) = river.boundary_conditions
     (; storage) = river.variables
-
     (; area) = domain.parameters
     indices_river = domain.network.river_inds_excl_reservoir
 
-    for (i, args) in enumerate(zip(surfacewater_demand, area))
-        index_river = indices_river[i]
+    # maps from the land domain to the internal river domain (linear index), excluding reservoirs
+    for (i, index_river) in enumerate(indices_river)
         if index_river > 0
-            act_surfacewater_abst_vol[index_river],
-            available_surfacewater[index_river],
-            surfacewater_demand[i],
-            act_surfacewater_abst[index_river],
-            surfacewater_alloc[i] = surface_water_allocation_local(
-                args...,
-                external_inflow[index_river],
-                storage[index_river],
-                dt,
-            )
+            # the available volume is limited by a fixed scaling factor of 0.8 to prevent
+            # rivers completely drying out. check for abstraction through negative external
+            # inflow first and adjust available volume.
+            available_volume = storage[index_river] * 0.80
+            if external_inflow[index_river] < 0.0
+                max_river_abstraction =
+                    min(-external_inflow[index_river] * dt, available_volume)
+                available_volume = max(available_volume - max_river_abstraction, 0.0)
+            end
+            # satisfy surface water demand with available local river volume
+            surfacewater_demand_vol = surfacewater_demand[i] * 0.001 * area[i]
+            abstraction_vol = min(surfacewater_demand_vol, available_volume)
+            act_surfacewater_abst_vol[index_river] = abstraction_vol
+            # remaining available surface water and demand
+            available_surfacewater[index_river] =
+                max(available_volume - abstraction_vol, 0.0)
+            abstraction = (abstraction_vol / area[i]) * 1000.0
+            surfacewater_demand[i] = max(surfacewater_demand[i] - abstraction, 0.0)
+            # update actual abstraction from river and surface water allocation (land cell)
+            act_surfacewater_abst[index_river] = abstraction
+            surfacewater_alloc[i] = abstraction
         end
     end
-end
-
-function surface_water_allocation_local(
-    surfacewater_demand,
-    area,
-    external_inflow,
-    storage,
-    dt,
-)
-    # the available volume is limited by a fixed scaling factor of 0.8 to prevent
-    # rivers completely drying out. check for abstraction through negative external
-    # inflow first and adjust available volume.
-    if external_inflow < 0.0
-        available_volume = storage * 0.80
-        max_river_abstraction = min(-external_inflow * dt, available_volume)
-        available_volume = max(available_volume - max_river_abstraction, 0.0)
-    else
-        available_volume = storage * 0.80
-    end
-    # satisfy surface water demand with available local river volume
-    surfacewater_demand_vol = surfacewater_demand * 0.001 * area
-    abstraction_vol = min(surfacewater_demand_vol, available_volume)
-
-    # remaining available surface water and demand
-    avail_surfacewater = max(available_volume - abstraction_vol, 0.0)
-    abstraction = (abstraction_vol / area) * 1000.0
-    surfacewater_demand = max(surfacewater_demand - abstraction, 0.0)
-
-    # update actual abstraction from river and surface water allocation (land cell)
-    act_surfacewater_abst = abstraction
-    surfacewater_alloc = abstraction
-
-    return abstraction_vol,
-    avail_surfacewater,
-    surfacewater_demand,
-    act_surfacewater_abst,
-    surfacewater_alloc
+    return nothing
 end
 
 """
@@ -993,7 +972,7 @@ function update_water_allocation!(
         frac_sw_used * nonirri_demand_gross + frac_sw_used * irri_demand_gross
 
     # local surface water demand and allocation (river, excluding reservoirs)
-    surface_water_allocation_local!(model, demand, river, domain.land, dt)
+    surface_water_allocation_local!(model, demand.variables, river, domain.land, dt)
     # surface water demand and allocation for areas
     surface_water_allocation_area!(model, demand, river, domain, dt)
 

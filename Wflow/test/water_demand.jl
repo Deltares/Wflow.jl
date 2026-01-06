@@ -77,27 +77,50 @@ end
 end
 
 @testitem "unit: surface_water_allocation_local" begin
-    surfacewater_demand = 0.02
-    area = 600_000.0
-    external_inflow = 5.0
-    storage = 375.0
+    n = 1
+
+    model = Wflow.AllocationLand(;
+        n,
+        parameters = Wflow.AllocationLandParameters(;
+            frac_sw_used = [NaN],
+            areas = [600_000.0],
+        ),
+    )
+
+    demand_variables = Wflow.DemandVariables(; n, surfacewater_demand = [0.02])
+
+    @kwdef struct DummyRiver{A, B, V} <: Wflow.AbstractRiverFlowModel
+        allocation::A
+        boundary_conditions::B
+        variables::V
+    end
+
+    river = DummyRiver(;
+        allocation = (;
+            variables = (;
+                act_surfacewater_abst_vol = zeros(n),
+                act_surfacewater_abst = zeros(n),
+                available_surfacewater = zeros(n),
+            )
+        ),
+        boundary_conditions = (; external_inflow = [5.0]),
+        variables = (; storage = [375.0]),
+    )
+
+    domain = Wflow.DomainLand(;
+        network = Wflow.NetworkLand(; river_inds_excl_reservoir = [1]),
+        parameters = Wflow.LandParameters(; area = [600_000.0]),
+    )
+
     dt = 86400.0
 
-    abstraction_vol,
-    avail_surfacewater,
-    surfacewater_demand,
-    act_surfacewater_abst,
-    surfacewater_alloc = Wflow.surface_water_allocation_local(
-        surfacewater_demand,
-        area,
-        external_inflow,
-        storage,
-        dt,
-    )
-    @test abstraction_vol ≈ 12.0
-    @test avail_surfacewater ≈ 288.0
-    @test surfacewater_demand ≈ 0.0
-    @test act_surfacewater_abst == surfacewater_alloc ≈ 0.02
+    Wflow.surface_water_allocation_local!(model, demand_variables, river, domain, dt)
+
+    @test river.allocation.variables.act_surfacewater_abst_vol |> only ≈ 12.0
+    @test river.allocation.variables.available_surfacewater |> only ≈ 288.0
+    @test demand_variables.surfacewater_demand |> only ≈ 0.0
+    @test river.allocation.variables.act_surfacewater_abst |> only ≈ 0.02
+    @test model.variables.surfacewater_alloc |> only ≈ 0.02
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
