@@ -76,7 +76,8 @@ end
     @test only(variables.demand_gross) ≈ 25.0
 end
 
-@testitem "unit: surface_water_allocation_local" begin
+@testitem "unit: surface_water_allocation_local!" begin
+    include("testing_utils.jl")
     n = 1
 
     model = Wflow.AllocationLand(;
@@ -88,12 +89,6 @@ end
     )
 
     demand_variables = Wflow.DemandVariables(; n, surfacewater_demand = [0.02])
-
-    @kwdef struct DummyRiver{A, B, V} <: Wflow.AbstractRiverFlowModel
-        allocation::A
-        boundary_conditions::B
-        variables::V
-    end
 
     river = DummyRiver(;
         allocation = (;
@@ -124,41 +119,67 @@ end
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
-    available_surfacewater = zeros(3)
-    act_surfacewater_abst_vol = zeros(3)
-    act_surfacewater_abst = zeros(3)
-    surfacewater_alloc = zeros(3)
-    surfacewater_demand = [0.65, 0.77, 0.331]
-    area = [603121.7, 603121.7, 603121.7]
-    cell_area = [602945.46, 602857.3, 602857.3]
-    external_inflow = [2.0, 3.0, 4.0]
-    storage = [1.5531612276024342e8, 4.28e7, 7.16e7]
-    inds_reservoir = [1, 2, 3]
-    dt = 86400.0
-    inds_land = [1, 2, 3]
-    inds_river = [1, 2, 3]
+    include("testing_utils.jl")
 
-    Wflow.surface_water_allocation_area!(
-        available_surfacewater,
-        act_surfacewater_abst_vol,
-        act_surfacewater_abst,
-        surfacewater_alloc,
-        surfacewater_demand,
-        area,
-        cell_area,
-        external_inflow,
-        storage,
-        inds_reservoir,
-        dt,
-        inds_land,
-        inds_river,
+    n = 3
+    model = Wflow.AllocationLand(;
+        n,
+        parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
     )
-    @test available_surfacewater ≈ [1.5220980030503854e8, 4.1944e7, 7.0168e7]
-    @test act_surfacewater_abst_vol ≈
+
+    demand_variables = Wflow.DemandVariables(; n, surfacewater_demand = [0.65, 0.77, 0.331])
+
+    river = DummyRiver(;
+        allocation = (;
+            variables = (;
+                act_surfacewater_abst_vol = zeros(n),
+                act_surfacewater_abst = zeros(n),
+                available_surfacewater = zeros(n),
+            )
+        ),
+        boundary_conditions = (;
+            reservoir = (;
+                boundary_conditions = (; external_inflow = [2.0, 3.0, 4.0]),
+                variables = (; storage = [1.5531612276024342e8, 4.28e7, 7.16e7]),
+            )
+        ),
+    )
+
+    domain = Wflow.Domain(;
+        land = Wflow.DomainLand(;
+            network = Wflow.NetworkLand(; allocation_area_indices = [[1, 2, 3]]),
+            parameters = Wflow.LandParameters(; area = [603121.7, 603121.7, 603121.7]),
+        ),
+        river = Wflow.DomainRiver(;
+            network = Wflow.NetworkRiver(;
+                allocation_area_indices = [[1, 2, 3]],
+                reservoir_indices = [1, 2, 3],
+            ),
+            parameters = Wflow.RiverParameters(;
+                cell_area = [602945.46, 602857.3, 602857.3],
+            ),
+        ),
+    )
+
+    dt = 86400.0
+
+    @test Wflow.available_surface_water!(
+        river.allocation.variables.available_surfacewater,
+        river.boundary_conditions.reservoir,
+        domain.river.network.allocation_area_indices[1],
+        domain.river.network.reservoir_indices,
+        dt,
+    ) ≈ 2.6432180030503854e8
+
+    Wflow.surface_water_allocation_area!(model, demand_variables, river, domain, dt)
+
+    @test river.allocation.variables.available_surfacewater ≈
+          [1.5220980030503854e8, 4.1944e7, 7.0168e7]
+    @test river.allocation.variables.act_surfacewater_abst_vol ≈
           [608.1360277590558, 167.5822285897938, 280.34784035115035]
-    @test act_surfacewater_abst ≈
+    @test river.allocation.variables.act_surfacewater_abst ≈
           [1.008608685367754, 0.27797992757124085, 0.46503184145095416]
-    @test surfacewater_alloc ≈ [0.65, 0.77, 0.331]
+    @test model.variables.surfacewater_alloc ≈ [0.65, 0.77, 0.331]
 end
 
 @testitem "unit: groundwater_allocation_local" begin

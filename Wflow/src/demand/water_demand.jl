@@ -668,7 +668,7 @@ availability for allocation areas.
 """
 function surface_water_allocation_area!(
     model::AllocationLand,
-    demand::Demand,
+    demand_variables::DemandVariables,
     river::AbstractRiverFlowModel,
     domain::Domain,
     dt::Float64,
@@ -677,69 +677,74 @@ function surface_water_allocation_area!(
     inds_land = domain.land.network.allocation_area_indices
     inds_reservoir = domain.river.network.reservoir_indices
     (; area) = domain.land.parameters
-    (; cell_area) = domain.river.parameters
 
     (; available_surfacewater, act_surfacewater_abst_vol, act_surfacewater_abst) =
         river.allocation.variables
     (; surfacewater_alloc) = model.variables
-    (; surfacewater_demand) = demand.variables
+    (; surfacewater_demand) = demand_variables
     (; reservoir) = river.boundary_conditions
 
-    (; external_inflow) = reservoir.boundary_conditions
-    (; storage) = reservoir.variables
+    for i in eachindex(inds_river)
+        # surface water_demand (allocation area)
+        sw_demand_vol =
+            mapreduce(j -> surfacewater_demand[j] * 1e-3 * area[j], +, inds_land[i])
 
-    # loop over allocation areas
-    for args in zip(inds_land, inds_river)
-        surface_water_allocation_area!(
+        sw_available = available_surface_water!(
             available_surfacewater,
-            act_surfacewater_abst_vol,
-            act_surfacewater_abst,
-            surfacewater_alloc,
-            surfacewater_demand,
-            area,
-            cell_area,
-            external_inflow,
-            storage,
+            reservoir,
+            inds_river[i],
             inds_reservoir,
             dt,
-            args...,
         )
+
+        # total actual surface water abstraction [m3] in an allocation area, minimum of
+        # available surface water and demand in an allocation area.
+        sw_abstraction = min(sw_available, sw_demand_vol)
+
+        # fraction of available surface water that can be abstracted at allocation area
+        # level
+        frac_abstract_sw = bounded_divide(sw_abstraction, sw_available)
+        # fraction of water demand that can be satisfied by available surface water at
+        # allocation area level.
+        frac_allocate_sw = bounded_divide(sw_abstraction, sw_demand_vol)
+
+        # water abstracted from surface water at each river cell (including reservoir
+        # locations).
+        for j in inds_river[i]
+            act_surfacewater_abst_vol[j] += frac_abstract_sw * available_surfacewater[j]
+            act_surfacewater_abst[j] =
+                (act_surfacewater_abst_vol[j] / domain.river.parameters.cell_area[j]) *
+                1000.0
+        end
+
+        # water allocated to each land cell.
+        for j in inds_land[i]
+            surfacewater_alloc[j] += frac_allocate_sw * surfacewater_demand[j]
+        end
     end
-    return nothing
 end
 
-function surface_water_allocation_area!(
+function available_surface_water!(
     available_surfacewater::Vector{Float64},
-    act_surfacewater_abst_vol::Vector{Float64},
-    act_surfacewater_abst::Vector{Float64},
-    surfacewater_alloc::Vector{Float64},
-    surfacewater_demand::Vector{Float64},
-    area::Vector{Float64},
-    cell_area::Vector{Float64},
-    external_inflow::Vector{Float64},
-    storage::Vector{Float64},
-    inds_reservoir,
-    dt,
-    inds_land,
-    inds_river,
+    reservoir,
+    indices_river::Vector{Int},
+    indices_reservoir::Vector{Int},
+    dt::Float64,
 )
-    # surface water demand (allocation area)
-    sw_demand_vol = 0.0
-    for j in inds_land
-        sw_demand_vol += surfacewater_demand[j] * 0.001 * area[j]
-    end
-    # surface water availability (allocation area)
     sw_available = 0.0
-    for j in inds_river
-        k = inds_reservoir[j]
+    for j in indices_river
+        k = indices_reservoir[j]
         if k > 0
             # for reservoir locations use reservoir storage, check for abstraction
             # through external negative inflow first and adjust available volume.
-            external_inflow_ = external_inflow[k]
-            available_volume = storage[k] * 0.98
-            if external_inflow_ < 0.0
-                max_res_abstraction = min(-external_inflow_ * dt, available_volume)
-                available_volume = max(available_volume - max_res_abstraction, 0.0)
+            external_inflow = reservoir.boundary_conditions.external_inflow[k]
+            available_volume = reservoir.variables.storage[k] * 0.98
+            if external_inflow < 0.0
+                if available_volume > -external_inflow * dt
+                    available_volume += external_inflow * dt
+                else
+                    available_volume = 0.0
+                end
             end
             available_surfacewater[j] = available_volume
             sw_available += available_volume
@@ -748,29 +753,7 @@ function surface_water_allocation_area!(
             sw_available += available_surfacewater[j]
         end
     end
-    # total actual surface water abstraction [m3] in an allocation area, minimum of
-    # available surface water and demand in an allocation area.
-    sw_abstraction = min(sw_available, sw_demand_vol)
-
-    # fraction of available surface water that can be abstracted at allocation area
-    # level
-    frac_abstract_sw = bounded_divide(sw_abstraction, sw_available)
-    # fraction of water demand that can be satisfied by available surface water at
-    # allocation area level.
-    frac_allocate_sw = bounded_divide(sw_abstraction, sw_demand_vol)
-
-    # water abstracted from surface water at each river cell (including reservoir
-    # locations).
-    for j in inds_river
-        act_surfacewater_abst_vol[j] += frac_abstract_sw * available_surfacewater[j]
-        act_surfacewater_abst[j] = (act_surfacewater_abst_vol[j] / cell_area[j]) * 1000.0
-    end
-
-    # water allocated to each land cell.
-    for j in inds_land
-        surfacewater_alloc[j] += frac_allocate_sw * surfacewater_demand[j]
-    end
-    return nothing
+    return sw_available
 end
 
 "Update water allocation for land domain based on local groundwater availability."
@@ -974,7 +957,7 @@ function update_water_allocation!(
     # local surface water demand and allocation (river, excluding reservoirs)
     surface_water_allocation_local!(model, demand.variables, river, domain.land, dt)
     # surface water demand and allocation for areas
-    surface_water_allocation_area!(model, demand, river, domain, dt)
+    surface_water_allocation_area!(model, demand.variables, river, domain, dt)
 
     @. abstraction = act_surfacewater_abst_vol / dt
 

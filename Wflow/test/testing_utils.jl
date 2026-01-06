@@ -172,3 +172,9 @@ function simple_soil(n, N; kwargs...)
 
     return Wflow.SbmSoilModel(; n, variables, parameters)
 end
+
+@kwdef struct DummyRiver{A, B, V} <: Wflow.AbstractRiverFlowModel
+    allocation::A = nothing
+    boundary_conditions::B = nothing
+    variables::V = nothing
+end
