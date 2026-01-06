@@ -4,13 +4,13 @@ abstract type AbstractSedimentRiverTransportModel end
 @with_kw struct SedimentRiverTransportVariables
     n::Int
     # Sediment flux [t dt-1]
-    sediment_flux::Vector{Float64} = fill(MISSING_VALUE, n)
-    clay_flux::Vector{Float64} = zeros(n)
-    silt_flux::Vector{Float64} = zeros(n)
-    sand_flux::Vector{Float64} = zeros(n)
-    sagg_flux::Vector{Float64} = zeros(n)
-    lagg_flux::Vector{Float64} = zeros(n)
-    gravel_flux::Vector{Float64} = zeros(n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay_rate::Vector{Float64} = zeros(n)
+    silt_rate::Vector{Float64} = zeros(n)
+    sand_rate::Vector{Float64} = zeros(n)
+    sagg_rate::Vector{Float64} = zeros(n)
+    lagg_rate::Vector{Float64} = zeros(n)
+    gravel_rate::Vector{Float64} = zeros(n)
     # Total Sediment deposition rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sediment erosion rate (from store + direct river bed/bank) [t dt-1]
@@ -318,13 +318,13 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         reservoir_trapping_efficiency,
     ) = model.parameters
     (;
-        sediment_flux,
-        clay_flux,
-        silt_flux,
-        sand_flux,
-        sagg_flux,
-        lagg_flux,
-        gravel_flux,
+        sediment_rate,
+        clay_rate,
+        silt_rate,
+        sand_rate,
+        sagg_rate,
+        lagg_rate,
+        gravel_rate,
         deposition,
         erosion,
         leftover_clay,
@@ -358,13 +358,13 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         upstream_nodes = inneighbors(graph, v)
         if !isempty(upstream_nodes)
             for i in upstream_nodes
-                if clay_flux[i] >= 0.0 # avoid NaN from upstream non-river cells
-                    input_clay += clay_flux[i]
-                    input_silt += silt_flux[i]
-                    input_sand += sand_flux[i]
-                    input_sagg += sagg_flux[i]
-                    input_lagg += lagg_flux[i]
-                    input_gravel += gravel_flux[i]
+                if clay_rate[i] >= 0.0 # avoid NaN from upstream non-river cells
+                    input_clay += clay_rate[i]
+                    input_silt += silt_rate[i]
+                    input_sand += sand_rate[i]
+                    input_sagg += sagg_rate[i]
+                    input_lagg += lagg_rate[i]
+                    input_gravel += gravel_rate[i]
                 end
             end
         end
@@ -649,30 +649,30 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         else
             fwaterout = 1.0
         end
-        clay_flux[v] = fwaterout * (input_clay + erosion_clay - deposition_clay)
-        silt_flux[v] = fwaterout * (input_silt + erosion_silt - deposition_silt)
-        sand_flux[v] = fwaterout * (input_sand + erosion_sand - deposition_sand)
-        sagg_flux[v] = fwaterout * (input_sagg + erosion_sagg - deposition_sagg)
-        lagg_flux[v] = fwaterout * (input_lagg + erosion_lagg - deposition_lagg)
-        gravel_flux[v] = fwaterout * (input_gravel + erosion_gravel - deposition_gravel)
+        clay_rate[v] = fwaterout * (input_clay + erosion_clay - deposition_clay)
+        silt_rate[v] = fwaterout * (input_silt + erosion_silt - deposition_silt)
+        sand_rate[v] = fwaterout * (input_sand + erosion_sand - deposition_sand)
+        sagg_rate[v] = fwaterout * (input_sagg + erosion_sagg - deposition_sagg)
+        lagg_rate[v] = fwaterout * (input_lagg + erosion_lagg - deposition_lagg)
+        gravel_rate[v] = fwaterout * (input_gravel + erosion_gravel - deposition_gravel)
 
-        sediment_flux[v] =
-            clay_flux[v] +
-            silt_flux[v] +
-            sand_flux[v] +
-            sagg_flux[v] +
-            lagg_flux[v] +
-            gravel_flux[v]
+        sediment_rate[v] =
+            clay_rate[v] +
+            silt_rate[v] +
+            sand_rate[v] +
+            sagg_rate[v] +
+            lagg_rate[v] +
+            gravel_rate[v]
 
         ### Leftover / mass balance ###
         # Sediment left in the cell [ton]
-        leftover_clay[v] = input_clay + erosion_clay - deposition_clay - clay_flux[v]
-        leftover_silt[v] = input_silt + erosion_silt - deposition_silt - silt_flux[v]
-        leftover_sand[v] = input_sand + erosion_sand - deposition_sand - sand_flux[v]
-        leftover_sagg[v] = input_sagg + erosion_sagg - deposition_sagg - sagg_flux[v]
-        leftover_lagg[v] = input_lagg + erosion_lagg - deposition_lagg - lagg_flux[v]
+        leftover_clay[v] = input_clay + erosion_clay - deposition_clay - clay_rate[v]
+        leftover_silt[v] = input_silt + erosion_silt - deposition_silt - silt_rate[v]
+        leftover_sand[v] = input_sand + erosion_sand - deposition_sand - sand_rate[v]
+        leftover_sagg[v] = input_sagg + erosion_sagg - deposition_sagg - sagg_rate[v]
+        leftover_lagg[v] = input_lagg + erosion_lagg - deposition_lagg - lagg_rate[v]
         leftover_gravel[v] =
-            input_gravel + erosion_gravel - deposition_gravel - gravel_flux[v]
+            input_gravel + erosion_gravel - deposition_gravel - gravel_rate[v]
     end
 end
 
@@ -824,12 +824,12 @@ function update_boundary_conditions!(
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Sediment flux per particle
-    @. clay = sediment_flux_model.variables.clay_flux
-    @. silt = sediment_flux_model.variables.silt_flux
-    @. sand = sediment_flux_model.variables.sand_flux
-    @. sagg = sediment_flux_model.variables.sagg_flux
-    @. lagg = sediment_flux_model.variables.lagg_flux
-    @. gravel = sediment_flux_model.variables.gravel_flux
+    @. clay = sediment_flux_model.variables.clay_rate
+    @. silt = sediment_flux_model.variables.silt_rate
+    @. sand = sediment_flux_model.variables.sand_rate
+    @. sagg = sediment_flux_model.variables.sagg_rate
+    @. lagg = sediment_flux_model.variables.lagg_rate
+    @. gravel = sediment_flux_model.variables.gravel_rate
 end
 
 function suspended_solid(dm, dsuspf, dbedf, substance)

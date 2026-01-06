@@ -433,27 +433,27 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
         unit = "t",
     ),
     "river_water_clay__mass_flow_rate" => (
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.clay_flux),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.clay_rate),
         unit = "t dt-1",
     ),
     "river_water_gravel__mass_flow_rate" => (
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.gravel_flux),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.gravel_rate),
         unit = "t dt-1",
     ),
     "river_water_large_aggregates__mass_flow_rate" => (
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg_flux),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg_rate),
         unit = "t dt-1",
     ),
     "river_water_small_aggregates__mass_flow_rate" => (
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg_flux),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg_rate),
         unit = "t dt-1",
     ),
     "river_water_sand__mass_flow_rate" => (
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.sand_flux),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.sand_rate),
         unit = "t dt-1",
     ),
     "river_water_silt__mass_flow_rate" => (
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.silt_flux),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.silt_rate),
         unit = "t dt-1",
     ),
     "river_water_small_aggregates__mass" => (
