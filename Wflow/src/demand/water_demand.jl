@@ -190,7 +190,7 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
                     irri_dem_gross += depletion
                 end
             end
-            demand_gross[i] = apply_infiltration_capacity(model, soil, irri_dem_gross, i)
+            demand_gross[i] = compute_demand_gross(model, soil, irri_dem_gross, i)
         else
             demand_gross[i] = 0.0
         end
@@ -222,8 +222,7 @@ function water_demand_root_zone(soil::SbmSoilModel, i::Int, k::Int)
     return depletion, readily_available_water
 end
 
-"Limit irrigation demand to infiltration capacity"
-function apply_infiltration_capacity(
+function compute_demand_gross(
     model::NonPaddy,
     soil::SbmSoilModel,
     irri_dem_gross::Float64,
@@ -415,7 +414,7 @@ function update_demand_gross!(model::Paddy)
 
     for i in eachindex(irrigation_areas)
         if irrigation_areas[i] && irrigation_trigger[i]
-            irr_depth_paddy = calc_demand_gross(model, i)
+            irr_depth_paddy = compute_irrigation_depth(model, i)
 
             irri_dem_gross = irr_depth_paddy / irrigation_efficiency[i]
             # limit irrigation demand to the maximum irrigation rate
@@ -427,7 +426,7 @@ function update_demand_gross!(model::Paddy)
     end
 end
 
-function calc_demand_gross(model::Paddy, i::Int)
+function compute_irrigation_depth(model::Paddy, i::Int)
     (; maximum_irrigation_rate, h_min, h_opt) = model.parameters
     (; demand_gross, h) = model.variables
 

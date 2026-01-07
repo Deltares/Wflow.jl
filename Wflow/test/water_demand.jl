@@ -54,7 +54,7 @@
     @test depletion ≈ 0.38958813885549093
     @test readily_available_water ≈ 0.2002509988361609
     irri_dem_gross = depletion
-    demand_gross = Wflow.apply_infiltration_capacity(model, soil, irri_dem_gross, i)
+    demand_gross = Wflow.compute_demand_gross(model, soil, irri_dem_gross, i)
     @test demand_gross ≈ 0.38958813885549093
 end
 
@@ -70,7 +70,7 @@ end
         h_max = [NaN],
     )
     model = Wflow.Paddy(; parameters, variables)
-    @test Wflow.calc_demand_gross(model, 1) ≈ 35.0
+    @test Wflow.compute_irrigation_depth(model, 1) ≈ 35.0
 
     Wflow.update_demand_gross!(model)
     @test only(variables.demand_gross) ≈ 25.0
