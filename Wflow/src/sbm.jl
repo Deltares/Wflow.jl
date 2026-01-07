@@ -1,5 +1,9 @@
+abstract type AbstractDemandModel end
+abstract type AbstractAllocationModel end
+
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D, A} <: AbstractLandModel
+@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+                AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -61,8 +65,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand = NoDemand(; n)
     end
 
-    args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,

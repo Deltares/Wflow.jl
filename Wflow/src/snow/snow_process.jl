@@ -33,7 +33,6 @@ function snowpack_hbv(
     cfr = 0.05,
 )
     if temperature > ttm
-        # No refreezing
         potential_snow_melt = cfmax * (temperature - ttm)
         snow_melt = min(potential_snow_melt, snow_storage)
         snow_storage -= snow_melt

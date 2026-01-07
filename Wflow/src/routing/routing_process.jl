@@ -23,31 +23,36 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
     return graph
 end
 
+const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
+
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0
     else
+        dt_dx = dt / dx
+        exponent = beta - 1.0
         # initial estimate using linear scheme
-        ab_pq = alpha * beta * pow(((q_prev + q_in) / 2.0), (beta - 1.0))
-        q = (dt / dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt / dx + ab_pq)
+        alpha_beta = alpha * beta
+        ab_pq = alpha_beta * pow(((q_prev + q_in) / 2.0), exponent)
+        q = (dt_dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt_dx + ab_pq)
         if isnan(q)
             q = 0.0
         end
-        q = max(q, 1.0e-30)
+        q = max(q, KIN_WAVE_MIN_FLOW)
         # newton-raphson
         max_iters = 3000
         epsilon = 1.0e-12
         count = 0
-        constant_term = dt / dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
+        constant_term = dt_dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
         while true
-            f_q = dt / dx * q + alpha * pow(q, beta) - constant_term
-            df_q = dt / dx + alpha * beta * pow(q, (beta - 1.0))
+            f_q = dt_dx * q + alpha * pow(q, beta) - constant_term
+            df_q = dt_dx + alpha * beta * pow(q, exponent)
             q -= (f_q / df_q)
             if isnan(q)
                 q = 0.0
             end
-            q = max(q, 1.0e-30)
+            q = max(q, KIN_WAVE_MIN_FLOW)
             if (abs(f_q) <= epsilon) || (count >= max_iters)
                 break
             end
@@ -91,14 +96,16 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
     epsilon = 1.0e-12
     max_iters = 3000
     count = 0
+    dt_dx = dt / dx
+    celerity_inv = inv(celerity)
     while true
-        f = (dt / dx) * ssf + (1.0 / celerity) * ssf - constant_term
-        df = (dt / dx) + 1.0 / celerity
+        f = dt_dx * ssf + celerity_inv * ssf - constant_term
+        df = dt_dx + celerity_inv
         ssf -= (f / df)
         if isnan(ssf)
             ssf = 0.0
         end
-        ssf = max(ssf, 1.0e-30)
+        ssf = max(ssf, KIN_WAVE_MIN_FLOW)
         if (abs(f) <= epsilon) || (count >= max_iters)
             break
         end
@@ -147,7 +154,7 @@ function kinematic_wave_ssf(
         # lower boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -162,7 +169,7 @@ function kinematic_wave_ssf(
             exfilt_sum = 0.0
             for _ in 1:its
                 celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-                constant_term = (dt_s / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt_s
+                constant_term = (dt_s / dx) * ssfin + ssf_prev / celerity + r * dt_s
                 ssf = kw_ssf_newton_raphson(ssf_prev, constant_term, celerity, dt_s, dx)
                 # constrain maximum lateral subsurface flow rate ssf
                 ssf = min(ssf, (ssfmax * dw))
@@ -172,7 +179,7 @@ function kinematic_wave_ssf(
                     zi_prev -
                     (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
                 if zi > d
-                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
                 end
                 exfilt_sum += min(zi, 0.0) * -theta_e
                 zi = clamp(zi, 0.0, d)
@@ -218,7 +225,7 @@ function kinematic_wave_ssf(
         ssf_ini = (ssf_prev + ssfin) / 2.0
         # newton-raphson
         celerity = (slope * kh_profile.kh[i]) / theta_e
-        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
+        constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # constrain maximum lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
@@ -226,7 +233,7 @@ function kinematic_wave_ssf(
         # boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -366,7 +373,6 @@ function local_inertial_flow(
     R,
     length,
     mannings_n_sq,
-    g,
     froude_limit,
     dt,
 )
@@ -374,13 +380,15 @@ function local_inertial_flow(
     pow_R = cbrt(R * R * R * R)
     unit = one(hf)
     q = (
-        (q0 - g * A * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_R * A))
+        (q0 - GRAVITATIONAL_ACCELERATION * A * dt * slope) / (
+            unit + GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_R * A)
+        )
     )
 
     # if froude number > 1.0, limit flow
-    fr = ((q / A) / sqrt(g * hf)) * froude_limit
-    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(g * hf) * A, q)
-    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(g * hf) * A, q)
+    fr = ((q / A) / sqrt(GRAVITATIONAL_ACCELERATION * hf)) * froude_limit
+    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
+    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
 
     return q
 end
@@ -403,7 +411,6 @@ function local_inertial_flow(
     width,
     length,
     mannings_n_sq,
-    g,
     froude_limit,
     dt,
 )
@@ -413,15 +420,21 @@ function local_inertial_flow(
     pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     q = (
-        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
+        (
+            (theta * q0 + half * (unit - theta) * (qu + qd)) -
+            GRAVITATIONAL_ACCELERATION * hf * width * dt * slope
+        ) / (
+            unit +
+            GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
+        )
     )
     # if froude number > 1.0, limit flow
     if froude_limit
-        fr = (q / width / hf) / sqrt(g * hf)
+        fr = (q / width / hf) / sqrt(GRAVITATIONAL_ACCELERATION * hf)
         if abs(fr) > 1.0 && q > 0.0
-            q = hf * sqrt(g * hf) * width
+            q = hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
         elseif abs(fr) > 1.0 && q < 0.0
-            q = -hf * sqrt(g * hf) * width
+            q = -hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
         end
     end
 

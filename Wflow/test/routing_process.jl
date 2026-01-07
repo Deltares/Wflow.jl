@@ -211,8 +211,8 @@ end
     using QuadGK: quadgk
     using Graphs: DiGraph, add_edge!, ne
     using Statistics: mean
+    using Wflow: GRAVITATIONAL_ACCELERATION
 
-    g = 9.80665
     L = 1000.0
     dx = 5.0
     n = Int(L / dx)
@@ -220,13 +220,15 @@ end
     # analytical solution MacDonald (1997) for channel with length L of 1000.0 m, Manning's
     # n of 0.03, constant inflow of 20.0 m3/s at upper boundary and channel width of 10.0 m
     # water depth profile h(x)
-    h(x) = (4 / g)^(1.0 / 3.0) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2.0))
+    h(x) = cbrt(4 / GRAVITATIONAL_ACCELERATION) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2))
     # spatial derivative of h(x)
     h_acc(x) =
-        -(4 / g)^(1.0 / 3.0) * 16.0 / L * (x / L - 0.5) * exp(-16 * (x / L - 0.5)^2.0)
+        -cbrt(4 / GRAVITATIONAL_ACCELERATION) * 16.0 / L *
+        (x / L - 0.5) *
+        exp(-16 * (x / L - 0.5)^2)
     # solution for channel slope s(x)
     s(x) =
-        (1.0 - 4.0 / (g * h(x)^(3.0))) * h_acc(x) +
+        (1.0 - 4.0 / (GRAVITATIONAL_ACCELERATION * h(x)^3)) * h_acc(x) +
         0.36 * (2 * h(x) + 10.0)^(4.0 / 3.0) / ((10.0 * h(x))^(10.0 / 3.0))
 
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
@@ -291,7 +293,6 @@ end
         ne = _ne,
         active_n = collect(1:(n - 1)),
         active_e = collect(1:_ne),
-        g = 9.80665,
         h_thresh,
         zb_max,
         mannings_n_sq,
@@ -330,7 +331,7 @@ end
         parameters,
         variables,
         floodplain = nothing,
-        allocation = nothing,
+        allocation = Wflow.NoAllocationRiver(n),
     )
 
     # run until steady state is reached
@@ -361,7 +362,6 @@ end
     R = 0.0011733219820725962
     length = 533.453125
     mannings_n_sq = 0.0008999999597668652
-    g = 9.80665
     froude_limit = true
     dt = 89.29563868855615
 
@@ -374,7 +374,6 @@ end
         R,
         length,
         mannings_n_sq,
-        g,
         froude_limit,
         dt,
     ) ≈ 0.005331926324969742
@@ -390,7 +389,6 @@ end
     width = 620.6649135473787
     length = 926.602742473319
     mannings_n_sq = 0.1773345894316103
-    g = 9.80665
     froude_limit = true
     dt = 49.774905820268735
 
@@ -405,7 +403,6 @@ end
         width,
         length,
         mannings_n_sq,
-        g,
         froude_limit,
         dt,
     ) ≈ 0.00017992597962222483

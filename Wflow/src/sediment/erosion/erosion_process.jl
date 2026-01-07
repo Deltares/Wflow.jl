@@ -30,16 +30,16 @@ Rainfall erosion model based on EUROSEM.
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
 function rainfall_erosion_eurosem(
-    precip,
-    interception,
-    waterlevel,
-    soil_detachability,
-    eurosem_exponent,
-    canopyheight,
-    canopygapfraction,
-    soilcover_fraction,
-    area,
-    dt,
+    precip::Float64,
+    interception::Float64,
+    waterlevel::Float64,
+    soil_detachability::Float64,
+    eurosem_exponent::Float64,
+    canopyheight::Float64,
+    canopygapfraction::Float64,
+    soilcover_fraction::Float64,
+    area::Float64,
+    dt::Float64,
 )
     # calculate rainfall intensity [mm/h]
     rintnsty = precip / (dt / 3600)
@@ -48,7 +48,7 @@ function rainfall_erosion_eurosem(
     kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
     # Kinetic energy of leaf drainage [J/m2/mm]
     pheff = 0.5 * canopyheight
-    keleaf = max((15.8 * pheff^0.5) - 5.87, 0.0)
+    keleaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
 
     #Depths of rainfall (total, leaf drianage, direct) [mm]
     rdtot = precip
@@ -89,7 +89,14 @@ Rainfall erosion model based on ANSWERS.
 # Output
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
-function rainfall_erosion_answers(precip, usle_k, usle_c, answers_rainfall_factor, area, dt)
+function rainfall_erosion_answers(
+    precip::Float64,
+    usle_k::Float64,
+    usle_c::Float64,
+    answers_rainfall_factor::Float64,
+    area::Float64,
+    dt::Float64,
+)
     # calculate rainfall intensity [mm/min]
     rintnsty = precip / (dt / 60)
     # splash erosion [kg/min]
@@ -128,18 +135,18 @@ Overland flow erosion model based on ANSWERS.
 - `overland_flow_erosion` (soil loss [t Δt⁻¹])
 """
 function overland_flow_erosion_answers(
-    overland_flow,
-    usle_k,
-    usle_c,
-    answers_overland_flow_factor,
-    slope,
-    area,
-    dt,
+    overland_flow::Float64,
+    usle_k::Float64,
+    usle_c::Float64,
+    answers_overland_flow_factor::Float64,
+    slope::Float64,
+    area::Float64,
+    dt::Float64,
 )
     # Overland flow rate [m2/min]
-    qr_land = overland_flow * 60 / (area .^ 0.5)
+    qr_land = overland_flow * 60 / sqrt(area)
     # Sine of the slope
-    sinslope = sin(atan(slope))
+    sinslope = sin_slope(slope)
 
     # Overland flow erosion [kg/min]
     # For a wide range of slope, it is better to use the sine of slope rather than tangeant
@@ -229,19 +236,26 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 - `bed` (potential river erosion [t Δt⁻¹])
 - `bank` (potential bank erosion [t Δt⁻¹])
 """
-function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
+function river_erosion_julian_torres(
+    waterlevel::Float64,
+    d50::Float64,
+    width::Float64,
+    length::Float64,
+    slope::Float64,
+    dt::Float64,
+)
     if waterlevel > 0.0
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
-        E_ = (2.65 - 1) * 9.81
-        E = (E_ * (d50 * 1e-3)^3 / 1e-12)^0.33
+        E_ = (2.65 - 1) * GRAVITATIONAL_ACCELERATION
+        E = 10 * d50 * cbrt(E_)
         TCrbed =
             E_ *
             d50 *
             (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E)))
         TCrbank = TCrbed
         # kd from Hanson & Simon 2001
-        kdbank = 0.2 * TCrbank^(-0.5) * 1e-6
-        kdbed = 0.2 * TCrbed^(-0.5) * 1e-6
+        kdbank = 0.2 * inv(sqrt(TCrbank)) * 1e-6
+        kdbed = 0.2 * inv(sqrt(TCrbed)) * 1e-6
 
         # Hydraulic radius of the river [m] (rectangular channel)
         hydrad = waterlevel * width / (width + 2 * waterlevel)
@@ -250,9 +264,15 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
         SFbank = exp(-3.23 * log10(width / waterlevel + 3) + 6.146)
         # Effective shear stress on river bed and banks [N/m2]
         TEffbank =
-            1000 * 9.81 * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
+            1000 * GRAVITATIONAL_ACCELERATION * hydrad * slope * SFbank / 100 *
+            (1 + width / (2 * waterlevel))
         TEffbed =
-            1000 * 9.81 * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
+            1000 *
+            GRAVITATIONAL_ACCELERATION *
+            hydrad *
+            slope *
+            (1 - SFbank / 100) *
+            (1 + 2 * waterlevel / width)
 
         # Potential erosion rates of the bed and bank [t/cell/timestep]
         #(assuming only one bank is eroding)

@@ -1073,7 +1073,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
             ind = rev_inds[index.x, index.y]
-            @info "Adding scalar output for 2D index." fileformat param = parameter index
+            @info "Adding scalar output for linear index." fileformat param = parameter index
             iszero(ind) && error("inactive loc specified for output")
             return A -> getindex(A, ind)
         end

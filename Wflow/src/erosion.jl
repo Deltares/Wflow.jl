@@ -1,5 +1,9 @@
 "Soil loss model"
-@with_kw struct SoilLoss{RE, OFE, SE} <: AbstractLandModel
+@with_kw struct SoilLoss{
+    RE <: AbstractRainfallErosionModel,
+    OFE <: AbstractOverlandFlowErosionModel,
+    SE <: AbstractSoilErosionModel,
+} <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     hydrological_forcing::HydrologicalForcing
     rainfall_erosion::RE

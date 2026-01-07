@@ -34,6 +34,21 @@ function scurve(x::Real, a::Real, b::Real, c::Real)::Real
     return s
 end
 
+function to_enumx(T, i::Int)
+    options = instances(T)
+    n_options = length(options)
+    if 1 ≤ i ≤ n_options
+        return options[i]
+    else
+        options_repr = repr(MIME("text/plain"), T)
+        throw(
+            error(
+                "Cannot convert $i to $T, there are only $n_options options:\n$options_repr.",
+            ),
+        )
+    end
+end
+
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
 function set_pit_ldd(
     pits_2d::AbstractMatrix{Bool},
@@ -455,23 +470,12 @@ end
 "Faster method for exponentiation"
 pow(x::Real, y::Real)::Real = exp(y * log(x))
 
-"Return the sum of the array `A` at indices `inds`"
 function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
-    v = zero(eltype(A))
-    for i in inds
-        v += A[i]
-    end
-    return v
+    mapreduce(i -> A[i], +, inds; init = zero(T))
 end
 
-"Return the sum of the function `f` at indices `inds`"
-function sum_at(f::Function, inds::AbstractVector{Int}, T::Type)::T
-    v = zero(T)
-    for i in inds
-        v += f(i)
-    end
-    return v
-end
+sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
+    mapreduce(f, +, inds; init = zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
 function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
@@ -993,3 +997,9 @@ function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0):
     z = y > 0.0 ? min(x / y, max) : default
     return z
 end
+
+"""
+The sine of the slope in radians;
+sin(arctan(x)) = x / √(1 + x²)
+"""
+sin_slope(slope) = slope / sqrt(1 + slope^2)
