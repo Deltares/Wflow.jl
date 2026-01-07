@@ -759,7 +759,7 @@ end
 "Update water allocation for land domain based on local groundwater availability."
 function groundwater_allocation_local!(
     model::AllocationLand,
-    demand::Demand,
+    demand_variables::DemandVariables,
     groundwater_storage::Vector{Float64},
     parameters::LandParameters,
 )
@@ -770,44 +770,29 @@ function groundwater_allocation_local!(
         act_groundwater_abst,
         groundwater_alloc,
     ) = model.variables
-    (; groundwater_demand, total_gross_demand) = demand.variables
+    (; groundwater_demand, total_gross_demand) = demand_variables
     (; area, reservoir_coverage) = parameters
 
-    for (i, args) in enumerate(zip(area, groundwater_storage))
+    for i in eachindex(groundwater_demand)
         # groundwater demand based on allocation from surface water.
-        groundwater_demand_ = max(total_gross_demand[i] - surfacewater_alloc[i], 0.0)
-        groundwater_demand[i] = groundwater_demand_
-
+        groundwater_demand[i] = max(total_gross_demand[i] - surfacewater_alloc[i], 0.0)
+        # excluding reservoirs
         if !reservoir_coverage[i]
-            act_groundwater_abst_vol[i],
-            available_groundwater[i],
-            groundwater_demand[i],
-            act_groundwater_abst[i],
-            groundwater_alloc[i] =
-                groundwater_allocation_local(groundwater_demand_, args...)
+            # satisfy groundwater demand with available local groundwater volume
+            groundwater_demand_vol = groundwater_demand[i] * 0.001 * area[i]
+            available_volume = groundwater_storage[i] * 0.75 # limit available groundwater volume
+            abstraction_vol = min(groundwater_demand_vol, available_volume)
+            act_groundwater_abst_vol[i] = abstraction_vol
+            # remaining available groundwater and demand
+            available_groundwater[i] = max(available_volume - abstraction_vol, 0.0)
+            abstraction = (abstraction_vol / area[i]) * 1000.0
+            groundwater_demand[i] = max(groundwater_demand[i] - abstraction, 0.0)
+            # update actual abstraction from groundwater and groundwater allocation (land cell)
+            act_groundwater_abst[i] = abstraction
+            groundwater_alloc[i] = abstraction
         end
     end
     return nothing
-end
-
-function groundwater_allocation_local(groundwater_demand, area, groundwater_storage)
-    # satisfy groundwater demand with available local groundwater volume
-    groundwater_demand_vol = groundwater_demand * 0.001 * area
-    available_volume = groundwater_storage * 0.75 # limit available groundwater volume
-    abstraction_vol = min(groundwater_demand_vol, available_volume)
-    # remaining available groundwater and demand
-    available_groundwater = max(available_volume - abstraction_vol, 0.0)
-    abstraction = (abstraction_vol / area) * 1000.0
-    groundwater_demand = max(groundwater_demand - abstraction, 0.0)
-    # update actual abstraction from groundwater and groundwater allocation (land cell)
-    act_groundwater_abst = abstraction
-    groundwater_alloc = abstraction
-
-    return abstraction_vol,
-    available_groundwater,
-    groundwater_demand,
-    act_groundwater_abst,
-    groundwater_alloc
 end
 
 """
@@ -815,7 +800,11 @@ Update water allocation for land domain based on groundwater availability for al
 areas.
 
 """
-function groundwater_allocation_area!(model::AllocationLand, demand::Demand, domain::Domain)
+function groundwater_allocation_area!(
+    model::AllocationLand,
+    demand_variables::DemandVariables,
+    domain::Domain,
+)
     inds_river = domain.river.network.allocation_area_indices
     inds_land = domain.land.network.allocation_area_indices
     (;
@@ -825,56 +814,36 @@ function groundwater_allocation_area!(model::AllocationLand, demand::Demand, dom
         groundwater_alloc,
     ) = model.variables
 
-    (; groundwater_demand) = demand.variables
+    (; groundwater_demand) = demand_variables
     (; area) = domain.land.parameters
 
     # loop over allocation areas
     for i in eachindex(inds_river)
-        groundwater_allocation_area!(
-            act_groundwater_abst_vol,
-            act_groundwater_abst,
-            groundwater_alloc,
-            groundwater_demand,
-            area,
-            available_groundwater,
-            inds_land[i],
-        )
+        # groundwater demand and availability (allocation area)
+        gw_demand_vol = 0.0
+        gw_available = 0.0
+        for j in inds_land[i]
+            gw_demand_vol += groundwater_demand[j] * 0.001 * area[j]
+            gw_available += available_groundwater[j]
+        end
+        # total actual groundwater abstraction [m3] in an allocation area, minimum of
+        # available  groundwater and demand in an allocation area.
+        gw_abstraction = min(gw_available, gw_demand_vol)
+
+        # fraction of available groundwater that can be abstracted at allocation area level
+        frac_abstract_gw = bounded_divide(gw_abstraction, gw_available)
+        # fraction of water demand that can be satisfied by available groundwater at
+        # allocation area level.
+        frac_allocate_gw = bounded_divide(gw_abstraction, gw_demand_vol)
+
+        # water abstracted from groundwater and allocated.
+        for j in inds_land[i]
+            act_groundwater_abst_vol[j] += frac_abstract_gw * available_groundwater[j]
+            act_groundwater_abst[j] = 1000.0 * (act_groundwater_abst_vol[j] / area[j])
+            groundwater_alloc[j] += frac_allocate_gw * groundwater_demand[j]
+        end
     end
     return nothing
-end
-
-function groundwater_allocation_area!(
-    act_groundwater_abst_vol::Vector{Float64},
-    act_groundwater_abst::Vector{Float64},
-    groundwater_alloc::Vector{Float64},
-    groundwater_demand::Vector{Float64},
-    area::Vector{Float64},
-    available_groundwater::Vector{Float64},
-    inds_land,
-)
-    # groundwater demand and availability (allocation area)
-    gw_demand_vol = 0.0
-    gw_available = 0.0
-    for j in inds_land
-        gw_demand_vol += groundwater_demand[j] * 0.001 * area[j]
-        gw_available += available_groundwater[j]
-    end
-    # total actual groundwater abstraction [m3] in an allocation area, minimum of
-    # available  groundwater and demand in an allocation area.
-    gw_abstraction = min(gw_available, gw_demand_vol)
-
-    # fraction of available groundwater that can be abstracted at allocation area level
-    frac_abstract_gw = bounded_divide(gw_abstraction, gw_available)
-    # fraction of water demand that can be satisfied by available groundwater at
-    # allocation area level.
-    frac_allocate_gw = bounded_divide(gw_abstraction, gw_demand_vol)
-
-    # water abstracted from groundwater and allocated.
-    for j in inds_land
-        act_groundwater_abst_vol[j] += frac_abstract_gw * available_groundwater[j]
-        act_groundwater_abst[j] = 1000.0 * (act_groundwater_abst_vol[j] / area[j])
-        groundwater_alloc[j] += frac_allocate_gw * groundwater_demand[j]
-    end
 end
 
 "Return and update non-irrigation sector (domestic, livestock, industry) return flow"
@@ -980,12 +949,12 @@ function update_water_allocation!(
     # local groundwater demand and allocation
     groundwater_allocation_local!(
         model,
-        demand,
+        demand.variables,
         groundwater_storage(routing.subsurface_flow),
         domain.land.parameters,
     )
     # groundwater demand and allocation for areas
-    groundwater_allocation_area!(model, demand, domain)
+    groundwater_allocation_area!(model, demand.variables, domain)
 
     # irrigation allocation
     for i in eachindex(total_alloc)
