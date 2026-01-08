@@ -18,24 +18,15 @@
         n,
         N;
         # Variables
-        ustorelayerthickness = [SVector(2.3346668393934804, NaN, NaN, NaN, NaN, NaN)],
-        ustorelayerdepth = [SVector(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)],
+        ustorelayerthickness = [SVector(2.334, 2.334, 2.334)],
+        ustorelayerdepth = [SVector(0.0, 0.0, 0.0)],
         n_unsatlayers = [3],
         h3 = [-934.9109542889025],
         f_infiltration_reduction = [0.8],
         # Parameters
-        maxlayers = 7,
-        sumlayers = [SVector(0.0, 50.0, 150.0, 200.0, 400.0, 1200.0, 2000.0)],
-        c = [
-            SVector(
-                9.195682525634766,
-                9.297739028930664,
-                9.597416877746582,
-                9.782596588134766,
-                9.974676132202148,
-                9.876368522644043,
-            ),
-        ],
+        maxlayers = 3,
+        sumlayers = [SVector(0.0, 50.0, 150.0, 200.0)],
+        c = [SVector(9.195682525634766, 9.297739028930664, 9.597416877746582)],
         nlayers = [7],
         theta_s = [0.4417283535003662],
         theta_r = [0.09082602709531784],
