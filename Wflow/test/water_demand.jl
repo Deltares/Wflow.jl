@@ -14,7 +14,7 @@
         variables = Wflow.NonPaddyVariables(; n, demand_gross = [0.8604076280853505]),
     )
 
-    soil = simple_soil(
+    soil = init_sbm_soil_model(
         n,
         N;
         # Variables
@@ -67,7 +67,7 @@ end
         irrigation_trigger = [true],
         h_min = [20.0],
         h_opt = [50.0],
-        h_max = [NaN],
+        h_max = [80.0],
     )
     model = Wflow.Paddy(; parameters, variables)
     @test Wflow.compute_irrigation_depth(model, 1) ≈ 35.0
@@ -83,7 +83,7 @@ end
     model = Wflow.AllocationLand(;
         n,
         parameters = Wflow.AllocationLandParameters(;
-            frac_sw_used = [NaN],
+            frac_sw_used = [1.0],
             areas = [600_000.0],
         ),
     )
@@ -124,7 +124,10 @@ end
     n = 3
     model = Wflow.AllocationLand(;
         n,
-        parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
+        parameters = Wflow.AllocationLandParameters(;
+            frac_sw_used = [1.0],
+            areas = [600_000.0],
+        ),
     )
 
     demand_variables = Wflow.DemandVariables(; n, surfacewater_demand = [0.65, 0.77, 0.331])

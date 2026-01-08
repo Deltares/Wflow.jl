@@ -112,7 +112,7 @@ function homogenous_aquifer(nrow, ncol)
     return (connectivity, conf_aqf, unconf_aqf)
 end
 
-function simple_soil(n, N; kwargs...)
+function init_sbm_soil_model(n, N; kwargs...)
     kwargs = Dict{Symbol, Any}(kwargs)
     kwargs[:n] = n
 
@@ -173,6 +173,10 @@ function simple_soil(n, N; kwargs...)
     return Wflow.SbmSoilModel(; n, variables, parameters)
 end
 
+"""
+River Flow Model without any restrictions on the fields, so that only the
+data required in certain functions has to be supplied (e.g. in the form of NamedTuple).
+"""
 @kwdef struct DummyRiver{A, B, V} <: Wflow.AbstractRiverFlowModel
     allocation::A = nothing
     boundary_conditions::B = nothing
