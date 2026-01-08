@@ -6,7 +6,6 @@ abstract type AbstractFloodPlain end
     ne::Int                                 # number of edges [-]
     active_n::Vector{Int}                   # active nodes [-]
     active_e::Vector{Int}                   # active edges [-]
-    g::Float64                              # acceleration due to gravity [m s⁻²]
     froude_limit::Bool                      # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     h_thresh::Float64                       # depth threshold for calculating flow [m]
     zb::Vector{Float64}                     # river bed elevation [m]
@@ -92,7 +91,6 @@ function LocalInertialRiverFlowParameters(
         ne = n_edges,
         active_n = active_index,
         active_e = active_index,
-        g = 9.80665,
         froude_limit,
         h_thresh = waterdepth_threshold,
         zb,
@@ -282,7 +280,6 @@ function local_inertial_river_update!(
                 river_v.r[i],
                 river_p.flow_length_at_edge[i],
                 river_p.mannings_n_sq[i],
-                river_p.g,
                 river_p.froude_limit,
                 dt,
             ),
@@ -368,7 +365,6 @@ function local_inertial_river_update!(
                     floodplain_v.r[i],
                     river_p.flow_length_at_edge[i],
                     floodplain_p.mannings_n_sq[i],
-                    river_p.g,
                     river_p.froude_limit,
                     dt,
                 ),
@@ -523,15 +519,24 @@ end
 "Struct to store local inertial overland flow model variables"
 @with_kw struct LocalInertialOverlandFlowVariables
     n::Int
-    qy0::Vector{Float64} = zeros(n + 1)    # flow in y direction at edge at previous time step [m³ s⁻¹]
-    qx0::Vector{Float64} = zeros(n + 1)    # flow in x direction at edge at previous time step [m³ s⁻¹]
-    qx::Vector{Float64} = zeros(n + 1)     # flow in x direction at egde [m³ s⁻¹]
-    qx_av::Vector{Float64} = zeros(n + 1)  # average flow in x direction at egde [m³ s⁻¹] for model timestep Δt
-    qy::Vector{Float64} = zeros(n + 1)     # flow in y direction at edge [m³ s⁻¹]
-    qy_av::Vector{Float64} = zeros(n + 1)  # average flow in y direction at egde [m³ s⁻¹] for model timestep Δt
-    storage::Vector{Float64} = zeros(n)    # total storage of cell [m³] (including river storage for river cells)
-    error::Vector{Float64} = zeros(n)      # error storage [m³]
-    h::Vector{Float64} = zeros(n)          # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
+    # flow in y direction at edge at previous time step [m³ s⁻¹]
+    qy0::Vector{Float64} = zeros(n + 1)
+    # flow in x direction at edge at previous time step [m³ s⁻¹]
+    qx0::Vector{Float64} = zeros(n + 1)
+    # flow in x direction at edge [m³ s⁻¹]
+    qx::Vector{Float64} = zeros(n + 1)
+    # average flow in x direction at edge [m³ s⁻¹] for model timestep Δt
+    qx_av::Vector{Float64} = zeros(n + 1)
+    # flow in y direction at edge [m³ s⁻¹]
+    qy::Vector{Float64} = zeros(n + 1)
+    # average flow in y direction at edge [m³ s⁻¹] for model timestep Δt
+    qy_av::Vector{Float64} = zeros(n + 1)
+    # total storage of cell [m³] (including river storage for river cells)
+    storage::Vector{Float64} = zeros(n)
+    # error storage [m³]
+    error::Vector{Float64} = zeros(n)
+    # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
+    h::Vector{Float64} = zeros(n)
 end
 
 "Struct to store local inertial overland flow model parameters"
@@ -539,7 +544,6 @@ end
     n::Int                              # number of cells [-]
     xwidth::Vector{Float64}             # effective flow width x direction at edge (floodplain) [m]
     ywidth::Vector{Float64}             # effective flow width y direction at edge (floodplain) [m]
-    g::Float64                          # acceleration due to gravity [m s⁻²]
     theta::Float64                      # weighting factor (de Almeida et al., 2012) [-]
     h_thresh::Float64                   # depth threshold for calculating flow [m]
     zx_max::Vector{Float64}             # maximum cell elevation at edge [m] (x direction)
@@ -600,7 +604,6 @@ function LocalInertialOverlandFlowParameters(
         n,
         xwidth = we_x,
         ywidth = we_y,
-        g = 9.80665,
         theta,
         h_thresh = waterdepth_threshold,
         zx_max,
@@ -657,10 +660,11 @@ dt = cfl * (Δx / sqrt(g max(h))
 function stable_timestep(model::LocalInertialRiverFlow, flow_length::Vector{Float64})
     dt_min = Inf
     (; cfl) = model.timestepping
-    (; n, g) = model.parameters
+    (; n) = model.parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
-        @fastmath @inbounds dt = cfl * flow_length[i] / sqrt(g * h[i])
+        @fastmath @inbounds dt =
+            cfl * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
@@ -670,12 +674,12 @@ end
 function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParameters)
     dt_min = Inf
     (; cfl) = model.timestepping
-    (; n, g) = model.parameters
+    (; n) = model.parameters
     (; x_length, y_length, river_location) = parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if river_location[i] == 0
-            cfl * min(x_length[i], y_length[i]) / sqrt(g * h[i])
+            cfl * min(x_length[i], y_length[i]) / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         else
             Inf
         end
@@ -837,7 +841,6 @@ function local_inertial_update_fluxes!(
                     land_p.ywidth[i],
                     length,
                     land_p.mannings_n_sq[i],
-                    land_p.g,
                     land_p.froude_limit,
                     dt,
                 )
@@ -877,7 +880,6 @@ function local_inertial_update_fluxes!(
                     land_p.xwidth[i],
                     length,
                     land_p.mannings_n_sq[i],
-                    land_p.g,
                     land_p.froude_limit,
                     dt,
                 )

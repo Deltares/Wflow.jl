@@ -113,6 +113,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.parameters.storfunc
         ),
+        type = Int,
         description = "Type of reservoir storage curve",
         flags = [:reservoir_input],
     ),
@@ -148,25 +149,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "reservoir_water__target_min_volume_fraction" => ParameterMetadata(;
         description = "Target minimum full fraction (of max storage)",
-        flags = [:reservoir_static_cyclic_forcing_input],
-    ),
-    "reservoir_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.external_inflow
-        ),
-        unit = Unit(; m = 3, s = -1),
-        default = 0.0,
-        description = "External inflow reservoir (negative for abstractions)",
-        flags = [:reservoir_static_cyclic_forcing_input],
-    ),
-    "reservoir_water__outgoing_observed_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_obs
-        ),
-        unit = Unit(; m = 3, s = -1),
-        default = MISSING_VALUE,
-        fill = MISSING_VALUE,
-        description = "Observed outflow reservoir",
         flags = [:reservoir_static_cyclic_forcing_input],
     ),
     #### States and Output
@@ -255,14 +237,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = (1, 1)),
         description = "River slope",
         flags = [:kinematic_wave_river_flow_input],
-    ),
-    #### Static or cyclic/forcing input
-    "river_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.external_inflow),
-        unit = Unit(; m = 3, s = -1),
-        default = 0.0,
-        description = "External inflow into the river (negative for abstractions)",
-        flags = [:kinematic_wave_river_static_cyclic_forcing_input],
     ),
     #### States
     "river_water__instantaneous_volume_flow_rate" => ParameterMetadata(;

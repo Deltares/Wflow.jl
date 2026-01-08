@@ -189,85 +189,87 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Rainfall interception by the vegetation",
     ),
     "rainfall_soil_erosion__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.rainfall_erosion.variables.amount),
+        lens = @optic(_.land.rainfall_erosion.variables.soil_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total soil erosion from rainfall (splash)",
     ),
     "overland_flow_soil_erosion__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.overland_flow_erosion.variables.amount),
+        lens = @optic(_.land.overland_flow_erosion.variables.soil_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total soil erosion from overland flow",
     ),
     "soil_erosion__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.amount),
+        lens = @optic(_.land.soil_erosion.variables.soil_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total soil erosion",
     ),
     "soil_erosion_clay__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.clay),
+        lens = @optic(_.land.soil_erosion.variables.clay_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total clay erosion",
     ),
     "soil_erosion_silt__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.silt),
+        lens = @optic(_.land.soil_erosion.variables.silt_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total silt erosion",
     ),
     "soil_erosion_sand__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.sand),
+        lens = @optic(_.land.soil_erosion.variables.sand_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total sand erosion",
     ),
     "soil_erosion_small_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.sagg),
+        lens = @optic(_.land.soil_erosion.variables.sagg_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total small aggregates erosion",
     ),
     "soil_erosion_large_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.lagg),
+        lens = @optic(_.land.soil_erosion.variables.lagg_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total large aggregates erosion",
     ),
     "land_surface_water_sediment_transport_capacity__mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.transport_capacity.variables.amount),
+            lens = @optic(
+                _.routing.overland_flow.transport_capacity.variables.sediment_transport_capacity
+            ),
             unit = Unit(; t = 1, dt = -1),
             description = "Total sediment transport capacity",
         ),
     "land_surface_water_sediment__to_river_mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.to_river.variables.amount),
+        lens = @optic(_.routing.overland_flow.to_river.variables.sediment_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total sediment flux flowing into the river",
     ),
     "land_surface_water_clay__to_river_mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.to_river.variables.clay),
+        lens = @optic(_.routing.overland_flow.to_river.variables.clay_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Clay flux flowing into the river",
     ),
     "land_surface_water_silt__to_river_mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.to_river.variables.silt),
+        lens = @optic(_.routing.overland_flow.to_river.variables.silt_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Silt flux flowing into the river",
     ),
     "land_surface_water_sand__to_river_mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.to_river.variables.sand),
+        lens = @optic(_.routing.overland_flow.to_river.variables.sand_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Sand flux flowing into the river",
     ),
     "land_surface_water_small_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.to_river.variables.sagg),
+            lens = @optic(_.routing.overland_flow.to_river.variables.sagg_rate),
             unit = Unit(; t = 1, dt = -1),
             description = "Small aggregates flux flowing into the river",
         ),
     "land_surface_water_large_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.to_river.variables.lagg),
+            lens = @optic(_.routing.overland_flow.to_river.variables.lagg_rate),
             unit = Unit(; t = 1, dt = -1),
             description = "Large aggregates flux flowing into the river",
         ),
     "land_surface_water_sediment__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.sediment_flux.variables.amount),
+        lens = @optic(_.routing.overland_flow.sediment_flux.variables.sediment_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Overland flow sediment flux",
     ),
@@ -317,32 +319,32 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Large aggregates mass in river bed",
     ),
     "river_water_clay__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.clay),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.clay_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Clay mass flow rate in river",
     ),
     "river_water_gravel__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.gravel),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.gravel_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Gravel mass flow rate in river",
     ),
     "river_water_large_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Large aggregates mass flow rate in river",
     ),
     "river_water_small_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Small aggregates mass flow rate in river",
     ),
     "river_water_sand__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.sand),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.sand_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Sand mass flow rate in river",
     ),
     "river_water_silt__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.silt),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.silt_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Silt mass flow rate in river",
     ),

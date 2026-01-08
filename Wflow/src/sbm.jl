@@ -63,8 +63,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand = NoDemand(; n)
     end
 
-    args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,

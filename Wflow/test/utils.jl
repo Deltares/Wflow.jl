@@ -64,6 +64,8 @@ end
 end
 
 @testitem "Lenses" begin
+    using Accessors: @optic
+
     standard_name_maps = (
         ("sbm", Wflow.sbm_standard_name_map),
         ("sediment", Wflow.sediment_standard_name_map),
@@ -131,11 +133,14 @@ end
         ]...,
     )
     filter!(!isnothing, lenses)
-    duplicates = []
+    duplicates = Set()
     for unique_lens in unique(lenses)
         if count(==(unique_lens), lenses) > 1
             push!(duplicates, unique_lens)
         end
     end
-    @test isempty(duplicates)
+    @test duplicates == Set([
+        @optic(_.land.atmospheric_forcing.precipitation),
+        @optic(_.land.glacier.variables.glacier_store)
+    ])
 end

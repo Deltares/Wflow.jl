@@ -156,7 +156,9 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "river_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.boundary_conditions.external_inflow),
         unit = Unit(; m = 3, s = -1),
-        description = "External inflow to river",
+        default = 0.0,
+        description = "External inflow into the river (negative for abstractions)",
+        flags = [:kinematic_wave_river_static_cyclic_forcing_input],
     ),
     "river_water__external_abstraction_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
@@ -258,14 +260,19 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
             _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_obs
         ),
         unit = Unit(; m = 3, s = -1),
-        description = "Observed reservoir outgoing flow rate",
+        default = MISSING_VALUE,
+        fill = MISSING_VALUE,
+        description = "Observed outflow reservoir",
+        flags = [:reservoir_static_cyclic_forcing_input],
     ),
     "reservoir_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.external_inflow
         ),
         unit = Unit(; m = 3, s = -1),
-        description = "External inflow to reservoir",
+        default = 0.0,
+        description = "External inflow reservoir (negative for abstractions)",
+        flags = [:reservoir_static_cyclic_forcing_input],
     ),
     "reservoir_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.reservoir_water_balance.error),
@@ -458,7 +465,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "soil_surface_water_saturated_zone__exfiltration_volume_flux" =>
         ParameterMetadata(;
-            lens = @optic(_.land.soil.variables.exfiltustore),
+            lens = @optic(_.land.soil.variables.exfiltsatwater),
             unit = Unit(; mm = 1, dt = -1),
             description = "Exfiltration from saturated zone",
         ),

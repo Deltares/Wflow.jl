@@ -15,7 +15,7 @@ function Model(config::Config, type::SedimentModel)
     reader = NCReader(config)
     clock = Clock(config, reader)
 
-    @info "General model settings" reservoirs = config.model.reservoir__flag
+    @info "General model settings." reservoirs = config.model.reservoir__flag
 
     domain = Domain(dataset, config, type)
     soilloss = SoilLoss(dataset, config, domain.land.network.indices)
