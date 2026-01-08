@@ -298,7 +298,7 @@ end
     @testset "warm states" begin
         (; land) = model
         nt = Wflow.standard_name_map(model.land)
-        lens = Wflow.get_lens("reservoir_water_surface__elevation", land)
+        lens = Wflow.get_lens("reservoir_water_surface__elevation", Wflow.Routing)
         @test lens(model)[1] ≈ 3.6172022486284856
         lens = Wflow.get_lens("soil_water_saturated_zone__depth", land)
         @test lens(model)[9115] ≈ 477.13548089422125
@@ -316,9 +316,9 @@ end
         @test lens(model)[50063] ≈ 558.8578304603327
         lens = Wflow.get_lens("subsurface_water__volume_flow_rate", land)
         @test lens(model)[10606] ≈ 39.972334552895816
-        lens = Wflow.get_lens("river_water__instantaneous_volume_flow_rate", land)
+        lens = Wflow.get_lens("river_water__instantaneous_volume_flow_rate", Wflow.Routing)
         @test lens(model)[149] ≈ 53.48673634956338
-        lens = Wflow.get_lens("river_water__depth", land)
+        lens = Wflow.get_lens("river_water__depth", Wflow.Routing)
         @test lens(model)[149] ≈ 1.167635369628945
         @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
         lens = Wflow.get_lens("land_surface_water__instantaneous_volume_flow_rate", land)

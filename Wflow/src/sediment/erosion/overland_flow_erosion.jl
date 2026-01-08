@@ -30,29 +30,14 @@ function OverlandFlowErosionAnswersParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    usle_k = ncread(
-        dataset,
-        config,
-        "soil_erosion__usle_k_factor";
-        sel = indices,
-        defaults = 0.1,
-        type = Float64,
-    )
-    usle_c = ncread(
-        dataset,
-        config,
-        "soil_erosion__usle_c_factor";
-        sel = indices,
-        defaults = 0.01,
-        type = Float64,
-    )
+    usle_k = ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLoss; sel = indices)
+    usle_c = ncread(dataset, config, "soil_erosion__usle_c_factor", SoilLoss; sel = indices)
     answers_overland_flow_factor = ncread(
         dataset,
         config,
-        "soil_erosion__answers_overland_flow_factor";
+        "soil_erosion__answers_overland_flow_factor",
+        SoilLoss;
         sel = indices,
-        defaults = 0.9,
-        type = Float64,
     )
 
     answers_parameters =

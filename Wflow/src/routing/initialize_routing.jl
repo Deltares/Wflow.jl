@@ -43,14 +43,7 @@ function initialize_subsurface_flow(
 
     n_cells = length(indices)
 
-    elevation = ncread(
-        dataset,
-        config,
-        "land_surface__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
 
     # unconfined aquifer
     if config.model.constanthead__flag

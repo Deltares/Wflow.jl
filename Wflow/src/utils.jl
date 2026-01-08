@@ -12,8 +12,6 @@ const PCR_DIR = [
     CartesianIndex(1, 1),  # 9
 ]
 
-const MISSING_VALUE = Float64(NaN)
-
 # timestep that the parameter units are defined in
 const BASETIMESTEP = Second(Day(1))
 
@@ -54,7 +52,7 @@ function set_pit_ldd(
     pits_2d::AbstractMatrix{Bool},
     ldd::Vector{UInt8},
     indices::Vector{CartesianIndex{2}};
-    pit::Integer = 5,
+    pit::Integer=5,
 )::Vector{UInt8}
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
@@ -90,7 +88,7 @@ represent inactive cells.
 function active_indices(
     subcatch_2d::AbstractMatrix,
     nodata,
-)::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
+)::Tuple{Vector{CartesianIndex{2}},Matrix{Int}}
     A = subcatch_2d
     all_inds = CartesianIndices(size(A))
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
@@ -115,7 +113,7 @@ function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIn
     end
 end
 
-function lattometres(lat::Real)::Tuple{Float64, Float64}
+function lattometres(lat::Real)::Tuple{Float64,Float64}
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
     m3 = 1.175         # latitude calculation term 3
@@ -135,7 +133,7 @@ function cell_lengths(
     y::AbstractVector{<:Real},
     celllength::Real,
     cell_length_in_meter::Bool,
-)::Tuple{Vector{Float64}, Vector{Float64}}
+)::Tuple{Vector{Float64},Vector{Float64}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -165,8 +163,8 @@ and set states in `model` object. Active cells are selected with the correspondi
 function set_states!(
     instate_path::AbstractString,
     model;
-    type = nothing,
-    dimname = nothing,
+    type=nothing,
+    dimname=nothing,
 )::Nothing
     (; domain, land, config) = model
 
@@ -184,7 +182,7 @@ function set_states!(
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
                 if dimname == :layer
-                    dimensions = (x = :, y = :, layer = :, time = 1)
+                    dimensions = (x=:, y=:, layer=:, time=1)
                 else
                     error("Unrecognized dimension name $dimname")
                 end
@@ -206,7 +204,7 @@ function set_states!(
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
-                A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
+                A = read_standardized(ds, ncname, (x=:, y=:, time=1))
                 A = A[sel]
                 A = nomissing(A)
                 # Convert to desired type if needed
@@ -216,7 +214,7 @@ function set_states!(
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = get_lens(state, land)
+                lens = get_metadata(state, typeof(land), Routing).lens
                 lens(model)[1:n] .= A
             else
                 error(
@@ -229,7 +227,7 @@ function set_states!(
     return nothing
 end
 
-function get_var(config::Config, parameter::AbstractString; optional = true)
+function get_var(config::Config, parameter::AbstractString; optional=true)
     if hasfield(InputSection, Symbol(parameter))
         var = getfield(config.input, Symbol(parameter))
     elseif haskey(config.input.location_maps, parameter)
@@ -249,7 +247,7 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
 end
 
 """
-    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString, model_type; sel = nothing)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
 model `parameter` (standard name) specified in the TOML configuration file. Supports various
@@ -257,58 +255,43 @@ keyword arguments to get selections of data in desired types, with or without mi
 values.
 
 # Arguments
-- `optional=true`: By default specifying a model `parameter` in the TOML file is optional.
-        Set to false if the model `parameter` is required.
+- `model_type`: The model type (e.g., LandHydrologySBM, SoilLoss, Domain, Routing) used to
+        determine the appropriate standard name mapping.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
-- `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
-    in this case.
-- `type=nothing`: Type to convert data to after reading. By default no conversion is done.
-- `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
-        `true` to allow missing values.
-- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is
-  `false`.
-- `dimname`: Name of third dimension of parameter `var`. By default no third dimension is
-  expected.
-- `logging`: Generate a logging message when reading a netCDF variable. By default `true`.
+- `logging=true`: Generate a logging message when reading a netCDF variable.
 """
 function ncread(
     nc,
     config::Config,
-    parameter::AbstractString;
-    optional = true,
-    sel = nothing,
-    defaults = nothing,
-    type = nothing,
-    allow_missing = false,
-    fill = nothing,
-    dimname = nothing,
-    logging = true,
+    parameter::AbstractString,
+    model_type;
+    sel=nothing,
+    logging=true,
+    metadata=get_metadata(parameter, model_type),
 )
-    var = get_var(config, parameter; optional)
+    (; default, fill, type, allow_missing, dimname) = metadata
+    var = get_var(config, parameter; optional=!isnothing(default))
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
-        @assert !isnothing(defaults) parameter
-        if !isnothing(type)
-            defaults = convert(type, defaults)
-        end
+        @info "Set `$parameter` using default value `$default`."
+        @assert !isnothing(default) "Default value required but not available for $parameter (if you see this as a user please open an issue)."
         if isnothing(dimname)
-            return Base.fill(defaults, length(sel))
+            return Base.fill(default, length(sel))
         else
-            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
+            return Base.fill(default, (nc.dim[String(dimname)], length(sel)))
         end
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :, time = 1)
+        dim_sel = (x=:, y=:, time=1)
     elseif dimname == :layer
-        dim_sel = (x = :, y = :, layer = :, time = 1)
+        dim_sel = (x=:, y=:, layer=:, time=1)
     elseif dimname == :flood_depth
-        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
+        dim_sel = (x=:, y=:, flood_depth=:, time=1)
     else
         error("Unrecognized dimension name $dimname")
     end
@@ -356,7 +339,10 @@ function ncread(
         end
     end
 
-    if !allow_missing
+    if allow_missing
+        # Convert to desired type if needed
+        A = map(x -> ismissing(x) ? x : type(x), A)
+    else
         if isnothing(fill)
             # errors if missings are found
             A = nomissing(A)
@@ -369,10 +355,8 @@ function ncread(
             # replace also NaN values with the fill value
             replace!(x -> isnan(x) ? fill : x, A)
         end
-    end
 
-    # Convert to desired type if needed
-    if !isnothing(type)
+        # Convert to desired type if needed
         if eltype(A) != type
             A = convert(Array{type}, A)
         end
@@ -395,7 +379,7 @@ function set_layerthickness(
 )::SVector
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
-        if reference_depth > cum_depth[i + 1]
+        if reference_depth > cum_depth[i+1]
             thicknesslayers = setindex(thicknesslayers, thickness[i], i)
         elseif reference_depth - cum_depth[i] > 0.0
             thicknesslayers = setindex(thicknesslayers, reference_depth - cum_depth[i], i)
@@ -478,10 +462,10 @@ sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
     mapreduce(f, +, inds; init = zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
-function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
+function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N,T}} where {T,N}
     size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
-    return copy(reinterpret(SVector{N, T}, vec(x)))
+    return copy(reinterpret(SVector{N,T}, vec(x)))
 end
 
 """
@@ -547,8 +531,8 @@ julia> tosecond(Day(1))
 """
 tosecond(x::Hour) = Float64(Dates.value(Second(x)))
 tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
+tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
+tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
 
 """
     adjacent_nodes_at_edge(graph)
@@ -557,9 +541,9 @@ Return the source node `src` and destination node `dst` of each edge of a direct
 """
 function adjacent_nodes_at_edge(
     graph::SimpleDiGraph{Int},
-)::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Int},Vector{Int}}}
     _edges = collect(edges(graph))
-    return (src = src.(_edges), dst = dst.(_edges))
+    return (src=src.(_edges), dst=dst.(_edges))
 end
 
 """
@@ -570,7 +554,7 @@ Return the source edge `src` and destination edge `dst` of each node of a direct
 function adjacent_edges_at_node(
     graph::SimpleDiGraph{Int},
     nodes_at_edge,
-)::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Vector{Int}},Vector{Vector{Int}}}}
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
@@ -578,7 +562,7 @@ function adjacent_edges_at_node(
         push!(src_edge, findall(isequal(nodes[i]), nodes_at_edge.dst))
         push!(dst_edge, findall(isequal(nodes[i]), nodes_at_edge.src))
     end
-    return (src = src_edge, dst = dst_edge)
+    return (src=src_edge, dst=dst_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
@@ -861,7 +845,7 @@ end
 kh_layered_profile!(
     soil::SbmSoilModel,
     subsurface::LateralSSF,
-    kv_profile::Union{KvExponential, KvExponentialConstant},
+    kv_profile::Union{KvExponential,KvExponentialConstant},
     dt,
 ) = nothing
 
@@ -993,7 +977,7 @@ end
 Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
 Otherwise return a `default` value.
 """
-function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
+function bounded_divide(x::Real, y::Real; max::Real=1.0, default::Real=0.0)::Real
     z = y > 0.0 ? min(x / y, max) : default
     return z
 end

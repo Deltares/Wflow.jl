@@ -40,27 +40,18 @@ function GwfRiver(
     infiltration_conductance = ncread(
         dataset,
         config,
-        "river_water__infiltration_conductance";
-        optional = false,
+        "river_water__infiltration_conductance",
+        Routing;
         sel = indices,
-        type = Float64,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
-        "river_water__exfiltration_conductance";
-        optional = false,
+        "river_water__exfiltration_conductance",
+        Routing;
         sel = indices,
-        type = Float64,
     )
-    bottom = ncread(
-        dataset,
-        config,
-        "river_bottom__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
@@ -115,24 +106,10 @@ function Drainage(
     indices::Vector{CartesianIndex{2}},
     index::Vector{Int},
 )
-    drain_elevation = ncread(
-        dataset,
-        config,
-        "land_drain__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
-        fill = MISSING_VALUE,
-    )
-    drain_conductance = ncread(
-        dataset,
-        config,
-        "land_drain__conductance";
-        optional = false,
-        sel = indices,
-        type = Float64,
-        fill = MISSING_VALUE,
-    )
+    drain_elevation =
+        ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
+    drain_conductance =
+        ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
     elevation = drain_elevation[index]
     conductance = drain_conductance[index]
     parameters = DrainageParameters(; elevation, conductance)
