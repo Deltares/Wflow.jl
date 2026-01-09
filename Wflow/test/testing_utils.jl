@@ -111,3 +111,74 @@ function homogenous_aquifer(nrow, ncol)
     unconf_aqf = Wflow.UnconfinedAquifer(; parameters, variables)
     return (connectivity, conf_aqf, unconf_aqf)
 end
+
+function init_sbm_soil_model(n, N; kwargs...)
+    kwargs = Dict{Symbol, Any}(kwargs)
+    kwargs[:n] = n
+
+    if !haskey(kwargs, :kv_profile)
+        kwargs[:kv_profile] = nothing
+    end
+
+    # Vectors of SVectors
+    for field_name in [:vwc, :vwc_perc, :act_thickl, :rootfraction, :kvfrac]
+        kwargs[field_name] = SVector{N, Float64}[]
+    end
+
+    # Vectors of other types
+    for field_name in [
+        # Variables
+        :ustorecapacity,
+        :satwaterdepth,
+        :zi,
+        :n_unsatlayers,
+        :total_soilwater_storage,
+        # Parameters
+        :nlayers,
+        :theta_s,
+        :theta_r,
+        :soilwatercapacity,
+        :hb,
+        :soilthickness,
+        :infiltcappath,
+        :infiltcapsoil,
+        :maxleakage,
+        :cap_hmax,
+        :cap_n,
+        :w_soil,
+        :cf_soil,
+        :pathfrac,
+        :rootdistpar,
+        :h1,
+        :h2,
+        :h3_high,
+        :h3_low,
+        :h4,
+        :alpha_h1,
+        :soil_fraction,
+    ]
+        if !haskey(kwargs, field_name)
+            kwargs[field_name] = []
+        end
+    end
+
+    kwargs_variables =
+        filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilVariables), kwargs)
+    variables = Wflow.SbmSoilVariables(; kwargs_variables...)
+
+    kwargs_parameters =
+        filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilParameters), kwargs)
+    parameters = Wflow.SbmSoilParameters(; kwargs_parameters...)
+
+    return Wflow.SbmSoilModel(; n, variables, parameters)
+end
+
+"""
+River Flow Model without any restrictions on the fields, so that only the
+data required in certain functions has to be supplied (e.g. in the form of NamedTuple).
+"""
+@kwdef struct DummyRiver{A, B, V} <: Wflow.AbstractRiverFlowModel
+    allocation::A = nothing
+    boundary_conditions::B = nothing
+    variables::V = nothing
+end
