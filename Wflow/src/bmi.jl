@@ -108,7 +108,7 @@ function BMI.get_input_var_names(model::Model)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
-            if !haskey(standard_name_map(land), var)
+            if isnothing(get_metadata(var, land))
                 push!(idx, i)
                 @warn(
                     "$var is not listed as variable for BMI exchange and removed from list"
@@ -152,8 +152,8 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
-    (; unit) = standard_name_map(land)[name]
-    return to_string(to_SI(unit); BMI_standard = true)
+    metadata = get_metadata(name, land)
+    return to_string(to_SI(metadata.unit); BMI_standard = true)
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)

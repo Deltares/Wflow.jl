@@ -332,28 +332,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "External inflow into the river (negative for abstractions)",
         tags = [:kinematic_wave_river_static_cyclic_forcing_input],
     ),
-    "river_water__external_abstraction_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.actual_external_abstraction_av
-        ),
-        unit = Unit(; m = 3, s = -1),
-        description = "External abstraction from river",
-    ),
-    "river_water__lateral_inflow_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.inwater),
-        unit = Unit(; m = 3, s = -1),
-        description = "Lateral inflow to river",
-    ),
-    "river_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.variables.q_av),
-        unit = Unit(; m = 3, s = -1),
-        description = "Average river discharge",
-    ),
-    "river_water__volume" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.variables.storage),
-        unit = Unit(; m = 3),
-        description = "River water volume",
-    ),
     "river_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.river_water_balance.error),
         unit = Unit(; m = 3, s = -1),
@@ -641,26 +619,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
             description = "Averianov exponent controlling capillary rise",
             tags = [:soil_input],
         ),
-    "subsurface_water_saturated_zone_top__depth" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.zi),
-        unit = Unit(; m = 1),
-        description = "Subsurface water table depth",
-    ),
-    "subsurface_water__exfiltration_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.exfiltwater),
-        unit = Unit(; m = 1, dt = -1),
-        description = "Subsurface water exfiltration flux",
-    ),
-    "subsurface_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.ssf),
-        unit = Unit(; m = 3, d = -1),
-        description = "Subsurface water flow rate",
-    ),
-    "subsurface_water__to_river_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.to_river),
-        unit = Unit(; m = 3, d = -1),
-        description = "Subsurface water flow to river",
-    ),
     "subsurface_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.subsurface_water_balance.error),
         unit = Unit(; m = 3, d = -1),
@@ -721,31 +679,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         fill = 0.0,
         description = "Fraction covered by a glacier",
         tags = [:glacier_input],
-    ),
-    "land_surface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.variables.q),
-        unit = Unit(; m = 3, s = -1),
-        description = "Instantaneous overland flow rate",
-    ),
-    "land_surface_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.variables.q_av),
-        unit = Unit(; m = 3, s = -1),
-        description = "Average overland flow rate",
-    ),
-    "land_surface_water__to_river_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.variables.to_river),
-        unit = Unit(; m = 3, s = -1),
-        description = "Overland flow to river",
-    ),
-    "land_surface_water__depth" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.variables.h),
-        unit = Unit(; m = 1),
-        description = "Overland flow water depth",
-    ),
-    "land_surface_water__volume" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.variables.storage),
-        unit = Unit(; m = 3),
-        description = "Overland flow water volume",
     ),
     "land_surface_water__x_component_of_instantaneous_volume_flow_rate" =>
         ParameterMetadata(;

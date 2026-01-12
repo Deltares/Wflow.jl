@@ -20,6 +20,7 @@ const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.domain.land.parameters.slope),
         unit = Unit(; m = (1, 1)),
         description = "Land slope",
+        tags = [:kinematic_wave_overland_input, kinematic_lateral_subsurface_input],
     ),
     "land_drain_location__mask" =>
         ParameterMetadata(; fill = false, description = "Drain location mask"),

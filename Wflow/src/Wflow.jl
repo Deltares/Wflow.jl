@@ -233,6 +233,14 @@ include("standard_name/standard_name_domain.jl")
 include("standard_name/standard_name_routing.jl")
 include("standard_name/standard_name_sbm.jl")
 include("standard_name/standard_name_sediment.jl")
+
+const standard_name_maps = (
+    ("sbm", Wflow.sbm_standard_name_map),
+    ("sediment", Wflow.sediment_standard_name_map),
+    ("domain", Wflow.domain_standard_name_map),
+    ("routing", Wflow.routing_standard_name_map),
+)
+
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

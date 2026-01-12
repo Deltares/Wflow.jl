@@ -157,7 +157,8 @@ end
 
 # Unit strings that are not the same as their field name in
 # the Unit struct
-const UnitStrings = Dict{Symbol, String}(:degC => "°C", :percentage => "%", :d => "day")
+const UnitStrings =
+    Dict{Symbol, String}(:degC => "°C", :percentage => "%", :d => "day", :dt => "Δt")
 
 const SUPERSCRIPT_NUMBERS = (
     '0' => '⁰',

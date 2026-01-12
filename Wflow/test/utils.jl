@@ -65,13 +65,6 @@ end
 
 @testitem "Lenses" begin
     using Accessors: @optic
-
-    standard_name_maps = (
-        ("sbm", Wflow.sbm_standard_name_map),
-        ("sediment", Wflow.sediment_standard_name_map),
-        ("domain", Wflow.domain_standard_name_map),
-        ("routing", Wflow.routing_standard_name_map),
-    )
     configs = Wflow.Config[]
 
     # Initialize the first model with mass balance
@@ -103,7 +96,7 @@ end
     end
 
     models = Wflow.Model.(configs)
-    for (map_name, standard_name_map) in standard_name_maps
+    for (map_name, standard_name_map) in Wflow.standard_name_maps
         @testset "Test lenses: $map_name" begin
             invalid = String[]
             for (name, data) in standard_name_map
@@ -129,7 +122,7 @@ end
     lenses = vcat(
         [
             getfield.(values(standard_name_map), :lens) for
-            (_, standard_name_map) in standard_name_maps
+            (_, standard_name_map) in Wflow.standard_name_maps
         ]...,
     )
     filter!(!isnothing, lenses)

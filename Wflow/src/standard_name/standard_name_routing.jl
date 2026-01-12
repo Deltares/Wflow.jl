@@ -1,12 +1,5 @@
 # NOTE: The order of the entries determines the order in the docs tables
 const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
-    # Subsurface flow parameters
-    "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.khfrac),
-            description = "A muliplication factor applied to vertical hydraulic conductivity",
-        ),
-
     # Groundwater flow parameters
     "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity" =>
         ParameterMetadata(;
@@ -243,17 +236,114 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.routing.river_flow.variables.q),
         unit = Unit(; m = 3, s = -1),
         description = "River discharge",
-        tags = [:kinematic_wave_river_state],
+        tags = [:kinematic_wave_river_state, :kinematic_wave_river_output],
     ),
     "river_water__depth" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.variables.h),
         unit = Unit(; m = 1),
         description = "River water depth",
-        tags = [:kinematic_wave_river_state],
+        tags = [:kinematic_wave_river_state, :kinematic_wave_river_output],
     ),
     #### Output
-
-    # River flow parameters
+    "river_water__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.variables.q_av),
+        unit = Unit(; m = 3, s = -1),
+        description = "Average river discharge",
+        tags = [:kinematic_wave_river_output],
+    ),
+    "river_water__volume" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.variables.storage),
+        unit = Unit(; m = 3),
+        description = "River water volume",
+        tags = [:kinematic_wave_river_output],
+    ),
+    "river_water__lateral_inflow_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.boundary_conditions.inwater),
+        unit = Unit(; m = 3, s = -1),
+        description = "Lateral inflow to river",
+        tags = [:kinematic_wave_river_output],
+    ),
+    "river_water__external_abstraction_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.actual_external_abstraction_av
+        ),
+        unit = Unit(; m = 3, s = -1),
+        description = "External abstraction from river",
+        tags = [:kinematic_wave_river_output],
+    ),
+    ### Land/overland flow parameters
+    #### input
+    "land_surface_water_flow__manning_n_parameter" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.parameters.mannings_n),
+        unit = Unit(; s = 1, m = -1 // 3),
+        default = 0.072,
+        description = "Manning's roughness",
+        tags = [:kinematic_wave_overland_input],
+    ),
+    #### States
+    "land_surface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.variables.q),
+        unit = Unit(; m = 3, s = -1),
+        description = "Instantaneous overland flow rate",
+        tags = [:kinematic_wave_overland_state, :kinematic_wave_overland_output],
+    ),
+    "land_surface_water__depth" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.variables.h),
+        unit = Unit(; m = 1),
+        description = "Overland flow water depth",
+        tags = [:kinematic_wave_overland_stat, :kinematic_wave_overland_output],
+    ),
+    #### Output
+    "land_surface_water__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.variables.q_av),
+        unit = Unit(; m = 3, s = -1),
+        description = "Discharge overland flow",
+        tags = [:kinematic_wave_overland_output],
+    ),
+    "land_surface_water__to_river_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.variables.to_river),
+        unit = Unit(; m = 3, s = -1),
+        description = "Discharge overland flow that flows to the river",
+        tags = [:kinematic_wave_overland_output],
+    ),
+    "land_surface_water__volume" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.variables.storage),
+        unit = Unit(; m = 3),
+        description = "Overland flow water volume",
+        tags = [:kinematic_wave_overland_output],
+    ),
+    ### Lateral subsurface_flow
+    #### Input
+    "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.subsurface_flow.parameters.khfrac),
+            description = "A muliplication factor applied to vertical hydraulic conductivity",
+            tags = [:kinematic_lateral_subsurface_input],
+        ),
+    #### States
+    "subsurface_water__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.variables.ssf),
+        unit = Unit(; m = 3, d = -1),
+        description = "Subsurface water flow rate",
+        tags = [:kinematic_lateral_subsurface_state, :kinematic_lateral_subsurface_output],
+    ),
+    #### Output
+    "subsurface_water_saturated_zone_top__depth" => ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.variables.zi),
+        unit = Unit(; m = 1),
+        description = "Pseudo-water table depth (top of the saturated zone)",
+        tags = [:kinematic_lateral_subsurface_output],
+    ),
+    "subsurface_water__exfiltration_volume_flux" => ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.variables.exfiltwater),
+        unit = Unit(; m = 1, dt = -1),
+        description = "Exfiltration (groundwater above surface level, saturated excess conditions)",
+    ),
+    "subsurface_water__to_river_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.variables.to_river),
+        unit = Unit(; m = 3, d = -1),
+        description = "Part of subsurface flow that flows to the river",
+    ),
     "model_boundary_condition_river__length" => ParameterMetadata(;
         unit = Unit(; m = 1),
         default = 1.0e4,
@@ -266,13 +356,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "model_boundary_condition_river_bank_water__depth" =>
         ParameterMetadata(; default = 0, unit = Unit(; m = 1)),
-    # Land/overland flow parameters
-    "land_surface_water_flow__manning_n_parameter" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.parameters.mannings_n),
-        unit = Unit(; s = 1, m = -1 // 3),
-        default = 0.072,
-        description = "Manning's roughness",
-    ),
     "land_surface_water_flow__ground_elevation" => ParameterMetadata(;
         unit = Unit(; m = 1),
         fill = 0.0,

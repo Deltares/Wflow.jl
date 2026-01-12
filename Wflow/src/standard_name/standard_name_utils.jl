@@ -86,6 +86,21 @@ function get_metadata(name::AbstractString, types::Vararg{Type})
     return nothing
 end
 
+function get_metadata(name::AbstractString, land::AbstractLandModel)
+    # Check whether it is a land variable first
+    metadata = get(standard_name_map(land), name, nothing)
+
+    if isnothing(metadata)
+        # Then check other variable types
+        for (name_map, _standard_name_map) in standard_name_maps
+            (name_map ∈ ("sbm", "sediment")) && continue
+            metadata = get(_standard_name_map, name, nothing)
+            !isnothing(metadata) && break
+        end
+    end
+    return metadata
+end
+
 get_metadata(name::AbstractString) =
     get_metadata(name, LandHydrologySBM, Routing, SoilLoss, Domain)
 

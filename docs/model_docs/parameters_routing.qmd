@@ -70,57 +70,44 @@ generate_table(Wflow.Routing, :kinematic_wave_river_state; relative_widths = [3,
 generate_table(Wflow.Routing, :kinematic_wave_river_output; relative_widths = [3, 3, 1])
 ```
 
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `river_water__volume_flow_rate` | River discharge | m³ s⁻¹ |
-| `river_water__instantaneous_volume_flow_rate` | River discharge | m³ s⁻¹ |
-| `river_water__volume` | River water volume | m³ |
-| `river_water__depth` | River water depth | m |
-| `river_water__lateral_inflow_volume_flow_rate` | Lateral inflow into the river | m³ s⁻¹ |
-| `river_water__external_abstraction_volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
-: {.striped .hover}
-
 ### Overland flow
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `land_surface_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.072 |
-| `land_surface__slope` | Land surface slope | m m⁻¹ | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table([Wflow.Routing, Wflow.Domain], :kinematic_wave_overland_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `land_surface_water__instantaneous_volume_flow_rate` | Discharge overland flow | m³ s⁻¹ |
-| `land_surface_water__depth` | Water depth overland flow | m |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_overland_state; relative_widths = [3, 3, 1])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `land_surface_water__volume_flow_rate` | Discharge overland flow | m³ s⁻¹ |
-| `land_surface_water__instantaneous_volume_flow_rate` | Discharge overland flow | m³ s⁻¹ |
-| `land_surface_water__to_river_volume_flow_rate` | Discharge overland flow that flows to the river | m³ s⁻¹ |
-| `land_surface_water__volume` | Water volume overland flow | m³ |
-| `land_surface_water__depth` | Water depth overland flow | m |
-: {.striped .hover}
-
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_overland_output; relative_widths = [3, 3, 1])
+```
 
 ### Lateral subsurface flow
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio` | A muliplication factor applied to vertical hydraulic conductivity | - | - |
-| `land_surface__slope` | Land surface slope | m m⁻¹ | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table([Wflow.Routing, Wflow.Domain], :kinematic_lateral_subsurface_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table([Wflow.Routing, Wflow.Domain], :kinematic_lateral_subsurface_state; relative_widths = [3, 3, 1])
+```
 
 #### Output
+```{julia}
+# | code-fold: true
+generate_table([Wflow.Routing, Wflow.Domain], :kinematic_lateral_subsurface_output; relative_widths = [3, 3, 1])
+```
+
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
