@@ -9,88 +9,88 @@ execute:
 ```{julia}
 # | code-fold: true
 include("../docs_utils.jl")
-generate_table(Wflow.LandHydrologySBM, :atmospheric_forcing, relative_widths = [6, 4, 2])
+generate_table(Wflow.LandHydrologySBM, :atmospheric_forcing; relative_widths = [6, 4, 2])
 ```
 
 ## Snow
 ### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :snow_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :snow_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :snow_state, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :snow_state; relative_widths = [3, 3, 1])
 ```
 
 ### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :snow_output, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :snow_output; relative_widths = [3, 3, 1])
 ```
 
 ## Glacier
 ### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :glacier_input, relative_widths = [5, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :glacier_input; relative_widths = [5, 4, 2, 2])
 ```
 
 ### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :glacier_state, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :glacier_state; relative_widths = [3, 3, 1])
 ```
 
 ### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :glacier_output, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :glacier_output; relative_widths = [3, 3, 1])
 ```
 
 ## Vegetation
 ### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :vegetation_input, relative_widths = [5, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :vegetation_input; relative_widths = [5, 4, 2, 2])
 ```
 
 ### Static or cyclic/forcing input {#input-cyclic-lai}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :vegetation_static_cyclic_forcing_input, relative_widths = [5, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :vegetation_static_cyclic_forcing_input; relative_widths = [5, 4, 2, 2])
 ```
 
 ### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :vegetation_state, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :vegetation_state; relative_widths = [3, 3, 1])
 ```
 
 ### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :vegetation_output, relative_widths = [4, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :vegetation_output; relative_widths = [4, 3, 1])
 ```
 ## Soil
 ### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :soil_input, relative_widths = [5, 5, 1, 1])
+generate_table(Wflow.LandHydrologySBM, :soil_input; relative_widths = [5, 5, 1, 1])
 ```
 
 ### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :soil_state, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :soil_state; relative_widths = [3, 3, 1])
 ```
 
 ### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :soil_output, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :soil_output; relative_widths = [3, 3, 1])
 ```
 
 ## Water demand
@@ -98,62 +98,62 @@ generate_table(Wflow.LandHydrologySBM, :soil_output, relative_widths = [3, 3, 1]
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_non_irrigation_static_cyclic_forcing_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :demand_non_irrigation_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### Non-paddy irrigation
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_static_cyclic_forcing_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_output, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_output; relative_widths = [3, 3, 1])
 ```
 
 ### Paddy irrigation
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_static_cyclic_forcing_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_state, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_state; relative_widths = [3, 3, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_output, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_output; relative_widths = [3, 3, 1])
 ```
 
 ### Allocation
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_allocation_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.LandHydrologySBM, :demand_allocation_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :demand_allocation_output, relative_widths = [3, 3, 1])
+generate_table(Wflow.LandHydrologySBM, :demand_allocation_output; relative_widths = [3, 3, 1])
 ```

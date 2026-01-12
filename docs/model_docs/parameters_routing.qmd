@@ -17,31 +17,31 @@ as a model output variable.
 ```{julia}
 # | code-fold: true
 include("../docs_utils.jl")
-generate_table(Wflow.Routing, :reservoir_generic_input)
+generate_table(Wflow.Routing, :reservoir_generic_input; relative_widths = [6, 5, 2, 2])
 ```
 
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :reservoir_input)
+generate_table(Wflow.Routing, :reservoir_input; relative_widths = [6, 5, 2, 2])
 ```
 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :reservoir_static_cyclic_forcing_input)
+generate_table([Wflow.Routing, Wflow.LandHydrologySBM], :reservoir_static_cyclic_forcing_input; relative_widths = [6, 5, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :reservoir_state)
+generate_table(Wflow.Routing, :reservoir_state; relative_widths = [3, 3, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :reservoir_output)
+generate_table(Wflow.Routing, :reservoir_output; relative_widths = [3, 3, 1])
 ```
 
 ## Kinematic wave
@@ -49,22 +49,27 @@ generate_table(Wflow.Routing, :reservoir_output)
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_river_flow_input)
+generate_table(Wflow.Routing, :kinematic_wave_river_flow_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_river_static_cyclic_forcing_input)
+generate_table(Wflow.LandHydrologySBM, :kinematic_wave_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_river_state)
+generate_table(Wflow.Routing, :kinematic_wave_river_state; relative_widths = [3, 3, 1])
 ```
 
 #### Output
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :kinematic_wave_river_output; relative_widths = [3, 3, 1])
+```
+
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `river_water__volume_flow_rate` | River discharge | m³ s⁻¹ |

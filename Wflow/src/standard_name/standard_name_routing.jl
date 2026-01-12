@@ -177,7 +177,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow
         ),
         unit = Unit(; m = 3, s = -1),
-        description = "Reservoir incoming flow rate",
+        description = "Inflow into the reservoir",
         tags = [:reservoir_output],
     ),
     "reservoir_water__evaporation_volume_flux" => ParameterMetadata(;
@@ -191,7 +191,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation
         ),
         unit = Unit(; mm = 1, dt = -1),
-        description = "Reservoir precipitation flux",
+        description = "Average precipitation over the reservoir area",
         tags = [:reservoir_output],
     ),
     "reservoir_water__potential_evaporation_volume_flux" => ParameterMetadata(;
@@ -199,7 +199,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation
         ),
         unit = Unit(; mm = 1, dt = -1),
-        description = "Reservoir potential evaporation flux",
+        description = "Average potential evaporation over the reservoir area",
         tags = [:reservoir_output],
     ),
 
@@ -249,6 +249,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.routing.river_flow.variables.h),
         unit = Unit(; m = 1),
         description = "River water depth",
+        tags = [:kinematic_wave_river_state],
     ),
     #### Output
 

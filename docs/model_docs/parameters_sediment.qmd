@@ -11,51 +11,51 @@ execute:
 include("../docs_utils.jl")
 using Pkg
 Pkg.status()
-generate_table(Wflow.SoilLoss, :atmospheric_forcing, relative_widths = [6, 4, 2])
+generate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])
 
 ```
 
 ## Hydrological forcing
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :hydrological_forcing, relative_widths = [6, 4, 2])
+generate_table(Wflow.SoilLoss, :hydrological_forcing; relative_widths = [6, 4, 2])
 ```
 
 ## Rainfall erosion
 ### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :rainfall_erosion_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLoss, :rainfall_erosion_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :rainfall_erosion_output, relative_widths = [6, 4, 2])
+generate_table(Wflow.SoilLoss, :rainfall_erosion_output; relative_widths = [6, 4, 2])
 ```
 
 ## Overland flow erosion
 ### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :overland_flow_erosion_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLoss, :overland_flow_erosion_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :overland_flow_erosion_output, relative_widths = [3, 3, 1])
+generate_table(Wflow.SoilLoss, :overland_flow_erosion_output; relative_widths = [3, 3, 1])
 ```
 
 ## Soil erosion
 ### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :soil_erosion_input, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLoss, :soil_erosion_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :soil_erosion_output, relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLoss, :soil_erosion_output; relative_widths = [6, 4, 2, 2])
 ```

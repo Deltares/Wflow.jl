@@ -6,18 +6,26 @@ using PrettyTables
 using Pkg
 Pkg.precompile("Wflow")
 
-function generate_table(model_type::Type, filter_tag::Symbol; kwargs...)
-    standard_name_map = Wflow.standard_name_map(model_type)
+# Generate table from model type and filter tag
+generate_table(model_type::Type, filter_tag::Symbol; kwargs...) =
+    generate_table([model_type], filter_tag; kwargs...)
+
+# Generate table from model types and filter tags
+function generate_table(model_types::Vector{<:Type}, filter_tag::Symbol; kwargs...)
     data = Tuple{String, Wflow.ParameterMetadata}[]
 
-    for (standard_name, metadata) in standard_name_map
-        if filter_tag ∈ metadata.tags
-            push!(data, (standard_name, metadata))
+    for model_type in model_types
+        standard_name_map = Wflow.standard_name_map(model_type)
+        for (standard_name, metadata) in standard_name_map
+            if filter_tag ∈ metadata.tags
+                push!(data, (standard_name, metadata))
+            end
         end
     end
     return generate_table(data; kwargs...)
 end
 
+# Generate table from parameter metadata
 function generate_table(
     data::Vector{Tuple{String, Wflow.ParameterMetadata}};
     relative_widths::Union{Vector{Int}, Nothing} = nothing,
