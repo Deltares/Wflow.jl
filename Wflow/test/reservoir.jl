@@ -1,4 +1,5 @@
 @testitem "Update reservoir simple" begin
+    using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Simple reservoir (outflowfunc = 4)
     n = 1
     res_bc = Wflow.ReservoirBC(;
@@ -19,8 +20,8 @@
         area = [1885665.353626924],
         targetfullfrac = [0.8],
         targetminfrac = [0.2425554726620697],
-        storfunc = [1],
-        outflowfunc = [4],
+        storfunc = [ReservoirProfileType.linear],
+        outflowfunc = [ReservoirOutflowType.simple],
     )
     res_vars = Wflow.ReservoirVariables(;
         outflow_obs = [Wflow.MISSING_VALUE],
@@ -60,6 +61,7 @@
 end
 
 @testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
+    using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Reservoir Modified Puls approach (outflowfunc = 3)
     n = 1
     res_bc = Wflow.ReservoirBC(;
@@ -76,13 +78,18 @@ end
         id = [1],
         area = [180510409.0],
         threshold = [0.0],
-        storfunc = [1],
-        outflowfunc = [3],
+        storfunc = [ReservoirProfileType.linear],
+        outflowfunc = [ReservoirOutflowType.modified_puls],
         b = [0.22],
         e = [2.0],
     )
     res_vars = Wflow.ReservoirVariables(;
-        storage = Wflow.initialize_storage([1], [180510409.0], [18.5], res_params.sh),
+        storage = Wflow.initialize_storage(
+            [ReservoirProfileType.linear],
+            [180510409.0],
+            [18.5],
+            res_params.sh,
+        ),
         waterlevel = [18.5],
     )
 
@@ -113,7 +120,7 @@ end
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
-    using Accessors: @reset
+    using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Linked reservoirs with free weir (outflowfunc = 1)
     datadir = joinpath(@__DIR__, "data")
     sh = Vector{Union{Wflow.SH, Missing}}([
@@ -133,20 +140,20 @@ end
         lower_reservoir_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, NaN],
-        storfunc = [2, 2],
-        outflowfunc = [2, 1],
+        storfunc = fill(ReservoirProfileType.interpolation, 2),
+        outflowfunc = [ReservoirOutflowType.free_weir, ReservoirOutflowType.rating_curve],
         b = [140.0, NaN],
         e = [1.5, NaN],
         sh,
         hq,
         col_index_hq = [15],
     )
-    @reset res_params.maxstorage[2] = Wflow.maximum_storage(res_params, 2)
+    res_params.maxstorage[2] = Wflow.maximum_storage(res_params, 2)
 
     res_vars = Wflow.ReservoirVariables(;
         waterlevel = [395.03027, 394.87833],
         storage = Wflow.initialize_storage(
-            [2, 2],
+            fill(ReservoirProfileType.interpolation, 2),
             [472461536.0, 60851088.0],
             [395.03027, 394.87833],
             sh,
@@ -192,6 +199,7 @@ end
 
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
 @testitem "Overflowing reservoir with SH and HQ" begin
+    using Wflow: ReservoirProfileType, ReservoirOutflowType
     using Accessors: @reset
     datadir = joinpath(@__DIR__, "data")
     n = 1
@@ -214,8 +222,8 @@ end
     res_params = Wflow.ReservoirParameters(;
         id = [1],
         area = [200_000_000],
-        storfunc = [2],
-        outflowfunc = [1],
+        storfunc = [ReservoirProfileType.interpolation],
+        outflowfunc = [ReservoirOutflowType.rating_curve],
         sh,
         hq,
         col_index_hq = [15],
