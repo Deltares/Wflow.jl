@@ -2,7 +2,7 @@
     include("testing_utils.jl")
     using StaticArrays: SVector
     n = 1
-    N = 6
+    N = 3
 
     model = Wflow.NonPaddy(;
         parameters = Wflow.NonPaddyParameters(;
@@ -42,11 +42,11 @@
     k = 1
 
     depletion, readily_available_water = Wflow.water_demand_root_zone(soil, i, k)
-    @test depletion ≈ 0.38958813885549093
-    @test readily_available_water ≈ 0.2002509988361609
+    @test depletion ≈ 0.3894768627137144
+    @test readily_available_water ≈ 0.20019380212939547
     irri_dem_gross = depletion
     demand_gross = Wflow.compute_demand_gross(model, soil, irri_dem_gross, i)
-    @test demand_gross ≈ 0.38958813885549093
+    @test demand_gross ≈ 0.3894768627137144
 end
 
 @testitem "unit: update_demand_gross! (Paddy)" begin
