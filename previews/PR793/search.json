@@ -957,6 +957,17 @@
     ]
   },
   {
+    "objectID": "changelog.html#v1.0.1---2026-01-07",
+    "href": "changelog.html#v1.0.1---2026-01-07",
+    "title": "Changelog",
+    "section": "v1.0.1 - 2026-01-07",
+    "text": "v1.0.1 - 2026-01-07\n\nFixed\n\nFixed mapping standard name soil_surface_water_saturated_zone__exfiltration_volume_flux to model variable, it was incorrectly mapped to variable exfiltustore and this has been changed to variable exfiltsatwater.",
+    "crumbs": [
+      "Home",
+      "Changelog"
+    ]
+  },
+  {
     "objectID": "changelog.html#v1.0.0---2025-12-10",
     "href": "changelog.html#v1.0.0---2025-12-10",
     "title": "Changelog",

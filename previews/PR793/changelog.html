@@ -411,9 +411,13 @@ window.Quarto = {
   <li><a href="#changed" id="toc-changed" class="nav-link" data-scroll-target="#changed">Changed</a></li>
   <li><a href="#added" id="toc-added" class="nav-link" data-scroll-target="#added">Added</a></li>
   </ul></li>
-  <li><a href="#v1.0.0---2025-12-10" id="toc-v1.0.0---2025-12-10" class="nav-link" data-scroll-target="#v1.0.0---2025-12-10">v1.0.0 - 2025-12-10</a>
+  <li><a href="#v1.0.1---2026-01-07" id="toc-v1.0.1---2026-01-07" class="nav-link" data-scroll-target="#v1.0.1---2026-01-07">v1.0.1 - 2026-01-07</a>
   <ul class="collapse">
   <li><a href="#fixed-1" id="toc-fixed-1" class="nav-link" data-scroll-target="#fixed-1">Fixed</a></li>
+  </ul></li>
+  <li><a href="#v1.0.0---2025-12-10" id="toc-v1.0.0---2025-12-10" class="nav-link" data-scroll-target="#v1.0.0---2025-12-10">v1.0.0 - 2025-12-10</a>
+  <ul class="collapse">
+  <li><a href="#fixed-2" id="toc-fixed-2" class="nav-link" data-scroll-target="#fixed-2">Fixed</a></li>
   <li><a href="#changed-1" id="toc-changed-1" class="nav-link" data-scroll-target="#changed-1">Changed</a></li>
   <li><a href="#added-1" id="toc-added-1" class="nav-link" data-scroll-target="#added-1">Added</a></li>
   </ul></li>
@@ -478,10 +482,19 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="added">Added</h3>
 </section>
 </section>
-<section id="v1.0.0---2025-12-10" class="level2">
-<h2 class="anchored" data-anchor-id="v1.0.0---2025-12-10">v1.0.0 - 2025-12-10</h2>
+<section id="v1.0.1---2026-01-07" class="level2">
+<h2 class="anchored" data-anchor-id="v1.0.1---2026-01-07">v1.0.1 - 2026-01-07</h2>
 <section id="fixed-1" class="level3">
 <h3 class="anchored" data-anchor-id="fixed-1">Fixed</h3>
+<ul>
+<li>Fixed mapping standard name <code>soil_surface_water_saturated_zone__exfiltration_volume_flux</code> to model variable, it was incorrectly mapped to variable <code>exfiltustore</code> and this has been changed to variable <code>exfiltsatwater</code>.</li>
+</ul>
+</section>
+</section>
+<section id="v1.0.0---2025-12-10" class="level2">
+<h2 class="anchored" data-anchor-id="v1.0.0---2025-12-10">v1.0.0 - 2025-12-10</h2>
+<section id="fixed-2" class="level3">
+<h3 class="anchored" data-anchor-id="fixed-2">Fixed</h3>
 <ul>
 <li>Initialization of <code>LateralSSF</code> variables <code>ssf</code> and <code>ssfmax</code> with vertical hydraulic conductivity profile <code>exponential_constant</code>. Removed parameter <code>khfrac</code> from the computation, as it is already part of parameter <code>kh_0</code>.</li>
 <li>Mutating BMI model control functions (<code>update</code>, <code>update_until</code> and <code>finalize</code>) and extended mutating BMI functions (<code>load_state</code> and <code>save_state</code>) should return <code>nothing</code>.</li>
@@ -541,8 +554,8 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="v0.x-releases">v0.x releases</h2>
 <section id="v0.8.1---2024-08-27" class="level3">
 <h3 class="anchored" data-anchor-id="v0.8.1---2024-08-27">v0.8.1 - 2024-08-27</h3>
-<section id="fixed-2" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-2">Fixed</h4>
+<section id="fixed-3" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-3">Fixed</h4>
 <ul>
 <li>Reduce allocations in update of vertical <code>SBM</code> concept.</li>
 </ul>
@@ -550,8 +563,8 @@ window.Quarto = {
 </section>
 <section id="v0.8.0---2024-08-19" class="level3">
 <h3 class="anchored" data-anchor-id="v0.8.0---2024-08-19">v0.8.0 - 2024-08-19</h3>
-<section id="fixed-3" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-3">Fixed</h4>
+<section id="fixed-4" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-4">Fixed</h4>
 <ul>
 <li>Added missing BMI function <code>get_grid_size</code>, it is used for unstructured grids, for example to get the length of arrays returned by BMI functions <code>get_grid_x</code> and <code>get_grid_y</code>.</li>
 <li>Added a check for the solution of the quadratic equation as part of the Modified Puls approach for lake outflow. Lower limit should be zero (very small negative values can occur).</li>
@@ -593,8 +606,8 @@ window.Quarto = {
 </section>
 <section id="v0.7.3---2024-01-12" class="level3">
 <h3 class="anchored" data-anchor-id="v0.7.3---2024-01-12">v0.7.3 - 2024-01-12</h3>
-<section id="fixed-4" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-4">Fixed</h4>
+<section id="fixed-5" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-5">Fixed</h4>
 <ul>
 <li>Documentation: add leakage term to the wflow_sbm figure, document external input parameter <code>ksathorfrac</code> and fix description of adding external <code>inflow</code> to the kinematic wave.</li>
 <li>Fixed BMI functions (e.g.&nbsp;<code>BMI.get_value</code>) that deviated from BMI specifications (BasicModelInterface.jl), including function arguments, return types and the BMI specification that arrays are always flattened (this was not the case for variables stored as 2-dimensional arrays or as vector of SVectors).</li>
@@ -619,8 +632,8 @@ window.Quarto = {
 </section>
 <section id="v0.7.2---2023-09-27" class="level3">
 <h3 class="anchored" data-anchor-id="v0.7.2---2023-09-27">v0.7.2 - 2023-09-27</h3>
-<section id="fixed-5" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-5">Fixed</h4>
+<section id="fixed-6" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-6">Fixed</h4>
 <ul>
 <li>Water balance of modified Rutter interception model. The sum of the stemflow partitioning coefficient <code>pt</code> and free throughfall coefficient <code>p</code> could get larger than 1, resulting in an overestimation of stemflow and throughfall amounts and negative net interception amounts. And the first drainage amount <code>dd</code>, controlled by a change over time in canopy storage capacity <code>cmax</code>, should not be subtracted from precipitation to compute net interception.</li>
 <li>The <code>netinterception</code> (net interception) computed by the modified Rutter interception model was stored as <code>interception</code> in <code>SBM</code>, while this should be the <code>interception</code> (interception loss by evaporation) output of the modified Rutter interception model. The <code>interception</code> of <code>SBM</code> is used to compute the total actual evapotranspiration <code>actevap</code>.</li>
@@ -629,8 +642,8 @@ window.Quarto = {
 </section>
 <section id="v0.7.1---2023-06-30" class="level3">
 <h3 class="anchored" data-anchor-id="v0.7.1---2023-06-30">v0.7.1 - 2023-06-30</h3>
-<section id="fixed-6" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-6">Fixed</h4>
+<section id="fixed-7" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-7">Fixed</h4>
 <ul>
 <li>State initialization of 1D floodplain <code>volume</code>. In the initialization function the wrong field name of type <code>FloodPlainProfile</code> was used (<code>area</code> instead of <code>a</code>).</li>
 </ul>
@@ -638,8 +651,8 @@ window.Quarto = {
 </section>
 <section id="v0.7.0---2023-06-12" class="level3">
 <h3 class="anchored" data-anchor-id="v0.7.0---2023-06-12">v0.7.0 - 2023-06-12</h3>
-<section id="fixed-7" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-7">Fixed</h4>
+<section id="fixed-8" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-8">Fixed</h4>
 <ul>
 <li><code>BMI.get_time_units</code> now gets called on the model rather than the type, like all other BMI functions, except <code>BMI.initialize</code>. Also it returns “s” instead of “seconds since 1970-01-01T00:00:00”, in line with the BMI specification.</li>
 <li>Added the <code>interception</code> component to total actual evapotranspiration <code>actevap</code> of <code>SBM</code> (was defined as the sum of soil evaporation, transpiration and open water evaporation).</li>
@@ -663,8 +676,8 @@ window.Quarto = {
 </section>
 <section id="v0.6.3---2023-03-01" class="level3">
 <h3 class="anchored" data-anchor-id="v0.6.3---2023-03-01">v0.6.3 - 2023-03-01</h3>
-<section id="fixed-8" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-8">Fixed</h4>
+<section id="fixed-9" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-9">Fixed</h4>
 <ul>
 <li>Removed error when <code>_FillValue</code> is present in the time dimension of the forcing netCDF file. The simulation is allowed to continue with the attribute present, given that there are no missing values in the time dimension. This is checked by the code, and an error is thrown if this is the case.</li>
 <li>Column index of daily lake rating curves. This was incorrectly based on <code>dayofyear</code> with a maximum of 365. The column index should be based on julian day (leap days are not counted).</li>
@@ -688,8 +701,8 @@ window.Quarto = {
 </section>
 <section id="v0.6.2---2022-09-01" class="level3">
 <h3 class="anchored" data-anchor-id="v0.6.2---2022-09-01">v0.6.2 - 2022-09-01</h3>
-<section id="fixed-9" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-9">Fixed</h4>
+<section id="fixed-10" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-10">Fixed</h4>
 <ul>
 <li>Two issues related to reservoir and lake locations as part of local inertial model: 1) added as boundary points to the update of overland flow, 2) fixed check reservoir and lake location in update river flow.</li>
 <li>Limit flow (<code>qx</code>, <code>qy</code> and <code>q</code>) in local inertial model when water is not available (set to zero).</li>
@@ -713,8 +726,8 @@ window.Quarto = {
 </section>
 <section id="v0.6.1---2022-04-26" class="level3">
 <h3 class="anchored" data-anchor-id="v0.6.1---2022-04-26">v0.6.1 - 2022-04-26</h3>
-<section id="fixed-10" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-10">Fixed</h4>
+<section id="fixed-11" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-11">Fixed</h4>
 <ul>
 <li>Fixed an error with the log file, when writing to a folder that does not (yet) exists. Now, the folder is created prior to writing the log file.</li>
 <li>Fixed a MethodError for <code>read_dims</code>, thrown when reading netCDF data with NCDatasets.jl 0.12.3 or higher.</li>
@@ -740,8 +753,8 @@ window.Quarto = {
 <li>Changed the reference level of water depth <code>h</code> and <code>h_av</code> of 2D overland flow (<code>ShallowWaterLand</code>) for cells containing a river from river bed elevation <code>zb</code> to cell elevation <code>z</code>.</li>
 </ul>
 </section>
-<section id="fixed-11" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-11">Fixed</h4>
+<section id="fixed-12" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-12">Fixed</h4>
 <ul>
 <li>Fixed calculation of average water depth <code>h_av</code> of 2D overland flow (<code>ShallowWaterLand</code>) with the local inertial approach. The summation of <code>h</code> was not correct, resulting in too low values for <code>h_av</code>. For river cells of 2D overland flow <code>h_av</code> was only updated as part of the river domain (<code>ShallowWaterRiver</code>), this value is now also updated as part of the land domain (<code>ShallowWaterLand</code>).</li>
 <li>Fixed the following two flow width issues for 2D overland flow of the local inertial model: 1) The flow widths <code>xwidth</code> and <code>ywidth</code> were mapped incorrectly (reversed) to the flow calculation in <code>x</code> and <code>y</code> direction, respectively. 2) For river cells the effective flow width for overland flow was not determined correctly: the <code>riverwidth</code> vector supplied to the function <code>set_effective_flowwidth!</code> covered the complete model domain and should have covered the river domain, resulting in incorrect river widths and thus incorrect effective flow widths for river cells.</li>
@@ -765,8 +778,8 @@ window.Quarto = {
 <li>Option to use the local inertial model for 1D river flow combined with 2D overland flow as part of the <code>sbm</code> model type. See also <a href="@ref config_sbm_gwf_lie_river_land">SBM + Local inertial river (1D) and land (2D)</a>.</li>
 </ul>
 </section>
-<section id="fixed-12" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-12">Fixed</h4>
+<section id="fixed-13" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-13">Fixed</h4>
 <ul>
 <li>Model type <code>hbv</code>: the surface width for overland flow was not corrected with the river width.</li>
 <li>Fixed use of absolute path for <code>path_forcing</code> in TOML file, which gave an error in wflow v0.5.1.</li>
@@ -780,8 +793,8 @@ window.Quarto = {
 </section>
 <section id="v0.5.1---2021-11-24" class="level3">
 <h3 class="anchored" data-anchor-id="v0.5.1---2021-11-24">v0.5.1 - 2021-11-24</h3>
-<section id="fixed-13" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-13">Fixed</h4>
+<section id="fixed-14" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-14">Fixed</h4>
 <ul>
 <li>Fixed calculation of <code>exfiltwater</code> as part of the <code>sbm_gwf</code> model type. This was based directly on groundwater head above the surface level, without multiplying by the <code>specific_yield</code>, resulting in an overestimation of <code>exfiltwater</code>. This is required since the groundwater model estimates the head by dividing the volume by the specific yield or storativity of the aquifer. So, should the groundwater table rise above surface level, the head above surface level does not represent a water column one to one. (This also means the groundwater model (slightly) overestimates heads when the head rises above the surface level. However, this water is immediately removed, and the head will be set to surface level.)</li>
 </ul>
@@ -801,8 +814,8 @@ window.Quarto = {
 <li>Scaling of potential capillary rise is replaced by a common approach found in literature, based on the water table depth <code>zi</code>, a maximum water depth <code>cap_hmax</code> beyond which capillary rise ceases, and a coefficient <code>cap_n</code>. See also <a href="@ref">Capillary rise</a>. Multiplying the scaling factor with the ratio of model time step and <code>basetimestep</code> in the original approach resulted in (much) smaller capillary fluxes at sub-daily model time steps compared to daily model time steps, and is not used in the new approach. Parameters <code>cap_hmax</code> and <code>cap_n</code> can be set through the TOML file, parameter <code>capscale</code> of the previous approach is not used anymore.</li>
 </ul>
 </section>
-<section id="fixed-14" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-14">Fixed</h4>
+<section id="fixed-15" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-15">Fixed</h4>
 <ul>
 <li>Conversion of <code>GroundwaterFlow</code> boundaries <span class="math inline">\(\SIb{}{m^3 d^{-1}}\)</span> as part of model concept <code>sbm_gwf</code> to <span class="math inline">\(\SI{m^3 s^{-1}}\)</span> for sub-daily model time steps. For the conversion the <code>basetimestep</code> (86400 s) should be used (and not the model time step).</li>
 </ul>
@@ -833,8 +846,8 @@ window.Quarto = {
 <li>Option to use the local inertial model for river flow as part of the <a href="@ref config_sbm">SBM + Kinematic wave</a>. See also <a href="@ref config_sbm_gwf_lie_river_land">SBM + Local inertial river</a>.</li>
 </ul>
 </section>
-<section id="fixed-15" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-15">Fixed</h4>
+<section id="fixed-16" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-16">Fixed</h4>
 <ul>
 <li>River inflow for reservoirs and lakes in the kinematic wave. This inflow was based on <code>sf.q[v]</code> at the previous time step, and this has been fixed to the current time step.</li>
 </ul>
@@ -857,8 +870,8 @@ window.Quarto = {
 <li>The TOML keys <code>kv₀</code>, <code>θᵣ</code> and <code>θₛ</code> have been replaced with the ASCII versions <code>kv_0</code>, <code>theta_r</code> and <code>theta_s</code>, to avoid encoding issues with certain text editors. The old keys still work as well.</li>
 </ul>
 </section>
-<section id="fixed-16" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-16">Fixed</h4>
+<section id="fixed-17" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-17">Fixed</h4>
 <ul>
 <li>Calculation of volumetric water content of vertical SBM (soil layers and root zone).</li>
 <li>Update of <code>satwaterdepth</code> in SBM (evaporation was only subtracted from a local variable, and not from <code>sbm.satwaterdepth</code>).</li>
@@ -876,8 +889,8 @@ window.Quarto = {
 </section>
 <section id="v0.3.1---2021-05-19" class="level3">
 <h3 class="anchored" data-anchor-id="v0.3.1---2021-05-19">v0.3.1 - 2021-05-19</h3>
-<section id="fixed-17" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-17">Fixed</h4>
+<section id="fixed-18" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-18">Fixed</h4>
 <ul>
 <li>Ignore extra dimensions in input netCDFs if they are size 1</li>
 </ul>
@@ -903,8 +916,8 @@ window.Quarto = {
 <li>Support more netCDF dimension and axis order variants.</li>
 </ul>
 </section>
-<section id="fixed-18" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-18">Fixed</h4>
+<section id="fixed-19" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-19">Fixed</h4>
 <ul>
 <li>Corrected a bug in sediment deposition in the river (case when incoming sediment load is more than the river transport capacity).</li>
 <li>Fixed update of <code>snow</code> and <code>glacierstore</code> fields of HBV and SBM concepts by the <code>glacier_hbv</code> module.</li>
@@ -928,8 +941,8 @@ window.Quarto = {
 <li>Export of netCDF scalar timeseries (separate netCDF file from gridded timeseries). This also allows for importing these timeseries by Delft-FEWS (General Adapter).</li>
 </ul>
 </section>
-<section id="fixed-19" class="level4">
-<h4 class="anchored" data-anchor-id="fixed-19">Fixed</h4>
+<section id="fixed-20" class="level4">
+<h4 class="anchored" data-anchor-id="fixed-20">Fixed</h4>
 <ul>
 <li>Model parameter Manning’s <code>n</code> now used during the update of the <code>struct SurfaceFlow</code>, to change the related <code>\alpha</code> parameter of the kinematic wave for channel flow.</li>
 </ul>
