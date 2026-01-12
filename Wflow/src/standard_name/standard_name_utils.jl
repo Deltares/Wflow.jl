@@ -20,7 +20,7 @@ Metadata associated with parameters and variables.
 - `description`: The description of the parameter/variable provided in the Wflow docs
 - `allow_missing`: Whether the parameter/variable is allowed to have missing entries
 - `dimname`: The name of the third dimension of the parameter/variable if it exists
-- `flags`: Identifiers to filter parameters/variables for specific tables in the docs
+- `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
 @kwdef struct ParameterMetadata{
     L,
@@ -37,7 +37,7 @@ Metadata associated with parameters and variables.
     description::String = ""
     allow_missing::Bool = false
     dimname::N = nothing
-    flags::Vector{Symbol} = []
+    tags::Vector{Symbol} = []
     function ParameterMetadata(
         lens::L,
         unit,

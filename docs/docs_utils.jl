@@ -1,15 +1,17 @@
 using Wflow
 using PrettyTables
 
-# using Pkg
-# Pkg.precompile("Wflow")
+# Forcing precompilation of Wflow can help Quarto pick up changes in the
+# kernel that do not automatically yield re-precompilation
+using Pkg
+Pkg.precompile("Wflow")
 
-function generate_table(model_type::Type, filter_flag::Symbol; kwargs...)
+function generate_table(model_type::Type, filter_tag::Symbol; kwargs...)
     standard_name_map = Wflow.standard_name_map(model_type)
     data = Tuple{String, Wflow.ParameterMetadata}[]
 
     for (standard_name, metadata) in standard_name_map
-        if filter_flag ∈ metadata.flags
+        if filter_tag ∈ metadata.tags
             push!(data, (standard_name, metadata))
         end
     end

@@ -1,86 +1,61 @@
 ---
 title: Land Sediment model
+engine: julia
+execute:
+  cache: false
 ---
 
-<style>
-table {
-  table-layout: fixed;
-  width: 100%;
-}
-td, th {
-  word-wrap: break-word;
-}
-</style>
-
 ## Atmospheric forcing
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `atmosphere_water__precipitation_volume_flux` | Precipitation | mm Δt⁻¹ | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+include("../docs_utils.jl")
+using Pkg
+Pkg.status()
+generate_table(Wflow.SoilLoss, :atmospheric_forcing, relative_widths = [6, 4, 2])
+
+```
 
 ## Hydrological forcing
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `river_water__volume_flow_rate` | River discharge | m³ s⁻¹ | - |
-| `river_water__depth` | River water depth | m | - |
-| `land_surface_water__volume_flow_rate` | Overland flow discharge | m³ s⁻¹ | - |
-| `land_surface_water__depth` | Overland flow water depth | m | - |
-| `vegetation_canopy_water__interception_volume_flux` | Rainfall interception by the vegetation | mm Δt⁻¹ | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :hydrological_forcing, relative_widths = [6, 4, 2])
+```
 
 ## Rainfall erosion
 ### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `soil_erosion__rainfall_soil_detachability_factor` |  Soil detachability factor | g J⁻¹ | 0.6 |
-| `soil_erosion__eurosem_exponent` | Exponent EUROSEM | - | 2.0 |
-| `vegetation_canopy__height` | Canopy height | m | 0.5 |
-| `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | 0.1 |
-| `compacted_soil__area_fraction` | Fraction of the soil that is covered (eg paved, snow, etc) | - | 0.01 |
-| `soil_erosion__usle_k_factor` | USLE soil erodibility factor | - | 0.1 |
-| `soil_erosion__usle_c_factor` | USLE crop management factor | - | 0.01 |
-| `soil_erosion__answers_rainfall_factor` | Answers rainfall erosion factor | - | 0.108
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :rainfall_erosion_input, relative_widths = [6, 4, 2, 2])
+```
 
 ### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `rainfall_soil_erosion__mass_flow_rate` | Total soil erosion from rainfall (splash) | ton Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :rainfall_erosion_output, relative_widths = [6, 4, 2])
+```
 
 ## Overland flow erosion
 ### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `soil_erosion__answers_overland_flow_factor` | Answers overland flow erosion factor | - | 0.9
-| `soil_erosion__usle_k_factor` | USLE soil erodibility factor | - | 0.1 |
-| `soil_erosion__usle_c_factor` | USLE crop management factor | - | 0.01 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :overland_flow_erosion_input, relative_widths = [6, 4, 2, 2])
+```
 
 ### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `overland_flow_soil_erosion__mass_flow_rate` | Total soil erosion from overland flow | ton Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :overland_flow_erosion_output, relative_widths = [3, 3, 1])
+```
 
 ## Soil erosion
 ### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `soil_clay__mass_fraction` | Soil content clay | - | 0.4 |
-| `soil_silt__mass_fraction` | Soil content silt | - | 0.3 |
-| `soil_sand__mass_fraction` | Soil content sand | - | 0.3 |
-| `soil_small_aggregates__mass_fraction` | Soil content small aggregates | - | 0.0 |
-| `soil_large_aggregates__mass_fraction` | Soil content large aggregates | - | 0.0 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :soil_erosion_input, relative_widths = [6, 4, 2, 2])
+```
 
 ### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `soil_erosion__mass_flow_rate` | Total soil erosion | ton Δt⁻¹ |
-| `soil_erosion_clay__mass_flow_rate` | Total clay erosion | ton Δt⁻¹ |
-| `soil_erosion_silt__mass_flow_rate` | Total silt erosion | ton Δt⁻¹ |
-| `soil_erosion_sand__mass_flow_rate` | Total sand erosion | ton Δt⁻¹ |
-| `soil_erosion_small_aggregates__mass_flow_rate` | Total small aggregates erosion | ton Δt⁻¹ |
-| `soil_erosion_large_aggregates__mass_flow_rate` | Total large aggregates erosion | ton Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :soil_erosion_output, relative_widths = [6, 4, 2, 2])
+```

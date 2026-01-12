@@ -5,16 +5,6 @@ execute:
   cache: false
 ---
 
-<style>
-table {
-  table-layout: fixed;
-  width: 100%;
-}
-td, th {
-  word-wrap: break-word;
-}
-</style>
-
 ## Atmospheric forcing
 ```{julia}
 # | code-fold: true
