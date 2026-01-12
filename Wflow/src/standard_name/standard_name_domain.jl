@@ -21,10 +21,6 @@ const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = (1, 1)),
         description = "Land slope",
     ),
-    "land_water_covered__area_fraction" => ParameterMetadata(;
-        default = 0.0,
-        description = "Land water covered area fraction",
-    ),
     "land_drain_location__mask" =>
         ParameterMetadata(; fill = false, description = "Drain location mask"),
 )

@@ -1,5 +1,8 @@
 ---
 title: Land Hydrology SBM
+engine: julia
+execute:
+  cache: false
 ---
 
 <style>
@@ -13,251 +16,154 @@ td, th {
 </style>
 
 ## Atmospheric forcing
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `atmosphere_water__precipitation_volume_flux` | Precipitation | mm Δt⁻¹ | - |
-| `land_surface_water__potential_evaporation_volume_flux` | Potential evaporation | mm Δt⁻¹ | - |
-| `atmosphere_air__temperature` | Temperature | ᵒC | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+include("../docs_utils.jl")
+generate_table(Wflow.LandHydrologySBM, :atmospheric_forcing, relative_widths = [6, 4, 2])
+```
 
 ## Snow
 ### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `atmosphere_air__snowfall_temperature_threshold` | Threshold temperature for snowfall | ᵒC | 0.0 |
-| `atmosphere_air__snowfall_temperature_interval` | Threshold temperature interval length | ᵒC | 1.0 |
-| `snowpack__melting_temperature_threshold` | Threshold temperature for snowmelt | ᵒC | 0.0 |
-| `snowpack__degree_day_coefficient` | Degree-day factor for snowmelt | mm ᵒC⁻¹ Δt⁻¹ | 3.75 mm ᵒC⁻¹ day⁻¹|
-| `snowpack__liquid_water_holding_capacity` | Water holding capacity as fraction of current snow pack | - | 0.1 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :snow_input, relative_widths = [6, 4, 2, 2])
+```
 
 ### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `snowpack_dry_snow__leq_depth` | Liquid-water equivalent of dry snow | mm |
-| `snowpack_liquid_water__depth` | Liquid water content in the snow pack | mm |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :snow_state, relative_widths = [3, 3, 1])
+```
 
 ### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `snowpack_dry_snow__leq_depth` | Liquid-water equivalent of dry snow | mm |
-| `snowpack_liquid_water__depth` | Liquid water content in the snow pack | mm |
-| `snowpack__leq_depth` | Liquid-water equivalent of snow pack (SWE) | mm |
-| `snowpack_meltwater__volume_flux` | Amount of snow melt |  mm Δt⁻¹ |
-| `snowpack_water__runoff_volume_flux` | Runoff from snowpack | mm Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :snow_output, relative_widths = [3, 3, 1])
+```
 
 ## Glacier
 ### Input
-| Standard Name | Description | Unit | Default |
-| ----- | ---- | -- | -- |
-| `glacier_ice__initial_leq_depth` | Initial glacier liquid-water equivalent (cold state) | mm | 5500.0 |
-| `glacier_ice__melting_temperature_threshold` | Threshold temperature for glacier melt | ᵒC | 0.0 |
-| `glacier_ice__degree_day_coefficient` | Degree-day factor for melt from glacier | mm ᵒC⁻¹ Δt⁻¹ | 3.0 mm ᵒC⁻¹ day⁻¹  |
-| `glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction` | Fraction of the snowpack on top of the glacier converted into ice | Δt⁻¹ | 0.001  day⁻¹ |
-| `glacier_surface__area_fraction` | Fraction covered by a glacier | - | 0.0 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :glacier_input, relative_widths = [5, 4, 2, 2])
+```
 
 ### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `glacier_ice__leq_depth` | Glacier liquid-water equivalent | mm |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :glacier_state, relative_widths = [3, 3, 1])
+```
 
 ### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `glacier_ice__leq_depth` | Glacier liquid-water equivalent | mm |
-| `glacier_ice__melt_volume_flux` | Melt from the glacier | mm Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :glacier_output, relative_widths = [3, 3, 1])
+```
 
 ## Vegetation
-
 ### Input
-| Standard Name | Description | Unit | Default |
-| ----- | ---- | -- | -- |
-| `vegetation_root__depth` | Rooting depth | mm | - |
-| `vegetation__crop_factor` | Crop coefficient | - | 1.0 |
-| `vegetation__specific_leaf_storage` | Specific leaf storage | mm | - |
-| `vegetation_wood_water__storage_capacity` | Storage woody part of vegetation | mm | - |
-| `vegetation_canopy__light_extinction_coefficient` | Extinction coefficient (to calculate canopy gap fraction) | - | - |
-| `vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio` | Gash interception model parameter | - | 0.1 |
-| `vegetation_canopy__gap_fraction` | Canopy gap fraction | - | - |
-| `vegetation_water__storage_capacity` | Maximum canopy storage | mm | 1.0 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :vegetation_input, relative_widths = [5, 4, 2, 2])
+```
 
 ### Static or cyclic/forcing input {#input-cyclic-lai}
-| Standard Name | Description | Unit | Default |
-| ----- | ---- | -- | -- |
-| `vegetation__leaf_area_index` | Leaf area index | m² m⁻² | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :vegetation_static_cyclic_forcing_input, relative_widths = [5, 4, 2, 2])
+```
 
 ### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `vegetation_canopy_water__depth` | Canopy storage | mm |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :vegetation_state, relative_widths = [3, 3, 1])
+```
 
 ### Output
-| Standard Name | Description | Unit |
-| ---- | --- | - |
-| `vegetation_canopy_water__depth` | Canopy storage | mm |
-| `vegetation_canopy_water__stemflow_volume_flux` | Stemflow | mm Δt⁻¹ |
-| `vegetation_canopy_water__throughfall_volume_flux` | Throughfall | mm Δt⁻¹ |
-| `vegetation_canopy_water__interception_volume_flux` | Interception | mm Δt⁻¹ |
-: {.striped .hover}
-
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :vegetation_output, relative_widths = [4, 3, 1])
+```
 ## Soil
 ### Input
-| Standard Name | Description | Unit | Default |
-| ----- | ----- | - | - |
-| `soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth` |  Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an `exponential_constant` saturated hydraulic conductivity profile is used | mm | - |
-| `soil_layer_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used | mm Δt⁻¹ | - |
-| `soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth`| Depth from soil surface for which `layered` profile is valid, when a `layered_exponential` saturated hydraulic conductivity profile is used| mm | - |
-| `soil_surface_temperature__weight_coefficient` | Weighting coefficient for soil surface temperature | - | 0.1125 |
-| `soil_surface_water__infiltration_reduction_parameter` | Controls soil infiltration reduction factor when soil is frozen | - | 0.038 |
-| `soil_water__saturated_volume_fraction` | Saturated water content | - | - |
-| `soil_water__residual_volume_fraction` | Residual water content | - | - |
-| `soil_surface_water__vertical_saturated_hydraulic_conductivity` | Vertical saturated hydraulic conductivity at soil surface | mm Δt⁻¹ | - |
-| `soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter` | Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth | mm⁻¹ | - |
-| `soil_water__air_entry_pressure_head` | Air entry pressure head of soil | cm | -10.0 |
-| `vegetation_root__feddes_critical_pressure_head_h1` | Critical pressure head h1 of the root water uptake reduction function (Feddes) | cm | 0.0 |
-| `vegetation_root__feddes_critical_pressure_head_h2` | Critical pressure head h2 of the root water uptake reduction function (Feddes) | cm | -100.0 |
-| `vegetation_root__feddes_critical_pressure_head_h3_high` | Critical pressure head h3_high of the root water uptake reduction function (Feddes) | cm | -400.0 |
-| `vegetation_root__feddes_critical_pressure_head_h3_low` | Critical pressure head h3_low of the root water uptake reduction function (Feddes) | cm | -1000.0 |
-| `vegetation_root__feddes_critical_pressure_head_h4` | Critical pressure head h4 of the root water uptake reduction function (Feddes) | cm | -16000.0 |
-| `vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient` | Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) | - | 1.0 |
-| `soil__thickness` | Soil thickness | mm | - |
-| `compacted_soil_surface_water__infiltration_capacity` | Infiltration capacity of compacted areas | mm Δt⁻¹ | 10 mm day⁻¹ |
-| `soil_water_saturated_zone_bottom__max_leakage_volume_flux` | Maximum leakage from saturated zone | mm Δt⁻¹ | 0.0 mm day⁻¹ |
-| `soil_layer_water__brooks_corey_exponent` | Brooks-Corey power coefficient per soil layer | - | - |
-| `land_water_covered__area_fraction` | Fraction of open water (excluding rivers) | - | 0.0 |
-| `soil_layer_water__vertical_saturated_hydraulic_conductivity_factor` | Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer | - | 1.0 |
-| `compacted_soil__area_fraction` | Fraction of compacted soil area | - | - |
-| `soil_wet_root__sigmoid_function_shape_parameter` | Controls sharpness of transition between fully wet and fully dry roots | - | -500.0 |
-| `soil_root__length_density_fraction` | Fraction of the root length density per soil layer | - | - |
-| `soil_water_saturated_zone_top__capillary_rise_max_water_table_depth` | Maximum water table depth for capillary rise | mm | 2000.0 |
-| `soil_water_saturated_zone_top__capillary_rise_averianov_exponent` | Averianov exponent controlling capillary rise | - | 2.0 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :soil_input, relative_widths = [5, 5, 1, 1])
+```
 
 ### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `soil_surface__temperature` | Soil surface temperature, only when snow is modelled | ᵒC |
-| `soil_water_saturated_zone__depth` | Amount of water in the saturated store | mm |
-| `soil_layer_water_unsaturated_zone__depth` | Amount of water in the unsaturated store, per soil layer | mm |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :soil_state, relative_widths = [3, 3, 1])
+```
 
 ### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `soil_surface__temperature` | Soil surface temperature, only when snow is modelled | ᵒC |
-| `soil_water_saturated_zone__depth` | Amount of water in the saturated store | mm |
-| `soil_layer_water_unsaturated_zone__depth` | Amount of water in the unsaturated store, per soil layer | mm |
-| `land_surface__evapotranspiration_volume_flux` | Total actual evapotranspiration | mm |
-| `land_water_storage__total_depth` | Total water storage (excluding floodplains and reservoirs) | mm |
-| `soil_water__infiltration_volume_flux` | Actual infiltration into the unsaturated zone | mm Δt⁻¹ |
-| `soil_water__transpiration_volume_flux` | Transpiration from vegetation | mm Δt⁻¹ |
-| `soil_surface_water__runoff_volume_flux` | Total surface runoff from infiltration and saturation excess | mm Δt⁻¹ |
-| `soil_surface_water__net_runoff_volume_flux` | Net surface runoff (after open water evaporation) | mm Δt⁻¹ |
-| `compacted_soil_surface_water__excess_volume_flux` | Excess water for compacted soil fraction | mm Δt⁻¹ |
-| `non_compacted_soil_surface_water__excess_volume_flux` | Excess water for non-compacted soil fraction | mm Δt⁻¹ |
-| `soil_surface_water_unsaturated_zone__exfiltration_volume_flux` | Water exfiltrating from unsaturated store because of rising water table | mm Δt⁻¹ |
-| `soil_surface_water_saturated_zone__exfiltration_volume_flux` | Water exfiltrating from saturated store during saturation excess conditions | mm Δt⁻¹ |
-| `soil_layer_water__volume_fraction` | Volumetric water content per soil layer (including residual water content and saturated zone) | - |
-| `soil_layer_water__volume_percentage` | Volumetric water content per soil layer (including residual water content and saturated zone) | % |
-| `soil_water_root_zone__volume_fraction` | Volumetric water content in root zone (including residual water content and saturated zone) | - |
-| `soil_water_root_zone__volume_percentage` | Volumetric water content in root zone (including residual water content and saturated zone) | % |
-| `soil_water_root_zone__depth` | Root water storage in unsaturated and saturated zone (excluding residual water content) | mm |
-| `soil_water_unsaturated_zone__depth` | Amount of water in the unsaturated store | mm |
-| `soil_water_saturated_zone_top__capillary_volume_flux` | Actual capillary rise | mm Δt⁻¹ |
-| `soil_water_saturated_zone_top__recharge_volume_flux` | Downward flux from unsaturated to saturated zone | mm Δt⁻¹ |
-| `soil_water_saturated_zone_top__net_recharge_volume_flux` | Net recharge to saturated zone | mm Δt⁻¹ |
-| `soil_water_saturated_zone_bottom__leakage_volume_flux` | Actual leakage from saturated store | mm Δt⁻¹ |
-| `soil_water_saturated_zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | mm |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :soil_output, relative_widths = [3, 3, 1])
+```
 
 ## Water demand
-
 ### Non-irrigation
 #### Static or cyclic/forcing input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `domestic__gross_water_demand_volume_flux` | Gross domestic water demand | mm Δt⁻¹ | 0.0 |
-| `domestic__net_water_demand_volume_flux` | Net domestic water demand | mm Δt⁻¹ | 0.0 |
-| `industry__gross_water_demand_volume_flux` | Gross industry water demand | mm Δt⁻¹ | 0.0 |
-| `industry__net_water_demand_volume_flux` | Net industry water demand | mm Δt⁻¹ | 0.0 |
-| `livestock__gross_water_demand_volume_flux` | Gross livestock water demand | mm Δt⁻¹ | 0.0 |
-| `livestock__net_water_demand_volume_flux` | Net livestock water demand | mm Δt⁻¹ | 0.0 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_non_irrigation_static_cyclic_forcing_input, relative_widths = [6, 4, 2, 2])
+```
 
 ### Non-paddy irrigation
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `irrigated_non_paddy__irrigation_efficiency` | Irrigation efficiency | - | 1.0 |
-| `irrigated_non_paddy_area__count` | Irrigation areas (non-paddy) | - | - |
-| `irrigated_non_paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_input, relative_widths = [6, 4, 2, 2])
+```
 
 #### Static or cyclic/forcing input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `irrigated_non_paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_static_cyclic_forcing_input, relative_widths = [6, 4, 2, 2])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `irrigated_non_paddy__gross_water_demand_volume_flux` | Irrigation (non-paddy) gross demand | mm Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_non_paddy_irrigation_output, relative_widths = [3, 3, 1])
+```
 
 ### Paddy irrigation
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `irrigated_paddy__min_depth` | Minimum required water depth in the irrigated paddy fields | mm | 20.0 |
-| `irrigated_paddy__optimal_depth` | Optimal water depth in the irrigated paddy fields | mm | 50.0 |
-| `irrigated_paddy__max_depth` | Water depth when paddy field starts spilling water (overflow) | mm | 80.0 |
-| `irrigated_paddy__irrigation_efficiency` | Irrigation efficiency | - | 1.0 |
-| `irrigated_paddy_area__count` | Irrigation areas (paddy) | - | - |
-| `irrigated_paddy__max_irrigation_rate` | Maximum irrigation rate | mm Δt⁻¹ | 25.0 mm day⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_input, relative_widths = [6, 4, 2, 2])
+```
 
 #### Static or cyclic/forcing input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `irrigated_paddy__irrigation_trigger_flag` | Irrigation trigger (off or on, 0 or 1) | - | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_static_cyclic_forcing_input, relative_widths = [6, 4, 2, 2])
+```
 
 #### States
-| Standard Name | Description | Unit |
-| --- | ---| - |
-| `paddy_surface_water__depth` | Water depth in paddy field | mm |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_state, relative_widths = [3, 3, 1])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `paddy_surface_water__depth` | Water depth in paddy field | mm |
-| `irrigated_paddy__gross_water_demand_volume_flux` | Irrigation (paddy) gross demand | mm Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_paddy_irrigation_output, relative_widths = [3, 3, 1])
+```
 
 ### Allocation
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `land_surface_water__withdrawal_fraction` | Fraction surface water used | - | 1.0 |
-| `land_water_allocation_area__count` | Allocation areas | - | 1 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_allocation_input, relative_widths = [6, 4, 2, 2])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `land_surface_water__abstraction_volume_flux` | Actual surface water abstraction | mm Δt⁻¹ |
-| `subsurface_water__abstraction_volume_flux` | Actual groundwater abstraction | mm Δt⁻¹ |
-| `land__allocated_irrigation_water_volume_flux` | Allocated water for irrigation | mm Δt⁻¹ |
-| `land__allocated_non_irrigation_water_volume_flux` | Allocated water for non-irrigation | mm Δt⁻¹ |
-| `land__non_irrigation_return_flow_volume_flux` | Return flow from non-irrgation sectors | mm Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :demand_allocation_output, relative_widths = [3, 3, 1])
+```
