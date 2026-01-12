@@ -486,11 +486,11 @@ Compute water mass balance error and relative error for single layer subsurface 
 boundaries are set at zero.
 """
 function compute_flow_balance!(
-    subsurface_flow::GroundwaterFlow{A},
+    subsurface_flow::GroundwaterFlow,
     water_balance::MassBalance,
     parameters::LandParameters,
     dt::Float64,
-) where {A <: UnconfinedAquifer}
+)
     (; storage_prev, error, relative_error) = water_balance
     (; storage, q_in_av, q_out_av, exfiltwater) = subsurface_flow.aquifer.variables
     (; area) = subsurface_flow.aquifer.parameters

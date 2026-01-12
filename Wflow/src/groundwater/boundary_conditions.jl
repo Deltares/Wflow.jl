@@ -8,9 +8,6 @@ function check_flux(flux::Float64, aquifer::UnconfinedAquifer, index::Int)
     end
 end
 
-# Do nothing for a confined aquifer: aquifer can always provide flux
-check_flux(flux::Float64, aquifer::ConfinedAquifer, index::Int) = flux
-
 @with_kw struct GwfRiverParameters
     infiltration_conductance::Vector{Float64} # [m² d⁻¹]
     exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
@@ -70,7 +67,7 @@ function GwfRiver(
     return river
 end
 
-function flux!(river::GwfRiver, aquifer::Aquifer, dt::Float64)
+function flux!(river::GwfRiver, aquifer::UnconfinedAquifer, dt::Float64)
     for (i, index) in enumerate(river.index)
         head = aquifer.variables.head[index]
         stage = river.variables.stage[i]
@@ -143,7 +140,7 @@ function Drainage(
     return drains
 end
 
-function flux!(drainage::Drainage, aquifer::Aquifer, dt::Float64)
+function flux!(drainage::Drainage, aquifer::UnconfinedAquifer, dt::Float64)
     for (i, index) in enumerate(drainage.index)
         cond = drainage.parameters.conductance[i]
         delta_head =
@@ -172,7 +169,7 @@ end
     index::Vector{Int} # [-]
 end
 
-function flux!(headboundary::HeadBoundary, aquifer::Aquifer, dt::Float64)
+function flux!(headboundary::HeadBoundary, aquifer::UnconfinedAquifer, dt::Float64)
     for (i, index) in enumerate(headboundary.index)
         cond = headboundary.parameters.conductance[i]
         delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
@@ -197,7 +194,7 @@ end
     index::Vector{Int} = collect(1:n)  # [-]
 end
 
-function flux!(recharge::Recharge, aquifer::Aquifer, dt::Float64)
+function flux!(recharge::Recharge, aquifer::UnconfinedAquifer, dt::Float64)
     for (i, index) in enumerate(recharge.index)
         flux = check_flux(
             recharge.variables.rate[i] * aquifer.parameters.area[index],
@@ -222,7 +219,7 @@ end
     index::Vector{Int} # [-]
 end
 
-function flux!(well::Well, aquifer::Aquifer, dt::Float64)
+function flux!(well::Well, aquifer::UnconfinedAquifer, dt::Float64)
     for (i, index) in enumerate(well.index)
         flux = check_flux(well.variables.volumetric_rate[i], aquifer, index)
         well.variables.flux[i] = flux
@@ -232,4 +229,4 @@ function flux!(well::Well, aquifer::Aquifer, dt::Float64)
     return nothing
 end
 
-flux!(::Nothing, ::Aquifer, ::Float64) = nothing
+flux!(::Nothing, ::UnconfinedAquifer, ::Float64) = nothing
