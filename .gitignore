@@ -16,6 +16,9 @@
 /Wflow/test/data/
 /tmp/
 
+# Temporary directories
+Wflow/test/jl_*
+
 # Build files
 /build/create_binaries/wflow_bundle/
 
