@@ -80,7 +80,13 @@ end
         "sediment_config.toml",
         "sediment_eurosem_engelund_config.toml",
     ]
-        push!(configs, Wflow.Config(normpath(@__DIR__, file_name)))
+        config = Wflow.Config(normpath(@__DIR__, file_name))
+        config.dir_output = mktempdir()
+        if do_mass_balance
+            config.model.water_mass_balance__flag = true
+            global do_mass_balance = false
+        end
+        push!(models, Wflow.Model(config))
     end
 
     for transport_method in ("kodatie", "govers", "yalin")
