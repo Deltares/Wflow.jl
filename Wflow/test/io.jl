@@ -268,6 +268,7 @@ end
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     @testset "config settings" begin
         @test config.model.cold_start__flag
         config.model.cold_start__flag = false

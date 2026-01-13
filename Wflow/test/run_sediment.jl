@@ -2,6 +2,7 @@
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     (; domain) = model
@@ -104,6 +105,7 @@ end
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.cold_start__flag = false
     model = Wflow.Model(config)
     @testset "initial warm states" begin
@@ -129,6 +131,7 @@ end
     ### Test the sediment model with a different configuration file ###
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     (; domain) = model
@@ -175,6 +178,7 @@ end
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     # Update config to run only the land model
     config.model.run_river_model__flag = false
     # Use govers equation for land transport capacity
@@ -204,6 +208,7 @@ end
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     # Update config to run only the land model
     config.model.run_river_model__flag = false
     # Use yalin equation for land transport capacity
@@ -234,6 +239,7 @@ end
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     # Use yang equation for river transport capacity
     config.model.river_transport = "yang"
 
@@ -260,6 +266,7 @@ end
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     # Use kodatie equation for river transport capacity
     config.model.river_transport = "kodatie"
 
@@ -288,6 +295,7 @@ end
     using Statistics: mean
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     # Use molinas equation for river transport capacity
     config.model.river_transport = "molinas"
 
@@ -314,5 +322,6 @@ end
 @testitem "run wflow sediment" begin
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     Wflow.run(tomlpath; silent = true)
 end
