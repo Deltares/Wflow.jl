@@ -20,10 +20,45 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
@@ -42,9 +77,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-152a7eaa3a473860f82b096fdec11055.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -71,6 +106,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
@@ -524,98 +562,118 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<style>
-table {
-  table-layout: fixed;
-  width: 100%;
-}
-td, th {
-  word-wrap: break-word;
-}
-</style>
 <section id="atmospheric-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="atmospheric-forcing">Atmospheric forcing</h2>
-<table class="table-striped table-hover caption-top table">
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Pkg</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">Pkg</span>.<span class="fu">status</span>()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>atmospheric_forcing; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-green-fg ansi-bold">Status</span> `~/work/Wflow.jl/Wflow.jl/docs/Project.toml`
+<span class="ansi-green-fg">⌃</span> <span class="ansi-bright-black-fg">[13f3f980] </span>CairoMakie v0.13.10
+  <span class="ansi-bright-black-fg">[a93c6f00] </span>DataFrames v1.8.1
+  <span class="ansi-bright-black-fg">[7073ff75] </span>IJulia v1.33.0
+  <span class="ansi-bright-black-fg">[54e234d5] </span>MakieExtra v0.1.68
+  <span class="ansi-bright-black-fg">[1862ce21] </span>MarkdownTables v1.1.0
+  <span class="ansi-bright-black-fg">[08abe8d2] </span>PrettyTables v3.1.2
+  <span class="ansi-bright-black-fg">[d48b7d99] </span>Wflow v1.1.0-dev `../Wflow`
+<span class="ansi-cyan-fg ansi-bold">Info</span> Packages marked with <span class="ansi-green-fg">⌃</span> have new versions available and may be upgradable.
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>atmosphere_water__precipitation_volume_flux</code></td>
-<td>Precipitation</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>atmosphere_water__precipitation_volume_flux</code></td>
+<td style="text-align: left;">Precipitation</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="hydrological-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="hydrological-forcing">Hydrological forcing</h2>
-<table class="table-striped table-hover caption-top table">
+<div id="4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>hydrological_forcing; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__volume_flow_rate</code></td>
-<td>River discharge</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
+<td style="text-align: left;">River discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__depth</code></td>
-<td>River water depth</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__depth</code></td>
+<td style="text-align: left;">River water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water__volume_flow_rate</code></td>
-<td>Overland flow discharge</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__volume_flow_rate</code></td>
+<td style="text-align: left;">Overland flow discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__depth</code></td>
-<td>Overland flow water depth</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__depth</code></td>
+<td style="text-align: left;">Overland flow water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_canopy_water__interception_volume_flux</code></td>
-<td>Rainfall interception by the vegetation</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy_water__interception_volume_flux</code></td>
+<td style="text-align: left;">Rainfall interception by the vegetation</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="rainfall-erosion" class="level2">
 <h2 class="anchored" data-anchor-id="rainfall-erosion">Rainfall erosion</h2>
 <section id="input" class="level3">
 <h3 class="anchored" data-anchor-id="input">Input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="6" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>rainfall_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -623,95 +681,99 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>soil_erosion__rainfall_soil_detachability_factor</code></td>
-<td>Soil detachability factor</td>
-<td>g J⁻¹</td>
-<td>0.6</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_erosion__rainfall_soil_detachability_factor</code></td>
+<td style="text-align: left;">Soil detachability factor</td>
+<td style="text-align: left;">g J⁻¹</td>
+<td style="text-align: left;">0.6</td>
 </tr>
-<tr class="even">
-<td><code>soil_erosion__eurosem_exponent</code></td>
-<td>Exponent EUROSEM</td>
-<td>-</td>
-<td>2.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_erosion__eurosem_exponent</code></td>
+<td style="text-align: left;">Exponent EUROSEM</td>
+<td style="text-align: left;">m⁻¹</td>
+<td style="text-align: left;">2.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_canopy__height</code></td>
-<td>Canopy height</td>
-<td>m</td>
-<td>0.5</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy__height</code></td>
+<td style="text-align: left;">Canopy height</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">0.5</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_canopy__gap_fraction</code></td>
-<td>Canopy gap fraction</td>
-<td>-</td>
-<td>0.1</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_canopy__gap_fraction</code></td>
+<td style="text-align: left;">Canopy gap fraction</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.1</td>
 </tr>
-<tr class="odd">
-<td><code>compacted_soil__area_fraction</code></td>
-<td>Fraction of the soil that is covered (eg paved, snow, etc)</td>
-<td>-</td>
-<td>0.01</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>compacted_soil__area_fraction</code></td>
+<td style="text-align: left;">Fraction of the soil that is covered (eg paved, snow, etc)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.01</td>
 </tr>
-<tr class="even">
-<td><code>soil_erosion__usle_k_factor</code></td>
-<td>USLE soil erodibility factor</td>
-<td>-</td>
-<td>0.1</td>
-</tr>
-<tr class="odd">
-<td><code>soil_erosion__usle_c_factor</code></td>
-<td>USLE crop management factor</td>
-<td>-</td>
-<td>0.01</td>
-</tr>
-<tr class="even">
-<td><code>soil_erosion__answers_rainfall_factor</code></td>
-<td>Answers rainfall erosion factor</td>
-<td>-</td>
-<td>0.108</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_erosion__answers_rainfall_factor</code></td>
+<td style="text-align: left;">Answers rainfall erosion factor</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.108</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output" class="level3">
 <h3 class="anchored" data-anchor-id="output">Output</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="8" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>rainfall_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>rainfall_soil_erosion__mass_flow_rate</code></td>
-<td>Total soil erosion from rainfall (splash)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>rainfall_soil_erosion__mass_flow_rate</code></td>
+<td style="text-align: left;">Total soil erosion from rainfall (splash)</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="overland-flow-erosion" class="level2">
 <h2 class="anchored" data-anchor-id="overland-flow-erosion">Overland flow erosion</h2>
 <section id="input-1" class="level3">
 <h3 class="anchored" data-anchor-id="input-1">Input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="10" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>overland_flow_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -719,65 +781,81 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>soil_erosion__answers_overland_flow_factor</code></td>
-<td>Answers overland flow erosion factor</td>
-<td>-</td>
-<td>0.9</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_erosion__answers_overland_flow_factor</code></td>
+<td style="text-align: left;">Answers overland flow erosion factor</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.9</td>
 </tr>
-<tr class="even">
-<td><code>soil_erosion__usle_k_factor</code></td>
-<td>USLE soil erodibility factor</td>
-<td>-</td>
-<td>0.1</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_erosion__usle_k_factor</code></td>
+<td style="text-align: left;">USLE soil erodibility factor</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.1</td>
 </tr>
-<tr class="odd">
-<td><code>soil_erosion__usle_c_factor</code></td>
-<td>USLE crop management factor</td>
-<td>-</td>
-<td>0.01</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_erosion__usle_c_factor</code></td>
+<td style="text-align: left;">USLE crop management factor</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.01</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-1" class="level3">
 <h3 class="anchored" data-anchor-id="output-1">Output</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="12" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>overland_flow_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>overland_flow_soil_erosion__mass_flow_rate</code></td>
-<td>Total soil erosion from overland flow</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>overland_flow_soil_erosion__mass_flow_rate</code></td>
+<td style="text-align: left;">Total soil erosion from overland flow</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="soil-erosion" class="level2">
 <h2 class="anchored" data-anchor-id="soil-erosion">Soil erosion</h2>
 <section id="input-2" class="level3">
 <h3 class="anchored" data-anchor-id="input-2">Input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="14" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>soil_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -785,95 +863,105 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>soil_clay__mass_fraction</code></td>
-<td>Soil content clay</td>
-<td>-</td>
-<td>0.4</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_clay__mass_fraction</code></td>
+<td style="text-align: left;">Soil content clay</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.4</td>
 </tr>
-<tr class="even">
-<td><code>soil_silt__mass_fraction</code></td>
-<td>Soil content silt</td>
-<td>-</td>
-<td>0.3</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_silt__mass_fraction</code></td>
+<td style="text-align: left;">Soil content silt</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.3</td>
 </tr>
-<tr class="odd">
-<td><code>soil_sand__mass_fraction</code></td>
-<td>Soil content sand</td>
-<td>-</td>
-<td>0.3</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_sand__mass_fraction</code></td>
+<td style="text-align: left;">Soil content sand</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.3</td>
 </tr>
-<tr class="even">
-<td><code>soil_small_aggregates__mass_fraction</code></td>
-<td>Soil content small aggregates</td>
-<td>-</td>
-<td>0.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_small_aggregates__mass_fraction</code></td>
+<td style="text-align: left;">Soil content small aggregates</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="odd">
-<td><code>soil_large_aggregates__mass_fraction</code></td>
-<td>Soil content large aggregates</td>
-<td>-</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_large_aggregates__mass_fraction</code></td>
+<td style="text-align: left;">Soil content large aggregates</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-2" class="level3">
 <h3 class="anchored" data-anchor-id="output-2">Output</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="16" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>soil_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>soil_erosion__mass_flow_rate</code></td>
-<td>Total soil erosion</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_erosion__mass_flow_rate</code></td>
+<td style="text-align: left;">Total soil erosion</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_erosion_clay__mass_flow_rate</code></td>
-<td>Total clay erosion</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_erosion_clay__mass_flow_rate</code></td>
+<td style="text-align: left;">Total clay erosion</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_erosion_silt__mass_flow_rate</code></td>
-<td>Total silt erosion</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_erosion_silt__mass_flow_rate</code></td>
+<td style="text-align: left;">Total silt erosion</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_erosion_sand__mass_flow_rate</code></td>
-<td>Total sand erosion</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_erosion_sand__mass_flow_rate</code></td>
+<td style="text-align: left;">Total sand erosion</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_erosion_small_aggregates__mass_flow_rate</code></td>
-<td>Total small aggregates erosion</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_erosion_small_aggregates__mass_flow_rate</code></td>
+<td style="text-align: left;">Total small aggregates erosion</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_erosion_large_aggregates__mass_flow_rate</code></td>
-<td>Total large aggregates erosion</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_erosion_large_aggregates__mass_flow_rate</code></td>
+<td style="text-align: left;">Total large aggregates erosion</td>
+<td style="text-align: left;">t Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 
 
 </section>

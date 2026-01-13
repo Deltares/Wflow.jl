@@ -20,10 +20,45 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
@@ -42,9 +77,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-152a7eaa3a473860f82b096fdec11055.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -71,6 +106,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
@@ -540,59 +578,60 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<style>
-table {
-  table-layout: fixed;
-  width: 100%;
-}
-td, th {
-  word-wrap: break-word;
-}
-</style>
 <section id="atmospheric-forcing" class="level2">
 <h2 class="anchored" data-anchor-id="atmospheric-forcing">Atmospheric forcing</h2>
-<table class="table-striped table-hover caption-top table">
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>atmospheric_forcing; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>atmosphere_water__precipitation_volume_flux</code></td>
-<td>Precipitation</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>atmosphere_water__precipitation_volume_flux</code></td>
+<td style="text-align: left;">Precipitation</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__potential_evaporation_volume_flux</code></td>
-<td>Potential evaporation</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__potential_evaporation_volume_flux</code></td>
+<td style="text-align: left;">Potential evaporation</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>atmosphere_air__temperature</code></td>
-<td>Temperature</td>
-<td>ᵒC</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>atmosphere_air__temperature</code></td>
+<td style="text-align: left;">Temperature</td>
+<td style="text-align: left;">°C</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="snow" class="level2">
 <h2 class="anchored" data-anchor-id="snow">Snow</h2>
 <section id="input" class="level3">
 <h3 class="anchored" data-anchor-id="input">Input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -600,126 +639,150 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>atmosphere_air__snowfall_temperature_threshold</code></td>
-<td>Threshold temperature for snowfall</td>
-<td>ᵒC</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>atmosphere_air__snowfall_temperature_threshold</code></td>
+<td style="text-align: left;">Threshold temperature for snowfall</td>
+<td style="text-align: left;">°C</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>atmosphere_air__snowfall_temperature_interval</code></td>
-<td>Threshold temperature interval length</td>
-<td>ᵒC</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>atmosphere_air__snowfall_temperature_interval</code></td>
+<td style="text-align: left;">Threshold temperature interval length</td>
+<td style="text-align: left;">°C</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>snowpack__melting_temperature_threshold</code></td>
-<td>Threshold temperature for snowmelt</td>
-<td>ᵒC</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>snowpack__melting_temperature_threshold</code></td>
+<td style="text-align: left;">Threshold temperature for snowmelt</td>
+<td style="text-align: left;">°C</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>snowpack__degree_day_coefficient</code></td>
-<td>Degree-day factor for snowmelt</td>
-<td>mm ᵒC⁻¹ Δt⁻¹</td>
-<td>3.75 mm ᵒC⁻¹ day⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>snowpack__degree_day_coefficient</code></td>
+<td style="text-align: left;">Degree-day factor for snowmelt</td>
+<td style="text-align: left;">mm °C⁻¹ day⁻¹</td>
+<td style="text-align: left;">3.75</td>
 </tr>
-<tr class="odd">
-<td><code>snowpack__liquid_water_holding_capacity</code></td>
-<td>Water holding capacity as fraction of current snow pack</td>
-<td>-</td>
-<td>0.1</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>snowpack__liquid_water_holding_capacity</code></td>
+<td style="text-align: left;">Water holding capacity as fraction of current snow pack</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.1</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states" class="level3">
 <h3 class="anchored" data-anchor-id="states">States</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="6" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>snowpack_dry_snow__leq_depth</code></td>
-<td>Liquid-water equivalent of dry snow</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>snowpack_dry_snow__leq_depth</code></td>
+<td style="text-align: left;">Liquid-water equivalent of dry snow</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>snowpack_liquid_water__depth</code></td>
-<td>Liquid water content in the snow pack</td>
-<td>mm</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>snowpack_liquid_water__depth</code></td>
+<td style="text-align: left;">Liquid water content in the snow pack</td>
+<td style="text-align: left;">mm</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output" class="level3">
 <h3 class="anchored" data-anchor-id="output">Output</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="8" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>snowpack_dry_snow__leq_depth</code></td>
-<td>Liquid-water equivalent of dry snow</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>snowpack_dry_snow__leq_depth</code></td>
+<td style="text-align: left;">Liquid-water equivalent of dry snow</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>snowpack_liquid_water__depth</code></td>
-<td>Liquid water content in the snow pack</td>
-<td>mm</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>snowpack_liquid_water__depth</code></td>
+<td style="text-align: left;">Liquid water content in the snow pack</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="odd">
-<td><code>snowpack__leq_depth</code></td>
-<td>Liquid-water equivalent of snow pack (SWE)</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>snowpack__leq_depth</code></td>
+<td style="text-align: left;">Liquid-water equivalent of snow pack (SWE)</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>snowpack_meltwater__volume_flux</code></td>
-<td>Amount of snow melt</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>snowpack_meltwater__volume_flux</code></td>
+<td style="text-align: left;">Amount of snow melt</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>snowpack_water__runoff_volume_flux</code></td>
-<td>Runoff from snowpack</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>snowpack_water__runoff_volume_flux</code></td>
+<td style="text-align: left;">Runoff from snowpack</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="glacier" class="level2">
 <h2 class="anchored" data-anchor-id="glacier">Glacier</h2>
 <section id="input-1" class="level3">
 <h3 class="anchored" data-anchor-id="input-1">Input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="10" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 38%">
 <col style="width: 30%">
@@ -727,96 +790,130 @@ td, th {
 <col style="width: 15%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>glacier_ice__initial_leq_depth</code></td>
-<td>Initial glacier liquid-water equivalent (cold state)</td>
-<td>mm</td>
-<td>5500.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>glacier_ice__initial_leq_depth</code></td>
+<td style="text-align: left;">Initial glacier liquid-water equivalent (cold state)</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">5500.0</td>
 </tr>
-<tr class="even">
-<td><code>glacier_ice__melting_temperature_threshold</code></td>
-<td>Threshold temperature for glacier melt</td>
-<td>ᵒC</td>
-<td>0.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>glacier_ice__melting_temperature_threshold</code></td>
+<td style="text-align: left;">Threshold temperature for glacier melt</td>
+<td style="text-align: left;">°C</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="odd">
-<td><code>glacier_ice__degree_day_coefficient</code></td>
-<td>Degree-day factor for melt from glacier</td>
-<td>mm ᵒC⁻¹ Δt⁻¹</td>
-<td>3.0 mm ᵒC⁻¹ day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>glacier_ice__degree_day_coefficient</code></td>
+<td style="text-align: left;">Degree-day factor for melt from glacier</td>
+<td style="text-align: left;">mm °C⁻¹ Δt⁻¹</td>
+<td style="text-align: left;">3.0</td>
 </tr>
-<tr class="even">
-<td><code>glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction</code></td>
-<td>Fraction of the snowpack on top of the glacier converted into ice</td>
-<td>Δt⁻¹</td>
-<td>0.001 day⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction</code></td>
+<td style="text-align: left;">Fraction of the snowpack on top of the glacier converted into ice</td>
+<td style="text-align: left;">Δt⁻¹</td>
+<td style="text-align: left;">0.001</td>
 </tr>
-<tr class="odd">
-<td><code>glacier_surface__area_fraction</code></td>
-<td>Fraction covered by a glacier</td>
-<td>-</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>glacier_surface__area_fraction</code></td>
+<td style="text-align: left;">Fraction covered by a glacier</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-1" class="level3">
 <h3 class="anchored" data-anchor-id="states-1">States</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="12" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>glacier_ice__leq_depth</code></td>
-<td>Glacier liquid-water equivalent</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>glacier_ice__leq_depth</code></td>
+<td style="text-align: left;">Glacier liquid-water equivalent</td>
+<td style="text-align: left;">mm</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-1" class="level3">
 <h3 class="anchored" data-anchor-id="output-1">Output</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="14" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>glacier_ice__leq_depth</code></td>
-<td>Glacier liquid-water equivalent</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>glacier_ice__leq_depth</code></td>
+<td style="text-align: left;">Glacier liquid-water equivalent</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>glacier_ice__melt_volume_flux</code></td>
-<td>Melt from the glacier</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>glacier_ice__melt_volume_flux</code></td>
+<td style="text-align: left;">Melt from the glacier</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="vegetation" class="level2">
 <h2 class="anchored" data-anchor-id="vegetation">Vegetation</h2>
 <section id="input-2" class="level3">
 <h3 class="anchored" data-anchor-id="input-2">Input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="16" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 38%">
 <col style="width: 30%">
@@ -824,150 +921,193 @@ td, th {
 <col style="width: 15%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>vegetation_root__depth</code></td>
-<td>Rooting depth</td>
-<td>mm</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_root__depth</code></td>
+<td style="text-align: left;">Rooting depth</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">750.0</td>
 </tr>
-<tr class="even">
-<td><code>vegetation__crop_factor</code></td>
-<td>Crop coefficient</td>
-<td>-</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation__crop_factor</code></td>
+<td style="text-align: left;">Crop coefficient</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation__specific_leaf_storage</code></td>
-<td>Specific leaf storage</td>
-<td>mm</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation__specific_leaf_storage</code></td>
+<td style="text-align: left;">Specific leaf storage</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">0.5</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_wood_water__storage_capacity</code></td>
-<td>Storage woody part of vegetation</td>
-<td>mm</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_wood_water__storage_capacity</code></td>
+<td style="text-align: left;">Storage woody part of vegetation</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_canopy__light_extinction_coefficient</code></td>
-<td>Extinction coefficient (to calculate canopy gap fraction)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy__light_extinction_coefficient</code></td>
+<td style="text-align: left;">Extinction coefficient (to calculate canopy gap fraction)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.5</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio</code></td>
-<td>Gash interception model parameter</td>
-<td>-</td>
-<td>0.1</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio</code></td>
+<td style="text-align: left;">Gash interception model parameter</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.1</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_canopy__gap_fraction</code></td>
-<td>Canopy gap fraction</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy__gap_fraction</code></td>
+<td style="text-align: left;">Canopy gap fraction</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.1</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_water__storage_capacity</code></td>
-<td>Maximum canopy storage</td>
-<td>mm</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_water__storage_capacity</code></td>
+<td style="text-align: left;">Maximum canopy storage</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">1.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="input-cyclic-lai" class="level3">
 <h3 class="anchored" data-anchor-id="input-cyclic-lai">Static or cyclic/forcing input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="18" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 30%">
+<col style="width: 15%">
+<col style="width: 15%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>vegetation__leaf_area_index</code></td>
-<td>Leaf area index</td>
-<td>m² m⁻²</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation__leaf_area_index</code></td>
+<td style="text-align: left;">Leaf area index</td>
+<td style="text-align: left;">m² m⁻²</td>
+<td style="text-align: left;">3.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-2" class="level3">
 <h3 class="anchored" data-anchor-id="states-2">States</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="20" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>vegetation_canopy_water__depth</code></td>
-<td>Canopy storage</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy_water__depth</code></td>
+<td style="text-align: left;">Canopy storage</td>
+<td style="text-align: left;">mm</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-2" class="level3">
 <h3 class="anchored" data-anchor-id="output-2">Output</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="22" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_output; relative_widths <span class="op">=</span> [<span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 37%">
 <col style="width: 12%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>vegetation_canopy_water__depth</code></td>
-<td>Canopy storage</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy_water__depth</code></td>
+<td style="text-align: left;">Canopy storage</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_canopy_water__stemflow_volume_flux</code></td>
-<td>Stemflow</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_canopy_water__stemflow_volume_flux</code></td>
+<td style="text-align: left;">Stemflow</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_canopy_water__throughfall_volume_flux</code></td>
-<td>Throughfall</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy_water__throughfall_volume_flux</code></td>
+<td style="text-align: left;">Throughfall</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_canopy_water__interception_volume_flux</code></td>
-<td>Interception</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_canopy_water__interception_volume_flux</code></td>
+<td style="text-align: left;">Interception</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="soil" class="level2">
 <h2 class="anchored" data-anchor-id="soil">Soil</h2>
 <section id="input-3" class="level3">
 <h3 class="anchored" data-anchor-id="input-3">Input</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="24" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 41%">
 <col style="width: 41%">
@@ -975,351 +1115,369 @@ td, th {
 <col style="width: 8%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
-<td>Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an <code>exponential_constant</code> saturated hydraulic conductivity profile is used</td>
-<td>mm</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
+<td style="text-align: left;">Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an <code>exponential_constant</code> saturated hydraulic conductivity profile is used</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>soil_layer_water__vertical_saturated_hydraulic_conductivity</code></td>
-<td>Vertical saturated hydraulic conductivity per soil layer, when a <code>layered</code> or <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_layer_water__vertical_saturated_hydraulic_conductivity</code></td>
+<td style="text-align: left;">Vertical saturated hydraulic conductivity per soil layer, when a <code>layered</code> or <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
-<td>Depth from soil surface for which <code>layered</code> profile is valid, when a <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
-<td>mm</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
+<td style="text-align: left;">Depth from soil surface for which <code>layered</code> profile is valid, when a <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>soil_surface_temperature__weight_coefficient</code></td>
-<td>Weighting coefficient for soil surface temperature</td>
-<td>-</td>
-<td>0.1125</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_surface_temperature__weight_coefficient</code></td>
+<td style="text-align: left;">Weighting coefficient for soil surface temperature</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.1125</td>
 </tr>
-<tr class="odd">
-<td><code>soil_surface_water__infiltration_reduction_parameter</code></td>
-<td>Controls soil infiltration reduction factor when soil is frozen</td>
-<td>-</td>
-<td>0.038</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_surface_water__infiltration_reduction_parameter</code></td>
+<td style="text-align: left;">Controls soil infiltration reduction factor when soil is frozen</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.038</td>
 </tr>
-<tr class="even">
-<td><code>soil_water__saturated_volume_fraction</code></td>
-<td>Saturated water content</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water__saturated_volume_fraction</code></td>
+<td style="text-align: left;">Saturated water content</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.6</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water__residual_volume_fraction</code></td>
-<td>Residual water content</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water__residual_volume_fraction</code></td>
+<td style="text-align: left;">Residual water content</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.01</td>
 </tr>
-<tr class="even">
-<td><code>soil_surface_water__vertical_saturated_hydraulic_conductivity</code></td>
-<td>Vertical saturated hydraulic conductivity at soil surface</td>
-<td>mm Δt⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_surface_water__vertical_saturated_hydraulic_conductivity</code></td>
+<td style="text-align: left;">Vertical saturated hydraulic conductivity at soil surface</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">3000.0</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter</code></td>
-<td>Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth</td>
-<td>mm⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter</code></td>
+<td style="text-align: left;">Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth</td>
+<td style="text-align: left;">mm⁻¹</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>soil_water__air_entry_pressure_head</code></td>
-<td>Air entry pressure head of soil</td>
-<td>cm</td>
-<td>-10.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water__air_entry_pressure_head</code></td>
+<td style="text-align: left;">Air entry pressure head of soil</td>
+<td style="text-align: left;">cm</td>
+<td style="text-align: left;">-10.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_root__feddes_critical_pressure_head_h1</code></td>
-<td>Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
-<td>cm</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h1</code></td>
+<td style="text-align: left;">Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
+<td style="text-align: left;">cm</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_root__feddes_critical_pressure_head_h2</code></td>
-<td>Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
-<td>cm</td>
-<td>-100.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h2</code></td>
+<td style="text-align: left;">Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
+<td style="text-align: left;">cm</td>
+<td style="text-align: left;">-100.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_root__feddes_critical_pressure_head_h3_high</code></td>
-<td>Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
-<td>cm</td>
-<td>-400.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h3_high</code></td>
+<td style="text-align: left;">Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
+<td style="text-align: left;">cm</td>
+<td style="text-align: left;">-400.0</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_root__feddes_critical_pressure_head_h3_low</code></td>
-<td>Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
-<td>cm</td>
-<td>-1000.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h3_low</code></td>
+<td style="text-align: left;">Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
+<td style="text-align: left;">cm</td>
+<td style="text-align: left;">-1000.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_root__feddes_critical_pressure_head_h4</code></td>
-<td>Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
-<td>cm</td>
-<td>-16000.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h4</code></td>
+<td style="text-align: left;">Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
+<td style="text-align: left;">cm</td>
+<td style="text-align: left;">-16000.0</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient</code></td>
-<td>Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
-<td>-</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient</code></td>
+<td style="text-align: left;">Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>soil__thickness</code></td>
-<td>Soil thickness</td>
-<td>mm</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil__thickness</code></td>
+<td style="text-align: left;">Soil thickness</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">2000.0</td>
 </tr>
-<tr class="even">
-<td><code>compacted_soil_surface_water__infiltration_capacity</code></td>
-<td>Infiltration capacity of compacted areas</td>
-<td>mm Δt⁻¹</td>
-<td>10 mm day⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>compacted_soil_surface_water__infiltration_capacity</code></td>
+<td style="text-align: left;">Infiltration capacity of compacted areas</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">10.0</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water_saturated_zone_bottom__max_leakage_volume_flux</code></td>
-<td>Maximum leakage from saturated zone</td>
-<td>mm Δt⁻¹</td>
-<td>0.0 mm day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water_saturated_zone_bottom__max_leakage_volume_flux</code></td>
+<td style="text-align: left;">Maximum leakage from saturated zone</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>soil_layer_water__brooks_corey_exponent</code></td>
-<td>Brooks-Corey power coefficient per soil layer</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_layer_water__brooks_corey_exponent</code></td>
+<td style="text-align: left;">Brooks-Corey power coefficient per soil layer</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">10.0</td>
 </tr>
-<tr class="odd">
-<td><code>land_water_covered__area_fraction</code></td>
-<td>Fraction of open water (excluding rivers)</td>
-<td>-</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_water_covered__area_fraction</code></td>
+<td style="text-align: left;">Fraction of open water (excluding rivers)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>soil_layer_water__vertical_saturated_hydraulic_conductivity_factor</code></td>
-<td>Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer</td>
-<td>-</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_layer_water__vertical_saturated_hydraulic_conductivity_factor</code></td>
+<td style="text-align: left;">Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>compacted_soil__area_fraction</code></td>
-<td>Fraction of compacted soil area</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>compacted_soil__area_fraction</code></td>
+<td style="text-align: left;">Fraction of compacted soil area</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.01</td>
 </tr>
-<tr class="even">
-<td><code>soil_wet_root__sigmoid_function_shape_parameter</code></td>
-<td>Controls sharpness of transition between fully wet and fully dry roots</td>
-<td>-</td>
-<td>-500.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_wet_root__sigmoid_function_shape_parameter</code></td>
+<td style="text-align: left;">Controls sharpness of transition between fully wet and fully dry roots</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-500.0</td>
 </tr>
-<tr class="odd">
-<td><code>soil_root__length_density_fraction</code></td>
-<td>Fraction of the root length density per soil layer</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_root__length_density_fraction</code></td>
+<td style="text-align: left;">Fraction of the root length density per soil layer</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_saturated_zone_top__capillary_rise_max_water_table_depth</code></td>
-<td>Maximum water table depth for capillary rise</td>
-<td>mm</td>
-<td>2000.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_saturated_zone_top__capillary_rise_max_water_table_depth</code></td>
+<td style="text-align: left;">Maximum water table depth for capillary rise</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">2000.0</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water_saturated_zone_top__capillary_rise_averianov_exponent</code></td>
-<td>Averianov exponent controlling capillary rise</td>
-<td>-</td>
-<td>2.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water_saturated_zone_top__capillary_rise_averianov_exponent</code></td>
+<td style="text-align: left;">Averianov exponent controlling capillary rise</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">2.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-3" class="level3">
 <h3 class="anchored" data-anchor-id="states-3">States</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="26" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>soil_surface__temperature</code></td>
-<td>Soil surface temperature, only when snow is modelled</td>
-<td>ᵒC</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_surface__temperature</code></td>
+<td style="text-align: left;">Soil surface temperature, only when snow is modelled</td>
+<td style="text-align: left;">°C</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_saturated_zone__depth</code></td>
-<td>Amount of water in the saturated store</td>
-<td>mm</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_saturated_zone__depth</code></td>
+<td style="text-align: left;">Amount of water in the saturated store</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="odd">
-<td><code>soil_layer_water_unsaturated_zone__depth</code></td>
-<td>Amount of water in the unsaturated store, per soil layer</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_layer_water_unsaturated_zone__depth</code></td>
+<td style="text-align: left;">Amount of water in the unsaturated store, per soil layer</td>
+<td style="text-align: left;">mm</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-3" class="level3">
 <h3 class="anchored" data-anchor-id="output-3">Output</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="28" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>soil_surface__temperature</code></td>
-<td>Soil surface temperature, only when snow is modelled</td>
-<td>ᵒC</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_surface__temperature</code></td>
+<td style="text-align: left;">Soil surface temperature, only when snow is modelled</td>
+<td style="text-align: left;">°C</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_saturated_zone__depth</code></td>
-<td>Amount of water in the saturated store</td>
-<td>mm</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_saturated_zone__depth</code></td>
+<td style="text-align: left;">Amount of water in the saturated store</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="odd">
-<td><code>soil_layer_water_unsaturated_zone__depth</code></td>
-<td>Amount of water in the unsaturated store, per soil layer</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_layer_water_unsaturated_zone__depth</code></td>
+<td style="text-align: left;">Amount of water in the unsaturated store, per soil layer</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>land_surface__evapotranspiration_volume_flux</code></td>
-<td>Total actual evapotranspiration</td>
-<td>mm</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface__evapotranspiration_volume_flux</code></td>
+<td style="text-align: left;">Total actual evapotranspiration</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land_water_storage__total_depth</code></td>
-<td>Total water storage (excluding floodplains and reservoirs)</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_water_storage__total_depth</code></td>
+<td style="text-align: left;">Total water storage (excluding floodplains and reservoirs)</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>soil_water__infiltration_volume_flux</code></td>
-<td>Actual infiltration into the unsaturated zone</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water__infiltration_volume_flux</code></td>
+<td style="text-align: left;">Actual infiltration into the unsaturated zone</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water__transpiration_volume_flux</code></td>
-<td>Transpiration from vegetation</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water__transpiration_volume_flux</code></td>
+<td style="text-align: left;">Transpiration from vegetation</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_surface_water__runoff_volume_flux</code></td>
-<td>Total surface runoff from infiltration and saturation excess</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_surface_water__runoff_volume_flux</code></td>
+<td style="text-align: left;">Total surface runoff from infiltration and saturation excess</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_surface_water__net_runoff_volume_flux</code></td>
-<td>Net surface runoff (after open water evaporation)</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_surface_water__net_runoff_volume_flux</code></td>
+<td style="text-align: left;">Net surface runoff (after open water evaporation)</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>compacted_soil_surface_water__excess_volume_flux</code></td>
-<td>Excess water for compacted soil fraction</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>compacted_soil_surface_water__excess_volume_flux</code></td>
+<td style="text-align: left;">Excess water for compacted soil fraction</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>non_compacted_soil_surface_water__excess_volume_flux</code></td>
-<td>Excess water for non-compacted soil fraction</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>non_compacted_soil_surface_water__excess_volume_flux</code></td>
+<td style="text-align: left;">Excess water for non-compacted soil fraction</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_surface_water_unsaturated_zone__exfiltration_volume_flux</code></td>
-<td>Water exfiltrating from unsaturated store because of rising water table</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_surface_water_unsaturated_zone__exfiltration_volume_flux</code></td>
+<td style="text-align: left;">Water exfiltrating from unsaturated store because of rising water table</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_surface_water_saturated_zone__exfiltration_volume_flux</code></td>
-<td>Water exfiltrating from saturated store during saturation excess conditions</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_surface_water_saturated_zone__exfiltration_volume_flux</code></td>
+<td style="text-align: left;">Water exfiltrating from saturated store during saturation excess conditions</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_layer_water__volume_fraction</code></td>
-<td>Volumetric water content per soil layer (including residual water content and saturated zone)</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_layer_water__volume_fraction</code></td>
+<td style="text-align: left;">Volumetric water content per soil layer (including residual water content and saturated zone)</td>
+<td style="text-align: left;">m³ m⁻³</td>
 </tr>
-<tr class="odd">
-<td><code>soil_layer_water__volume_percentage</code></td>
-<td>Volumetric water content per soil layer (including residual water content and saturated zone)</td>
-<td>%</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_layer_water__volume_percentage</code></td>
+<td style="text-align: left;">Volumetric water content per soil layer (including residual water content and saturated zone)</td>
+<td style="text-align: left;">%</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_root_zone__volume_fraction</code></td>
-<td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_root_zone__volume_fraction</code></td>
+<td style="text-align: left;">Volumetric water content in root zone (including residual water content and saturated zone)</td>
+<td style="text-align: left;">m³ m⁻³</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water_root_zone__volume_percentage</code></td>
-<td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
-<td>%</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water_root_zone__volume_percentage</code></td>
+<td style="text-align: left;">Volumetric water content in root zone (including residual water content and saturated zone)</td>
+<td style="text-align: left;">%</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_root_zone__depth</code></td>
-<td>Root water storage in unsaturated and saturated zone (excluding residual water content)</td>
-<td>mm</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_root_zone__depth</code></td>
+<td style="text-align: left;">Root water storage in unsaturated and saturated zone (excluding residual water content)</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water_unsaturated_zone__depth</code></td>
-<td>Amount of water in the unsaturated store</td>
-<td>mm</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water_unsaturated_zone__depth</code></td>
+<td style="text-align: left;">Amount of water in the unsaturated store</td>
+<td style="text-align: left;">mm</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_saturated_zone_top__capillary_volume_flux</code></td>
-<td>Actual capillary rise</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_saturated_zone_top__capillary_volume_flux</code></td>
+<td style="text-align: left;">Actual capillary rise</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water_saturated_zone_top__recharge_volume_flux</code></td>
-<td>Downward flux from unsaturated to saturated zone</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water_saturated_zone_top__recharge_volume_flux</code></td>
+<td style="text-align: left;">Downward flux from unsaturated to saturated zone</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_saturated_zone_top__net_recharge_volume_flux</code></td>
-<td>Net recharge to saturated zone</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_saturated_zone_top__net_recharge_volume_flux</code></td>
+<td style="text-align: left;">Net recharge to saturated zone</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_water_saturated_zone_bottom__leakage_volume_flux</code></td>
-<td>Actual leakage from saturated store</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>soil_water_saturated_zone_bottom__leakage_volume_flux</code></td>
+<td style="text-align: left;">Actual leakage from saturated store</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil_water_saturated_zone_top__depth</code></td>
-<td>Pseudo-water table depth (top of the saturated zone)</td>
-<td>mm</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>soil_water_saturated_zone_top__depth</code></td>
+<td style="text-align: left;">Pseudo-water table depth (top of the saturated zone)</td>
+<td style="text-align: left;">mm</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="water-demand" class="level2">
@@ -1328,7 +1486,13 @@ td, th {
 <h3 class="anchored" data-anchor-id="non-irrigation">Non-irrigation</h3>
 <section id="static-or-cyclicforcing-input" class="level4">
 <h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input">Static or cyclic/forcing input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="30" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1336,59 +1500,67 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>domestic__gross_water_demand_volume_flux</code></td>
-<td>Gross domestic water demand</td>
-<td>mm Δt⁻¹</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>domestic__gross_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Gross domestic water demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>domestic__net_water_demand_volume_flux</code></td>
-<td>Net domestic water demand</td>
-<td>mm Δt⁻¹</td>
-<td>0.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>domestic__net_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Net domestic water demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="odd">
-<td><code>industry__gross_water_demand_volume_flux</code></td>
-<td>Gross industry water demand</td>
-<td>mm Δt⁻¹</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>industry__gross_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Gross industry water demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>industry__net_water_demand_volume_flux</code></td>
-<td>Net industry water demand</td>
-<td>mm Δt⁻¹</td>
-<td>0.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>industry__net_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Net industry water demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="odd">
-<td><code>livestock__gross_water_demand_volume_flux</code></td>
-<td>Gross livestock water demand</td>
-<td>mm Δt⁻¹</td>
-<td>0.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>livestock__gross_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Gross livestock water demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>livestock__net_water_demand_volume_flux</code></td>
-<td>Net livestock water demand</td>
-<td>mm Δt⁻¹</td>
-<td>0.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>livestock__net_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Net livestock water demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="non-paddy-irrigation" class="level3">
 <h3 class="anchored" data-anchor-id="non-paddy-irrigation">Non-paddy irrigation</h3>
 <section id="input-4" class="level4">
 <h4 class="anchored" data-anchor-id="input-4">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="32" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1396,92 +1568,113 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>irrigated_non_paddy__irrigation_efficiency</code></td>
-<td>Irrigation efficiency</td>
-<td>-</td>
-<td>1.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_non_paddy__irrigation_efficiency</code></td>
+<td style="text-align: left;">Irrigation efficiency</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="even">
-<td><code>irrigated_non_paddy_area__count</code></td>
-<td>Irrigation areas (non-paddy)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_non_paddy_area__count</code></td>
+<td style="text-align: left;">Irrigation areas (non-paddy)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>irrigated_non_paddy__max_irrigation_rate</code></td>
-<td>Maximum irrigation rate</td>
-<td>mm Δt⁻¹</td>
-<td>25.0 mm day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_non_paddy__max_irrigation_rate</code></td>
+<td style="text-align: left;">Maximum irrigation rate</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">25.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="static-or-cyclicforcing-input-1" class="level4">
 <h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-1">Static or cyclic/forcing input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="34" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>irrigated_non_paddy__irrigation_trigger_flag</code></td>
-<td>Irrigation trigger (off or on, 0 or 1)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_non_paddy__irrigation_trigger_flag</code></td>
+<td style="text-align: left;">Non-paddy irrigation trigger flag</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-4" class="level4">
 <h4 class="anchored" data-anchor-id="output-4">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="36" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>irrigated_non_paddy__gross_water_demand_volume_flux</code></td>
-<td>Irrigation (non-paddy) gross demand</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_non_paddy__gross_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Irrigation (non-paddy) gross demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="paddy-irrigation" class="level3">
 <h3 class="anchored" data-anchor-id="paddy-irrigation">Paddy irrigation</h3>
 <section id="input-5" class="level4">
 <h4 class="anchored" data-anchor-id="input-5">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="38" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1489,134 +1682,168 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>irrigated_paddy__min_depth</code></td>
-<td>Minimum required water depth in the irrigated paddy fields</td>
-<td>mm</td>
-<td>20.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_paddy__min_depth</code></td>
+<td style="text-align: left;">Minimum required water depth in the irrigated paddy fields</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">20.0</td>
 </tr>
-<tr class="even">
-<td><code>irrigated_paddy__optimal_depth</code></td>
-<td>Optimal water depth in the irrigated paddy fields</td>
-<td>mm</td>
-<td>50.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_paddy__optimal_depth</code></td>
+<td style="text-align: left;">Optimal water depth in the irrigated paddy fields</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">50.0</td>
 </tr>
-<tr class="odd">
-<td><code>irrigated_paddy__max_depth</code></td>
-<td>Water depth when paddy field starts spilling water (overflow)</td>
-<td>mm</td>
-<td>80.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_paddy__max_depth</code></td>
+<td style="text-align: left;">Water depth when paddy field starts spilling water (overflow)</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">80.0</td>
 </tr>
-<tr class="even">
-<td><code>irrigated_paddy__irrigation_efficiency</code></td>
-<td>Irrigation efficiency</td>
-<td>-</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_paddy__irrigation_efficiency</code></td>
+<td style="text-align: left;">Irrigation efficiency</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>irrigated_paddy_area__count</code></td>
-<td>Irrigation areas (paddy)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_paddy_area__count</code></td>
+<td style="text-align: left;">Irrigation areas (paddy)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>irrigated_paddy__max_irrigation_rate</code></td>
-<td>Maximum irrigation rate</td>
-<td>mm Δt⁻¹</td>
-<td>25.0 mm day⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_paddy__max_irrigation_rate</code></td>
+<td style="text-align: left;">Maximum irrigation rate</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">25.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="static-or-cyclicforcing-input-2" class="level4">
 <h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-2">Static or cyclic/forcing input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="40" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>irrigated_paddy__irrigation_trigger_flag</code></td>
-<td>Irrigation trigger (off or on, 0 or 1)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_paddy__irrigation_trigger_flag</code></td>
+<td style="text-align: left;">Irrigation trigger (off or on, 0 or 1)</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-4" class="level4">
 <h4 class="anchored" data-anchor-id="states-4">States</h4>
-<table class="table-striped table-hover caption-top table">
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>paddy_surface_water__depth</code></td>
-<td>Water depth in paddy field</td>
-<td>mm</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="output-5" class="level4">
-<h4 class="anchored" data-anchor-id="output-5">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="42" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>paddy_surface_water__depth</code></td>
-<td>Water depth in paddy field</td>
-<td>mm</td>
-</tr>
-<tr class="even">
-<td><code>irrigated_paddy__gross_water_demand_volume_flux</code></td>
-<td>Irrigation (paddy) gross demand</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>paddy_surface_water__depth</code></td>
+<td style="text-align: left;">Water depth in paddy field</td>
+<td style="text-align: left;">mm</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+</section>
+<section id="output-5" class="level4">
+<h4 class="anchored" data-anchor-id="output-5">Output</h4>
+<div id="44" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>paddy_surface_water__depth</code></td>
+<td style="text-align: left;">Water depth in paddy field</td>
+<td style="text-align: left;">mm</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_paddy__gross_water_demand_volume_flux</code></td>
+<td style="text-align: left;">Irrigation (paddy) gross demand</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
 </section>
 <section id="allocation" class="level3">
 <h3 class="anchored" data-anchor-id="allocation">Allocation</h3>
 <section id="input-6" class="level4">
 <h4 class="anchored" data-anchor-id="input-6">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="46" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_allocation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1624,72 +1851,82 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water__withdrawal_fraction</code></td>
-<td>Fraction surface water used</td>
-<td>-</td>
-<td>1.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__withdrawal_fraction</code></td>
+<td style="text-align: left;">Fraction surface water used</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="even">
-<td><code>land_water_allocation_area__count</code></td>
-<td>Allocation areas</td>
-<td>-</td>
-<td>1</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_water_allocation_area__count</code></td>
+<td style="text-align: left;">Allocation areas</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-6" class="level4">
 <h4 class="anchored" data-anchor-id="output-6">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="48" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_allocation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water__abstraction_volume_flux</code></td>
-<td>Actual surface water abstraction</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__abstraction_volume_flux</code></td>
+<td style="text-align: left;">Actual surface water abstraction</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>subsurface_water__abstraction_volume_flux</code></td>
-<td>Actual groundwater abstraction</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land__allocated_irrigation_water_volume_flux</code></td>
+<td style="text-align: left;">Allocated water for irrigation</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land__allocated_irrigation_water_volume_flux</code></td>
-<td>Allocated water for irrigation</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land__allocated_non_irrigation_water_volume_flux</code></td>
+<td style="text-align: left;">Allocated water for non-irrigation</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land__allocated_non_irrigation_water_volume_flux</code></td>
-<td>Allocated water for non-irrigation</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_water__abstraction_volume_flux</code></td>
+<td style="text-align: left;">Actual groundwater abstraction</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land__non_irrigation_return_flow_volume_flux</code></td>
-<td>Return flow from non-irrgation sectors</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land__non_irrigation_return_flow_volume_flux</code></td>
+<td style="text-align: left;">Return flow from non-irrgation sectors</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 
 
 </section>
