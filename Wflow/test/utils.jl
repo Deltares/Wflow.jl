@@ -52,8 +52,8 @@ end
     unit = Unit(; m = 1, dt = -1)
     @test_throws Exception to_SI(unit, 1.0)
     @test to_SI_factor(unit; dt_val = dt) == inv(dt)
-    @test string(unit) == "m dt⁻¹"
-    @test to_string(unit; BMI_standard = true) == "m dt-1"
+    @test string(unit) == "m Δt⁻¹"
+    @test to_string(unit; BMI_standard = true) == "m Δt-1"
 
     unit = Unit(; s = 1, m = -1 // 3)
     @test to_SI_factor(unit) == 1.0
@@ -67,11 +67,6 @@ end
     using Accessors: @optic
     configs = Wflow.Config[]
 
-    # Initialize the first model with mass balance
-    config = Wflow.Config(normpath(@__DIR__, "sbm_config.toml"))
-    config.model.water_mass_balance__flag = true
-    push!(configs, config)
-
     for file_name in [
         "sbm_gwf_config.toml",
         "sbm_river-floodplain-local-inertial_config.toml",
@@ -82,16 +77,13 @@ end
     ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
-        if do_mass_balance
-            config.model.water_mass_balance__flag = true
-            global do_mass_balance = false
-        end
-        push!(models, Wflow.Model(config))
+        config.model.water_mass_balance__flag = true
+        push!(configs, config)
     end
 
     for transport_method in ("kodatie", "govers", "yalin")
         config = Wflow.Config(normpath(@__DIR__, "sediment_eurosem_engelund_config.toml"))
-        config.dir_output = normpath(@__DIR__, "data", "output", transport_method) # Avoid file permission problems
+        config.dir_output = mktempdir()
         if transport_method == "kodatie"
             config.model.river_transport = transport_method
         else

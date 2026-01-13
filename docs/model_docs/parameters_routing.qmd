@@ -55,7 +55,7 @@ generate_table(Wflow.Routing, :kinematic_wave_river_flow_input; relative_widths 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.LandHydrologySBM, :kinematic_wave_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :kinematic_wave_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### States
@@ -74,7 +74,7 @@ generate_table(Wflow.Routing, :kinematic_wave_river_output; relative_widths = [3
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table([Wflow.Routing, Wflow.Domain], :kinematic_wave_overland_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :kinematic_wave_overland_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### States
@@ -93,176 +93,138 @@ generate_table(Wflow.Routing, :kinematic_wave_overland_output; relative_widths =
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table([Wflow.Routing, Wflow.Domain], :kinematic_lateral_subsurface_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :kinematic_lateral_subsurface_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table([Wflow.Routing, Wflow.Domain], :kinematic_lateral_subsurface_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_lateral_subsurface_state; relative_widths = [3, 3, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table([Wflow.Routing, Wflow.Domain], :kinematic_lateral_subsurface_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_lateral_subsurface_output; relative_widths = [3, 3, 1])
 ```
-
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
-| `subsurface_water_saturated_zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | m |
-| `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | mm Δt⁻¹ |
-| `subsurface_water__to_river_volume_flow_rate` | Part of subsurface flow that flows to the river | m³ day⁻¹ |
-: {.striped .hover}
 
 ## Local inertial
 ### River flow
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `river__length` | River length | m | - |
-| `model_boundary_condition_river__length` | Boundary condition river length downstream river outlets | m | 10 000 |
-| `river__width` | River width | m | - |
-| `model_boundary_condition_river_bank_water__depth` | Boundary condition bankfull depth downstream river outlets | m | 0.0 |
-| `river_bank_water__elevation` | Bankfull elevation of the river | m | - |
-| `river_bank_water__depth` | Bankfull depth of the river | m | - |
-| `river_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.0036 |
-| `river_water__external_inflow_volume_flow_rate` | External inflow into the river (negative for abstractions) | m³ s⁻¹ | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_river_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `river_water__instantaneous_volume_flow_rate` | River discharge | m³ s⁻¹ |
-| `river_water__depth` | River water depth | m |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_river_state; relative_widths = [3, 3, 1])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `river_water__volume_flow_rate` | River (+ floodplain) discharge | m³ s⁻¹ |
-| `river_water__instantaneous_volume_flow_rate` | River discharge | m³ s⁻¹ |
-| `river_water__depth` | River water depth | m |
-| `river_water__volume` | River water volume | m³ |
-| `river_water__external_abstraction_volume_flow_rate` | Actual abstraction based on external negative inflow | m³ s⁻¹ | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_river_output; relative_widths = [3, 3, 1])
+```
 
 ### 1D floodplain flow
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `floodplain_water__sum_of_volume_per_depth` | Floodplain profile (cumulative volume per flood depth) | m³ | - |
-| `floodplain_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.072 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### States
-| Standard Name | Description | Unit | |
-| --- | --- | - |
-| `floodplain_water__instantaneous_volume_flow_rate` | Floodplain discharge | m³ s⁻¹ |
-| `floodplain_water__depth` | Floodplain water depth | m |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_state; relative_widths = [3, 3, 1])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `floodplain_water__volume` | Floodplain volume | m³ |
-| `floodplain_water__depth` | Floodplain water depth | m |
-| `floodplain_water__volume_flow_rate` | Floodplain discharge | m³ s⁻¹ |
-| `floodplain_water__instantaneous_volume_flow_rate` | Floodplain discharge | m³ s⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_output; relative_widths = [3, 3, 1])
+```
 
 ### Overland flow
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `land_surface_water_flow__manning_n_parameter` | Manning’s roughness | s m$^{-\frac{1}{3}}$ | 0.072 |
-| `land_surface_water_flow__ground_elevation` | Elevation of each cell | m | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_overland_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### States
-| Standard Name | Description | Unit |
-| --- | ---- | - |
-| `land_surface_water__x_component_of_instantaneous_volume_flow_rate` | Flow in x direction | m³ s⁻¹ |
-| `land_surface_water__y_component_of_instantaneous_volume_flow_rate` | Flow in y direction | m³ s⁻¹ |
-| `land_surface_water__depth` | Water depth | m |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_overland_state; relative_widths = [3, 4, 1])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `land_surface_water__x_component_of_instantaneous_volume_flow_rate` | Flow in x direction | m³ s⁻¹ |
-| `land_surface_water__y_component_of_instantaneous_volume_flow_rate` | Flow in y direction | m³ s⁻¹ |
-| `land_surface_water__depth` | Water depth | m |
-| `land_surface_water__volume` | Total surface water storage of cell (including river storage for river cells) | m³ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_overland_output; relative_widths = [3, 3, 1])
+```
 
 ## Groundwater flow
 ### Unconfined aquifer
 #### Input {#input-gwf-unconfined}
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `land_surface__elevation ` | Land surface elevation conductivity | m | - |
-| `subsurface_surface_water__horizontal_saturated_hydraulic_conductivity` | Horizontal conductivity | m day⁻¹ | - |
-| `subsurface_water__specific_yield` | Specific yield | m m⁻¹ | - |
-| `subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter` | Factor controlling the reduction of horizontal conductivity with depth | - | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### States{#state-gwf-unconfined}
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `subsurface_water__hydraulic_head` | Groundwater head | m |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_state; relative_widths = [3, 3, 1])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `subsurface_water__hydraulic_head` | Groundwater head | m |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_output; relative_widths = [3, 3, 1])
+```
 
 ### River boundary
 #### Input {#input-gwf-river}
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `river_water__infiltration_conductance` | River bed infiltration conductance | m² day⁻¹ | - |
-| `river_water__exfiltration_conductance` | River bed exfiltration conductance | m² day⁻¹ | - |
-| `river_bottom__elevation` | River bottom elevation | m | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_river_boundary_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### Output {#output-gwf-river}
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `river_water__to_subsurface_volume_flow_rate` | Exchange flux (river to aquifer) | m³ day⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_river_boundary_output; relative_widths = [3, 3, 1])
+```
 
 ### Drainage boundary
 #### Input {#input-gwf-drainage}
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `land_drain__elevation` | Drain elevation | m | - |
-| `land_drain__conductance` | Drain conductance | m² day⁻¹ | - |
-| `land_drain_location__mask` | Drain location | - | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_drainage_boundary_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### Output {#output-gwf-drainage}
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `land_drain_water__to_subsurface_volume_flow_rate` | Exchange flux (drain to aquifer) | m³ day⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_drainage_boundary_output; relative_widths = [3, 3, 1])
+```
 
 ### Recharge boundary
 #### Output {#output-gwf-recharge}
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate` | Net recharge flux | m³ day⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_recharge_boundary_output; relative_widths = [3, 3, 1])
+```
 
 ### Constant head boundary
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `model_constant_boundary_condition__hydraulic_head` | Head of the boundary | m | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :groundwater_constant_head_boundary_input; relative_widths = [6, 4, 2, 2])
+```
 
 ## Sediment
 ### Transport capacity Overland flow

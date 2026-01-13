@@ -315,16 +315,19 @@ end
         @test lens(model)[50063] ≈ 0.0
         lens = Wflow.get_lens("soil_water_saturated_zone__depth", land)
         @test lens(model)[50063] ≈ 558.8578304603327
-        lens = Wflow.get_lens("subsurface_water__volume_flow_rate", land)
+        lens = Wflow.get_lens("subsurface_water__volume_flow_rate", Wflow.Routing)
         @test lens(model)[10606] ≈ 39.972334552895816
         lens = Wflow.get_lens("river_water__instantaneous_volume_flow_rate", Wflow.Routing)
         @test lens(model)[149] ≈ 53.48673634956338
         lens = Wflow.get_lens("river_water__depth", Wflow.Routing)
         @test lens(model)[149] ≈ 1.167635369628945
         @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
-        lens = Wflow.get_lens("land_surface_water__instantaneous_volume_flow_rate", land)
+        lens = Wflow.get_lens(
+            "land_surface_water__instantaneous_volume_flow_rate",
+            Wflow.Routing,
+        )
         @test lens(model)[2075] ≈ 3.285909284322251
-        lens = Wflow.get_lens("land_surface_water__depth", land)
+        lens = Wflow.get_lens("land_surface_water__depth", Wflow.Routing)
         @test lens(model)[2075] ≈ 0.052076262033771775
         @test model.routing.overland_flow.variables.storage[2075] ≈ 29920.754983235012
     end

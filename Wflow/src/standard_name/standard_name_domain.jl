@@ -16,12 +16,4 @@ const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ParameterMetadata(; fill = false, description = "River mask (0-1)"),
     "land_water_allocation_area__count" =>
         ParameterMetadata(; default = 1, description = "Water allocation area ids"),
-    "land_surface__slope" => ParameterMetadata(;
-        lens = @optic(_.domain.land.parameters.slope),
-        unit = Unit(; m = (1, 1)),
-        description = "Land slope",
-        tags = [:kinematic_wave_overland_input, kinematic_lateral_subsurface_input],
-    ),
-    "land_drain_location__mask" =>
-        ParameterMetadata(; fill = false, description = "Drain location mask"),
 )

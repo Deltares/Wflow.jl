@@ -351,7 +351,7 @@ function NetworkDrain(
     surface_flow_width::Vector{Float64},
 )
     n_cells = length(indices)
-    drain_2d = ncread(dataset, config, "land_drain_location__mask", Domain)
+    drain_2d = ncread(dataset, config, "land_drain_location__mask", Routing)
     drain = drain_2d[indices]
 
     # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)

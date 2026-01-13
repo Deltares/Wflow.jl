@@ -325,13 +325,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Runoff from snowpack",
         tags = [:snow_output],
     ),
-    "river_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.external_inflow),
-        unit = Unit(; m = 3, s = -1),
-        default = 0.0,
-        description = "External inflow into the river (negative for abstractions)",
-        tags = [:kinematic_wave_river_static_cyclic_forcing_input],
-    ),
     "river_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.river_water_balance.error),
         unit = Unit(; m = 3, s = -1),
@@ -346,26 +339,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; mm = 1, dt = -1),
         description = "Actual surface water abstraction",
         tags = [:demand_allocation_output],
-    ),
-    "floodplain_water__volume" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.floodplain.variables.storage),
-        unit = Unit(; m = 3),
-        description = "Floodplain water volume",
-    ),
-    "floodplain_water__depth" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.floodplain.variables.h),
-        unit = Unit(; m = 1),
-        description = "Floodplain water depth",
-    ),
-    "floodplain_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.floodplain.variables.q),
-        unit = Unit(; m = 3, s = -1),
-        description = "Instantaneous floodplain discharge",
-    ),
-    "floodplain_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.floodplain.variables.q_av),
-        unit = Unit(; m = 3, s = -1),
-        description = "Average floodplain discharge",
     ),
     "reservoir_water__target_min_volume_fraction" => ParameterMetadata(;
         lens = @optic(
@@ -680,18 +653,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Fraction covered by a glacier",
         tags = [:glacier_input],
     ),
-    "land_surface_water__x_component_of_instantaneous_volume_flow_rate" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.variables.qx),
-            unit = Unit(; m = 3, s = -1),
-            description = "X-component of instantaneous overland flow",
-        ),
-    "land_surface_water__y_component_of_instantaneous_volume_flow_rate" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.variables.qy),
-            unit = Unit(; m = 3, s = -1),
-            description = "Y-component of instantaneous overland flow",
-        ),
     "land_surface_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.overland_water_balance.error),
         unit = Unit(; m = 3, s = -1),
@@ -858,27 +819,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; mm = 1, dt = -1),
         description = "Return flow from non-irrgation sectors",
         tags = [:demand_allocation_output],
-    ),
-    "subsurface_water__hydraulic_head" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.aquifer.variables.head),
-        unit = Unit(; m = 1),
-        description = "Subsurface water hydraulic head",
-    ),
-    "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.boundaries.recharge.variables.flux_av),
-            unit = Unit(; m = 3, d = -1),
-            description = "Net recharge volume flow rate to saturated zone",
-        ),
-    "land_drain_water__to_subsurface_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.boundaries.drain.variables.flux_av),
-        unit = Unit(; m = 3, d = -1),
-        description = "Land drain water to subsurface volume flow rate",
-    ),
-    "river_water__to_subsurface_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.boundaries.river.variables.flux_av),
-        unit = Unit(; m = 3, d = -1),
-        description = "River water to subsurface volume flow rate",
     ),
     "land_surface_water__withdrawal_fraction" => ParameterMetadata(;
         lens = @optic(_.land.allocation.parameters.frac_sw_used),
