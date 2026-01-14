@@ -450,6 +450,8 @@ function update_reservoir_hq(
     (; precipitation, actevap, inflow) = boundary_vars
 
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    storage_input = max(storage_input, 0.0) # prevent negative values
+
     outflow = interpolate_linear(
         res_v.waterlevel[i],
         res_p.hq[i].H,
@@ -482,6 +484,7 @@ function update_reservoir_free_weir(
     diff_wl = has_lower_res ? res_v.waterlevel[i] - res_v.waterlevel[lo] : 0.0
 
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    storage_input = max(storage_input, 0.0) # prevent negative values
 
     if diff_wl >= 0.0
         if res_v.waterlevel[i] > res_p.threshold[i]
@@ -534,6 +537,7 @@ function update_reservoir_outflow_obs(
     (; precipitation, actevap, inflow) = boundary_vars
 
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    storage_input = max(storage_input, 0.0) # prevent negative values
     outflow = min(res_v.outflow_obs[i], storage_input)
     storage = (storage_input - outflow) * dt
     return outflow, storage
