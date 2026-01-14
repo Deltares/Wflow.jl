@@ -166,10 +166,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.mass_balance.land_water_balance.error),
         unit = Unit(; mm = 1, dt = -1),
         description = "Land water mass balance error",
+        tags = [:water_mass_balance_land_hydrology, :water_mass_balance_overland_flow],
     ),
     "land_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.land_water_balance.relative_error),
         description = "Land water mass balance relative error",
+        tags = [:water_mass_balance_land_hydrology],
     ),
     "atmosphere_air__temperature" => ParameterMetadata(;
         lens = @optic(_.land.atmospheric_forcing.temperature),
@@ -329,10 +331,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.mass_balance.routing.river_water_balance.error),
         unit = Unit(; m = 3, s = -1),
         description = "River water mass balance error",
+        tags = [:water_mass_balance_river_flow],
     ),
     "river_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.river_water_balance.relative_error),
         description = "River water mass balance relative error",
+        tags = [:water_mass_balance_river_flow],
     ),
     "land_surface_water__abstraction_volume_flux" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.allocation.variables.act_surfacewater_abst),
@@ -402,10 +406,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.mass_balance.routing.reservoir_water_balance.error),
         unit = Unit(; m = 3, s = -1),
         description = "Reservoir water mass balance error",
+        tags = [:water_mass_balance_reservoir],
     ),
     "reservoir_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.reservoir_water_balance.relative_error),
         description = "Reservoir water mass balance relative error",
+        tags = [:water_mass_balance_reservoir],
     ),
     "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth" =>
         ParameterMetadata(;
@@ -596,10 +602,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.mass_balance.routing.subsurface_water_balance.error),
         unit = Unit(; m = 3, d = -1),
         description = "Subsurface water mass balance error",
+        tags = [:water_mass_balance_subsurface_flow],
     ),
     "subsurface_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.subsurface_water_balance.relative_error),
         description = "Subsurface water mass balance relative error",
+        tags = [:water_mass_balance_subsurface_flow],
     ),
     "glacier_ice__leq_depth" => ParameterMetadata(;
         lens = @optic(_.land.glacier.variables.glacier_store),
@@ -661,6 +669,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "land_surface_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.overland_water_balance.relative_error),
         description = "Overland flow mass balance relative error",
+        tags = [:water_mass_balance_overland_flow],
     ),
     "paddy_surface_water__depth" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.variables.h),

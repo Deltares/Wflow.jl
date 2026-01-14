@@ -1,44 +1,44 @@
 ---
 title: Mass balance
+engine: julia
+execute:
+  cache: false
 ---
+
 
 ## Water mass balance
 
 ### Land Hydrology `SBM`
-| Standard Name | Description | Unit |
-| --- | -- | - |
-| `land_water_mass_balance_error__volume_flux` | Water mass balance error | mm Δt⁻¹ |
-| `land_water_mass_balance_relative_error__number` | Water mass balance relative error | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+include("../docs_utils.jl")
+generate_table(Wflow.LandHydrologySBM, :water_mass_balance_land_hydrology; relative_widths = [3, 2, 1])
+```
 
 ### River flow (including floodplains)
-| Standard Name | Description | Unit |
-| --- | -- | - |
-| `river_water_mass_balance_error__volume_flow_rate` | River water mass balance error | m³ s⁻¹ |
-| `river_water_mass_balance_relative_error__number` | River water mass balance relative error | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :water_mass_balance_river_flow; relative_widths = [3, 2, 1])
+```
 
 ### Reservoirs
-| Standard Name | Description | Unit |
-| --- | -- | - |
-| `reservoir_water_mass_balance_error__volume_flow_rate` | Reservoir water mass balance error | m³ s⁻¹ |
-| `reservoir_water_mass_balance_relative_error__number` | Reservoir water mass balance relative error | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :water_mass_balance_reservoir; relative_widths = [3, 2, 1])
+```
 
 ### Overland flow
 For kinematic wave routing and local inertial routing 1D river and 2D overland flow. For the
 local inertial routing 1D river and 2D overland flow, water balance errors are computed for
 each land cell (total storage) considering both river and overland flow.
 
-| Standard Name | Description | Unit |
-| --- | -- | - |
-| `land_surface_water_mass_balance_error__volume_flow_rate` | Overland (and river) flow water mass balance error | m³ s⁻¹ |
-| `land_surface_water_mass_balance_relative_error__number` | Overland (and river) flow water mass balance relative error | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :water_mass_balance_overland_flow; relative_widths = [3, 2, 1])
+```
 
 ### Subsurface flow
-| Standard Name | Description | Unit |
-| --- | -- | - |
-| `subsurface_water_mass_balance_error__volume_flow_rate` | Subsurface flow water mass balance error | m³ day⁻¹ |
-| `subsurface_water_mass_balance_relative_error__number` | Subsurface flow water mass balance relative error | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.LandHydrologySBM, :water_mass_balance_subsurface_flow; relative_widths = [3, 2, 1])
+```
