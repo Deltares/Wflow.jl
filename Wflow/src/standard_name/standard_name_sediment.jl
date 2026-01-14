@@ -40,12 +40,6 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Soil content large aggregates",
         tags = [:soil_erosion_input],
     ),
-    "river_bottom_and_bank_sediment__median_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.potential_erosion.parameters.d50),
-        unit = Unit(; mm = 1),
-        default = 0.1,
-        description = "Median diameter in the river bed/bank",
-    ),
     "soil_erosion__answers_overland_flow_factor" => ParameterMetadata(;
         lens = @optic(_.land.overland_flow_erosion.parameters.answers_overland_flow_factor),
         default = 0.9,
@@ -103,80 +97,10 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Answers rainfall erosion factor",
         tags = [:rainfall_erosion_input],
     ),
-    "river_bottom_and_bank_clay__mass_fraction" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.parameters.clay_fraction),
-        default = 0.15,
-        description = "River bed/bank content clay",
-    ),
-    "river_bottom_and_bank_silt__mass_fraction" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.parameters.silt_fraction),
-        default = 0.65,
-        description = "River bed/bank content silt",
-    ),
-    "river_bottom_and_bank_sand__mass_fraction" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.parameters.sand_fraction),
-        default = 0.15,
-        description = "River bed/bank content sand",
-    ),
-    "river_bottom_and_bank_gravel__mass_fraction" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.parameters.gravel_fraction),
-        default = 0.05,
-        description = "River bed/bank content gravel",
-    ),
-    "clay__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_clay),
-        unit = Unit(; μm = 1),
-        default = 2.0,
-        description = "Clay mean diameter",
-    ),
-    "silt__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_silt),
-        unit = Unit(; μm = 1),
-        default = 10.0,
-        description = "Silt mean diameter",
-    ),
-    "sand__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_sand),
-        unit = Unit(; μm = 1),
-        default = 200.0,
-        description = "Sand mean diameter",
-    ),
-    "sediment_small_aggregates__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_sagg),
-        unit = Unit(; μm = 1),
-        default = 30.0,
-        description = "Small aggregates mean diameter",
-    ),
-    "sediment_large_aggregates__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_lagg),
-        unit = Unit(; μm = 1),
-        default = 500.0,
-        description = "Large aggregates mean diameter",
-    ),
-    "gravel__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_gravel),
-        unit = Unit(; μm = 1),
-        default = 2000.0,
-        description = "Gravel mean diameter",
-    ),
     "reservoir_location__count" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.sediment_flux.parameters.reservoir_outlet),
         fill = 0,
         description = "Reservoir location ids",
-    ),
-    "reservoir_surface__area" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.parameters.reservoir_area),
-        unit = Unit(; m = 2),
-        fill = 0.0,
-        description = "Reservoir surface area",
-    ),
-    "reservoir_water_sediment__bedload_trapping_efficiency" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.sediment_flux.parameters.reservoir_trapping_efficiency
-        ),
-        default = 1.0,
-        fill = 0.0,
-        description = "Reservoir sediment bedload trapping efficiency",
     ),
     "river_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.hydrological_forcing.q_river),
@@ -256,6 +180,125 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Total large aggregates erosion",
         tags = [:soil_erosion_output],
     ),
+    # Routing
+    ## Sediment
+    ### Transport capacity overland flow
+    #### Input
+    "sediment__particle_density" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.transport_capacity.parameters.density),
+        unit = Unit(; kg = 1, m = -3),
+        default = 2650.0,
+        description = "Particle density",
+        tags = [:sediment_transport_cap_overland_input],
+    ),
+    "land_surface_sediment__median_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.transport_capacity.parameters.d50),
+        unit = Unit(; mm = 1),
+        default = 0.1,
+        description = "Particle median diameter",
+        tags = [:sediment_transport_cap_overland_input],
+    ),
+    "clay__mean_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_clay),
+        unit = Unit(; μm = 1),
+        default = 2.0,
+        description = "Clay mean diameter",
+        tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
+    ),
+    "silt__mean_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_silt),
+        unit = Unit(; μm = 1),
+        default = 10.0,
+        description = "Silt mean diameter",
+        tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
+    ),
+    "sand__mean_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_sand),
+        unit = Unit(; μm = 1),
+        default = 200.0,
+        description = "Sand mean diameter",
+        tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
+    ),
+    "sediment_small_aggregates__mean_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_sagg),
+        unit = Unit(; μm = 1),
+        default = 30.0,
+        description = "Small aggregates mean diameter",
+        tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
+    ),
+    "sediment_large_aggregates__mean_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_lagg),
+        unit = Unit(; μm = 1),
+        default = 500.0,
+        description = "Large aggregates mean diameter",
+        tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
+    ),
+    "land_surface_water_sediment__govers_transport_capacity_coefficient" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.overland_flow.transport_capacity.parameters.c_govers),
+            default = 5.0e-7,
+            description = "Govers transport capacity coefficient",
+            tags = [:sediment_transport_cap_overland_input],
+        ),
+    "land_surface_water_sediment__govers_transport_capacity_exponent" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.overland_flow.transport_capacity.parameters.n_govers),
+            default = 1.5,
+            description = "Govers transport capacity exponent",
+            tags = [:sediment_transport_cap_overland_input],
+        ),
+    ### Transport capacity river
+    #### Input
+    "river_sediment__median_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.transport_capacity.parameters.d50),
+        unit = Unit(; mm = 1),
+        default = 1.0,
+        description = "Particle mean diameter",
+        tags = [:sediment_transport_cap_river_input],
+    ),
+    "river_water_sediment__bagnold_transport_capacity_coefficient" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_bagnold),
+            default = 0.0017,
+            description = "Bagnold transport capacity coefficient",
+            tags = [:sediment_transport_cap_river_input],
+        ),
+    "river_water_sediment__bagnold_transport_capacity_exponent" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.transport_capacity.parameters.e_bagnold),
+        default = 1.8,
+        description = "Bagnold transport capacity exponent",
+        tags = [:sediment_transport_cap_river_input],
+    ),
+    "river_water_sediment__kodatie_transport_capacity_a_coefficient" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.river_flow.transport_capacity.parameters.a_kodatie),
+            default = 5.0,
+            description = "Kodatie transport capacity coefficient a",
+            tags = [:sediment_transport_cap_river_input],
+        ),
+    "river_water_sediment__kodatie_transport_capacity_b_coefficient" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.river_flow.transport_capacity.parameters.b_kodatie),
+            default = 0.6,
+            description = "Kodatie transport capacity coefficient b",
+            tags = [:sediment_transport_cap_river_input],
+        ),
+    "river_water_sediment__kodatie_transport_capacity_c_coefficient" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_kodatie),
+            default = 0.05,
+            description = "Kodatie transport capacity coefficient c",
+            tags = [:sediment_transport_cap_river_input],
+        ),
+    "river_water_sediment__kodatie_transport_capacity_d_coefficient" =>
+        ParameterMetadata(;
+            lens = @optic(_.routing.river_flow.transport_capacity.parameters.d_kodatie),
+            default = 2.0,
+            description = "Kodatie transport capacity coefficient d",
+            tags = [:sediment_transport_cap_river_input],
+        ),
+    ### Overland flow transport
+    #### Output
     "land_surface_water_sediment_transport_capacity__mass_flow_rate" =>
         ParameterMetadata(;
             lens = @optic(
@@ -263,222 +306,248 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
             ),
             unit = Unit(; t = 1, dt = -1),
             description = "Total sediment transport capacity",
+            tags = [:sediment_transport_overland_output],
         ),
     "land_surface_water_sediment__to_river_mass_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.to_river.variables.sediment_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total sediment flux flowing into the river",
+        tags = [:sediment_transport_overland_output],
     ),
     "land_surface_water_clay__to_river_mass_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.to_river.variables.clay_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Clay flux flowing into the river",
+        tags = [:sediment_transport_overland_output],
     ),
     "land_surface_water_silt__to_river_mass_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.to_river.variables.silt_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Silt flux flowing into the river",
+        tags = [:sediment_transport_overland_output],
     ),
     "land_surface_water_sand__to_river_mass_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.to_river.variables.sand_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Sand flux flowing into the river",
+        tags = [:sediment_transport_overland_output],
     ),
     "land_surface_water_small_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
             lens = @optic(_.routing.overland_flow.to_river.variables.sagg_rate),
             unit = Unit(; t = 1, dt = -1),
             description = "Small aggregates flux flowing into the river",
+            tags = [:sediment_transport_overland_output],
         ),
     "land_surface_water_large_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
             lens = @optic(_.routing.overland_flow.to_river.variables.lagg_rate),
             unit = Unit(; t = 1, dt = -1),
             description = "Large aggregates flux flowing into the river",
+            tags = [:sediment_transport_overland_output],
         ),
     "land_surface_water_sediment__mass_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.overland_flow.sediment_flux.variables.sediment_rate),
         unit = Unit(; t = 1, dt = -1),
-        description = "Overland flow sediment flux",
+        description = "Total sediment flux",
+        tags = [:sediment_transport_overland_output],
     ),
+    ### River erosion
+    #### Input
+    "river_bottom_and_bank_sediment__median_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.potential_erosion.parameters.d50),
+        unit = Unit(; mm = 1),
+        default = 0.1,
+        description = "Median diameter in the river bed/bank",
+        tags = [:sediment_river_erosion_input],
+    ),
+    ### River transport
+    #### Input
+    "reservoir_surface__area" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.parameters.reservoir_area),
+        unit = Unit(; m = 2),
+        fill = 0.0,
+        description = "Reservoir surface area",
+        tags = [:sediment_river_transport_input],
+    ),
+    "reservoir_water_sediment__bedload_trapping_efficiency" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.sediment_flux.parameters.reservoir_trapping_efficiency
+        ),
+        default = 1.0,
+        fill = 0.0,
+        description = "Reservoir sediment bedload trapping efficiency",
+        tags = [:sediment_river_transport_input],
+    ),
+    "river_bottom_and_bank_clay__mass_fraction" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.parameters.clay_fraction),
+        default = 0.15,
+        description = "River bed/bank content clay",
+        tags = [:sediment_river_transport_input],
+    ),
+    "river_bottom_and_bank_silt__mass_fraction" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.parameters.silt_fraction),
+        default = 0.65,
+        description = "River bed/bank content silt",
+        tags = [:sediment_river_transport_input],
+    ),
+    "river_bottom_and_bank_sand__mass_fraction" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.parameters.sand_fraction),
+        default = 0.15,
+        description = "River bed/bank content sand",
+        tags = [:sediment_river_transport_input],
+    ),
+    "river_bottom_and_bank_gravel__mass_fraction" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.parameters.gravel_fraction),
+        default = 0.05,
+        description = "River bed/bank content gravel",
+        tags = [:sediment_river_transport_input],
+    ),
+    "gravel__mean_diameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_gravel),
+        unit = Unit(; μm = 1),
+        default = 2000.0,
+        description = "Gravel mean diameter",
+        tags = [:sediment_river_transport_input],
+    ),
+    #### States
+    "river_bed_clay__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_clay),
+        unit = Unit(; t = 1),
+        description = "Clay stored on the river bed after deposition",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_bed_silt__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_silt),
+        unit = Unit(; t = 1),
+        description = "Silt stored on the river bed after deposition",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_bed_sand__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_sand),
+        unit = Unit(; t = 1),
+        description = "Sand stored on the river bed after deposition",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_bed_small_aggregates__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_sagg),
+        unit = Unit(; t = 1),
+        description = "Small aggregates stored on the river bed after deposition",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_bed_large_aggregates__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_lagg),
+        unit = Unit(; t = 1),
+        description = "Large aggregates stored on the river bed after deposition",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_bed_gravel__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_gravel),
+        unit = Unit(; t = 1),
+        description = "Gravel stored on the river bed after deposition",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_clay__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_clay),
+        unit = Unit(; t = 1),
+        description = "Clay left in cell",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_silt__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_silt),
+        unit = Unit(; t = 1),
+        description = "Silt left in cell",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_sand__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_sand),
+        unit = Unit(; t = 1),
+        description = "Sand left in cell",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_small_aggregates__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_sagg),
+        unit = Unit(; t = 1),
+        description = "Small aggregates left in cell",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_large_aggregates__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_lagg),
+        unit = Unit(; t = 1),
+        description = "Large aggregates left in cell",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_gravel__mass" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_gravel),
+        unit = Unit(; t = 1),
+        description = "Gravel left in cell",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_clay__mass_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.clay_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Sediment flux (clay)",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_silt__mass_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.silt_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Sediment flux (silt)",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_sand__mass_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.sand_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Sediment flux (sand)",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_small_aggregates__mass_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Sediment flux (small aggregates)",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_large_aggregates__mass_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Sediment flux (large aggregates)",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    "river_water_gravel__mass_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.gravel_rate),
+        unit = Unit(; t = 1, dt = -1),
+        description = "Sediment flux (gravel)",
+        tags = [:sediment_river_transport_state, :sediment_river_transport_output],
+    ),
+    #### Output
     "river_water_sediment__bedload_mass_concentration" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.concentrations.variables.bed),
         unit = Unit(; g = 1, m = -3),
-        description = "Bedload sediment concentration in river",
+        description = "Suspended sediment concentration in the river",
+        tags = [:sediment_river_transport_output],
     ),
     "river_water_sediment__suspended_mass_concentration" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.concentrations.variables.suspended),
         unit = Unit(; g = 1, m = -3),
         description = "Suspended sediment concentration in river",
+        tags = [:sediment_river_transport_output],
     ),
     "river_water_sediment__mass_concentration" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.concentrations.variables.total),
         unit = Unit(; g = 1, m = -3),
-        description = "Total sediment concentration in river",
-    ),
-    "river_water_clay__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_clay),
-        unit = Unit(; t = 1),
-        description = "Clay mass in river water",
-    ),
-    "river_bed_clay__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_clay),
-        unit = Unit(; t = 1),
-        description = "Clay mass in river bed",
-    ),
-    "river_water_gravel__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_gravel),
-        unit = Unit(; t = 1),
-        description = "Gravel mass in river water",
-    ),
-    "river_bed_gravel__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_gravel),
-        unit = Unit(; t = 1),
-        description = "Gravel mass in river bed",
-    ),
-    "river_water_large_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_lagg),
-        unit = Unit(; t = 1),
-        description = "Large aggregates mass in river water",
-    ),
-    "river_bed_large_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_lagg),
-        unit = Unit(; t = 1),
-        description = "Large aggregates mass in river bed",
-    ),
-    "river_water_clay__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.clay_rate),
-        unit = Unit(; t = 1, dt = -1),
-        description = "Clay mass flow rate in river",
-    ),
-    "river_water_gravel__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.gravel_rate),
-        unit = Unit(; t = 1, dt = -1),
-        description = "Gravel mass flow rate in river",
-    ),
-    "river_water_large_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg_rate),
-        unit = Unit(; t = 1, dt = -1),
-        description = "Large aggregates mass flow rate in river",
-    ),
-    "river_water_small_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg_rate),
-        unit = Unit(; t = 1, dt = -1),
-        description = "Small aggregates mass flow rate in river",
-    ),
-    "river_water_sand__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.sand_rate),
-        unit = Unit(; t = 1, dt = -1),
-        description = "Sand mass flow rate in river",
-    ),
-    "river_water_silt__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.silt_rate),
-        unit = Unit(; t = 1, dt = -1),
-        description = "Silt mass flow rate in river",
-    ),
-    "river_water_small_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_sagg),
-        unit = Unit(; t = 1),
-        description = "Small aggregates mass in river water",
-    ),
-    "river_bed_small_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_sagg),
-        unit = Unit(; t = 1),
-        description = "Small aggregates mass in river bed",
-    ),
-    "river_water_sand__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_sand),
-        unit = Unit(; t = 1),
-        description = "Sand mass in river water",
-    ),
-    "river_bed_sand__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_sand),
-        unit = Unit(; t = 1),
-        description = "Sand mass in river bed",
-    ),
-    "river_water_silt__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_silt),
-        unit = Unit(; t = 1),
-        description = "Silt mass in river water",
-    ),
-    "river_bed_silt__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_silt),
-        unit = Unit(; t = 1),
-        description = "Silt mass in river bed",
+        description = "Total sediment concentration in the river",
+        tags = [:sediment_river_transport_output],
     ),
     "river_water_sediment_erosion__mass" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.sediment_flux.variables.erosion),
         unit = Unit(; t = 1),
-        description = "Sediment erosion mass in river",
+        description = "Total sediment erosion (from store + direct river bed/bank)",
+        tags = [:sediment_river_transport_output],
     ),
     "river_water_sediment_deposition__mass" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.sediment_flux.variables.deposition),
         unit = Unit(; t = 1),
-        description = "Sediment deposition mass in river",
+        description = "Total sediment deposition",
+        tags = [:sediment_river_transport_output],
     ),
-    "sediment__particle_density" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.transport_capacity.parameters.density),
-        unit = Unit(; kg = 1, m = -3),
-        default = 2650.0,
-        description = "Particle density of sediment",
-    ),
-    "land_surface_sediment__median_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.transport_capacity.parameters.d50),
-        unit = Unit(; mm = 1),
-        default = 0.1,
-        description = "Median diameter of land surface sediment",
-    ),
-    "land_surface_water_sediment__govers_transport_capacity_coefficient" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.transport_capacity.parameters.c_govers),
-            default = 0.0000005,
-            description = "Govers transport capacity coefficient for overland flow",
-        ),
-    "land_surface_water_sediment__govers_transport_capacity_exponent" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.transport_capacity.parameters.n_govers),
-            default = 1.5,
-            description = "Govers transport capacity exponent for overland flow",
-        ),
-    "river_sediment__median_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.transport_capacity.parameters.d50),
-        unit = Unit(; mm = 1),
-        default = 1.0,
-        description = "Median diameter of river sediment",
-    ),
-    "river_water_sediment__bagnold_transport_capacity_coefficient" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_bagnold),
-            default = 0.0017,
-            description = "Bagnold transport capacity coefficient for river flow",
-        ),
-    "river_water_sediment__bagnold_transport_capacity_exponent" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.transport_capacity.parameters.e_bagnold),
-        default = 1.8,
-        description = "Bagnold transport capacity exponent for river flow",
-    ),
-    "river_water_sediment__kodatie_transport_capacity_a_coefficient" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.a_kodatie),
-            default = 5.0,
-            description = "Kodatie transport capacity coefficient A for river flow",
-        ),
-    "river_water_sediment__kodatie_transport_capacity_b_coefficient" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.b_kodatie),
-            default = 0.6,
-            description = "Kodatie transport capacity coefficient B for river flow",
-        ),
-    "river_water_sediment__kodatie_transport_capacity_c_coefficient" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_kodatie),
-            default = 0.05,
-            description = "Kodatie transport capacity coefficient C for river flow",
-        ),
-    "river_water_sediment__kodatie_transport_capacity_d_coefficient" =>
-        ParameterMetadata(;
-            lens = @optic(_.routing.river_flow.transport_capacity.parameters.d_kodatie),
-            default = 2.0,
-            description = "Kodatie transport capacity coefficient D for river flow",
-        ),
 )

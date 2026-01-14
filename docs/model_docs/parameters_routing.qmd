@@ -227,121 +227,49 @@ generate_table(Wflow.Routing, :groundwater_constant_head_boundary_input; relativ
 ```
 
 ## Sediment
-### Transport capacity Overland flow
+### Transport capacity overland flow
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `sediment__particle_density` | Particle density | kg m⁻³ | 2650.0 |
-| `land_surface_sediment__median_diameter` | Particle median diameter | mm | 0.1 |
-| `clay__mean_diameter` | Clay mean diameter | μm | 2.0 |
-| `silt__mean_diameter` | Silt mean diameter | μm | 10.0 |
-| `sand__mean_diameter` | Sand mean diameter | μm | 200.0 |
-| `sediment_small_aggregates__mean_diameter` | Small aggregates mean diameter | μm | 30.0 |
-| `sediment_large_aggregates__mean_diameter` | Large aggregates mean diameter | μm | 500.0 |
-| `land_surface_water_sediment__govers_transport_capacity_coefficient` | Govers transport capacity coefficient | - | 0.000505 |
-| `land_surface_water_sediment__govers_transport_capacity_exponent` | Govers transport capacity exponent | - | 4.27 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :sediment_transport_cap_overland_input; relative_widths = [6, 4, 2, 2])
+```
 
-### Transport capacity River
+### Transport capacity river
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `river_sediment__median_diameter` | Particle median diameter | mm | 0.1 |
-| `river_water_sediment__bagnold_transport_capacity_coefficient` | Bagnold transport capacity coefficient | - | - |
-| `river_water_sediment__bagnold_transport_capacity_exponent` | Bagnold transport capacity exponent | - | - |
-| `river_water_sediment__kodatie_transport_capacity_a_coefficient` | Kodatie transport capacity coefficient a | - | - |
-| `river_water_sediment__kodatie_transport_capacity_b_coefficient` | Kodatie transport capacity coefficient b | - | - |
-| `river_water_sediment__kodatie_transport_capacity_c_coefficient` | Kodatie transport capacity coefficient c | - | - |
-| `river_water_sediment__kodatie_transport_capacity_d_coefficient` | Kodatie transport capacity coefficient d | - | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :sediment_transport_cap_river_input; relative_widths = [6, 4, 2, 2])
+```
 
 ### Overland flow transport
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `land_surface_water_sediment_transport_capacity__mass_flow_rate` | Total sediment transport capacity | ton Δt⁻¹ |
-| `land_surface_water_clay_transport_capacity__mass_flow_rate` | Clay transport capacity | ton Δt⁻¹ |
-| `land_surface_water_sediment__to_river_mass_flow_rate` | Total sediment flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_clay__to_river_mass_flow_rate` | Clay flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_silt__to_river_mass_flow_rate` | Silt flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_sand__to_river_mass_flow_rate` | Sand flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_small_aggregates__to_river_mass_flow_rate` | Small aggregates flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_large_aggregates__to_river_mass_flow_rate` | Large aggregates flux flowing into the river | ton Δt⁻¹ |
-| `land_surface_water_sediment__mass_flow_rate` | Total sediment flux | ton Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :sediment_transport_overland_output; relative_widths = [3, 3, 1])
+```
 
 ### River erosion
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `river_bottom_and_bank_sediment__median_diameter` | Median diameter in the river bed/bank | mm | 0.1
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :sediment_river_erosion_input; relative_widths = [6, 4, 2, 2])
+```
 
 ### River transport
 #### Input
-| Standard Name | Description | Unit | Default |
-| ------ | ---- | -- | -- |
-| `reservoir_surface__area` | Reservoir surface area | m² | - |
-| `reservoir_water_sediment__bedload_trapping_efficiency` | Reservoir sediment bedload trapping efficiency | - | 1.0 |
-| `river_bottom_and_bank_clay__mass_fraction` | River bed/bank content clay | - | 0.15 |
-| `river_bottom_and_bank_silt__mass_fraction` | River bed/bank content silt | - | 0.65 |
-| `river_bottom_and_bank_sand__mass_fraction` | River bed/bank content sand | - | 0.15 |
-| `river_bottom_and_bank_gravel__mass_fraction` | River bed/bank content gravel | - | 0.05 |
-| `clay__mean_diameter` | Clay mean diameter | µm | 2.0 |
-| `silt__mean_diameter` | Silt mean diameter | µm | 10.0 |
-| `sand__mean_diameter` | Sand mean diameter | µm | 200.0 |
-| `sediment_small_aggregates__mean_diameter` | Small aggregates mean diameter | µm | 30.0 |
-| `sediment_large_aggregates__mean_diameter` | Large aggregates mean diameter | µm | 500.0 |
-| `gravel__mean_diameter` | Gravel mean diameter | µm | 2000.0 |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :sediment_river_transport_input; relative_widths = [6, 4, 2, 2])
+```
 
 #### States
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton |
-| `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton |
-| `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton |
-| `river_bed_small_aggregates__mass` | Small aggregates stored on the river bed after deposition | ton |
-| `river_bed_large_aggregates__mass` | Large aggregates stored on the river bed after deposition | ton |
-| `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton |
-| `river_water_clay__mass` | Clay left in cell | ton |
-| `river_water_silt__mass` | Silt left in cell | ton |
-| `river_water_sand__mass` | Sand left in cell | ton |
-| `river_water_small_aggregates__mass` | Small aggregates left in cell | ton |
-| `river_water_large_aggregates__mass` | Large aggregates left in cell | ton |
-| `river_water_gravel__mass` | Gravel left in cell | ton? |
-| `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
-| `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
-| `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
-| `river_water_small_aggregates__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
-| `river_water_large_aggregates__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
-| `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :sediment_river_transport_state; relative_widths = [3, 3, 1])
+```
 
 #### Output
-| Standard Name | Description | Unit |
-| --- | --- | - |
-| `river_bed_clay__mass` | Clay stored on the river bed after deposition | ton |
-| `river_bed_silt__mass` | Silt stored on the river bed after deposition | ton |
-| `river_bed_sand__mass` | Sand stored on the river bed after deposition | ton |
-| `river_bed_small_aggregates__mass` | Small aggregates stored on the river bed after deposition | ton |
-| `river_bed_large_aggregates__mass` | Large aggregates stored on the river bed after deposition | ton |
-| `river_bed_gravel__mass` | Gravel stored on the river bed after deposition | ton |
-| `river_water_clay__mass` | Clay left in cell | ton |
-| `river_water_silt__mass` | Silt left in cell | ton |
-| `river_water_sand__mass` | Sand left in cell | ton |
-| `river_water_small_aggregates__mass` | Small aggregates left in cell | ton |
-| `river_water_large_aggregates__mass` | Large aggregates left in cell | ton |
-| `river_water_gravel__mass` | Gravel left in cell | ton? |
-| `river_water_clay__mass_flow_rate` | Sediment flux (clay) | ton Δt⁻¹ |
-| `river_water_silt__mass_flow_rate` | Sediment flux (silt) | ton Δt⁻¹ |
-| `river_water_sand__mass_flow_rate` | Sediment flux (sand) | ton Δt⁻¹ |
-| `river_water_small_aggregates__mass_flow_rate` | Sediment flux (small aggregates) | ton Δt⁻¹ |
-| `river_water_large_aggregates__mass_flow_rate` | Sediment flux (large aggregates) | ton Δt⁻¹ |
-| `river_water_gravel__mass_flow_rate` | Sediment flux (gravel) | ton Δt⁻¹ |
-| `river_water_sediment__bedload_mass_concentration` | Bed load sediment concentration in the river | g m⁻³ |
-| `river_water_sediment__suspended_mass_concentration` | Suspended sediemnt concentration in the river | g m⁻³ |
-| `river_water_sediment__mass_concentration` | Total sediment concentration in the river | g m⁻³ |
-| `river_water_sediment_erosion__mass` | Total sediment erosion (from store + direct river bed/bank) | ton Δt⁻¹ |
-| `river_water_sediment_deposition__mass` | Total sediment deposition | ton Δt⁻¹ |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+generate_table(Wflow.SoilLoss, :sediment_river_transport_output; relative_widths = [3, 3, 1])
+```
