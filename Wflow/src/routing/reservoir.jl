@@ -418,7 +418,7 @@ function update_reservoir_modified_puls(
     (; precipitation, actevap, inflow) = boundary_vars
 
     res_factor = res_p.area[i] / (dt * pow(res_p.b[i], 0.5))
-    si_factor = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    si_factor = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
     # Adjust si_factor for reservoir threshold != 0
     si_factor_adj = si_factor - res_p.area[i] * res_p.threshold[i] / dt
     # Calculate the new reservoir outflow/waterlevel/storage
@@ -449,8 +449,7 @@ function update_reservoir_hq(
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
-    storage_input = max(storage_input, 0.0) # prevent negative values
+    storage_input = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
 
     outflow = interpolate_linear(
         res_v.waterlevel[i],
@@ -483,8 +482,7 @@ function update_reservoir_free_weir(
     has_lower_res = lo != 0
     diff_wl = has_lower_res ? res_v.waterlevel[i] - res_v.waterlevel[lo] : 0.0
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
-    storage_input = max(storage_input, 0.0) # prevent negative values
+    storage_input = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
 
     if diff_wl >= 0.0
         if res_v.waterlevel[i] > res_p.threshold[i]
@@ -536,8 +534,7 @@ function update_reservoir_outflow_obs(
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
-    storage_input = max(storage_input, 0.0) # prevent negative values
+    storage_input = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
     outflow = min(res_v.outflow_obs[i], storage_input)
     storage = (storage_input - outflow) * dt
     return outflow, storage
