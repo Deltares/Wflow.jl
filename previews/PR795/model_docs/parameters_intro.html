@@ -58,7 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
@@ -106,6 +106,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
@@ -591,36 +594,46 @@ window.Quarto = {
 <section id="input-generic" class="level2">
 <h2 class="anchored" data-anchor-id="input-generic">Generic input maps</h2>
 <p>The table below lists static input maps that are not directly part of wflow models and are required to run wflow.</p>
-<table class="table-striped table-hover caption-top table">
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Domain, <span class="op">:</span>generic_input_map; relative_widths <span class="op">=</span> [<span class="fl">4</span>, <span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 50%">
+<col style="width: 10%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default value</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>basin__local_drain_direction</code></td>
-<td>Local drain direction (1-9)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subbasin_location__count</code></td>
+<td style="text-align: left;">Subbasin ids</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>subbasin_location__count</code></td>
-<td>Subbasin ids</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>basin__local_drain_direction</code></td>
+<td style="text-align: left;">Local drain direction (1-9)</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>river_location__mask</code></td>
-<td>River mask (0-1)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_location__mask</code></td>
+<td style="text-align: left;">River mask (0-1)</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 <p>For reservoir generic input see <a href="../model_docs/parameters_routing.html#input-generic-reservoir">reservoir-input</a>.</p>
 
 

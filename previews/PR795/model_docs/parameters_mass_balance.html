@@ -20,10 +20,45 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
@@ -71,6 +106,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
@@ -519,149 +557,190 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="water-mass-balance">Water mass balance</h2>
 <section id="land-hydrology-sbm" class="level3">
 <h3 class="anchored" data-anchor-id="land-hydrology-sbm">Land Hydrology <code>SBM</code></h3>
-<table class="table-striped table-hover caption-top table">
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_land_hydrology; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 33%">
 <col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_water_mass_balance_error__volume_flux</code></td>
-<td>Water mass balance error</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_water_mass_balance_error__volume_flux</code></td>
+<td style="text-align: left;">Land water mass balance error</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_water_mass_balance_relative_error__number</code></td>
-<td>Water mass balance relative error</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_water_mass_balance_relative_error__number</code></td>
+<td style="text-align: left;">Land water mass balance relative error</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="river-flow-including-floodplains" class="level3">
 <h3 class="anchored" data-anchor-id="river-flow-including-floodplains">River flow (including floodplains)</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_river_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 33%">
 <col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water_mass_balance_error__volume_flow_rate</code></td>
-<td>River water mass balance error</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_mass_balance_error__volume_flow_rate</code></td>
+<td style="text-align: left;">River water mass balance error</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water_mass_balance_relative_error__number</code></td>
-<td>River water mass balance relative error</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_mass_balance_relative_error__number</code></td>
+<td style="text-align: left;">River water mass balance relative error</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="reservoirs" class="level3">
 <h3 class="anchored" data-anchor-id="reservoirs">Reservoirs</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="6" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_reservoir; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 33%">
 <col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>reservoir_water_mass_balance_error__volume_flow_rate</code></td>
-<td>Reservoir water mass balance error</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water_mass_balance_error__volume_flow_rate</code></td>
+<td style="text-align: left;">Reservoir water mass balance error</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water_mass_balance_relative_error__number</code></td>
-<td>Reservoir water mass balance relative error</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water_mass_balance_relative_error__number</code></td>
+<td style="text-align: left;">Reservoir water mass balance relative error</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="overland-flow" class="level3">
 <h3 class="anchored" data-anchor-id="overland-flow">Overland flow</h3>
 <p>For kinematic wave routing and local inertial routing 1D river and 2D overland flow. For the local inertial routing 1D river and 2D overland flow, water balance errors are computed for each land cell (total storage) considering both river and overland flow.</p>
-<table class="table-striped table-hover caption-top table">
+<div id="8" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_overland_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 33%">
 <col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water_mass_balance_error__volume_flow_rate</code></td>
-<td>Overland (and river) flow water mass balance error</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_water_mass_balance_error__volume_flux</code></td>
+<td style="text-align: left;">Land water mass balance error</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water_mass_balance_relative_error__number</code></td>
-<td>Overland (and river) flow water mass balance relative error</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water_mass_balance_relative_error__number</code></td>
+<td style="text-align: left;">Overland flow mass balance relative error</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="subsurface-flow" class="level3">
 <h3 class="anchored" data-anchor-id="subsurface-flow">Subsurface flow</h3>
-<table class="table-striped table-hover caption-top table">
+<div id="10" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_subsurface_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 33%">
 <col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>subsurface_water_mass_balance_error__volume_flow_rate</code></td>
-<td>Subsurface flow water mass balance error</td>
-<td>m³ day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water_mass_balance_error__volume_flow_rate</code></td>
+<td style="text-align: left;">Subsurface water mass balance error</td>
+<td style="text-align: left;">m³ day⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>subsurface_water_mass_balance_relative_error__number</code></td>
-<td>Subsurface flow water mass balance relative error</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_water_mass_balance_relative_error__number</code></td>
+<td style="text-align: left;">Subsurface water mass balance relative error</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 
 
 </section>
