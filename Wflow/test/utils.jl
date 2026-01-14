@@ -135,3 +135,15 @@ end
         @optic(_.land.glacier.variables.glacier_store)
     ])
 end
+
+@testitem "Variable tags" begin
+    for (map_name, map) in Wflow.standard_name_maps
+        @testset "Check that each $map_name variable has at least one tag" begin
+            vars_without_tags = String[]
+            for (name, metadata) in map
+                isempty(metadata.tags) && push!(vars_without_tags, name)
+            end
+            @test isempty(vars_without_tags)
+        end
+    end
+end

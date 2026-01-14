@@ -344,45 +344,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Actual surface water abstraction",
         tags = [:demand_allocation_output],
     ),
-    "reservoir_water__target_min_volume_fraction" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetminfrac
-        ),
-        default = 0.1,
-        description = "Target minimum reservoir volume fraction",
-    ),
-    "reservoir_water__target_full_volume_fraction" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetfullfrac
-        ),
-        default = 0.8,
-        description = "Target full reservoir volume fraction",
-    ),
-    "reservoir_water_demand__required_downstream_volume_flow_rate" =>
-        ParameterMetadata(;
-            lens = @optic(
-                _.routing.river_flow.boundary_conditions.reservoir.parameters.demand
-            ),
-            unit = Unit(; m = 3, s = -1),
-            default = 0.0,
-            description = "Required downstream flow rate",
-        ),
-    "reservoir_water_release_below_spillway__max_volume_flow_rate" =>
-        ParameterMetadata(;
-            lens = @optic(
-                _.routing.river_flow.boundary_conditions.reservoir.parameters.maxrelease
-            ),
-            unit = Unit(; m = 3, s = -1),
-            default = 0.0,
-            description = "Maximum release below spillway",
-        ),
-    "reservoir_water__outgoing_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_av
-        ),
-        unit = Unit(; m = 3, s = -1),
-        description = "Reservoir outgoing flow rate",
-    ),
     "reservoir_water__outgoing_observed_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
             _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_obs
@@ -665,6 +626,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.mass_balance.routing.overland_water_balance.error),
         unit = Unit(; m = 3, s = -1),
         description = "Overland flow mass balance error",
+        tags = [:water_mass_balance_overland_flow],
     ),
     "land_surface_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.overland_water_balance.relative_error),
