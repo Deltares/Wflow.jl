@@ -8,7 +8,7 @@ abstract type AbstractSoilModel end
     # Unsaturated store capacity [mm]
     ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm]
-    ustorelayerdepth::Vector{SVector{N, Float64}} = zeros(n)
+    ustorelayerdepth::Vector{SVector{N, Float64}}
     # Thickness of unsaturated zone, per layer [mm]
     ustorelayerthickness::Vector{SVector{N, Float64}}
     # Saturated store [mm]

@@ -26,8 +26,10 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     if dt >= Hour(23)
         interception =
             GashInterceptionModel(dataset, config, indices, vegetation_parameters)
+        @info "Using the Gash interception model since dt >= 23 hours."
     else
         interception = RutterInterceptionModel(vegetation_parameters, n)
+        @info "Using the modified Rutter interception model since dt < 23 hours."
     end
 
     do_snow = config.model.snow__flag

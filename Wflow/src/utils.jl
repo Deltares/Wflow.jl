@@ -24,8 +24,8 @@ Sigmoid "S"-shaped curve.
 
 # Arguments
 - `x::Real`: input
-- `a::Real`: determines the centre level
-- `b::Real`: determines the amplitude of the curve
+- `a::Real`: determines the center level
+- `b::Real`: determines the amplitude of the curve (range: (0, b⁻¹))
 - `c::Real`: determines the steepness or "stepwiseness" of the curve.
              The higher c the sharper the function. A negative c reverses the function.
 """
