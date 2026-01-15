@@ -497,7 +497,8 @@ function compute_flow_balance!(
     for i in eachindex(zi_prev)
         total_in = ssfin[i] * f_conv
         total_out = ssf[i] * f_conv + exfiltwater[i] * area[i]
-        total_in, total_out = add_inflow(total_in, total_out, recharge[i] * flow_length[i])
+        total_in, total_out =
+            add_inflow(total_in, total_out, f_conv * recharge[i] * flow_length[i])
         storage_rate = specific_yield_dyn[i] * (zi_prev[i] - zi[i]) * area[i]
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
