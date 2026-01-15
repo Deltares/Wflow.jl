@@ -950,7 +950,7 @@
     "href": "changelog.html#unreleased",
     "title": "Changelog",
     "section": "Unreleased",
-    "text": "Unreleased\n\nFixed\n\nFixed issue with lake rating curve type 2 (H-Q equation) where the outflow could become negative for very low lake storage values, due to floating point precision errors. The storage_input variable is now limited to a minimum of zero.",
+    "text": "Unreleased\n\nFixed\n\nFixed issue with where the reservoir outflow could become negative for very low reservoir storage values, due to floating point precision errors. The storage_input variable is now limited to a minimum of zero.",
     "crumbs": [
       "Home",
       "Changelog"
