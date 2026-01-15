@@ -4,6 +4,7 @@
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     (; domain) = model
@@ -95,7 +96,8 @@
             "land_drain_water__to_subsurface_volume_flow_rate",
         )
         model = Wflow.Model(config)
-        @test collect(keys(model.routing.subsurface_flow.boundaries)) == [:recharge, :river]
+        @test typeof.(Wflow.get_boundaries(model.routing.subsurface_flow.boundaries)) ==
+              (Wflow.Recharge, Wflow.GwfRiver, Nothing, Nothing)
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -108,6 +110,7 @@ end
     # test local-inertial option for river flow routing
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.river_routing = "local_inertial"
 
     config.input.static["river_bank_water__elevation"] = "bankfull_elevation"
@@ -215,6 +218,7 @@ end
 @testitem "overland flow warm start (kinematic wave)" begin
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.cold_start__flag = false
 
     model = Wflow.Model(config)
@@ -229,6 +233,7 @@ end
 @testitem "run wflow sbm_gwf" begin
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.time.endtime = "2000-06-04"
     Wflow.run(config)
 end
@@ -236,6 +241,7 @@ end
 @testitem "water balance sbm with groundwater" begin
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; land_water_balance, routing) = model.mass_balance

@@ -43,28 +43,35 @@ function rainfall_erosion_eurosem(
 )
     # Precipitation expressed in unit expected by model
     rainfall_intensity = from_SI(precip, MM_PER_HOUR)
-    # Kinetic energy of direct throughfall [J m⁻² mm⁻¹]
+    # Kinetic energy of direct throughfall
     # E_kin_direct = max(11.87 + 8.73 * log10(max(0.0001, rainfall_intensity)),0.0) #basis used in USLE
+    # [J m⁻² mm⁻¹]
     E_kin_direct = max(8.95 + 8.44 * log10(max(0.0001, rainfall_intensity)), 0.0) #variant used in most distributed models
-    # Kinetic energy of leaf drainage [J m⁻² mm⁻¹]
+    # Kinetic energy of leaf drainage
     pheff = 0.5 * canopyheight
+    # [J m⁻² mm⁻¹]
     E_kin_leaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
 
-    # Depths of rainfall (total, leaf drainage, direct) [mm]
+    # Depths of rainfall (total, leaf drainage, direct)
+    # [mm] = [mm h⁻¹] * [h]
     rainfall_depth_total = rainfall_intensity * from_SI(dt, HOUR)
+    # [mm] = [mm] * [-] * [-]
     rainfall_depth_leaf = rainfall_depth_total * 0.1 * canopygapfraction # stemflow
+    # [mm]
     intercepted = from_SI(interception * dt, MM)
+    # [mm]
     rainfall_depth_direct =
         max(rainfall_depth_total - rainfall_depth_leaf - intercepted, 0.0) # throughfall
 
-    # Total kinetic energy by rainfall [J m⁻²]
+    # Total kinetic energy by rainfall
+    # [J m⁻²] = [mm] * [J m⁻² mm⁻¹] + [mm] * [J m⁻² mm⁻¹]
     E_kin_tot = rainfall_depth_direct * E_kin_direct + rainfall_depth_leaf * E_kin_leaf
-    # Rainfall / splash erosion [g m⁻²]
-    # [kg] = [m²] * [kg J⁻¹] * [J m⁻²] * exp([m⁻¹] * [m])
+    # [kg s⁻¹] = [m²] * [kg J⁻¹] * [J m⁻²] * exp([m⁻¹] * [m]) / [s]
     rainfall_erosion =
-        area * soil_detachability * E_kin_tot * exp(-eurosem_exponent * waterlevel)
+        area * soil_detachability * E_kin_tot * exp(-eurosem_exponent * waterlevel) / dt
 
     # Remove the impervious area
+    # [kg s⁻¹] = [kg s⁻¹] * [-]
     rainfall_erosion *= 1.0 - soilcover_fraction
     return rainfall_erosion
 end
@@ -109,12 +116,6 @@ function rainfall_erosion_answers(
     return to_SI(rainfall_erosion, KG_PER_MIN)
 end
 
-"""T
-he sine of the slope in radians;
-sin(arctan(x)) = x / √(1 + x²)
-"""
-sin_slope(slope) = slope / sqrt(1 + slope^2)
-
 """
     overland_flow_erosion_answers(
         overland_flow,
@@ -132,7 +133,6 @@ Overland flow erosion model based on ANSWERS.
 
 # Arguments
 - `overland_flow` (overland flow [m³ s⁻¹])
-- `waterlevel` (water level [m])
 - `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha-1 h-1 MJ-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
 - `answers_overland_flow_factor` (ANSWERS overland flow factor [-], treated as unitless but could have units)
@@ -144,12 +144,12 @@ Overland flow erosion model based on ANSWERS.
 - `overland_flow_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
 """
 function overland_flow_erosion_answers(
-    overland_flow,
-    usle_k,
-    usle_c,
-    answers_overland_flow_factor,
-    slope,
-    area,
+    overland_flow::Float64,
+    usle_k::Float64,
+    usle_c::Float64,
+    answers_overland_flow_factor::Float64,
+    slope::Float64,
+    area::Float64,
 )
     # Overland flow rate [m² min⁻¹]
     qr_land = from_SI(overland_flow, M3_PER_MIN) / sqrt(area)
@@ -240,17 +240,24 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 - `dt` (timestep [seconds])
 
 # Output
-- `bed` (potential river erosion [tdt⁻¹ => kg s⁻¹])
-- `bank` (potential bank erosion [tdt⁻¹ => kg s⁻¹])
+- `bed` (potential river erosion [t dt⁻¹ => kg s⁻¹])
+- `bank` (potential bank erosion [t dt⁻¹ => kg s⁻¹])
 """
-function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
+function river_erosion_julian_torres(
+    waterlevel::Float64,
+    d50::Float64,
+    width::Float64,
+    length::Float64,
+    slope::Float64,
+    dt::Float64,
+)
     if waterlevel > 0.0
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
-        E_ = (2.65 - 1) * g_gravity
-        E = d50 * cbrt(E_) * 1e-4
+        E_ = (2.65 - 1) * GRAVITATIONAL_ACCELERATION
+        E = 10 * d50 * cbrt(E_)
         TCrbed =
             E_ *
-            (1e3 * d50) *
+            d50 *
             (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E)))
         TCrbank = TCrbed
         # kd from Hanson & Simon 2001
@@ -264,9 +271,15 @@ function river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
         SFbank = exp(-3.23 * log10(width / waterlevel + 3) + 6.146)
         # Effective shear stress on river bed and banks [N/m2]
         TEffbank =
-            g_gravity * hydrad * slope * SFbank / 100 * (1 + width / (2 * waterlevel))
+            1000 * GRAVITATIONAL_ACCELERATION * hydrad * slope * SFbank / 100 *
+            (1 + width / (2 * waterlevel))
         TEffbed =
-            g_gravity * hydrad * slope * (1 - SFbank / 100) * (1 + 2 * waterlevel / width)
+            1000 *
+            GRAVITATIONAL_ACCELERATION *
+            hydrad *
+            slope *
+            (1 - SFbank / 100) *
+            (1 + 2 * waterlevel / width)
 
         # Potential erosion rates of the bed and bank [t/cell/timestep]
         #(assuming only one bank is eroding)

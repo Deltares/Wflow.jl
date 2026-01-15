@@ -1,5 +1,4 @@
 abstract type AbstractIrrigationModel end
-abstract type AbstractAllocationModel end
 abstract type AbstractIrrigationDemandModel <: AbstractDemandModel end
 
 struct NoIrrigationPaddy <: AbstractIrrigationModel

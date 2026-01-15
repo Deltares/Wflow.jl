@@ -29,9 +29,6 @@ jobs:
       - name: Prepare pixi
         run: pixi run install-ci
 
-      - name: Install Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
       - name: Check Quarto installation and all engines
         run: pixi run quarto-check
 

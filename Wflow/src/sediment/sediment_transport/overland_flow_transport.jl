@@ -32,8 +32,8 @@ function update_boundary_conditions!(
     transport_capacity_model::AbstractTransportCapacityModel,
 )
     (; erosion, transport_capacity) = model.boundary_conditions
-    (; sediment_rate) = erosion_model.variables
-    @. erosion = sediment_rate
+    (; soil_erosion_rate) = erosion_model.variables
+    @. erosion = soil_erosion_rate
 
     (; sediment_transport_capacity) = transport_capacity_model.variables
     @. transport_capacity = sediment_transport_capacity
@@ -130,12 +130,18 @@ function update_boundary_conditions!(
         transport_capacity_sagg,
         transport_capacity_lagg,
     ) = model.boundary_conditions
-    (; clay, silt, sand, sagg, lagg) = erosion_model.variables
-    @. erosion_clay = clay
-    @. erosion_silt = silt
-    @. erosion_sand = sand
-    @. erosion_sagg = sagg
-    @. erosion_lagg = lagg
+    (;
+        clay_erosion_rate,
+        silt_erosion_rate,
+        sand_erosion_rate,
+        sagg_erosion_rate,
+        lagg_erosion_rate,
+    ) = erosion_model.variables
+    @. erosion_clay = clay_erosion_rate
+    @. erosion_silt = silt_erosion_rate
+    @. erosion_sand = sand_erosion_rate
+    @. erosion_sagg = sagg_erosion_rate
+    @. erosion_lagg = lagg_erosion_rate
 
     (; clay, silt, sand, sagg, lagg) = transport_capacity_model.variables
     @. transport_capacity_clay = clay

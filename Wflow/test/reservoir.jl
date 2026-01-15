@@ -136,7 +136,7 @@ end
         lower_reservoir_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, NaN],
-        storfunc = [ReservoirProfileType.interpolation, ReservoirProfileType.interpolation],
+        storfunc = fill(ReservoirProfileType.interpolation, 2),
         outflowfunc = [ReservoirOutflowType.free_weir, ReservoirOutflowType.rating_curve],
         b = [140.0, NaN],
         e = [1.5, NaN],

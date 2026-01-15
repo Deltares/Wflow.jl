@@ -67,7 +67,6 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
-using PrettyTables: pretty_table
 import Subscripts
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
@@ -75,7 +74,7 @@ const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
-g_gravity = 9.81 # m s⁻²
+const GRAVITATIONAL_ACCELERATION = 9.80665 # m s⁻²
 
 mutable struct Clock{T}
     time::T
@@ -350,13 +349,7 @@ function run!(model::Model; close_files = true)
     endtime = cftime(config.time.endtime, config.time.calendar)
     times = range(starttime + dt, endtime; step = dt)
 
-    @info "Run information." * to_table(;
-        model_type = String(Symbol(model_type)),
-        starttime,
-        dt,
-        endtime,
-        nthreads = nthreads(),
-    )
+    @info "Run information" model_type = String(Symbol(model_type)) starttime dt endtime nthreads()
     runstart_time = now()
     @progress for (i, time) in enumerate(times)
         @debug "Starting timestep." time i now()

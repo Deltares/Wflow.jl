@@ -23,7 +23,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
     return graph
 end
 
-const MIN_FLOW = 1e-30 # [m s⁻¹]
+const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
@@ -31,7 +31,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
         return 0.0
     else
         # [s m⁻¹] = [s] / [m]
-        C = dt / dx
+        dt_dx = dt / dx
         # [-] (generally -2/5)
         exponent = beta - 1.0
         # [s³ᐟ⁵ m¹ᐟ⁵] = [s³ᐟ⁵ m¹ᐟ⁵] * [-]
@@ -40,29 +40,29 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
         # [s m⁻¹] = [s³ᐟ⁵ m¹ᐟ⁵] * (([m³ s⁻¹] + [m³ s⁻¹])/[-])⁻²ᐟ⁵
         ab_pq = product * pow((q_prev + q_in) / 2, exponent)
         # [m³ s⁻¹] = ([s m⁻¹] * [m³ s⁻¹] + [m³ s⁻¹] * [s m⁻¹] + [s] * [m² s⁻¹])/([s m⁻¹] + [s m⁻¹])
-        q = (C * q_in + q_prev * ab_pq + dt * q_lat) / (C + ab_pq)
+        q = (dt_dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt_dx + ab_pq)
         if isnan(q)
-            q = MIN_FLOW
+            q = KIN_WAVE_MIN_FLOW
         else
-            q = max(q, MIN_FLOW)
+            q = max(q, KIN_WAVE_MIN_FLOW)
         end
         # newton-raphson
         max_iters = 3000
         epsilon = 1.0e-12
         count = 0
         # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵ + [s] * [m² s⁻¹]
-        constant_term = C * q_in + alpha * pow(q_prev, beta) + dt * q_lat
+        constant_term = dt_dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
         while true
             # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵ - [m²]
-            f_q = C * q + alpha * pow(q, beta) - constant_term
+            f_q = dt_dx * q + alpha * pow(q, beta) - constant_term
             # [s m⁻¹] = [s m⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵
-            df_q = C + product * pow(q, exponent)
+            df_q = dt_dx + product * pow(q, exponent)
             # [m³ s⁻¹] -= [m²] / [s m⁻¹]
             q -= (f_q / df_q)
             if isnan(q)
-                q = MIN_FLOW
+                q = KIN_WAVE_MIN_FLOW
             else
-                q = max(q, MIN_FLOW)
+                q = max(q, KIN_WAVE_MIN_FLOW)
             end
             if (abs(f_q) <= epsilon) || (count >= max_iters)
                 break
@@ -179,7 +179,7 @@ function kinematic_wave_ssf(
         if zi > d
             # TODO: I'm not completely sure of the correctness of the dt division here
             # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s])
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d) / dt, 1.0e-30)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d) / dt, KIN_WAVE_MIN_FLOW)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -211,7 +211,7 @@ function kinematic_wave_ssf(
                 if zi > d
                     # TODO: I'm not completely sure of the correctness of the dt division here
                     # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s], [m³ s⁻¹])
-                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d) / dt, MIN_SSF)
+                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
                 end
                 exfilt_sum += min(zi, 0.0) * -theta_e
                 zi = clamp(zi, 0.0, d)
@@ -273,7 +273,7 @@ function kinematic_wave_ssf(
         if zi > d
             # TODO: I'm not completely sure of the correctness of the dt division here
             # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s], [m³ s⁻¹])
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), MIN_SSF)
+            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -345,7 +345,7 @@ function accucapacityflux!(flux, material, network, capacity, dt)
             # pit: material is transported out of the map if a capacity is set,
             # cannot add the material anywhere
         elseif n == 1
-            material[only(downstream_nodes)] += flux_val
+            material[only(downstream_nodes)] += flux_val * dt
         else
             error("bifurcations not supported")
         end
@@ -369,10 +369,10 @@ end
 
 Non mutating version of combined `accucapacityflux!` and `accucapacitystate!`.
 """
-function accucapacityflux_state(material, network, capacity)
+function accucapacityflux_state(material, network, capacity, dt)
     flux = zero(material)
     material = copy(material)
-    accucapacityflux!(flux, material, network, capacity)
+    accucapacityflux!(flux, material, network, capacity, dt)
     return flux, material
 end
 
@@ -425,7 +425,6 @@ function local_inertial_flow(
     R,
     length,
     mannings_n_sq,
-    g,
     froude_limit,
     dt,
 )
@@ -436,14 +435,16 @@ function local_inertial_flow(
     unit = one(hf)
     # [m³ s⁻¹] = ([m³ s⁻¹] - [m s⁻²] * [m²] * [s] * [-]) / ([-] + [m s⁻²] * [s] * [(s m-1/3)²] * [m³ s⁻¹] / ([m^4/3] * [m²]))
     q = (
-        (q0 - g * A * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_R * A))
+        (q0 - GRAVITATIONAL_ACCELERATION * A * dt * slope) / (
+            unit + GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_R * A)
+        )
     )
 
     # if froude number > 1.0, limit flow
     # [-] = (([m³ s⁻¹] / [m²]) / ([m s⁻²] * [m])^1/2) * [-]
-    fr = ((q / A) / sqrt(g * hf)) * froude_limit
-    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(g * hf) * A, q)
-    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(g * hf) * A, q)
+    fr = ((q / A) / sqrt(GRAVITATIONAL_ACCELERATION * hf)) * froude_limit
+    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
+    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
 
     return q
 end
@@ -466,7 +467,6 @@ function local_inertial_flow(
     width,
     length,
     mannings_n_sq,
-    g,
     froude_limit,
     dt,
 ) where {T}
@@ -480,18 +480,22 @@ function local_inertial_flow(
 
     # [m³ s⁻¹] = (([-] * [m³ s⁻¹] + [-] * ([-] - [-]) * ([m³ s⁻¹] + [m³ s⁻¹])) - [m s⁻²] * [m] * [m] * [s] * [-]) / ([-] + [m s⁻²] * [s] * [(s m-1/3)²] * [m³ s⁻¹] / ([m^7/3] * [m]))
     q = (
-        ((theta * q0 + half * (unit - theta) * (qu + qd)) - g * hf * width * dt * slope) / (unit + g * dt * mannings_n_sq * abs(q0) / (pow_hf * width))
+        (
+            (theta * q0 + half * (unit - theta) * (qu + qd)) -
+            GRAVITATIONAL_ACCELERATION * hf * width * dt * slope
+        ) / (
+            unit +
+            GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
+        )
     )
     # if froude number > 1.0, limit flow
     if froude_limit
         # [-] = ([m³ s⁻¹] / ([m] * [m])) / sqrt([m s⁻²] * [m])
-        fr = (q / (width * hf)) / sqrt(g * hf)
-        if abs(fr) > 1.0
-            if q > 0
-                q = hf * sqrt(g * hf) * width
-            else
-                q = -hf * sqrt(g * hf) * width
-            end
+        fr = (q / width / hf) / sqrt(GRAVITATIONAL_ACCELERATION * hf)
+        if abs(fr) > 1.0 && q > 0.0
+            q = hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
+        elseif abs(fr) > 1.0 && q < 0.0
+            q = -hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
         end
     end
 

@@ -1,7 +1,5 @@
 abstract type AbstractDemandModel end
-abstract type AbstractIrrigationModel end
 abstract type AbstractAllocationModel end
-abstract type AbstractIrrigationDemandModel <: AbstractDemandModel end
 
 "Land hydrology model with SBM soil model"
 @with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:

@@ -4,6 +4,7 @@
     MM_PER_DT = Unit(; mm = 1, dt = -1)
     tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     dt = Wflow.tosecond(model.clock.dt)
@@ -96,6 +97,7 @@ end
 @testitem "water balance piave water demand (sbm_gwf model)" begin
     tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; land_water_balance, routing) = model.mass_balance

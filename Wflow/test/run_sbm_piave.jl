@@ -2,12 +2,14 @@
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     q_demand, riv_storage_demand, ssf_storage_demand = run_piave(model, 30)
     Wflow.close_files(model; delete_output = false)
 
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     q_, riv_storage, ssf_storage = run_piave(model, 30)
     Wflow.close_files(model; delete_output = false)
@@ -92,6 +94,7 @@ end
 
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
 
@@ -182,6 +185,7 @@ end
 @testitem "Piave water demand and allocation, switch off livestock, paddy and nonpaddy" begin
     tomlpath = joinpath(@__DIR__, "sbm_piave_nonirri-demand_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
@@ -207,6 +211,7 @@ end
     # test cyclic reservoir external inflow
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
@@ -240,6 +245,7 @@ end
     # test use of observed reservoir outflow (cyclic)
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.input.cyclic["reservoir_water__outgoing_observed_volume_flow_rate"] = "reservoir_outflow"
     config.time.endtime = DateTime(2010, 7, 3)
     model = Wflow.Model(config)
@@ -262,6 +268,7 @@ end
     using Dates: DateTime
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.input.cyclic["reservoir_water__outgoing_observed_volume_flow_rate"] = "reservoir_outflow"
     config.logging.loglevel = "debug"
     config.logging.path_log = "log_sbm_piave_debug.txt"
@@ -281,6 +288,7 @@ end
 @testitem "Water balance Piave water demand (sbm model)" begin
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; land_water_balance, routing) = model.mass_balance

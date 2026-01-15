@@ -1,3 +1,5 @@
+abstract type AbstractFloodPlain end
+
 "Struct for storing local inertial river flow model parameters"
 @with_kw struct LocalInertialRiverFlowParameters
     # number of cells [-]
@@ -8,8 +10,6 @@
     active_n::Vector{Int}
     # active edges [-]
     active_e::Vector{Int}
-    # acceleration due to gravity [m s⁻²]
-    g::Float64
     # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     froude_limit::Bool
     # depth threshold for calculating flow [m]
@@ -125,7 +125,6 @@ function LocalInertialRiverFlowParameters(
         ne = n_edges,
         active_n = active_index,
         active_e = active_index,
-        g = 9.80665,
         froude_limit,
         h_thresh = waterdepth_threshold,
         zb,
@@ -203,9 +202,13 @@ function LocalInertialRiverFlowVariables(
 end
 
 "Shallow water river flow model using the local inertial method"
-@with_kw struct LocalInertialRiverFlow{R, F, A} <: AbstractRiverFlowModel
+@with_kw struct LocalInertialRiverFlow{
+    R <: RiverFlowBC,
+    F <: Union{AbstractFloodPlain, Nothing},
+    A <: AbstractAllocationModel,
+} <: AbstractRiverFlowModel
     timestepping::TimeStepping
-    boundary_conditions::RiverFlowBC{R}
+    boundary_conditions::R
     parameters::LocalInertialRiverFlowParameters
     variables::LocalInertialRiverFlowVariables
     # Floodplain (1D) schematization
@@ -323,7 +326,6 @@ function local_inertial_river_update!(
                 river_v.r[i],
                 river_p.flow_length_at_edge[i],
                 river_p.mannings_n_sq[i],
-                river_p.g,
                 river_p.froude_limit,
                 dt,
             ),
@@ -409,7 +411,6 @@ function local_inertial_river_update!(
                     floodplain_v.r[i],
                     river_p.flow_length_at_edge[i],
                     floodplain_p.mannings_n_sq[i],
-                    river_p.g,
                     river_p.froude_limit,
                     dt,
                 ),
@@ -569,12 +570,12 @@ end
     qx0::Vector{Float64} = zeros(n + 1)
     # flow in x direction at edge [m³ s⁻¹]
     qx::Vector{Float64} = zeros(n + 1)
-    # average flow in x direction at egde [m³ s⁻¹] for model time step dt
-    qx_av::AverageVector = AverageVector(; n = n + 1)
+    # average flow in x direction at edge [m³ s⁻¹] for model timestep Δt
+    qx_av::Vector{Float64} = zeros(n + 1)
     # flow in y direction at edge [m³ s⁻¹]
     qy::Vector{Float64} = zeros(n + 1)
-    # average flow in y direction at edge [m³ s⁻¹] for model time step dt
-    qy_av::AverageVector = AverageVector(; n = n + 1)
+    # average flow in y direction at edge [m³ s⁻¹] for model timestep Δt
+    qy_av::Vector{Float64} = zeros(n + 1)
     # total storage of cell [m³] (including river storage for river cells)
     storage::Vector{Float64} = zeros(n)
     # error storage [m³]
@@ -730,10 +731,11 @@ dt = cfl * (Δx / sqrt(g max(h))
 function stable_timestep(model::LocalInertialRiverFlow, flow_length::Vector{Float64})
     dt_min = Inf
     (; cfl) = model.timestepping
-    (; n, g) = model.parameters
+    (; n) = model.parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
-        @fastmath @inbounds dt = cfl * flow_length[i] / sqrt(g * h[i])
+        @fastmath @inbounds dt =
+            cfl * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
@@ -743,12 +745,12 @@ end
 function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParameters)
     dt_min = Inf
     (; cfl) = model.timestepping
-    (; n, g) = model.parameters
+    (; n) = model.parameters
     (; x_length, y_length, river_location) = parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if river_location[i] == 0
-            cfl * min(x_length[i], y_length[i]) / sqrt(g * h[i])
+            cfl * min(x_length[i], y_length[i]) / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         else
             Inf
         end
@@ -906,7 +908,6 @@ function local_inertial_update_fluxes!(
                     land_p.ywidth[i],
                     length,
                     land_p.mannings_n_sq[i],
-                    land_p.g,
                     land_p.froude_limit,
                     dt,
                 )
@@ -946,7 +947,6 @@ function local_inertial_update_fluxes!(
                     land_p.xwidth[i],
                     length,
                     land_p.mannings_n_sq[i],
-                    land_p.g,
                     land_p.froude_limit,
                     dt,
                 )
@@ -1275,7 +1275,7 @@ end
 end
 
 "Floodplain flow model"
-@with_kw struct FloodPlain{P}
+@with_kw struct FloodPlain{P} <: AbstractFloodPlain
     parameters::FloodPlainParameters{P}
     variables::FloodPlainVariables
 end

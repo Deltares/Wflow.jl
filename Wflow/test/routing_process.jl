@@ -107,23 +107,24 @@ end
     network = (graph = g, order = [1, 2, 3, 4, 5, 6])
 
     # example 1, accucapacityflux
-    material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
+    dt = 86400.0
+    material = dt .* [0.5, 2.0, 2.0, 0.5, 2.0, 0.5]
     capacity = fill(1.5, 6)
-    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity, dt)
     @test new_material != material
-    @test new_material == [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
+    @test new_material == dt .* [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
     @test flux == Float64[0.5, 1.5, 1.5, 1, 1.5, 1.5]
-    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    flux_ = Wflow.accucapacityflux(material, network, capacity, dt)
     @test flux == flux_
 
     # example 2, accucapacityflux
-    material = fill(10.0, 6)
+    material = dt .* fill(10.0, 6)
     capacity = Float64[2, 30, 30, 2, 30, 2]
-    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity, dt)
     @test new_material != material
-    @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
+    @test new_material == dt .* [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
     @test flux == Float64[2, 10, 10, 2, 30, 2]
-    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    flux_ = Wflow.accucapacityflux(material, network, capacity, dt)
     @test flux == flux_
 
     # example 1, accucapacitystate
@@ -146,10 +147,10 @@ end
     using QuadGK: quadgk
     using Graphs: DiGraph, add_edge!, ne
     using Statistics: mean
+    using Wflow: GRAVITATIONAL_ACCELERATION
 
     CM = Unit(; cm = 1)
 
-    g = 9.80665
     L = 1000.0
     dx = 5.0
     n = Int(L / dx)
@@ -157,13 +158,15 @@ end
     # analytical solution MacDonald (1997) for channel with length L of 1000.0 m, Manning's
     # n of 0.03, constant inflow of 20.0 m3/s at upper boundary and channel width of 10.0 m
     # water depth profile h(x)
-    h(x) = (4 / g)^(1.0 / 3.0) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2.0))
+    h(x) = cbrt(4 / GRAVITATIONAL_ACCELERATION) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2))
     # spatial derivative of h(x)
     h_acc(x) =
-        -(4 / g)^(1.0 / 3.0) * 16.0 / L * (x / L - 0.5) * exp(-16 * (x / L - 0.5)^2.0)
+        -cbrt(4 / GRAVITATIONAL_ACCELERATION) * 16.0 / L *
+        (x / L - 0.5) *
+        exp(-16 * (x / L - 0.5)^2)
     # solution for channel slope s(x)
     s(x) =
-        (1.0 - 4.0 / (g * h(x)^(3.0))) * h_acc(x) +
+        (1.0 - 4.0 / (GRAVITATIONAL_ACCELERATION * h(x)^3)) * h_acc(x) +
         0.36 * (2 * h(x) + 10.0)^(4.0 / 3.0) / ((10.0 * h(x))^(10.0 / 3.0))
 
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
@@ -228,7 +231,6 @@ end
         ne = _ne,
         active_n = collect(1:(n - 1)),
         active_e = collect(1:_ne),
-        g = 9.80665,
         h_thresh,
         zb_max,
         mannings_n_sq,
@@ -245,7 +247,7 @@ end
         Wflow.LocalInertialRiverFlowVariables(; n_cells = n, n_edges = _ne, h = h_init)
 
     boundary_conditions =
-        Wflow.RiverFlowBC(; external_inflow = zeros(n), reservoir = nothing)
+        Wflow.RiverFlowBC(; n, external_inflow = zeros(n), reservoir = nothing)
 
     sw_river = Wflow.LocalInertialRiverFlow(;
         timestepping,
@@ -253,7 +255,7 @@ end
         parameters,
         variables,
         floodplain = nothing,
-        allocation = nothing,
+        allocation = Wflow.NoAllocationRiver(n),
     )
 
     # run until steady state is reached

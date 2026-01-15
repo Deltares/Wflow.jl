@@ -222,17 +222,17 @@ end
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
 @with_kw struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
-    # Total sediment transport capacity [t dt-1 => kg s⁻¹]
+    # Total sediment transport capacity [t dt⁻¹ => kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity clay [t dt-1 => kg s⁻¹]
+    # Transport capacity clay [t dt⁻¹ => kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity silt [t dt-1 => kg s⁻¹]
+    # Transport capacity silt [t dt⁻¹ => kg s⁻¹]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity sand [t dt-1 => kg s⁻¹]
+    # Transport capacity sand [t dt⁻¹ => kg s⁻¹]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity small aggregates [t dt-1 => kg s⁻¹]
+    # Transport capacity small aggregates [t dt⁻¹ => kg s⁻¹]
     sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity large aggregates [t dt-1 => kg s⁻¹]
+    # Transport capacity large aggregates [t dt⁻¹ => kg s⁻¹]
     lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 

@@ -220,7 +220,7 @@ end
             stage = fill(2.0, n),
             storage = fill(20.0, n),
             flux = zeros(n),
-            flux_av = zeros(n),
+            flux_av = Wflow.AverageVector(; n),
         )
         river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
         conf_aqf.variables.q_net .= 0.0
@@ -237,7 +237,11 @@ end
         n = 2
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
-        variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
+        variables = Wflow.DrainageVariables(;
+            n,
+            flux = [0.0, 0.0],
+            flux_av = Wflow.AverageVector(; n = 2),
+        )
         drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(drainage, conf_aqf, dt)
@@ -251,7 +255,7 @@ end
         variables = Wflow.HeadBoundaryVariables(;
             head = [2.0, 2.0],
             flux = [0.0, 0.0],
-            flux_av = [0.0, 0.0],
+            flux_av = Wflow.AverageVector(; n = 2),
         )
 
         headboundary = Wflow.HeadBoundary(; parameters, variables, index = [1, 2])
@@ -276,7 +280,7 @@ end
         variables = Wflow.WellVariables(;
             volumetric_rate = [-1000.0],
             flux = [0.0],
-            flux_av = [0.0],
+            flux_av = Wflow.AverageVector(; n = 1),
         )
         well = Wflow.Well(; variables, index = [1])
         conf_aqf.variables.q_net .= 0.0
@@ -292,13 +296,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
     conductivity_profile = Wflow.GwfConductivityProfileType.uniform
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
 
@@ -322,13 +320,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
     conductivity_profile = Wflow.GwfConductivityProfileType.exponential
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
 
@@ -376,8 +368,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     parameters = Wflow.UnconfinedAquiferParameters(;
@@ -394,13 +386,7 @@ end
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
 
     time = 20.0
     t = 0.0
@@ -454,8 +440,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     parameters = Wflow.UnconfinedAquiferParameters(;
@@ -472,13 +458,7 @@ end
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead,
-        boundaries = NamedTuple(),
-    )
+    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
 
     time = 20.0
     t = 0.0
@@ -543,8 +523,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     aquifer = Wflow.ConfinedAquifer(; parameters, variables)
@@ -554,8 +534,11 @@ end
     variables = Wflow.ConstantHeadVariables(; head = fill(10.0, size(indices)))
     constanthead = Wflow.ConstantHead(; variables, index = indices)
     # Place a well in the middle of the domain
-    variables =
-        Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0], flux_av = [0.0])
+    variables = Wflow.WellVariables(;
+        volumetric_rate = [discharge],
+        flux = [0.0],
+        flux_av = Wflow.AverageVector(; n = 1),
+    )
     well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
     gwf = Wflow.GroundwaterFlow(;
@@ -563,7 +546,7 @@ end
         aquifer,
         connectivity,
         constanthead,
-        boundaries = (; well,),
+        boundaries = Wflow.AquiferBoundaries(; well),
     )
 
     time = 20.0

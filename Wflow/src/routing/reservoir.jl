@@ -366,7 +366,7 @@ function maximum_storage(parameters::ReservoirParameters, i::Int)
     # maximum storage is based on the maximum water level (H) value in the H-Q table
     if storfunc[i] == ReservoirProfileType.interpolation
         maxstorage = interpolate_linear(maximum(hq[i].H), sh[i].H, sh[i].S)
-    else # storfunc[i] == ReservoirProfileType. linear
+    else # storfunc[i] == ReservoirProfileType.linear
         maxstorage = area[i] * maximum(hq[i].H)
     end
 
