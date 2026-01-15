@@ -10,9 +10,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## Unreleased
 
 ### Fixed
-- Fixed issue with lake rating curve type 2 (H-Q equation) where the outflow could become
-  negative for very low lake storage values, due to floating point precision errors. The
-  `storage_input` variable is now limited to a minimum of zero.
+- Fixed issue with where the reservoir outflow could become negative for very low reservoir
+  storage values, due to floating point precision errors. The `storage_input` variable is
+  now limited to a minimum of zero.
 
 ## v1.0.1 - 2026-01-07
 
