@@ -189,7 +189,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             @reset parameters.sh[i] = read_sh_csv(csv_path)
         end
 
-        if outflowfunc[i] == 1
+        if outflowfunc[i] == ReservoirOutflowType.rating_curve
             csv_path = joinpath(path, "reservoir_hq_$resloc.csv")
             @info(
                 "Read a rating curve from CSV file `$csv_path`, for reservoir location `$resloc`"
