@@ -199,10 +199,10 @@ end
 
     @testset "river flow at basin outlets and downstream of one pit" begin
         q = model.routing.river_flow.variables.q_av
-        @test q[4009] ≈ 8.537506212117359 # pit/ outlet, CartesianIndex(141, 228)
-        @test q[4020] ≈ 0.006791268121343883 # downstream of pit 4009, CartesianIndex(141, 229)
-        @test q[2508] ≈ 172.41816373356536 # pit/ outlet
-        @test q[5808] ≈ 0.12330612961088772  # pit/ outlet
+        @test q[4009] ≈ 8.537505679075965 # pit/ outlet, CartesianIndex(141, 228)
+        @test q[4020] ≈ 0.00679127033819331 # downstream of pit 4009, CartesianIndex(141, 229)
+        @test q[2508] ≈ 171.98268196274407 # pit/ outlet
+        @test q[5808] ≈ 0.12330636063280076  # pit/ outlet
     end
 end
 

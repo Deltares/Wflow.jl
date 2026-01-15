@@ -168,7 +168,8 @@ function kinematic_wave_ssf(
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         if zi > d
-            ssf = max(ssf - (dw * dx) * sy_d * (zi - d), KIN_WAVE_MIN_FLOW)
+            ssf_excess = (dw * dx) * sy_d * (zi - d) / dt
+            ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
         end
         zi = clamp(zi, 0.0, d)
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
@@ -200,7 +201,8 @@ function kinematic_wave_ssf(
                 )
                 zi = zi_prev - dh
                 if zi > d
-                    ssf = max(ssf - (dw * dx) * sy_d * (zi - d), KIN_WAVE_MIN_FLOW)
+                    ssf_excess = (dw * dx) * sy_d * (zi - d) / dt_s
+                    ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
                 end
                 zi = clamp(zi, 0.0, d)
                 # update unsaturated zone
@@ -281,7 +283,8 @@ function kinematic_wave_ssf(
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
+            ssf_excess = (dw * dx) * sy_d * (zi - d) / dt
+            ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
         end
         zi = clamp(zi, 0.0, d)
 
