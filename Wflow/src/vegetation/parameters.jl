@@ -1,7 +1,7 @@
 "Struct to store (shared) vegetation parameters"
 @with_kw struct VegetationParameters
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Union{Vector{Float64}, Nothing} = nothing
+    leaf_area_index::Union{Vector{Float64}, Nothing}
     # Storage woody part of vegetation [mm]
     storage_wood::Union{Vector{Float64}, Nothing} = nothing
     # Extinction coefficient [-] (to calculate canopy gap fraction)

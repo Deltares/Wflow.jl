@@ -18,7 +18,7 @@
         n,
         N;
         # Variables
-        ustorelayerthickness = [SVector(2.334, 2.334, 2.334)],
+        ustorelayerthickness = [SVector(50.0, 100.0, 50.0)],
         ustorelayerdepth = [SVector(0.0, 0.0, 0.0)],
         n_unsatlayers = [3],
         h3 = [-934.9109542889025],
@@ -27,14 +27,15 @@
         maxlayers = 3,
         sumlayers = [SVector(0.0, 50.0, 150.0, 200.0)],
         c = [SVector(9.195682525634766, 9.297739028930664, 9.597416877746582)],
-        nlayers = [7],
+        nlayers = [3],
         theta_s = [0.4417283535003662],
         theta_r = [0.09082602709531784],
         hb = [-10.0],
         infiltcapsoil = [334.45526123046875],
         pathfrac = [0.0],
         vegetation_parameter_set = Wflow.VegetationParameters(;
-            rootingdepth = [396.8680114746094],
+            rootingdepth = [150.0],
+            leaf_area_index = nothing,
         ),
     )
 
@@ -42,11 +43,11 @@
     k = 1
 
     depletion, readily_available_water = Wflow.water_demand_root_zone(soil, i, k)
-    @test depletion ≈ 0.3894768627137144
-    @test readily_available_water ≈ 0.20019380212939547
+    @test depletion ≈ 8.343548901322073
+    @test readily_available_water ≈ 4.288641862240691
     irri_dem_gross = depletion
     demand_gross = Wflow.compute_demand_gross(model, soil, irri_dem_gross, i)
-    @test demand_gross ≈ 0.3894768627137144
+    @test demand_gross ≈ 8.343548901322073
 end
 
 @testitem "unit: update_demand_gross! (Paddy)" begin
