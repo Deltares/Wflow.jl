@@ -93,21 +93,25 @@ end
         ("sediment", Wflow.sediment_standard_name_map),
     )
         @testset "Test lenses: $map_name" begin
-            invalid = String[]
-            for (name, data) in standard_name_map
+            dict_data = collect(standard_name_map)
+            n = length(dict_data)
+            invalids = zeros(Bool, n)
+            Wflow.threaded_foreach(1:n; basesize = 25) do i
+                (name, data) = dict_data[i]
                 (; lens) = data
-                valid = false
+                invalid = true
                 for model in models
                     try
                         lens(model)
-                        valid = true
+                        invalid = false
                         break
                     catch
                         nothing
                     end
                 end
-                valid || push!(invalid, name)
+                invalids[i] = invalid
             end
+            invalid = [dict_data[i][1] for i in findall(invalids)]
             @test isempty(invalid)
         end
     end

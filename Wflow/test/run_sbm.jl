@@ -590,6 +590,7 @@ end
         tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         function get_config(profile)
             config = Wflow.Config(tomlpath)
+            config.dir_output = mktempdir()
             config.model.saturated_hydraulic_conductivity_profile = profile
             config.input.static["soil_layer_water__vertical_saturated_hydraulic_conductivity"] = "kv"
             config.input.static["soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth"] =
@@ -673,6 +674,7 @@ end
         end
 
         @testset "river flow layered exponential profile" begin
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
