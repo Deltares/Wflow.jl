@@ -5,6 +5,7 @@
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     (; domain) = model
@@ -150,6 +151,7 @@
     # test without lateral snow transport
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.snow_gravitational_transport__flag = false
 
     model = Wflow.Model(config)
@@ -165,6 +167,7 @@
 
     # test without snow model
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.snow__flag = false
     pop!(config.output.netcdf_grid.variables, "snowpack_dry_snow__leq_depth")
     pop!(config.output.netcdf_grid.variables, "snowpack_liquid_water__depth")
@@ -184,6 +187,7 @@ end
     # resulting in 3 basins)
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.pit__flag = true
     config.input.basin_pit_location__mask = "wflow_pits"
     config.time.endtime = DateTime(2000, 1, 9)
@@ -210,6 +214,7 @@ end
     # Run unchanged
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
 
     Wflow.run_timestep!(model)
@@ -255,6 +260,7 @@ end
 @testitem "Cyclic river and reservoir external inflow (kinematic wave routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     config.input.cyclic["river_water__external_inflow_volume_flow_rate"] = "inflow"
     config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
@@ -279,6 +285,7 @@ end
 @testitem "Cyclic river and reservoir external inflow (local inertial routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     config.input.cyclic["river_water__external_inflow_volume_flow_rate"] = "inflow"
     config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
@@ -303,7 +310,9 @@ end
 @testitem "External negative inflow" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
+    config.dir_output = mktempdir()
     model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
     (; actual_external_abstraction_av, external_inflow) =
         model.routing.river_flow.boundary_conditions
@@ -325,6 +334,7 @@ end
 @testitem "Fixed forcing (precipitation = 2.5)" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] = 2.5
     model = Wflow.Model(config)
     Wflow.load_fixed_forcing!(model)
@@ -359,6 +369,7 @@ end
 @testitem "Local-inertial option for river flow river_routing" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
@@ -382,6 +393,7 @@ end
 @testitem "External negative inflow local-inertial river flow" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
     (; actual_external_abstraction_av, external_inflow, reservoir) =
@@ -405,6 +417,7 @@ end
 @testitem "Local-inertial option for river and overland flow" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
@@ -435,6 +448,7 @@ end
 @testitem "Local-inertial option for river flow including 1D floodplain schematization" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
 
     (; flow_length, flow_length) = model.domain.river.parameters
@@ -675,6 +689,7 @@ end
 @testitem "run wflow sbm" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.time.endtime = "2000-01-05"
     Wflow.run(config)
 end
@@ -682,6 +697,7 @@ end
 @testitem "water balance sbm (kinematic wave routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; land_water_balance, routing) = model.mass_balance
@@ -720,7 +736,7 @@ end
 @testitem "water balance river local inertial routing" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
-    model = Wflow.Model(config)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; river_water_balance) = model.mass_balance.routing
@@ -740,6 +756,7 @@ end
 @testitem "water balance river local inertial routing with floodplain" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; river_water_balance) = model.mass_balance.routing
@@ -759,6 +776,7 @@ end
 @testitem "water balance river and land local inertial routing" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; overland_water_balance) = model.mass_balance.routing

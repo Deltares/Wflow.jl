@@ -80,6 +80,7 @@ end
         "sediment_eurosem_engelund_config.toml",
     ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
+        config.dir_output = mktempdir()
         if do_mass_balance
             config.model.water_mass_balance__flag = true
             global do_mass_balance = false
