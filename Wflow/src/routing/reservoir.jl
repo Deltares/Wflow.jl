@@ -25,9 +25,9 @@
     # rating curve exponent [-]
     e::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # data for storage curve
-    sh::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
+    sh::Vector{Union{SH,Missing}} = Vector{Union{SH,Missing}}(missing, length(area))
     # data for rating curve
-    hq::Vector{Union{HQ, Missing}} = Vector{Union{HQ, Missing}}(missing, length(area))
+    hq::Vector{Union{HQ,Missing}} = Vector{Union{HQ,Missing}}(missing, length(area))
     # column index of rating curve data hq
     col_index_hq::Vector{Int} = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
@@ -45,130 +45,104 @@ end
 function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkReservoir)
     (; indices_outlet) = network
 
-    area = ncread(
-        dataset,
-        config,
-        "reservoir_surface__area";
-        optional = false,
-        sel = indices_outlet,
-        type = Float64,
-    )
+    area = ncread(dataset, config, "reservoir_surface__area", Routing; sel=indices_outlet)
     waterlevel = ncread(
         dataset,
         config,
-        "reservoir_water_surface__initial_elevation";
-        optional = false,
-        sel = indices_outlet,
-        type = Float64,
+        "reservoir_water_surface__initial_elevation",
+        Routing;
+        sel=indices_outlet,
     )
     storfunc = ncread(
         dataset,
         config,
-        "reservoir_water__storage_curve_type_count";
-        optional = false,
-        sel = indices_outlet,
-        type = Int,
+        "reservoir_water__storage_curve_type_count",
+        Routing;
+        sel=indices_outlet,
     )
     storfunc = to_enumx.(ReservoirProfileType.T, storfunc)
     outflowfunc = ncread(
         dataset,
         config,
-        "reservoir_water__rating_curve_type_count";
-        optional = false,
-        sel = indices_outlet,
-        type = Int,
+        "reservoir_water__rating_curve_type_count",
+        Routing;
+        sel=indices_outlet,
     )
     outflowfunc = to_enumx.(ReservoirOutflowType.T, outflowfunc)
     linked_reslocs = ncread(
         dataset,
         config,
-        "reservoir_lower_location__count";
-        sel = indices_outlet,
-        defaults = 0,
-        type = Int,
-        fill = 0,
+        "reservoir_lower_location__count",
+        Routing;
+        sel=indices_outlet,
     )
 
     n_reservoirs = length(area)
-    reslocs = ncread(
-        dataset,
-        config,
-        "reservoir_location__count";
-        optional = false,
-        sel = indices_outlet,
-        type = Int,
-    )
+    reslocs =
+        ncread(dataset, config, "reservoir_location__count", Routing; sel=indices_outlet)
     @info "Read `$n_reservoirs` reservoir locations."
 
-    parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
+    parameters = ReservoirParameters(; id=reslocs, area, outflowfunc, storfunc)
 
     if ReservoirOutflowType.free_weir in outflowfunc ||
        ReservoirOutflowType.modified_puls in outflowfunc
         threshold = ncread(
             dataset,
             config,
-            "reservoir_water_flow_threshold_level__elevation";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water_flow_threshold_level__elevation",
+            Routing;
+            sel=indices_outlet,
         )
         b = ncread(
             dataset,
             config,
-            "reservoir_water__rating_curve_coefficient";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water__rating_curve_coefficient",
+            Routing;
+            sel=indices_outlet,
         )
         e = ncread(
             dataset,
             config,
-            "reservoir_water__rating_curve_exponent";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water__rating_curve_exponent",
+            Routing;
+            sel=indices_outlet,
         )
     end
     if ReservoirOutflowType.simple in outflowfunc
         demand = ncread(
             dataset,
             config,
-            "reservoir_water_demand__required_downstream_volume_flow_rate";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water_demand__required_downstream_volume_flow_rate",
+            Routing;
+            sel=indices_outlet,
         )
         maxrelease = ncread(
             dataset,
             config,
-            "reservoir_water_release_below_spillway__max_volume_flow_rate";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water_release_below_spillway__max_volume_flow_rate",
+            Routing;
+            sel=indices_outlet,
         )
         maxstorage = ncread(
             dataset,
             config,
-            "reservoir_water__max_volume";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water__max_volume",
+            Routing;
+            sel=indices_outlet,
         )
         targetfullfrac = ncread(
             dataset,
             config,
-            "reservoir_water__target_full_volume_fraction";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water__target_full_volume_fraction",
+            Routing;
+            sel=indices_outlet,
         )
         targetminfrac = ncread(
             dataset,
             config,
-            "reservoir_water__target_min_volume_fraction";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            "reservoir_water__target_min_volume_fraction",
+            Routing;
+            sel=indices_outlet,
         )
     end
 
@@ -249,15 +223,13 @@ function ReservoirVariables(
     outflow_obs = ncread(
         dataset,
         config,
-        "reservoir_water__outgoing_observed_volume_flow_rate";
-        sel = indices_outlet,
-        defaults = MISSING_VALUE,
-        type = Float64,
-        fill = MISSING_VALUE,
+        "reservoir_water__outgoing_observed_volume_flow_rate",
+        LandHydrologySBM;
+        sel=indices_outlet,
     )
     variables = ReservoirVariables(;
         waterlevel,
-        storage = initialize_storage(storfunc, area, waterlevel, sh),
+        storage=initialize_storage(storfunc, area, waterlevel, sh),
         outflow_obs,
     )
     return variables
@@ -281,10 +253,9 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
     external_inflow = ncread(
         dataset,
         config,
-        "reservoir_water__external_inflow_volume_flow_rate";
-        sel = indices_outlet,
-        defaults = 0.0,
-        type = Float64,
+        "reservoir_water__external_inflow_volume_flow_rate",
+        LandHydrologySBM;
+        sel=indices_outlet,
     )
     n = length(indices_outlet)
     bc = ReservoirBC(; n, external_inflow)
@@ -313,7 +284,7 @@ function waterlevel(
     storfunc::ReservoirProfileType.T,
     area::Float64,
     storage::Float64,
-    sh::Union{SH, Missing},
+    sh::Union{SH,Missing},
 )
     if storfunc == ReservoirProfileType.linear
         waterlevel = storage / area
@@ -342,7 +313,7 @@ function initialize_storage(
     storfunc::Vector{ReservoirProfileType.T},
     area::Vector{Float64},
     waterlevel::Vector{Float64},
-    sh::Vector{Union{SH, Missing}},
+    sh::Vector{Union{SH,Missing}},
 )
     storage = similar(area)
     for i in eachindex(storage)
@@ -617,7 +588,7 @@ function log_message_observed_outflow(reservoir::Reservoir)
 end
 
 "Check if observed outflow is used for reservoirs"
-function using_observed_outflow(reservoir::Union{Reservoir, Nothing}, config::Config)
+function using_observed_outflow(reservoir::Union{Reservoir,Nothing}, config::Config)
     par = "reservoir_water__outgoing_observed_volume_flow_rate"
     check =
         !isnothing(reservoir) &&
