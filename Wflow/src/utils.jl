@@ -1032,7 +1032,7 @@ function water_table_change(
                 ),
             )
             sy = theta_e - (ustorelayerdepth[k] / ustorelayerthickness[k])
-            dh += if sy == 0.0
+            dh += if flux_layer == 0.0
                 # if unsaturated layer is fully saturated dh equals layer thickness
                 f_conv * ustorelayerthickness[k]
             else
