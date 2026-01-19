@@ -248,7 +248,7 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
     return var
 end
 
-function apply_affine_transform!(v::Vector, var::InputEntry)
+function apply_affine_transform!(v::Union{AbstractArray, Number}, var::InputEntry)
     (; scale, offset) = var
     if !all(isone, scale)
         if length(scale) |> isone
