@@ -1003,3 +1003,50 @@ The sine of the slope in radians;
 sin(arctan(x)) = x / √(1 + x²)
 """
 sin_slope(slope) = slope / sqrt(1 + slope^2)
+
+"""
+Return water table change `dh` and exfiltration rate `exfilt`. For a falling water table
+`dh` is based on subsurface net flux `net_flux` and specific yield `specific_yield`. For a
+rising water table `dh` is based on `net_flux` and the unsaturated store capacity (per soil
+layer). For a rising water table a dynamic specific yield is computed.
+"""
+function water_table_change(
+    net_flux::Float64,
+    specific_yield::Float64,
+    n_unsatlayers::Int,
+    ustorelayerthickness::SVector,
+    ustorelayerdepth::SVector,
+    theta_e::Float64,
+)
+    if net_flux <= 0.0
+        dh = net_flux / specific_yield
+    else
+        dh = 0.0
+        f_conv = 0.001 # convert units from [mm] to [m]
+        for k in n_unsatlayers:-1:1
+            flux_layer = min(
+                net_flux,
+                max(
+                    f_conv * (ustorelayerthickness[k] * theta_e - ustorelayerdepth[k]),
+                    0.0,
+                ),
+            )
+            sy = theta_e - (ustorelayerdepth[k] / ustorelayerthickness[k])
+            dh += if flux_layer == 0.0
+                # if unsaturated layer is fully saturated dh equals layer thickness
+                f_conv * ustorelayerthickness[k]
+            else
+                flux_layer / sy
+            end
+            net_flux -= flux_layer
+            net_flux == 0.0 && break
+        end
+    end
+    exfilt = max(net_flux, 0.0)
+    return dh, exfilt
+end
+
+"Set lower bound for drainable porosity"
+function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
+    return max(theta_s - theta_fc, lower_bound)
+end
