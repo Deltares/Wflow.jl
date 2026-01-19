@@ -36,3 +36,20 @@ end
     @test Wflow.bounded_divide(1.0, 0.5; max = 0.75) == 0.75
     @test Wflow.bounded_divide(1.0, 2.0) == 0.5
 end
+
+@testitem "Affine transform" begin
+    using Wflow: apply_affine_transform!, InputEntry
+
+    v = [3.5, 4.7, 2.4]
+
+    @test apply_affine_transform!(copy(v), InputEntry(; scale = [2.0])) == 2 * v
+    @test apply_affine_transform!(copy(v), InputEntry(; scale = fill(3.0, 3))) == 3 * v
+
+    @test apply_affine_transform!(copy(v), InputEntry(; offset = [4.0])) == v .+ 4.0
+    @test apply_affine_transform!(copy(v), InputEntry(; offset = fill(5.0, 3))) == v .+ 5.0
+
+    @test apply_affine_transform!(
+        copy(v),
+        InputEntry(; scale = [6.0], offset = fill(7.0, 3)),
+    ) == 6.0 * v .+ 7.0
+end

@@ -233,6 +233,25 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
     return var
 end
 
+function apply_affine_transform!(v::Union{AbstractArray, Number}, var::InputEntry)
+    (; scale, offset) = var
+    if !all(isone, scale)
+        if length(scale) |> isone
+            v .*= only(scale)
+        else
+            v .*= scale
+        end
+    end
+    if !all(iszero, offset)
+        if length(offset) |> isone
+            v .+= only(offset)
+        else
+            v .+= offset
+        end
+    end
+    return v
+end
+
 """
     ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
 
@@ -327,8 +346,8 @@ function ncread(
             for i in eachindex(layer)
                 A[:, :, layer[i]] = A[:, :, layer[i]] .* scale[i] .+ offset[i]
             end
-        elseif scale != 1.0 || offset != 0.0
-            A = A .* scale .+ offset
+        else
+            apply_affine_transform!(A, var)
         end
     end
 
