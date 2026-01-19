@@ -67,6 +67,7 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+import Subscripts
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
@@ -128,6 +129,28 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+"""
+The AverageVector is a struct for computing averages of a some quantity with unit [u]
+over a timestep dt [s].
+"""
+@with_kw struct AverageVector
+    n::Int
+    # Cumulative value [u]
+    cumulative::Vector{Float64} = zeros(n)
+    # Average value [u s⁻¹]
+    average::Vector{Float64} = zeros(n)
+end
+
+add_to_cumulative!(v::AverageVector, i::Int, val::Number) = (v.cumulative[i] += val)
+average!(v::AverageVector, dt::Number) = (@. v.average = v.cumulative / dt)
+zero!(v::AverageVector) = (v.cumulative .= 0)
+Base.eltype(::AverageVector) = Float64
+Base.iterate(v::AverageVector) = iterate(v.average)
+Base.iterate(v::AverageVector, state) = iterate(v.average, state)
+Base.length(v::AverageVector) = length(v.average)
+Base.collect(v::AverageVector) = v.average
+
+include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")
 include("config_init.jl")
@@ -224,7 +247,24 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
-include("standard_name.jl")
+
+include("standard_name/standard_name_domain.jl")
+include("standard_name/standard_name_routing.jl")
+include("standard_name/standard_name_sbm.jl")
+include("standard_name/standard_name_sediment.jl")
+
+# wrapper methods for standard name mapping
+standard_name_map(model) = standard_name_map(typeof(model))
+standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
+standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
+standard_name_map(::Type{<:Domain}) = domain_standard_name_map
+standard_name_map(::Type{<:Routing}) = routing_standard_name_map
+get_lens(name::AbstractString, model) = get_lens(name, typeof(model))
+get_lens(name::AbstractString, L::Type) = standard_name_map(L)[name].lens
+get_unit(name::AbstractString, model) = get_unit(name, typeof(model))
+get_unit(name::AbstractString, L::Type) = standard_name_map(L)[name].unit
+get_unit(::AbstractString, ::Type{<:Writer}) = Unit()
+
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

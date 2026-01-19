@@ -211,16 +211,16 @@ end
         dt = 1.0
         n = 2
         parameters = Wflow.GwfRiverParameters(;
-            infiltration_conductance = [100.0, 100.0],
-            exfiltration_conductance = [200.0, 200.0],
-            bottom = [1.0, 1.0],
+            infiltration_conductance = fill(100.0, n),
+            exfiltration_conductance = fill(200.0, n),
+            bottom = fill(1.0, n),
         )
         variables = Wflow.GwfRiverVariables(;
             n,
-            stage = [2.0, 2.0],
-            storage = [20.0, 20.0],
-            flux = [0.0, 0.0],
-            flux_av = [0.0, 0.0],
+            stage = fill(2.0, n),
+            storage = fill(20.0, n),
+            flux = zeros(n),
+            flux_av = Wflow.AverageVector(; n),
         )
         river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
         conf_aqf.variables.q_net .= 0.0
@@ -237,7 +237,11 @@ end
         n = 2
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
-        variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
+        variables = Wflow.DrainageVariables(;
+            n,
+            flux = [0.0, 0.0],
+            flux_av = Wflow.AverageVector(; n = 2),
+        )
         drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(drainage, conf_aqf, dt)
@@ -251,7 +255,7 @@ end
         variables = Wflow.HeadBoundaryVariables(;
             head = [2.0, 2.0],
             flux = [0.0, 0.0],
-            flux_av = [0.0, 0.0],
+            flux_av = Wflow.AverageVector(; n = 2),
         )
 
         headboundary = Wflow.HeadBoundary(; parameters, variables, index = [1, 2])
@@ -264,12 +268,7 @@ end
     @testset "recharge" begin
         dt = 1.0
         n = 3
-        variables = Wflow.RechargeVariables(;
-            n,
-            rate = [1.0e-3, 1.0e-3, 1.0e-3],
-            flux = [0.0, 0.0, 0.0],
-            flux_av = [0.0, 0.0, 0.0],
-        )
+        variables = Wflow.RechargeVariables(; n, rate = fill(1e-3, n))
         recharge = Wflow.Recharge(; n, variables, index = [1, 2, 3])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(recharge, conf_aqf, dt)
@@ -281,7 +280,7 @@ end
         variables = Wflow.WellVariables(;
             volumetric_rate = [-1000.0],
             flux = [0.0],
-            flux_av = [0.0],
+            flux_av = Wflow.AverageVector(; n = 1),
         )
         well = Wflow.Well(; variables, index = [1])
         conf_aqf.variables.q_net .= 0.0
@@ -369,8 +368,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     parameters = Wflow.UnconfinedAquiferParameters(;
@@ -441,8 +440,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     parameters = Wflow.UnconfinedAquiferParameters(;
@@ -524,8 +523,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     aquifer = Wflow.ConfinedAquifer(; parameters, variables)
@@ -535,8 +534,11 @@ end
     variables = Wflow.ConstantHeadVariables(; head = fill(10.0, size(indices)))
     constanthead = Wflow.ConstantHead(; variables, index = indices)
     # Place a well in the middle of the domain
-    variables =
-        Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0], flux_av = [0.0])
+    variables = Wflow.WellVariables(;
+        volumetric_rate = [discharge],
+        flux = [0.0],
+        flux_av = Wflow.AverageVector(; n = 1),
+    )
     well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
     gwf = Wflow.GroundwaterFlow(;

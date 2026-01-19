@@ -3,7 +3,7 @@ abstract type AbstractTransportCapacityModel end
 "Struct to store total transport capacity model variables"
 @with_kw struct TransportCapacityModelVariables
     n::Int
-    # Total sediment transport capacity [t dt-1]
+    # Total sediment transport capacity [t dt-1 => kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -38,7 +38,7 @@ end
 
 "Struct to store Govers overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityGoversParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
     # Govers transport capacity coefficient [-]
     c_govers::Vector{Float64}
@@ -55,7 +55,8 @@ function TransportCapacityGoversParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -63,7 +64,8 @@ function TransportCapacityGoversParameters(
     c_govers = ncread(
         dataset,
         config,
-        "land_surface_water_sediment__govers_transport_capacity_coefficient";
+        "land_surface_water_sediment__govers_transport_capacity_coefficient",
+        SoilLoss;
         sel = indices,
         defaults = 0.000505,
         type = Float64,
@@ -71,7 +73,8 @@ function TransportCapacityGoversParameters(
     n_govers = ncread(
         dataset,
         config,
-        "land_surface_water_sediment__govers_transport_capacity_exponent";
+        "land_surface_water_sediment__govers_transport_capacity_exponent",
+        SoilLoss;
         sel = indices,
         defaults = 4.27,
         type = Float64,
@@ -132,9 +135,9 @@ end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityYalinParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Particle mean diameter [mm]
+    # Particle mean diameter [mm => m]
     d50::Vector{Float64}
 end
 
@@ -147,7 +150,8 @@ function TransportCapacityYalinParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -155,7 +159,8 @@ function TransportCapacityYalinParameters(
     d50 = ncread(
         dataset,
         config,
-        "land_surface_sediment__median_diameter";
+        "land_surface_sediment__median_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 0.1,
         type = Float64,
@@ -217,33 +222,33 @@ end
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
 @with_kw struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
-    # Total sediment transport capacity [t dt-1]
+    # Total sediment transport capacity [t dt⁻¹ => kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity clay [t dt-1]
+    # Transport capacity clay [t dt⁻¹ => kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity silt [t dt-1]
+    # Transport capacity silt [t dt⁻¹ => kg s⁻¹]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity sand [t dt-1]
+    # Transport capacity sand [t dt⁻¹ => kg s⁻¹]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity small aggregates [t dt-1]
+    # Transport capacity small aggregates [t dt⁻¹ => kg s⁻¹]
     sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity large aggregates [t dt-1]
+    # Transport capacity large aggregates [t dt⁻¹ => kg s⁻¹]
     lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityYalinDifferentiationParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Clay mean diameter [μm]
+    # Clay mean diameter [μm => m]
     dm_clay::Vector{Float64}
-    # Silt mean diameter [μm]
+    # Silt mean diameter [μm => m]
     dm_silt::Vector{Float64}
-    # Sand mean diameter [μm]
+    # Sand mean diameter [μm => m]
     dm_sand::Vector{Float64}
-    # Small aggregates mean diameter [μm]
+    # Small aggregates mean diameter [μm => m]
     dm_sagg::Vector{Float64}
-    # Large aggregates mean diameter [μm]
+    # Large aggregates mean diameter [μm => m]
     dm_lagg::Vector{Float64}
 end
 
@@ -256,7 +261,8 @@ function TransportCapacityYalinDifferentiationParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -264,7 +270,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_clay = ncread(
         dataset,
         config,
-        "clay__mean_diameter";
+        "clay__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 2.0,
         type = Float64,
@@ -272,7 +279,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_silt = ncread(
         dataset,
         config,
-        "silt__mean_diameter";
+        "silt__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 10.0,
         type = Float64,
@@ -280,7 +288,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_sand = ncread(
         dataset,
         config,
-        "sand__mean_diameter";
+        "sand__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 200.0,
         type = Float64,
@@ -288,7 +297,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_sagg = ncread(
         dataset,
         config,
-        "sediment_small_aggregates__mean_diameter";
+        "sediment_small_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 30.0,
         type = Float64,
@@ -296,7 +306,8 @@ function TransportCapacityYalinDifferentiationParameters(
     dm_lagg = ncread(
         dataset,
         config,
-        "sediment_large_aggregates__mean_diameter";
+        "sediment_large_aggregates__mean_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 500.0,
         type = Float64,
@@ -440,7 +451,8 @@ function TransportCapacityRiverParameters(
     density = ncread(
         dataset,
         config,
-        "sediment__particle_density";
+        "sediment__particle_density",
+        SoilLoss;
         sel = indices,
         defaults = 2650.0,
         type = Float64,
@@ -448,7 +460,8 @@ function TransportCapacityRiverParameters(
     d50 = ncread(
         dataset,
         config,
-        "river_sediment__median_diameter";
+        "river_sediment__median_diameter",
+        SoilLoss;
         sel = indices,
         defaults = 0.1,
         type = Float64,
@@ -476,7 +489,8 @@ function TransportCapacityBagnoldParameters(
     c_bagnold = ncread(
         dataset,
         config,
-        "river_water_sediment__bagnold_transport_capacity_coefficient";
+        "river_water_sediment__bagnold_transport_capacity_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -484,7 +498,8 @@ function TransportCapacityBagnoldParameters(
     e_bagnold = ncread(
         dataset,
         config,
-        "river_water_sediment__bagnold_transport_capacity_exponent";
+        "river_water_sediment__bagnold_transport_capacity_exponent",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -607,7 +622,8 @@ function TransportCapacityKodatieParameters(
     a_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_a_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_a_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -615,7 +631,8 @@ function TransportCapacityKodatieParameters(
     b_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_b_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_b_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -623,7 +640,8 @@ function TransportCapacityKodatieParameters(
     c_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_c_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_c_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,
@@ -631,7 +649,8 @@ function TransportCapacityKodatieParameters(
     d_kodatie = ncread(
         dataset,
         config,
-        "river_water_sediment__kodatie_transport_capacity_d_coefficient";
+        "river_water_sediment__kodatie_transport_capacity_d_coefficient",
+        SoilLoss;
         optional = false,
         sel = indices,
         type = Float64,

@@ -142,6 +142,9 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
 
         # Invoke default method
         return init_config_section_default(InputEntry, dict)
+    elseif value isa String
+        # Option 3
+        return InputEntry(; external_name = value)
     elseif !isnothing(value)
         # Option 2
         return InputEntry(; value)

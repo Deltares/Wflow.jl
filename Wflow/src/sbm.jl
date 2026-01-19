@@ -33,7 +33,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     do_snow = config.model.snow__flag
     do_glacier = config.model.glacier__flag
     if do_snow
-        snow = SnowHbvModel(dataset, config, indices, dt)
+        snow = SnowHbvModel(dataset, config, indices)
     else
         snow = NoSnowModel(n)
     end
@@ -57,13 +57,13 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
 
     if do_water_demand(config)
         allocation = AllocationLand(dataset, config, indices)
-        demand = Demand(dataset, config, indices, dt)
+        demand = Demand(dataset, config, indices)
     else
         allocation = NoAllocationLand(n)
         demand = NoDemand(; n)
     end
 
-    land_hydrology_model = LandHydrologySBM(;
+    return LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -74,7 +74,6 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand,
         allocation,
     )
-    return land_hydrology_model
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
@@ -89,15 +88,15 @@ function update!(
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         model
 
-    update!(interception, atmospheric_forcing)
+    update!(interception, atmospheric_forcing, dt)
 
     update_boundary_conditions!(snow, (; interception))
-    update!(snow, atmospheric_forcing)
+    update!(snow, atmospheric_forcing, dt)
     if config.model.snow_gravitational_transport__flag
-        lateral_snow_transport!(snow, domain.land)
+        lateral_snow_transport!(snow, domain.land, dt)
     end
 
-    update!(glacier, atmospheric_forcing)
+    update!(glacier, atmospheric_forcing, dt)
 
     update_boundary_conditions!(
         runoff,
@@ -105,15 +104,15 @@ function update!(
         routing,
         domain.river.network,
     )
-    update!(runoff, atmospheric_forcing, parameters)
+    update!(runoff, atmospheric_forcing, parameters, dt)
 
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)
-        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
+        @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration)
     end
-    update_water_demand!(demand, soil)
+    update_water_demand!(demand, soil, dt)
     update_water_allocation!(allocation, demand, routing, domain, dt)
 
     soil_fraction!(soil, glacier, parameters)
@@ -121,6 +120,7 @@ function update!(
         soil,
         atmospheric_forcing,
         (; interception, runoff, demand, allocation),
+        dt,
     )
 
     update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
@@ -154,9 +154,10 @@ function update_total_water_storage!(
 
     # Burn the river routing values
     for (i, index_river) in enumerate(domain.river.network.land_indices)
+        # [m] = [m] * [m] * [m] / [m²]
         total_storage[index_river] = (
             (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
-            (area[index_river]) * 1000 # Convert to mm
+            (area[index_river])
         )
     end
 

@@ -107,23 +107,24 @@ end
     network = (graph = g, order = [1, 2, 3, 4, 5, 6])
 
     # example 1, accucapacityflux
-    material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
+    dt = 86400.0
+    material = dt .* [0.5, 2.0, 2.0, 0.5, 2.0, 0.5]
     capacity = fill(1.5, 6)
-    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity, dt)
     @test new_material != material
-    @test new_material == [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
+    @test new_material == dt .* [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
     @test flux == Float64[0.5, 1.5, 1.5, 1, 1.5, 1.5]
-    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    flux_ = Wflow.accucapacityflux(material, network, capacity, dt)
     @test flux == flux_
 
     # example 2, accucapacityflux
-    material = fill(10.0, 6)
+    material = dt .* fill(10.0, 6)
     capacity = Float64[2, 30, 30, 2, 30, 2]
-    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity, dt)
     @test new_material != material
-    @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
+    @test new_material == dt .* [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
     @test flux == Float64[2, 10, 10, 2, 30, 2]
-    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    flux_ = Wflow.accucapacityflux(material, network, capacity, dt)
     @test flux == flux_
 
     # example 1, accucapacitystate
@@ -142,10 +143,13 @@ end
 end
 
 @testitem "local inertial long channel MacDonald (1997)" begin
+    using Wflow: Unit, to_SI
     using QuadGK: quadgk
     using Graphs: DiGraph, add_edge!, ne
     using Statistics: mean
     using Wflow: GRAVITATIONAL_ACCELERATION
+
+    CM = Unit(; cm = 1)
 
     L = 1000.0
     dx = 5.0
@@ -239,25 +243,11 @@ end
         froude_limit,
     )
 
-    variables = Wflow.LocalInertialRiverFlowVariables(;
-        n,
-        n_edges = _ne,
-        q0 = zeros(_ne),
-        q = zeros(_ne),
-        q_av = zeros(_ne),
-        q_channel_av = zeros(_ne),
-        h = h_init,
-        zs_max = zeros(_ne),
-        zs_src = zeros(_ne),
-        zs_dst = zeros(_ne),
-        hf = zeros(_ne),
-        a = zeros(_ne),
-        r = zeros(_ne),
-        storage = fill(0.0, n),
-        error = zeros(n),
-    )
+    variables =
+        Wflow.LocalInertialRiverFlowVariables(; n_cells = n, n_edges = _ne, h = h_init)
 
-    boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
+    boundary_conditions =
+        Wflow.RiverFlowBC(; n, external_inflow = zeros(n), reservoir = nothing)
 
     sw_river = Wflow.LocalInertialRiverFlow(;
         timestepping,
@@ -269,7 +259,7 @@ end
     )
 
     # run until steady state is reached
-    epsilon = 1.0e-12
+    epsilon = 1e-12
     (; flow_length) = domain_river.parameters
     while true
         sw_river.boundary_conditions.inwater[1] = 20.0
@@ -283,5 +273,5 @@ end
     end
 
     # test for mean absolute error [cm]
-    @test mean(abs.(sw_river.variables.h .- h_a)) * 100.0 ≈ 1.873574206931199
+    @test mean(abs.(sw_river.variables.h .- h_a)) ≈ to_SI(1.873574206931199, CM)
 end

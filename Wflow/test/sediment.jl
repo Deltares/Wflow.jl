@@ -1,12 +1,16 @@
 @testitem "unit: Rainfall erosion (Eurosem, Answers)" begin
-    precip = 3.11846423149108887
-    area = 551370.3190576562
+    using Wflow: Unit, to_SI, from_SI, TON_PER_DT
     dt = 86400.0
+    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    GRAM_PER_J = Unit(; g = 1, J = -1)
+
+    precip = to_SI(3.11846423149108887, MM_PER_DT; dt_val = dt)
+    area = 551370.3190576562
 
     # Eurosem
-    interception = 0.05009511485695839
+    interception = to_SI(0.05009511485695839, MM_PER_DT; dt_val = dt)
     waterlevel = 0.0
-    soil_detachability = 2.0
+    soil_detachability = to_SI(2.0, GRAM_PER_J)
     eurosem_exponent = 2.0
     canopyheight = 0.0
     canopygapfraction = 0.1
@@ -22,7 +26,7 @@
         soilcover_fraction,
         area,
         dt,
-    ) ≈ 0.004922952011258949
+    ) ≈ 0.05697861124142303
 
     # Answers
     usle_k = 0.1
@@ -34,18 +38,18 @@
         usle_c,
         answers_rainfall_factor,
         area,
-        dt,
-    ) ≈ 0.0004021482483547921
+    ) ≈ to_SI(0.0004021482483547921, TON_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: Overland flow erosion (Answers)" begin
+    using Wflow: TON_PER_DT, to_SI
+    dt = 86400.0
     overland_flow = 300.0
     usle_k = 0.1
     usle_c = 0.01
     answers_overland_flow_factor = 0.9
     slope = 0.5
     area = 551370.3190576562
-    dt = 86400.0
 
     @test Wflow.overland_flow_erosion_answers(
         overland_flow,
@@ -54,11 +58,11 @@ end
         answers_overland_flow_factor,
         slope,
         area,
-        dt,
-    ) ≈ 7746.6546686921265
+    ) ≈ to_SI(7746.6546686921265, TON_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: River flow erosion (Julian Torres)" begin
+    using Wflow: to_SI, TON_PER_DT
     waterlevel = 0.0085
     d50 = 0.005
     width = 150.0
@@ -67,7 +71,7 @@ end
     dt = 86400.0
 
     bed, bank = Wflow.river_erosion_julian_torres(waterlevel, d50, width, length, slope, dt)
-    @test bed ≈ 1626.026639596875
+    @test bed ≈ to_SI(1626.026639596875, TON_PER_DT; dt_val = dt)
     @test bank == 0.0
 end
 
@@ -92,6 +96,8 @@ end
 end
 
 @testitem "unit: Transport capacity (Govers, Yalin)" begin
+    using Wflow: to_SI, TON_PER_DT, MM
+
     q = 100.0
     waterlevel = 1.0
     density = 2650.0
@@ -116,10 +122,10 @@ end
         reservoirs,
         rivers,
         dt,
-    ) ≈ 9.580217096195597e9
+    ) ≈ to_SI(9.580217096195597e9, TON_PER_DT; dt_val = dt)
 
     # Yalin
-    d50 = 0.1
+    d50 = to_SI(0.1, MM)
 
     @test Wflow.transport_capacity_yalin(
         q,
@@ -131,17 +137,20 @@ end
         reservoirs,
         rivers,
         dt,
-    ) ≈ 1.1821602590761435e8
+    ) ≈ to_SI(1.1821602590761435e8, TON_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: differentiation (Yalin)" begin
+    using Wflow: Unit, to_SI
+    μM = Unit(; μm = 1)
+
     waterlevel = 30.0
     density = 3020.0
-    dm_clay = 2.0
-    dm_silt = 10.0
-    dm_sand = 200.0
-    dm_sagg = 30.0
-    dm_lagg = 500.0
+    dm_clay = to_SI(2.0, μM)
+    dm_silt = to_SI(10.0, μM)
+    dm_sand = to_SI(200.0, μM)
+    dm_sagg = to_SI(30.0, μM)
+    dm_lagg = to_SI(500.0, μM)
     slope = 0.15
 
     @test Wflow.transportability_yalin_differentiation(
