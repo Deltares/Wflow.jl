@@ -69,9 +69,9 @@
               [0.0, 4.264347104462701, 5.022735931644931]
         @test reservoir.variables.waterlevel ≈
               [23.963488224416217, 32.68607771649562, 39.970184252221905]
-        @test reservoir.variables.storage ≈ [1.552834036942174e8, 4.28e7, 7.16e7]
+        @test reservoir.variables.storage ≈ [1.552834064233491e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
-              [3.2484777194372767, 9.786060151682026, 36.775649884896126]
+              [3.248477758506481, 9.78606013238214, 36.7768455543205]
         @test soil.variables.exfiltsatwater[27:33] ≈ [
             38.691415562179856,
             1.8640906989562667,
@@ -83,8 +83,8 @@
         ]
         @test maximum(soil.variables.exfiltsatwater) ≈ 341.59378295314747
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(river_flow.variables.q_av) ≈ 36.15037912106164
-        @test maximum(river_flow.variables.q_av) ≈ 140.4266200329677
+        @test mean(river_flow.variables.q_av) ≈ 36.15061722750282
+        @test maximum(river_flow.variables.q_av) ≈ 140.42694443194858
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -105,7 +105,7 @@ end
             x -> !iszero(x),
             Wflow.saturated_thickness(model.routing.subsurface_flow.aquifer),
         )
-        @test length(inds) == 7492
+        @test length(inds) == 7499
         @test all(e -> abs(e) < 1e-9, land_water_balance.error[inds])
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
@@ -119,13 +119,13 @@ end
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 0.25, land_water_balance.error)
-        @test all(re -> abs(re) < 0.10, land_water_balance.relative_error)
+        @test all(e -> abs(e) < 0.07, land_water_balance.error)
+        @test all(re -> abs(re) < 0.04, land_water_balance.relative_error)
         inds = findall(
             x -> !iszero(x),
             Wflow.saturated_thickness(model.routing.subsurface_flow.aquifer),
         )
-        @test length(inds) == 7496
+        @test length(inds) == 7499
         @test all(e -> abs(e) < 1e-9, land_water_balance.error[inds])
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
@@ -134,10 +134,10 @@ end
         @test all(e -> abs(e) < 1e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 147.0, subsurface_water_balance.error)
-        @test all(re -> abs(re) < 0.84, subsurface_water_balance.relative_error)
-        @test all(e -> abs(e) < 5.4e-8, subsurface_water_balance.error[inds])
-        @test all(re -> abs(re) <= 0.007, subsurface_water_balance.relative_error[inds])
+        @test all(e -> abs(e) < 37.0, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 0.6, subsurface_water_balance.relative_error)
+        @test all(e -> abs(e) < 5.5e-8, subsurface_water_balance.error[inds])
+        @test all(re -> abs(re) <= 0.009, subsurface_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)
 end

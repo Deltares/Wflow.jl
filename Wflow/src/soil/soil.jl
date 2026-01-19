@@ -839,17 +839,18 @@ function soil_evaporation!(model::SbmSoilModel)
         v.ustorelayerdepth[i] =
             setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][1] - soilevapunsat, 1)
 
+        theta_drainable = lower_bound_drainable_porosity(p.theta_s[i], p.theta_fc[i])
         soilevapsat = soil_evaporation_satured_store(
             potsoilevap,
             v.n_unsatlayers[i],
             p.act_thickl[i][1],
             v.zi[i],
-            p.theta_s[i] - p.theta_r[i],
+            theta_drainable,
         )
 
         v.soilevapsat[i] = soilevapsat
         v.soilevap[i] = soilevapunsat + soilevapsat
-        v.satwaterdepth[i] = v.satwaterdepth[i] - soilevapsat
+        v.drainable_waterdepth[i] = v.drainable_waterdepth[i] - soilevapsat
     end
     return nothing
 end
@@ -946,11 +947,11 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
             p.alpha_h1[i],
         )
         restpottrans = potential_transpiration[i] - actevapustore
-        actevapsat = min(restpottrans * wetroots * alpha, v.satwaterdepth[i])
+        actevapsat = min(restpottrans * wetroots * alpha, v.drainable_waterdepth[i])
 
         v.ae_ustore[i] = actevapustore
         v.actevapsat[i] = actevapsat
-        v.satwaterdepth[i] = v.satwaterdepth[i] - actevapsat
+        v.drainable_waterdepth[i] = v.drainable_waterdepth[i] - actevapsat
         v.transpiration[i] = actevapustore + actevapsat
     end
     return nothing
@@ -1044,8 +1045,10 @@ function capillary_flux!(model::SbmSoilModel)
                 i,
                 v.n_unsatlayers[i],
             )
-            maxcapflux =
-                max(0.0, min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.satwaterdepth[i]))
+            maxcapflux = max(
+                0.0,
+                min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.drainable_waterdepth[i]),
+            )
 
             if v.zi[i] > rootingdepth[i]
                 capflux =
@@ -1097,7 +1100,7 @@ function leakage!(model::SbmSoilModel)
             i,
             p.nlayers[i],
         )
-        deeptransfer = min(v.satwaterdepth[i], deepksat)
+        deeptransfer = min(v.drainable_waterdepth[i], deepksat)
         v.actleakage[i] = max(0.0, min(p.maxleakage[i], deeptransfer))
     end
     return nothing
@@ -1295,12 +1298,16 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
         vwc_percroot = (vwc_root / p.theta_s[i]) * 100.0
 
         satwaterdepth = (p.soilthickness[i] - v.zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        drainable_waterdepth =
+            (p.soilthickness[i] - v.zi[i]) *
+            lower_bound_drainable_porosity(p.theta_s[i], p.theta_fc[i])
         ustorecapacity = p.soilwatercapacity[i] - satwaterdepth - ustoredepth
 
         # update the outputs and states
         v.ustorecapacity[i] = ustorecapacity
         v.ustoredepth[i] = ustoredepth
         v.satwaterdepth[i] = satwaterdepth
+        v.drainable_waterdepth[i] = drainable_waterdepth
         v.exfiltsatwater[i] = exfiltsatwater[i]
         v.runoff[i] = sbm_runoff
         v.vwc[i] = vwc

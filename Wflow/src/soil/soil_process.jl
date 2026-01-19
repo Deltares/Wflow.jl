@@ -227,12 +227,12 @@ function soil_evaporation_satured_store(
     n_unsatlayers,
     layerthickness,
     zi,
-    theta_effective,
+    theta_drainable,
 )
     if n_unsatlayers == 0 || n_unsatlayers == 1
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
-        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_effective)
+        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable)
     else
         soilevapsat = 0.0
     end
