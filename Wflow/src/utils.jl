@@ -264,6 +264,7 @@ function apply_affine_transform!(v::Union{AbstractArray, Number}, var::InputEntr
             v .+= offset
         end
     end
+    return v
 end
 
 """
