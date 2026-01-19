@@ -1024,19 +1024,15 @@ function water_table_change(
         dh = 0.0
         f_conv = 0.001 # convert units from [mm] to [m]
         for k in n_unsatlayers:-1:1
-            flux_layer = min(
-                net_flux,
-                max(
-                    f_conv * (ustorelayerthickness[k] * theta_e - ustorelayerdepth[k]),
-                    0.0,
-                ),
-            )
-            sy = theta_e - (ustorelayerdepth[k] / ustorelayerthickness[k])
-            dh += if flux_layer == 0.0
+            capacity =
+                max(f_conv * (ustorelayerthickness[k] * theta_e - ustorelayerdepth[k]), 0.0)
+            flux_layer = min(net_flux, capacity)
+            if capacity <= net_flux
                 # if unsaturated layer is fully saturated dh equals layer thickness
-                f_conv * ustorelayerthickness[k]
+                dh += f_conv * ustorelayerthickness[k]
             else
-                flux_layer / sy
+                sy = theta_e - (ustorelayerdepth[k] / ustorelayerthickness[k])
+                dh += flux_layer / sy
             end
             net_flux -= flux_layer
             net_flux == 0.0 && break
