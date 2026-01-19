@@ -252,7 +252,7 @@ function apply_affine_transform!(v::Union{AbstractArray, Number}, var::InputEntr
     (; scale, offset) = var
     if !all(isone, scale)
         if length(scale) |> isone
-            v *= only(scale)
+            v .*= only(scale)
         else
             v .*= scale
         end
