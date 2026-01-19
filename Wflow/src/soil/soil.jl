@@ -13,6 +13,8 @@ abstract type AbstractSoilModel end
     ustorelayerthickness::Vector{SVector{N, Float64}}
     # Saturated store [mm]
     satwaterdepth::Vector{Float64}
+    # Drainable water store [mm]
+    drainable_waterdepth::Vector{Float64}
     # Pseudo-water table depth [mm] (top of the saturated zone)
     zi::Vector{Float64}
     # Number of unsaturated soil layers
@@ -157,10 +159,12 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         soilwatercapacity,
         theta_s,
         theta_r,
+        theta_fc,
     ) = parameters
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
     ustoredepth = zeros(n)
     zi = @. max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
+    drainable_waterdepth = @. (soilthickness - zi) * (theta_s - theta_fc)
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
 
@@ -174,6 +178,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         ustorecapacity = soilwatercapacity .- satwaterdepth,
         ustorelayerthickness,
         satwaterdepth,
+        drainable_waterdepth,
         zi,
         n_unsatlayers,
         vwc = svectorscopy(vwc, Val{maxlayers}()),
@@ -1321,17 +1326,26 @@ function update_diagnostic_vars!(model::SbmSoilModel)
     (;
         zi,
         satwaterdepth,
+        drainable_waterdepth,
         ustorelayerthickness,
         ustorecapacity,
         ustoredepth,
         total_soilwater_storage,
         n_unsatlayers,
     ) = model.variables
-    (; soilthickness, theta_s, theta_r, soilwatercapacity, sumlayers, act_thickl) =
-        model.parameters
+    (;
+        soilthickness,
+        theta_s,
+        theta_r,
+        theta_fc,
+        soilwatercapacity,
+        sumlayers,
+        act_thickl,
+    ) = model.parameters
 
     ustoredepth!(model)
-    @. zi .= max(0.0, soilthickness - satwaterdepth / (theta_s .- theta_r))
+    @. zi = max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
+    @. drainable_waterdepth = (soilthickness - zi) * (theta_s - theta_fc)
     @. ustorecapacity = soilwatercapacity - satwaterdepth - ustoredepth
     @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
     @. n_unsatlayers = number_of_active_layers(ustorelayerthickness)
