@@ -147,7 +147,8 @@ function kinematic_wave_ssf(
         # lower boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+            ssf_excess = (dw * dx) * theta_e * (zi - d) / dt
+            ssf = max(ssf - ssf_excess, 1.0e-30)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
@@ -172,7 +173,8 @@ function kinematic_wave_ssf(
                     zi_prev -
                     (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
                 if zi > d
-                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+                    ssf_excess = (dw * dx) * theta_e * (zi - d) / dt_s
+                    ssf = max(ssf - ssf_excess, 1.0e-30)
                 end
                 exfilt_sum += min(zi, 0.0) * -theta_e
                 zi = clamp(zi, 0.0, d)
@@ -226,7 +228,8 @@ function kinematic_wave_ssf(
         # boundary ssf
         zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
         if zi > d
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), 1.0e-30)
+            ssf_excess = (dw * dx) * theta_e * (zi - d) / dt
+            ssf = max(ssf - ssf_excess, 1.0e-30)
         end
         exfilt = min(zi, 0.0) * -theta_e
         zi = clamp(zi, 0.0, d)
