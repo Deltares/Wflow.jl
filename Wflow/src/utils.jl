@@ -251,10 +251,18 @@ end
 function apply_affine_transform!(v::Vector, var::InputEntry)
     (; scale, offset) = var
     if !all(isone, scale)
-        v .*= scale
+        if length(scale) |> isone
+            v *= only(scale)
+        else
+            v .*= scale
+        end
     end
     if !all(iszero, offset)
-        v .+= offset
+        if length(offset) |> isone
+            v .+= only(offset)
+        else
+            v .+= offset
+        end
     end
 end
 
