@@ -1045,3 +1045,8 @@ function water_table_change(
     exfilt = max(net_flux, 0.0)
     return dh, exfilt
 end
+
+"Set lower bound for drainable porosity"
+function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
+    return max(theta_s - theta_fc, lower_bound)
+end

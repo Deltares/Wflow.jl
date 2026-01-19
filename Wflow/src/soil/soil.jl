@@ -164,7 +164,8 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
     ustoredepth = zeros(n)
     zi = @. max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
-    drainable_waterdepth = @. (soilthickness - zi) * (theta_s - theta_fc)
+    drainable_waterdepth =
+        @. (soilthickness - zi) * lower_bound_drainable_porosity(theta_s, theta_fc)
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
 
@@ -1345,7 +1346,8 @@ function update_diagnostic_vars!(model::SbmSoilModel)
 
     ustoredepth!(model)
     @. zi = max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
-    @. drainable_waterdepth = (soilthickness - zi) * (theta_s - theta_fc)
+    @. drainable_waterdepth =
+        (soilthickness - zi) * lower_bound_drainable_porosity(theta_s, theta_fc)
     @. ustorecapacity = soilwatercapacity - satwaterdepth - ustoredepth
     @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
     @. n_unsatlayers = number_of_active_layers(ustorelayerthickness)
