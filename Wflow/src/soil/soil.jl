@@ -77,8 +77,8 @@ abstract type AbstractSoilModel end
     total_storage::Vector{Float64} = zeros(Float64, n)
     # Total soil water storage [mm => m]
     total_soilwater_storage::Vector{Float64}
-    # Top soil temperature [ᵒC]
-    tsoil::Vector{Float64} = fill(10.0, n)
+    # Top soil temperature [ᵒC => K]
+    tsoil::Vector{Float64} = to_SI.(fill(10.0, n), ABSOLUTE_DEGREES)
     # Soil infiltration reduction factor (when soil is frozen) [-]
     f_infiltration_reduction::Vector{Float64} = ones(n)
 end
@@ -127,15 +127,15 @@ end
     rootdistpar::Vector{Float64}
     # Fraction of the root length density in each soil layer [-]
     rootfraction::Vector{SVector{N, Float64}}
-    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
+    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm => m]
     h1::Vector{Float64}
-    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
+    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm => m]
     h2::Vector{Float64}
-    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
+    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm => m]
     h3_high::Vector{Float64}
-    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
+    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm => m]
     h3_low::Vector{Float64}
-    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
+    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm => m]
     h4::Vector{Float64}
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
     alpha_h1::Vector{Float64}
@@ -822,7 +822,7 @@ function soil_evaporation!(model::SbmSoilModel)
         potsoilevap = potential_soilevaporation[i]
         # First calculate the evaporation of unsaturated storage into the
         # atmosphere from the upper layer.
-        soilevapunsat = soil_evaporation_unsatured_store(
+        soilevapunsat = soil_evaporation_unsaturated_store(
             potsoilevap,
             v.ustorelayerdepth[i][1],
             v.ustorelayerthickness[i][1],
@@ -838,7 +838,7 @@ function soil_evaporation!(model::SbmSoilModel)
         v.ustorelayerdepth[i] =
             setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][1] - soilevapunsat, 1)
 
-        soilevapsat = soil_evaporation_satured_store(
+        soilevapsat = soil_evaporation_saturated_store(
             potsoilevap,
             v.n_unsatlayers[i],
             p.act_thickl[i][1],

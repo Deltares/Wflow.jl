@@ -116,12 +116,15 @@ Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
     # [-]
-    par_lambda = 2.0 / (c - 3.0)
-    # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
-    # part of the numerical vwc calculation
-    # [m] = [m] / (([-] / [-])^inv([-]))
-    h = hb / (pow(((vwc) / (theta_s - theta_r)), inv(par_lambda)))
-    h = min(h, hb)
+    par_lambda = 2 / (c - 3.0)
+    h = if par_lambda > 0
+        # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
+        # part of the numerical vwc calculation
+        # [m] = [m] / (([-] / [-])^inv([-]))
+        hb / pow(vwc / (theta_s - theta_r), inv(par_lambda))
+    else
+        hb
+    end
     return h
 end
 
@@ -201,7 +204,8 @@ function infiltration_reduction_factor(
 )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)
-        f_infiltration_reduction = scurve(tsoil, 0.0, bb, 8.0) + cf_soil
+        f_infiltration_reduction =
+            scurve(tsoil, to_SI(0.0, ABSOLUTE_DEGREES), bb, 8.0) + cf_soil
     else
         f_infiltration_reduction = 1.0
     end
@@ -209,7 +213,7 @@ function infiltration_reduction_factor(
 end
 
 "Return soil evaporation from the unsaturated store"
-function soil_evaporation_unsatured_store(
+function soil_evaporation_unsaturated_store(
     potential_soilevaporation,
     ustorelayerdepth,
     ustorelayerthickness,
@@ -221,29 +225,34 @@ function soil_evaporation_unsatured_store(
         soilevapunsat = 0.0
     elseif n_unsatlayers == 1
         # Check if groundwater level lies below the surface
+        # [m s⁻¹] = [m s⁻¹] * min([-], [m] / ([m] * [-]))
         soilevapunsat =
             potential_soilevaporation * min(1.0, ustorelayerdepth / (zi * theta_effective))
     else
         # In case first layer contains no saturated storage
+        # [m s⁻¹] = [m s⁻¹] * min([-], [m] / ([m] * [-]))
         soilevapunsat =
             potential_soilevaporation *
-            min(1.0, ustorelayerdepth / (ustorelayerthickness * (theta_effective)))
+            min(1.0, ustorelayerdepth / (ustorelayerthickness * theta_effective))
     end
     return soilevapunsat
 end
 
 "Return soil evaporation from the saturated store"
-function soil_evaporation_satured_store(
+function soil_evaporation_saturated_store(
     potential_soilevaporation,
     n_unsatlayers,
     layerthickness,
     zi,
     theta_effective,
+    dt,
 )
-    if n_unsatlayers == 0 || n_unsatlayers == 1
+    if n_unsatlayers in (0, 1)
+        # [m s⁻¹] = [m s⁻¹] * min([-], ([m] - [m])/[m])
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
-        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_effective)
+        # [m s⁻¹] = min([m s⁻¹], ([m] - [m]) * [-] / [s])
+        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_effective / dt)
     else
         soilevapsat = 0.0
     end

@@ -8,12 +8,12 @@ Glacier melting is modelled using a temperature degree factor and only
 occurs if the snow storage < 10 mm.
 
 # Arguments
-- `glacierFrac` fraction covered by glaciers [-]
-- `glacierstore` volume of the glacier [mm => m] w.e.
+- `glacier_frac` fraction covered by glaciers [-]
+- `glacier_store` volume of the glacier [mm => m] w.e.
 - `snow_storage` snow storage on top of glacier [mm => m]
 - `temperature` air temperature [°C => K]
 - `ttm` temperature threshold for ice melting [°C => K]
-- `cfmax` ice degree-day factor in [mm °C⁻¹ dt⁻¹ => m K⁻¹ s⁻¹]
+- `cfmax` ice degree-day factor in [mm °C⁻¹ day⁻¹ => m K⁻¹ s⁻¹]
 - `g_sifrac` fraction of the snow turned into ice [-]
 - `max_snow_to_glacier` maximum snow to glacier conversion rate
 
@@ -39,8 +39,8 @@ function glacier_hbv(
     # Fraction of the snow transformed into ice (HBV-light model)
     # [m s⁻¹]
     snow_to_glacier = if glacier_frac > 0.0
-        # [-] * [m] / [s]
-        g_sifrac * snow_storage / dt
+        # [s⁻¹] * [m]
+        g_sifrac * snow_storage
     else
         0.0
     end
