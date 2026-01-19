@@ -13,6 +13,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Water mass balance computation for `LateralSSF` at a sub-daily model timestep. A unit
   conversion (to sub-daily timestep) of the `recharge` variable was missing and has been
   added.
+- Fixed issue with where the reservoir outflow could become negative for very low reservoir
+  storage values, due to floating point precision errors. The `storage_input` variable is
+  now limited to a minimum of zero.
 - Limiting kinematic wave subsurface flow that flows partly below the soil bottom while
   solving the kinematic wave has been fixed. The computation to limit subsurface flow was
   not correct resulting in an subsurface flow overestimation.
