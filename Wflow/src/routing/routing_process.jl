@@ -136,7 +136,7 @@ function kinematic_wave_ssf(
     dw,
     ssfmax,
     kh_profile::Union{KhExponential, KhExponentialConstant},
-    soil,
+    soil::SbmSoilModel,
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
@@ -250,7 +250,7 @@ function kinematic_wave_ssf(
     dw,
     ssfmax,
     kh_profile::KhLayered,
-    soil,
+    soil::SbmSoilModel,
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
