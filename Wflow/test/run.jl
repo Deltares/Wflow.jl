@@ -7,6 +7,7 @@
     # test whether restarted runs get the same results as continuous ones, i.e. state is captured
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     # January at once, cold start
     config.time.starttime = DateTime("2000-01-01T00:00:00")

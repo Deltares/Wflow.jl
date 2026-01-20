@@ -80,6 +80,7 @@ juliaup = "*"
 python = ">=3.10"
 jupyter = ">=1.1.1,<2"
 pre-commit = "*"
+quarto = ">=1.8.26,<2"
 
 [system-requirements]
 linux = "3.10.0"
