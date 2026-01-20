@@ -36,6 +36,12 @@
         vegetation_parameter_set = Wflow.VegetationParameters(;
             rootingdepth = [150.0],
             leaf_area_index = nothing,
+            storage_wood = nothing,
+            kext = nothing,
+            storage_specific_leaf = nothing,
+            canopygapfraction = [0.5],
+            cmax = [0.0],
+            kc = [1.0],
         ),
     )
 

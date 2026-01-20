@@ -3,19 +3,19 @@
     # Leaf area index [m² m⁻²]
     leaf_area_index::Union{Vector{Float64}, Nothing}
     # Storage woody part of vegetation [mm]
-    storage_wood::Union{Vector{Float64}, Nothing} = nothing
+    storage_wood::Union{Vector{Float64}, Nothing}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Union{Vector{Float64}, Nothing} = nothing
+    kext::Union{Vector{Float64}, Nothing}
     # Specific leaf storage [mm]
-    storage_specific_leaf::Union{Vector{Float64}, Nothing} = nothing
+    storage_specific_leaf::Union{Vector{Float64}, Nothing}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{Float64} = []
+    canopygapfraction::Vector{Float64}
     # Maximum canopy storage [mm]
-    cmax::Vector{Float64} = []
+    cmax::Vector{Float64}
     # Rooting depth [mm]
-    rootingdepth::Vector{Float64} = []
+    rootingdepth::Vector{Float64}
     # Crop coefficient Kc [-]
-    kc::Vector{Float64} = []
+    kc::Vector{Float64}
 end
 
 "Initialize (shared) vegetation parameters"
