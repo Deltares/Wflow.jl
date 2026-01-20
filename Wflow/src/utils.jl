@@ -234,7 +234,7 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
 end
 
 """
-Apply the affine transform in `var`` to the incoming array `A` in place element-wise.
+Apply the affine transform in `var` to the incoming array `A` in place element-wise.
 The affine transform consists of a scaling by `scale` and a translation by `offset`.
 These operations are only applied when non-trivial.
 """
