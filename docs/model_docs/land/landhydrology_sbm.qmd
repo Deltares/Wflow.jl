@@ -405,9 +405,12 @@ first evaporated from the unsaturated store. The remaining potential soil evapor
 used for evaporation from the saturated store, but only when the water table is present in
 the upper soil layer. Both the evaporation from the unsaturated store and the evaporation
 from the saturated store are limited by the minimum of the remaining potential soil
-evaporation and the available water in the unsaturated/saturated zone of the upper soil
-layer. The evaporation (both unsaturated and saturated) decreases linearly with decreasing
-water availability, as indicated by the figure below.
+evaporation and the available water in respectively the unsaturated and saturated zone of
+the upper soil layer. Available water in the unsaturated and saturated zone is based on the
+effective porosity (difference between saturated and residual water content) and drainable
+porosity (difference between water content at saturation and field capacity). The
+evaporation (both unsaturated and saturated) decreases linearly with decreasing water
+availability, as indicated by the figure below.
 
 ```{julia}
 # | code-fold: true
@@ -645,8 +648,8 @@ rooting depth, the reduction coefficient $\alpha$ and the fraction of wet roots.
 fraction of wet roots is determined using a sigmoid function (see figure below). The
 parameter `rootdistpar` defines the sharpness of the transition between fully wet and fully
 dry roots. The remaining potential transpiration is multiplied by the wet roots fraction and
-$\alpha$ (and limited by the available water in saturated zone) to get the transpiration
-from the saturated part of the soil.
+$\alpha$ (and limited by the available water in saturated zone based on drainable porosity)
+to get the transpiration from the saturated part of the soil.
 
 ```{julia}
 # | code-fold: true
