@@ -233,23 +233,28 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
     return var
 end
 
-function apply_affine_transform!(v::Union{AbstractArray, Number}, var::InputEntry)
+"""
+Apply the affine transform in var to the incoming array A in place element-wise.
+The affine transform consists of a scaling by `scale` and a translation by `offset`.
+These operations are only applied when non-trivial.
+"""
+function apply_affine_transform!(A::Union{AbstractArray, Number}, var::InputEntry)
     (; scale, offset) = var
     if !all(isone, scale)
         if length(scale) |> isone
-            v .*= only(scale)
+            A .*= only(scale)
         else
-            v .*= scale
+            A .*= scale
         end
     end
     if !all(iszero, offset)
         if length(offset) |> isone
-            v .+= only(offset)
+            A .+= only(offset)
         else
-            v .+= offset
+            A .+= offset
         end
     end
-    return v
+    return A
 end
 
 """
