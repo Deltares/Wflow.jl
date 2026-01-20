@@ -46,7 +46,7 @@
     end
 end
 
-@testitem "Streamorder and subbasins" begin
+@testitem "unit: Streamorder and subbasins" begin
     using Graphs: Graphs, Graph, DiGraph, add_edge!, topological_sort_by_dfs
     # directed acyclic graph of basin
     g = DiGraph(16)

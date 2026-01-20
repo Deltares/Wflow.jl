@@ -1,3 +1,49 @@
+@testitem "unit: kinematic_wave" begin
+    alpha = 2.586
+    beta = 0.6
+    dt = 600.0
+    dx = 1061.375
+
+    # Case !(q_in + q_prev + q_lat ≈ 0.0)
+    q_in = 1.104e-6
+    q_prev = 0.0
+    q_lat = 1.142e-6
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) ≈
+          1.09308660753423e-6
+
+    # Case q_in + q_prev + q_lat ≈ 0.0
+    q_in = 0.0
+    q_prev = 0.0
+    q_lat = 0.0
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) == 0.0
+end
+
+@testitem "unit: ssf_celerity" begin
+    zi = 0.3
+    theta_e = 0.274
+    slope = 0.00586
+    i = 1
+
+    # Case kh_profile::KhExponential
+    kh_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈ 0.3010012323985728
+
+    # Case kh_profile::KhExponentialConstant
+    kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈ 0.3603676427614705
+end
+
+@testitem "unit: kw_ssf_newton_raphson" begin
+    ssf = 754.993
+    constant_term = 77.774
+    celerity = 12.254
+    dt = 1.0
+    dx = 1103.816
+
+    @test Wflow.kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx) ≈
+          942.5785713676884
+end
+
 @testitem "kinematic wave overland flow" begin
     using NCDatasets: NCDataset
     using Graphs: topological_sort_by_dfs
@@ -48,88 +94,125 @@
     @test Q[sink] ≈ 4131.101474418251
 end
 
-@testitem "kinematic wave subsurface flow" begin
+@testitem "unit: kinematic_wave_ssf" begin
     using StaticArrays: SVector
-    kh_exp_profile = Wflow.KhExponential([205.5965576171875], [1.0141291422769427])
+    include("testing_utils.jl")
+    n = 1
+    N = 4
 
-    ustorelayerthickness = fill(SVector{4}([100.0, 300.0, 119.83408703759733, NaN]), 1)
-    ustorelayerdepth = fill(
-        SVector{4}([0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0]),
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 119.83408703759733, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [519.8340870375973],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+    )
+
+    ssfin = 0.0
+    ssf_prev = 25953.147860945584
+    zi_prev = 0.5198340870375974
+    r = 0.4346106913943182
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
+    d = 2.0
+    dt = 1.0
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 79.62016166711079
+    kh_profile = Wflow.KhExponential([205.5965576171875], [1.0141291422769427])
+    i = 1
+
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        r,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil,
+        i,
+    )
+    @test ssf ≈ 23675.53215503045
+    @test zi ≈ 0.7162637030758906
+    @test exfilt ≈ 0.0
+    @test sy_d ≈ 0.20423455984891598
+
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 348.31246153148595, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 58.42501219303608, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [758.8905603985703],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+    )
+
+    ssfin = 0.0
+    ssf_prev = 54175.65003911068
+    zi_prev = 0.7588905603985703
+    r = 0.6928420612599803
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
+    d = 2.0
+    dt = 1.0
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 153.46698446681825
+    kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
+    i = 1
+
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        r,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil,
         1,
     )
-    n_unsatlayers = fill(3, 1)
-    zi = fill(519.8340870375973, 1)
-    theta_s = fill(0.48642662167549133, 1)
-    theta_fc = fill(0.28219206182657536, 1)
-    theta_r = fill(0.11939866840839386, 1)
-    sumlayers = fill(SVector{5}([0.0, 100.0, 400.0, 1200.0, 2000.0]), 1)
-    act_thickl = fill(SVector{4}([100.0, 300.0, 800.0, 800.0]), 1)
 
-    variables = (; ustorelayerthickness, ustorelayerdepth, n_unsatlayers, zi)
-    parameters = (; theta_s, theta_fc, theta_r, sumlayers, act_thickl)
-    soil = (; parameters, variables)
-
-    @test all(
-        isapprox.(
-            Wflow.kinematic_wave_ssf(
-                0.0,
-                25953.147860945584,
-                0.5198340870375974,
-                0.4346106913943182,
-                0.4522336721420288,
-                0.20423455984891598,
-                2.0,
-                1.0,
-                1117.0150713112287,
-                517.495693771673,
-                79.62016166711079,
-                kh_exp_profile,
-                soil,
-                1,
-            ),
-            (23675.53215503045, 0.7162637030758906, 0.0, 0.20423455984891598),
-        ),
-    )
-    kh_exp_const_profile = Wflow.KhExponentialConstant(kh_exp_profile, [0.2])
-    ustorelayerthickness = fill(SVector{4}([100.0, 300.0, 348.31246153148595, NaN]), 1)
-    ustorelayerdepth =
-        fill(SVector{4}([0.1909439890049523, 16.27933934181815, 58.42501219303608, 0.0]), 1)
-    n_unsatlayers = fill(3, 1)
-    zi = fill(758.8905603985703, 1)
-    theta_s = fill(0.48642662167549133, 1)
-    theta_fc = fill(0.28219206182657536, 1)
-    theta_r = fill(0.11939866840839386, 1)
-    sumlayers = fill(SVector{5}([0.0, 100.0, 400.0, 1200.0, 2000.0]), 1)
-    act_thickl = fill(SVector{4}([100.0, 300.0, 800.0, 800.0]), 1)
-
-    variables = (; ustorelayerthickness, ustorelayerdepth, n_unsatlayers, zi)
-    parameters = (; theta_s, theta_fc, theta_r, sumlayers, act_thickl)
-    soil = (; parameters, variables)
-
-    @test all(
-        isapprox.(
-            Wflow.kinematic_wave_ssf(
-                0.0,
-                54175.65003911068,
-                0.7588905603985703,
-                0.6928420612599803,
-                0.4522336721420288,
-                0.20423455984891598,
-                2.0,
-                1.0,
-                1117.0150713112287,
-                517.495693771673,
-                153.46698446681825,
-                kh_exp_const_profile,
-                soil,
-                1,
-            ),
-            (48524.884193017664, 1.163361369433857, 0.0, 0.20423455984891598),
-        ),
-    )
+    @test ssf ≈ 48524.884193017664
+    @test zi ≈ 1.163361369433857
+    @test exfilt ≈ 0.0
+    @test sy_d ≈ 0.20423455984891598
 end
 
-@testitem "accucapacity" begin
+@testitem "unit: accucapacity" begin
     using Graphs: DiGraph, add_edge!
     # test based on a subset of the examples at
     # https://pcraster.geo.uu.nl/pcraster/4.3.0/documentation/pcraster_manual/sphinx/op_accucapacity.html#examples
@@ -320,4 +403,60 @@ end
 
     # test for mean absolute error [cm]
     @test mean(abs.(sw_river.variables.h .- h_a)) * 100.0 ≈ 1.873574206931199
+end
+
+@testitem "unit: local_inertial_flow" begin
+    # Case of general area
+    q0 = 0.0004713562869434079
+    zs0 = 206.10117949049967
+    zs1 = 201.9003737619653
+    hf = 0.0011733869840497846
+    A = 0.04970535373017763
+    R = 0.0011733219820725962
+    length = 533.453125
+    mannings_n_sq = 0.0008999999597668652
+    froude_limit = true
+    dt = 89.29563868855615
+
+    @test Wflow.local_inertial_flow(
+        q0,
+        zs0,
+        zs1,
+        hf,
+        A,
+        R,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    ) ≈ 0.005331926324969742
+
+    # Case of rectangular area
+    theta = 1.0
+    q0 = 0.0001769756305800402
+    qd = 0.0
+    qu = 0.0
+    zs0 = 601.4761297394623
+    zs1 = 601.4730243288751
+    hf = 0.00310727852479431
+    width = 620.6649135473787
+    length = 926.602742473319
+    mannings_n_sq = 0.1773345894316103
+    froude_limit = true
+    dt = 49.774905820268735
+
+    @test Wflow.local_inertial_flow(
+        theta,
+        q0,
+        qd,
+        qu,
+        zs0,
+        zs1,
+        hf,
+        width,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    ) ≈ 0.00017992597962222483
 end

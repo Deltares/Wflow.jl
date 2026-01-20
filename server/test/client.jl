@@ -107,7 +107,7 @@
             inds = [1, 5, 10],
         )
         @test request(msg)["value_at_indices"] ≈
-              [2.4118611241579373, 2.941398980586549, 3.828586012331925]
+              [2.4112735500660465, 2.940689882444756, 3.8274095228773835]
         msg = (
             fn = "set_value",
             name = "soil_water_saturated_zone_top__depth",

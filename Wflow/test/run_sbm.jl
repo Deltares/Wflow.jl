@@ -5,6 +5,7 @@
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     (; domain) = model
@@ -107,7 +108,7 @@
         @test snow.variables.snow_storage[5] ≈ 3.843412524052313
         @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949
         @test sbm.variables.total_storage[50063] ≈ 560.0151437824605
-        @test sbm.variables.total_storage[429] ≈ 623.1804359396649  # river cell
+        @test sbm.variables.total_storage[429] ≈ 623.1814665413528  # river cell
     end
 
     @testset "subsurface flow" begin
@@ -120,7 +121,7 @@
 
     @testset "overland flow" begin
         q = model.routing.overland_flow.variables.q_av
-        @test sum(q) ≈ 337.94787419314093
+        @test sum(q) ≈ 337.9150614435162
         @test q[26625] ≈ 0.0
         @test q[39308] ≈ 0.0
         @test q[domain.land.network.order[end]] ≈ 1.0e-30
@@ -128,10 +129,10 @@
 
     @testset "river flow" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4187.154747445427
-        @test q[1622] ≈ 0.0007514918443750375
-        @test q[43] ≈ 13.018383521570259
-        @test q[domain.river.network.order[end]] ≈ 0.04418439910072365
+        @test sum(q) ≈ 4186.784533496028
+        @test q[1622] ≈ 0.0007514918116697234
+        @test q[43] ≈ 13.017224224000445
+        @test q[domain.river.network.order[end]] ≈ 0.04418440154818148
     end
 
     @testset "reservoir simple" begin
@@ -150,6 +151,7 @@
     # test without lateral snow transport
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.snow_gravitational_transport__flag = false
 
     model = Wflow.Model(config)
@@ -165,6 +167,7 @@
 
     # test without snow model
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.snow__flag = false
     pop!(config.output.netcdf_grid.variables, "snowpack_dry_snow__leq_depth")
     pop!(config.output.netcdf_grid.variables, "snowpack_liquid_water__depth")
@@ -184,6 +187,7 @@ end
     # resulting in 3 basins)
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.pit__flag = true
     config.input.basin_pit_location__mask = "wflow_pits"
     config.time.endtime = DateTime(2000, 1, 9)
@@ -201,7 +205,7 @@ end
         q = model.routing.river_flow.variables.q_av
         @test q[4009] ≈ 8.537505679075965 # pit/ outlet, CartesianIndex(141, 228)
         @test q[4020] ≈ 0.00679127033819331 # downstream of pit 4009, CartesianIndex(141, 229)
-        @test q[2508] ≈ 171.98268196274407 # pit/ outlet
+        @test q[2508] ≈ 171.98373520045266 # pit/ outlet
         @test q[5808] ≈ 0.12330636063280076  # pit/ outlet
     end
 end
@@ -210,6 +214,7 @@ end
     # Run unchanged
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
 
     Wflow.run_timestep!(model)
@@ -255,6 +260,7 @@ end
 @testitem "Cyclic river and reservoir external inflow (kinematic wave routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     config.input.cyclic["river_water__external_inflow_volume_flow_rate"] = "inflow"
     config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
@@ -268,7 +274,7 @@ end
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_av[44] ≈ 11.48873108635753
+        @test model.routing.river_flow.variables.q_av[44] ≈ 11.487790151625433
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
         @test reservoir.boundary_conditions.inflow[2] ≈ -0.9035070845177204
@@ -279,6 +285,7 @@ end
 @testitem "Cyclic river and reservoir external inflow (local inertial routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     config.input.cyclic["river_water__external_inflow_volume_flow_rate"] = "inflow"
     config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
@@ -292,7 +299,7 @@ end
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
         @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_av[44] ≈ 11.443249008491575
+        @test model.routing.river_flow.variables.q_av[44] ≈ 11.44231608429484
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
         @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
         @test reservoir.boundary_conditions.inflow[2] ≈ -0.9071802850784522
@@ -303,7 +310,9 @@ end
 @testitem "External negative inflow" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
+    config.dir_output = mktempdir()
     model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
     (; actual_external_abstraction_av, external_inflow) =
         model.routing.river_flow.boundary_conditions
@@ -313,18 +322,19 @@ end
         @test actual_external_abstraction_av[44] ≈ 1.6066097432532513
         @test q_av[44] ≈ 1.4512198057949857
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 6.140502525799602
-        @test q_av[44] ≈ 4.625502996485344
+        @test actual_external_abstraction_av[44] ≈ 6.140179747100433
+        @test q_av[44] ≈ 4.6250257296378585
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 9.917170374623714
+        @test actual_external_abstraction_av[44] ≈ 9.917025948850897
         @test external_inflow[44] == -10.0
-        @test q_av[44] ≈ 10.081371804532058
+        @test q_av[44] ≈ 10.082144509214096
     end
 end
 
 @testitem "Fixed forcing (precipitation = 2.5)" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] = 2.5
     model = Wflow.Model(config)
     Wflow.load_fixed_forcing!(model)
@@ -359,6 +369,7 @@ end
 @testitem "Local-inertial option for river flow river_routing" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
@@ -366,14 +377,14 @@ end
 
     @testset "river flow and depth (local inertial)" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4217.4353293474005
+        @test sum(q) ≈ 4217.0313359116935
         @test q[1622] ≈ 7.312412830514379e-5
-        @test q[43] ≈ 12.774011691903313
-        @test q[501] ≈ 4.014194960710372
+        @test q[43] ≈ 12.772881891049886
+        @test q[501] ≈ 4.013561017640277
         h = model.routing.river_flow.variables.h
         @test h[1622] ≈ 0.0019184803167210742
-        @test h[43] ≈ 0.47610216955453677
-        @test h[501] ≈ 0.4217060308558738
+        @test h[43] ≈ 0.47608133061126595
+        @test h[501] ≈ 0.4216627098182128
         q_channel = model.routing.river_flow.variables.q_channel_av
         @test q ≈ q_channel
     end
@@ -382,6 +393,7 @@ end
 @testitem "External negative inflow local-inertial river flow" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
     (; actual_external_abstraction_av, external_inflow, reservoir) =
@@ -392,12 +404,12 @@ end
         @test actual_external_abstraction_av[44] ≈ 3.0444083521846212
         @test q_av[44] ≈ 0.0007127746171795451
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 9.795618210961049
-        @test q_av[44] ≈ 0.9330601853042995
+        @test actual_external_abstraction_av[44] ≈ 9.795575003430386
+        @test q_av[44] ≈ 0.9321825114840181
         Wflow.run_timestep!(model)
         @test actual_external_abstraction_av[44] ≈ 9.999999999999991
         @test external_inflow[44] == -10.0
-        @test q_av[44] ≈ 9.903467850349777
+        @test q_av[44] ≈ 9.90421050773167
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -405,6 +417,7 @@ end
 @testitem "Local-inertial option for river and overland flow" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
@@ -435,6 +448,7 @@ end
 @testitem "Local-inertial option for river flow including 1D floodplain schematization" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
 
     (; flow_length, flow_length) = model.domain.river.parameters
@@ -537,16 +551,16 @@ end
 
     @testset "river flow (local inertial) with floodplain schematization simulation" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4203.24153702621
+        @test sum(q) ≈ 4202.843362267012
         @test q[1622] ≈ 7.312412831688984e-5
-        @test q[43] ≈ 12.774011691903329
-        @test q[501] ≈ 3.9095556990250735
-        @test q[5808] ≈ 0.0022137184533284945
+        @test q[43] ≈ 12.772881891049861
+        @test q[501] ≈ 3.908995869643488
+        @test q[5808] ≈ 0.0022137241591687414
         h = model.routing.river_flow.variables.h
         @test h[1622] ≈ 0.0019184803167033389
-        @test h[43] ≈ 0.4761021695545351
-        @test h[501] ≈ 0.4135202099064374
-        @test h[5808] ≈ 0.007328532856496975
+        @test h[43] ≈ 0.476081330611265
+        @test h[501] ≈ 0.413479623748406
+        @test h[5808] ≈ 0.0073285586787802575
     end
 
     # set boundary condition local inertial routing from netCDF file
@@ -558,15 +572,15 @@ end
 
     @testset "change boundary condition for local inertial routing (including floodplain)" begin
         q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 4203.430156736818
+        @test sum(q) ≈ 4203.0319819326905
         @test q[1622] ≈ 7.312412831688984e-5
-        @test q[43] ≈ 12.774011691903329
-        @test q[501] ≈ 3.9095556990250735
-        @test q[5808] ≈ 0.05514127007113524
+        @test q[43] ≈ 12.772881891049861
+        @test q[501] ≈ 3.908995869643488
+        @test q[5808] ≈ 0.05514128167881398
         h = model.routing.river_flow.variables.h
         @test h[1622] ≈ 0.0019184803167033389
-        @test h[43] ≈ 0.4761021695545351
-        @test h[501] ≈ 0.4135202099064374
+        @test h[43] ≈ 0.476081330611265
+        @test h[501] ≈ 0.413479623748406
         @test h[5808] ≈ 2.0000256770311324
     end
     Wflow.close_files(model; delete_output = false)
@@ -576,6 +590,7 @@ end
         tomlpath = joinpath(@__DIR__, "sbm_config.toml")
         function get_config(profile)
             config = Wflow.Config(tomlpath)
+            config.dir_output = mktempdir()
             config.model.saturated_hydraulic_conductivity_profile = profile
             config.input.static["soil_layer_water__vertical_saturated_hydraulic_conductivity"] = "kv"
             config.input.static["soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth"] =
@@ -659,13 +674,14 @@ end
         end
 
         @testset "river flow layered exponential profile" begin
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
             q = model.routing.river_flow.variables.q_av
-            @test sum(q) ≈ 3308.5544697349515
+            @test sum(q) ≈ 3308.46387351294
             @test q[1622] ≈ 0.0006989471904416826
-            @test q[43] ≈ 9.693652836847482
+            @test q[43] ≈ 9.693133468979447
         end
 
         Wflow.close_files(model; delete_output = false)
@@ -675,6 +691,7 @@ end
 @testitem "run wflow sbm" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.time.endtime = "2000-01-05"
     Wflow.run(config)
 end
@@ -682,6 +699,7 @@ end
 @testitem "water balance sbm (kinematic wave routing)" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; land_water_balance, routing) = model.mass_balance
@@ -720,7 +738,7 @@ end
 @testitem "water balance river local inertial routing" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
-    model = Wflow.Model(config)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; river_water_balance) = model.mass_balance.routing
@@ -740,6 +758,7 @@ end
 @testitem "water balance river local inertial routing with floodplain" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; river_water_balance) = model.mass_balance.routing
@@ -759,6 +778,7 @@ end
 @testitem "water balance river and land local inertial routing" begin
     tomlpath = joinpath(@__DIR__, "sbm_river-land-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
     model = Wflow.Model(config)
     (; overland_water_balance) = model.mass_balance.routing
