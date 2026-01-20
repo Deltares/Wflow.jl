@@ -211,12 +211,12 @@ function water_demand_root_zone(soil::SbmSoilModel, i::Int, k::Int)
 
     rootingdepth = get_rootingdepth(soil)
 
-    # [-] = [m] / [m]
+    # [-] = clamp(([m] - [m]) / [m], [-], [-])
     rootfrac =
-        min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / ustorelayerthickness[i][k]))
+        clamp((rootingdepth[i] - sumlayers[i][k]) / ustorelayerthickness[i][k], 0.0, 1.0)
     # vwc_f and vwc_h3 can be precalculated.
     # [-]
-    vwc_fc = vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
+    vwc_fc = vwc_brooks_corey(-1.0, hb[i], theta_s[i], theta_r[i], c[i][k])
     # [-]
     vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
     # [m] = ([-] * [m]) - ([m] + [-] * [m])
@@ -246,9 +246,9 @@ function compute_demand_gross(
     # [m s⁻¹] = [-] * [-] * [m s⁻¹]
     infiltration_capacity =
         f_infiltration_reduction[i] * (1.0 - pathfrac[i]) * infiltcapsoil[i]
-    # [m s⁻¹] = min([m] / [s], [m s⁻¹])
+    # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])
     irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
-    # [m] = [m] / [-]
+    # [m s⁻¹] = [m s⁻¹] / [-]
     irri_dem_gross /= irrigation_efficiency[i]
     # limit irrigation demand to the maximum irrigation rate
     irri_dem_gross = min(irri_dem_gross, maximum_irrigation_rate[i])
@@ -530,7 +530,7 @@ end
 @with_kw struct AllocationRiverVariables
     n::Int
     act_surfacewater_abst::Vector{Float64} = zeros(n)       # actual surface water abstraction [mm dt⁻¹ => m s⁻¹]
-    act_surfacewater_abst_vol::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ dt⁻¹ => m³ s⁻¹]
+    act_surfacewater_abst_vol::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ s⁻¹]
     available_surfacewater::Vector{Float64} = zeros(n)      # available surface water [m³]
     nonirri_returnflow::Vector{Float64} = zeros(n)          # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
 end
@@ -687,7 +687,7 @@ function surface_water_allocation_local!(
                 max(available_volume - abstraction_vol, 0.0)
             # [m s⁻¹] = [m³] / ([m²] * [s])
             abstraction = abstraction_vol / (area[i] * dt)
-            # [m s⁻¹] = max([m s⁻¹] - [m s⁻¹])
+            # [m s⁻¹] = max([m s⁻¹] - [m s⁻¹], [m s⁻¹])
             surfacewater_demand[i] = max(surfacewater_demand[i] - abstraction, 0.0)
             # [m s⁻¹]
             # update actual abstraction from river and surface water allocation (land cell)
@@ -723,9 +723,10 @@ function surface_water_allocation_area!(
 
     for i in eachindex(inds_river)
         # surface water_demand (allocation area)
-        sw_demand_vol =
-            mapreduce(j -> surfacewater_demand[j] * 1e-3 * area[j], +, inds_land[i])
+        # [m³ s⁻¹] = ∑ [m s⁻¹] * [m²]
+        sw_demand_vol = mapreduce(j -> surfacewater_demand[j] * area[j], +, inds_land[i])
 
+        # [m³]
         sw_available = available_surface_water!(
             available_surfacewater,
             reservoir,
@@ -734,8 +735,9 @@ function surface_water_allocation_area!(
             dt,
         )
 
-        # total actual surface water abstraction [m3] in an allocation area, minimum of
+        # total actual surface water abstraction [m³] in an allocation area, minimum of
         # available surface water and demand in an allocation area.
+        # [m³] = min([m³], [m³])
         sw_abstraction = min(sw_available, sw_demand_vol)
 
         # fraction of available surface water that can be abstracted at allocation area

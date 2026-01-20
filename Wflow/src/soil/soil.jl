@@ -3,7 +3,7 @@ abstract type AbstractSoilModel end
 "Struct for storing SBM soil model variables"
 @with_kw struct SbmSoilVariables{N}
     n::Int
-    # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
+    # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm => m]
     h3::Vector{Float64} = fill(MISSING_VALUE, n)
     # Unsaturated store capacity [mm => m]
     ustorecapacity::Vector{Float64}
@@ -78,7 +78,7 @@ abstract type AbstractSoilModel end
     # Total soil water storage [mm => m]
     total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC => K]
-    tsoil::Vector{Float64} = to_SI.(fill(10.0, n), ABSOLUTE_DEGREES)
+    tsoil::Vector{Float64} = to_SI.(fill(10.0, n), Ref(ABSOLUTE_DEGREES))
     # Soil infiltration reduction factor (when soil is frozen) [-]
     f_infiltration_reduction::Vector{Float64} = ones(n)
 end

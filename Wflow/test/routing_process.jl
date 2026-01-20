@@ -338,7 +338,7 @@ end
         end
     end
 
-    # test for mean absolute error [cm]
+    # test for mean absolute error [m]
     @test mean(abs.(sw_river.variables.h .- h_a)) ≈ to_SI(1.873574206931199, CM)
 end
 
