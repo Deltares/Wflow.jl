@@ -67,7 +67,9 @@ end
 end
 
 @testitem "Lenses" begin
-    models = Wflow.Model[]
+    configs_sbm = Wflow.Config[]
+    configs_sediment = Wflow.Config[]
+
     # Initialize the first model with mass balance
     do_mass_balance = true
     for file_name in [
@@ -76,8 +78,6 @@ end
         "sbm_river-floodplain-local-inertial_config.toml",
         "sbm_river-land-local-inertial_config.toml",
         "sbm_gwf_piave_demand_config.toml",
-        "sediment_config.toml",
-        "sediment_eurosem_engelund_config.toml",
     ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
@@ -85,19 +85,25 @@ end
             config.model.water_mass_balance__flag = true
             global do_mass_balance = false
         end
-        push!(models, Wflow.Model(config))
+        push!(configs_sbm, config)
     end
 
-    for (map_name, standard_name_map) in (
-        ("sbm", Wflow.sbm_standard_name_map),
-        ("sediment", Wflow.sediment_standard_name_map),
+    for file_name in ["sediment_config.toml", "sediment_eurosem_engelund_config.toml"]
+        config = Wflow.Config(normpath(@__DIR__, file_name))
+        config.dir_output = mktempdir()
+        push!(configs_sediment, config)
+    end
+
+    models_sbm = Wflow.Model.(configs_sbm)
+    models_sediment = Wflow.Model.(configs_sediment)
+
+    for (map_name, standard_name_map, models) in (
+        ("sbm", Wflow.sbm_standard_name_map, models_sbm),
+        ("sediment", Wflow.sediment_standard_name_map, models_sediment),
     )
         @testset "Test lenses: $map_name" begin
-            dict_data = collect(standard_name_map)
-            n = length(dict_data)
-            invalids = zeros(Bool, n)
-            Wflow.threaded_foreach(1:n; basesize = 25) do i
-                (name, data) = dict_data[i]
+            invalids = String[]
+            for (name, data) in standard_name_map
                 (; lens) = data
                 invalid = true
                 for model in models
@@ -109,10 +115,9 @@ end
                         nothing
                     end
                 end
-                invalids[i] = invalid
+                invalid && push!(invalids, name)
             end
-            invalid = [dict_data[i][1] for i in findall(invalids)]
-            @test isempty(invalid)
+            @test isempty(invalids)
         end
     end
 end

@@ -851,7 +851,11 @@ Update water allocation for land domain based on groundwater availability for al
 areas.
 
 """
-function groundwater_allocation_area!(model::AllocationLand, domain::Domain, dt)
+function groundwater_allocation_area!(
+    model::AllocationLand,
+    demand_variables::DemandVariables,
+    domain::Domain,
+)
     inds_river = domain.river.network.allocation_area_indices
     inds_land = domain.land.network.allocation_area_indices
     (;

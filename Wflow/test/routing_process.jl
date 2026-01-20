@@ -397,3 +397,59 @@ end
         dt,
     ) ≈ 0.00017992597962222483
 end
+
+@testitem "unit: local_inertial_flow" begin
+    # Case of general area
+    q0 = 0.0004713562869434079
+    zs0 = 206.10117949049967
+    zs1 = 201.9003737619653
+    hf = 0.0011733869840497846
+    A = 0.04970535373017763
+    R = 0.0011733219820725962
+    length = 533.453125
+    mannings_n_sq = 0.0008999999597668652
+    froude_limit = true
+    dt = 89.29563868855615
+
+    @test Wflow.local_inertial_flow(
+        q0,
+        zs0,
+        zs1,
+        hf,
+        A,
+        R,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    ) ≈ 0.005331926324969742
+
+    # Case of rectangular area
+    theta = 1.0
+    q0 = 0.0001769756305800402
+    qd = 0.0
+    qu = 0.0
+    zs0 = 601.4761297394623
+    zs1 = 601.4730243288751
+    hf = 0.00310727852479431
+    width = 620.6649135473787
+    length = 926.602742473319
+    mannings_n_sq = 0.1773345894316103
+    froude_limit = true
+    dt = 49.774905820268735
+
+    @test Wflow.local_inertial_flow(
+        theta,
+        q0,
+        qd,
+        qu,
+        zs0,
+        zs1,
+        hf,
+        width,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    ) ≈ 0.00017992597962222483
+end
