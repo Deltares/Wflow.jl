@@ -141,7 +141,7 @@ end
 end
 
 @testitem "unit: differentiation (Yalin)" begin
-    using Wflow: Unit, to_SI
+    using Wflow: Unit, to_SI, TON_PER_DT
     μM = Unit(; μm = 1)
 
     waterlevel = 30.0
@@ -184,10 +184,12 @@ end
         rivers,
         dtot,
         dt,
-    ) ≈ 1.1399953444551338e18
+    ) ≈ to_SI(1.1399953444551338e18, TON_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: Transport capacity (Bagnold, Engelund, Kodatie, Yang, Molinas)" begin
+    using Wflow: to_SI, TON_PER_DT, MM
+
     q = 30.0
     waterlevel = 3.0
     density = 2650.0
@@ -195,7 +197,7 @@ end
     length = 635.0
     slope = 0.25
     dt = 86400.0
-    d50 = 0.1
+    d50 = to_SI(0.1, MM)
 
     # Bagnold
     c_bagnold = 1.75e-5
@@ -208,7 +210,7 @@ end
         width,
         length,
         dt,
-    ) ≈ 0.21179558575660237
+    ) ≈ to_SI(0.21179558575660237, TON_PER_DT; dt_val = dt)
 
     # Engelund
     @test Wflow.transport_capacity_engelund(
@@ -220,7 +222,7 @@ end
         length,
         slope,
         dt,
-    ) ≈ 2084.912726864413
+    ) ≈ to_SI(2084.912726864413, TON_PER_DT; dt_val = dt)
 
     # Kodatie
     a_kodatie = 2829.6
@@ -238,7 +240,7 @@ end
         length,
         slope,
         dt,
-    ) ≈ 0.709667571148066
+    ) ≈ to_SI(0.709667571148066, TON_PER_DT; dt_val = dt)
 
     # Yang
     @test Wflow.transport_capacity_yang(
@@ -250,7 +252,7 @@ end
         length,
         slope,
         dt,
-    ) ≈ 3.830215137542314e6
+    ) ≈ to_SI(3.830215137542314e6, TON_PER_DT; dt_val = dt)
 
     # Molinas
     @test Wflow.transport_capacity_molinas(
@@ -262,5 +264,5 @@ end
         length,
         slope,
         dt,
-    ) ≈ 0.002447635363976675
+    ) ≈ to_SI(0.002447635363976675, TON_PER_DT; dt_val = dt)
 end

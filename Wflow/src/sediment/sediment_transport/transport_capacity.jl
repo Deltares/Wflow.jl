@@ -436,9 +436,9 @@ end
 
 "Struct to store common river transport capacity model parameters"
 @with_kw struct TransportCapacityRiverParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Particle mean diameter [mm]
+    # Particle mean diameter [mm => m]
     d50::Vector{Float64}
 end
 
