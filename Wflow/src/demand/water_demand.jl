@@ -530,7 +530,7 @@ end
 @with_kw struct AllocationRiverVariables
     n::Int
     act_surfacewater_abst::Vector{Float64} = zeros(n)       # actual surface water abstraction [mm dt⁻¹ => m s⁻¹]
-    act_surfacewater_abst_vol::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ s⁻¹]
+    act_surfacewater_abst_vol::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ dt⁻¹ => m³ s⁻¹]
     available_surfacewater::Vector{Float64} = zeros(n)      # available surface water [m³]
     nonirri_returnflow::Vector{Float64} = zeros(n)          # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
 end
@@ -557,7 +557,7 @@ end
     surfacewater_alloc::Vector{Float64} = zeros(n)
     # actual groundwater abstraction [mm dt⁻¹ => m s⁻¹]
     act_groundwater_abst::Vector{Float64} = zeros(n)
-    # actual groundwater abstraction [m³dt⁻¹ => m³ s⁻¹]
+    # actual groundwater abstraction [m³ dt⁻¹ => m³ s⁻¹]
     act_groundwater_abst_vol::Vector{Float64} = zeros(n)
     # available groundwater [m³]
     available_groundwater::Vector{Float64} = zeros(n)
@@ -681,7 +681,8 @@ function surface_water_allocation_local!(
             surfacewater_demand_vol = surfacewater_demand[i] * area[i]
             # [m³] = min([m³ s⁻¹] * [s], [m³])
             abstraction_vol = min(surfacewater_demand_vol * dt, available_volume)
-            act_surfacewater_abst_vol[index_river] = abstraction_vol
+            # [m³ s⁻¹] = [m³] / [s]
+            act_surfacewater_abst_vol[index_river] = abstraction_vol / dt
             # remaining available surface water and demand [m³]
             available_surfacewater[index_river] =
                 max(available_volume - abstraction_vol, 0.0)
@@ -737,14 +738,16 @@ function surface_water_allocation_area!(
 
         # total actual surface water abstraction [m³] in an allocation area, minimum of
         # available surface water and demand in an allocation area.
-        # [m³] = min([m³], [m³])
-        sw_abstraction = min(sw_available, sw_demand_vol)
+        # [m³ s⁻¹] = min([m³] / [s], [m³ s⁻¹])
+        sw_abstraction = min(sw_available / dt, sw_demand_vol)
 
         # fraction of available surface water that can be abstracted at allocation area
-        # level [-]
-        frac_abstract_sw = bounded_divide(sw_abstraction, sw_available)
+        # level
+        # [-] = [m³ s⁻¹] / ([m³] / [s])
+        frac_abstract_sw = bounded_divide(sw_abstraction, sw_available / dt)
         # fraction of water demand that can be satisfied by available surface water at
-        # allocation area level [-].
+        # allocation area level
+        # [-] = [m³ s⁻¹] / [m³ s⁻¹]
         frac_allocate_sw = bounded_divide(sw_abstraction, sw_demand_vol)
 
         # water abstracted from surface water at each river cell (including reservoir
@@ -755,7 +758,7 @@ function surface_water_allocation_area!(
                 frac_abstract_sw * available_surfacewater[j] / dt
             # [m s⁻¹] = [m³ s⁻¹] / [m²]
             act_surfacewater_abst[j] =
-                (act_surfacewater_abst_vol[j] / domain.river.parameters.cell_area[j])
+                act_surfacewater_abst_vol[j] / domain.river.parameters.cell_area[j]
         end
 
         # water allocated to each land cell.
@@ -809,6 +812,7 @@ function groundwater_allocation_local!(
     demand_variables::DemandVariables,
     groundwater_storage::Vector{Float64},
     parameters::LandParameters,
+    dt,
 )
     (;
         surfacewater_alloc,
@@ -830,13 +834,19 @@ function groundwater_allocation_local!(
             # satisfy groundwater demand with available local groundwater volume
             # [m³ s⁻¹] = [m s⁻¹] * [m²]
             groundwater_demand_vol = groundwater_demand[i] * area[i]
-
+            # [m³] = [m³] * [-]
             available_volume = groundwater_storage[i] * 0.75 # limit available groundwater volume
-            abstraction_vol = min(groundwater_demand_vol, available_volume)
-            act_groundwater_abst_vol[i] = abstraction_vol
+            # [m³] = min([m³ s⁻¹] * [s], [m³])
+            abstraction_vol = min(groundwater_demand_vol * dt, available_volume)
+            # [m³ s⁻¹] = [m³] / [s]
+            actual_groundwater_abstraction_volume = abstraction_vol / dt
+            act_groundwater_abst_vol[i] = actual_groundwater_abstraction_volume
             # remaining available groundwater and demand
+            # [m³] = max([m³] - [m³], [m³])
             available_groundwater[i] = max(available_volume - abstraction_vol, 0.0)
-            abstraction = (abstraction_vol / area[i])
+            # [m s⁻¹] = [m³ s⁻¹] / [m²]
+            abstraction = actual_groundwater_abstraction_volume / area[i]
+            # [m s⁻¹] = max([m s⁻¹] - [m s⁻¹], [m s⁻¹])
             groundwater_demand[i] = max(groundwater_demand[i] - abstraction, 0.0)
             # update actual abstraction from groundwater and groundwater allocation (land cell)
             act_groundwater_abst[i] = abstraction
@@ -855,6 +865,7 @@ function groundwater_allocation_area!(
     model::AllocationLand,
     demand_variables::DemandVariables,
     domain::Domain,
+    dt::Float64,
 )
     inds_river = domain.river.network.allocation_area_indices
     inds_land = domain.land.network.allocation_area_indices
@@ -1014,6 +1025,7 @@ function update_water_allocation!(
         demand.variables,
         groundwater_storage(routing.subsurface_flow),
         domain.land.parameters,
+        dt,
     )
     # groundwater demand and allocation for areas
     groundwater_allocation_area!(model, demand.variables, domain)

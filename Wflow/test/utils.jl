@@ -66,7 +66,7 @@ end
     @test relative_error ≈ -2 / 11
 end
 
-@testitem "Lenses" begin
+@testitem "unit: Lenses" begin
     configs_sbm = Wflow.Config[]
     configs_sediment = Wflow.Config[]
 

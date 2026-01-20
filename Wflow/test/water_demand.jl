@@ -62,7 +62,7 @@
 end
 
 @testitem "unit: update_demand_gross! (Paddy)" begin
-    using Wflow: to_SI, MM
+    using Wflow: to_SI, MM, Unit
     MM_PER_DT = Unit(; mm = 1, dt = -1)
     dt = 86400.0
     n = 1
@@ -88,6 +88,7 @@ end
     using Wflow: to_SI, Unit
     MM_PER_DT = Unit(; mm = 1, dt = -1)
     M3_PER_DT = Unit(; m = 3, dt = -1)
+    dt = 86400.0
     include("testing_utils.jl")
     n = 1
 
@@ -125,7 +126,8 @@ end
 
     Wflow.surface_water_allocation_local!(model, demand_variables, river, domain, dt)
 
-    @test river.allocation.variables.act_surfacewater_abst_vol |> only ≈ 12.0
+    @test river.allocation.variables.act_surfacewater_abst_vol |> only ≈
+          to_SI(12.0, M3_PER_DT; dt_val = dt)
     @test river.allocation.variables.available_surfacewater |> only ≈ 288.0
     @test demand_variables.surfacewater_demand |> only ≈ 0.0
     @test river.allocation.variables.act_surfacewater_abst |> only ≈
@@ -136,6 +138,7 @@ end
 @testitem "unit: surface_water_allocation_area!" begin
     using Wflow: to_SI, Unit
     MM_PER_DT = Unit(; mm = 1, dt = -1)
+    M3_PER_DT = Unit(; m = 3, dt = -1)
     dt = 86400.0
     include("testing_utils.jl")
 
@@ -200,13 +203,27 @@ end
     @test river.allocation.variables.available_surfacewater ≈
           [1.5220980030503854e8, 4.1944e7, 7.0168e7]
     @test river.allocation.variables.act_surfacewater_abst_vol ≈
-          [608.1360277590558, 167.5822285897938, 280.34784035115035]
+          to_SI.(
+        [608.1360277590558, 167.5822285897938, 280.34784035115035],
+        Ref(M3_PER_DT);
+        dt_val = dt,
+    )
     @test river.allocation.variables.act_surfacewater_abst ≈
-          [1.008608685367754, 0.27797992757124085, 0.46503184145095416]
-    @test model.variables.surfacewater_alloc ≈ [0.65, 0.77, 0.331]
+          to_SI.(
+        [1.008608685367754, 0.27797992757124085, 0.46503184145095416],
+        Ref(MM_PER_DT);
+        dt_val = dt,
+    )
+    @test model.variables.surfacewater_alloc ≈
+          to_SI.([0.65, 0.77, 0.331], Ref(MM_PER_DT); dt_val = dt)
 end
 
 @testitem "unit: groundwater_allocation_local!" begin
+    using Wflow: to_SI, Unit
+    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    M3_PER_DT = Unit(; m = 3, dt = -1)
+    dt = 86400.0
+
     n = 1
 
     model = Wflow.AllocationLand(;
@@ -214,7 +231,10 @@ end
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
     )
 
-    demand_variables = Wflow.DemandVariables(; n, total_gross_demand = [100.0])
+    demand_variables = Wflow.DemandVariables(;
+        n,
+        total_gross_demand = [to_SI(100.0, MM_PER_DT; dt_val = dt)],
+    )
 
     groundwater_storage = [315947.6]
 
@@ -225,16 +245,24 @@ end
         demand_variables,
         groundwater_storage,
         parameters,
+        dt,
     )
 
-    @test model.variables.act_groundwater_abst_vol |> only ≈ 59128.64
+    @test model.variables.act_groundwater_abst_vol |> only ≈
+          to_SI(59128.64, M3_PER_DT; dt_val = dt)
     @test model.variables.available_groundwater |> only ≈ 177832.06
     @test demand_variables.groundwater_demand |> only == 0.0
-    @test model.variables.act_groundwater_abst |> only ≈ 100.0
-    @test model.variables.groundwater_alloc |> only ≈ 100.0
+    @test model.variables.act_groundwater_abst |> only ≈
+          to_SI(100.0, MM_PER_DT; dt_val = dt)
+    @test model.variables.groundwater_alloc |> only ≈ to_SI(100.0, MM_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: groundwater_allocation_area!" begin
+    using Wflow: to_SI, Unit
+    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    M3_PER_DT = Unit(; m = 3, dt = -1)
+    dt = 86400.0
+
     n = 3
 
     model = Wflow.AllocationLand(;
@@ -246,8 +274,14 @@ end
         ),
     )
 
-    demand_variables =
-        Wflow.DemandVariables(; n, groundwater_demand = [23.23450, 12.261, 674.32])
+    demand_variables = Wflow.DemandVariables(;
+        n,
+        groundwater_demand = to_SI.(
+            [23.23450, 12.261, 674.32],
+            Ref(MM_PER_DT);
+            dt_val = dt,
+        ),
+    )
 
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
@@ -259,11 +293,20 @@ end
         ),
     )
 
-    Wflow.groundwater_allocation_area!(model, demand_variables, domain)
+    Wflow.groundwater_allocation_area!(model, demand_variables, domain, dt)
 
     @test model.variables.act_groundwater_abst_vol ≈
-          [141483.796500842, 143733.60374878853, 142887.23392586954]
+          to_SI.(
+        [141483.796500842, 143733.60374878853, 142887.23392586954],
+        Ref(M3_PER_DT);
+        dt_val = dt,
+    )
     @test model.variables.act_groundwater_abst ≈
-          [234.58608886250354, 238.31636396144145, 236.91304717605513]
-    @test model.variables.groundwater_alloc ≈ [23.2345, 12.261, 674.32]
+          to_SI.(
+        [234.58608886250354, 238.31636396144145, 236.91304717605513],
+        Ref(MM_PER_DT);
+        dt_val = dt,
+    )
+    @test model.variables.groundwater_alloc ≈
+          to_SI.([23.2345, 12.261, 674.32], Ref(MM_PER_DT); dt_val = dt)
 end
