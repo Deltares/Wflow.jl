@@ -368,19 +368,23 @@ end
         boundaries = Wflow.AquiferBoundaries(),
     )
 
-    maxlayers = 1
-    n_unsatlayers = fill(maxlayers, ncell)
-    ustorelayerthickness = Wflow.svectorscopy(
-        reshape(
-            1000.0 .* (aquifer.parameters.top - aquifer.variables.head),
-            maxlayers,
-            ncell,
-        ),
-        Val{maxlayers}(),
+    N = 1
+    n = ncell
+    zi = @. 1000.0 * (aquifer.parameters.top - aquifer.variables.head)
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = SVector.(zi),
+        ustorelayerdepth = SVector.(zeros(n)),
+        n_unsatlayers = fill(N, n),
+        zi,
+        # Parameters
+        maxlayers = N,
+        nlayers = fill(1, n),
+        theta_s = fill(0.45, n),
+        theta_r = fill(0.05, n),
     )
-    ustorelayerdepth = fill(SVector{1}(0), ncell)
-    theta_r = fill(0.05, ncell)
-    theta_s = fill(0.45, ncell)
 
     time = 20.0
     t = 0.0
@@ -391,15 +395,7 @@ end
         dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-        Wflow.update_head!(
-            gwf,
-            n_unsatlayers,
-            ustorelayerthickness,
-            ustorelayerdepth,
-            theta_s,
-            theta_r,
-            dt_s,
-        )
+        Wflow.update_head!(gwf, soil, dt_s)
         t += dt_s
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.aquifer.variables.head) .> 0.0)
@@ -470,19 +466,23 @@ end
         boundaries = Wflow.AquiferBoundaries(),
     )
 
-    maxlayers = 1
-    n_unsatlayers = fill(maxlayers, ncell)
-    ustorelayerthickness = Wflow.svectorscopy(
-        reshape(
-            1000.0 .* (aquifer.parameters.top - aquifer.variables.head),
-            maxlayers,
-            ncell,
-        ),
-        Val{maxlayers}(),
+    N = 1
+    n = ncell
+    zi = @. 1000.0 * (aquifer.parameters.top - aquifer.variables.head)
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = SVector.(zi),
+        ustorelayerdepth = SVector.(zeros(n)),
+        n_unsatlayers = fill(N, n),
+        zi,
+        # Parameters
+        maxlayers = N,
+        nlayers = fill(1, n),
+        theta_s = fill(0.45, n),
+        theta_r = fill(0.05, n),
     )
-    ustorelayerdepth = fill(SVector{1}(0), ncell)
-    theta_r = fill(0.05, ncell)
-    theta_s = fill(0.45, ncell)
 
     time = 20.0
     t = 0.0
@@ -493,15 +493,7 @@ end
         dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-        Wflow.update_head!(
-            gwf,
-            n_unsatlayers,
-            ustorelayerthickness,
-            ustorelayerdepth,
-            theta_s,
-            theta_r,
-            dt_s,
-        )
+        Wflow.update_head!(gwf, soil, dt_s)
         t += dt_s
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.aquifer.variables.head) .> 0.0)
