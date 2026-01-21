@@ -84,7 +84,6 @@ function update!(
                 precipitation[i],
                 canopy_storage[i],
                 canopy_potevap[i],
-                dt,
             )
     end
     return nothing

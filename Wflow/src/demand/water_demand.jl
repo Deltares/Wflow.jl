@@ -376,8 +376,9 @@ timestep.
 function evaporation!(model::Paddy, potential_evaporation, dt::Number)
     for i in eachindex(potential_evaporation)
         if model.parameters.irrigation_areas[i]
-            # [m s⁻¹] = min([h] / [s], [m s⁻¹])
+            # [m s⁻¹] = min([m] / [s], [m s⁻¹])
             evaporation = min(model.variables.h[i] / dt, potential_evaporation[i])
+            # [m] -= [m s⁻¹] * [s]
             model.variables.h[i] -= evaporation * dt
             model.variables.evaporation[i] = evaporation
         end

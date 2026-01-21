@@ -95,12 +95,13 @@ function update!(
     (; river_fraction, water_fraction) = parameters
     (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
 
+    # [m s⁻¹] = [-] * [m s⁻¹]
     @. runoff_river = min(1.0, river_fraction) * water_flux_surface
     @. runoff_land = min(1.0, water_fraction) * water_flux_surface
-    @. ae_openw_r =
-        min(waterdepth_river * river_fraction, river_fraction * potential_evaporation)
-    @. ae_openw_l =
-        min(waterdepth_land * water_fraction, water_fraction * potential_evaporation)
+    # [m s⁻¹] = [-] * min([m] / [s], [m s⁻¹])
+    @. ae_openw_r = river_fraction * min(waterdepth_river / dt, potential_evaporation)
+    @. ae_openw_l = water_fraction * min(waterdepth_land / dt, potential_evaporation)
+    # [m s⁻¹] = [m s⁻¹] - [m s⁻¹]
     @. net_runoff_river = runoff_river - ae_openw_r
 
     return nothing

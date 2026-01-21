@@ -25,7 +25,17 @@ end
 
 const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
 
-"Kinematic wave surface flow rate for a single cell and timestep"
+"""
+Kinematic wave surface flow rate for a single cell and timestep
+
+- `q_in`: [m³ s⁻¹]
+- `q_prev`: [m³ s⁻¹]
+- `q_lat`: [m³ s⁻¹]
+- `alpha`: [s³ᐟ⁵ m¹ᐟ⁵]
+- `beta`: [-]
+- `dt`: [s]
+- `dx`: [m]
+"""
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0
@@ -280,44 +290,6 @@ function kinematic_wave_ssf(
 
         return ssf, zi, exfilt
     end
-end
-
-"""
-    accucapacitystate!(material, network, capacity)
-
-Transport of material downstream with a limited transport capacity over a directed graph.
-Mutates the material input. The network is expected to hold a graph and order field, where
-the graph implements the Graphs interface, and the order is a valid topological ordering
-such as that returned by `Graphs.topological_sort_by_dfs`.
-"""
-function accucapacitystate!(material, network, capacity)
-    (; graph, order) = network
-    for v in order
-        downstream_nodes = outneighbors(graph, v)
-        n = length(downstream_nodes)
-        flux_val = min(material[v], capacity[v])
-        material[v] -= flux_val
-        if n == 0
-            # pit: material is transported out of the map if a capacity is set,
-            # cannot add the material anywhere
-        elseif n == 1
-            material[only(downstream_nodes)] += flux_val
-        else
-            error("bifurcations not supported")
-        end
-    end
-    return nothing
-end
-
-"""
-    accucapacitystate!(material, network, capacity) -> material
-
-Non mutating version of `accucapacitystate!`.
-"""
-function accucapacitystate(material, network, capacity)
-    material = copy(material)
-    accucapacitystate!(material, network, capacity)
-    return material
 end
 
 """

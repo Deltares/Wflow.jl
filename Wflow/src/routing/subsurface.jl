@@ -34,7 +34,7 @@ end
 "Struct for storing lateral subsurface flow model boundary conditions"
 @with_kw struct LateralSsfBC
     n::Int
-    recharge::Vector{Float64} = fill(MISSING_VALUE, n) # Net recharge to saturated store [m² d⁻¹ => m² s⁻¹]
+    recharge_area::Vector{Float64} = fill(MISSING_VALUE, n) # Net recharge to saturated store [m² d⁻¹ => m² s⁻¹]
 end
 
 "Lateral subsurface flow model"
@@ -144,7 +144,7 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
         domain.network
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters
 
-    (; recharge) = model.boundary_conditions
+    (; recharge_area) = model.boundary_conditions
     (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) = model.variables
     (; theta_s, theta_r, soilthickness, kh_profile) = model.parameters
 
@@ -167,7 +167,7 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
                     ssfin[v],
                     ssf[v],
                     zi[v],
-                    recharge[v],
+                    recharge_area[v],
                     slope[v],
                     theta_s[v] - theta_r[v],
                     soilthickness[v],
@@ -178,7 +178,7 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
                     kh_profile,
                     v,
                 )
-                # [m³] = ([-] - [-]) * ([m] - [m]) * [m³]
+                # [m³] = ([-] - [-]) * ([m] - [m]) * [m²]
                 storage[v] =
                     (theta_s[v] - theta_r[v]) * (soilthickness[v] - zi[v]) * area[v]
             end

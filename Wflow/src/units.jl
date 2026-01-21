@@ -136,6 +136,7 @@ const TON_PER_M = Unit(; t = 1, m = -1)
 const TON_PER_M3 = Unit(; t = 1, m = -3)
 const PPM = Unit(; ppm = 1)
 const M3_PER_DAY = Unit(; m = 3, d = -1)
+const PERCENTAGE = Unit(; percentage = 1)
 
 function Base.:*(u1::Unit, u2::Unit)
     absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature

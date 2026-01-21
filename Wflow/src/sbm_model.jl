@@ -61,20 +61,20 @@ function update!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     (; kv_profile) = land.soil.parameters
+    (; flow_width) = domain.land.parameters
+    (; recharge_area) = routing.subsurface_flow.boundary_conditions
 
     update_until_recharge!(model)
-    # exchange of recharge [mm dt⁻¹ => m s⁻¹] between SBM soil model and subsurface flow domain
-    routing.subsurface_flow.boundary_conditions.recharge .= land.soil.variables.recharge
+    # exchange of recharge between SBM soil model and subsurface flow domain
+    # [m² s⁻¹] = [m s⁻¹] * [m]
+    @. recharge_area = land.soil.variables.recharge * flow_width
     if do_water_demand(config)
-        @. routing.subsurface_flow.boundary_conditions.recharge -=
-            land.allocation.variables.act_groundwater_abst
+        # [m² s⁻¹] -= [m s⁻¹] * [m]
+        @. recharge_area -= land.allocation.variables.act_groundwater_abst * flow_width
     end
-    # unit conversions
-    routing.subsurface_flow.boundary_conditions.recharge .*=
-        domain.land.parameters.flow_width
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi
     # update lateral subsurface flow domain (kinematic wave)
-    kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
+    kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile)
     update!(routing.subsurface_flow, domain.land, dt)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)

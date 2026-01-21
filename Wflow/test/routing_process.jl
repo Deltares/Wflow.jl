@@ -192,20 +192,6 @@ end
     @test flux == Float64[2, 10, 10, 2, 30, 2]
     flux_ = Wflow.accucapacityflux(material, network, capacity, dt)
     @test flux == flux_
-
-    # example 1, accucapacitystate
-    material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
-    capacity = fill(1.5, 6)
-    new_material = Wflow.accucapacitystate(material, network, capacity)
-    @test new_material != material
-    @test new_material == [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
-
-    # example 2, accucapacitystate
-    material = fill(10.0, 6)
-    capacity = Float64[2, 30, 30, 2, 30, 2]
-    new_material = Wflow.accucapacitystate(material, network, capacity)
-    @test new_material != material
-    @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
 end
 
 @testitem "local inertial long channel MacDonald (1997)" begin

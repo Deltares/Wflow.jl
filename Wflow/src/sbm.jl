@@ -172,13 +172,14 @@ function update_total_water_storage!(
     # Chunk the data for parallel computing
     n = length(ustoredepth)
     threaded_foreach(1:n; basesize = 1000) do i
+        # [m] = [m] + [m]
         sub_surface = ustoredepth[i] + satwaterdepth[i]
-        lateral = (
-            overland_flow.variables.h[i] * (1 - river_fraction[i]) * 1000 # convert to mm
-        )
+        # [m] = [m] * [-]
+        lateral = overland_flow.variables.h[i] * (1 - river_fraction[i])
 
         # Add everything to the total water storage
-        total_storage[i] += (sub_surface + lateral)
+        # [m] += [m] + [m]
+        total_storage[i] += sub_surface + lateral
     end
     return nothing
 end

@@ -877,6 +877,7 @@ function local_inertial_update_fluxes!(
     land_v = land.variables
     land_p = land.parameters
 
+    # [m³ s⁻¹] = [m³ s⁻¹]
     land_v.qx0 .= land_v.qx
     land_v.qy0 .= land_v.qy
 
@@ -890,10 +891,13 @@ function local_inertial_update_fluxes!(
         # the effective flow width is zero when the river width exceeds the cell width (dy
         # for flow in x dir) and floodplain flow is not calculated.
         if xu <= land_p.n && land_p.ywidth[i] != 0.0
+            # [m] = [m] + [m]
             zs_x = land_p.z[i] + land_v.h[i]
             zs_xu = land_p.z[xu] + land_v.h[xu]
+            # [m] = max([m], [m])
             zs_max = max(zs_x, zs_xu)
-            hf = (zs_max - land_p.zx_max[i])
+            # [m] = [m] = [m]
+            hf = zs_max - land_p.zx_max[i]
 
             if hf > land_p.h_thresh
                 length = 0.5 * (x_length[i] + x_length[xu]) # can be precalculated
