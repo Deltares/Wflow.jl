@@ -547,20 +547,9 @@ function update_head!(
     (; head, exfiltwater, q_net) = gwf.aquifer.variables
     (; area, specific_yield, specific_yield_dyn) = gwf.aquifer.parameters
 
-    (; theta_s, theta_r) = soil.parameters
-    (; ustorelayerthickness, ustorelayerdepth, n_unsatlayers) = soil.variables
-
     for i in eachindex(head)
         net_flux = q_net[i] / area[i] * dt
-        theta_e = theta_s[i] - theta_r[i]
-        dh, exfilt = water_table_change(
-            net_flux,
-            specific_yield[i],
-            n_unsatlayers[i],
-            ustorelayerthickness[i],
-            ustorelayerdepth[i],
-            theta_e,
-        )
+        dh, exfilt = water_table_change(soil, net_flux, specific_yield[i], i)
         head[i] += dh
         exfiltwater[i] += exfilt
         specific_yield_dyn[i] = dh > 0.0 ? (net_flux - exfilt) / dh : specific_yield[i]

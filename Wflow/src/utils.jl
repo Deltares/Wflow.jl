@@ -1011,27 +1011,32 @@ rising water table `dh` is based on `net_flux` and the unsaturated store capacit
 layer). For a rising water table a dynamic specific yield is computed.
 """
 function water_table_change(
+    soil::SbmSoilModel,
     net_flux::Float64,
     specific_yield::Float64,
-    n_unsatlayers::Int,
-    ustorelayerthickness::SVector,
-    ustorelayerdepth::SVector,
-    theta_e::Float64,
+    i::Int,
 )
+    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
+    (; theta_s, theta_r) = soil.parameters
+
+    theta_e = theta_s[i] - theta_r[i]
+
     if net_flux <= 0.0
         dh = net_flux / specific_yield
     else
         dh = 0.0
         f_conv = 0.001 # convert units from [mm] to [m]
-        for k in n_unsatlayers:-1:1
-            capacity =
-                max(f_conv * (ustorelayerthickness[k] * theta_e - ustorelayerdepth[k]), 0.0)
+        for k in n_unsatlayers[i]:-1:1
+            capacity = max(
+                f_conv * (ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k]),
+                0.0,
+            )
             flux_layer = min(net_flux, capacity)
             if capacity <= net_flux
                 # if unsaturated layer is fully saturated dh equals layer thickness
-                dh += f_conv * ustorelayerthickness[k]
+                dh += f_conv * ustorelayerthickness[i][k]
             else
-                sy = theta_e - (ustorelayerdepth[k] / ustorelayerthickness[k])
+                sy = theta_e - (ustorelayerdepth[i][k] / ustorelayerthickness[i][k])
                 dh += flux_layer / sy
             end
             net_flux -= flux_layer

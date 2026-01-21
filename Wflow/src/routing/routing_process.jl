@@ -142,12 +142,10 @@ function kinematic_wave_ssf(
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
         return 0.0, d, 0.0
     else
-        soil_v = soil.variables
-        soil_p = soil.parameters
-        theta_e = soil_p.theta_s[i] - soil_p.theta_r[i]
         # initial estimate
         ssf = (ssf_prev + ssfin) / 2.0
         # newton-raphson
+        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_r[i]
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
         constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
         ssf = kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
@@ -157,14 +155,7 @@ function kinematic_wave_ssf(
         # estimate water table depth zi, exfiltration rate and constrain zi and
         # lower boundary ssf
         net_flux = (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx)
-        dh, exfilt = water_table_change(
-            net_flux,
-            sy,
-            soil_v.n_unsatlayers[i],
-            soil_v.ustorelayerthickness[i],
-            soil_v.ustorelayerdepth[i],
-            theta_e,
-        )
+        dh, exfilt = water_table_change(soil, net_flux, sy, i)
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         if zi > d
@@ -191,14 +182,7 @@ function kinematic_wave_ssf(
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
                 net_flux = (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx)
-                dh, exfilt = water_table_change(
-                    net_flux,
-                    sy,
-                    soil_v.n_unsatlayers[i],
-                    soil_v.ustorelayerthickness[i],
-                    soil_v.ustorelayerdepth[i],
-                    theta_e,
-                )
+                dh, exfilt = water_table_change(soil, net_flux, sy, i)
                 zi = zi_prev - dh
                 if zi > d
                     ssf_excess = (dw * dx) * sy_d * (zi - d) / dt_s
@@ -256,13 +240,10 @@ function kinematic_wave_ssf(
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
         return 0.0, d, 0.0
     else
-        (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
-        (; theta_s, theta_r) = soil.parameters
-        theta_e = theta_s[i] - theta_r[i]
-
         # initial estimate
         ssf_ini = (ssf_prev + ssfin) / 2.0
         # newton-raphson
+        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_r[i]
         celerity = (slope * kh_profile.kh[i]) / theta_e
         constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
@@ -272,14 +253,7 @@ function kinematic_wave_ssf(
         # estimate water table depth zi, exfiltration rate and constrain zi and lower
         # boundary ssf
         net_flux = (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx)
-        dh, exfilt = water_table_change(
-            net_flux,
-            sy,
-            n_unsatlayers[i],
-            ustorelayerthickness[i],
-            ustorelayerdepth[i],
-            theta_e,
-        )
+        dh, exfilt = water_table_change(soil, net_flux, sy, i)
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         if zi > d
