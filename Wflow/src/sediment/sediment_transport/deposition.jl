@@ -32,7 +32,7 @@ Deposition of sediment in reservoirs from Camp 1945.
 - `slope` (slope [-])
 
 # Output
-- `deposition` (deposition [tdt⁻¹ => kg s⁻¹])
+- `deposition` (deposition [t dt⁻¹ => kg s⁻¹])
 """
 function reservoir_deposition_camp(
     input::Float64,

@@ -36,7 +36,7 @@ function update!(model::SedimentToRiverModel, rivers::Vector{Bool}, dt::Number)
     (; sediment_rate) = model.variables
 
     for (i, river) in enumerate(rivers)
-        sediment_rate[i] = river ? deposition : 0.0
+        sediment_rate[i] = river ? deposition[i] : 0.0
     end
 end
 

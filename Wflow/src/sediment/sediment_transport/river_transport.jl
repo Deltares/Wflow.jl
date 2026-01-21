@@ -360,18 +360,20 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
     # Sediment transport - water balance in the river
     for v in order
         ### Sediment input in the cell (left from previous timestep + from land + from upstream outflux) ###
-        input_clay = leftover_clay[v] + erosion_land_clay[v]
-        input_silt = leftover_silt[v] + erosion_land_silt[v]
-        input_sand = leftover_sand[v] + erosion_land_sand[v]
-        input_sagg = leftover_sagg[v] + erosion_land_sagg[v]
-        input_lagg = leftover_lagg[v] + erosion_land_lagg[v]
-        input_gravel = leftover_gravel[v]
+        # [kg s⁻¹] = [kg] / [s] + [kg s⁻¹]
+        input_clay = leftover_clay[v] / dt + erosion_land_clay[v]
+        input_silt = leftover_silt[v] / dt + erosion_land_silt[v]
+        input_sand = leftover_sand[v] / dt + erosion_land_sand[v]
+        input_sagg = leftover_sagg[v] / dt + erosion_land_sagg[v]
+        input_lagg = leftover_lagg[v] / dt + erosion_land_lagg[v]
+        input_gravel = leftover_gravel[v] / dt
 
         # Add upstream contribution
         upstream_nodes = inneighbors(graph, v)
         if !isempty(upstream_nodes)
             for i in upstream_nodes
                 if clay_rate[i] >= 0.0 # avoid NaN from upstream non-river cells
+                    # [kg s⁻¹] += [kg s⁻¹]
                     input_clay += clay_rate[i]
                     input_silt += silt_rate[i]
                     input_sand += sand_rate[i]
@@ -382,18 +384,23 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             end
         end
 
+        # [kg s⁻¹] = ∑ [kg s⁻¹]
         input_sediment =
             input_clay + input_silt + input_sand + input_sagg + input_lagg + input_gravel
 
         ### River erosion ###
-        # Erosion only if the load is below the transport capacity of the flow.
-        sediment_need = max(transport_capacity[v] - input_sediment, 0.0)
-        # No erosion in reservoirs
-        if reservoir_coverage[v]
-            sediment_need = 0.0
+        # [kg s⁻¹]
+        sediment_need = if reservoir_coverage[v]
+            # No erosion in reservoirs
+            0.0
+        else
+            # Erosion only if the load is below the transport capacity of the flow.
+            # [kg] = max([kg s⁻¹] - [kg s⁻¹], [kg s⁻¹])
+            max(transport_capacity[v] - input_sediment, 0.0)
         end
 
         # Available sediment stored from previous deposition
+        # [kg] = ∑ [kg]
         store_sediment =
             store_clay[v] +
             store_silt[v] +
@@ -403,32 +410,42 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             store_gravel[v]
 
         # Direct erosion from the river bed/bank
-        if sediment_need > store_sediment
-            # Effective sediment needed from river bed and bank erosion [t]
-            effsediment_need = sediment_need - store_sediment
-            # Relative potential erosion rates of the bed and the bank [-]
-            if (potential_erosion_river_bank[v] + potential_erosion_river_bed[v] > 0.0)
-                RTEbank =
-                    potential_erosion_river_bank[v] /
-                    (potential_erosion_river_bank[v] + potential_erosion_river_bed[v])
-            else
-                RTEbank = 0.0
-            end
+        if sediment_need > store_sediment / dt
+            # Effective sediment needed from river bed and bank erosion
+            # [kg s⁻¹] = [kg s⁻¹] - [kg] / [s]
+            effsediment_need = sediment_need - store_sediment / dt
+            # Relative potential erosion rates of the bed and the bank
+            # [-]
+            RTEbank =
+                if (potential_erosion_river_bank[v] + potential_erosion_river_bed[v] > 0.0)
+                    # [kg s⁻¹] / ([kg s⁻¹] + [kg s⁻¹])
+                    RTEbank =
+                        potential_erosion_river_bank[v] /
+                        (potential_erosion_river_bank[v] + potential_erosion_river_bed[v])
+                else
+                    0.0
+                end
+            # [-]
             RTEbed = 1.0 - RTEbank
 
             # Actual bed and bank erosion
+            # [kg s⁻¹] = min([-] * [kg s⁻¹], [kg s⁻¹])
             erosion_bank = min(RTEbank * effsediment_need, potential_erosion_river_bank[v])
             erosion_bed = min(RTEbed * effsediment_need, potential_erosion_river_bed[v])
+            # [kg s⁻¹] + [kg s⁻¹]
             erosion_river = erosion_bank + erosion_bed
             # Per particle
+            # [kg s⁻¹] = [-] * [kg s⁻¹]
             erosion_clay = erosion_river * clay_fraction[v]
             erosion_silt = erosion_river * silt_fraction[v]
             erosion_sand = erosion_river * sand_fraction[v]
             erosion_gravel = erosion_river * gravel_fraction[v]
             # No small and large aggregates in the river bed/bank
+            # [kg s⁻¹]
             erosion_sagg = 0.0
             erosion_lagg = 0.0
         else
+            # [kg s⁻¹]
             erosion_clay = 0.0
             erosion_silt = 0.0
             erosion_sand = 0.0
@@ -442,6 +459,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             # Erosion in priority of the smaller particles
             # Clay
             if store_clay[v] > 0.0
+                # [kg s⁻¹], [kg s⁻¹], [kg]
                 erosion_store_clay, sediment_need, store_clay[v] =
                     river_erosion_store(sediment_need, store_clay[v], dt)
                 # Update the clay erosion
@@ -449,42 +467,53 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             end
             # Silt
             if store_silt[v] > 0.0
+                # [kg s⁻¹], [kg s⁻¹], [kg]
                 erosion_store_silt, sediment_need, store_silt[v] =
                     river_erosion_store(sediment_need, store_silt[v], dt)
                 # Update the silt erosion
+                # [kg s⁻¹] += [kg s⁻¹]
                 erosion_silt += erosion_store_silt
             end
             # Small aggregates
             if store_sagg[v] > 0.0
+                # [kg s⁻¹], [kg s⁻¹], [kg]
                 erosion_store_sagg, sediment_need, store_sagg[v] =
                     river_erosion_store(sediment_need, store_sagg[v], dt)
                 # Update the sagg erosion
+                # [kg s⁻¹] += [kg s⁻¹]
                 erosion_sagg += erosion_store_sagg
             end
             # Sand
             if store_sand[v] > 0.0
+                # [kg s⁻¹], [kg s⁻¹], [kg]
                 erosion_store_sand, sediment_need, store_sand[v] =
                     river_erosion_store(sediment_need, store_sand[v], dt)
                 # Update the sand erosion
+                # [kg s⁻¹] += [kg s⁻¹]
                 erosion_sand += erosion_store_sand
             end
             # Large aggregates
             if store_lagg[v] > 0.0
+                # [kg s⁻¹], [kg s⁻¹], [kg]
                 erosion_store_lagg, sediment_need, store_lagg[v] =
                     river_erosion_store(sediment_need, store_lagg[v], dt)
                 # Update the lagg erosion
+                # [kg s⁻¹] += [kg s⁻¹]
                 erosion_lagg += erosion_store_lagg
             end
             # Gravel
             if store_gravel[v] > 0.0
+                # [kg s⁻¹], [kg s⁻¹], [kg]
                 erosion_store_gravel, sediment_need, store_gravel[v] =
                     river_erosion_store(sediment_need, store_gravel[v], dt)
                 # Update the gravel erosion
+                # [kg s⁻¹] += [kg s⁻¹]
                 erosion_gravel += erosion_store_gravel
             end
         end
 
         # Compute total erosion
+        # [kg s⁻¹] = ∑ [kg s⁻¹]
         erosion[v] =
             erosion_clay +
             erosion_silt +
@@ -497,6 +526,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         # Different deposition if reservoir outlet or river
         if reservoir_outlet[v]
             # Deposition in reservoir outlets
+            # [kg s⁻¹]
             deposition_clay = reservoir_deposition_camp(
                 (input_clay + erosion_clay),
                 q[v],
@@ -553,6 +583,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             )
         elseif reservoir_coverage[v]
             # No deposition in reservoir coverage, only at the outlets
+            # [kg s⁻¹]
             deposition_clay = 0.0
             deposition_silt = 0.0
             deposition_sand = 0.0
@@ -562,51 +593,82 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         else
             # Deposition in the river
             # From transport capacity exceedance
+            # [kg s⁻¹] = max([kg s⁻¹] - [kg s⁻¹], [kg s⁻¹])
             excess_sediment = max(input_sediment - transport_capacity[v], 0.0)
             if excess_sediment > 0.0
-                # Sediment deposited in the channel (from gravel to clay) [t]
+                # Sediment deposited in the channel (from gravel to clay)
+
                 # Gravel
-                deposition_gravel = ifelse(
-                    excess_sediment > (input_gravel + erosion_gravel),
-                    (input_gravel + erosion_gravel),
-                    excess_sediment,
-                )
-                excess_sediment = max(excess_sediment - deposition_gravel, 0.0)
+                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                gravel_sum = input_gravel + erosion_gravel
+                if excess_sediment > gravel_sum
+                    deposition_gravel = gravel_sum
+                    # [kg s⁻¹] -= [kg s⁻¹]
+                    excess_sediment -= gravel_sum
+                else
+                    deposition_gravel = excess_sediment
+                    excess_sediment = 0.0
+                end
+
                 # Large aggregates
-                deposition_lagg = ifelse(
-                    excess_sediment > (input_lagg + erosion_lagg),
-                    (input_lagg + erosion_lagg),
-                    excess_sediment,
-                )
-                excess_sediment = max(excess_sediment - deposition_lagg, 0.0)
+                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                lagg_sum = input_lagg + erosion_lagg
+                if excess_sediment > lagg_sum
+                    deposition_lagg = lagg_sum
+                    # [kg s⁻¹] -= [kg s⁻¹]
+                    excess_sediment -= lagg_sum
+                else
+                    deposition_lagg = excess_sediment
+                    excess_sediment = 0.0
+                end
+
                 # Sand
-                deposition_sand = ifelse(
-                    excess_sediment > (input_sand + erosion_sand),
-                    (input_sand + erosion_sand),
-                    excess_sediment,
-                )
-                excess_sediment = max(excess_sediment - deposition_sand, 0.0)
+                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                sand_sum = input_sand + erosion_sand
+                if excess_sediment > sand_sum
+                    deposition_sand = sand_sum
+                    # [kg s⁻¹] -= [kg s⁻¹]
+                    excess_sediment -= sand_sum
+                else
+                    deposition_sand = excess_sediment
+                    excess_sediment = 0.0
+                end
+
                 # Small aggregates
-                deposition_sagg = ifelse(
-                    excess_sediment > (input_sagg + erosion_sagg),
-                    (input_sagg + erosion_sagg),
-                    excess_sediment,
-                )
-                excess_sediment = max(excess_sediment - deposition_sagg, 0.0)
+                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                sagg_sum = input_sagg + erosion_sagg
+                if excess_sediment > sagg_sum
+                    deposition_sagg = sagg_sum
+                    # [kg s⁻¹] -= [kg s⁻¹]
+                    excess_sediment -= sagg_sum
+                else
+                    deposition_sagg = excess_sediment
+                    excess_sediment = 0.0
+                end
+
                 # Silt
-                deposition_silt = ifelse(
-                    excess_sediment > (input_silt + erosion_silt),
-                    (input_silt + erosion_silt),
-                    excess_sediment,
-                )
-                excess_sediment = max(excess_sediment - deposition_silt, 0.0)
+                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                silt_sum = input_silt + erosion_silt
+                if excess_sediment > silt_sum
+                    deposition_silt = silt_sum
+                    # [kg s⁻¹] -= [kg s⁻¹]
+                    excess_sediment -= silt_sum
+                else
+                    deposition_silt = excess_sediment
+                    excess_sediment = 0.0
+                end
+
                 # Clay
-                deposition_clay = ifelse(
-                    excess_sediment > (input_clay + erosion_clay),
-                    (input_clay + erosion_clay),
-                    excess_sediment,
-                )
-                excess_sediment = max(excess_sediment - deposition_clay, 0.0)
+                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                clay_sum = input_clay + erosion_clay
+                if excess_sediment > clay_sum
+                    deposition_clay = clay_sum
+                    # [kg s⁻¹] -= [kg s⁻¹]
+                    excess_sediment -= clay_sum
+                else
+                    deposition_clay = excess_sediment
+                    excess_sediment = 0.0
+                end
             else
                 # Natural deposition from Einstein's formula (density controlled)
                 # Particle fall velocity [m s⁻¹] from Stokes
@@ -628,14 +690,16 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         end
 
         # Update the sediment store
-        store_clay[v] += deposition_clay
-        store_silt[v] += deposition_silt
-        store_sand[v] += deposition_sand
-        store_sagg[v] += deposition_sagg
-        store_lagg[v] += deposition_lagg
-        store_gravel[v] += deposition_gravel
+        # [kg] += [kg s⁻¹] * [s]
+        store_clay[v] += deposition_clay * dt
+        store_silt[v] += deposition_silt * dt
+        store_sand[v] += deposition_sand * dt
+        store_sagg[v] += deposition_sagg * dt
+        store_lagg[v] += deposition_lagg * dt
+        store_gravel[v] += deposition_gravel * dt
 
         # Compute total deposition
+        # [kg s⁻¹] = ∑ [kg s⁻¹]
         deposition[v] =
             deposition_clay +
             deposition_silt +
@@ -649,11 +713,13 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         # 0 in case all sediment are deposited in the cell
         # Reduce the fraction so that there is still some sediment staying in the river cell
         if waterlevel[v] > 0.0
+            # [-] = min([m³ s⁻¹] * [s] / ([m] * [m] * [m]), [-])
             fwaterout =
                 min(q[v] * dt / (waterlevel[v] * flow_width[v] * flow_length[v]), 1.0)
         else
             fwaterout = 1.0
         end
+        # [kg s⁻¹] = [-] * ([kg s⁻¹] + [kg s⁻¹] - [kg s⁻¹])
         clay_rate[v] = fwaterout * (input_clay + erosion_clay - deposition_clay)
         silt_rate[v] = fwaterout * (input_silt + erosion_silt - deposition_silt)
         sand_rate[v] = fwaterout * (input_sand + erosion_sand - deposition_sand)
@@ -661,6 +727,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         lagg_rate[v] = fwaterout * (input_lagg + erosion_lagg - deposition_lagg)
         gravel_rate[v] = fwaterout * (input_gravel + erosion_gravel - deposition_gravel)
 
+        # [kg s⁻¹] = ∑ [kg s⁻¹]
         sediment_rate[v] =
             clay_rate[v] +
             silt_rate[v] +
@@ -670,14 +737,15 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             gravel_rate[v]
 
         ### Leftover / mass balance ###
-        # Sediment left in the cell [ton]
-        leftover_clay[v] = input_clay + erosion_clay - deposition_clay - clay_rate[v]
-        leftover_silt[v] = input_silt + erosion_silt - deposition_silt - silt_rate[v]
-        leftover_sand[v] = input_sand + erosion_sand - deposition_sand - sand_rate[v]
-        leftover_sagg[v] = input_sagg + erosion_sagg - deposition_sagg - sagg_rate[v]
-        leftover_lagg[v] = input_lagg + erosion_lagg - deposition_lagg - lagg_rate[v]
+        # Sediment left in the cell
+        # [kg] = ([kg s⁻¹] + [kg s⁻¹] - [kg s⁻¹] - [kg s⁻¹]) * dt
+        leftover_clay[v] = (input_clay + erosion_clay - deposition_clay - clay_rate[v]) * dt
+        leftover_silt[v] = (input_silt + erosion_silt - deposition_silt - silt_rate[v]) * dt
+        leftover_sand[v] = (input_sand + erosion_sand - deposition_sand - sand_rate[v]) * dt
+        leftover_sagg[v] = (input_sagg + erosion_sagg - deposition_sagg - sagg_rate[v]) * dt
+        leftover_lagg[v] = (input_lagg + erosion_lagg - deposition_lagg - lagg_rate[v]) * dt
         leftover_gravel[v] =
-            input_gravel + erosion_gravel - deposition_gravel - gravel_rate[v]
+            (input_gravel + erosion_gravel - deposition_gravel - gravel_rate[v]) * dt
     end
 end
 
@@ -869,11 +937,12 @@ function update!(
             common_term =
                 0.41 * sqrt(GRAVITATIONAL_ACCELERATION * waterlevel[i] * slope[i]) /
                 STOKES_FACTOR
-            dbedf = sqrt(2.5 * common_term)
+            dbedf = 1e3 * sqrt(2.5 * common_term)
             # # threshold diameter between suspended load and mixed load using Rouse number
-            dsuspf = sqrt(1.2 * common_term)
+            dsuspf = 1e3 * sqrt(1.2 * common_term)
 
             # Rouse with diameter
+            # [kg m⁻³]
             SSclay = suspended_solid(dm_clay[i], dsuspf, dbedf, clay[i])
             SSsilt = suspended_solid(dm_silt[i], dsuspf, dbedf, silt[i])
             SSsand = suspended_solid(dm_sand[i], dsuspf, dbedf, sand[i])
@@ -882,6 +951,7 @@ function update!(
             SSgrav = suspended_solid(dm_gravel[i], dsuspf, dbedf, gravel[i])
 
             to_conc = 1e6 / (q[i] * dt)
+            # [kg m⁻³] = ∑ [kg m⁻³]
             total_ = clay[i] + silt[i] + sagg[i] + sand[i] + lagg[i] + gravel[i]
             total[i] = total_ * to_conc
 
