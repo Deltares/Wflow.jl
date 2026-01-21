@@ -316,10 +316,10 @@ function SbmSoilParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    config_soil_layer_thickness = config.model.soil_layer__thickness
+    config_soil_layer_thickness =
+        to_SI.(Float64.(config.model.soil_layer__thickness), Ref(MM))
 
-    soil_layer_thickness =
-        SVector(Tuple(push!(Float64.(config_soil_layer_thickness), MISSING_VALUE)))
+    soil_layer_thickness = SVector(Tuple(push!(config_soil_layer_thickness, MISSING_VALUE)))
     cum_depth_layers = pushfirst(cumsum(soil_layer_thickness), 0.0)
     maxlayers = length(soil_layer_thickness) # max number of soil layers
 

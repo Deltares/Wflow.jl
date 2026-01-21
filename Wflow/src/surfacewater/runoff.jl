@@ -23,7 +23,7 @@ end
     # [mm => m]
     waterdepth_land::Vector{Float64} = fill(MISSING_VALUE, n)
     # [mm => m]
-    waterdepth_river::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterdepth_river::Vector{Float64} = zeros(n)
 end
 
 "Open water runoff model"

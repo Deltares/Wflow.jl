@@ -6,13 +6,13 @@
     storage_wood::Union{Vector{Float64}, Nothing} = nothing
     # Extinction coefficient [-] (to calculate canopy gap fraction)
     kext::Union{Vector{Float64}, Nothing} = nothing
-    # Specific leaf storage [mm]
+    # Specific leaf storage [mm => m]
     storage_specific_leaf::Union{Vector{Float64}, Nothing} = nothing
     # Canopy gap fraction [-]
     canopygapfraction::Vector{Float64}
     # Maximum canopy storage [mm => m]
     cmax::Vector{Float64}
-    # Rooting depth [mm]
+    # Rooting depth [mm => m]
     rootingdepth::Vector{Float64} = []
     # Crop coefficient Kc [-]
     kc::Vector{Float64} = []
