@@ -135,7 +135,7 @@ function init_sbm_soil_model(n, N; kwargs...)
     end
 
     # Vectors of SVectors
-    for field_name in [:vwc, :vwc_perc, :act_thickl, :rootfraction, :kvfrac, :c]
+    for field_name in [:vwc, :vwc_perc, :act_thickl, :rootfraction, :kvfrac, :c, :sumlayers]
         if !haskey(kwargs, field_name)
             kwargs[field_name] = SVector{N, Float64}[]
         end
