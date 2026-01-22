@@ -95,68 +95,121 @@ end
 end
 
 @testitem "unit: kinematic_wave_ssf" begin
-    ssfin = 151.93545317754274
-    ssf_prev = 66.13838493935127
-    zi_prev = 0.037300947928732966
-    r = -0.4682469020507169
-    slope = 0.0058632562868297
-    theta_e = 0.1703555408323154
+    using StaticArrays: SVector
+    include("testing_utils.jl")
+    n = 1
+    N = 4
+
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 119.83408703759733, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [519.8340870375973],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+    )
+
+    ssfin = 0.0
+    ssf_prev = 25953.147860945584
+    zi_prev = 0.5198340870375974
+    r = 0.4346106913943182
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
     d = 2.0
     dt = 1.0
-    dx = 651.0959333549443
-    dw = 926.1824194767788
-    ssfmax = 0.07651841216556145
-    kh_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 79.62016166711079
+    kh_profile = Wflow.KhExponential([205.5965576171875], [1.0141291422769427])
     i = 1
 
-    ssf, zi, exfilt = Wflow.kinematic_wave_ssf(
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
         r,
         slope,
-        theta_e,
+        sy,
         d,
         dt,
         dx,
         dw,
         ssfmax,
         kh_profile,
+        soil,
         i,
     )
-    @test ssf ≈ 65.87716383769195
-    @test zi ≈ 0.039430950039165864
+    @test ssf ≈ 22100.628024231868
+    @test zi ≈ 0.7029236021516849
     @test exfilt ≈ 0.0
+    @test sy_d ≈ 0.20423455984891598
 
-    ssfin = 726.5698548296821
-    ssf_prev = 540.095599334873
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 348.31246153148595, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 58.42501219303608, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [758.8905603985703],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+    )
+
+    ssfin = 0.0
+    ssf_prev = 54175.65003911068
+    zi_prev = 0.7588905603985703
+    r = 0.6928420612599803
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
+    d = 2.0
+    dt = 1.0
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 153.46698446681825
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
-    zi_prev = 0.2989648788074234
-    r = 0.6
-    slope = 0.08617263287305832
-    theta_e = 0.3281228095293045
-    dx = 1100.0330152617341
-    dw = 499.09766763570804
-    ssfmax = 2.223399526492016
+    i = 1
 
-    ssf, zi, exfilt = Wflow.kinematic_wave_ssf(
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
         r,
         slope,
-        theta_e,
+        sy,
         d,
         dt,
         dx,
         dw,
         ssfmax,
         kh_profile,
-        i,
+        soil,
+        1,
     )
-    @test ssf ≈ 543.4872124727707
-    @test zi ≈ 0.2942848053422706
+
+    @test ssf ≈ 44680.57723298823
+    @test zi ≈ 1.130798471269119
     @test exfilt ≈ 0.0
+    @test sy_d ≈ 0.20423455984891598
 end
 
 @testitem "unit: accucapacity" begin
