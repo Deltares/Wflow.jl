@@ -1019,6 +1019,7 @@ function water_table_change(
     (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
     (; theta_s, theta_r) = soil.parameters
 
+    # effective porosity (difference between saturated and residual water content)
     theta_e = theta_s[i] - theta_r[i]
 
     if net_flux <= 0.0

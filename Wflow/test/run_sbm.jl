@@ -679,9 +679,9 @@ end
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
             q = model.routing.river_flow.variables.q_av
-            @test sum(q) ≈ 3308.46387351294
-            @test q[1622] ≈ 0.0006989471904416826
-            @test q[43] ≈ 9.693133468979447
+            @test sum(q) ≈ 3032.617045063436
+            @test q[1622] ≈ 0.0006987386860043929
+            @test q[43] ≈ 8.710529495056752
         end
 
         Wflow.close_files(model; delete_output = false)

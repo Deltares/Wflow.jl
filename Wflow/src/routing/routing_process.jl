@@ -144,8 +144,9 @@ function kinematic_wave_ssf(
     else
         # initial estimate
         ssf = (ssf_prev + ssfin) / 2.0
-        # newton-raphson
+        # effective/drainabale porosity
         theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_r[i]
+        # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
         constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
         ssf = kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
@@ -242,8 +243,9 @@ function kinematic_wave_ssf(
     else
         # initial estimate
         ssf_ini = (ssf_prev + ssfin) / 2.0
+        # effective/drainabale porosity
+        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
         # newton-raphson
-        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_r[i]
         celerity = (slope * kh_profile.kh[i]) / theta_e
         constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
