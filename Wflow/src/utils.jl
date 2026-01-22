@@ -238,7 +238,7 @@ Apply the affine transform in `var` to the incoming array `A` in place element-w
 The affine transform consists of a scaling by `scale` and a translation by `offset`.
 These operations are only applied when non-trivial.
 """
-function apply_affine_transform!(A::Union{AbstractArray, Number}, var::InputEntry)
+function apply_affine_transform!(A::AbstractArray, var::InputEntry)
     (; scale, offset) = var
     if !all(isone, scale)
         if length(scale) |> isone
