@@ -286,6 +286,7 @@ function ncread(
 )
     var = get_var(config, parameter; optional)
     unit = get_unit(parameter, model_type)
+    dt_val = config.time.timestepsecs
 
     # for optional parameters default values are used.
     if isnothing(var)
@@ -295,9 +296,12 @@ function ncread(
             defaults = convert(type, defaults)
         end
         if isnothing(dimname)
-            return Base.fill(defaults, length(sel))
+            return Base.fill(to_SI(defaults, unit; dt_val), length(sel))
         else
-            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
+            return Base.fill(
+                to_SI(defaults, unit; dt_val),
+                (nc.dim[String(dimname)], length(sel)),
+            )
         end
     end
 
@@ -386,7 +390,7 @@ function ncread(
         end
     end
 
-    return to_SI!(A, unit; dt_val = config.time.timestepsecs)
+    return to_SI!(A, unit; dt_val)
 end
 
 """

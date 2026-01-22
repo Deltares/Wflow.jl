@@ -177,7 +177,7 @@ function BMI.get_current_time(model::Model)
     (; starttime, calendar) = config.time
     starttime = cftime(starttime, calendar)
     # ms => s
-    return Dates.value(clock.time - starttime) / 1e3
+    return to_SI(Dates.value(clock.time - starttime), MS)
 end
 
 function BMI.get_start_time(::Model)
@@ -189,7 +189,7 @@ function BMI.get_end_time(model::Model)
     starttime_ = cftime(starttime, calendar)
     endtime_ = cftime(endtime, calendar)
     # ms => s
-    return to_SI(Float64(Dates.value(endtime_ - starttime_)), Unit(; ms = 1))
+    return to_SI(Float64(Dates.value(endtime_ - starttime_)), MS)
 end
 
 function BMI.get_time_units(model::Model)
