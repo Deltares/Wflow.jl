@@ -239,16 +239,16 @@ The affine transform consists of a scaling by `scale` and a translation by `offs
 These operations are only applied when non-trivial.
 """
 function apply_affine_transform!(A::AbstractArray, var::InputEntry)
-    (; scale, offset) = var
-    if !all(isone, scale)
-        if length(scale) |> isone
+    (; do_scaling, scale_scalar, scale, do_offsetting, offset_scalar, offset) = var
+    if do_scaling
+        if scale_scalar
             A .*= only(scale)
         else
             A .*= scale
         end
     end
-    if !all(iszero, offset)
-        if length(offset) |> isone
+    if do_offsetting
+        if offset_scalar
             A .+= only(offset)
         else
             A .+= offset
