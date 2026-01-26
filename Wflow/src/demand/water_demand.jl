@@ -158,7 +158,7 @@ get_demand_gross(model::NonPaddy) = model.variables.demand_gross
 get_demand_gross(model::NoIrrigationNonPaddy) = Zeros(model.n)
 
 """
-    update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
+    update_demand_gross!(model::NonPaddy, soil::SbmSoilModel, dt::Float64)
 
 Update gross water demand `demand_gross` of the non-paddy irrigation model for a single
 timestep.
@@ -169,7 +169,7 @@ zone of the SBM soil model. Irrigation brings the root zone back to field capaci
 by the infiltration capacity, taking into account limited irrigation efficiency and limited
 by a maximum irrigation rate.
 """
-function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
+function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel, dt::Float64)
     (; irrigation_areas, irrigation_trigger, maximum_irrigation_rate) = model.parameters
     (; demand_gross) = model.variables
     (; n_unsatlayers) = soil.variables
@@ -186,7 +186,7 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
                     model.variables.demand_gross[i] == maximum_irrigation_rate[i]
                 if depletion >= readily_available_water # start irrigation
                     # [m] += [m]
-                    irri_dem_gross += depletion
+                    irri_dem_gross_depth += depletion
                     # add depletion to irrigation gross demand when the maximum irrigation rate has been
                     # applied at the previous time step (to get volumetric water content at field capacity)
                 elseif depletion > 0.0 && max_irri_rate_applied # continue irrigation
@@ -194,6 +194,8 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
                     irri_dem_gross_depth += depletion
                 end
             end
+            # [m s⁻¹] = [m] / [s]
+            irri_dem_gross = irri_dem_gross_depth / dt
             demand_gross[i] = compute_demand_gross(model, soil, irri_dem_gross, i)
         else
             demand_gross[i] = 0.0
@@ -202,7 +204,7 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel)
     return nothing
 end
 
-update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
+update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel, dt::Float64) = nothing
 
 "Compute water demand only for root zone through root fraction per layer"
 function water_demand_root_zone(soil::SbmSoilModel, i::Int, k::Int)
@@ -271,8 +273,8 @@ end
     irrigation_areas::Vector{Bool}                # irrigation areas [-]
     irrigation_trigger::Vector{Bool}              # irrigation on or off [-]
     h_min::Vector{Float64}                        # minimum required water depth in the irrigated rice field [mm => m]
-    h_opt::Vector{Float64}                        # optimal water depth in the irrigated rice fields  => m
-    h_max::Vector{Float64}                        # water depth when rice field starts spilling water (overflow)  => m
+    h_opt::Vector{Float64}                        # optimal water depth in the irrigated rice fields  [mm => m]
+    h_max::Vector{Float64}                        # water depth when rice field starts spilling water (overflow)  [mm => m]
 end
 
 "Paddy (flooded rice) irrigation model"
@@ -422,7 +424,7 @@ is `true` (`on`) and when the paddy water depth `h` reaches below the minimum wa
 `h_min`. Irrigation is the amount required to reach the optimal paddy water depth `h_opt`,
 taking into account limited irrigation efficiency and limited by a maximum irrigation rate.
 """
-function update_demand_gross!(model::Paddy)
+function update_demand_gross!(model::Paddy, dt::Float64)
     (; demand_gross) = model.variables
     (;
         irrigation_areas,
@@ -439,7 +441,7 @@ function update_demand_gross!(model::Paddy)
             irri_dem_gross = irr_depth_paddy / irrigation_efficiency[i]
             # limit irrigation demand to the maximum irrigation rate
             # [m s⁻¹] = min([m] / [s], [m s⁻¹])
-            irri_dem_gross = min(irri_dem_gross, maximum_irrigation_rate[i])
+            irri_dem_gross = min(irri_dem_gross / dt, maximum_irrigation_rate[i])
             demand_gross[i] = irri_dem_gross
         else
             demand_gross[i] = 0.0
@@ -789,7 +791,7 @@ function available_surface_water!(
             available_volume = reservoir.variables.storage[k] * 0.98
             if external_inflow < 0.0
                 if available_volume > -external_inflow * dt
-                    # [m³] = min([m³ s⁻¹] * [s], [m³])
+                    # [m³] += [m³ s⁻¹] * [s]
                     available_volume += external_inflow * dt
                 else
                     available_volume = 0.0
@@ -1029,7 +1031,7 @@ function update_water_allocation!(
         dt,
     )
     # groundwater demand and allocation for areas
-    groundwater_allocation_area!(model, demand.variables, domain)
+    groundwater_allocation_area!(model, demand.variables, domain, dt)
 
     # irrigation allocation
     for i in eachindex(total_alloc)

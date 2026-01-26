@@ -257,6 +257,8 @@ function to_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing,Number}=nothi
     end
 end
 
+to_SI(::Float32, ::Unit; kwargs...) = error("to_SI called with Float32.")
+
 # Fallback method for non-Floats, e.g. nothing, missing, Bool, Int
 to_SI(x, unit::Unit; kwargs...) = x
 

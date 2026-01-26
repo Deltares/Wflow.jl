@@ -69,9 +69,6 @@ function unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, c, dt)
     # [m] -= [m s⁻¹] * [s]
     ustorelayerdepth -= sum_ast * dt
 
-    # [m s⁻¹] = [m] / [s]
-    max_flow = ustorelayerdepth / dt
-
     # number of iterations (to reduce "overshooting") based on fixed maximum change in soil
     # water per iteration step (0.2 mm / model timestep)
     # [m] = min([m s⁻¹] * [s], [m])
@@ -81,12 +78,20 @@ function unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, c, dt)
     for _ in 1:its
         # [m s⁻¹] = ([m s⁻¹] / [-]) * [-]
         st = (kv_z / its) * bounded_power(ustorelayerdepth / l_sat, c)
-        # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])
-        ast = min(st, max_flow)
+        # [m s⁻¹] = min([m s⁻¹], [m] / [s])
+        ast = min(st, ustorelayerdepth / dt)
         # [m] -= [m]
         ustorelayerdepth -= ast * dt
         # [m s⁻¹] += [m s⁻¹]
         sum_ast += ast
+        if ustorelayerdepth < 0
+            if ustorelayerdepth < -eps()
+                error()
+            else
+                ustorelayerdepth = 0.0
+                break
+            end
+        end
     end
 
     return ustorelayerdepth, sum_ast

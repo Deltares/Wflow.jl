@@ -107,7 +107,7 @@ function GlacierHbvParameters(
         defaults = 0.0,
         fill = 0.0,
     )
-    max_snow_to_glacier = 8.0 * Dates.value(dt)
+    max_snow_to_glacier = 8.0 * tosecond(dt)
     return GlacierHbvParameters(;
         g_ttm,
         g_cfmax,

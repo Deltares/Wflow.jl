@@ -34,7 +34,7 @@ function get_at(ds::CFDataset, var::InputEntry, unit::Unit, i::Int, dt::Second)
     if scale != 1.0 || offset != 0.0
         data .= data .* scale .+ offset
     end
-    return to_SI!(data, unit; dt_val = Dates.value(dt))
+    return to_SI!(data, unit; dt_val = tosecond(dt))
 end
 
 function get_param_res(model)
@@ -1107,6 +1107,7 @@ function write_csv_row(model)
     (; csv_path, csv_io, csv_cols) = writer
     isnothing(csv_path) && return nothing
     print(csv_io, string(clock.time))
+    dt_val = tosecond(clock.dt)
     for col in csv_cols
         (; parameter) = col
         reducer = writer.reducer[col]
@@ -1126,7 +1127,6 @@ function write_csv_row(model)
         end
         # Convert to proper unit
         unit = get_unit(parameter)
-        dt_val = Dates.value(clock.dt)
         v = if v isa Number
             from_SI(v, unit; dt_val)
         else

@@ -1,12 +1,15 @@
 
 @testitem "Run model sbm_gwf (kinematic wave routing)" begin
     using Dates: DateTime
+    using Wflow: to_SI, Unit
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
+    MM_PER_DT = Unit(; mm = 1, dt = -1)
     (; domain) = model
 
     @testset "initial states and depending variables" begin
@@ -16,7 +19,7 @@
         (; zi, ustorecapacity) = model.land.soil.variables
         (; land_indices) = model.domain.river.network
         @test all(
-            0.001 * zi .==
+            zi .==
             aquifer.parameters.top .- min.(aquifer.variables.head, aquifer.parameters.top),
         )
         @test all(ustorecapacity[land_indices] .== 0.0)
@@ -44,7 +47,8 @@
         @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test sbm.soil.variables.runoff[1] == 0.0
         @test sbm.soil.variables.soilevap[1] == 0.0
-        @test sbm.soil.variables.transpiration[1] ≈ 0.30587632831650247
+        @test sbm.soil.variables.transpiration[1] ≈
+              to_SI(0.30587632831650247, MM_PER_DT; dt_val = dt)
     end
 
     # run the second timestep
@@ -55,7 +59,8 @@
         @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test sbm.soil.variables.runoff[1] == 0.0
         @test sbm.soil.variables.soilevap[1] == 0.0
-        @test sbm.soil.variables.transpiration[4] ≈ 0.9545461724219301
+        @test sbm.soil.variables.transpiration[4] ≈
+              to_SI(0.9545461724219301, MM_PER_DT; dt_val = dt)
     end
 
     @testset "overland flow (kinematic wave)" begin
@@ -64,7 +69,7 @@
     end
 
     @testset "river domain (kinematic wave)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_av.average
         river = model.routing.river_flow
         @test sum(q) ≈ 0.04467596116472541
         @test q[6] ≈ 0.01045806777050397

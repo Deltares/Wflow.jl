@@ -341,7 +341,7 @@ function ncread(
             @assert length(value) == nc.dim[String(dimname)]
             repeat(value, 1, length(sel))
         end
-        return to_SI!(A, unit; dt_val = config.time.timestepsecs)
+        return to_SI!(A, unit; dt_val)
     else
         if logging
             @info "Set parameter using netCDF variable." parameter var unit

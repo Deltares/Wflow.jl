@@ -310,10 +310,10 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
                 # goes to the river (flow_fraction_to_river) and part goes to the surface
                 # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
                 # reservoir are excluded
-                # [m³ s⁻¹] = ∑ [m³ s⁻¹] * [-]
                 add_to_cumulative!(
                     to_river,
                     v,
+                    # [m³] += (∑ [m³ s⁻¹] * [-]) * dt
                     sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt,
                 )
                 if surface_flow_width[v] > 0.0
@@ -420,7 +420,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, domain::DomainRiver, dt:
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If external_inflow < 0, abstraction is limited
                 if external_inflow[v] < 0.0
-                    # [m³ s⁻¹] = min([m³ s⁻¹], [m³] / [s])
+                    # [m³ s⁻¹] = min([m³ s⁻¹], ([m³] / [s]) * [-])
                     _abstraction = min(-external_inflow[v], (storage[v] / dt) * 0.80)
                     # [m³] += [m³ s⁻¹] * [s]
                     add_to_cumulative!(actual_external_abstraction_av, v, _abstraction * dt)
@@ -451,7 +451,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, domain::DomainRiver, dt:
                     i = reservoir_indices[v]
                     # If external_inflow < 0, abstraction is limited
                     if res_bc.external_inflow[i] < 0.0
-                        # [m³ s⁻¹] = min([m³ s⁻¹], [m³] / [s] * [-])
+                        # [m³ s⁻¹] = min([m³ s⁻¹], ([m³] / [s]) * [-])
                         _abstraction = min(
                             -res_bc.external_inflow[i],
                             (reservoir.variables.storage[i] / dt) * 0.98,
