@@ -85,8 +85,8 @@ function flux!(river::GwfRiver, aquifer::Aquifer, dt::Float64)
         end
         river.variables.flux[i] = flux
         aquifer.variables.q_net[index] += flux
-        river.variables.storage[i] -= -dt * flux
-        add_to_cumulative!(river.variables.flux_av, i, -dt * flux)
+        river.variables.storage[i] -= dt * flux
+        add_to_cumulative!(river.variables.flux_av, i, dt * flux)
     end
     return nothing
 end

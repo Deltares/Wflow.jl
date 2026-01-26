@@ -45,10 +45,10 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
         # [-] (generally -2/5)
         exponent = beta - 1.0
         # [s³ᐟ⁵ m¹ᐟ⁵] = [s³ᐟ⁵ m¹ᐟ⁵] * [-]
-        product = alpha * beta
+        alpha_beta = alpha * beta
         # initial estimate using linear scheme
         # [s m⁻¹] = [s³ᐟ⁵ m¹ᐟ⁵] * (([m³ s⁻¹] + [m³ s⁻¹])/[-])⁻²ᐟ⁵
-        ab_pq = product * pow((q_prev + q_in) / 2, exponent)
+        ab_pq = alpha_beta * pow((q_prev + q_in) / 2.0, exponent)
         # [m³ s⁻¹] = ([s m⁻¹] * [m³ s⁻¹] + [m³ s⁻¹] * [s m⁻¹] + [s] * [m² s⁻¹])/([s m⁻¹] + [s m⁻¹])
         q = (dt_dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt_dx + ab_pq)
         if isnan(q)
@@ -66,11 +66,11 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
             # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵ - [m²]
             f_q = dt_dx * q + alpha * pow(q, beta) - constant_term
             # [s m⁻¹] = [s m⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵
-            df_q = dt_dx + product * pow(q, exponent)
+            df_q = dt_dx + alpha_beta * pow(q, exponent)
             # [m³ s⁻¹] -= [m²] / [s m⁻¹]
             q -= (f_q / df_q)
             if isnan(q)
-                q = KIN_WAVE_MIN_FLOW
+                q = 0.0
             else
                 q = max(q, KIN_WAVE_MIN_FLOW)
             end

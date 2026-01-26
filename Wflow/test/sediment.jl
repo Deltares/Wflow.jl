@@ -1,7 +1,6 @@
 @testitem "unit: Rainfall erosion (Eurosem, Answers)" begin
-    using Wflow: Unit, to_SI, from_SI, TON_PER_DT
+    using Wflow: Unit, to_SI, from_SI, TON_PER_DT, MM_PER_DT
     dt = 86400.0
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
     GRAM_PER_J = Unit(; g = 1, J = -1)
 
     precip = to_SI(3.11846423149108887, MM_PER_DT; dt_val = dt)

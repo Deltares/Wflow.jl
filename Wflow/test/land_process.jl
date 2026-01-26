@@ -1,6 +1,5 @@
 @testitem "unit: rainfall_intercepiton_gash" begin
-    using Wflow: Unit, to_SI, MM
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: Unit, to_SI, MM, MM_PER_DT
     dt = 86400.0
 
     # Case cmax == 0
@@ -58,8 +57,7 @@
 end
 
 @testitem "unit: rainfall_interception_modrut (modified Rutter)" begin
-    using Wflow: Unit, to_SI, MM
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: Unit, to_SI, MM, MM_PER_DT
     dt = 86400.0
 
     # Case canopy_gap_fraction < inv(1.1), potential_evaporation < canopy_storage (after precipitation)
@@ -99,8 +97,7 @@ end
 end
 
 @testitem "unit: precipitation_hbv" begin
-    using Wflow: Unit, to_SI, MM, ABSOLUTE_DEGREES
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: Unit, to_SI, MM, ABSOLUTE_DEGREES, MM_PER_DT
     dt = 86400.0
 
     ## Case tti > 0.0
@@ -130,8 +127,7 @@ end
 end
 
 @testitem "unit: snowpack_hbv" begin
-    using Wflow: to_SI, Unit, MM, ABSOLUTE_DEGREES
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM, ABSOLUTE_DEGREES, MM_PER_DT
     DDF = Unit(; mm = 1, degC = -1, dt = -1)
     dt = 86400.0
 
@@ -184,8 +180,7 @@ end
 end
 
 @testitem "unit: glacier_hbv" begin
-    using Wflow: to_SI, Unit, MM, ABSOLUTE_DEGREES
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM, ABSOLUTE_DEGREES, MM_PER_DT
     DDF = Unit(; mm = 1, degC = -1, dt = -1)
     FREQ = Unit(; dt = -1)
     dt = 86400.0
@@ -216,8 +211,7 @@ end
 end
 
 @testitem "unit: infiltration" begin
-    using Wflow: to_SI, Unit, MM
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM, MM_PER_DT
     dt = 86400.0
 
     potential_infiltration = to_SI(27.5, MM_PER_DT; dt_val = dt)
@@ -240,8 +234,7 @@ end
 end
 
 @testitem "unit: unsatzone_flow_layer" begin
-    using Wflow: to_SI, Unit, MM
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM, MM_PER_DT
     dt = 86400.0
 
     kv_z = to_SI(256.0, MM_PER_DT; dt_val = dt)
@@ -390,8 +383,7 @@ end
 end
 
 @testitem "unit: soil_evaporation_unsaturated_store" begin
-    using Wflow: to_SI, Unit, MM
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM, MM_PER_DT
     dt = 86400.0
 
     potential_soilevaporation = to_SI(0.302, MM_PER_DT; dt_val = dt)
@@ -435,8 +427,7 @@ end
 end
 
 @testitem "unit: soil_evaporation_saturated_store" begin
-    using Wflow: to_SI, Unit, MM
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM, MM_PER_DT
     dt = 86400.0
 
     potential_soilevaporation = to_SI(0.125, MM_PER_DT; dt_val = dt)
@@ -468,8 +459,7 @@ end
 end
 
 @testitem "unit: actual_infiltration_soil_path" begin
-    using Wflow: to_SI, Unit
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM_PER_DT
     dt = 86400.0
 
     potential_infiltration = to_SI(1.627, MM_PER_DT; dt_val = dt)

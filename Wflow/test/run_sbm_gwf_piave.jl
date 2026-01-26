@@ -1,7 +1,6 @@
 @testitem "Piave water demand and allocation (sbm_gwf model)" begin
     using Statistics: mean
-    using Wflow: to_SI, to_SI!, Unit, MM
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, to_SI!, Unit, MM, MM_PER_DT
     tomlpath = joinpath(@__DIR__, "sbm_gwf_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()

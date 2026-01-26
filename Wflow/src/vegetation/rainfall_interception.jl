@@ -101,11 +101,11 @@ function rainfall_interception_modrut(
     # is required because cmax can change over time
     if canopy_storage > cmax
         # [m]
-        canopy_storage_excess = canopy_storage - cmax
+        canopy_drainage = canopy_storage - cmax
         canopy_storage = cmax
 
         # [m s⁻¹] += [m] / [s]
-        throughfall += canopy_storage_excess / dt
+        throughfall += canopy_drainage / dt
     end
 
     # Add the precipitation that falls on the canopy to the store

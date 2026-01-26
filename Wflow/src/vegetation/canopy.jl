@@ -69,7 +69,13 @@ function update!(
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
             e_r[i] =
                 precipitation[i] > 0.0 ?
-                min(0.25, ewet / max(0.0001, canopyfraction * precipitation[i])) : 0.0
+                min(
+                    to_SI(0.25, MM_PER_DT; dt_val = dt),
+                    ewet / max(
+                        to_SI(0.0001, MM_PER_DT; dt_val = dt),
+                        canopyfraction * precipitation[i],
+                    ),
+                ) : 0.0
         end
     end
     threaded_foreach(1:n; basesize = 1000) do i

@@ -1,8 +1,7 @@
 @testitem "Run sediment" begin
-    using Wflow: to_SI, Unit, TON_PER_DT
+    using Wflow: to_SI, Unit, TON_PER_DT, MM_PER_DT
     using Statistics: mean
     dt = 86400.0
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
     tomlpath = joinpath(@__DIR__, "sediment_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()

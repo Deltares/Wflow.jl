@@ -1,7 +1,7 @@
 
 @testitem "Run model sbm_gwf (kinematic wave routing)" begin
     using Dates: DateTime
-    using Wflow: to_SI, Unit
+    using Wflow: to_SI, Unit, MM_PER_DT
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
@@ -9,7 +9,6 @@
 
     model = Wflow.Model(config)
     dt = Wflow.tosecond(model.clock.dt)
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
     (; domain) = model
 
     @testset "initial states and depending variables" begin

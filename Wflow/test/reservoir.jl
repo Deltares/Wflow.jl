@@ -1,6 +1,5 @@
 @testitem "Update reservoir simple" begin
-    using Wflow: ReservoirProfileType, ReservoirOutflowType, Unit, to_SI
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: ReservoirProfileType, ReservoirOutflowType, Unit, to_SI, MM_PER_DT
     dt = 86400.0
     # Simple reservoir (outflowfunc = 4)
     n = 1
@@ -57,8 +56,7 @@
 end
 
 @testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
-    using Wflow: to_SI, Unit, ReservoirProfileType, ReservoirOutflowType
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM_PER_DT, ReservoirProfileType, ReservoirOutflowType
     # Reservoir Modified Puls approach (outflowfunc = 3)
     n = 1
     dt = 86400.0
@@ -114,9 +112,8 @@ end
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
-    using Wflow: to_SI, Unit, ReservoirProfileType, ReservoirOutflowType
+    using Wflow: to_SI, Unit, MM_PER_DT, ReservoirProfileType, ReservoirOutflowType
     dt = 86400.0
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
     # Linked reservoirs with free weir (outflowfunc = 1)
     datadir = joinpath(@__DIR__, "data")
     sh = Vector{Union{Wflow.SH, Missing}}([
@@ -197,11 +194,10 @@ end
 
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
 @testitem "Overflowing reservoir with SH and HQ" begin
-    using Wflow: to_SI, Unit, ReservoirProfileType, ReservoirOutflowType
+    using Wflow: to_SI, Unit, MM_PER_DT, ReservoirProfileType, ReservoirOutflowType
     datadir = joinpath(@__DIR__, "data")
     n = 1
     dt = 86400.0
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
     res_bc = Wflow.ReservoirBC(;
         n,
         precipitation = [to_SI(10.0, MM_PER_DT; dt_val = dt)],

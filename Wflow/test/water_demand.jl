@@ -1,11 +1,10 @@
 @testitem "unit: update_demand_gross! (NonPaddy)" begin
     include("testing_utils.jl")
-    using Wflow: to_SI, Unit, MM
+    using Wflow: to_SI, Unit, MM, MM_PER_DT
     using StaticArrays: SVector
     n = 1
     N = 3
 
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
     CM = Unit(; cm = 1)
     dt = 86400.0
 
@@ -62,8 +61,7 @@
 end
 
 @testitem "unit: update_demand_gross! (Paddy)" begin
-    using Wflow: to_SI, MM, Unit
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, MM, Unit, MM_PER_DT
     dt = 86400.0
     n = 1
 
@@ -85,8 +83,7 @@ end
 end
 
 @testitem "unit: surface_water_allocation_local!" begin
-    using Wflow: to_SI, Unit
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM_PER_DT
     M3_PER_DT = Unit(; m = 3, dt = -1)
     dt = 86400.0
     include("testing_utils.jl")
@@ -136,8 +133,7 @@ end
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
-    using Wflow: to_SI, Unit
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM_PER_DT
     M3_PER_DT = Unit(; m = 3, dt = -1)
     dt = 86400.0
     include("testing_utils.jl")
@@ -219,8 +215,7 @@ end
 end
 
 @testitem "unit: groundwater_allocation_local!" begin
-    using Wflow: to_SI, Unit
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM_PER_DT
     M3_PER_DT = Unit(; m = 3, dt = -1)
     dt = 86400.0
 
@@ -258,8 +253,7 @@ end
 end
 
 @testitem "unit: groundwater_allocation_area!" begin
-    using Wflow: to_SI, Unit
-    MM_PER_DT = Unit(; mm = 1, dt = -1)
+    using Wflow: to_SI, Unit, MM_PER_DT
     M3_PER_DT = Unit(; m = 3, dt = -1)
     dt = 86400.0
 

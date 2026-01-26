@@ -38,27 +38,31 @@ function snowpack_hbv(
         # [m s⁻¹] = [m K⁻¹ s⁻¹] * ([K] - [K])
         potential_snow_melt = cfmax * (temperature - ttm)
         # [m s⁻¹] = min([m s⁻¹], [m] / [s])
-        snowmelt = min(potential_snow_melt, snow_storage / dt)
-
-        refreezing = 0.0
+        snow_melt = min(potential_snow_melt, snow_storage / dt)
+        # [m] -= [m s⁻¹] * [s]
+        snow_storage -= snow_melt * dt
+        # [m] += [m s⁻¹] * [s]
+        snow_water += snow_melt * dt
     else
-        snowmelt = 0.0
+        snow_melt = 0.0
 
         # [m s⁻¹] = [m K⁻¹ s⁻¹] * [-] * ([K] - [K])
         potential_refreezing = cfmax * cfr * (ttm - temperature)
-        # [m s⁻¹] = min([m s⁻¹], [m] / [s])
-        refreezing = min(potential_refreezing, snow_water / dt)
+        # [m] = min([m s⁻¹] * [s], [m])
+        refreezing = min(potential_refreezing * dt, snow_water)
+        # [m] += [m]
+        snow_storage += refreezing
+        # [m] -= [m]
+        snow_water -= refreezing
     end
 
-    # no land use correction here
-    # [m] += ([m s⁻¹] + [m s⁻¹] - [m s⁻¹]) * [s]
-    snow_storage += (snow_precip + refreezing - snowmelt) * dt # dry snow content
-    # [m] -= [m s⁻¹] * [s]
-    snow_water -= refreezing * dt # free water content in snow
+    # [m] += [m s⁻¹] * [s]
+    snow_storage += snow_precip * dt # dry snow content
+    # [m] += [m s⁻¹] * [s]
+    snow_water += liquid_precip * dt # free water content in snow
+
     # [m] = [m] * [-]
     max_snow_water = snow_storage * whc  # max water in the snow
-    # [m] += ([m s⁻¹] + [m s⁻¹]) * [s]
-    snow_water += (snowmelt + liquid_precip) * dt  # add all water and potentially supersaturate the snowpack
 
     if snow_water > max_snow_water
         # [m s⁻¹] = ([m] - [m]) / [s]
@@ -70,7 +74,7 @@ function snowpack_hbv(
     # [m] = [m] + [m]
     snow_water_equivalent = snow_water + snow_storage
 
-    return snow_storage, snow_water, snow_water_equivalent, snowmelt, runoff
+    return snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff
 end
 
 """

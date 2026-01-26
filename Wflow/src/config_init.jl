@@ -288,10 +288,5 @@ Base.setproperty!(
     config_section::T,
     field::Symbol,
     value,
-) where {T <: AbstractConfigSection} = invoke(
-    setfield!,
-    Tuple{Any, Symbol, Any},
-    config_section,
-    field,
-    convert_value(fieldtype(T, field), value),
-)
+) where {T <: AbstractConfigSection} =
+    setfield!(config_section, field, convert_value(fieldtype(T, field), value))
