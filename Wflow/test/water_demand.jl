@@ -80,7 +80,7 @@ end
     model = Wflow.Paddy(; n, parameters, variables)
     @test Wflow.compute_irrigation_depth(model, 1) ≈ to_SI(35.0, MM)
 
-    Wflow.update_demand_gross!(model)
+    Wflow.update_demand_gross!(model, dt)
     @test only(variables.demand_gross) ≈ to_SI(25.0, MM_PER_DT; dt_val = dt)
 end
 

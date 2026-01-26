@@ -52,23 +52,13 @@ function TransportCapacityGoversParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(
-        dataset,
-        config,
-        "sediment__particle_density",
-        SoilLoss;
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
-    )
+    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
     c_govers = ncread(
         dataset,
         config,
         "land_surface_water_sediment__govers_transport_capacity_coefficient",
         SoilLoss;
         sel = indices,
-        defaults = 0.000505,
-        type = Float64,
     )
     n_govers = ncread(
         dataset,
@@ -76,8 +66,6 @@ function TransportCapacityGoversParameters(
         "land_surface_water_sediment__govers_transport_capacity_exponent",
         SoilLoss;
         sel = indices,
-        defaults = 4.27,
-        type = Float64,
     )
     tc_parameters = TransportCapacityGoversParameters(; density, c_govers, n_govers)
 
@@ -147,23 +135,13 @@ function TransportCapacityYalinParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(
-        dataset,
-        config,
-        "sediment__particle_density",
-        SoilLoss;
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
-    )
+    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
     d50 = ncread(
         dataset,
         config,
         "land_surface_sediment__median_diameter",
         SoilLoss;
         sel = indices,
-        defaults = 0.1,
-        type = Float64,
     )
 
     tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
@@ -258,50 +236,16 @@ function TransportCapacityYalinDifferentiationParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(
-        dataset,
-        config,
-        "sediment__particle_density",
-        SoilLoss;
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
-    )
-    dm_clay = ncread(
-        dataset,
-        config,
-        "clay__mean_diameter",
-        SoilLoss;
-        sel = indices,
-        defaults = 2.0,
-        type = Float64,
-    )
-    dm_silt = ncread(
-        dataset,
-        config,
-        "silt__mean_diameter",
-        SoilLoss;
-        sel = indices,
-        defaults = 10.0,
-        type = Float64,
-    )
-    dm_sand = ncread(
-        dataset,
-        config,
-        "sand__mean_diameter",
-        SoilLoss;
-        sel = indices,
-        defaults = 200.0,
-        type = Float64,
-    )
+    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
+    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel = indices)
+    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel = indices)
+    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel = indices)
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
         SoilLoss;
         sel = indices,
-        defaults = 30.0,
-        type = Float64,
     )
     dm_lagg = ncread(
         dataset,
@@ -309,8 +253,6 @@ function TransportCapacityYalinDifferentiationParameters(
         "sediment_large_aggregates__mean_diameter",
         SoilLoss;
         sel = indices,
-        defaults = 500.0,
-        type = Float64,
     )
 
     tc_parameters = TransportCapacityYalinDifferentiationParameters(;
@@ -448,24 +390,9 @@ function TransportCapacityRiverParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(
-        dataset,
-        config,
-        "sediment__particle_density",
-        SoilLoss;
-        sel = indices,
-        defaults = 2650.0,
-        type = Float64,
-    )
-    d50 = ncread(
-        dataset,
-        config,
-        "river_sediment__median_diameter",
-        SoilLoss;
-        sel = indices,
-        defaults = 0.1,
-        type = Float64,
-    )
+    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
+    d50 =
+        ncread(dataset, config, "river_sediment__median_diameter", SoilLoss; sel = indices)
 
     tc_parameters = TransportCapacityRiverParameters(; density, d50)
 
@@ -491,18 +418,14 @@ function TransportCapacityBagnoldParameters(
         config,
         "river_water_sediment__bagnold_transport_capacity_coefficient",
         SoilLoss;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     e_bagnold = ncread(
         dataset,
         config,
         "river_water_sediment__bagnold_transport_capacity_exponent",
         SoilLoss;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
 
     tc_parameters = TransportCapacityBagnoldParameters(; c_bagnold, e_bagnold)
@@ -624,36 +547,28 @@ function TransportCapacityKodatieParameters(
         config,
         "river_water_sediment__kodatie_transport_capacity_a_coefficient",
         SoilLoss;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     b_kodatie = ncread(
         dataset,
         config,
         "river_water_sediment__kodatie_transport_capacity_b_coefficient",
         SoilLoss;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     c_kodatie = ncread(
         dataset,
         config,
         "river_water_sediment__kodatie_transport_capacity_c_coefficient",
         SoilLoss;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     d_kodatie = ncread(
         dataset,
         config,
         "river_water_sediment__kodatie_transport_capacity_d_coefficient",
         SoilLoss;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
 
     tc_parameters =

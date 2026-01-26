@@ -137,7 +137,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float64, dimname = :layer)
+        set_states!(instate_path, model; dimname = :layer)
 
         update_diagnostic_vars!(land.soil)
 

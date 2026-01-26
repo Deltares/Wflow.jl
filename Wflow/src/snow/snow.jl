@@ -68,8 +68,6 @@ function SnowHbvParameters(
         "snowpack__degree_day_coefficient",
         LandHydrologySBM;
         sel = indices,
-        defaults = 3.75,
-        type = Float64,
     )
     tt = ncread(
         dataset,
@@ -77,8 +75,6 @@ function SnowHbvParameters(
         "atmosphere_air__snowfall_temperature_threshold",
         LandHydrologySBM;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     tti = ncread(
         dataset,
@@ -86,8 +82,6 @@ function SnowHbvParameters(
         "atmosphere_air__snowfall_temperature_interval",
         LandHydrologySBM;
         sel = indices,
-        defaults = 1.0,
-        type = Float64,
     )
     ttm = ncread(
         dataset,
@@ -95,8 +89,6 @@ function SnowHbvParameters(
         "snowpack__melting_temperature_threshold",
         LandHydrologySBM;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     whc = ncread(
         dataset,
@@ -104,8 +96,6 @@ function SnowHbvParameters(
         "snowpack__liquid_water_holding_capacity",
         LandHydrologySBM;
         sel = indices,
-        defaults = 0.1,
-        type = Float64,
     )
     snow_hbv_params = SnowHbvParameters(; cfmax, tt, tti, ttm, whc)
     return snow_hbv_params

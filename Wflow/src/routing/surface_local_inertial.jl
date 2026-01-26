@@ -54,27 +54,9 @@ function LocalInertialRiverFlowParameters(
         "model_boundary_condition_river__length",
         Routing;
         sel = pit_indices,
-        defaults = 1.0e04,
-        type = Float64,
     )
-    bankfull_elevation_2d = ncread(
-        dataset,
-        config,
-        "river_bank_water__elevation",
-        Routing;
-        optional = false,
-        type = Float64,
-        fill = 0,
-    )
-    bankfull_depth_2d = ncread(
-        dataset,
-        config,
-        "river_bank_water__depth",
-        Routing;
-        optional = false,
-        type = Float64,
-        fill = 0,
-    )
+    bankfull_elevation_2d = ncread(dataset, config, "river_bank_water__elevation", Routing)
+    bankfull_depth_2d = ncread(dataset, config, "river_bank_water__depth", Routing)
     bankfull_depth = bankfull_depth_2d[indices]
     zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
 
@@ -85,8 +67,6 @@ function LocalInertialRiverFlowParameters(
         "river_water_flow__manning_n_parameter",
         Routing;
         sel = indices,
-        defaults = 0.036,
-        type = Float64,
     )
 
     n = length(indices)
@@ -185,8 +165,6 @@ function LocalInertialRiverFlowVariables(
         "model_boundary_condition_river_bank_water__depth",
         Routing;
         sel = pit_indices,
-        defaults = 0.0,
-        type = Float64,
     )
 
     n_cells = length(indices)
@@ -636,18 +614,9 @@ function LocalInertialOverlandFlowParameters(
         "land_surface_water_flow__manning_n_parameter",
         Routing;
         sel = indices,
-        defaults = 0.072,
-        type = Float64,
     )
-    elevation_2d = ncread(
-        dataset,
-        config,
-        "land_surface_water_flow__ground_elevation",
-        Routing;
-        optional = false,
-        type = Float64,
-        fill = 0,
-    )
+    elevation_2d =
+        ncread(dataset, config, "land_surface_water_flow__ground_elevation", Routing)
     elevation = elevation_2d[indices]
     n = length(domain.land.network.indices)
 
@@ -1120,10 +1089,7 @@ function FloodPlainProfile(
         config,
         "floodplain_water__sum_of_volume_per_depth",
         Routing;
-        optional = false,
         sel = indices,
-        type = Float64,
-        dimname = :flood_depth,
     )
     n = length(indices)
 
@@ -1230,8 +1196,6 @@ function FloodPlainParameters(
         "floodplain_water_flow__manning_n_parameter",
         Routing;
         sel = indices,
-        defaults = 0.072,
-        type = Float64,
     )
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes

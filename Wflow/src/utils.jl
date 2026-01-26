@@ -12,8 +12,6 @@ const PCR_DIR = [
     CartesianIndex(1, 1),  # 9
 ]
 
-const MISSING_VALUE = Float64(NaN)
-
 """
     scurve(x, a, b, c)
 
@@ -159,14 +157,9 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states!(
-    instate_path::AbstractString,
-    model;
-    type = nothing,
-    dimname = nothing,
-)::Nothing
-    (; domain, land, config, clock) = model
-    dt = tosecond(clock.dt)
+function set_states!(instate_path::AbstractString, model; dimname = nothing)::Nothing
+    (; domain, config, clock) = model
+    dt_val = tosecond(clock.dt)
 
     # Check if required states are covered
     state_ncnames = check_states(config)
@@ -174,7 +167,8 @@ function set_states!(
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
-            (; lens, unit) = standard_name_map(land)[state]
+            parameter_metadata = get_metadata(state)
+            (; unit) = parameter_metadata
             @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
                 ncname state unit
             sel = active_indices(domain, state)
@@ -194,28 +188,17 @@ function set_states!(
                 if dimname == :layer
                     A = replace!(A, missing => NaN)
                 end
-                # Convert to desired type if needed
-                if !isnothing(type)
-                    if eltype(A) != type
-                        A = map(type, A)
-                    end
-                end
+                A = transform(A, parameter_metadata; dt_val)
                 # set state in model object
-                lens(model) .= svectorscopy(to_SI!(A, unit), Val{size(A)[1]}())
+                parameter_metadata.lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
                 A = A[sel]
                 A = nomissing(A)
-                # Convert to desired type if needed
-                if !isnothing(type)
-                    if eltype(A) != type
-                        A = map(type, A)
-                    end
-                end
+                A = transform(A, parameter_metadata; dt_val)
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = get_lens(state, land)
-                lens(model)[1:n] .= to_SI!(A, unit; dt_val = dt)
+                parameter_metadata.lens(model)[1:n] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -255,53 +238,35 @@ keyword arguments to get selections of data in desired types, with or without mi
 values.
 
 # Arguments
-- `optional=true`: By default specifying a model `parameter` in the TOML file is optional.
-        Set to false if the model `parameter` is required.
+- `model_type`: The model type (e.g., LandHydrologySBM, SoilLoss, Domain, Routing) used to
+        determine the appropriate standard name mapping.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
-- `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
-    in this case.
-- `type=nothing`: Type to convert data to after reading. By default no conversion is done.
-- `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
-        `true` to allow missing values.
-- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is
-  `false`.
-- `dimname`: Name of third dimension of parameter `var`. By default no third dimension is
-  expected.
-- `logging`: Generate a logging message when reading a netCDF variable. By default `true`.
+- `logging=true`: Generate a logging message when reading a netCDF variable.
 """
 function ncread(
     nc,
     config::Config,
     parameter::AbstractString,
-    model_type::Type;
-    type = nothing,
-    optional = true,
+    model_type;
     sel = nothing,
-    defaults = nothing,
-    allow_missing = false,
-    fill = nothing,
-    dimname = nothing,
     logging = true,
+    parameter_metadata = get_metadata(parameter, model_type),
 )
-    var = get_var(config, parameter; optional)
-    unit = get_unit(parameter, model_type)
+    (; default, fill, type, allow_missing, dimname) = parameter_metadata
+    var = get_var(config, parameter; optional = !isnothing(default))
+    (; default, unit) = parameter_metadata
     dt_val = config.time.timestepsecs
 
     # for optional parameters default values are used.
     if isnothing(var)
         @info "Set parameter." parameter unit
-        @assert !isnothing(defaults) parameter
-        if !isnothing(type)
-            defaults = convert(type, defaults)
-        end
+        @assert !isnothing(default) parameter
+        default = transform(default, parameter_metadata; dt_val)
         if isnothing(dimname)
-            return Base.fill(to_SI(defaults, unit; dt_val), length(sel))
+            return Base.fill(default, length(sel))
         else
-            return Base.fill(
-                to_SI(defaults, unit; dt_val),
-                (nc.dim[String(dimname)], length(sel)),
-            )
+            return Base.fill(default, (nc.dim[String(dimname)], length(sel)))
         end
     end
 
@@ -341,7 +306,7 @@ function ncread(
             @assert length(value) == nc.dim[String(dimname)]
             repeat(value, 1, length(sel))
         end
-        return to_SI!(A, unit; dt_val)
+        return transform(A, parameter_metadata; dt_val)
     else
         if logging
             @info "Set parameter using netCDF variable." parameter var unit
@@ -368,7 +333,10 @@ function ncread(
         end
     end
 
-    if !allow_missing
+    if allow_missing
+        # Convert to desired type if needed
+        A = map(x -> ismissing(x) ? x : type(x), A)
+    else
         if isnothing(fill)
             # errors if missings are found
             A = nomissing(A)
@@ -382,15 +350,7 @@ function ncread(
             replace!(x -> isnan(x) ? fill : x, A)
         end
     end
-
-    # Convert to desired type if needed
-    if !isnothing(type)
-        if eltype(A) != type
-            A = convert(Array{type}, A)
-        end
-    end
-
-    return to_SI!(A, unit; dt_val)
+    return transform(A, parameter_metadata; dt_val)
 end
 
 """

@@ -253,10 +253,9 @@ function sbm_kv_profiles(
         z_exp = ncread(
             dataset,
             config,
-            "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth";
-            optional = false,
+            "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
+            LandHydrologySBM;
             sel = indices,
-            type = Float64,
         )
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
@@ -265,11 +264,9 @@ function sbm_kv_profiles(
         kv = ncread(
             dataset,
             config,
-            "soil_layer_water__vertical_saturated_hydraulic_conductivity";
-            optional = false,
+            "soil_layer_water__vertical_saturated_hydraulic_conductivity",
+            LandHydrologySBM;
             sel = indices,
-            type = Float64,
-            dimname = :layer,
         )
         if size(kv, 1) != maxlayers
             parname = param(
@@ -285,10 +282,9 @@ function sbm_kv_profiles(
             z_layered = ncread(
                 dataset,
                 config,
-                "soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth";
-                optional = false,
+                "soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
+                LandHydrologySBM;
                 sel = indices,
-                type = Float64,
             )
             nlayers_kv = fill(0, n)
             for i in eachindex(nlayers_kv)
@@ -331,8 +327,6 @@ function SbmSoilParameters(
         "soil_surface_temperature__weight_coefficient",
         LandHydrologySBM;
         sel = indices,
-        defaults = 0.1125,
-        type = Float64,
     )
     cf_soil = ncread(
         dataset,
@@ -340,8 +334,6 @@ function SbmSoilParameters(
         "soil_surface_water__infiltration_reduction_parameter",
         LandHydrologySBM;
         sel = indices,
-        defaults = 0.038,
-        type = Float64,
     )
 
     # soil parameters
@@ -350,36 +342,28 @@ function SbmSoilParameters(
         config,
         "soil_water__saturated_volume_fraction",
         LandHydrologySBM;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     theta_r = ncread(
         dataset,
         config,
         "soil_water__residual_volume_fraction",
         LandHydrologySBM;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     kv_0 = ncread(
         dataset,
         config,
         "soil_surface_water__vertical_saturated_hydraulic_conductivity",
         LandHydrologySBM;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     f = ncread(
         dataset,
         config,
         "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter",
         LandHydrologySBM;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
     hb = ncread(
         dataset,
@@ -387,8 +371,6 @@ function SbmSoilParameters(
         "soil_water__air_entry_pressure_head",
         LandHydrologySBM;
         sel = indices,
-        defaults = -10.0,
-        type = Float64,
     )
     h1 = ncread(
         dataset,
@@ -396,8 +378,6 @@ function SbmSoilParameters(
         "vegetation_root__feddes_critical_pressure_head_h1",
         LandHydrologySBM;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     h2 = ncread(
         dataset,
@@ -405,8 +385,6 @@ function SbmSoilParameters(
         "vegetation_root__feddes_critical_pressure_head_h2",
         LandHydrologySBM;
         sel = indices,
-        defaults = -100.0,
-        type = Float64,
     )
     h3_high = ncread(
         dataset,
@@ -414,8 +392,6 @@ function SbmSoilParameters(
         "vegetation_root__feddes_critical_pressure_head_h3_high",
         LandHydrologySBM;
         sel = indices,
-        defaults = -400.0,
-        type = Float64,
     )
     h3_low = ncread(
         dataset,
@@ -423,8 +399,6 @@ function SbmSoilParameters(
         "vegetation_root__feddes_critical_pressure_head_h3_low",
         LandHydrologySBM;
         sel = indices,
-        defaults = -1000.0,
-        type = Float64,
     )
     h4 = ncread(
         dataset,
@@ -432,8 +406,6 @@ function SbmSoilParameters(
         "vegetation_root__feddes_critical_pressure_head_h4",
         LandHydrologySBM;
         sel = indices,
-        defaults = -16000.0,
-        type = Float64,
     )
     alpha_h1 = ncread(
         dataset,
@@ -441,26 +413,15 @@ function SbmSoilParameters(
         "vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient",
         LandHydrologySBM;
         sel = indices,
-        defaults = 1.0,
-        type = Float64,
     )
-    soilthickness = ncread(
-        dataset,
-        config,
-        "soil__thickness",
-        LandHydrologySBM;
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    soilthickness =
+        ncread(dataset, config, "soil__thickness", LandHydrologySBM; sel = indices)
     infiltcappath = ncread(
         dataset,
         config,
         "compacted_soil_surface_water__infiltration_capacity",
         LandHydrologySBM;
         sel = indices,
-        defaults = 10.0,
-        type = Float64,
     )
     maxleakage = ncread(
         dataset,
@@ -468,18 +429,13 @@ function SbmSoilParameters(
         "soil_water_saturated_zone_bottom__max_leakage_volume_flux",
         LandHydrologySBM;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     c = ncread(
         dataset,
         config,
         "soil_layer_water__brooks_corey_exponent",
         LandHydrologySBM;
-        optional = false,
         sel = indices,
-        type = Float64,
-        dimname = :layer,
     )
     if size(c, 1) != maxlayers
         parname = param(config.input.static, "soil_layer_water__brooks_corey_exponent")
@@ -492,9 +448,6 @@ function SbmSoilParameters(
         "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor",
         LandHydrologySBM;
         sel = indices,
-        defaults = 1.0,
-        type = Float64,
-        dimname = :layer,
     )
     if size(kvfrac, 1) != maxlayers
         parname = param(
@@ -514,9 +467,7 @@ function SbmSoilParameters(
         config,
         "compacted_soil__area_fraction",
         LandHydrologySBM;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
 
     # vegetation parameters
@@ -526,8 +477,6 @@ function SbmSoilParameters(
         "soil_wet_root__sigmoid_function_shape_parameter",
         LandHydrologySBM;
         sel = indices,
-        defaults = -500.0,
-        type = Float64,
     )
     cap_hmax = ncread(
         dataset,
@@ -535,8 +484,6 @@ function SbmSoilParameters(
         "soil_water_saturated_zone_top__capillary_rise_max_water_table_depth",
         LandHydrologySBM;
         sel = indices,
-        defaults = 2000.0,
-        type = Float64,
     )
     cap_n = ncread(
         dataset,
@@ -544,8 +491,6 @@ function SbmSoilParameters(
         "soil_water_saturated_zone_top__capillary_rise_averianov_exponent",
         LandHydrologySBM;
         sel = indices,
-        defaults = 2.0,
-        type = Float64,
     )
 
     act_thickl =
@@ -556,16 +501,8 @@ function SbmSoilParameters(
     # optional root fraction
     rootfraction_name = "soil_root__length_density_fraction"
     if haskey(config.input.static, rootfraction_name)
-        rootfraction = ncread(
-            dataset,
-            config,
-            par_name,
-            LandHydrologySBM;
-            optional = false,
-            sel = indices,
-            type = Float64,
-            dimname = :layer,
-        )
+        rootfraction =
+            ncread(dataset, config, rootfraction_name, LandHydrologySBM; sel = indices)
     else
         n = length(indices)
         (; rootingdepth) = vegetation_parameter_set

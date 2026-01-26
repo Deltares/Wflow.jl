@@ -256,37 +256,13 @@ end
 "Initialize (shared) river parameters"
 function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiver)
     (; indices) = network
-    flow_length = ncread(
-        dataset,
-        config,
-        "river__length",
-        Domain;
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    flow_length = ncread(dataset, config, "river__length", Routing; sel = indices)
     minimum(flow_length) > 0 || error("river length must be positive on river cells")
 
-    flow_width = ncread(
-        dataset,
-        config,
-        "river__width",
-        Domain;
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    flow_width = ncread(dataset, config, "river__width", Routing; sel = indices)
     minimum(flow_width) > 0 || error("river width must be positive on river cells")
 
-    slope = ncread(
-        dataset,
-        config,
-        "river__slope",
-        Domain;
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    slope = ncread(dataset, config, "river__slope", Routing; sel = indices)
     clamp!(slope, 0.00001, Inf)
 
     river_parameters = RiverParameters(; flow_width, flow_length, slope)
@@ -318,10 +294,8 @@ function get_water_fraction(
         dataset,
         config,
         "land_water_covered__area_fraction",
-        Domain;
+        LandHydrologySBM;
         sel = network.indices,
-        defaults = 0.0,
-        type = Float64,
     )
     water_fraction = max.(water_fraction .- river_fraction, 0.0)
     return water_fraction
@@ -332,31 +306,13 @@ function get_river_fraction(
     dataset::NCDataset,
     config::Config,
     network::NetworkLand,
-    river_location::Vector{Bool},
+    river_location::Union{Vector{Bool}, BitVector},
     area::Vector{Float64},
 )
-    river_width_2d = ncread(
-        dataset,
-        config,
-        "river__width",
-        Domain;
-        optional = false,
-        type = Float64,
-        fill = 0,
-        logging = false,
-    )
+    river_width_2d = ncread(dataset, config, "river__width", Routing; logging = false)
     river_width = river_width_2d[network.indices]
 
-    river_length_2d = ncread(
-        dataset,
-        config,
-        "river__length",
-        Domain;
-        optional = false,
-        type = Float64,
-        fill = 0,
-        logging = false,
-    )
+    river_length_2d = ncread(dataset, config, "river__length", Routing; logging = false)
     river_length = river_length_2d[network.indices]
 
     n = length(river_location)
@@ -385,30 +341,14 @@ end
 
 "Return land surface slope"
 function get_landsurface_slope(dataset::NCDataset, config::Config, network::NetworkLand)
-    slope = ncread(
-        dataset,
-        config,
-        "land_surface__slope",
-        Domain;
-        optional = false,
-        sel = network.indices,
-        type = Float64,
-    )
+    slope = ncread(dataset, config, "land_surface__slope", Routing; sel = network.indices)
     clamp!(slope, 0.00001, Inf)
     return slope
 end
 
 "Return river mask"
 function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
-    river_2d = ncread(
-        dataset,
-        config,
-        "river_location__mask",
-        Domain;
-        optional = false,
-        type = Bool,
-        fill = false,
-    )
+    river_2d = ncread(dataset, config, "river_location__mask", Domain)
     river_location = river_2d[network.indices]
     return river_location
 end
@@ -426,12 +366,10 @@ function reservoir_mask(
             dataset,
             config,
             "reservoir_$(region)__count",
-            Domain;
-            optional = false,
+            Routing;
             sel = network.indices,
-            type = Float64,
-            fill = 0,
         )
+        replace!(x -> ismissing(x) ? 0 : x, reservoirs)
     end
     reservoirs = Vector{Bool}(reservoirs .> 0)
     return reservoirs
@@ -455,8 +393,6 @@ function get_allocation_area_indices(dataset::NCDataset, config::Config, domain:
         "land_water_allocation_area__count",
         Domain;
         sel = indices,
-        defaults = 1,
-        type = Int,
         logging = false,
     )
     unique_areas = unique(areas)

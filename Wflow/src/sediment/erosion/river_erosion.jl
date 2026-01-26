@@ -42,8 +42,6 @@ function RiverErosionParameters(
         "river_bottom_and_bank_sediment__median_diameter",
         SoilLoss;
         sel = indices,
-        defaults = 0.1,
-        type = Float64,
     )
     river_parameters = RiverErosionParameters(; d50)
 

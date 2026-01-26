@@ -16,7 +16,7 @@ end
 function get_at(
     ds::CFDataset,
     var::InputEntry,
-    unit::Unit,
+    parameter_metadata,
     times::AbstractVector{<:TimeType},
     t::TimeType,
     dt::Second,
@@ -25,16 +25,16 @@ function get_at(
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at(ds, var, unit, i, dt)
+    return get_at(ds, var, parameter_metadata, i, dt)
 end
 
-function get_at(ds::CFDataset, var::InputEntry, unit::Unit, i::Int, dt::Second)
+function get_at(ds::CFDataset, var::InputEntry, parameter_metadata, i::Int, dt::Second)
     (; scale, offset) = var
     data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
     if scale != 1.0 || offset != 0.0
         data .= data .* scale .+ offset
     end
-    return to_SI!(data, unit; dt_val = tosecond(dt))
+    return transform(data, parameter_metadata; dt_val = tosecond(dt))
 end
 
 function get_param_res(model)
@@ -128,8 +128,9 @@ function update_forcing!(model)
         variable_name(ncvar) === nothing && continue
 
         time = convert(eltype(dataset_times), clock.time)
-        unit = get_unit(par)
-        data = get_at(dataset, ncvar, unit, dataset_times, time, model.clock.dt)
+        parameter_metadata = get_metadata(par)
+        data =
+            get_at(dataset, ncvar, parameter_metadata, dataset_times, time, model.clock.dt)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -195,14 +196,14 @@ function update_cyclic!(model)
     is_first_timestep = clock.iteration == 1
 
     for (par, ncvar) in cyclic_parameters
-        unit = get_unit(par)
+        parameter_metadata = get_metadata(par)
         if is_first_timestep || (month_day in cyclic_times[par])
             # time for an update of the cyclic forcing
             i = findlast(t -> monthday_passed(month_day, t), cyclic_times[par])
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar, unit, i, clock.dt)
+            data = get_at(cyclic_dataset, ncvar, parameter_metadata, i, clock.dt)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -603,9 +604,7 @@ function locations_map(ds, mapname, config)
         config,
         mapname,
         Writer;
-        optional = false,
-        type = Union{Int, Missing},
-        allow_missing = true,
+        parameter_metadata = ParameterMetadata(; type = Int, allow_missing = true),
     )
     ids = unique(skipmissing(map_2d))
     return ids
@@ -702,11 +701,12 @@ function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
     (; land) = modelmap
     for (par, ncname) in ncnames_dict
-        A = if haskey(standard_name_map(land), par)
-            lens = get_lens(par, land)
-            lens(modelmap)
-        else
+        metadata = get_metadata(par, typeof(land), Routing)
+        lens = isnothing(metadata) ? nothing : metadata.lens
+        A = if isnothing(lens)
             param(modelmap, par)
+        else
+            lens(modelmap)
         end
         output_map[ncname] = (par = par, vector = A)
     end
@@ -1044,9 +1044,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             config,
             map,
             Writer;
-            type = Union{Int, Missing},
-            allow_missing = true,
             logging = false,
+            parameter_metadata = ParameterMetadata(; allow_missing = true, type = Int),
         )
         @info "Adding scalar output for a map with a reducer function." fileformat param =
             parameter mapname = map reducer_name = String(nameof(f))
@@ -1111,11 +1110,11 @@ function write_csv_row(model)
     for col in csv_cols
         (; parameter) = col
         reducer = writer.reducer[col]
-        A = if haskey(standard_name_map(land), parameter)
-            lens = get_lens(parameter, land)
-            lens(model)
-        else
+        metadata = get_metadata(parameter, typeof(land), Routing)
+        A = if isnothing(metadata)
             param(model, parameter)
+        else
+            metadata.lens(model)
         end
         # v could be a value, or a vector in case of map
         if eltype(A) <: SVector

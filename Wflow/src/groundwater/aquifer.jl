@@ -157,19 +157,10 @@ function UnconfinedAquiferParameters(
         config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
         Routing;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
-    specific_yield = ncread(
-        dataset,
-        config,
-        "subsurface_water__specific_yield",
-        Routing;
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    specific_yield =
+        ncread(dataset, config, "subsurface_water__specific_yield", Routing; sel = indices)
 
     if config.model.conductivity_profile == GwfConductivityProfileType.exponential
         f = ncread(
@@ -177,9 +168,7 @@ function UnconfinedAquiferParameters(
             config,
             "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
             Routing;
-            optional = false,
             sel = indices,
-            type = Float64,
         )
     else
         f = Float64[]
@@ -454,10 +443,7 @@ function ConstantHead(
         config,
         "model_constant_boundary_condition__hydraulic_head",
         Routing;
-        optional = false,
         sel = indices,
-        type = Float64,
-        fill = MISSING_VALUE,
     )
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
@@ -645,7 +631,7 @@ function sum_boundary_fluxes(
         isnothing(boundary) && continue
         typeof(boundary) == exclude && continue
         for (i, index) in enumerate(boundary.index)
-            flux = boundary.variables.flux_av[i]
+            flux = boundary.variables.flux_av.average[i]
             if flux > 0.0
                 flux_in[index] += flux
             else
@@ -656,8 +642,8 @@ function sum_boundary_fluxes(
     return flux_in, flux_out
 end
 get_inflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.q_in_av
+    gwf.aquifer.variables.q_in_av.average
 get_outflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.q_out_av
+    gwf.aquifer.variables.q_out_av.average
 get_storage(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
     gwf.aquifer.variables.storage

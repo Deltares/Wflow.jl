@@ -59,6 +59,7 @@ using LoggingExtras:
     Warn,
     with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
@@ -207,6 +208,8 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+const MISSING_VALUE = Float64(NaN)
+
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -247,23 +250,18 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
-
+include("standard_name/standard_name_utils.jl")
 include("standard_name/standard_name_domain.jl")
 include("standard_name/standard_name_routing.jl")
 include("standard_name/standard_name_sbm.jl")
 include("standard_name/standard_name_sediment.jl")
 
-# wrapper methods for standard name mapping
-standard_name_map(model) = standard_name_map(typeof(model))
-standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
-standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
-standard_name_map(::Type{<:Domain}) = domain_standard_name_map
-standard_name_map(::Type{<:Routing}) = routing_standard_name_map
-get_lens(name::AbstractString, model) = get_lens(name, typeof(model))
-get_lens(name::AbstractString, L::Type) = standard_name_map(L)[name].lens
-get_unit(name::AbstractString, model) = get_unit(name, typeof(model))
-get_unit(name::AbstractString, L::Type) = standard_name_map(L)[name].unit
-get_unit(::AbstractString, ::Type{<:Writer}) = Unit()
+const standard_name_maps = (
+    ("sbm", Wflow.sbm_standard_name_map),
+    ("sediment", Wflow.sediment_standard_name_map),
+    ("domain", Wflow.domain_standard_name_map),
+    ("routing", Wflow.routing_standard_name_map),
+)
 
 include("utils.jl")
 include("bmi.jl")

@@ -78,9 +78,7 @@ function LateralSsfParameters(
         config,
         "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
         Routing;
-        optional = false,
         sel = indices,
-        type = Float64,
     )
 
     (; theta_s, theta_r, soilthickness) = soil
