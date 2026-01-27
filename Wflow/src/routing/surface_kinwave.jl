@@ -587,7 +587,7 @@ Update boundary condition lateral inflow `inwater` of a kinematic wave overland 
 function update_lateral_inflow!(
     model::KinWaveOverlandFlow,
     external_models::NamedTuple,
-    area::Vector{Float64},
+    domain::Domain,
     config::Config,
     dt::Float64,
 )
@@ -595,10 +595,13 @@ function update_lateral_inflow!(
     (; net_runoff) = soil.variables
     (; inwater) = model.boundary_conditions
 
+    (; area) = domain.land.parameters
+    (; land_indices) = domain.drain.network
+
     if config.model.drain__flag
         drain = subsurface_flow.boundaries.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[drain.index] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
+        drainflux[land_indices] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
     else
         drainflux = 0.0
     end

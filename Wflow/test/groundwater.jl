@@ -185,9 +185,10 @@ end
             flux = [0.0, 0.0],
             flux_av = [0.0, 0.0],
         )
-        river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
+        river = Wflow.GwfRiver(; parameters, variables)
         unconf_aqf.variables.q_net .= 0.0
-        Wflow.flux!(river, unconf_aqf, dt)
+        index = [1, 3]
+        Wflow.flux!(river, unconf_aqf, index, dt)
         # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
         # river storage (20.0)
         @test unconf_aqf.variables.q_net[1] == 20.0
@@ -201,9 +202,10 @@ end
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
         variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
-        drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
+        drainage = Wflow.Drainage(; parameters, variables)
         unconf_aqf.variables.q_net .= 0.0
-        Wflow.flux!(drainage, unconf_aqf, dt)
+        index = [1, 2]
+        Wflow.flux!(drainage, unconf_aqf, index, dt)
         @test unconf_aqf.variables.q_net[1] == 0.0
         @test unconf_aqf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
     end
@@ -217,9 +219,10 @@ end
             flux_av = [0.0, 0.0],
         )
 
-        headboundary = Wflow.HeadBoundary(; parameters, variables, index = [1, 2])
+        headboundary = Wflow.HeadBoundary(; parameters, variables)
         unconf_aqf.variables.q_net .= 0.0
-        Wflow.flux!(headboundary, unconf_aqf, dt)
+        index = [1, 2]
+        Wflow.flux!(headboundary, unconf_aqf, index, dt)
         @test unconf_aqf.variables.q_net[1] == 100.0 * (2.0 - 0.0)
         @test unconf_aqf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
     end
@@ -233,9 +236,10 @@ end
             flux = [0.0, 0.0, 0.0],
             flux_av = [0.0, 0.0, 0.0],
         )
-        recharge = Wflow.Recharge(; n, variables, index = [1, 2, 3])
+        recharge = Wflow.Recharge(; n, variables)
         unconf_aqf.variables.q_net .= 0.0
-        Wflow.flux!(recharge, unconf_aqf, dt)
+        index = [1, 2, 3]
+        Wflow.flux!(recharge, unconf_aqf, index, dt)
         @test all(unconf_aqf.variables.q_net .== 1.0e-3 * 100.0)
     end
 
@@ -246,9 +250,10 @@ end
             flux = [0.0],
             flux_av = [0.0],
         )
-        well = Wflow.Well(; variables, index = [2])
+        well = Wflow.Well(; variables)
         unconf_aqf.variables.q_net .= 0.0
-        Wflow.flux!(well, unconf_aqf, dt)
+        index = [2]
+        Wflow.flux!(well, unconf_aqf, index, dt)
         @test unconf_aqf.variables.q_net[2] == -1000.0
     end
 end
@@ -303,6 +308,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
     gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
+    domain = Wflow.Domain()
 
     time = 20.0
     t = 0.0
@@ -312,7 +318,7 @@ end
         gwf.aquifer.variables.q_net .= 0.0
         dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
-        Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
+        Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
         Wflow.update_head!(gwf, dt_s)
         t = t + dt_s
         # Gradient dh/dx is positive, all flow to the left
@@ -375,6 +381,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
     gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
+    domain = Wflow.Domain()
 
     time = 20.0
     t = 0.0
@@ -384,7 +391,7 @@ end
         gwf.aquifer.variables.q_net .= 0.0
         dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
-        Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
+        Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
         Wflow.update_head!(gwf, dt_s)
         t = t + dt_s
         # Gradient dh/dx is positive, all flow to the left

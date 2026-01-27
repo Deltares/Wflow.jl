@@ -437,12 +437,14 @@ end
 
 function update_fluxes!(
     gwf::GroundwaterFlow,
+    domain::Domain,
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
 )
     flux!(gwf.aquifer, gwf.connectivity, conductivity_profile, dt)
     for boundary in get_boundaries(gwf.boundaries)
-        flux!(boundary, gwf.aquifer, dt)
+        indices = get_boundary_index(boundary, domain)
+        flux!(boundary, gwf.aquifer, indices, dt)
     end
     return nothing
 end
@@ -471,6 +473,7 @@ end
 
 function update!(
     gwf::GroundwaterFlow,
+    domain::Domain,
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T,
 )
@@ -486,7 +489,7 @@ function update!(
         gwf.aquifer.variables.q_net .= 0.0
         dt_s = stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
-        update_fluxes!(gwf, conductivity_profile, dt_s)
+        update_fluxes!(gwf, domain, conductivity_profile, dt_s)
         update_head!(gwf, dt_s)
         t += dt_s
     end
@@ -509,7 +512,7 @@ function get_flux_to_river(subsurface_flow::GroundwaterFlow, inds::Vector{Int})
     return flux
 end
 
-function sum_boundary_fluxes(gwf::GroundwaterFlow; exclude = nothing)
+function sum_boundary_fluxes(gwf::GroundwaterFlow, domain::Domain; exclude = nothing)
     (; boundaries) = gwf
     n = length(gwf.aquifer.variables.storage)
     flux_in = zeros(n)
@@ -517,7 +520,8 @@ function sum_boundary_fluxes(gwf::GroundwaterFlow; exclude = nothing)
     for boundary in get_boundaries(boundaries)
         isnothing(boundary) && continue
         typeof(boundary) == exclude && continue
-        for (i, index) in enumerate(boundary.index)
+        indices = get_boundary_index(boundary, domain)
+        for (i, index) in enumerate(indices)
             flux = boundary.variables.flux_av[i]
             if flux > 0.0
                 flux_in[index] += flux
