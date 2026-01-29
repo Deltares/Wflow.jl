@@ -26,10 +26,14 @@ function update_boundary_conditions!(
     (; q_land, waterlevel_land, q_river, waterlevel_river) = hydrological_forcing
 
     if model_type == :land
+        # [m³ s⁻¹] = [m³ s⁻¹]
         @. q = q_land
+        # [m] = [m]
         @. waterlevel = waterlevel_land
     elseif model_type == :river
+        # [m³ s⁻¹] = [m³ s⁻¹]
         @. q = q_river
+        # [m] = [m]
         @. waterlevel = waterlevel_river
     end
 end

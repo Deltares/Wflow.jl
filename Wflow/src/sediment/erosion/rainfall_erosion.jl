@@ -90,9 +90,13 @@ function update_boundary_conditions!(
     atmospheric_forcing::AtmosphericForcing,
     hydrological_forcing::HydrologicalForcing,
 )
+    # [m s⁻¹], [m s⁻¹], [m]
     (; precipitation, interception, waterlevel) = model.boundary_conditions
+    # [m s⁻¹] = [m s⁻¹]
     @. precipitation = atmospheric_forcing.precipitation
+    # [m] = [m]
     @. waterlevel = hydrological_forcing.waterlevel_land
+    # [m s⁻¹] = [m s⁻¹]
     @. interception = hydrological_forcing.interception
 end
 
@@ -194,6 +198,7 @@ function update_boundary_conditions!(
     hydrological_forcing::HydrologicalForcing,
 )
     (; precipitation) = model.boundary_conditions
+    # [m s⁻¹] = [m s⁻¹]
     @. precipitation = atmospheric_forcing.precipitation
 end
 

@@ -27,6 +27,7 @@ function update_boundary_conditions!(
     transport_model::SedimentLandTransportModel,
 )
     (; deposition) = model.boundary_conditions
+    # [kg s⁻¹] = [kg s⁻¹]
     @. deposition = transport_model.variables.deposition
 end
 
@@ -93,6 +94,7 @@ function update_boundary_conditions!(
         deposition_sagg,
         deposition_lagg,
     ) = model.boundary_conditions
+    # [kg s⁻¹] = [kg s⁻¹]
     @. deposition_clay = transport_model.variables.deposition_clay
     @. deposition_silt = transport_model.variables.deposition_silt
     @. deposition_sand = transport_model.variables.deposition_sand
@@ -118,6 +120,7 @@ function update!(
 
     for (i, river) in enumerate(rivers)
         if river
+            # [kg s⁻¹] = [kg s⁻¹]
             clay_rate[i] = deposition_clay[i]
             silt_rate[i] = deposition_silt[i]
             sand_rate[i] = deposition_sand[i]

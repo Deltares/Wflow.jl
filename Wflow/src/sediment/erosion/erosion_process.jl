@@ -303,32 +303,47 @@ function river_erosion_julian_torres(
 end
 
 """
-    function river_erosion_store(
-        excess_sediment,
-        store,
+    function river_erosion_store!(
+        store_vec::Vector{float64}
+        excess_sediment::Float64,
+        dt::Float64,
+        v::Int,
     )
 
 River erosion of the previously deposited sediment.
 
 # Arguments
+- `store_vec` (sediment_store [t => kg])
 - `excess_sediment` (excess sediment [t dt⁻¹ => kg s⁻¹])
-- `store` (sediment store [t => kg])
 - `dt` (timestep [s])
+- `v` (index [-])
 
 # Output
 - `erosion` (river erosion [t dt⁻¹ => kg s⁻¹])
 - `excess_sediment` (updated excess sediment [tdt⁻¹ => kg s⁻¹])
-- `store` (updated sediment store [t => kg])
 """
-function river_erosion_store(excess_sediment, store, dt)
-    # River erosion of the previously deposited sediment
+function river_erosion_store!(
+    store_vec::Vector{Float64},
+    excess_sediment::Float64,
+    dt::Float64,
+    v::Int,
+)
+    # [kg]
+    store = store_vec[v]
 
-    # [kg s⁻¹] = min([kg] / [s], [kg s⁻¹])
-    erosion = min(store / dt, excess_sediment)
-    # Update the excess sediment and the sediment store
-    # [kg s⁻¹] -= [kg s⁻¹]
-    excess_sediment -= erosion
-    # [kg] -= [kg s⁻¹] * [s]
-    store -= erosion * dt
-    return erosion, excess_sediment, store
+    if store > 0
+        # River erosion of the previously deposited sediment
+        # [kg s⁻¹] = min([kg] / [s], [kg s⁻¹])
+        erosion = min(store / dt, excess_sediment)
+        # Update the excess sediment and the sediment store
+        # [kg s⁻¹] -= [kg s⁻¹]
+        excess_sediment -= erosion
+        # [kg] = [kg] - [kg s⁻¹] * [s]
+        store_vec[v] = store - erosion * dt
+    else
+        # [kg s⁻¹]
+        erosion = 0.0
+    end
+
+    return erosion, excess_sediment
 end

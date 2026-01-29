@@ -109,10 +109,14 @@ function update_boundary_conditions!(
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::OverlandFlowErosionAnswersModel,
 )
+    # [kg s⁻¹]
     re = rainfall_erosion.variables.soil_erosion_rate
+    # [kg s⁻¹]
     ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
+    # [kg s⁻¹] = [kg s⁻¹]
     @. rainfall_erosion = re
+    # [kg s⁻¹] = [kg s⁻¹]
     @. overland_flow_erosion = ole
 end
 
@@ -132,6 +136,7 @@ function update!(model::SoilErosionModel)
 
     n = length(rainfall_erosion)
     threaded_foreach(1:n; basesize = 1000) do i
+        # [kg s⁻¹]
         soil_erosion_rate[i],
         clay_erosion_rate[i],
         silt_erosion_rate[i],

@@ -49,7 +49,7 @@ function reservoir_deposition_camp(
     reservoir_critical_velocity = q / reservoir_area
     # Natural deposition
     # [kg s⁻¹] = [kg s⁻¹] * [-]
-    deposition = input * min(1.0, fall_velocity(dm) / (reservoir_critical_velocity * dt))
+    deposition = input * min(1.0, fall_velocity(dm) / reservoir_critical_velocity)
 
     # Check if particles are traveling in suspension or bed load using Rouse number
     # [m]

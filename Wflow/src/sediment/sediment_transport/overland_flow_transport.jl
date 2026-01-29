@@ -33,9 +33,11 @@ function update_boundary_conditions!(
 )
     (; erosion, transport_capacity) = model.boundary_conditions
     (; soil_erosion_rate) = erosion_model.variables
+    # [kg s⁻¹] = [kg s⁻¹]
     @. erosion = soil_erosion_rate
 
     (; sediment_transport_capacity) = transport_capacity_model.variables
+    # [kg s⁻¹] = [kg s⁻¹]
     @. transport_capacity = sediment_transport_capacity
 end
 
@@ -44,7 +46,15 @@ function update!(model::SedimentLandTransportModel, network::NetworkLand, dt::Nu
     (; erosion, transport_capacity) = model.boundary_conditions
     (; sediment_rate, deposition) = model.variables
 
-    accucapacityflux!(sediment_rate, erosion, network, transport_capacity, dt)
+    accucapacityflux!(
+        sediment_rate,
+        erosion,
+        network,
+        transport_capacity,
+        dt;
+        material_is_flux = true,
+    )
+    # [kg s⁻¹] = [kg s⁻¹]
     deposition .= erosion
 end
 
@@ -137,6 +147,7 @@ function update_boundary_conditions!(
         sagg_erosion_rate,
         lagg_erosion_rate,
     ) = erosion_model.variables
+    # [kg s⁻¹] = [kg s⁻¹]
     @. erosion_clay = clay_erosion_rate
     @. erosion_silt = silt_erosion_rate
     @. erosion_sand = sand_erosion_rate
@@ -144,6 +155,7 @@ function update_boundary_conditions!(
     @. erosion_lagg = lagg_erosion_rate
 
     (; clay, silt, sand, sagg, lagg) = transport_capacity_model.variables
+    # [kg s⁻¹] = [kg s⁻¹]
     @. transport_capacity_clay = clay
     @. transport_capacity_silt = silt
     @. transport_capacity_sand = sand
@@ -184,17 +196,31 @@ function update!(
         deposition_lagg,
     ) = model.variables
 
-    accucapacityflux!(clay, erosion_clay, network, transport_capacity_clay, dt)
+    do_accucapacityflux!(rate, erosion, transport_capacity) = accucapacityflux!(
+        rate,
+        erosion,
+        network,
+        transport_capacity,
+        dt;
+        material_is_flux = true,
+    )
+
+    do_accucapacityflux!(clay, erosion_clay, transport_capacity_clay)
+    do_accucapacityflux!(silt, erosion_silt, transport_capacity_silt)
+    do_accucapacityflux!(sand, erosion_sand, transport_capacity_sand)
+    do_accucapacityflux!(sagg, erosion_sagg, transport_capacity_sagg)
+    do_accucapacityflux!(lagg, erosion_lagg, transport_capacity_lagg)
+
+    # [kg s⁻¹] = [kg s⁻¹]
     deposition_clay .= erosion_clay
-    accucapacityflux!(silt, erosion_silt, network, transport_capacity_silt, dt)
     deposition_silt .= erosion_silt
-    accucapacityflux!(sand, erosion_sand, network, transport_capacity_sand, dt)
     deposition_sand .= erosion_sand
-    accucapacityflux!(sagg, erosion_sagg, network, transport_capacity_sagg, dt)
     deposition_sagg .= erosion_sagg
-    accucapacityflux!(lagg, erosion_lagg, network, transport_capacity_lagg, dt)
     deposition_lagg .= erosion_lagg
+
+    # [kg s⁻¹] = ∑ [kg s⁻¹]
     @. sediment_rate = clay + silt + sand + sagg + lagg
+    # [kg s⁻¹] = ∑ [kg s⁻¹]
     @. deposition =
         deposition_clay +
         deposition_silt +

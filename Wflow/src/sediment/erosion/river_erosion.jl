@@ -67,6 +67,7 @@ function update_boundary_conditions!(
 )
     (; waterlevel) = model.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
+    # [m] = [m]
     @. waterlevel = waterlevel_river
 end
 

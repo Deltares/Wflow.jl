@@ -12,7 +12,7 @@ end
 "Struct to store hydrological forcing variables"
 @with_kw struct HydrologicalForcing
     n::Int
-    # Rainfall interception by the vegetation [mm => m]
+    # Rainfall interception by the vegetation [mm dt⁻¹ => m s⁻¹]
     interception::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow depth [m]
     waterlevel_land::Vector{Float64} = fill(MISSING_VALUE, n)

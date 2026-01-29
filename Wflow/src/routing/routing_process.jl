@@ -301,25 +301,39 @@ network is expected to hold a graph and order field, where the graph implements 
 interface, and the order is a valid topological ordering such as that returned by
 `Graphs.topological_sort_by_dfs`.
 """
-function accucapacityflux!(flux, material, network, capacity, dt)
+function accucapacityflux!(flux, material, network, capacity, dt; material_is_flux = false)
     (; graph, order) = network
     for v in order
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)
-        # Let [u] be the unit of material
-        # [u s⁻¹] = min([u] / [s], [u s⁻¹])
-        flux_val = min(material[v] / dt, capacity[v])
-        # [u] -= [u s⁻¹] * [s]
-        material[v] -= flux_val * dt
-        # [u s⁻¹]
-        flux[v] = flux_val
-        if n == 0
-            # pit: material is transported out of the map if a capacity is set,
-            # cannot add the material anywhere
-        elseif n == 1
-            material[only(downstream_nodes)] += flux_val * dt
+
+        # pit: material is transported out of the map if a capacity is set,
+        # cannot add the material anywhere
+        iszero(n) && return
+
+        !isone(n) && error("bifurcations not supported")
+
+        if material_is_flux
+            # Let [u s⁻¹] be the unit of the material
+            # [u s⁻¹] = min([u s⁻¹], [u s⁻¹])
+            flux_val = min(material[v], capacity[v])
+            # [u s⁻¹] -= [u s⁻¹]
+            material[v] -= flux_val
+            # [u s⁻¹]
+            flux[v] = flux_val
+            material[only(downstream_nodes)] += flux_val
         else
-            error("bifurcations not supported")
+            # Let [u] be the unit of material
+            # [u s⁻¹] = min([u] / [s], [u s⁻¹])
+            flux_val = min(material[v] / dt, capacity[v])
+            # [u] = [u s⁻¹] * [s]
+            material_update = flux_val * dt
+            # [u] -= [u]
+            material[v] -= material_update
+            # [u s⁻¹]
+            flux[v] = flux_val
+            # [u] += [u]
+            material[only(downstream_nodes)] += material_update
         end
     end
     return nothing
@@ -330,9 +344,9 @@ end
 
 Non mutating version of `accucapacityflux!`.
 """
-function accucapacityflux(material, network, capacity, dt)
+function accucapacityflux(material, network, capacity, dt; kwargs...)
     flux = zero(material)
-    accucapacityflux!(flux, material, network, capacity, dt)
+    accucapacityflux!(flux, material, network, capacity, dt; kwargs...)
     return flux
 end
 
@@ -341,10 +355,10 @@ end
 
 Non mutating version of combined `accucapacityflux!` and `accucapacitystate!`.
 """
-function accucapacityflux_state(material, network, capacity, dt)
+function accucapacityflux_state(material, network, capacity, dt; kwargs...)
     flux = zero(material)
     material = copy(material)
-    accucapacityflux!(flux, material, network, capacity, dt)
+    accucapacityflux!(flux, material, network, capacity, dt; kwargs...)
     return flux, material
 end
 

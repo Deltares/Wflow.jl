@@ -68,7 +68,9 @@ function update_boundary_conditions!(
     model::OverlandFlowErosionAnswersModel,
     hydrological_forcing::HydrologicalForcing,
 )
+    # [m³ s⁻¹]
     (; q) = model.boundary_conditions
+    # [m³ s⁻¹]
     (; q_land) = hydrological_forcing
     @. q = q_land
 end
