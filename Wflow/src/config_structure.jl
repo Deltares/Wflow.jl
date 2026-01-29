@@ -146,6 +146,8 @@ end
 Base.haskey(input_entries::InputEntries, key) = haskey(input_entries.dict, key)
 Base.getindex(input_entries::InputEntries, key) = input_entries.dict[key]
 Base.setindex!(input_entries::InputEntries, value, key) = (input_entries.dict[key] = value)
+Base.setindex!(input_entries::InputEntries, value::AbstractDict, key) =
+    (input_entries.dict[key] = init_config_section(InputEntry, value))
 Base.keys(input_entries::InputEntries) = keys(input_entries.dict)
 Base.iterate(input_entries::InputEntries) = iterate(input_entries.dict)
 Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, state)
