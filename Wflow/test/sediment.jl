@@ -276,11 +276,11 @@ end
             dm_silt = [10.0],
             dm_sand = [200.0], # dm < dsuspf
             dm_sagg = [30.0],
-            dm_lagg = [500.0], # dsuspf < dm < dbedf 
+            dm_lagg = [500.0], # dsuspf < dm < dbedf
             dm_gravel = [2000.0], # dbedf < dm
-        ), # TODO: Set mean diameters
+        ),
     )
-    parameters = Wflow.RiverParameters(; slope = [1e-3]) # TODO: set parameters
+    parameters = Wflow.RiverParameters(; slope = [1e-3])
     dt = 86400.0
 
     Wflow.update!(model, parameters, dt)
