@@ -30,7 +30,7 @@
         eros = model.land
 
         @test eros.atmospheric_forcing.precipitation[1] ≈
-              to_SI(4.086122035980225, MM_PER_DT; dt_val = dt) rtol = 1e-7
+              to_SI(4.086122035980225, MM_PER_DT; dt_val = dt)
         @test eros.hydrological_forcing.q_land[1] ≈ 0.0
         @test eros.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934
         @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
@@ -38,12 +38,12 @@
               0.8999999761581421
         @test eros.overland_flow_erosion.variables.soil_erosion_rate[1] ≈ 0.0
         @test eros.rainfall_erosion.variables.soil_erosion_rate[1] ≈
-              to_SI(0.00027245577922893746, TON_PER_DT; dt_val = dt) rtol = 1e-7
+              to_SI(0.00027245577922893746, TON_PER_DT; dt_val = dt)
         @test model.clock.iteration == 1
         @test mean(eros.overland_flow_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.00861079076689589, TON_PER_DT; dt_val = dt)
         @test mean(eros.rainfall_erosion.variables.soil_erosion_rate) ≈
-              to_SI(0.00016326203201620437, TON_PER_DT; dt_val = dt) rtol = 1e-7
+              to_SI(0.00016326203201620437, TON_PER_DT; dt_val = dt)
         @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.008774052798912092, TON_PER_DT; dt_val = dt)
     end
@@ -77,11 +77,11 @@
 
         @test mean(land.transport_capacity.boundary_conditions.q) ≈ 0.006879398771052133
         @test mean(land.transport_capacity.variables.silt) ≈
-              to_SI(1.0988158364353527f6, TON_PER_DT; dt_val = dt)
+              Float32(to_SI(1.0988158364353527e6, TON_PER_DT; dt_val = dt))
         @test mean(land.transport_capacity.variables.sand) ≈
-              to_SI(1.0987090622888755f6, TON_PER_DT; dt_val = dt)
+              Float32(to_SI(1.0987090622888755e6, TON_PER_DT; dt_val = dt))
         @test mean(land.transport_capacity.variables.clay) ≈
-              to_SI(1.0992655197016734f6, TON_PER_DT; dt_val = dt)
+              Float32(to_SI(1.0992655197016734e6, TON_PER_DT; dt_val = dt))
 
         @test mean(land.to_river.variables.sediment_rate) ≈
               to_SI(0.0762386279230294, TON_PER_DT; dt_val = dt)
@@ -109,13 +109,13 @@
               to_SI(1289.417324985034, TON_PER_DT; dt_val = dt)
         @test mean(river.sediment_flux.boundary_conditions.transport_capacity) ≈
               to_SI(0.4458019733090582, TON_PER_DT; dt_val = dt)
-        @test mean(river.sediment_flux.variables.sediment_flux) ≈
+        @test mean(river.sediment_flux.variables.sediment_rate) ≈
               to_SI(0.43330815120929567, TON_PER_DT; dt_val = dt)
         @test mean(river.sediment_flux.variables.erosion) ≈
               to_SI(0.018944871787785745, TON_PER_DT; dt_val = dt)
         @test mean(river.sediment_flux.variables.deposition) ≈
               to_SI(0.6939704797633529, TON_PER_DT; dt_val = dt)
-        @test river.sediment_flux.variables.clay[5649] ≈
+        @test river.sediment_flux.variables.clay_rate[5649] ≈
               to_SI(2.840979764480952e-9, TON_PER_DT; dt_val = dt)
 
         @test mean(river.concentrations.variables.suspended) ≈
@@ -141,16 +141,22 @@ end
               to_SI(0.06881654169660432, TON)
         @test mean(river.sediment_flux.variables.leftover_clay) ≈
               to_SI(1.8985203566870876e-7, TON)
-        @test mean(river.sediment_flux.variables.clay) ≈
+        @test mean(river.sediment_flux.variables.clay_rate) ≈
               to_SI(0.761820269217149, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.sediment_flux.variables.store_silt) ≈ 0.13222698520947598
-        @test mean(river.sediment_flux.variables.leftover_silt) ≈ 3.0309355418150914e-9
-        @test mean(river.sediment_flux.variables.silt) ≈ 0.4054607471933968
+        @test mean(river.sediment_flux.variables.store_silt) ≈
+              to_SI(0.13222698520947598, TON)
+        @test mean(river.sediment_flux.variables.leftover_silt) ≈
+              to_SI(3.0309355418150914e-9, TON)
+        @test mean(river.sediment_flux.variables.silt_rate) ≈
+              to_SI(0.4054607471933968, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.sediment_flux.variables.store_sand) ≈ 0.6762573229681987
-        @test mean(river.sediment_flux.variables.leftover_sand) ≈ 7.890080963256109e-10
-        @test mean(river.sediment_flux.variables.sand) ≈ 0.005085932599331321
+        @test mean(river.sediment_flux.variables.store_sand) ≈
+              to_SI(0.6762573229681987, TON)
+        @test mean(river.sediment_flux.variables.leftover_sand) ≈
+              to_SI(7.890080963256109e-10, TON)
+        @test mean(river.sediment_flux.variables.sand_rate) ≈
+              to_SI(0.005085932599331321, TON_PER_DT; dt_val = dt)
     end
 
     Wflow.close_files(model)
@@ -158,32 +164,41 @@ end
 
 @testitem "Run sediment other configuration" begin
     using Statistics: mean
+    using Wflow: to_SI, Unit, MM_PER_DT, TON_PER_DT, MM
+    GRAM_PER_JOULE = Unit(; g = 1, J = -1)
+    GRAM_PER_M3 = Unit(; g = 1, m = -3)
     ### Test the sediment model with a different configuration file ###
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
 
     model = Wflow.Model(config)
-    (; domain) = model
+    (; domain, clock) = model
+    dt = Wflow.tosecond(clock.dt)
 
     Wflow.run_timestep!(model)
 
     @testset "first timestep sediment model eurosem (land part)" begin
         eros = model.land
 
-        @test eros.atmospheric_forcing.precipitation[1] ≈ 4.086122035980225
-        @test eros.hydrological_forcing.interception[1] ≈ 0.6329902410507202
+        @test eros.atmospheric_forcing.precipitation[1] ≈
+              to_SI(4.086122035980225, MM_PER_DT; dt_val = dt)
+        @test eros.hydrological_forcing.interception[1] ≈
+              to_SI(0.6329902410507202, MM_PER_DT; dt_val = dt)
         @test eros.hydrological_forcing.q_land[1] ≈ 0.0
-        @test eros.rainfall_erosion.parameters.soil_detachability[1] ≈ 2.0
+        @test eros.rainfall_erosion.parameters.soil_detachability[1] ≈
+              to_SI(2.0, GRAM_PER_JOULE)
         @test eros.rainfall_erosion.parameters.eurosem_exponent[1] ≈ 2.0
         @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
         @test eros.overland_flow_erosion.variables.soil_erosion_rate[1] ≈ 0.0
-        @test eros.rainfall_erosion.variables.soil_erosion_rate[1] ≈ 0.01232301374083337
+        @test eros.rainfall_erosion.variables.soil_erosion_rate[1] ≈
+              to_SI(0.01232301374083337, TON_PER_DT; dt_val = dt)
         @test mean(eros.overland_flow_erosion.variables.soil_erosion_rate) ≈
-              0.00861079076689589
+              to_SI(0.00861079076689589, TON_PER_DT; dt_val = dt)
         @test mean(eros.rainfall_erosion.variables.soil_erosion_rate) ≈
-              0.0014726364432116048
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈ 0.010083427210107495
+              to_SI(0.0014726364432116048, TON_PER_DT; dt_val = dt)
+        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+              to_SI(0.010083427210107495, TON_PER_DT; dt_val = dt)
     end
 
     # run the second timestep
@@ -193,12 +208,13 @@ end
         land = model.routing.overland_flow
         river = model.routing.river_flow
 
-        @test river.transport_capacity.parameters.d50[1] == 0.05000000074505806
+        @test river.transport_capacity.parameters.d50[1] == to_SI(0.05000000074505806, MM)
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
-              0.1418728167951134
+              to_SI(0.1418728167951134, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.concentrations.variables.suspended) ≈ 0.24791810261189964
+        @test mean(river.concentrations.variables.suspended) ≈
+              to_SI(0.24791810261189964, GRAM_PER_M3)
     end
 
     Wflow.close_files(model)
@@ -206,6 +222,7 @@ end
 
 @testitem "Run sediment land only" begin
     using Statistics: mean
+    using Wflow: to_SI, TON_PER_DT
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -215,6 +232,7 @@ end
     config.model.land_transport = "govers"
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -224,11 +242,13 @@ end
         eros = model.land
         land = model.routing.overland_flow
 
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈ 0.0776983847440198
+        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+              to_SI(0.0776983847440198, TON_PER_DT; dt_val = dt)
         @test mean(land.transport_capacity.parameters.c_govers) ≈ 0.16393911236592437
         @test mean(land.transport_capacity.variables.sediment_transport_capacity) ≈
-              1.0990864706347766e6
-        @test mean(land.to_river.variables.sediment_rate) ≈ 0.07708434959918917
+              to_SI(1.0990864706347766e6, TON_PER_DT; dt_val = dt)
+        @test mean(land.to_river.variables.sediment_rate) ≈
+              to_SI(0.07708434959918917, TON_PER_DT; dt_val = dt)
     end
 
     Wflow.close_files(model)
@@ -236,6 +256,7 @@ end
 
 @testitem "Run sediment yalin transport capacity" begin
     using Statistics: mean
+    using Wflow: to_SI, TON_PER_DT, MM
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -245,6 +266,7 @@ end
     config.model.land_transport = "yalin"
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -254,11 +276,13 @@ end
         eros = model.land
         land = model.routing.overland_flow
 
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈ 0.0776983847440198
-        @test mean(land.transport_capacity.parameters.d50) ≈ 0.001534350291334408
+        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+              to_SI(0.0776983847440198, TON_PER_DT; dt_val = dt)
+        @test mean(land.transport_capacity.parameters.d50) ≈ to_SI(0.001534350291334408, MM)
         @test mean(land.transport_capacity.variables.sediment_transport_capacity) ≈
-              1.0988158364353527f6
-        @test mean(land.to_river.variables.sediment_rate) ≈ 0.07759383356462951
+              Float32(to_SI(1.0988158364353527e6, TON_PER_DT; dt_val = dt))
+        @test mean(land.to_river.variables.sediment_rate) ≈
+              to_SI(0.07759383356462951, TON_PER_DT; dt_val = dt)
     end
 
     Wflow.close_files(model)
@@ -267,6 +291,8 @@ end
 ### Test all river transport capacity ###
 @testitem "Run sediment yang transport capacity" begin
     using Statistics: mean
+    using Wflow: to_SI, Unit, MM, TON_PER_DT
+    GRAM_PER_M3 = Unit(; g = 1, m = -3)
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -274,6 +300,7 @@ end
     config.model.river_transport = "yang"
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -282,11 +309,12 @@ end
     @testset "second timestep sediment model yang (routing)" begin
         river = model.routing.river_flow
 
-        @test river.transport_capacity.parameters.d50[1] == 0.05000000074505806
+        @test river.transport_capacity.parameters.d50[1] == to_SI(0.05000000074505806, MM)
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
-              39.955369987101946
-        @test mean(river.concentrations.variables.suspended) ≈ 0.004036949009419181
+              to_SI(39.955369987101946, TON_PER_DT; dt_val = dt)
+        @test mean(river.concentrations.variables.suspended) ≈
+              to_SI(0.004036949009419181, GRAM_PER_M3)
     end
 
     Wflow.close_files(model)
@@ -294,6 +322,8 @@ end
 
 @testitem "Run sediment kodatie transport capacity" begin
     using Statistics: mean
+    using Wflow: to_SI, Unit, TON_PER_DT
+    GRAM_PER_M3 = Unit(; g = 1, m = -3)
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -301,6 +331,7 @@ end
     config.model.river_transport = "kodatie"
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -313,9 +344,10 @@ end
         @test river.transport_capacity.parameters.b_kodatie[1] == 3.646
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
-              30.332588671299625
+              to_SI(30.332588671299625, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.concentrations.variables.suspended) ≈ 54.7559835316139
+        @test mean(river.concentrations.variables.suspended) ≈
+              to_SI(54.7559835316139, GRAM_PER_M3)
     end
 
     Wflow.close_files(model)
@@ -323,6 +355,8 @@ end
 
 @testitem "Run sediment molinas transport capacity" begin
     using Statistics: mean
+    using Wflow: to_SI, Unit, MM, TON_PER_DT
+    GRAM_PER_M3 = Unit(; g = 1, m = -3)
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -330,6 +364,7 @@ end
     config.model.river_transport = "molinas"
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
 
     # run the first and second timestep
     Wflow.run_timestep!(model)
@@ -338,12 +373,13 @@ end
     @testset "second timestep sediment model molinas (routing)" begin
         river = model.routing.river_flow
 
-        @test river.transport_capacity.parameters.d50[1] == 0.05000000074505806
+        @test river.transport_capacity.parameters.d50[1] == to_SI(0.05000000074505806, MM)
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
-              350.7538564169241
+              to_SI(350.7538564169241, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.concentrations.variables.suspended) ≈ 884.749798262824
+        @test mean(river.concentrations.variables.suspended) ≈
+              to_SI(884.749798262824, GRAM_PER_M3)
     end
 
     Wflow.close_files(model)

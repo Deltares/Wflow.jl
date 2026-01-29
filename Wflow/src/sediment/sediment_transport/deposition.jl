@@ -28,7 +28,7 @@ Deposition of sediment in reservoirs from Camp 1945.
 - `waterlevel` (water level [m])
 - `reservoir_area` (reservoir area [m²])
 - `res_trapping_efficiency` (reservoir trapping efficiency [-])
-- `dm` (mean diameter [m])
+- `dm` (mean diameter [μm => m])
 - `slope` (slope [-])
 
 # Output
@@ -42,19 +42,22 @@ function reservoir_deposition_camp(
     res_trapping_efficiency::Float64,
     dm::Float64,
     slope::Float64,
+    dt::Float64,
 )
     # Compute critical velocity
     # [m s⁻¹] = [m³ s⁻¹] / [m²]
     reservoir_critical_velocity = q / reservoir_area
     # Natural deposition
-    # [kg s⁻¹] = [kg s⁻¹] * min([-], [m s⁻¹] / [m s⁻¹])
-    deposition = input * min(1.0, fall_velocity(dm) / reservoir_critical_velocity)
+    # [kg s⁻¹] = [kg s⁻¹] * [-]
+    deposition = input * min(1.0, fall_velocity(dm) / (reservoir_critical_velocity * dt))
 
     # Check if particles are traveling in suspension or bed load using Rouse number
     # [m]
-    dsuspf = sqrt(
-        1.2 * 0.41 * sqrt(GRAVITATIONAL_ACCELERATION * waterlevel * slope) / STOKES_FACTOR,
-    )
+    dsuspf =
+        1e-3 * sqrt(
+            1.2 * 0.41 * sqrt(GRAVITATIONAL_ACCELERATION * waterlevel * slope) /
+            STOKES_FACTOR,
+        )
     # If bed load, we have extra deposition depending on the reservoir type
     if dm > dsuspf
         deposition = max(deposition, res_trapping_efficiency * input)

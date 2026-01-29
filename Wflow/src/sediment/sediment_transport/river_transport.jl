@@ -357,9 +357,8 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             RTEbank =
                 if (potential_erosion_river_bank[v] + potential_erosion_river_bed[v] > 0.0)
                     # [kg s⁻¹] / ([kg s⁻¹] + [kg s⁻¹])
-                    RTEbank =
-                        potential_erosion_river_bank[v] /
-                        (potential_erosion_river_bank[v] + potential_erosion_river_bed[v])
+                    potential_erosion_river_bank[v] /
+                    (potential_erosion_river_bank[v] + potential_erosion_river_bed[v])
                 else
                     0.0
                 end
@@ -373,7 +372,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             # [kg s⁻¹] + [kg s⁻¹]
             erosion_river = erosion_bank + erosion_bed
             # Per particle
-            # [kg s⁻¹] = [-] * [kg s⁻¹]
+            # [kg s⁻¹] = [kg s⁻¹] * [-]
             erosion_clay = erosion_river * clay_fraction[v]
             erosion_silt = erosion_river * silt_fraction[v]
             erosion_sand = erosion_river * sand_fraction[v]
@@ -473,6 +472,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 reservoir_trapping_efficiency[v],
                 dm_clay[v],
                 slope[v],
+                dt,
             )
             deposition_silt = reservoir_deposition_camp(
                 (input_silt + erosion_silt),
@@ -482,6 +482,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 reservoir_trapping_efficiency[v],
                 dm_silt[v],
                 slope[v],
+                dt,
             )
             deposition_sand = reservoir_deposition_camp(
                 (input_sand + erosion_sand),
@@ -491,6 +492,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 reservoir_trapping_efficiency[v],
                 dm_sand[v],
                 slope[v],
+                dt,
             )
             deposition_sagg = reservoir_deposition_camp(
                 (input_sagg + erosion_sagg),
@@ -500,6 +502,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 reservoir_trapping_efficiency[v],
                 dm_sagg[v],
                 slope[v],
+                dt,
             )
             deposition_lagg = reservoir_deposition_camp(
                 (input_lagg + erosion_lagg),
@@ -509,6 +512,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 reservoir_trapping_efficiency[v],
                 dm_lagg[v],
                 slope[v],
+                dt,
             )
             deposition_gravel = reservoir_deposition_camp(
                 (input_gravel + erosion_gravel),
@@ -518,6 +522,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 reservoir_trapping_efficiency[v],
                 dm_gravel[v],
                 slope[v],
+                dt,
             )
         elseif reservoir_coverage[v]
             # No deposition in reservoir coverage, only at the outlets
@@ -537,7 +542,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 # Sediment deposited in the channel (from gravel to clay)
 
                 # Gravel
-                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
                 gravel_sum = input_gravel + erosion_gravel
                 if excess_sediment > gravel_sum
                     deposition_gravel = gravel_sum
@@ -549,7 +554,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 end
 
                 # Large aggregates
-                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
                 lagg_sum = input_lagg + erosion_lagg
                 if excess_sediment > lagg_sum
                     deposition_lagg = lagg_sum
@@ -561,7 +566,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 end
 
                 # Sand
-                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
                 sand_sum = input_sand + erosion_sand
                 if excess_sediment > sand_sum
                     deposition_sand = sand_sum
@@ -573,7 +578,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 end
 
                 # Small aggregates
-                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
                 sagg_sum = input_sagg + erosion_sagg
                 if excess_sediment > sagg_sum
                     deposition_sagg = sagg_sum
@@ -585,7 +590,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 end
 
                 # Silt
-                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
                 silt_sum = input_silt + erosion_silt
                 if excess_sediment > silt_sum
                     deposition_silt = silt_sum
@@ -597,7 +602,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 end
 
                 # Clay
-                # [kg s⁻¹] = [[kg s⁻¹] + [kg s⁻¹]
+                # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
                 clay_sum = input_clay + erosion_clay
                 if excess_sediment > clay_sum
                     deposition_clay = clay_sum
@@ -839,9 +844,11 @@ function update!(
             common_term =
                 0.41 * sqrt(GRAVITATIONAL_ACCELERATION * waterlevel[i] * slope[i]) /
                 STOKES_FACTOR
-            dbedf = 1e3 * sqrt(2.5 * common_term)
+            # [m]
+            dbedf = 1e-3 * sqrt(2.5 * common_term)
             # # threshold diameter between suspended load and mixed load using Rouse number
-            dsuspf = 1e3 * sqrt(1.2 * common_term)
+            # [m]
+            dsuspf = 1e-3 * sqrt(1.2 * common_term)
 
             # Rouse with diameter
             # [kg m⁻³]
@@ -852,7 +859,7 @@ function update!(
             SSlagg = suspended_solid(dm_lagg[i], dsuspf, dbedf, lagg[i])
             SSgrav = suspended_solid(dm_gravel[i], dsuspf, dbedf, gravel[i])
 
-            to_conc = 1e6 / (q[i] * dt)
+            to_conc = 1e6 / (flow * dt)
             # [kg m⁻³] = ∑ [kg m⁻³]
             total_ = clay[i] + silt[i] + sagg[i] + sand[i] + lagg[i] + gravel[i]
             total[i] = total_ * to_conc

@@ -144,7 +144,7 @@ function TransportCapacityYalinParameters(
         sel = indices,
     )
 
-    tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
+    tc_parameters = TransportCapacityYalinParameters(; density, d50)
 
     return tc_parameters
 end

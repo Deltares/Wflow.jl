@@ -283,7 +283,7 @@ Transport capacity for a specific grain size based on Yalin with particle differ
 - `q` (discharge [m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m⁻³])
-- `dm` (median grain size [m])
+- `dm` (median grain size [μm => m])
 - `slope` (slope [-])
 - `width` (drain width [m])
 - `reservoirs` (reservoirs mask [-])
@@ -309,7 +309,7 @@ function transport_capacity_yalin_differentiation(
     sinslope = sin_slope(slope) #slope in radians
     # Transport capacity from Yalin with particle differentiation
     # Delta parameter of Yalin for the specific particle class
-    delta = waterlevel * sinslope / (1e-6 * (density / WATER_DENSITY - 1)) / 0.06
+    delta = waterlevel * sinslope / (density / WATER_DENSITY - 1) / 0.06
     d_part = max(delta / dm - 1, 0.0)
 
     if q > 0.0
@@ -328,7 +328,7 @@ function transport_capacity_yalin_differentiation(
         # [kg m⁻³]
         TC =
             TCa * dm * d_part / dtot *
-            0.635 *
+            0.635e6 *
             d_part *
             (1 - log(1 + d_part * TCb) / d_part * TCb)
         # [kg s⁻¹] = [kg m⁻³] * [m³ s⁻¹]
@@ -663,7 +663,7 @@ end
 Total sediment transport capacity based on Molinas and Wu.
 
 # Arguments
-- `q` (discharge [m³ s-1])
+- `q` (discharge [m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m⁻³])
 - `d50` (median grain size [m])

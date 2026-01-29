@@ -233,7 +233,7 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 
 # Arguments
 - `waterlevel` (water level [m])
-- `d50` (median grain size [m])
+- `d50` (median grain size [mm => m])
 - `width` (width [m])
 - `length` (length [m])
 - `slope` (slope [-])
@@ -252,12 +252,13 @@ function river_erosion_julian_torres(
     dt::Float64,
 )
     if waterlevel > 0.0
+        d50_mm = from_SI(d50, MM)
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
         E_ = (2.65 - 1) * GRAVITATIONAL_ACCELERATION
-        E = 10 * d50 * cbrt(E_)
+        E = 10 * d50_mm * cbrt(E_)
         TCrbed =
             E_ *
-            d50 *
+            d50_mm *
             (0.13 * E^(-0.392) * exp(-0.015 * E^2) + 0.045 * (1 - exp(-0.068 * E)))
         TCrbank = TCrbed
         # kd from Hanson & Simon 2001
@@ -310,7 +311,7 @@ end
 River erosion of the previously deposited sediment.
 
 # Arguments
-- `excess_sediment` (excess sediment [tdt⁻¹ => kg s⁻¹])
+- `excess_sediment` (excess sediment [t dt⁻¹ => kg s⁻¹])
 - `store` (sediment store [t => kg])
 - `dt` (timestep [s])
 

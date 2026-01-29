@@ -741,6 +741,7 @@ function surface_water_allocation_area!(
             surfacewater_alloc[j] += frac_allocate_sw * surfacewater_demand[j]
         end
     end
+    return nothing
 end
 
 function available_surface_water!(

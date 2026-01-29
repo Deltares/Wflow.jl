@@ -61,9 +61,9 @@ end
 end
 
 @testitem "unit: River flow erosion (Julian Torres)" begin
-    using Wflow: to_SI, TON_PER_DT
+    using Wflow: to_SI, TON_PER_DT, MM
     waterlevel = 0.0085
-    d50 = 0.005
+    d50 = to_SI(0.005, MM)
     width = 150.0
     length = 635.0
     slope = 1.5e-3
@@ -75,13 +75,20 @@ end
 end
 
 @testitem "unit: Reservoir deposition (Camp)" begin
-    input = 0.002
-    q = 3.0
+    using Wflow: to_SI, Unit, TON_PER_DT
+    M3_PER_DT = Unit(; m = 3, dt = -1)
+    μM = Unit(; μm = 1)
+    dt = 86400.0
+
+    input = to_SI(0.002, TON_PER_DT; dt_val = dt)
+    q = to_SI(3.0, M3_PER_DT; dt_val = dt)
     waterlevel = 0.57
-    res_area = 1.48e6
     res_trapping_efficiency = 0.75
-    dm = 30.0
+    dm = to_SI(30.0, μM)
     slope = 2e-4
+
+    # Case: limited deposition, dm < dsuspf
+    res_area = 1.48e4
 
     @test Wflow.reservoir_deposition_camp(
         input,
@@ -91,7 +98,36 @@ end
         res_trapping_efficiency,
         dm,
         slope,
-    ) ≈ 0.002
+        dt,
+    ) ≈ to_SI(0.0010138, TON_PER_DT; dt_val = dt)
+
+    # Case: non-limited deposition, dm < dsuspf
+    res_area = 1.48e6
+
+    @test Wflow.reservoir_deposition_camp(
+        input,
+        q,
+        waterlevel,
+        res_area,
+        res_trapping_efficiency,
+        dm,
+        slope,
+        dt,
+    ) ≈ to_SI(0.002, TON_PER_DT; dt_val = dt)
+
+    # Case non-limited deposition dm > dsuspf
+    dm = to_SI(400.0, μM)
+
+    @test Wflow.reservoir_deposition_camp(
+        input,
+        q,
+        waterlevel,
+        res_area,
+        res_trapping_efficiency,
+        dm,
+        slope,
+        dt,
+    ) ≈ to_SI(0.002, TON_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: Transport capacity (Govers, Yalin)" begin
@@ -164,7 +200,7 @@ end
     ) ≈ 2.3511712003217816e7
 
     q = 30.0
-    dm = 30.0
+    dm = to_SI(30.0, μM)
     slope = 0.25
     width = 600.0
     reservoirs = false
@@ -264,4 +300,41 @@ end
         slope,
         dt,
     ) ≈ to_SI(0.002447635363976675, TON_PER_DT; dt_val = dt)
+end
+
+@testitem "unit: update SedimentConcentrationsRiverModel" begin
+    using Wflow: to_SI, Unit
+    GRAM_PER_M3 = Unit(; g = 1, m = -3)
+    μM = Unit(; μm = 1)
+
+    n = 1
+    model = Wflow.SedimentConcentrationsRiverModel(;
+        n,
+        boundary_conditions = Wflow.SedimentConcentrationsRiverBC(;
+            n,
+            q = [2.5],
+            waterlevel = [0.2],
+            clay = [to_SI(0.0, GRAM_PER_M3)],
+            silt = [to_SI(0.0, GRAM_PER_M3)],
+            sand = [to_SI(1.0e-10, GRAM_PER_M3)],
+            sagg = [to_SI(0.0, GRAM_PER_M3)],
+            lagg = [to_SI(2.0e-12, GRAM_PER_M3)],
+            gravel = [to_SI(3.0e-14, GRAM_PER_M3)],
+        ),
+        parameters = Wflow.SedimentConcentrationsRiverParameters(;
+            dm_clay = [to_SI(2.0, μM)],
+            dm_silt = [to_SI(10.0, μM)],
+            dm_sand = [to_SI(200.0, μM)], # dm < dsuspf
+            dm_sagg = [to_SI(30.0, μM)],
+            dm_lagg = [to_SI(500.0, μM)], # dsuspf < dm < dbedf
+            dm_gravel = [to_SI(2000.0, μM)], # dbedf < dm
+        ),
+    )
+    parameters = Wflow.RiverParameters(; slope = [1e-3])
+    dt = 86400.0
+
+    Wflow.update!(model, parameters, dt)
+    @test model.variables.suspended[1] ≈ to_SI(4.675925925925926e-10, GRAM_PER_M3)
+    @test model.variables.bed[1] ≈ to_SI(4.768518518518557e-12, GRAM_PER_M3)
+    @test model.variables.total[1] ≈ to_SI(4.723611111111112e-10, GRAM_PER_M3)
 end
