@@ -229,19 +229,11 @@ end
 
     # Run changed
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
-        Wflow.init_config_section(
-            Wflow.InputEntry,
-            Dict("scale" => 2.0, "netcdf_variable_name" => "precip"),
-        )
+        Dict("scale" => 2.0, "netcdf_variable_name" => "precip")
     config.input.forcing["land_surface_water__potential_evaporation_volume_flux"] =
-        Wflow.init_config_section(
-            Wflow.InputEntry,
-            Dict("scale" => 3.0, "offset" => 1.50, "netcdf_variable_name" => "pet"),
-        )
-    config.input.cyclic["vegetation__leaf_area_index"] = Wflow.init_config_section(
-        Wflow.InputEntry,
-        Dict("scale" => 1.6, "netcdf_variable_name" => "LAI"),
-    )
+        Dict("scale" => 3.0, "offset" => 1.50, "netcdf_variable_name" => "pet")
+    config.input.cyclic["vegetation__leaf_area_index"] =
+        Dict("scale" => 1.6, "netcdf_variable_name" => "LAI")
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
@@ -604,6 +596,7 @@ end
 
         @testset "exponential profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.exponential)
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -618,6 +611,7 @@ end
 
         @testset "exponential constant profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.exponential_constant)
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -640,6 +634,7 @@ end
 
         @testset "layered profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.layered)
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -657,6 +652,7 @@ end
         config = get_config(Wflow.VerticalConductivityProfile.layered_exponential)
 
         @testset "layered exponential profile" begin
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters

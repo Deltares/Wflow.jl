@@ -59,6 +59,7 @@ using LoggingExtras:
     Warn,
     with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
@@ -67,6 +68,7 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+import Subscripts
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
@@ -128,6 +130,28 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+"""
+The AverageVector is a struct for computing averages of a some quantity with unit [u]
+over a timestep dt [s].
+"""
+@with_kw struct AverageVector
+    n::Int
+    # Cumulative value [u]
+    cumulative::Vector{Float64} = zeros(n)
+    # Average value [u s⁻¹]
+    average::Vector{Float64} = zeros(n)
+end
+
+add_to_cumulative!(v::AverageVector, i::Int, val::Number) = (v.cumulative[i] += val)
+average!(v::AverageVector, dt::Number) = (@. v.average = v.cumulative / dt)
+zero!(v::AverageVector) = (v.cumulative .= 0)
+Base.eltype(::AverageVector) = Float64
+Base.iterate(v::AverageVector) = iterate(v.average)
+Base.iterate(v::AverageVector, state) = iterate(v.average, state)
+Base.length(v::AverageVector) = length(v.average)
+Base.collect(v::AverageVector) = v.average
+
+include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")
 include("config_init.jl")
@@ -184,6 +208,8 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+const MISSING_VALUE = Float64(NaN)
+
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -224,7 +250,19 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
-include("standard_name.jl")
+include("standard_name/standard_name_utils.jl")
+include("standard_name/standard_name_domain.jl")
+include("standard_name/standard_name_routing.jl")
+include("standard_name/standard_name_sbm.jl")
+include("standard_name/standard_name_sediment.jl")
+
+const standard_name_maps = (
+    ("sbm", Wflow.sbm_standard_name_map),
+    ("sediment", Wflow.sediment_standard_name_map),
+    ("domain", Wflow.domain_standard_name_map),
+    ("routing", Wflow.routing_standard_name_map),
+)
+
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

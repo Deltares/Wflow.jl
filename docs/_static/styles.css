@@ -19,10 +19,21 @@
 }
 
 .navbar-right .fa-github {
-    font-size: 40px; /* Adjust the value as needed */
+    font-size: 40px;
+    /* Adjust the value as needed */
 }
 
 .active-item {
     font-weight: bold;
     text-decoration: underline;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+td,
+th {
+    word-wrap: break-word;
 }

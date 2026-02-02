@@ -3,29 +3,30 @@ abstract type AbstractInterceptionModel end
 "Struct for storing interception model variables"
 @with_kw struct InterceptionVariables
     n::Int
-    # Canopy potential evaporation [mm Δt⁻¹]
+    # Canopy potential evaporation [mm dt⁻¹ => m s⁻¹]
     canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Interception loss by evaporation [mm Δt⁻¹]
+    # Interception loss by evaporation [mm dt⁻¹ => m s⁻¹]
     interception_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Canopy storage [mm]
+    # Canopy storage [mm => m]
     canopy_storage::Vector{Float64} = zeros(n)
-    # Stemflow [mm Δt⁻¹]
+    # Stemflow [mm dt⁻¹ => m s⁻¹]
     stemflow::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Throughfall [mm Δt⁻¹]
+    # Throughfall [mm dt⁻¹ => m s⁻¹]
     throughfall::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing Gash interception model parameters"
 @with_kw struct GashParameters
-    # ratio [-] of wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
+    # ratio [-] of wet canopy [mm dt⁻¹ => m s⁻¹] and the average precipitation intensity [mm dt⁻¹ => m s⁻¹] on a saturated canopy
     e_r::Vector{Float64}
     vegetation_parameter_set::VegetationParameters
 end
 
 "Gash interception model"
 @with_kw struct GashInterceptionModel <: AbstractInterceptionModel
+    n::Int
     parameters::GashParameters
-    variables::InterceptionVariables
+    variables::InterceptionVariables = InterceptionVariables(; n)
 end
 
 "Initialize Gash interception model"
@@ -38,20 +39,22 @@ function GashInterceptionModel(
     e_r = ncread(
         dataset,
         config,
-        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio";
+        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio",
+        LandHydrologySBM;
         sel = indices,
-        defaults = 0.1,
-        type = Float64,
     )
     n = length(indices)
     parameters = GashParameters(; e_r, vegetation_parameter_set)
-    variables = InterceptionVariables(; n)
-    model = GashInterceptionModel(; parameters, variables)
+    model = GashInterceptionModel(; n, parameters)
     return model
 end
 
 "Update Gash interception model for a single timestep"
-function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+function update!(
+    model::GashInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+    dt::Float64,
+)
     (; leaf_area_index, canopygapfraction, cmax, kc) =
         model.parameters.vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
@@ -66,7 +69,13 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
             e_r[i] =
                 precipitation[i] > 0.0 ?
-                min(0.25, ewet / max(0.0001, canopyfraction * precipitation[i])) : 0.0
+                min(
+                    to_SI(0.25, MM_PER_DT; dt_val = dt),
+                    ewet / max(
+                        to_SI(0.0001, MM_PER_DT; dt_val = dt),
+                        canopyfraction * precipitation[i],
+                    ),
+                ) : 0.0
         end
     end
     threaded_foreach(1:n; basesize = 1000) do i
@@ -98,7 +107,11 @@ function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters,
 end
 
 "Update Rutter interception model for a single timestep"
-function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+function update!(
+    model::RutterInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+    dt::Number,
+)
     (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         model.variables
