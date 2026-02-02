@@ -599,7 +599,7 @@ function update_lateral_inflow!(
     (; land_indices) = domain.drain.network
 
     if config.model.drain__flag
-        drain = subsurface_flow.boundaries.drain
+        drain = subsurface_flow.boundary_conditions.drain
         drainflux = zeros(length(net_runoff))
         drainflux[land_indices] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
     else

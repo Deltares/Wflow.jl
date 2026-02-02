@@ -76,7 +76,7 @@
 
     @testset "groundwater" begin
         gw = model.routing.subsurface_flow
-        @test gw.boundaries.river.variables.stage[1] ≈ 1.212479774379469
+        @test gw.boundary_conditions.river.variables.stage[1] ≈ 1.212479774379469
         @test gw.aquifer.variables.head[17:21] ≈ [
             1.4037567076805044,
             1.4616545639019285,
@@ -84,9 +84,9 @@
             1.6266815385109639,
             1.503470591440436,
         ]
-        @test gw.boundaries.river.variables.flux[1] ≈ -61.786976087971084
-        @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
-        @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
+        @test gw.boundary_conditions.river.variables.flux[1] ≈ -61.786976087971084
+        @test gw.boundary_conditions.drain.variables.flux[1] ≈ 0.0
+        @test gw.boundary_conditions.recharge.variables.rate[19] ≈ -0.0014241196552847502
     end
 
     @testset "no drains" begin
@@ -96,8 +96,9 @@
             "land_drain_water__to_subsurface_volume_flow_rate",
         )
         model = Wflow.Model(config)
-        @test typeof.(Wflow.get_boundaries(model.routing.subsurface_flow.boundaries)) ==
-              (Wflow.Recharge, Wflow.GwfRiver, Nothing, Nothing)
+        @test typeof.(
+            Wflow.get_boundaries(model.routing.subsurface_flow.boundary_conditions)
+        ) == (Wflow.Recharge, Wflow.GwfRiver, Nothing, Nothing)
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -199,7 +200,7 @@ end
 
     @testset "groundwater warm start" begin
         gw = model.routing.subsurface_flow
-        @test gw.boundaries.river.variables.stage[1] ≈ 1.2030201719029363
+        @test gw.boundary_conditions.river.variables.stage[1] ≈ 1.2030201719029363
         @test gw.aquifer.variables.head[17:21] ≈ [
             1.2271445115520103,
             1.2841099964673919,
@@ -207,9 +208,9 @@ end
             1.5991095485460984,
             1.2079062115823571,
         ]
-        @test gw.boundaries.river.variables.flux[1] ≈ -7.205394770592832
-        @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
-        @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
+        @test gw.boundary_conditions.river.variables.flux[1] ≈ -7.205394770592832
+        @test gw.boundary_conditions.drain.variables.flux[1] ≈ 0.0
+        @test gw.boundary_conditions.recharge.variables.rate[19] ≈ -0.0014241196552847502
     end
 
     Wflow.close_files(model; delete_output = false)

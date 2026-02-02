@@ -64,7 +64,7 @@ end
 function update!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
-    (; boundaries) = routing.subsurface_flow
+    (; boundary_conditions) = routing.subsurface_flow
 
     dt = tosecond(clock.dt)
 
@@ -72,10 +72,12 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     # set river stage and storage (groundwater boundary) based on river flow routing
     # variables
-    for i in eachindex(boundaries.river.variables.stage)
-        boundaries.river.variables.stage[i] =
-            routing.river_flow.variables.h[i] + boundaries.river.parameters.bottom[i]
-        boundaries.river.variables.storage[i] = routing.river_flow.variables.storage[i]
+    for i in eachindex(boundary_conditions.river.variables.stage)
+        boundary_conditions.river.variables.stage[i] =
+            routing.river_flow.variables.h[i] +
+            boundary_conditions.river.parameters.bottom[i]
+        boundary_conditions.river.variables.storage[i] =
+            routing.river_flow.variables.storage[i]
     end
 
     # determine stable time step for groundwater flow
@@ -83,10 +85,10 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
-    @. boundaries.recharge.variables.rate =
+    @. boundary_conditions.recharge.variables.rate =
         soil.variables.recharge / 1000.0 * (1.0 / dt_gwf)
     if do_water_demand(config)
-        @. boundaries.recharge.variables.rate -=
+        @. boundary_conditions.recharge.variables.rate -=
             land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_gwf)
     end
 

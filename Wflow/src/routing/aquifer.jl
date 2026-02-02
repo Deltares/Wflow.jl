@@ -1,4 +1,4 @@
-abstract type AquiferBoundaryCondition end
+abstract type AbstractAquiferBC end
 
 """
     UnconfinedAquifer
@@ -402,11 +402,11 @@ minimum_head(aquifer::UnconfinedAquifer) =
 maximum_head(aquifer::UnconfinedAquifer) =
     min.(aquifer.variables.head, aquifer.parameters.top)
 
-@kwdef struct AquiferBoundaries{
-    Re <: Union{Nothing, AquiferBoundaryCondition},
-    Ri <: Union{Nothing, AquiferBoundaryCondition},
-    D <: Union{Nothing, AquiferBoundaryCondition},
-    W <: Union{Nothing, AquiferBoundaryCondition},
+@kwdef struct AquiferBC{
+    Re <: Union{Nothing, AbstractAquiferBC},
+    Ri <: Union{Nothing, AbstractAquiferBC},
+    D <: Union{Nothing, AbstractAquiferBC},
+    W <: Union{Nothing, AbstractAquiferBC},
 }
     recharge::Re = nothing
     river::Ri = nothing
@@ -414,24 +414,28 @@ maximum_head(aquifer::UnconfinedAquifer) =
     well::W = nothing
 end
 
-get_boundaries(boundaries::AquiferBoundaries) =
-    (boundaries.recharge, boundaries.river, boundaries.drain, boundaries.well)
+get_boundaries(boundary_conditions::AquiferBC) = (
+    boundary_conditions.recharge,
+    boundary_conditions.river,
+    boundary_conditions.drain,
+    boundary_conditions.well,
+)
 
-@kwdef struct GroundwaterFlow{B <: AquiferBoundaries} <: AbstractSubsurfaceFlowModel
+@kwdef struct GroundwaterFlow{B <: AquiferBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     aquifer::UnconfinedAquifer
     connectivity::Connectivity
     constanthead::ConstantHead
-    boundaries::B = AquiferBoundaries()
+    boundary_conditions::B = AquiferBC()
     function GroundwaterFlow(
         timestepping::TimeStepping,
         aquifer::UnconfinedAquifer,
         connectivity::Connectivity,
         constanthead::ConstantHead,
-        boundaries::B,
-    ) where {B <: AquiferBoundaries}
+        boundary_conditions::B,
+    ) where {B <: AquiferBC}
         initialize_conductance!(aquifer, connectivity)
-        new{B}(timestepping, aquifer, connectivity, constanthead, boundaries)
+        new{B}(timestepping, aquifer, connectivity, constanthead, boundary_conditions)
     end
 end
 
@@ -442,9 +446,9 @@ function update_fluxes!(
     dt::Float64,
 )
     flux!(gwf.aquifer, gwf.connectivity, conductivity_profile, dt)
-    for boundary in get_boundaries(gwf.boundaries)
-        indices = get_boundary_index(boundary, domain)
-        flux!(boundary, gwf.aquifer, indices, dt)
+    for bc in get_boundaries(gwf.boundary_conditions)
+        indices = get_boundary_index(bc, domain)
+        flux!(bc, gwf.aquifer, indices, dt)
     end
     return nothing
 end
@@ -478,8 +482,8 @@ function update!(
     conductivity_profile::GwfConductivityProfileType.T,
 )
     (; cfl) = gwf.timestepping
-    for boundary in get_boundaries(gwf.boundaries)
-        !isnothing(boundary) && (boundary.variables.flux_av .= 0.0)
+    for bc in get_boundaries(gwf.boundary_conditions)
+        !isnothing(bc) && (bc.variables.flux_av .= 0.0)
     end
     gwf.aquifer.variables.exfiltwater .= 0.0
     gwf.aquifer.variables.q_in_av .= 0.0
@@ -493,8 +497,8 @@ function update!(
         update_head!(gwf, dt_s)
         t += dt_s
     end
-    for boundary in get_boundaries(gwf.boundaries)
-        !isnothing(boundary) && (boundary.variables.flux_av ./= dt)
+    for bc in get_boundaries(gwf.boundary_conditions)
+        !isnothing(bc) && (bc.variables.flux_av ./= dt)
     end
     gwf.aquifer.variables.q_in_av ./= dt
     gwf.aquifer.variables.q_out_av ./= dt
@@ -507,22 +511,22 @@ get_water_depth(gwf::GroundwaterFlow) =
 get_exfiltwater(gwf::GroundwaterFlow) = gwf.aquifer.variables.exfiltwater
 
 function get_flux_to_river(subsurface_flow::GroundwaterFlow, inds::Vector{Int})
-    (; river) = subsurface_flow.boundaries
+    (; river) = subsurface_flow.boundary_conditions
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end
 
 function sum_boundary_fluxes(gwf::GroundwaterFlow, domain::Domain; exclude = nothing)
-    (; boundaries) = gwf
+    (; boundary_conditions) = gwf
     n = length(gwf.aquifer.variables.storage)
     flux_in = zeros(n)
     flux_out = zeros(n)
-    for boundary in get_boundaries(boundaries)
-        isnothing(boundary) && continue
-        typeof(boundary) == exclude && continue
-        indices = get_boundary_index(boundary, domain)
+    for bc in get_boundaries(boundary_conditions)
+        isnothing(bc) && continue
+        typeof(bc) == exclude && continue
+        indices = get_boundary_index(bc, domain)
         for (i, index) in enumerate(indices)
-            flux = boundary.variables.flux_av[i]
+            flux = bc.variables.flux_av[i]
             if flux > 0.0
                 flux_in[index] += flux
             else

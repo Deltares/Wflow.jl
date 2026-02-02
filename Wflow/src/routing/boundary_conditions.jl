@@ -22,7 +22,7 @@ end
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
 end
 
-@with_kw struct GwfRiver <: AquiferBoundaryCondition
+@with_kw struct GwfRiver <: AbstractAquiferBC
     parameters::GwfRiverParameters
     variables::GwfRiverVariables
 end
@@ -99,7 +99,7 @@ end
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
 end
 
-@with_kw struct Drainage <: AquiferBoundaryCondition
+@with_kw struct Drainage <: AbstractAquiferBC
     parameters::DrainageParameters
     variables::DrainageVariables
 end
@@ -159,7 +159,7 @@ end
     flux_av::Vector{Float64} # [m³ d⁻¹]
 end
 
-@with_kw struct HeadBoundary <: AquiferBoundaryCondition
+@with_kw struct HeadBoundary <: AbstractAquiferBC
     parameters::HeadBoundaryParameters
     variables::HeadBoundaryVariables
 end
@@ -188,7 +188,7 @@ end
     flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹]
 end
 
-@with_kw struct Recharge <: AquiferBoundaryCondition
+@with_kw struct Recharge <: AbstractAquiferBC
     n::Int
     variables::RechargeVariables = RechargeVariables(; n)
 end
@@ -218,7 +218,7 @@ end
     flux_av::Vector{Float64} # [m³ d⁻¹]
 end
 
-@with_kw struct Well <: AquiferBoundaryCondition
+@with_kw struct Well <: AbstractAquiferBC
     variables::WellVariables
 end
 
