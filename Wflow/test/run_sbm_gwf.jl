@@ -1,7 +1,8 @@
 
 @testitem "Run model sbm_gwf (kinematic wave routing)" begin
     using Dates: DateTime
-    using Wflow: to_SI, Unit, MM_PER_DT
+    using Wflow: to_SI, Unit, MM_PER_DT, M3_PER_DAY
+    M_PER_DAY = Unit(; m = 1, d = -1)
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
@@ -88,9 +89,10 @@
             1.6266815385109639,
             1.503470591440436,
         ]
-        @test gw.boundaries.river.variables.flux[1] ≈ -61.786976087971084
+        @test gw.boundaries.river.variables.flux[1] ≈ to_SI(-61.786976087971084, M3_PER_DAY)
         @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
-        @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
+        @test gw.boundaries.recharge.variables.rate[19] ≈
+              to_SI(-0.0014241196552847502, M_PER_DAY)
     end
 
     @testset "no drains" begin
@@ -108,6 +110,9 @@
 end
 
 @testitem "Run sbm_gwf (local inertial routing)" begin
+    using Wflow: to_SI, Unit, MM_PER_DT, M3_PER_DAY
+    M_PER_DAY = Unit(; m = 1, d = -1)
+
     # test complete run including logging entry TOML file (not set)
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 
@@ -121,11 +126,13 @@ end
     config.input.static["river_bank_water__depth"] = "bankfull_depth"
 
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
+
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
     @testset "river domain (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_av.average
         river = model.routing.river_flow
         @test sum(q) ≈ 0.03415339215740202
         @test q[6] ≈ 0.00797964303605101
@@ -156,7 +163,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river and land domain (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_av.average
         @test sum(q) ≈ 0.034153376823583735
         @test q[6] ≈ 0.007979645156223385
         @test q[13] ≈ 0.0005485472496903369
@@ -186,12 +193,14 @@ end
     @testset "second timestep warm start" begin
         sbm = model.land
         @test sbm.soil.variables.runoff[1] == 0.0
-        @test sbm.soil.variables.soilevap[1] ≈ 0.28488618656022874
-        @test sbm.soil.variables.transpiration[1] ≈ 1.0122634204681036
+        @test sbm.soil.variables.soilevap[1] ≈
+              to_SI(0.28488618656022874, MM_PER_DT; dt_val = dt)
+        @test sbm.soil.variables.transpiration[1] ≈
+              to_SI(1.0122634204681036, MM_PER_DT; dt_val = dt)
     end
 
     @testset "river domain warm start (kinematic wave)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_av.average
         river = model.routing.river_flow
         @test sum(q) ≈ 0.012035660670336177
         @test q[6] ≈ 0.002461611895159899
@@ -211,9 +220,10 @@ end
             1.5991095485460984,
             1.2079062115823571,
         ]
-        @test gw.boundaries.river.variables.flux[1] ≈ -7.205394770592832
+        @test gw.boundaries.river.variables.flux[1] ≈ to_SI(-7.205394770592832, M3_PER_DAY)
         @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
-        @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
+        @test gw.boundaries.recharge.variables.rate[19] ≈
+              to_SI(-0.0014241196552847502, M_PER_DAY)
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -230,7 +240,7 @@ end
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
-    q = model.routing.overland_flow.variables.q_av
+    q = model.routing.overland_flow.variables.q_av.average
     @test sum(q) ≈ 1.4233852635648338e-5
 end
 

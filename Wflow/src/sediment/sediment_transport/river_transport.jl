@@ -402,7 +402,6 @@ function calculate_reservoir_deposition(
     domain_parameters::RiverParameters,
     input_particles::NTuple{6, Float64},
     erosion_particles::NTuple{6, Float64},
-    dt::Float64,
     v::Int,
 )
     (; boundary_conditions, parameters) = model
@@ -432,7 +431,6 @@ function calculate_reservoir_deposition(
         reservoir_trapping_efficiency[v],
         dm[v],
         slope[v],
-        dt,
     )
 
     # [kg s⁻¹]
@@ -722,7 +720,6 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
                 domain.parameters,
                 input_particles,
                 erosion_particles,
-                dt,
                 v,
             )
         elseif reservoir_coverage[v]

@@ -141,6 +141,8 @@ end
 
     for (map_name, standard_name_map, models) in (
         ("sbm", Wflow.sbm_standard_name_map, models_sbm),
+        ("routing", Wflow.routing_standard_name_map, models_sbm),
+        ("domain", Wflow.domain_standard_name_map, models_sbm),
         ("sediment", Wflow.sediment_standard_name_map, models_sediment),
     )
         @testset "Test lenses: $map_name" begin

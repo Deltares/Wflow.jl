@@ -307,11 +307,11 @@ function accucapacityflux!(flux, material, network, capacity, dt; material_is_fl
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)
 
+        (n > 1) && error("bifurcations not supported")
+
         # pit: material is transported out of the map if a capacity is set,
         # cannot add the material anywhere
-        iszero(n) && return
-
-        !isone(n) && error("bifurcations not supported")
+        to_pit = iszero(n)
 
         if material_is_flux
             # Let [u s⁻¹] be the unit of the material
@@ -321,7 +321,10 @@ function accucapacityflux!(flux, material, network, capacity, dt; material_is_fl
             material[v] -= flux_val
             # [u s⁻¹]
             flux[v] = flux_val
-            material[only(downstream_nodes)] += flux_val
+            if !to_pit
+                # [u s⁻¹] += [u s⁻¹]
+                material[only(downstream_nodes)] += flux_val
+            end
         else
             # Let [u] be the unit of material
             # [u s⁻¹] = min([u] / [s], [u s⁻¹])
@@ -332,8 +335,10 @@ function accucapacityflux!(flux, material, network, capacity, dt; material_is_fl
             material[v] -= material_update
             # [u s⁻¹]
             flux[v] = flux_val
-            # [u] += [u]
-            material[only(downstream_nodes)] += material_update
+            if !to_pit
+                # [u] += [u]
+                material[only(downstream_nodes)] += material_update
+            end
         end
     end
     return nothing

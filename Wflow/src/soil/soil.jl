@@ -654,6 +654,7 @@ function soil_temperature!(
 )
     v = model.variables
     p = model.parameters
+    # [K] = [K]
     @. v.tsoil = soil_temperature(v.tsoil, p.w_soil, temperature)
     return nothing
 end
@@ -666,6 +667,7 @@ function ustoredepth!(model::SbmSoilModel)
     v = model.variables
     p = model.parameters
     for i in eachindex(v.ustorelayerdepth)
+        # [m] = ∑ [m]
         v.ustoredepth[i] = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
     end
     return nothing
@@ -682,6 +684,7 @@ function infiltration_reduction_factor!(
 
     n = length(v.tsoil)
     threaded_foreach(1:n; basesize = 1000) do i
+        # [-]
         v.f_infiltration_reduction[i] = infiltration_reduction_factor(
             v.tsoil[i],
             p.cf_soil[i];
@@ -705,6 +708,7 @@ function infiltration!(model::SbmSoilModel, dt::Number)
 
     n = length(v.infiltsoilpath)
     threaded_foreach(1:n; basesize = 1000) do i
+        # [m s⁻¹], [m s⁻¹]
         v.infiltsoilpath[i], v.infiltexcess[i] = infiltration(
             water_flux_surface[i],
             p.pathfrac[i],
@@ -1031,6 +1035,7 @@ function capillary_flux!(model::SbmSoilModel, dt::Float64)
             # [m s⁻¹] = max([m s⁻¹], min([m s⁻¹], [m s⁻¹], [m] / [s], [m] / [s]))
             maxcapflux = max(
                 0.0,
+                # min([m s⁻¹], [m s⁻¹], [m] / [s], [m] / [s]),
                 min(
                     ksat,
                     v.ae_ustore[i],
@@ -1039,29 +1044,39 @@ function capillary_flux!(model::SbmSoilModel, dt::Float64)
                 ),
             )
 
-            if v.zi[i] > rootingdepth[i]
-                # [m s⁻¹]
-                capflux =
-                    maxcapflux *
-                    pow(1.0 - min(v.zi[i], p.cap_hmax[i]) / (p.cap_hmax[i]), p.cap_n[i])
+            # [m s⁻¹]
+            capflux = if v.zi[i] > rootingdepth[i]
+                maxcapflux *
+                pow(1.0 - min(v.zi[i], p.cap_hmax[i]) / (p.cap_hmax[i]), p.cap_n[i])
             else
-                capflux = 0.0
+                0.0
             end
-
+            # [m s⁻¹]
             netcapflux = capflux
+            # [m s⁻¹]
             actcapflux = 0.0
             for k in v.n_unsatlayers[i]:-1:1
+                # [m s⁻¹]
                 toadd = min(
+                    # [m s⁻¹]
                     netcapflux,
+                    # max(([m] * ([-] - [-]) - [m]) / [s], [m s⁻¹])
                     max(
-                        v.ustorelayerthickness[i][k] * (p.theta_s[i] - p.theta_r[i]) -
-                        v.ustorelayerdepth[i][k],
+                        (
+                            v.ustorelayerthickness[i][k] * (p.theta_s[i] - p.theta_r[i]) - v.ustorelayerdepth[i][k]
+                        ) / dt,
                         0.0,
                     ),
                 )
-                v.ustorelayerdepth[i] =
-                    setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][k] + toadd, k)
+                # [m] = [m] + [m s⁻¹] * [s]
+                v.ustorelayerdepth[i] = setindex(
+                    v.ustorelayerdepth[i],
+                    v.ustorelayerdepth[i][k] + toadd * dt,
+                    k,
+                )
+                # [m s⁻¹] -= [m s⁻¹]
                 netcapflux -= toadd
+                # [m s⁻¹] += [m s⁻¹]
                 actcapflux += toadd
             end
             v.actcapflux[i] = actcapflux

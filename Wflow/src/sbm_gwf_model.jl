@@ -81,7 +81,7 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     # determine stable time step for groundwater flow
 
     # exchange of recharge between SBM soil model and groundwater flow domain
-    # recharge rate groundwater is required in units [m d⁻¹]
+    # recharge rate groundwater is required in units [m s⁻¹]
     @. boundaries.recharge.variables.rate = soil.variables.recharge
     if do_water_demand(config)
         @. boundaries.recharge.variables.rate -=

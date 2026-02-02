@@ -527,6 +527,8 @@ function update!(
         local_inertial_river_update!(model, domain, dt_s, dt, update_h)
         t += dt_s
     end
+    average_flow_vars!(model, dt)
+    average_reservoir_vars!(reservoir, dt)
 
     if !isnothing(model.floodplain)
         average!(model.floodplain.variables.q_av, dt)
@@ -549,11 +551,11 @@ end
     # flow in x direction at edge [m³ s⁻¹]
     qx::Vector{Float64} = zeros(n + 1)
     # average flow in x direction at edge [m³ s⁻¹] for model timestep Δt
-    qx_av::Vector{Float64} = zeros(n + 1)
+    qx_av::AverageVector = AverageVector(; n = n + 1)
     # flow in y direction at edge [m³ s⁻¹]
     qy::Vector{Float64} = zeros(n + 1)
     # average flow in y direction at edge [m³ s⁻¹] for model timestep Δt
-    qy_av::Vector{Float64} = zeros(n + 1)
+    qy_av::AverageVector = AverageVector(; n = n + 1)
     # total storage of cell [m³] (including river storage for river cells)
     storage::Vector{Float64} = zeros(n)
     # error storage [m³]
@@ -745,7 +747,9 @@ function update_boundary_conditions!(
     (; area) = domain.land.parameters
     river_indices = domain.river.network.land_indices
 
+    # [m³ s⁻¹] =  [m s⁻¹] * [m²]
     @. model.boundary_conditions.runoff = (net_runoff + net_runoff_river) * area
+    # [m³ s⁻¹] += [m³ s⁻¹]
     model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
     return nothing
@@ -828,6 +832,10 @@ function update!(
 
         t += dt_s
     end
+
+    average_flow_vars!(river, dt)
+    average_flow_vars!(land, dt)
+    average_reservoir_vars!(reservoir, dt)
 
     return nothing
 end

@@ -81,7 +81,7 @@ end
     dt = 86400.0
 
     input = to_SI(0.002, TON_PER_DT; dt_val = dt)
-    q = to_SI(3.0, M3_PER_DT; dt_val = dt)
+    q = 3.0
     waterlevel = 0.57
     res_trapping_efficiency = 0.75
     dm = to_SI(30.0, μM)
@@ -98,7 +98,6 @@ end
         res_trapping_efficiency,
         dm,
         slope,
-        dt,
     ) ≈ to_SI(0.0010138, TON_PER_DT; dt_val = dt)
 
     # Case: non-limited deposition, dm < dsuspf
@@ -112,7 +111,6 @@ end
         res_trapping_efficiency,
         dm,
         slope,
-        dt,
     ) ≈ to_SI(0.002, TON_PER_DT; dt_val = dt)
 
     # Case non-limited deposition dm > dsuspf
@@ -126,7 +124,6 @@ end
         res_trapping_efficiency,
         dm,
         slope,
-        dt,
     ) ≈ to_SI(0.002, TON_PER_DT; dt_val = dt)
 end
 
@@ -501,7 +498,6 @@ end
         domain.parameters,
         input_particles[1][1:6],
         erosion_particles[1],
-        dt,
         1,
     )
     deposition_particles_1_expected = to_SI(

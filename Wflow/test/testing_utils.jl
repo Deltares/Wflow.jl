@@ -1,5 +1,6 @@
 using Statistics: mean
 using SpecialFunctions: expint
+using Wflow: to_SI, Unit
 
 "Return the first row of a Wflow output CSV file as a NamedTuple"
 function csv_first_row(path)
@@ -70,8 +71,10 @@ function homogenous_aquifer(nrow, ncol)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
     ncell = connectivity.ncell
 
+    M_PER_DAY = Unit(; m = 1, d = -1)
+
     parameters = Wflow.ConfinedAquiferParameters(;
-        k = fill(10.0, ncell),
+        k = fill(to_SI(10.0, M_PER_DAY), ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
@@ -87,7 +90,7 @@ function homogenous_aquifer(nrow, ncol)
     conf_aqf = Wflow.ConfinedAquifer(; parameters, variables)
 
     parameters = Wflow.UnconfinedAquiferParameters(;
-        k = fill(10.0, ncell),
+        k = fill(to_SI(10.0, M_PER_DAY), ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),

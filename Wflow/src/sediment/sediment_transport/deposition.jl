@@ -42,7 +42,6 @@ function reservoir_deposition_camp(
     res_trapping_efficiency::Float64,
     dm::Float64,
     slope::Float64,
-    dt::Float64,
 )
     # Compute critical velocity
     # [m s⁻¹] = [m³ s⁻¹] / [m²]

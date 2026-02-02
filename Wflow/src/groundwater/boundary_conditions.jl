@@ -50,16 +50,16 @@ function GwfRiver(
         config,
         "river_water__infiltration_conductance",
         Routing;
-        sel = indices,
+        sel=indices,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
         "river_water__exfiltration_conductance",
         Routing;
-        sel = indices,
+        sel=indices,
     )
-    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
+    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel=indices)
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
@@ -71,16 +71,25 @@ end
 
 function flux!(river::GwfRiver, aquifer::Aquifer, dt::Float64)
     for (i, index) in enumerate(river.index)
+        # [m]
         head = aquifer.variables.head[index]
+        # [m]
         stage = river.variables.stage[i]
         if stage > head
+            # [m³ s⁻¹] = [m³] / [s]
             max_infiltration_flux = river.variables.storage[i] / dt
+            # [m² s⁻¹]
             cond = river.parameters.infiltration_conductance[i]
+            # [m] = min([m] - [m], [m] - [m])
             delta_head = min(stage - river.parameters.bottom[i], stage - head)
+            # [m³ s⁻¹] = min([m² s⁻¹] * [m], [m³ s⁻¹])
             flux = min(cond * delta_head, max_infiltration_flux)
         else
+            # [m² s⁻¹]
             cond = river.parameters.exfiltration_conductance[i]
+            # [m] = [m] - [m]
             delta_head = stage - head
+            # [m³ s⁻¹] = [m² s⁻¹] * [m]
             flux = check_flux(cond * delta_head, aquifer, index)
         end
         river.variables.flux[i] = flux
@@ -120,9 +129,9 @@ function Drainage(
     index::Vector{Int},
 )
     drain_elevation =
-        ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
+        ncread(dataset, config, "land_drain__elevation", Routing; sel=indices)
     drain_conductance =
-        ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
+        ncread(dataset, config, "land_drain__conductance", Routing; sel=indices)
     elevation = drain_elevation[index]
     conductance = drain_conductance[index]
     parameters = DrainageParameters(; elevation, conductance)
@@ -135,9 +144,12 @@ end
 
 function flux!(drainage::Drainage, aquifer::Aquifer, dt::Float64)
     for (i, index) in enumerate(drainage.index)
+        # [m² s⁻¹]
         cond = drainage.parameters.conductance[i]
+        # [m] = [m] - [m]
         delta_head =
             min(0, drainage.parameters.elevation[i] - aquifer.variables.head[index])
+        # [m³ s⁻¹] = [m² s⁻¹] * [m]
         flux = check_flux(cond * delta_head, aquifer, index)
         drainage.variables.flux[i] = flux
         add_to_cumulative!(drainage.variables.flux_av, i, dt * flux)
