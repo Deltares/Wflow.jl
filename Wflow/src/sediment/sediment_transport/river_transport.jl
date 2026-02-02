@@ -291,11 +291,7 @@ end
 """
 Calculate sediment input from leftover sediment, land erosion, and upstream contributions
 """
-function calculate_sediment_input(
-    model::SedimentRiverTransportModel,
-    graph::DiGraph,
-    v::Int,
-)
+function compute_sediment_input(model::SedimentRiverTransportModel, graph::DiGraph, v::Int)
     (; boundary_conditions, variables) = model
     (;
         erosion_land_clay,
@@ -348,7 +344,7 @@ end
 """
 Calculate direct river bed/bank erosion based on sediment need
 """
-function calculate_direct_river_erosion(
+function compute_direct_river_erosion(
     model::SedimentRiverTransportModel,
     sediment_need::Float64,
     store_sediment::Float64,
@@ -402,7 +398,7 @@ end
 """
 Calculate erosion from previously deposited sediment store
 """
-function calculate_store_erosion!(
+function compute_store_erosion!(
     variables::SedimentRiverTransportVariables,
     sediment_need::Float64,
     v::Int,
@@ -429,7 +425,7 @@ end
 """
 Calculate sediment deposition in reservoir outlets using Camp's formula
 """
-function calculate_reservoir_deposition(
+function compute_reservoir_deposition(
     model::SedimentRiverTransportModel,
     domain_parameters::RiverParameters,
     input_particles::NTuple{6, Float64},
@@ -497,7 +493,7 @@ end
 """
 Calculate river deposition from transport capacity exceedance (gravel to clay priority)
 """
-function calculate_transport_capacity_deposition(
+function compute_transport_capacity_deposition(
     excess_sediment::Float64,
     input_particles::NTuple{6, Float64},
     erosion_particles::NTuple{6, Float64},
@@ -539,7 +535,7 @@ end
 """
 Calculate natural river deposition using Einstein's formula (Stokes settling)
 """
-function calculate_natural_deposition(
+function compute_natural_deposition(
     model::SedimentRiverTransportModel,
     domain_parameters::RiverParameters,
     input_particles::NTuple{6, Float64},
@@ -683,7 +679,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
     # Sediment transport - water balance in the river
     for v in order
         ### Sediment input in the cell (left from previous timestep + from land + from upstream outflux) ###
-        input_particles = calculate_sediment_input(model, graph, v)
+        input_particles = compute_sediment_input(model, graph, v)
         input_sediment = sum(input_particles)
 
         ### River erosion ###
@@ -705,11 +701,10 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
 
         # Direct erosion from the river bed/bank
         erosion_particles =
-            calculate_direct_river_erosion(model, sediment_need, store_sediment, v)
+            compute_direct_river_erosion(model, sediment_need, store_sediment, v)
 
         # Erosion/degradation of the previously deposited sediment (from clay to gravel) [ton]
-        store_erosion_particles =
-            calculate_store_erosion!(model.variables, sediment_need, v)
+        store_erosion_particles = compute_store_erosion!(model.variables, sediment_need, v)
 
         # Update total erosion
         erosion_particles = erosion_particles .+ store_erosion_particles
@@ -719,7 +714,7 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         # Different deposition if reservoir outlet or river
         deposition_particles = if reservoir_outlet[v]
             # Deposition in reservoir outlets
-            calculate_reservoir_deposition(
+            compute_reservoir_deposition(
                 model,
                 domain.parameters,
                 input_particles,
@@ -736,14 +731,14 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
             excess_sediment = max(input_sediment - transport_capacity[v], 0.0)
             (v == 4) && @show input_sediment
             if excess_sediment > 0.0
-                calculate_transport_capacity_deposition(
+                compute_transport_capacity_deposition(
                     excess_sediment,
                     input_particles,
                     erosion_particles,
                 )
             else
                 # Natural deposition from Einstein's formula (density controlled)
-                calculate_natural_deposition(
+                compute_natural_deposition(
                     model,
                     domain.parameters,
                     input_particles,
