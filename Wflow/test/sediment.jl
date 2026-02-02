@@ -375,7 +375,7 @@ end
     dt = 86400.0
     model, domain, graph, order, n = get_objects()
 
-    input_particles = Wflow.calculate_sediment_input.(Ref(model), Ref(graph), order)
+    input_particles = Wflow.compute_sediment_input.(Ref(model), Ref(graph), order)
     input_particles_expected = [1.125e-8, 5.75e-9, 5.75e-9, 5.75e-9, 5.75e-9, 0.0]
     @test all(x -> collect(x) ≈ input_particles_expected, input_particles)
 
@@ -394,7 +394,7 @@ end
     @test all(≈(5.3e-9), store_sediment)
 
     erosion_particles =
-        Wflow.calculate_direct_river_erosion.(
+        Wflow.compute_direct_river_erosion.(
             Ref(model),
             sediment_need,
             store_sediment,
@@ -405,7 +405,7 @@ end
           [erosion_particles_expected, zeros(6), erosion_particles_expected, zeros(6)]
 
     store_erosion =
-        Wflow.calculate_store_erosion!.(Ref(model.variables), sediment_need, order)
+        Wflow.compute_store_erosion!.(Ref(model.variables), sediment_need, order)
     store_erosion_expected = [0.0, 0.0, 0.0, 0.0, 0.0, 5.3e-9]
     @test collect.(store_erosion) ≈
           [store_erosion_expected, zeros(6), store_erosion_expected, zeros(6)]
@@ -416,7 +416,7 @@ end
     @test model.variables.erosion ≈ [erosion_expected, 0.0, erosion_expected, 0.0]
 
     # Index 1: reservoir outlet
-    deposition_particles_1 = Wflow.calculate_reservoir_deposition(
+    deposition_particles_1 = Wflow.compute_reservoir_deposition(
         model,
         domain.parameters,
         input_particles[1][1:6],
@@ -434,7 +434,7 @@ end
     excess_sediment =
         max(input_particles[3][1] - model.boundary_conditions.transport_capacity[3], 0.0)
     @test excess_sediment == 0.0
-    deposition_particles_3 = Wflow.calculate_natural_deposition(
+    deposition_particles_3 = Wflow.compute_natural_deposition(
         model,
         domain.parameters,
         input_particles[3][1:6],
@@ -449,7 +449,7 @@ end
     excess_sediment =
         max(sum(input_particles[4]) - model.boundary_conditions.transport_capacity[4], 0.0)
     @test excess_sediment ≈ 1.125e-8
-    deposition_particles_4 = Wflow.calculate_transport_capacity_deposition(
+    deposition_particles_4 = Wflow.compute_transport_capacity_deposition(
         excess_sediment,
         input_particles[4][1:6],
         erosion_particles[4],
