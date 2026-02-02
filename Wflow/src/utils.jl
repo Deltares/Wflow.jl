@@ -234,6 +234,30 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
 end
 
 """
+Apply the affine transform in `var` to the incoming array `A` in place element-wise.
+The affine transform consists of a scaling by `scale` and a translation by `offset`.
+These operations are only applied when non-trivial.
+"""
+function apply_affine_transform!(A::AbstractArray, var::InputEntry)
+    (; do_scaling, scale_scalar, scale, do_offsetting, offset_scalar, offset) = var
+    if do_scaling
+        if scale_scalar
+            A .*= only(scale)
+        else
+            A .*= scale
+        end
+    end
+    if do_offsetting
+        if offset_scalar
+            A .+= only(offset)
+        else
+            A .+= offset
+        end
+    end
+    return A
+end
+
+"""
     ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
@@ -327,8 +351,8 @@ function ncread(
             for i in eachindex(layer)
                 A[:, :, layer[i]] = A[:, :, layer[i]] .* scale[i] .+ offset[i]
             end
-        elseif scale != 1.0 || offset != 0.0
-            A = A .* scale .+ offset
+        else
+            apply_affine_transform!(A, var)
         end
     end
 

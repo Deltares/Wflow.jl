@@ -128,7 +128,11 @@ end
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
+    do_scaling::Bool = !all(isone, scale)
+    scale_scalar = isone(length(scale))
     offset::Vector{Float64} = [0.0]
+    do_offsetting::Bool = !all(iszero, offset)
+    offset_scalar = isone(length(offset))
     layer::Union{Nothing, Vector{Int}} = nothing
     # Option 2
     value::Any = nothing
