@@ -1,4 +1,4 @@
-abstract type AbstractAquiferBC end
+abstract type AbstractSubsurfaceFlowBC end
 
 """
     UnconfinedAquifer
@@ -402,11 +402,11 @@ minimum_head(aquifer::UnconfinedAquifer) =
 maximum_head(aquifer::UnconfinedAquifer) =
     min.(aquifer.variables.head, aquifer.parameters.top)
 
-@kwdef struct AquiferBC{
-    Re <: Union{Nothing, AbstractAquiferBC},
-    Ri <: Union{Nothing, AbstractAquiferBC},
-    D <: Union{Nothing, AbstractAquiferBC},
-    W <: Union{Nothing, AbstractAquiferBC},
+@kwdef struct SubsurfaceFlowBC{
+    Re <: Union{Nothing, AbstractSubsurfaceFlowBC},
+    Ri <: Union{Nothing, AbstractSubsurfaceFlowBC},
+    D <: Union{Nothing, AbstractSubsurfaceFlowBC},
+    W <: Union{Nothing, AbstractSubsurfaceFlowBC},
 }
     recharge::Re = nothing
     river::Ri = nothing
@@ -414,26 +414,26 @@ maximum_head(aquifer::UnconfinedAquifer) =
     well::W = nothing
 end
 
-get_boundaries(boundary_conditions::AquiferBC) = (
+get_boundaries(boundary_conditions::SubsurfaceFlowBC) = (
     boundary_conditions.recharge,
     boundary_conditions.river,
     boundary_conditions.drain,
     boundary_conditions.well,
 )
 
-@kwdef struct GroundwaterFlow{B <: AquiferBC} <: AbstractSubsurfaceFlowModel
+@kwdef struct GroundwaterFlow{B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     aquifer::UnconfinedAquifer
     connectivity::Connectivity
     constanthead::ConstantHead
-    boundary_conditions::B = AquiferBC()
+    boundary_conditions::B = SubsurfaceFlowBC()
     function GroundwaterFlow(
         timestepping::TimeStepping,
         aquifer::UnconfinedAquifer,
         connectivity::Connectivity,
         constanthead::ConstantHead,
         boundary_conditions::B,
-    ) where {B <: AquiferBC}
+    ) where {B <: SubsurfaceFlowBC}
         initialize_conductance!(aquifer, connectivity)
         new{B}(timestepping, aquifer, connectivity, constanthead, boundary_conditions)
     end

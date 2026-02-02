@@ -111,10 +111,13 @@ function initialize_subsurface_flow(
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
         gwf_drain = Drainage(dataset, config, drain.network.indices)
-        boundary_conditions =
-            AquiferBC(; recharge = gwf_recharge, river = gwf_river, drain = gwf_drain)
+        boundary_conditions = SubsurfaceFlowBC(;
+            recharge = gwf_recharge,
+            river = gwf_river,
+            drain = gwf_drain,
+        )
     else
-        boundary_conditions = AquiferBC(; recharge = gwf_recharge, river = gwf_river)
+        boundary_conditions = SubsurfaceFlowBC(; recharge = gwf_recharge, river = gwf_river)
     end
 
     cfl = config.model.subsurface_water_flow__alpha_coefficient
