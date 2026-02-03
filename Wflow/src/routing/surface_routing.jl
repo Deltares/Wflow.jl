@@ -62,7 +62,7 @@ function surface_routing!(
     (; reservoir) = river_flow.boundary_conditions
 
     dt = tosecond(clock.dt)
-    update_boundary_conditions!(
+    update_boundary_conditions_runoff!(
         overland_flow,
         (; soil, runoff, subsurface_flow),
         domain,

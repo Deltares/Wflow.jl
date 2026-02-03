@@ -283,7 +283,7 @@ end
     parameters = Wflow.RiverParameters(; slope = [1e-3])
     dt = 86400.0
 
-    Wflow.update!(model, parameters, dt)
+    Wflow.update_river_sediment_concentration!(model, parameters, dt)
     @test model.variables.suspended[1] ≈ 4.675925925925926e-10
     @test model.variables.bed[1] ≈ 4.768518518518557e-12
     @test model.variables.total[1] ≈ 4.723611111111112e-10
@@ -487,6 +487,6 @@ end
 
     # Perform calculations again by directly calling update!
     model, domain, _, _, _ = get_objects()
-    Wflow.update!(model, domain, dt)
+    Wflow.update_sediment_river_transport!(model, domain, dt)
     perform_tests(model.variables)
 end
