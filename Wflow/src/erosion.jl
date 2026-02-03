@@ -63,5 +63,5 @@ function update_land!(model::SoilLoss, parameters::LandParameters, dt::Float64)
     update_overland_flow_erosion!(overland_flow_erosion, parameters, dt)
     # Total soil erosion and particle differentiation
     update_boundary_conditions!(soil_erosion, rainfall_erosion, overland_flow_erosion)
-    update!(soil_erosion)
+    update_soil_erosion!(soil_erosion)
 end
