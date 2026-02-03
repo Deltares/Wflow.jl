@@ -183,7 +183,7 @@ function update_river_flow!(
     update_river_erosion!(model.potential_erosion, domain.parameters, dt)
 
     # River transport
-    update_boundary_conditions!(
+    update_boundary_conditions_river_sediment_transport!(
         model.sediment_flux,
         model.hydrological_forcing,
         model.transport_capacity,
