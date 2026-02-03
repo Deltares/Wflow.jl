@@ -91,7 +91,7 @@ function update_boundary_conditions!(
 end
 
 "Update ANSWERS overland flow erosion model for a single timestep"
-function update!(
+function update_overland_flow_erosion!(
     model::OverlandFlowErosionAnswersModel,
     geometry::LandParameters,
     dt::Float64,
