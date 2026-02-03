@@ -42,10 +42,10 @@ function ManningFlowParameters(mannings_n::Vector{Float64}, slope::Vector{Float6
     n = length(slope)
     parameters = ManningFlowParameters(;
         n,
-        beta = Float64(0.6),
+        beta=Float64(0.6),
         slope,
         mannings_n,
-        alpha_pow = Float64((2.0 / 3.0) * 0.6),
+        alpha_pow=Float64((2.0 / 3.0) * 0.6),
     )
     return parameters
 end
@@ -75,21 +75,21 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
         dataset,
         config,
         "river_water_flow__manning_n_parameter";
-        sel = indices,
-        defaults = 0.036,
-        type = Float64,
+        sel=indices,
+        defaults=0.036,
+        type=Float64,
     )
     bankfull_depth = ncread(
         dataset,
         config,
         "river_bank_water__depth";
-        sel = indices,
-        defaults = 1.0,
-        type = Float64,
+        sel=indices,
+        defaults=1.0,
+        type=Float64,
     )
 
     flow_params = ManningFlowParameters(mannings_n, slope)
-    parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth)
+    parameters = RiverFlowParameters(; flow=flow_params, bankfull_depth)
     return parameters
 end
 
@@ -108,16 +108,16 @@ function RiverFlowBC(
     dataset::NCDataset,
     config::Config,
     network::NetworkRiver,
-    reservoir::Union{Reservoir, Nothing},
+    reservoir::Union{Reservoir,Nothing},
 )
     (; indices) = network
     external_inflow = ncread(
         dataset,
         config,
         "river_water__external_inflow_volume_flow_rate";
-        sel = indices,
-        defaults = 0.0,
-        type = Float64,
+        sel=indices,
+        defaults=0.0,
+        type=Float64,
     )
     n = length(indices)
     bc = RiverFlowBC(; n, external_inflow, reservoir)
@@ -125,7 +125,7 @@ function RiverFlowBC(
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlow{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
+@with_kw struct KinWaveRiverFlow{R<:RiverFlowBC,A<:AbstractAllocationModel} <:
                 AbstractRiverFlowModel
     timestepping::TimeStepping
     boundary_conditions::R
@@ -139,12 +139,12 @@ function KinWaveRiverFlow(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir::Union{Reservoir, Nothing},
+    reservoir::Union{Reservoir,Nothing},
 )
     (; indices) = domain.network
     n = length(indices)
 
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
+    timestepping = init_kinematic_wave_timestepping(config, n; domain="river")
 
     allocation = do_water_demand(config) ? AllocationRiver(; n) : NoAllocationRiver(n)
 
@@ -203,13 +203,13 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
         dataset,
         config,
         "land_surface_water_flow__manning_n_parameter";
-        sel = indices,
-        defaults = 0.072,
-        type = Float64,
+        sel=indices,
+        defaults=0.072,
+        type=Float64,
     )
 
     n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
+    timestepping = init_kinematic_wave_timestepping(config, n; domain="land")
 
     variables = OverLandFlowVariables(; n)
     parameters = ManningFlowParameters(mannings_n, slope)
@@ -291,7 +291,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir part of the upstream surface flow
@@ -397,7 +397,7 @@ function kinwave_river_update!(
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # qin by outflow from upstream reservoir location is added
@@ -445,7 +445,7 @@ function kinwave_river_update!(
                         res_bc.inflow_overland[i] +
                         res_bc.inflow_subsurface[i] +
                         _inflow
-                    update!(reservoir, i, net_inflow, dt, dt_forcing)
+                    update_reservoir!(reservoir, i, net_inflow, dt, dt_forcing)
 
                     downstream_nodes = outneighbors(graph, v)
                     n_downstream = length(downstream_nodes)
@@ -526,7 +526,7 @@ function stable_timestep(
     model::S,
     flow_length::Vector{Float64},
     p::Float64,
-) where {S <: Union{KinWaveOverlandFlow, KinWaveRiverFlow}}
+) where {S<:Union{KinWaveOverlandFlow,KinWaveRiverFlow}}
     (; q) = model.variables
     (; alpha, beta) = model.parameters
     (; stable_timesteps) = model.timestepping
@@ -614,7 +614,7 @@ Update overland and subsurface flow contribution to inflow of a reservoir model 
 flow model `AbstractRiverFlowModel` for a single timestep.
 """
 function update_inflow!(
-    model::Union{Reservoir, Nothing},
+    model::Union{Reservoir,Nothing},
     river_flow::AbstractRiverFlowModel,
     external_models::NamedTuple,
     network::NetworkReservoir,
