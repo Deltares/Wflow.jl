@@ -45,7 +45,7 @@ function Model(config::Config, type::SedimentModel)
 end
 
 "update `sediment` model for a single timestep"
-function update!(model::AbstractModel{<:SedimentModel})
+function update_model!(model::AbstractModel{<:SedimentModel})
     (; routing, land, domain, config, clock) = model
     dt = tosecond(clock.dt)
 

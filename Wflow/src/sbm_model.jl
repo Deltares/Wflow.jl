@@ -57,7 +57,7 @@ function Model(config::Config, type::SbmModel)
 end
 
 "update the `sbm` model type for a single timestep"
-function update!(model::AbstractModel{<:SbmModel})
+function update_model!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     (; kv_profile) = land.soil.parameters
