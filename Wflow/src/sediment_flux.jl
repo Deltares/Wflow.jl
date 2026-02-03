@@ -176,7 +176,7 @@ function update_river_flow!(
     update_transport_capacity!(model.transport_capacity, domain.parameters, dt)
 
     # Potential maximum river erosion
-    update_boundary_conditions!(model.potential_erosion, model.hydrological_forcing)
+    update_boundary_conditions_water_level!(model.potential_erosion, model.hydrological_forcing)
     update_river_erosion!(model.potential_erosion, domain.parameters, dt)
 
     # River transport
