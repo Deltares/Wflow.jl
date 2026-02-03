@@ -194,7 +194,7 @@ function update_river_flow!(
     update_sediment_river_transport!(model.sediment_flux, domain, dt)
 
     # Concentrations
-    update_boundary_conditions!(
+    update_boundary_conditions_river_sediment_concentration!(
         model.concentrations,
         model.hydrological_forcing,
         model.sediment_flux,
