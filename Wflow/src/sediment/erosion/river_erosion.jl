@@ -72,7 +72,7 @@ function update_boundary_conditions!(
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
-function update!(
+function update_river_erosion!(
     model::RiverErosionJulianTorresModel,
     parameters::RiverParameters,
     dt::Float64,
