@@ -495,7 +495,7 @@ end
 Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep `dt`. An adaptive
 timestepping method is used (computing a sub timestep `dt_s`).
 """
-function update!(
+function update_river_flow!(
     model::LocalInertialRiverFlow,
     domain::Domain,
     clock::Clock;

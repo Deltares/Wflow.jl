@@ -161,7 +161,7 @@ function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
 end
 
 "Update the river sediment transport model for a single timestep"
-function update!(
+function update_river_flow!(
     model::RiverSediment,
     to_river_model::SedimentToRiverDifferentiationModel,
     domain::DomainRiver,

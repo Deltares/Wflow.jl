@@ -57,7 +57,7 @@ function update_model!(model::AbstractModel{<:SedimentModel})
 
     # River sediment transport
     if config.model.run_river_model__flag
-        update!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
+        update_river_flow!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
     end
 
     return nothing
