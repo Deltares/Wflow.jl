@@ -53,7 +53,7 @@ function update_model!(model::AbstractModel{<:SedimentModel})
     update_land!(land, domain.land.parameters, dt)
 
     # Overland flow sediment transport
-    update!(routing.overland_flow, land.soil_erosion, domain.land, dt)
+    update_overland_flow!(routing.overland_flow, land.soil_erosion, domain.land, dt)
 
     # River sediment transport
     if config.model.run_river_model__flag

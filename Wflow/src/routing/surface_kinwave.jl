@@ -336,7 +336,7 @@ end
 Update overland flow model `KinWaveOverlandFlow` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
+function update_overland_flow!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     (; inwater) = model.boundary_conditions
     (; alpha_term, mannings_n, beta, alpha_pow, alpha) = model.parameters
     (; surface_flow_width, flow_length, slope) = domain.parameters

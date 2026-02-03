@@ -20,12 +20,12 @@ function surface_routing!(model)
         dt,
     )
     # run kinematic wave overland flow
-    update!(overland_flow, domain.land, dt)
+    update_overland_flow!(overland_flow, domain.land, dt)
 
     # update lateral inflow river flow
     update_lateral_inflow!(
         river_flow,
-        (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
+        (; allocation=river_flow.allocation, runoff, overland_flow, subsurface_flow),
         domain,
         dt,
     )
@@ -55,7 +55,7 @@ Run surface routing (land and river) for a model type that contains the routing 
 """
 function surface_routing!(
     model::Model{R},
-) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
+) where {R<:Routing{<:LocalInertialOverlandFlow,<:LocalInertialRiverFlow}}
     (; routing, land, domain, clock, config) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
@@ -75,7 +75,7 @@ function surface_routing!(
         @debug log_message_observed_outflow(reservoir)
     end
     # update overland and river flow
-    update!(overland_flow, river_flow, domain, clock)
+    update_overland_flow!(overland_flow, river_flow, domain, clock)
 
     return nothing
 end

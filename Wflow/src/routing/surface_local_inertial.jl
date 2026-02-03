@@ -782,8 +782,8 @@ Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialO
 models for a single timestep `dt`. An adaptive timestepping method is used (computing a sub
 timestep `dt_s`).
 """
-function update!(
-    land::LocalInertialOverlandFlow,
+function update_overland_flow!(
+    model::LocalInertialOverlandFlow,
     river::LocalInertialRiverFlow,
     domain::Domain,
     clock::Clock;
@@ -796,25 +796,25 @@ function update!(
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
     set_flow_vars!(river)
-    set_flow_vars!(land)
+    set_flow_vars!(model)
 
     dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
         dt_river = stable_timestep(river, flow_length)
-        dt_land = stable_timestep(land, parameters)
+        dt_land = stable_timestep(model, parameters)
         dt_s = min(dt_river, dt_land)
         dt_s = check_timestepsize(dt_s, t, dt)
 
-        local_inertial_update_fluxes!(land, domain, dt_s)
-        update_inflow_reservoir!(land, reservoir, domain)
+        local_inertial_update_fluxes!(model, domain, dt_s)
+        update_inflow_reservoir!(model, reservoir, domain)
         local_inertial_river_update!(river, domain, dt_s, dt, update_h)
-        local_inertial_update_water_depth!(land, river, domain, dt_s)
+        local_inertial_update_water_depth!(model, river, domain, dt_s)
 
         t += dt_s
     end
     average_flow_vars!(river, dt)
-    average_flow_vars!(land, dt)
+    average_flow_vars!(model, dt)
     average_reservoir_vars!(reservoir, dt)
 
     return nothing
