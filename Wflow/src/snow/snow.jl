@@ -135,7 +135,7 @@ function update_boundary_conditions!(model::NoSnowModel, external_models::NamedT
 end
 
 "Update snow HBV model for a single timestep"
-function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update_snow!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; snow_storage, snow_water, swe, snow_melt, runoff) = model.variables
     (; effective_precip, snow_precip, liquid_precip) = model.boundary_conditions
@@ -161,7 +161,7 @@ function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 
-function update!(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
+function update_snow!(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 

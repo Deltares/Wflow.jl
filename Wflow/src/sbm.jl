@@ -94,7 +94,7 @@ function update_land!(
     update_interception!(interception, atmospheric_forcing)
 
     update_boundary_conditions!(snow, (; interception))
-    update!(snow, atmospheric_forcing)
+    update_snow!(snow, atmospheric_forcing)
     if config.model.snow_gravitational_transport__flag
         lateral_snow_transport!(snow, domain.land)
     end
