@@ -80,7 +80,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(
+function update_land!(
     model::LandHydrologySBM,
     routing::Routing,
     domain::Domain,

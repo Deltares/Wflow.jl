@@ -17,13 +17,13 @@ function Model(config::Config, type::SbmGwfModel)
     clock = Clock(config, reader)
 
     @info "General model settings." (;
-        snow = config.model.snow__flag,
-        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
-        glacier = config.model.glacier__flag,
-        reservoirs = config.model.reservoir__flag,
-        drains = config.model.drain__flag,
-        constanthead = config.model.constanthead__flag,
-        water_demand = do_water_demand(config),
+        snow=config.model.snow__flag,
+        gravitational_snow_transport=config.model.snow_gravitational_transport__flag,
+        glacier=config.model.glacier__flag,
+        reservoirs=config.model.reservoir__flag,
+        drains=config.model.drain__flag,
+        constanthead=config.model.constanthead__flag,
+        water_demand=do_water_demand(config),
     )...
 
     domain = Domain(dataset, config, type)
@@ -32,14 +32,14 @@ function Model(config::Config, type::SbmGwfModel)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
     mass_balance = HydrologicalMassBalance(domain, config)
 
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land=land_hydrology, routing, mass_balance)
     (; maxlayers) = land_hydrology.soil.parameters
     writer = Writer(
         config,
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim=(name="layer", value=Float64.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -68,7 +68,7 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
 
     dt = tosecond(clock.dt)
 
-    update!(land, routing, domain, config, dt)
+    update_land!(land, routing, domain, config, dt)
 
     # set river stage and storage (groundwater boundary) based on river flow routing
     # variables
@@ -94,7 +94,7 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     update!(routing.subsurface_flow, dt_gwf, config.model.conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
+    update!(soil, (; runoff, demand, subsurface_flow=routing.subsurface_flow))
 
     surface_routing!(model)
 
