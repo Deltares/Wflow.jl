@@ -33,7 +33,7 @@ function SedimentLandTransportModel(indices::Vector{CartesianIndex{2}})
 end
 
 "Update total sediment flux in overland flow model boundary conditions"
-function update_boundary_conditions!(
+function update_boundary_conditions_sediment_land_transport!(
     model::SedimentLandTransportModel,
     erosion_model::SoilErosionModel,
     transport_capacity_model::AbstractTransportCapacityModel,
@@ -127,7 +127,7 @@ function SedimentLandTransportDifferentiationModel(indices::Vector{CartesianInde
 end
 
 "Update differentiated sediment flux in overland flow model boundary conditions"
-function update_boundary_conditions!(
+function update_boundary_conditions_sediment_land_transport!(
     model::SedimentLandTransportDifferentiationModel,
     erosion_model::SoilErosionModel,
     transport_capacity_model::TransportCapacityYalinDifferentiationModel,
