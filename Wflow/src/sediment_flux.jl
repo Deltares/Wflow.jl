@@ -92,7 +92,7 @@ function update_overland_flow!(
         model.transport_capacity,
     )
     # Compute transport
-    update!(model.sediment_flux, domain.network)
+    update_sediment_overland!(model.sediment_flux, domain.network)
 
     # Update boundary conditions before computing sediment reaching the river
     update_boundary_conditions!(model.to_river, model.sediment_flux)
