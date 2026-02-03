@@ -77,7 +77,7 @@ function update_boundary_conditions!(
 end
 
 "Update the open water runoff model for a single timestep"
-function update!(
+function update_open_water_runoff!(
     model::OpenWaterRunoff,
     atmospheric_forcing::AtmosphericForcing,
     parameters::LandParameters,

@@ -107,7 +107,7 @@ function update_land!(
         routing,
         domain.river.network,
     )
-    update!(runoff, atmospheric_forcing, parameters)
+    update_open_water_runoff!(runoff, atmospheric_forcing, parameters)
 
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
