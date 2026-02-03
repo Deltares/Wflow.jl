@@ -529,7 +529,7 @@ function update_reservoir_free_weir(
 
         # update values for the lower reservoir in place
         res_v.outflow[lo] = -outflow
-        add_to_cumulative!(res_v.outflow_av, lo, -outflow * dt)
+        add_to_cumulative!(res_v.outflow_av, lo, -outflow, dt)
         res_v.storage[lo] = lower_res_storage
         waterlevel[lo] = lower_res_waterlevel
     end
@@ -602,9 +602,9 @@ function update!(model::Reservoir, i::Int, inflow::Float64, dt::Float64)
     res_v.outflow[i] = outflow
 
     # average variables (here accumulated for model timestep dt)
-    add_to_cumulative!(res_bc.inflow, i, inflow * dt)
-    add_to_cumulative!(res_v.outflow_av, i, outflow * dt)
-    add_to_cumulative!(res_v.actevap, i, evaporation * dt / res_p.area[i])
+    add_to_cumulative!(res_bc.inflow, i, inflow, dt)
+    add_to_cumulative!(res_v.outflow_av, i, outflow, dt)
+    add_to_cumulative!(res_v.actevap, i, evaporation / res_p.area[i], dt)
     return nothing
 end
 

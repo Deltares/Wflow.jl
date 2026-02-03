@@ -48,7 +48,7 @@
         @test reservoir.variables.waterlevel ≈
               [23.968537463000757, 32.68607771649563, 39.97018425222191]
         @test reservoir.variables.storage ≈ [1.5531612276024494e8, 4.28e7, 7.16e7]
-        @test reservoir.variables.outflow_av.average ≈
+        @test Wflow.get_average(reservoir.variables.outflow_av) ≈
               [3.248673046140208, 8.352196766583088, 29.02990124474297]
         @test soil.variables.exfiltsatwater[27:31] ≈ to_SI!(
             [
@@ -64,8 +64,8 @@
         @test maximum(soil.variables.exfiltsatwater) ≈
               to_SI(221.55275282631922, MM_PER_DT; dt_val = dt)
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(river_flow.variables.q_av.average) ≈ 30.13050620962414
-        @test maximum(river_flow.variables.q_av.average) ≈ 117.02953499886921
+        @test mean(Wflow.get_average(river_flow.variables.q_av)) ≈ 30.13050620962414
+        @test maximum(Wflow.get_average(river_flow.variables.q_av)) ≈ 117.02953499886921
     end
 
     Wflow.run_timestep!(model)
@@ -84,7 +84,7 @@
         @test reservoir.variables.waterlevel ≈
               [23.963613508389003, 32.68607771649562, 39.97018425222191]
         @test reservoir.variables.storage ≈ [1.5528421553436098e8, 4.28e7, 7.16e7]
-        @test reservoir.variables.outflow_av.average ≈
+        @test Wflow.get_average(reservoir.variables.outflow_av) ≈
               [3.2484850081729024, 9.328049956914716, 38.06870720301024]
         @test soil.variables.exfiltsatwater[27:33] ≈ [
             38.826956323090826,
@@ -97,8 +97,8 @@
         ]
         @test maximum(soil.variables.exfiltsatwater) ≈ 341.6531285891759
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(river_flow.variables.q_av.average) ≈ 35.77645362130085
-        @test maximum(river_flow.variables.q_av.average) ≈ 138.32457335760404
+        @test mean(Wflow.get_average(river_flow.variables.q_av)) ≈ 35.77645362130085
+        @test maximum(Wflow.get_average(river_flow.variables.q_av)) ≈ 138.32457335760404
     end
 
     Wflow.close_files(model; delete_output = false)

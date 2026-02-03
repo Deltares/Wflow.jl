@@ -50,16 +50,16 @@ function GwfRiver(
         config,
         "river_water__infiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
         "river_water__exfiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
-    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel=indices)
+    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
@@ -95,7 +95,7 @@ function flux!(river::GwfRiver, aquifer::Aquifer, dt::Float64)
         river.variables.flux[i] = flux
         aquifer.variables.q_net[index] += flux
         river.variables.storage[i] -= dt * flux
-        add_to_cumulative!(river.variables.flux_av, i, dt * flux)
+        add_to_cumulative!(river.variables.flux_av, i, flux, dt)
     end
     return nothing
 end
@@ -129,9 +129,9 @@ function Drainage(
     index::Vector{Int},
 )
     drain_elevation =
-        ncread(dataset, config, "land_drain__elevation", Routing; sel=indices)
+        ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
     drain_conductance =
-        ncread(dataset, config, "land_drain__conductance", Routing; sel=indices)
+        ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
     elevation = drain_elevation[index]
     conductance = drain_conductance[index]
     parameters = DrainageParameters(; elevation, conductance)
@@ -152,7 +152,7 @@ function flux!(drainage::Drainage, aquifer::Aquifer, dt::Float64)
         # [m³ s⁻¹] = [m² s⁻¹] * [m]
         flux = check_flux(cond * delta_head, aquifer, index)
         drainage.variables.flux[i] = flux
-        add_to_cumulative!(drainage.variables.flux_av, i, dt * flux)
+        add_to_cumulative!(drainage.variables.flux_av, i, flux, dt)
         aquifer.variables.q_net[index] += flux
     end
     return nothing
@@ -185,7 +185,7 @@ function flux!(headboundary::HeadBoundary, aquifer::Aquifer, dt::Float64)
         delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
         flux = check_flux(cond * delta_head, aquifer, index)
         headboundary.variables.flux[i] = flux
-        add_to_cumulative!(headboundary.variables.flux_av, i, dt * flux)
+        add_to_cumulative!(headboundary.variables.flux_av, i, flux, dt)
         aquifer.variables.q_net[index] += flux
     end
     return nothing
@@ -216,7 +216,7 @@ function flux!(recharge::Recharge, aquifer::Aquifer, dt::Float64)
             index,
         )
         recharge.variables.flux[i] = flux
-        add_to_cumulative!(recharge.variables.flux_av, i, dt * flux)
+        add_to_cumulative!(recharge.variables.flux_av, i, flux, dt)
         aquifer.variables.q_net[index] += flux
     end
     return nothing
@@ -241,7 +241,7 @@ function flux!(well::Well, aquifer::Aquifer, dt::Float64)
     for (i, index) in enumerate(well.index)
         flux = check_flux(well.variables.volumetric_rate[i], aquifer, index)
         well.variables.flux[i] = flux
-        add_to_cumulative!(well.variables.flux_av, i, dt * flux)
+        add_to_cumulative!(well.variables.flux_av, i, flux, dt)
         aquifer.variables.q_net[index] += flux
     end
     return nothing

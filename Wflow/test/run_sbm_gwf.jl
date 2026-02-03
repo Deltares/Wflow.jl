@@ -69,7 +69,7 @@
     end
 
     @testset "river domain (kinematic wave)" begin
-        q = model.routing.river_flow.variables.q_av.average
+        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
         river = model.routing.river_flow
         @test sum(q) ≈ 0.04467596116472541
         @test q[6] ≈ 0.01045806777050397
@@ -132,7 +132,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river domain (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av.average
+        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
         river = model.routing.river_flow
         @test sum(q) ≈ 0.03415339215740202
         @test q[6] ≈ 0.00797964303605101
@@ -163,7 +163,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river and land domain (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av.average
+        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
         @test sum(q) ≈ 0.034153376823583735
         @test q[6] ≈ 0.007979645156223385
         @test q[13] ≈ 0.0005485472496903369
@@ -200,7 +200,7 @@ end
     end
 
     @testset "river domain warm start (kinematic wave)" begin
-        q = model.routing.river_flow.variables.q_av.average
+        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
         river = model.routing.river_flow
         @test sum(q) ≈ 0.012035660670336177
         @test q[6] ≈ 0.002461611895159899
@@ -240,7 +240,7 @@ end
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
-    q = model.routing.overland_flow.variables.q_av.average
+    q = Wflow.get_average(model.routing.overland_flow.variables.q_av)
     @test sum(q) ≈ 1.4233852635648338e-5
 end
 

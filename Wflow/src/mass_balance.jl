@@ -17,8 +17,8 @@ Water mass balance error results (balance error and relative error) for river, o
 subsurface and reservoir flow routing.
 """
 @with_kw struct FlowRoutingMassBalance{
-    R<:AbstractMassBalance,
-    RT<:AbstractMassBalance,
+    R <: AbstractMassBalance,
+    RT <: AbstractMassBalance,
 } <: AbstractMassBalance
     river_water_balance::R
     reservoir_water_balance::RT
@@ -49,7 +49,7 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
         n_river = length(domain.river.network.indices)
         if config.model.reservoir__flag
             n_reservoir = length(domain.reservoir.network.indices_outlet)
-            reservoir_water_balance = MassBalance(; n=n_reservoir)
+            reservoir_water_balance = MassBalance(; n = n_reservoir)
         else
             reservoir_water_balance = NoMassBalance()
         end
@@ -57,16 +57,16 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
            river_routing == RoutingType.local_inertial
             river_water_balance = NoMassBalance()
         else
-            river_water_balance = MassBalance(; n=n_river)
+            river_water_balance = MassBalance(; n = n_river)
         end
         routing = FlowRoutingMassBalance(;
             river_water_balance,
             reservoir_water_balance,
-            overland_water_balance=MassBalance(; n=n_land),
-            subsurface_water_balance=MassBalance(; n=n_land),
+            overland_water_balance = MassBalance(; n = n_land),
+            subsurface_water_balance = MassBalance(; n = n_land),
         )
         mass_balance = HydrologicalMassBalance(;
-            land_water_balance=MassBalance(; n=n_land),
+            land_water_balance = MassBalance(; n = n_land),
             routing,
         )
     else
@@ -271,7 +271,7 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
     # groundwaterflow, other boundaries are required for the total soil water balance.
     # [m³ s⁻¹], [m³ s⁻¹]
     boundaries_flow_in, boundaries_flow_out =
-        sum_boundary_fluxes(subsurface_flow; exclude=Recharge)
+        sum_boundary_fluxes(subsurface_flow; exclude = Recharge)
 
     for i in eachindex(storage_prev)
         # [m²]
@@ -323,10 +323,13 @@ function compute_flow_balance!(
     (; precipitation, inflow) = reservoir.boundary_conditions
     (; area) = reservoir.parameters
 
+    average!(inflow)
+    average!(actevap)
+
     for i in eachindex(storage_prev)
         # [m³ s⁻¹] = [m³ s⁻¹] + [m s⁻¹] * [m²]
-        total_in = inflow.average[i] + precipitation[i] * area[i]
-        total_out = outflow_av.average[i] + actevap.average[i] * area[i]
+        total_in = get_average(inflow)[i] + precipitation[i] * area[i]
+        total_out = get_average(outflow_av)[i] + get_average(actevap)[i] * area[i]
         # [m³ s⁻¹] = ([m³] = [m³]) / [s]
         storage_rate = (storage[i] - storage_prev[i]) / dt
         error[i], relative_error[i] =
@@ -352,9 +355,12 @@ function compute_flow_balance!(
 
     for i in eachindex(storage_prev)
         # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]
-        total_in = inwater[i] + qin_av.average[i] + max(0.0, external_inflow[i])
+        total_in = inwater[i] + get_average(qin_av)[i] + max(0.0, external_inflow[i])
         # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]
-        total_out = q_av.average[i] + actual_external_abstraction_av.average[i] + abstraction[i]
+        total_out =
+            get_average(q_av)[i] +
+            get_average(actual_external_abstraction_av)[i] +
+            abstraction[i]
         # [m³ s⁻¹] = ([m³] - [m³]) / [s]
         storage_rate = (storage[i] - storage_prev[i]) / dt
         error[i], relative_error[i] =
@@ -445,9 +451,12 @@ function compute_flow_balance!(
     (; inwater) = overland_flow.boundary_conditions
     (; qin_av, q_av, storage) = overland_flow.variables
 
+    qin_av_average = get_average(qin_av)
+    q_av_average = get_average(q_av)
+
     for i in eachindex(storage_prev)
-        total_in = inwater[i] + qin_av.average[i]
-        total_out = q_av.average[i]
+        total_in = inwater[i] + qin_av_average[i]
+        total_out = q_av_average[i]
         storage_rate = (storage[i] - storage_prev[i]) / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
@@ -535,7 +544,7 @@ function compute_flow_balance!(
     water_balance::MassBalance,
     parameters::LandParameters,
     dt::Float64,
-) where {A<:UnconfinedAquifer}
+) where {A <: UnconfinedAquifer}
     (; storage_prev, error, relative_error) = water_balance
     (; storage, q_in_av, q_out_av, exfiltwater) = subsurface_flow.aquifer.variables
     (; area) = subsurface_flow.aquifer.parameters
@@ -545,9 +554,12 @@ function compute_flow_balance!(
     flux_out = zeros(n)
     flux_in, flux_out = sum_boundary_fluxes(subsurface_flow)
 
+    q_in_av_average = get_average(q_in_av)
+    q_out_av_average = get_average(q_out_av)
+
     for i in eachindex(storage_prev)
-        total_in = q_in_av.average[i] + flux_in[i]
-        total_out = dt * (q_out_av.average[i] + flux_out[i]) + exfiltwater[i] * area[i]
+        total_in = q_in_av_average[i] + flux_in[i]
+        total_out = dt * (q_out_av_average[i] + flux_out[i]) + exfiltwater[i] * area[i]
         storage_rate = (storage[i] - storage_prev[i])
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
@@ -592,7 +604,7 @@ routing.
 """
 function compute_flow_routing_balance!(
     model::Model{R},
-) where {R<:Routing{<:LocalInertialOverlandFlow,<:LocalInertialRiverFlow}}
+) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
     (; river_flow, overland_flow, subsurface_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =

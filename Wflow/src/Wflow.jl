@@ -132,21 +132,55 @@ struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_mo
 
 """
 The AverageVector is a struct for computing averages of a some quantity with unit [u]
-over a timestep dt [s].
+over time.
 """
-@with_kw struct AverageVector
-    n::Int
+@kwdef mutable struct AverageVector
+    const n::Int
     # Cumulative value [u]
-    cumulative::Vector{Float64} = zeros(n)
+    const cumulative_material::Vector{Float64} = zeros(n)
+    # Cumulative time [s]
+    const cumulative_time::Vector{Float64} = zeros(n)
     # Average value [u s⁻¹]
-    average::Vector{Float64} = zeros(n)
+    const average::Vector{Float64} = zeros(n)
+    # Whether the average was freshly calculated
+    fresh_average::Bool = true
 end
 
-add_to_cumulative!(v::AverageVector, i::Int, val::Number) = (v.cumulative[i] += val)
-average!(v::AverageVector, dt::Number) = (@. v.average = v.cumulative / dt)
-zero!(v::AverageVector) = (v.cumulative .= 0)
+function add_to_cumulative!(v::AverageVector, i::Int, flux::Number, dt::Number)
+    v.fresh_average = false
+    v.cumulative_material[i] += flux * dt
+    v.cumulative_time[i] += dt
+end
+
+function average!(v::AverageVector)
+    v.fresh_average = true
+    for i in 1:(v.n)
+        time = v.cumulative_time[i]
+        if iszero(time)
+            v.average[i] = 0.0
+        else
+            v.average[i] = v.cumulative_material[i] / time
+        end
+    end
+end
+
+function set_average!(v::AverageVector, input::AbstractVector)
+    v.fresh_average = true
+    v.average .= input
+end
+
+function get_average(v::AverageVector)
+    if !v.fresh_average
+        error(
+            "The average isn't fresh; new value was added to the cumulative before averaging.",
+        )
+    end
+    return v.average
+end
+
+zero!(v::AverageVector) = (v.cumulative_material .= 0.0; v.cumulative_time .= 0.0)
 Base.eltype(::AverageVector) = Float64
-Base.iterate(v::AverageVector) = iterate(v.average)
+Base.iterate(v::AverageVector) = iterate(get_average(v))
 Base.iterate(v::AverageVector, state) = iterate(v.average, state)
 Base.length(v::AverageVector) = length(v.average)
 Base.collect(v::AverageVector) = v.average

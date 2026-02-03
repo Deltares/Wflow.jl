@@ -50,7 +50,7 @@
         Wflow.update!(res, 1, 100.0, dt)
         Wflow.average_reservoir_vars!(res, 86400.0)
         @test res.variables.outflow[1] ≈ 80.0
-        @test res.variables.outflow_av.average[1] == res.variables.outflow[1]
+        @test Wflow.get_average(res.variables.outflow_av)[1] == res.variables.outflow[1]
         @test res.variables.storage[1] ≈ 2.0983091296454795e7
     end
 end
@@ -103,7 +103,7 @@ end
         res_p.sh[1],
     ) ≈ 19.672653848925634
     @test res_v.outflow[1] ≈ 85.14292808113598
-    @test res_v.outflow_av.average ≈ res_v.outflow
+    @test Wflow.get_average(res_v.outflow_av) ≈ res_v.outflow
     @test res_v.storage[1] ≈ 3.55111879238499e9
     @test res_v.waterlevel[1] ≈ 19.672653848925634
     @test res_bc.precipitation[1] ≈ to_SI(20.0, MM_PER_DT; dt_val = dt)
@@ -178,14 +178,14 @@ end
     res_v = res.variables
     res_bc = res.boundary_conditions
     @test res_v.outflow ≈ [214.80170846121263, 236.83281600000214]
-    @test res_v.outflow_av.average ≈ res_v.outflow
+    @test Wflow.get_average(res_v.outflow_av) ≈ res_v.outflow
     @test res_v.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8]
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 500.0, dt)
     Wflow.update!(res, 2, 500.0, dt)
     Wflow.average_reservoir_vars!(res, dt)
     @test res_v.outflow ≈ [-259.8005149014703, 239.66710359986183]
-    @test res_v.outflow_av.average ≈ [-259.8005149014703, 499.4676185013321]
+    @test Wflow.get_average(res_v.outflow_av) ≈ [-259.8005149014703, 499.4676185013321]
     @test res_v.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8]
     @test res_v.waterlevel ≈ [395.239782021054, 395.21771942667266]
     @test res_v.actevap.cumulative ≈
@@ -237,7 +237,7 @@ end
         res_p.sh[1],
     ) ≈ 398.0 atol = 1e-2
     @test res_v.outflow ≈ [1303.67476852]
-    @test res_v.outflow_av.average ≈ res_v.outflow
+    @test Wflow.get_average(res_v.outflow_av) ≈ res_v.outflow
     @test res_v.storage ≈ [4.293225e8]
     @test res_v.waterlevel ≈ [398.000000]
 end

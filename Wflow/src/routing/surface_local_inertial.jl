@@ -255,7 +255,7 @@ get_inflow_reservoir(
     ::LocalInertialRiverFlow,
     model::KinWaveOverlandFlow,
     inds::Vector{Int},
-) = model.variables.q_av.average[inds] .+ model.variables.to_river.average[inds]
+) = get_average(model.variables.q_av)[inds] .+ get_average(model.variables.to_river)[inds]
 
 get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF, inds::Vector{Int}) =
     (model.variables.ssf[inds] .+ model.variables.to_river[inds])
@@ -276,8 +276,10 @@ function local_inertial_river_update!(
     river_v = model.variables
     river_p = model.parameters
 
+    # [m³ s⁻¹] = [m³ s⁻¹]
     river_v.q0 .= river_v.q
     if !isnothing(model.floodplain)
+        # [m³ s⁻¹] = [m³ s⁻¹]
         model.floodplain.variables.q0 .= model.floodplain.variables.q
     end
     @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
@@ -290,7 +292,9 @@ function local_inertial_river_update!(
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
+        # [m²] = [m] * [m]
         river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
+        # [m] = [m²] / ([m] + [-] * [m])
         river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
@@ -314,7 +318,7 @@ function local_inertial_river_update!(
         river_v.q[i] = ifelse(river_v.h[i_src] <= 0.0, min(river_v.q[i], 0.0), river_v.q[i])
         river_v.q[i] = ifelse(river_v.h[i_dst] <= 0.0, max(river_v.q[i], 0.0), river_v.q[i])
         # average river discharge (here accumulated for model timestep dt)
-        add_to_cumulative!(river_v.q_av, i, river_v.q[i] * dt)
+        add_to_cumulative!(river_v.q_av, i, river_v.q[i], dt)
     end
     if !isnothing(model.floodplain)
         floodplain_p = model.floodplain.parameters
@@ -410,7 +414,7 @@ function local_inertial_river_update!(
             floodplain_v.q[i] =
                 ifelse(floodplain_v.q[i] * river_v.q[i] < 0.0, 0.0, floodplain_v.q[i])
             # average floodplain discharge (here accumulated for model timestep dt)
-            add_to_cumulative!(floodplain_v.q_av, i, floodplain_v.q[i] * dt)
+            add_to_cumulative!(floodplain_v.q_av, i, floodplain_v.q[i], dt)
         end
     end
     # For reservoir locations the local inertial solution is replaced by the reservoir
@@ -441,16 +445,18 @@ function local_inertial_river_update!(
         update!(reservoir, v, net_inflow, dt)
         river_v.q[i] = reservoir.variables.outflow[v]
         # average river discharge (here accumulated for model timestep dt)
-        add_to_cumulative!(river_v.q_av, i, river_v.q[i] * dt)
+        add_to_cumulative!(river_v.q_av, i, river_v.q[i], dt)
     end
     if update_h
         @batch per = thread minbatch = 1000 for i in river_p.active_n
+            # [m³ s⁻¹] = ∑ [m³ s⁻¹]
             q_src = sum_at(river_v.q, edges_at_node.src[i])
+            # [m³ s⁻¹] = ∑ [m³ s⁻¹]
             q_dst = sum_at(river_v.q, edges_at_node.dst[i])
             # internal abstraction (water demand) is limited by river storage and negative
             # external inflow as part of water allocation computations.
-            river_v.storage[i] =
-                river_v.storage[i] + (q_src - q_dst + inwater[i] - abstraction[i]) * dt
+            # [m³] += ([m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹] - [m³ s⁻¹]) * [s]
+            river_v.storage[i] += (q_src - q_dst + inwater[i] - abstraction[i]) * dt
 
             if river_v.storage[i] < 0.0
                 river_v.error[i] = river_v.error[i] + abs(river_v.storage[i])
@@ -458,36 +464,52 @@ function local_inertial_river_update!(
             end
             # limit negative external inflow
             if external_inflow[i] < 0.0
+                # [m³ s⁻¹] = min([m³ s⁻¹], [m³] / [s])
                 _abstraction = min(-external_inflow[i], river_v.storage[i] / dt * 0.80)
-                actual_external_abstraction_av[i] += _abstraction * dt
+                add_to_cumulative!(actual_external_abstraction_av, i, _abstraction, dt)
+                # [m³ s⁻¹] = [m³ s⁻¹]
                 _inflow = -_abstraction
             else
+                # [m³ s⁻¹] = [m³ s⁻¹]
                 _inflow = external_inflow[i]
             end
+            # [m³] += [m³ s⁻¹] * [s]
             river_v.storage[i] += _inflow * dt # add external inflow
+            # [m] = [m³] / ([m] * [m])
             river_v.h[i] = river_v.storage[i] / (flow_length[i] * flow_width[i])
 
             if !isnothing(model.floodplain)
                 floodplain_v = model.floodplain.variables
                 floodplain_p = model.floodplain.parameters
+                # [m³ s⁻¹] =  ∑ [m³ s⁻¹]
                 q_src = sum_at(floodplain_v.q, edges_at_node.src[i])
+                # [m³ s⁻¹] =  ∑ [m³ s⁻¹]
                 q_dst = sum_at(floodplain_v.q, edges_at_node.dst[i])
-                floodplain_v.storage[i] = floodplain_v.storage[i] + (q_src - q_dst) * dt
+                # [m³] += ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
+                floodplain_v.storage[i] += (q_src - q_dst) * dt
                 if floodplain_v.storage[i] < 0.0
                     floodplain_v.error[i] =
                         floodplain_v.error[i] + abs(floodplain_v.storage[i])
                     floodplain_v.storage[i] = 0.0
                 end
+                # [m³] = [m³] + [m³]
                 storage_total = river_v.storage[i] + floodplain_v.storage[i]
                 if storage_total > river_p.bankfull_storage[i]
+                    # [m³] = [m³] - [m³]
                     flood_storage = storage_total - river_p.bankfull_storage[i]
+                    # [m]
                     h = flood_depth(floodplain_p.profile, flood_storage, flow_length[i], i)
+                    # [m] = [m] + [m]
                     river_v.h[i] = river_p.bankfull_depth[i] + h
+                    # [m³] = [m] * [m] * [m]
                     river_v.storage[i] = river_v.h[i] * flow_width[i] * flow_length[i]
+                    # [m³] = max([m³] - [m³], [m³])
                     floodplain_v.storage[i] = max(storage_total - river_v.storage[i], 0.0)
                     floodplain_v.h[i] = floodplain_v.storage[i] > 0.0 ? h : 0.0
                 else
+                    # [m] = [m³] / ([m] * [m])
                     river_v.h[i] = storage_total / (flow_length[i] * flow_width[i])
+                    # [m³] = [m³]
                     river_v.storage[i] = storage_total
                     floodplain_v.h[i] = 0.0
                     floodplain_v.storage[i] = 0.0
@@ -527,15 +549,17 @@ function update!(
         local_inertial_river_update!(model, domain, dt_s, dt, update_h)
         t += dt_s
     end
-    average_flow_vars!(model, dt)
-    average_reservoir_vars!(reservoir, dt)
+    average_flow_vars!(model)
+    average_reservoir_vars!(reservoir)
 
     if !isnothing(model.floodplain)
-        average!(model.floodplain.variables.q_av, dt)
-
-        model.variables.q_channel_av.average .= model.variables.q_av.average
-        model.variables.q_av.average .=
-            model.variables.q_channel_av.average .+ model.floodplain.variables.q_av.average
+        average!(model.floodplain.variables.q_av)
+        set_average!(model.variables.q_channel_av, get_average(model.variables.q_av))
+        set_average!(
+            model.variables.q_av,
+            get_average(model.variables.q_channel_av) .+
+            get_average(model.floodplain.variables.q_av),
+        )
     end
 
     return nothing
@@ -789,10 +813,10 @@ end
 Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
 This is done at the end of each simulation timestep.
 """
-function average_flow_vars!(model::LocalInertialOverlandFlow, dt::Float64)
+function average_flow_vars!(model::LocalInertialOverlandFlow)
     (; qx_av, qy_av) = model.variables
-    average!(qx_av, dt)
-    average!(qy_av, dt)
+    average!(qx_av)
+    average!(qy_av)
     return nothing
 end
 
@@ -833,9 +857,9 @@ function update!(
         t += dt_s
     end
 
-    average_flow_vars!(river, dt)
-    average_flow_vars!(land, dt)
-    average_reservoir_vars!(reservoir, dt)
+    average_flow_vars!(river)
+    average_flow_vars!(land)
+    average_reservoir_vars!(reservoir)
 
     return nothing
 end
@@ -902,7 +926,7 @@ function local_inertial_update_fluxes!(
             else
                 land_v.qx[i] = 0.0
             end
-            add_to_cumulative!(land_v.qx_av, i, land_v.qx[i] * dt)
+            add_to_cumulative!(land_v.qx_av, i, land_v.qx[i], dt)
         end
 
         # update qy
@@ -941,7 +965,7 @@ function local_inertial_update_fluxes!(
             else
                 land_v.qy[i] = 0.0
             end
-            add_to_cumulative!(land_v.qy_av, i, land_v.qy[i] * dt)
+            add_to_cumulative!(land_v.qy_av, i, land_v.qy[i], dt)
         end
     end
     return nothing
@@ -1323,8 +1347,11 @@ function flood_depth(
     i::Int,
 )
     i1, i2 = interpolation_indices(flood_storage, @view profile.storage[:, i])
+    # [m²] = ([m³] - [m³]) / [m]
     ΔA = (flood_storage - profile.storage[i1, i]) / flow_length
+    # [m] = [m²] / [m]
     dh = ΔA / profile.width[i2, i]
+    # [m] = [m] + [m]
     flood_depth = profile.depth[i1] + dh
     return flood_depth
 end
