@@ -29,7 +29,7 @@ function SedimentToRiverModel(indices::Vector{CartesianIndex{2}})
 end
 
 "Update total sediment reaching the river model boundary conditions"
-function update_boundary_conditions!(
+function update_boundary_conditions_sediment_to_river!(
     model::SedimentToRiverModel,
     transport_model::SedimentLandTransportModel,
 )
@@ -95,7 +95,7 @@ function SedimentToRiverDifferentiationModel(indices::Vector{CartesianIndex{2}})
 end
 
 "Update differentiated sediment reaching the river model boundary conditions"
-function update_boundary_conditions!(
+function update_boundary_conditions_sediment_to_river!(
     model::SedimentToRiverDifferentiationModel,
     transport_model::SedimentLandTransportDifferentiationModel,
 )
