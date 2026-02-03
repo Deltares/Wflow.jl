@@ -56,7 +56,7 @@ function update_land!(model::SoilLoss, parameters::LandParameters, dt::Float64)
     #need SBM refactor
 
     # Rainfall erosion
-    update_boundary_conditions!(rainfall_erosion, atmospheric_forcing, hydrological_forcing)
+    update_boundary_conditions_rainfall_erosion!(rainfall_erosion, atmospheric_forcing, hydrological_forcing)
     update_rainfall_erosion!(rainfall_erosion, parameters, dt)
     # Overland flow erosion
     update_boundary_conditions_overland_flow!(overland_flow_erosion, hydrological_forcing)

@@ -110,7 +110,7 @@ function RainfallErosionEurosemModel(
 end
 
 "Update EUROSEM rainfall erosion model boundary conditions for a single timestep"
-function update_boundary_conditions!(
+function update_boundary_conditions_rainfall_erosion!(
     model::RainfallErosionEurosemModel,
     atmospheric_forcing::AtmosphericForcing,
     hydrological_forcing::HydrologicalForcing,
@@ -228,7 +228,7 @@ function RainfallErosionAnswersModel(
 end
 
 "Update ANSWERS rainfall erosion model boundary conditions for a single timestep"
-function update_boundary_conditions!(
+function update_boundary_conditions_rainfall_erosion!(
     model::RainfallErosionAnswersModel,
     atmospheric_forcing::AtmosphericForcing,
     hydrological_forcing::HydrologicalForcing,
