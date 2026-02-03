@@ -122,7 +122,7 @@ function update_boundary_conditions!(
 end
 
 "Update EUROSEM rainfall erosion model for a single timestep"
-function update!(
+function update_rainfall_erosion!(
     model::RainfallErosionEurosemModel,
     parameters::LandParameters,
     dt::Float64,
@@ -238,7 +238,7 @@ function update_boundary_conditions!(
 end
 
 "Update ANSWERS rainfall erosion model for a single timestep"
-function update!(
+function update_rainfall_erosion!(
     model::RainfallErosionAnswersModel,
     parameters::LandParameters,
     dt::Float64,

@@ -57,7 +57,7 @@ function update_land!(model::SoilLoss, parameters::LandParameters, dt::Float64)
 
     # Rainfall erosion
     update_boundary_conditions!(rainfall_erosion, atmospheric_forcing, hydrological_forcing)
-    update!(rainfall_erosion, parameters, dt)
+    update_rainfall_erosion!(rainfall_erosion, parameters, dt)
     # Overland flow erosion
     update_boundary_conditions!(overland_flow_erosion, hydrological_forcing)
     update_overland_flow_erosion!(overland_flow_erosion, parameters, dt)
