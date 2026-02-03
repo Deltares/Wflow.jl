@@ -188,7 +188,7 @@ function update_river_flow!(
         model.potential_erosion,
         domain.network.land_indices,
     )
-    update!(model.sediment_flux, domain, dt)
+    update_sediment_river_transport!(model.sediment_flux, domain, dt)
 
     # Concentrations
     update_boundary_conditions!(
@@ -196,5 +196,5 @@ function update_river_flow!(
         model.hydrological_forcing,
         model.sediment_flux,
     )
-    update!(model.concentrations, domain.parameters, dt)
+    update_river_sediment_concentration!(model.concentrations, domain.parameters, dt)
 end
