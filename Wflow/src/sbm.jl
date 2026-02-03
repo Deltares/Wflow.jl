@@ -99,7 +99,7 @@ function update_land!(
         lateral_snow_transport!(snow, domain.land)
     end
 
-    update!(glacier, atmospheric_forcing)
+    update_glacier!(glacier, atmospheric_forcing)
 
     update_boundary_conditions!(
         runoff,
