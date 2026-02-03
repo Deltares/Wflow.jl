@@ -19,14 +19,9 @@ end
     theta_r::Vector{Float64}            # Residual water content [-]
 end
 
-"Struct for storing lateral subsurface flow model boundary conditions"
-@with_kw struct LateralSsfBC
-    recharge::Vector{Float64} # Net recharge to saturated store [m² d⁻¹]
-end
-
 "Lateral subsurface flow model"
-@with_kw struct LateralSSF{Kh} <: AbstractSubsurfaceFlowModel
-    boundary_conditions::LateralSsfBC
+@with_kw struct LateralSSF{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+    boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
     variables::LateralSsfVariables
 end
@@ -118,7 +113,9 @@ function LateralSSF(
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
     zi = 0.001 * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi, area)
-    boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
+    n_cells = length(indices)
+    recharge = Recharge(; n = n_cells)
+    boundary_conditions = SubsurfaceFlowBC(; recharge)
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end
@@ -152,7 +149,7 @@ function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
                     ssfin[v],
                     ssf[v],
                     zi[v],
-                    recharge[v],
+                    recharge.variables.rate[v],
                     slope[v],
                     theta_s[v] - theta_r[v],
                     soilthickness[v],

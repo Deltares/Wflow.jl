@@ -145,14 +145,14 @@ function kinematic_wave_ssf(
         ssf = (ssf_prev + ssfin) / 2.0
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
+        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * (dt / dx)
         ssf = kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 
         # constrain maximum lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # estimate water table depth zi, exfiltration rate and constrain zi and
         # lower boundary ssf
-        zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
+        zi = zi_prev - (ssfin * dt + r * dt - ssf * dt) / (dw * dx) / theta_e
         if zi > d
             ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
         end
@@ -169,15 +169,13 @@ function kinematic_wave_ssf(
             exfilt_sum = 0.0
             for _ in 1:its
                 celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-                constant_term = (dt_s / dx) * ssfin + ssf_prev / celerity + r * dt_s
+                constant_term = (dt_s / dx) * ssfin + ssf_prev / celerity + r * (dt_s / dx)
                 ssf = kw_ssf_newton_raphson(ssf_prev, constant_term, celerity, dt_s, dx)
                 # constrain maximum lateral subsurface flow rate ssf
                 ssf = min(ssf, (ssfmax * dw))
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
-                zi =
-                    zi_prev -
-                    (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
+                zi = zi_prev - (ssfin * dt_s + r * dt_s - ssf * dt_s) / (dw * dx) / theta_e
                 if zi > d
                     ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
                 end
@@ -225,13 +223,13 @@ function kinematic_wave_ssf(
         ssf_ini = (ssf_prev + ssfin) / 2.0
         # newton-raphson
         celerity = (slope * kh_profile.kh[i]) / theta_e
-        constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
+        constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * (dt / dx)
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # constrain maximum lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # estimate water table depth zi, exfiltration rate and constrain zi and lower
         # boundary ssf
-        zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
+        zi = zi_prev - (ssfin * dt + r * dt - ssf * dt) / (dw * dx) / theta_e
         if zi > d
             ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
         end
