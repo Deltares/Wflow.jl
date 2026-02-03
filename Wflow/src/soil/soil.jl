@@ -1094,7 +1094,7 @@ end
 Update the SBM soil model (infiltration, unsaturated zone flow, soil evaporation and
 transpiration, capillary flux and leakage) for a single timestep.
 """
-function update!(
+function update_soil!(
     model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,

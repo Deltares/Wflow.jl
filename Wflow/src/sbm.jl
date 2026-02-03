@@ -125,7 +125,7 @@ function update_land!(
         (; interception, runoff, demand, allocation),
     )
 
-    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update_soil!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end
