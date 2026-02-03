@@ -13,12 +13,12 @@ function Model(config::Config, type::SbmModel)
     clock = Clock(config, reader)
 
     @info "General model settings." (;
-        snow = config.model.snow__flag,
-        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
-        glacier = config.model.glacier__flag,
-        reservoirs = config.model.reservoir__flag,
-        pits = config.model.pit__flag,
-        water_demand = do_water_demand(config),
+        snow=config.model.snow__flag,
+        gravitational_snow_transport=config.model.snow_gravitational_transport__flag,
+        glacier=config.model.glacier__flag,
+        reservoirs=config.model.reservoir__flag,
+        pits=config.model.pit__flag,
+        water_demand=do_water_demand(config),
     )...
 
     domain = Domain(dataset, config, type)
@@ -28,13 +28,13 @@ function Model(config::Config, type::SbmModel)
     mass_balance = HydrologicalMassBalance(domain, config)
 
     (; maxlayers) = land_hydrology.soil.parameters
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land=land_hydrology, routing, mass_balance)
     writer = Writer(
         config,
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim=(name="layer", value=Float64.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -106,7 +106,7 @@ function update_after_subsurface_flow!(model::AbstractModel{<:SbmModel})
     (; subsurface_flow) = routing
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow))
+    update_soil_second!(soil, (; runoff, demand, subsurface_flow))
 
     surface_routing!(model)
 
@@ -123,7 +123,7 @@ function update_total_water_storage!(model::AbstractModel{<:SbmModel})
     return nothing
 end
 
-function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+function set_states!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
     (; routing, land, domain, config) = model
     land_v = routing.overland_flow.variables
     river_v = routing.river_flow.variables
@@ -135,7 +135,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float64, dimname = :layer)
+        set_states!(instate_path, model; type=Float64, dimname=:layer)
 
         update_diagnostic_vars!(land.soil)
 

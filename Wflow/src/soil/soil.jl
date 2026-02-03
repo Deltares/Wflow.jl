@@ -1094,7 +1094,7 @@ end
 Update the SBM soil model (infiltration, unsaturated zone flow, soil evaporation and
 transpiration, capillary flux and leakage) for a single timestep.
 """
-function update_soil!(
+function update_soil_first!(
     model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
@@ -1157,7 +1157,7 @@ the unsaturated store `exfiltustore`, land `runoff` and `net_runoff`, the satura
 `exfiltsatwater` are updated. Addionally, volumetric water content per soil layer and for
 the root zone are updated.
 """
-function update!(model::SbmSoilModel, external_models::NamedTuple)
+function update_soil_second!(model::SbmSoilModel, external_models::NamedTuple)
     (; runoff, demand, subsurface_flow) = external_models
     (; runoff_land, ae_openw_l) = runoff.variables
     p = model.parameters
