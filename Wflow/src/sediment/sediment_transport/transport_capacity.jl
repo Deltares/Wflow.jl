@@ -102,7 +102,7 @@ function TransportCapacityGoversModel(
 end
 
 "Update Govers overland flow transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityGoversModel,
     parameters::LandParameters,
     dt::Float64,
@@ -187,7 +187,7 @@ function TransportCapacityYalinModel(
 end
 
 "Update Yalin overland flow transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityYalinModel,
     parameters::LandParameters,
     dt::Float64,
@@ -336,7 +336,7 @@ function TransportCapacityYalinDifferentiationModel(
 end
 
 "Update Yalin differentiated overland flow transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityYalinDifferentiationModel,
     parameters::LandParameters,
     dt::Float64,
@@ -516,7 +516,7 @@ function TransportCapacityBagnoldModel(
 end
 
 "Update Bagnold river transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityBagnoldModel,
     parameters::RiverParameters,
     dt::Float64,
@@ -562,7 +562,7 @@ function TransportCapacityEngelundModel(
 end
 
 "Update Engelund and Hansen river transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityEngelundModel,
     parameters::RiverParameters,
     dt::Float64,
@@ -664,7 +664,7 @@ function TransportCapacityKodatieModel(
 end
 
 "Update Kodatie river transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityKodatieModel,
     parameters::RiverParameters,
     dt::Float64,
@@ -711,7 +711,7 @@ function TransportCapacityYangModel(
 end
 
 "Update Yang river transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityYangModel,
     parameters::RiverParameters,
     dt::Float64,
@@ -756,7 +756,7 @@ function TransportCapacityMolinasModel(
 end
 
 "Update Molinas and Wu river transport capacity model for a single timestep"
-function update!(
+function update_transport_capacity!(
     model::TransportCapacityMolinasModel,
     parameters::RiverParameters,
     dt::Float64,
