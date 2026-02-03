@@ -82,7 +82,7 @@ function update_overland_flow!(
     dt::Float64,
 )
     # Transport capacity
-    update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
+    update_boundary_conditions_transport_capacity!(model.transport_capacity, model.hydrological_forcing, :land)
     update_transport_capacity!(model.transport_capacity, domain.parameters, dt)
 
     # Update boundary conditions before transport
@@ -168,7 +168,7 @@ function update_river_flow!(
     dt::Float64,
 )
     # Transport capacity
-    update_boundary_conditions!(
+    update_boundary_conditions_transport_capacity!(
         model.transport_capacity,
         model.hydrological_forcing,
         :river,
