@@ -8,6 +8,16 @@ function check_flux(flux::Float64, gwf::GroundwaterFlow, index::Int)
     end
 end
 
+function check_flux(flux::Float64, gwf::LateralSSF, index::Int)
+    # Check if cell is dry
+    if gwf.variables.zi[index] >= gwf.parameters.soilthickness[index]
+        # If cell is dry, no negative flux is allowed
+        return max(0, flux)
+    else
+        return flux
+    end
+end
+
 @with_kw struct GwfRiverParameters
     infiltration_conductance::Vector{Float64} # [m² d⁻¹]
     exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
@@ -182,7 +192,12 @@ end
     variables::RechargeVariables = RechargeVariables(; n)
 end
 
-function flux!(recharge::Recharge, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float64)
+function flux!(
+    recharge::Recharge,
+    gwf::AbstractSubsurfaceFlowModel,
+    indices::Vector{Int},
+    dt::Float64,
+)
     for (i, index) in enumerate(indices)
         flux =
             check_flux(recharge.variables.rate[i] * gwf.parameters.area[index], gwf, index)
@@ -213,7 +228,7 @@ function flux!(well::Well, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float
     return nothing
 end
 
-flux!(::Nothing, ::GroundwaterFlow, ::Vector{Int}, ::Float64) = nothing
+flux!(::Nothing, ::AbstractSubsurfaceFlowModel, ::Vector{Int}, ::Float64) = nothing
 
 get_boundary_index(::Recharge, domain::Domain) = domain.land.network.land_indices
 get_boundary_index(::GwfRiver, domain::Domain) = domain.river.network.land_indices

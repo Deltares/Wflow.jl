@@ -71,12 +71,11 @@ function update!(model::AbstractModel{<:SbmModel})
             land.allocation.variables.act_groundwater_abst
     end
     # unit conversions
-    boundary_conditions.recharge.variables.rate .*=
-        domain.land.parameters.area * 0.001 * (tosecond(BASETIMESTEP) / dt)
+    boundary_conditions.recharge.variables.rate .*= 0.001 * (tosecond(BASETIMESTEP) / dt)
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, domain.land, clock.dt / BASETIMESTEP)
+    update!(routing.subsurface_flow, domain, clock.dt / BASETIMESTEP)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
