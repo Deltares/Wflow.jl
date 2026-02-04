@@ -228,6 +228,7 @@ end
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
+    config.dir_output = mktempdir()
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)

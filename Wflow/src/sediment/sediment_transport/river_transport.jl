@@ -425,49 +425,46 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
         end
 
         # Erosion/degradation of the previously deposited sediment (from clay to gravel) [ton]
-        if sediment_need > 0.0
-            # Erosion in priority of the smaller particles
-            # Clay
-            if store_clay[v] > 0.0
-                erosion_store_clay, sediment_need, store_clay[v] =
-                    river_erosion_store(sediment_need, store_clay[v])
-                # Update the clay erosion
-                erosion_clay += erosion_store_clay
-            end
-            # Silt
-            if store_silt[v] > 0.0
-                erosion_store_silt, sediment_need, store_silt[v] =
-                    river_erosion_store(sediment_need, store_silt[v])
-                # Update the silt erosion
-                erosion_silt += erosion_store_silt
-            end
-            # Small aggregates
-            if store_sagg[v] > 0.0
-                erosion_store_sagg, sediment_need, store_sagg[v] =
-                    river_erosion_store(sediment_need, store_sagg[v])
-                # Update the sagg erosion
-                erosion_sagg += erosion_store_sagg
-            end
-            # Sand
-            if store_sand[v] > 0.0
-                erosion_store_sand, sediment_need, store_sand[v] =
-                    river_erosion_store(sediment_need, store_sand[v])
-                # Update the sand erosion
-                erosion_sand += erosion_store_sand
-            end
-            # Large aggregates
-            if store_lagg[v] > 0.0
-                erosion_store_lagg, sediment_need, store_lagg[v] =
-                    river_erosion_store(sediment_need, store_lagg[v])
-                # Update the lagg erosion
-                erosion_lagg += erosion_store_lagg
-            end
-            # Gravel
-            if store_gravel[v] > 0.0
-                erosion_store_gravel, sediment_need, store_gravel[v] =
-                    river_erosion_store(sediment_need, store_gravel[v])
-                # Update the gravel erosion
-                erosion_gravel += erosion_store_gravel
+        store_erosion_particles = compute_store_erosion!(model.variables, sediment_need, v)
+
+        # Update total erosion
+        erosion_particles = erosion_particles .+ store_erosion_particles
+
+        ### Deposition / settling ###
+
+        # Different deposition if reservoir outlet or river
+        deposition_particles = if reservoir_outlet[v]
+            # Deposition in reservoir outlets
+            compute_reservoir_deposition(
+                model,
+                domain.parameters,
+                input_particles,
+                erosion_particles,
+                v,
+            )
+        elseif reservoir_coverage[v]
+            # No deposition in reservoir coverage, only at the outlets
+            (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        else
+            # Deposition in the river
+
+            # From transport capacity exceedance
+            excess_sediment = max(input_sediment - transport_capacity[v], 0.0)
+            if excess_sediment > 0.0
+                compute_transport_capacity_deposition(
+                    excess_sediment,
+                    input_particles,
+                    erosion_particles,
+                )
+            else
+                # Natural deposition from Einstein's formula (density controlled)
+                compute_natural_deposition(
+                    model,
+                    domain.parameters,
+                    input_particles,
+                    erosion_particles,
+                    v,
+                )
             end
         end
 

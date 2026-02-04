@@ -164,7 +164,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
             @info "Parallel execution of kinematic wave." min_streamorder_land min_streamorder_river
         elseif land_routing == RoutingType.kinematic_wave ||
                subsurface_routing(config) == RoutingType.kinematic_wave
-            @info "Parallel execution of kinematic wave." * min_streamorder_land
+            @info "Parallel execution of kinematic wave." min_streamorder_land
         end
     end
 
