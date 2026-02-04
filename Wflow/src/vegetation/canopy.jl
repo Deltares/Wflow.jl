@@ -51,7 +51,10 @@ function GashInterceptionModel(
 end
 
 "Update Gash interception model for a single timestep"
-function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+function update_interception!(
+    model::GashInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
     (; leaf_area_index, canopygapfraction, cmax, kc) =
         model.parameters.vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
@@ -98,7 +101,10 @@ function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters,
 end
 
 "Update Rutter interception model for a single timestep"
-function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
+function update_interception!(
+    model::RutterInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
     (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         model.variables

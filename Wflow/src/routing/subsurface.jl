@@ -124,7 +124,7 @@ function LateralSSF(
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, domain::DomainLand, dt::Float64)
+function update_subsurface_flow!(model::LateralSSF, domain::DomainLand, dt::Float64)
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters

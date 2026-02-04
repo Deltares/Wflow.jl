@@ -126,7 +126,7 @@ function GlacierHbvModel(
 end
 
 "Update glacier HBV model for a single timestep"
-function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update_glacier!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = model.variables
     (; snow_storage) = model.boundary_conditions
@@ -149,7 +149,7 @@ function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing
     return nothing
 end
 
-function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
+function update_glacier!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 

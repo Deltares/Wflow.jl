@@ -249,7 +249,7 @@ function SedimentRiverTransportModel(
 end
 
 "Update boundary conditions for river sediment transport model"
-function update_boundary_conditions!(
+function update_bc_river_sediment_transport!(
     model::SedimentRiverTransportModel,
     hydrological_forcing::HydrologicalForcing,
     transport_capacity_model::AbstractTransportCapacityModel,
@@ -667,7 +667,11 @@ function update_variables!(
 end
 
 "Update river sediment transport model for a single timestep"
-function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Float64)
+function update_sediment_river_transport!(
+    model::SedimentRiverTransportModel,
+    domain::DomainRiver,
+    dt::Float64,
+)
     (; waterlevel, q, transport_capacity) = model.boundary_conditions
     (; reservoir_outlet) = model.parameters
     (; store_clay, store_silt, store_sand, store_sagg, store_lagg, store_gravel) =
@@ -900,7 +904,7 @@ function SedimentConcentrationsRiverModel(
 end
 
 "Update boundary conditions for river sediment concentrations model"
-function update_boundary_conditions!(
+function update_bc_river_sediment_concentration!(
     model::SedimentConcentrationsRiverModel,
     hydrological_forcing::HydrologicalForcing,
     sediment_flux_model::AbstractSedimentRiverTransportModel,
@@ -930,7 +934,7 @@ function suspended_solid(dm, dsuspf, dbedf, substance)
 end
 
 "Update river sediment concentrations model for a single timestep"
-function update!(
+function update_river_sediment_concentration!(
     model::SedimentConcentrationsRiverModel,
     parameters::RiverParameters,
     dt::Float64,

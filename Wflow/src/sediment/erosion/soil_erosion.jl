@@ -124,7 +124,7 @@ function SoilErosionModel(
 end
 
 "Update boundary conditions for soil erosion model"
-function update_boundary_conditions!(
+function update_bc_soil_erosion!(
     model::SoilErosionModel,
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::AbstractOverlandFlowErosionModel,
@@ -137,7 +137,7 @@ function update_boundary_conditions!(
 end
 
 "Update soil erosion model for a single timestep"
-function update!(model::SoilErosionModel)
+function update_soil_erosion!(model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
         model.parameters

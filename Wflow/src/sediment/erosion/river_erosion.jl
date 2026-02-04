@@ -62,7 +62,7 @@ function RiverErosionJulianTorresModel(
 end
 
 "Update river erosion model boundary conditions"
-function update_boundary_conditions!(
+function update_bc_water_level!(
     model::RiverErosionJulianTorresModel,
     hydrological_forcing::HydrologicalForcing,
 )
@@ -72,7 +72,7 @@ function update_boundary_conditions!(
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
-function update!(
+function update_river_erosion!(
     model::RiverErosionJulianTorresModel,
     parameters::RiverParameters,
     dt::Float64,

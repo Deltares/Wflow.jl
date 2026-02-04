@@ -552,7 +552,7 @@ Update a single reservoir at position `i`.
 This is called from within the river routing scheme, therefore updating only for a single
 element rather than all at once.
 """
-function update!(
+function update_reservoir!(
     model::Reservoir,
     i::Int,
     inflow::Float64,
