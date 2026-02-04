@@ -367,6 +367,62 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     return nothing
 end
 
+"""
+run reservoir model and copy reservoir outflow to inflow (qin) of
+downstream river cell
+"""
+function update_reservoir!(
+    reservoir::Reservoir,
+    river_flow_vars::FlowVariables,
+    network::NetworkRiver,
+    v::Int,
+    dt::Float64,
+    dt_forcing::Float64,
+)
+    (; boundary_conditions, variables) = reservoir
+    (; storage, outflow) = variables
+    (;
+        external_inflow,
+        actual_external_abstraction_av,
+        inflow_overland,
+        inflow_subsurface,
+    ) = boundary_conditions
+    (; q, qin) = river_flow_vars
+    (; reservoir_indices, graph) = network
+
+    i = reservoir_indices[v]
+    iszero(i) && return nothing
+
+    # If the external inflow is negative, the abstraction is limited
+    inflow_ext = external_inflow[i]
+    if inflow_ext < 0.0
+        abstraction = min(-inflow_ext, (storage[i] / dt) * 0.98)
+        actual_external_abstraction_av[i] += abstraction * dt
+        inflow = -abstraction
+    else
+        inflow = inflow_ext
+    end
+
+    net_inflow = q[v] + inflow_overland[i] + inflow_subsurface[i] + inflow
+    update!(reservoir, i, net_inflow, dt, dt_forcing)
+
+    downstream_nodes = outneighbors(graph, v)
+    n_downstream = length(downstream_nodes)
+    if n_downstream == 1
+        j = only(downstream_nodes)
+        qin[j] = outflow[i]
+    elseif n_downstream == 0
+        error(
+            """A reservoir without a downstream river node is not supported.
+            Add a downstream river node or move the reservoir to an upstream node (model schematization).
+            """,
+        )
+    else
+        error("bifurcations not supported")
+    end
+    return nothing
+end
+
 "Update river flow model `KinWaveRiverFlow` for a single timestep"
 function kinwave_river_update!(
     model::KinWaveRiverFlow,
@@ -374,14 +430,8 @@ function kinwave_river_update!(
     dt::Float64,
     dt_forcing::Float64,
 )
-    (;
-        graph,
-        order_of_subdomains,
-        order_subdomain,
-        subdomain_indices,
-        upstream_nodes,
-        reservoir_indices,
-    ) = domain.network
+    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
+        domain.network
 
     (; reservoir, external_inflow, actual_external_abstraction_av, abstraction) =
         model.boundary_conditions
@@ -389,10 +439,6 @@ function kinwave_river_update!(
     (; beta, alpha) = model.parameters
     (; flow_width, flow_length) = domain.parameters
     (; h, q, q_av, storage, qin, qin_av, qlat) = model.variables
-
-    if !isnothing(reservoir)
-        res_bc = reservoir.boundary_conditions
-    end
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -425,42 +471,15 @@ function kinwave_river_update!(
                     flow_length[v],
                 )
 
-                if !isnothing(reservoir) && reservoir_indices[v] != 0
-                    # run reservoir model and copy reservoir outflow to inflow (qin) of
-                    # downstream river cell
-                    i = reservoir_indices[v]
-                    # If external_inflow < 0, abstraction is limited
-                    if res_bc.external_inflow[i] < 0.0
-                        _abstraction = min(
-                            -res_bc.external_inflow[i],
-                            (reservoir.variables.storage[i] / dt) * 0.98,
-                        )
-                        res_bc.actual_external_abstraction_av[i] += _abstraction * dt
-                        _inflow = -_abstraction
-                    else
-                        _inflow = res_bc.external_inflow[i]
-                    end
-                    net_inflow =
-                        q[v] +
-                        res_bc.inflow_overland[i] +
-                        res_bc.inflow_subsurface[i] +
-                        _inflow
-                    update!(reservoir, i, net_inflow, dt, dt_forcing)
-
-                    downstream_nodes = outneighbors(graph, v)
-                    n_downstream = length(downstream_nodes)
-                    if n_downstream == 1
-                        j = only(downstream_nodes)
-                        qin[j] = reservoir.variables.outflow[i]
-                    elseif n_downstream == 0
-                        error(
-                            """A reservoir without a downstream river node is not supported.
-                            Add a downstream river node or move the reservoir to an upstream node (model schematization).
-                            """,
-                        )
-                    else
-                        error("bifurcations not supported")
-                    end
+                if !isnothing(reservoir)
+                    update_reservoir!(
+                        reservoir,
+                        model.variables,
+                        domain.network,
+                        v,
+                        dt,
+                        dt_forcing,
+                    )
                 end
                 # update h and storage
                 crossarea = alpha[v] * pow(q[v], beta)
