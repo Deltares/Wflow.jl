@@ -492,8 +492,8 @@ function compute_flow_balance!(
     dt::Float64,
 )
     (; storage_prev, error, relative_error) = water_balance
-    (; storage, q_in_av, q_out_av, exfiltwater) = subsurface_flow.aquifer.variables
-    (; area) = subsurface_flow.aquifer.parameters
+    (; storage, q_in_av, q_out_av, exfiltwater) = subsurface_flow.variables
+    (; area) = subsurface_flow.parameters
 
     n = length(storage_prev)
     flux_in = zeros(n)

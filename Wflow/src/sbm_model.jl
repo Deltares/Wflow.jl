@@ -175,10 +175,10 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             @. storage =
                 (theta_s - theta_r) * (soilthickness - zi) * domain.land.parameters.area
         elseif config.model.type == ModelType.sbm_gwf
-            (; aquifer) = routing.subsurface_flow
-            aquifer.variables.storage .=
-                saturated_thickness(aquifer) .* aquifer.parameters.area .*
-                storativity(aquifer)
+            (; subsurface_flow) = routing
+            subsurface_flow.variables.storage .=
+                saturated_thickness(subsurface_flow) .* subsurface_flow.parameters.area .*
+                storativity(subsurface_flow)
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
         (; flow_width, flow_length) = domain.river.parameters

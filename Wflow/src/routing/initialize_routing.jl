@@ -91,16 +91,11 @@ function initialize_subsurface_flow(
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
     conductance = zeros(connectivity.nconnection)
-    aquifer = UnconfinedAquifer(
-        dataset,
-        config,
-        indices,
-        elevation,
-        bottom,
-        area,
-        conductance,
-        initial_head,
-    )
+    parameters =
+        GroundwaterFlowParameters(dataset, config, indices, elevation, bottom, area)
+    storage = @. (min(elevation, initial_head) - bottom) * area * parameters.specific_yield
+    n = length(storage)
+    variables = GroundwaterFlowVariables(; n, head = initial_head, conductance, storage)
 
     # river boundary of unconfined aquifer
     gwf_river = GwfRiver(dataset, config, river.network.indices)
@@ -126,7 +121,8 @@ function initialize_subsurface_flow(
 
     subsurface_flow = GroundwaterFlow(;
         timestepping,
-        aquifer,
+        parameters,
+        variables,
         connectivity,
         constanthead,
         boundary_conditions,

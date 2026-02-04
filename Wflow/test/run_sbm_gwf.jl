@@ -12,16 +12,18 @@
     @testset "initial states and depending variables" begin
         # test if states and depending variables are consistent between soil and groundwater
         # flow models
-        (; aquifer) = model.routing.subsurface_flow
+        (; subsurface_flow) = model.routing
         (; zi, ustorecapacity) = model.land.soil.variables
         (; land_indices) = model.domain.river.network
         @test all(
             0.001 * zi .==
-            aquifer.parameters.top .- min.(aquifer.variables.head, aquifer.parameters.top),
+            subsurface_flow.parameters.top .-
+            min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
         )
         @test all(ustorecapacity[land_indices] .== 0.0)
         @test all(
-            aquifer.variables.head[land_indices] .== aquifer.parameters.top[land_indices],
+            subsurface_flow.variables.head[land_indices] .==
+            subsurface_flow.parameters.top[land_indices],
         )
     end
 
@@ -75,18 +77,18 @@
     end
 
     @testset "groundwater" begin
-        gw = model.routing.subsurface_flow
-        @test gw.boundary_conditions.river.variables.stage[1] ≈ 1.212479774379469
-        @test gw.aquifer.variables.head[17:21] ≈ [
+        gwf = model.routing.subsurface_flow
+        @test gwf.boundary_conditions.river.variables.stage[1] ≈ 1.212479774379469
+        @test gwf.variables.head[17:21] ≈ [
             1.4037567076805044,
             1.4616545639019285,
             1.7999999523162842,
             1.6266815385109639,
             1.503470591440436,
         ]
-        @test gw.boundary_conditions.river.variables.flux[1] ≈ -61.786976087971084
-        @test gw.boundary_conditions.drain.variables.flux[1] ≈ 0.0
-        @test gw.boundary_conditions.recharge.variables.rate[19] ≈ -0.0014241196552847502
+        @test gwf.boundary_conditions.river.variables.flux[1] ≈ -61.786976087971084
+        @test gwf.boundary_conditions.drain.variables.flux[1] ≈ 0.0
+        @test gwf.boundary_conditions.recharge.variables.rate[19] ≈ -0.0014241196552847502
     end
 
     @testset "no drains" begin
@@ -201,7 +203,7 @@ end
     @testset "groundwater warm start" begin
         gw = model.routing.subsurface_flow
         @test gw.boundary_conditions.river.variables.stage[1] ≈ 1.2030201719029363
-        @test gw.aquifer.variables.head[17:21] ≈ [
+        @test gw.variables.head[17:21] ≈ [
             1.2271445115520103,
             1.2841099964673919,
             1.7999999523162842,

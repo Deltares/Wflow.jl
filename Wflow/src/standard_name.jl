@@ -294,7 +294,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         unit = "mm dt-1",
     ),
     "subsurface_water__hydraulic_head" =>
-        (lens = @optic(_.routing.subsurface_flow.aquifer.variables.head), unit = "m"),
+        (lens = @optic(_.routing.subsurface_flow.variables.head), unit = "m"),
     "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate" => (
         lens = @optic(
             _.routing.subsurface_flow.boundary_conditions.recharge.variables.flux_av

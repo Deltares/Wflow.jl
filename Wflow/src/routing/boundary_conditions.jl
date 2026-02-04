@@ -1,6 +1,6 @@
-function check_flux(flux::Float64, aquifer::UnconfinedAquifer, index::Int)
+function check_flux(flux::Float64, gwf::GroundwaterFlow, index::Int)
     # Check if cell is dry
-    if aquifer.variables.head[index] <= aquifer.parameters.bottom[index]
+    if gwf.variables.head[index] <= gwf.parameters.bottom[index]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -61,14 +61,9 @@ function GwfRiver(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     return river
 end
 
-function flux!(
-    river::GwfRiver,
-    aquifer::UnconfinedAquifer,
-    indices::Vector{Int},
-    dt::Float64,
-)
+function flux!(river::GwfRiver, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float64)
     for (i, index) in enumerate(indices)
-        head = aquifer.variables.head[index]
+        head = gwf.variables.head[index]
         stage = river.variables.stage[i]
         if stage > head
             max_infiltration_flux = river.variables.storage[i] / dt
@@ -78,10 +73,10 @@ function flux!(
         else
             cond = river.parameters.exfiltration_conductance[i]
             delta_head = stage - head
-            flux = check_flux(cond * delta_head, aquifer, index)
+            flux = check_flux(cond * delta_head, gwf, index)
         end
         river.variables.flux[i] = flux
-        aquifer.variables.q_net[index] += flux
+        gwf.variables.q_net[index] += flux
         river.variables.storage[i] -= dt * flux
         river.variables.flux_av[i] += dt * flux
     end
@@ -131,20 +126,14 @@ function Drainage(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     return drains
 end
 
-function flux!(
-    drainage::Drainage,
-    aquifer::UnconfinedAquifer,
-    indices::Vector{Int},
-    dt::Float64,
-)
+function flux!(drainage::Drainage, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float64)
     for (i, index) in enumerate(indices)
         cond = drainage.parameters.conductance[i]
-        delta_head =
-            min(0, drainage.parameters.elevation[i] - aquifer.variables.head[index])
-        flux = check_flux(cond * delta_head, aquifer, index)
+        delta_head = min(0, drainage.parameters.elevation[i] - gwf.variables.head[index])
+        flux = check_flux(cond * delta_head, gwf, index)
         drainage.variables.flux[i] = flux
         drainage.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        gwf.variables.q_net[index] += flux
     end
     return nothing
 end
@@ -166,17 +155,17 @@ end
 
 function flux!(
     headboundary::HeadBoundary,
-    aquifer::UnconfinedAquifer,
+    gwf::GroundwaterFlow,
     indices::Vector{Int},
     dt::Float64,
 )
     for (i, index) in enumerate(indices)
         cond = headboundary.parameters.conductance[i]
-        delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
-        flux = check_flux(cond * delta_head, aquifer, index)
+        delta_head = headboundary.variables.head[i] - gwf.variables.head[index]
+        flux = check_flux(cond * delta_head, gwf, index)
         headboundary.variables.flux[i] = flux
         headboundary.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        gwf.variables.q_net[index] += flux
     end
     return nothing
 end
@@ -193,21 +182,13 @@ end
     variables::RechargeVariables = RechargeVariables(; n)
 end
 
-function flux!(
-    recharge::Recharge,
-    aquifer::UnconfinedAquifer,
-    indices::Vector{Int},
-    dt::Float64,
-)
+function flux!(recharge::Recharge, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float64)
     for (i, index) in enumerate(indices)
-        flux = check_flux(
-            recharge.variables.rate[i] * aquifer.parameters.area[index],
-            aquifer,
-            index,
-        )
+        flux =
+            check_flux(recharge.variables.rate[i] * gwf.parameters.area[index], gwf, index)
         recharge.variables.flux[i] = flux
         recharge.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        gwf.variables.q_net[index] += flux
     end
     return nothing
 end
@@ -222,17 +203,17 @@ end
     variables::WellVariables
 end
 
-function flux!(well::Well, aquifer::UnconfinedAquifer, indices::Vector{Int}, dt::Float64)
+function flux!(well::Well, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float64)
     for (i, index) in enumerate(indices)
-        flux = check_flux(well.variables.volumetric_rate[i], aquifer, index)
+        flux = check_flux(well.variables.volumetric_rate[i], gwf, index)
         well.variables.flux[i] = flux
         well.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        gwf.variables.q_net[index] += flux
     end
     return nothing
 end
 
-flux!(::Nothing, ::UnconfinedAquifer, ::Vector{Int}, ::Float64) = nothing
+flux!(::Nothing, ::GroundwaterFlow, ::Vector{Int}, ::Float64) = nothing
 
 get_boundary_index(::Recharge, domain::Domain) = domain.land.network.land_indices
 get_boundary_index(::GwfRiver, domain::Domain) = domain.river.network.land_indices

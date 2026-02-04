@@ -60,7 +60,12 @@ function homogenous_aquifer(nrow, ncol)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
     ncell = connectivity.ncell
 
-    parameters = Wflow.UnconfinedAquiferParameters(;
+    variables = Wflow.ConstantHeadVariables(; head = Float64[])
+    constanthead = Wflow.ConstantHead(; variables, index = Int64[])
+
+    timestepping = Wflow.TimeStepping()
+
+    parameters = Wflow.GroundwaterFlowParameters(;
         k = fill(10.0, ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
@@ -68,7 +73,7 @@ function homogenous_aquifer(nrow, ncol)
         specific_yield = fill(0.15, ncell),
         f = fill(3.0, ncell),
     )
-    variables = Wflow.AquiferVariables(;
+    variables = Wflow.GroundwaterFlowVariables(;
         n = ncell,
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
@@ -78,8 +83,15 @@ function homogenous_aquifer(nrow, ncol)
         q_out_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
     )
-    unconf_aqf = Wflow.UnconfinedAquifer(; parameters, variables)
-    return (connectivity, unconf_aqf)
+
+    gwf = Wflow.GroundwaterFlow(;
+        timestepping,
+        parameters,
+        variables,
+        connectivity,
+        constanthead,
+    )
+    return gwf
 end
 
 function init_sbm_soil_model(n, N; kwargs...)
