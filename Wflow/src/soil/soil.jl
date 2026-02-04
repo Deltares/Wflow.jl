@@ -650,7 +650,7 @@ function soil_fraction!(
 end
 
 "Update boundary conditions of the SBM soil model for a single timestep"
-function update_boundary_conditions_soil!(
+function update_bc_soil!(
     model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,

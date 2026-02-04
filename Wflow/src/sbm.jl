@@ -93,7 +93,7 @@ function update_land!(
 
     update_interception!(interception, atmospheric_forcing)
 
-    update_boundary_conditions_snow!(snow, (; interception))
+    update_bc_snow!(snow, (; interception))
     update_snow!(snow, atmospheric_forcing)
     if config.model.snow_gravitational_transport__flag
         lateral_snow_transport!(snow, domain.land)
@@ -101,7 +101,7 @@ function update_land!(
 
     update_glacier!(glacier, atmospheric_forcing)
 
-    update_boundary_conditions_runoff!(
+    update_bc_runoff!(
         runoff,
         (; glacier, snow, interception),
         routing,
@@ -119,11 +119,7 @@ function update_land!(
     update_water_allocation!(allocation, demand, routing, domain, dt)
 
     soil_fraction!(soil, glacier, parameters)
-    update_boundary_conditions_soil!(
-        soil,
-        atmospheric_forcing,
-        (; interception, runoff, demand, allocation),
-    )
+    update_bc_soil!(soil, atmospheric_forcing, (; interception, runoff, demand, allocation))
 
     update_soil_first!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate

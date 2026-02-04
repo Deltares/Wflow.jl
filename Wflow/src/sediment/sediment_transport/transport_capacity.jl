@@ -17,7 +17,7 @@ end
 end
 
 "Update total transport capacity model boundary conditions"
-function update_boundary_conditions_transport_capacity!(
+function update_bc_transport_capacity!(
     model::AbstractTransportCapacityModel,
     hydrological_forcing::HydrologicalForcing,
     model_type::Symbol,

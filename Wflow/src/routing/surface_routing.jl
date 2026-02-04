@@ -25,7 +25,7 @@ function surface_routing!(model)
     # update lateral inflow river flow
     update_lateral_inflow!(
         river_flow,
-        (; allocation=river_flow.allocation, runoff, overland_flow, subsurface_flow),
+        (; allocation = river_flow.allocation, runoff, overland_flow, subsurface_flow),
         domain,
         dt,
     )
@@ -55,19 +55,14 @@ Run surface routing (land and river) for a model type that contains the routing 
 """
 function surface_routing!(
     model::Model{R},
-) where {R<:Routing{<:LocalInertialOverlandFlow,<:LocalInertialRiverFlow}}
+) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
     (; routing, land, domain, clock, config) = model
     (; soil, runoff) = land
     (; overland_flow, river_flow, subsurface_flow) = routing
     (; reservoir) = river_flow.boundary_conditions
 
     dt = tosecond(clock.dt)
-    update_boundary_conditions_runoff!(
-        overland_flow,
-        (; soil, runoff, subsurface_flow),
-        domain,
-        dt,
-    )
+    update_bc_runoff!(overland_flow, (; soil, runoff, subsurface_flow), domain, dt)
     # update reservoir inflow (subsurface flow), inflow from river and overland flow is
     # added within the river and overland routing schemes
     update_inflow!(reservoir, river_flow, subsurface_flow, domain.reservoir.network)

@@ -249,7 +249,7 @@ function SedimentRiverTransportModel(
 end
 
 "Update boundary conditions for river sediment transport model"
-function update_boundary_conditions_river_sediment_transport!(
+function update_bc_river_sediment_transport!(
     model::SedimentRiverTransportModel,
     hydrological_forcing::HydrologicalForcing,
     transport_capacity_model::AbstractTransportCapacityModel,
@@ -904,7 +904,7 @@ function SedimentConcentrationsRiverModel(
 end
 
 "Update boundary conditions for river sediment concentrations model"
-function update_boundary_conditions_river_sediment_concentration!(
+function update_bc_river_sediment_concentration!(
     model::SedimentConcentrationsRiverModel,
     hydrological_forcing::HydrologicalForcing,
     sediment_flux_model::AbstractSedimentRiverTransportModel,

@@ -124,7 +124,7 @@ function SoilErosionModel(
 end
 
 "Update boundary conditions for soil erosion model"
-function update_boundary_conditions_soil_erosion!(
+function update_bc_soil_erosion!(
     model::SoilErosionModel,
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::AbstractOverlandFlowErosionModel,

@@ -122,10 +122,7 @@ function SnowHbvModel(
 end
 
 "Update boundary condition (effective precipitation provided by an interception model) of a snow model for a single timestep"
-function update_boundary_conditions_snow!(
-    model::AbstractSnowModel,
-    external_models::NamedTuple,
-)
+function update_bc_snow!(model::AbstractSnowModel, external_models::NamedTuple)
     (; effective_precip) = model.boundary_conditions
     (; interception) = external_models
     @. effective_precip =
@@ -133,7 +130,7 @@ function update_boundary_conditions_snow!(
     return nothing
 end
 
-function update_boundary_conditions_snow!(model::NoSnowModel, external_models::NamedTuple)
+function update_bc_snow!(model::NoSnowModel, external_models::NamedTuple)
     return nothing
 end
 

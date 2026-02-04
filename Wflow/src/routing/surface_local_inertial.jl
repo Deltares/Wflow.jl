@@ -717,7 +717,7 @@ end
 Update boundary condition `runoff` overland flow model `LocalInertialOverlandFlow` for a
 single timestep.
 """
-function update_boundary_conditions_runoff!(
+function update_bc_runoff!(
     model::LocalInertialOverlandFlow,
     external_models::NamedTuple,
     domain::Domain,

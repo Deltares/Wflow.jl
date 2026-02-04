@@ -81,7 +81,7 @@ function OverlandFlowErosionAnswersModel(
 end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"
-function update_boundary_conditions_overland_flow!(
+function update_bc_overland_flow!(
     model::OverlandFlowErosionAnswersModel,
     hydrological_forcing::HydrologicalForcing,
 )
