@@ -19,6 +19,7 @@ end
     specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_fc) [-]
     specific_yield_dyn::Vector{Float64} # Dynamic specific yield [-]
     area::Vector{Float64}               # Area of cell [m²]
+    top::Vector{Float64}                # Top of subsurface flow layer [m]
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"
@@ -63,6 +64,14 @@ function LateralSsfParameters(
     soil::SbmSoilParameters,
     area::Vector{Float64},
 )
+    elevation = ncread(
+        dataset,
+        config,
+        "land_surface__elevation";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     khfrac = ncread(
         dataset,
         config,
@@ -101,6 +110,7 @@ function LateralSsfParameters(
         specific_yield,
         specific_yield_dyn,
         area,
+        top = elevation,
     )
     return ssf_parameters
 end
