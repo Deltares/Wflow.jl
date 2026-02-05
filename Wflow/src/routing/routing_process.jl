@@ -115,7 +115,7 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, sy, d, dt, dx, dw, ssfmax, kh_profile, soil, i)
+    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, q_net, slope, sy, d, dt, dx, dw, ssfmax, kh_profile, soil, i)
 
 Kinematic wave for lateral subsurface flow for a single cell and timestep. The hydraulic
 conductivity profile `kh_profile` is either `KhExponential` or `KhExponentialConstant`.
@@ -127,7 +127,7 @@ function kinematic_wave_ssf(
     ssfin,
     ssf_prev,
     zi_prev,
-    r,
+    q_net,
     slope,
     sy,
     d,
@@ -148,14 +148,14 @@ function kinematic_wave_ssf(
         theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * (dt / dx)
+        constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + q_net * (dt / dx)
         ssf = kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 
         # constrain maximum lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
         # estimate water table depth zi, exfiltration rate and constrain zi and
         # lower boundary ssf
-        net_flux = (ssfin * dt + r * dt - ssf * dt) / (dw * dx)
+        net_flux = (ssfin * dt + q_net * dt - ssf * dt) / (dw * dx)
         dh, exfilt = water_table_change(soil, net_flux, sy, i)
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
@@ -176,13 +176,14 @@ function kinematic_wave_ssf(
             zi_start = zi_prev
             for _ in 1:its
                 celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
-                constant_term = (dt_s / dx) * ssfin + ssf_prev / celerity + r * (dt_s / dx)
+                constant_term =
+                    (dt_s / dx) * ssfin + ssf_prev / celerity + q_net * (dt_s / dx)
                 ssf = kw_ssf_newton_raphson(ssf_prev, constant_term, celerity, dt_s, dx)
                 # constrain maximum lateral subsurface flow rate ssf
                 ssf = min(ssf, (ssfmax * dw))
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
-                net_flux = (ssfin * dt_s + r * dt_s - ssf * dt_s) / (dw * dx)
+                net_flux = (ssfin * dt_s + q_net * dt_s - ssf * dt_s) / (dw * dx)
                 dh, exfilt = water_table_change(soil, net_flux, sy, i)
                 zi = zi_prev - dh
                 if zi > d
@@ -214,7 +215,7 @@ function kinematic_wave_ssf(
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, sy, d, dt, dx, dw, ssfmax, kh_profile, soil, i)
+    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, q_net, slope, sy, d, dt, dx, dw, ssfmax, kh_profile, soil, i)
 
 Kinematic wave for lateral subsurface flow for a single cell and timestep with a `KhLayered`
 conductivity profile, using (average) hydraulic conductivity `kh`.
@@ -226,7 +227,7 @@ function kinematic_wave_ssf(
     ssfin,
     ssf_prev,
     zi_prev,
-    r,
+    q_net,
     slope,
     sy,
     d,
@@ -247,14 +248,14 @@ function kinematic_wave_ssf(
         theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
         # newton-raphson
         celerity = (slope * kh_profile.kh[i]) / theta_e
-        constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * (dt / dx)
+        constant_term = (dt / dx) * ssfin + ssf_prev / celerity + q_net * (dt / dx)
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # constrain maximum lateral subsurface flow rate ssf
         ssf = min(ssf, (ssfmax * dw))
 
         # estimate water table depth zi, exfiltration rate and constrain zi and lower
         # boundary ssf
-        net_flux = (ssfin * dt + r * dt - ssf * dt) / (dw * dx)
+        net_flux = (ssfin * dt + q_net * dt - ssf * dt) / (dw * dx)
         dh, exfilt = water_table_change(soil, net_flux, sy, i)
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
