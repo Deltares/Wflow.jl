@@ -9,6 +9,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+The change of using drainable and dynamic fillable porosity for computing water table
+changes (#730) instead of using the effective porosity (difference between saturated and
+residual water content) can have a relatively large impact on model results, generally
+resulting in higher peak flow, lower baseflow and higher actual evapotranspiration.
+
 ### Fixed
 
 ### Changed
