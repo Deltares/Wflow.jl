@@ -2,6 +2,7 @@
 @with_kw struct LateralSsfVariables
     n::Int
     zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
+    head::Vector{Float64} = fill(MISSING_VALUE, n)         # Hydraulic head [m]
     exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹]
@@ -157,8 +158,10 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) =
         domain.land.parameters
 
-    (; ssfin, ssf, to_river, zi, exfiltwater, ssfmax, storage, q_net) = model.variables
-    (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) = model.parameters
+    (; ssfin, ssf, to_river, zi, head, exfiltwater, ssfmax, storage, q_net) =
+        model.variables
+    (; specific_yield, specific_yield_dyn, top, soilthickness, kh_profile) =
+        model.parameters
 
     model.variables.q_net .= 0.0
     update_fluxes!(model, domain, dt)
@@ -194,6 +197,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
                     soil,
                     v,
                 )
+                head[v] = top[v] - zi[v]
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
         end
