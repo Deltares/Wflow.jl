@@ -15,7 +15,7 @@
     # reservoir area [m²]
     area::Vector{Float64}
     # index of lower reservoir (linked reservoirs) [-]
-    lower_reservoir_ind::Vector{Int} = fill(0, length(area))
+    lower_reservoir_ind::Vector{Int} = zeros(Int, length(area))
     # reservoir maximum storage for rating curve types 1 and 4 [m³]
     maxstorage::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # water level threshold H₀ [m] below that level outflow is zero

@@ -94,7 +94,7 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
 end
 
 "Struct for storing river flow model boundary conditions"
-@with_kw struct RiverFlowBC{R}
+@with_kw struct RiverFlowBC{R <: Union{Reservoir, Nothing}}
     n::Int
     inwater::Vector{Float64} = zeros(n)                         # Lateral inflow [m³ s⁻¹]
     external_inflow::Vector{Float64} = zeros(n)                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
