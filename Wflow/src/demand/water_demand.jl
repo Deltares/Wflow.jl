@@ -202,21 +202,20 @@ update_demand_gross!(model::NoIrrigationNonPaddy, soil::SbmSoilModel) = nothing
 
 "Compute water demand only for root zone through root fraction per layer"
 function water_demand_root_zone(soil::SbmSoilModel, i::Int, k::Int)
-    (; sumlayers, hb, theta_s, theta_r, c) = soil.parameters
+    (; sumlayers, hb, theta_s, theta_r, theta_fc, c) = soil.parameters
     (; ustorelayerthickness, ustorelayerdepth, h3) = soil.variables
 
     rootingdepth = get_rootingdepth(soil)
 
     rootfrac =
         min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / ustorelayerthickness[i][k]))
-    # vwc_f and vwc_h3 can be precalculated.
-    vwc_fc = vwc_brooks_corey(-100.0, hb[i], theta_s[i], theta_r[i], c[i][k])
+    # vwc_h3 can be precalculated.
     vwc_h3 = vwc_brooks_corey(h3[i], hb[i], theta_s[i], theta_r[i], c[i][k])
     depletion =
-        (vwc_fc * ustorelayerthickness[i][k]) -
+        (theta_fc[i] * ustorelayerthickness[i][k]) -
         (ustorelayerdepth[i][k] + theta_r[i] * ustorelayerthickness[i][k])
     depletion *= rootfrac
-    readily_available_water = (vwc_fc - vwc_h3) * ustorelayerthickness[i][k]
+    readily_available_water = (theta_fc[i] - vwc_h3) * ustorelayerthickness[i][k]
     readily_available_water *= rootfrac
 
     return depletion, readily_available_water

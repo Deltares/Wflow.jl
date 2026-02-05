@@ -90,9 +90,18 @@ function initialize_subsurface_flow(
     end
 
     bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
+    specific_yield =
+        @. lower_bound_drainable_porosity(soil.parameters.theta_s, soil.parameters.theta_fc)
     conductance = zeros(connectivity.nconnection)
-    parameters =
-        GroundwaterFlowParameters(dataset, config, indices, elevation, bottom, area)
+    parameters = GroundwaterFlowParameters(
+        dataset,
+        config,
+        indices,
+        elevation,
+        bottom,
+        area,
+        specific_yield,
+    )
     storage = @. (min(elevation, initial_head) - bottom) * area * parameters.specific_yield
     n = length(storage)
     variables = GroundwaterFlowVariables(; n, head = initial_head, conductance, storage)

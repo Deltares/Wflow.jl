@@ -83,12 +83,13 @@ instead.
 end
 
 @with_kw struct GroundwaterFlowParameters
-    k::Vector{Float64}                # reference horizontal conductivity [m d⁻¹]
-    top::Vector{Float64}              # top of groundwater layer [m]
-    bottom::Vector{Float64}           # bottom of groundwater layer [m]
-    area::Vector{Float64}             # area of cell [m²]
-    specific_yield::Vector{Float64}   # [m m⁻¹]
-    f::Vector{Float64}                # factor controlling the reduction of reference horizontal conductivity [-]
+    k::Vector{Float64}                  # reference horizontal conductivity [m d⁻¹]
+    top::Vector{Float64}                # top of groundwater layer [m]
+    bottom::Vector{Float64}             # bottom of groundwater layer [m]
+    area::Vector{Float64}               # area of cell [m²]
+    specific_yield::Vector{Float64}     # specific yield (theta_s - theta_fc) [m m⁻¹]
+    specific_yield_dyn::Vector{Float64} # dynamic specific yield [m m⁻¹]
+    f::Vector{Float64}                  # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
 end
@@ -100,6 +101,7 @@ function GroundwaterFlowParameters(
     top::Vector{Float64},
     bottom::Vector{Float64},
     area::Vector{Float64},
+    specific_yield::Vector{Float64},
 )
     k = ncread(
         dataset,
@@ -109,15 +111,6 @@ function GroundwaterFlowParameters(
         sel = indices,
         type = Float64,
     )
-    specific_yield = ncread(
-        dataset,
-        config,
-        "subsurface_water__specific_yield";
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
-
     if config.model.conductivity_profile == GwfConductivityProfileType.exponential
         f = ncread(
             dataset,
@@ -130,7 +123,16 @@ function GroundwaterFlowParameters(
     else
         f = Float64[]
     end
-    parameters = GroundwaterFlowParameters(; k, top, bottom, area, specific_yield, f)
+    specific_yield_dyn = fill(MISSING_VALUE, length(specific_yield))
+    parameters = GroundwaterFlowParameters(;
+        k,
+        top,
+        bottom,
+        area,
+        specific_yield,
+        specific_yield_dyn,
+        f,
+    )
     return parameters
 end
 
@@ -432,9 +434,17 @@ function update_fluxes!(
     return nothing
 end
 
-function update_head!(gwf::GroundwaterFlow, dt::Float64)
-    gwf.variables.head .+=
-        (gwf.variables.q_net ./ gwf.parameters.area .* dt ./ storativity(gwf))
+function update_head!(gwf::GroundwaterFlow, soil::SbmSoilModel, dt::Float64)
+    (; head, exfiltwater, q_net) = gwf.variables
+    (; area, specific_yield, specific_yield_dyn) = gwf.parameters
+
+    for i in eachindex(head)
+        net_flux = q_net[i] / area[i] * dt
+        dh, exfilt = water_table_change(soil, net_flux, specific_yield[i], i)
+        head[i] += dh
+        exfiltwater[i] += exfilt
+        specific_yield_dyn[i] = dh > 0.0 ? (net_flux - exfilt) / dh : specific_yield[i]
+    end
     # Set constant head (dirichlet) boundaries
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
@@ -450,33 +460,46 @@ function update_head!(gwf::GroundwaterFlow, dt::Float64)
     return nothing
 end
 
-function update!(
-    gwf::GroundwaterFlow,
-    domain::Domain,
-    dt::Float64,
-    conductivity_profile::GwfConductivityProfileType.T,
-)
-    (; cfl) = gwf.timestepping
+function set_flux_vars!(gwf::GroundwaterFlow)
     for bc in get_boundaries(gwf.boundary_conditions)
         !isnothing(bc) && (bc.variables.flux_av .= 0.0)
     end
     gwf.variables.exfiltwater .= 0.0
     gwf.variables.q_in_av .= 0.0
     gwf.variables.q_out_av .= 0.0
+    return nothing
+end
+
+function average_flux_vars!(gwf::GroundwaterFlow, dt::Float64)
+    for bc in get_boundaries(gwf.boundary_conditions)
+        !isnothing(bc) && (bc.variables.flux_av ./= dt)
+    end
+    gwf.variables.q_in_av ./= dt
+    gwf.variables.q_out_av ./= dt
+    return nothing
+end
+
+function update!(
+    gwf::GroundwaterFlow,
+    soil::SbmSoilModel,
+    domain::Domain,
+    dt::Float64,
+    conductivity_profile::GwfConductivityProfileType.T,
+)
+    (; cfl) = gwf.timestepping
+
+    set_flux_vars!(gwf)
     t = 0.0
     while t < dt
         gwf.variables.q_net .= 0.0
         dt_s = stable_timestep(gwf, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
         update_fluxes!(gwf, domain, conductivity_profile, dt_s)
-        update_head!(gwf, dt_s)
+        update_head!(gwf, soil, dt_s)
+        update_ustorelayerdepth!(soil, gwf)
         t += dt_s
     end
-    for bc in get_boundaries(gwf.boundary_conditions)
-        !isnothing(bc) && (bc.variables.flux_av ./= dt)
-    end
-    gwf.variables.q_in_av ./= dt
-    gwf.variables.q_out_av ./= dt
+    average_flux_vars!(gwf, dt)
     return nothing
 end
 

@@ -258,6 +258,7 @@ end
 
 @testitem "integration: unconfined transient 1D" begin
     include("testing_utils.jl")
+    using StaticArrays: SVector
 
     nrow = 1
     ncol = 9
@@ -301,6 +302,7 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
+        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(gwf_f, ncell),
     )
 
@@ -314,6 +316,24 @@ end
     )
     domain = Wflow.Domain()
 
+    N = 1
+    n = ncell
+    zi = @. 1000.0 * (gwf.parameters.top - gwf.variables.head)
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = SVector.(zi),
+        ustorelayerdepth = SVector.(zeros(n)),
+        n_unsatlayers = fill(N, n),
+        zi,
+        # Parameters
+        maxlayers = N,
+        nlayers = fill(1, n),
+        theta_s = fill(0.45, n),
+        theta_r = fill(0.05, n),
+    )
+
     time = 20.0
     t = 0.0
     (; cfl) = gwf.timestepping
@@ -323,8 +343,9 @@ end
         dt_s = Wflow.stable_timestep(gwf, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, dt_s)
+        Wflow.update_head!(gwf, soil, dt_s)
         t = t + dt_s
+        t += dt_s
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.variables.head) .> 0.0)
     end
@@ -338,6 +359,7 @@ end
 
 @testitem "integration: unconfined transient 1D, exponential conductivity" begin
     include("testing_utils.jl")
+    using StaticArrays: SVector
     nrow = 1
     ncol = 9
     shape = (nrow, ncol)
@@ -380,6 +402,7 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
+        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(gwf_f, ncell),
     )
 
@@ -393,6 +416,24 @@ end
     )
     domain = Wflow.Domain()
 
+    N = 1
+    n = ncell
+    zi = @. 1000.0 * (gwf.parameters.top - gwf.variables.head)
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = SVector.(zi),
+        ustorelayerdepth = SVector.(zeros(n)),
+        n_unsatlayers = fill(N, n),
+        zi,
+        # Parameters
+        maxlayers = N,
+        nlayers = fill(1, n),
+        theta_s = fill(0.45, n),
+        theta_r = fill(0.05, n),
+    )
+
     time = 20.0
     t = 0.0
     (; cfl) = gwf.timestepping
@@ -402,8 +443,8 @@ end
         dt_s = Wflow.stable_timestep(gwf, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, dt_s)
-        t = t + dt_s
+        Wflow.update_head!(gwf, soil, dt_s)
+        t += dt_s
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.variables.head) .> 0.0)
     end

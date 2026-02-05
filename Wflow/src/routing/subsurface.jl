@@ -8,7 +8,7 @@
     ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)       # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{Float64} = zeros(n)                   # Part of subsurface flow [m³ d⁻¹] that flows to the river
     q_net::Vector{Float64} = zeros(n)                      # Net flow (boundaries) [m³ d⁻¹]
-    storage::Vector{Float64}                               # Subsurface storage [m³]
+    storage::Vector{Float64}                               # Subsurface storage that can be released [m³]
 end
 
 "Struct for storing lateral subsurface flow model parameters"
@@ -16,9 +16,14 @@ end
     kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]
     khfrac::Vector{Float64}             # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{Float64}      # Soil thickness [m]
-    theta_s::Vector{Float64}            # Saturated water content (porosity) [-]
-    theta_r::Vector{Float64}            # Residual water content [-]
+    specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_fc) [-]
+    specific_yield_dyn::Vector{Float64} # Dynamic specific yield [-]
     area::Vector{Float64}               # Area of cell [m²]
+end
+
+"Struct for storing lateral subsurface flow model boundary conditions"
+@with_kw struct LateralSsfBC
+    recharge::Vector{Float64} # Net recharge to saturated store [m² d⁻¹]
 end
 
 "Lateral subsurface flow model"
@@ -67,7 +72,7 @@ function LateralSsfParameters(
         type = Float64,
     )
 
-    (; theta_s, theta_r, soilthickness) = soil
+    (; theta_s, theta_fc, soilthickness) = soil
     soilthickness = soilthickness .* 0.001
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
@@ -87,15 +92,23 @@ function LateralSsfParameters(
         n_cells = length(khfrac)
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
-    ssf_parameters =
-        LateralSsfParameters(; kh_profile, khfrac, soilthickness, theta_s, theta_r, area)
+    specific_yield_dyn = fill(MISSING_VALUE, length(soilthickness))
+    specific_yield = @. lower_bound_drainable_porosity(theta_s, theta_fc)
+    ssf_parameters = LateralSsfParameters(;
+        kh_profile,
+        khfrac,
+        soilthickness,
+        specific_yield,
+        specific_yield_dyn,
+        area,
+    )
     return ssf_parameters
 end
 
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
     n = length(zi)
-    storage = @. (ssf.theta_s - ssf.theta_r) * (ssf.soilthickness - zi) * ssf.area
+    storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * ssf.area
     variables = LateralSsfVariables(; n, zi, storage)
     return variables
 end
@@ -128,14 +141,14 @@ function update_fluxes!(model::LateralSSF, domain::Domain, dt::Float64)
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, domain::Domain, dt::Float64)
+function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Float64)
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.land.network
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) =
         domain.land.parameters
 
-    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage, q_net) = model.variables
-    (; theta_s, theta_r, soilthickness, kh_profile) = model.parameters
+    (; ssfin, ssf, to_river, zi, exfiltwater, ssfmax, storage, q_net) = model.variables
+    (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) = model.parameters
 
     model.variables.q_net .= 0.0
     update_fluxes!(model, domain, dt)
@@ -155,23 +168,23 @@ function update!(model::LateralSSF, domain::Domain, dt::Float64)
                 )
                 to_river[v] =
                     sum_at(i -> ssf[i] * flow_fraction_to_river[i], upstream_nodes[n])
-                ssf[v], zi[v], exfiltwater[v] = kinematic_wave_ssf(
+                ssf[v], zi[v], exfiltwater[v], specific_yield_dyn[v] = kinematic_wave_ssf(
                     ssfin[v],
                     ssf[v],
                     zi[v],
                     q_net[v],
                     slope[v],
-                    theta_s[v] - theta_r[v],
+                    specific_yield[v],
                     soilthickness[v],
                     dt,
                     flow_length[v],
                     flow_width[v],
                     ssfmax[v],
                     kh_profile,
+                    soil,
                     v,
                 )
-                storage[v] =
-                    (theta_s[v] - theta_r[v]) * (soilthickness[v] - zi[v]) * area[v]
+                storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
         end
     end

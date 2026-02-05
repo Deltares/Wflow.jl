@@ -8,8 +8,20 @@ time step `storage_prev` required for mass balance computation.
 @with_kw struct MassBalance <: AbstractMassBalance
     n::Int # number of cells/nodes
     storage_prev::Vector{Float64} = zeros(n)
+    zi_prev::Vector{Float64} = []
+    head_prev::Vector{Float64} = []
     error::Vector{Float64} = zeros(n)
     relative_error::Vector{Float64} = zeros(n)
+end
+
+function MassBalance(::LateralSSF, n::Int)
+    mass_balance = MassBalance(; n, storage_prev = [], zi_prev = zeros(n))
+    return mass_balance
+end
+
+function MassBalance(::GroundwaterFlow, n::Int)
+    mass_balance = MassBalance(; n, storage_prev = [], head_prev = zeros(n))
+    return mass_balance
 end
 
 """
@@ -42,7 +54,7 @@ model time step Δt for a hydrological model.
 end
 
 "Initialize `HydrologicalMassBalance` for storing water mass balance error results."
-function HydrologicalMassBalance(domain::Domain, config::Config)
+function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config)
     (; river_routing, land_routing, water_mass_balance__flag) = config.model
     if water_mass_balance__flag
         n_land = length(domain.land.network.indices)
@@ -63,7 +75,7 @@ function HydrologicalMassBalance(domain::Domain, config::Config)
             river_water_balance,
             reservoir_water_balance,
             overland_water_balance = MassBalance(; n = n_land),
-            subsurface_water_balance = MassBalance(; n = n_land),
+            subsurface_water_balance = MassBalance(subsurface_flow, n_land),
         )
         mass_balance = HydrologicalMassBalance(;
             land_water_balance = MassBalance(; n = n_land),
@@ -153,6 +165,14 @@ function storage_prev!(reservoir::Reservoir, water_balance::MassBalance)
     water_balance.storage_prev .= reservoir.variables.storage
 end
 
+function watertable_prev!(subsurface_flow::LateralSSF, water_balance::MassBalance)
+    water_balance.zi_prev .= subsurface_flow.variables.zi
+end
+
+function watertable_prev!(subsurface_flow::GroundwaterFlow, water_balance::MassBalance)
+    water_balance.head_prev .= subsurface_flow.variables.head
+end
+
 """
     storage_prev!(model, ::HydrologicalMassBalance)
     storage_prev!(model, ::NoMassBalance)
@@ -177,7 +197,7 @@ function storage_prev!(model, ::HydrologicalMassBalance)
     compute_total_storage!(land, land_water_balance)
     storage_prev!(river_flow, river_water_balance)
     overland_water_balance.storage_prev .= overland_flow.variables.storage
-    subsurface_water_balance.storage_prev .= get_storage(subsurface_flow)
+    watertable_prev!(subsurface_flow, subsurface_water_balance)
     storage_prev!(reservoir, reservoir_water_balance)
     return nothing
 end
@@ -464,17 +484,18 @@ function compute_flow_balance!(
     domain::Domain,
     dt::Float64,
 )
-    (; storage_prev, error, relative_error) = water_balance
-    (; storage, ssfin, ssf, exfiltwater) = subsurface_flow.variables
+    (; error, relative_error, zi_prev) = water_balance
+    (; ssfin, ssf, exfiltwater, zi) = subsurface_flow.variables
+    (; specific_yield_dyn) = subsurface_flow.parameters
     (; recharge) = subsurface_flow.boundary_conditions
     (; area) = domain.land.parameters
 
     f_conv = dt / tosecond(BASETIMESTEP)
-    for i in eachindex(storage_prev)
+    for i in eachindex(zi_prev)
         total_in = ssfin[i] * f_conv
         total_out = ssf[i] * f_conv + exfiltwater[i] * area[i]
         total_in, total_out = add_inflow(total_in, total_out, recharge.variables.flux[i])
-        storage_rate = (storage[i] - storage_prev[i])
+        storage_rate = specific_yield_dyn[i] * (zi_prev[i] - zi[i]) * area[i]
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
@@ -491,20 +512,20 @@ function compute_flow_balance!(
     domain::Domain,
     dt::Float64,
 )
-    (; storage_prev, error, relative_error) = water_balance
-    (; storage, q_in_av, q_out_av, exfiltwater) = subsurface_flow.variables
-    (; area) = subsurface_flow.parameters
+    (; head_prev, error, relative_error) = water_balance
+    (; head, q_in_av, q_out_av, exfiltwater) = subsurface_flow.variables
+    (; area, specific_yield_dyn) = subsurface_flow.parameters
 
-    n = length(storage_prev)
+    n = length(head_prev)
     flux_in = zeros(n)
     flux_out = zeros(n)
     flux_in, flux_out = sum_boundary_fluxes(subsurface_flow, domain)
 
     f_conv = dt / tosecond(BASETIMESTEP)
-    for i in eachindex(storage_prev)
+    for i in eachindex(head_prev)
         total_in = (q_in_av[i] + flux_in[i]) * f_conv
         total_out = f_conv * (q_out_av[i] + flux_out[i]) + exfiltwater[i] * area[i]
-        storage_rate = (storage[i] - storage_prev[i])
+        storage_rate = specific_yield_dyn[i] * (head[i] - head_prev[i]) * area[i]
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
