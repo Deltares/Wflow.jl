@@ -125,8 +125,8 @@ instead. Specific yield will vary roughly between 0.05 (clay) and 0.45 (peat)
     top::Vector{Float64}                # top of groundwater layer [m]
     bottom::Vector{Float64}             # bottom of groundwater layer [m]
     area::Vector{Float64}               # area of cell [m²]
-    specific_yield::Vector{Float64}     # [m m⁻¹]
-    specific_yield_dyn::Vector{Float64} # [m m⁻¹]
+    specific_yield::Vector{Float64}     # specific yield (theta_s - theta_fc) [m m⁻¹]
+    specific_yield_dyn::Vector{Float64} # dynamic specific yield [m m⁻¹]
     f::Vector{Float64}                  # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
