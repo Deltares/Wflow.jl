@@ -96,6 +96,7 @@ function homogenous_aquifer(nrow, ncol)
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
         specific_yield = fill(0.15, ncell),
+        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(3.0, ncell),
     )
     variables = Wflow.AquiferVariables(;
@@ -120,9 +121,24 @@ function init_sbm_soil_model(n, N; kwargs...)
         kwargs[:kv_profile] = nothing
     end
 
+    if !haskey(kwargs, :vegetation_parameter_set)
+        kwargs[:vegetation_parameter_set] = Wflow.VegetationParameters(;
+            rootingdepth = [],
+            leaf_area_index = nothing,
+            storage_wood = nothing,
+            kext = nothing,
+            storage_specific_leaf = nothing,
+            canopygapfraction = [],
+            cmax = [],
+            kc = [],
+        )
+    end
+
     # Vectors of SVectors
-    for field_name in [:vwc, :vwc_perc, :act_thickl, :rootfraction, :kvfrac]
-        kwargs[field_name] = SVector{N, Float64}[]
+    for field_name in [:vwc, :vwc_perc, :act_thickl, :rootfraction, :kvfrac, :c, :sumlayers]
+        if !haskey(kwargs, field_name)
+            kwargs[field_name] = SVector{N, Float64}[]
+        end
     end
 
     # Vectors of other types
@@ -130,6 +146,7 @@ function init_sbm_soil_model(n, N; kwargs...)
         # Variables
         :ustorecapacity,
         :satwaterdepth,
+        :drainable_waterdepth,
         :zi,
         :n_unsatlayers,
         :total_soilwater_storage,
@@ -137,6 +154,7 @@ function init_sbm_soil_model(n, N; kwargs...)
         :nlayers,
         :theta_s,
         :theta_r,
+        :theta_fc,
         :soilwatercapacity,
         :hb,
         :soilthickness,
