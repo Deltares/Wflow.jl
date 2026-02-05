@@ -1,0 +1,28 @@
+/* css styles */
+
+.only-on-dark {
+    display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .only-on-dark {
+        display: block;
+    }
+
+    .only-on-light {
+        display: none;
+    }
+}
+
+[aria-label="Deltares-Image"] {
+    height: 30px;
+}
+
+.navbar-right .fa-github {
+    font-size: 40px; /* Adjust the value as needed */
+}
+
+.active-item {
+    font-weight: bold;
+    text-decoration: underline;
+}
