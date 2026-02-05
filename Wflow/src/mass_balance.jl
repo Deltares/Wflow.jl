@@ -19,7 +19,7 @@ function MassBalance(::LateralSSF, n::Int)
     return mass_balance
 end
 
-function MassBalance(::GroundwaterFlow{A}, n::Int) where {A <: UnconfinedAquifer}
+function MassBalance(::GroundwaterFlow, n::Int)
     mass_balance = MassBalance(; n, storage_prev = [], head_prev = zeros(n))
     return mass_balance
 end
@@ -169,11 +169,8 @@ function watertable_prev!(subsurface_flow::LateralSSF, water_balance::MassBalanc
     water_balance.zi_prev .= subsurface_flow.variables.zi
 end
 
-function watertable_prev!(
-    subsurface_flow::GroundwaterFlow{A},
-    water_balance::MassBalance,
-) where {A <: UnconfinedAquifer}
-    water_balance.head_prev .= subsurface_flow.aquifer.variables.head
+function watertable_prev!(subsurface_flow::GroundwaterFlow, water_balance::MassBalance)
+    water_balance.head_prev .= subsurface_flow.variables.head
 end
 
 """
@@ -270,7 +267,7 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
     # exclude recharge from computing total incoming and outgoing boundary fluxes for
     # groundwaterflow, other boundaries are required for the total soil water balance.
     boundaries_flow_in, boundaries_flow_out =
-        sum_boundary_fluxes(subsurface_flow; exclude = Recharge)
+        sum_boundary_fluxes(subsurface_flow, model.domain; exclude = Recharge)
 
     for i in eachindex(storage_prev)
         f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)
@@ -484,21 +481,20 @@ routing.
 function compute_flow_balance!(
     subsurface_flow::LateralSSF,
     water_balance::MassBalance,
-    parameters::LandParameters,
+    domain::Domain,
     dt::Float64,
 )
     (; error, relative_error, zi_prev) = water_balance
     (; ssfin, ssf, exfiltwater, zi) = subsurface_flow.variables
     (; specific_yield_dyn) = subsurface_flow.parameters
     (; recharge) = subsurface_flow.boundary_conditions
-    (; flow_length, area) = parameters
+    (; area) = domain.land.parameters
 
     f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(zi_prev)
         total_in = ssfin[i] * f_conv
         total_out = ssf[i] * f_conv + exfiltwater[i] * area[i]
-        total_in, total_out =
-            add_inflow(total_in, total_out, f_conv * recharge[i] * flow_length[i])
+        total_in, total_out = add_inflow(total_in, total_out, recharge.variables.flux[i])
         storage_rate = specific_yield_dyn[i] * (zi_prev[i] - zi[i]) * area[i]
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
@@ -511,19 +507,19 @@ Compute water mass balance error and relative error for single layer subsurface 
 boundaries are set at zero.
 """
 function compute_flow_balance!(
-    subsurface_flow::GroundwaterFlow{A},
+    subsurface_flow::GroundwaterFlow,
     water_balance::MassBalance,
-    parameters::LandParameters,
+    domain::Domain,
     dt::Float64,
-) where {A <: UnconfinedAquifer}
+)
     (; head_prev, error, relative_error) = water_balance
-    (; head, q_in_av, q_out_av, exfiltwater) = subsurface_flow.aquifer.variables
-    (; area, specific_yield_dyn) = subsurface_flow.aquifer.parameters
+    (; head, q_in_av, q_out_av, exfiltwater) = subsurface_flow.variables
+    (; area, specific_yield_dyn) = subsurface_flow.parameters
 
     n = length(head_prev)
     flux_in = zeros(n)
     flux_out = zeros(n)
-    flux_in, flux_out = sum_boundary_fluxes(subsurface_flow)
+    flux_in, flux_out = sum_boundary_fluxes(subsurface_flow, domain)
 
     f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(head_prev)
@@ -557,12 +553,7 @@ function compute_flow_routing_balance!(model)
     compute_flow_balance!(river_flow, river_water_balance, model.domain.river.network, dt)
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
     compute_flow_balance!(overland_flow, overland_water_balance, dt)
-    compute_flow_balance!(
-        subsurface_flow,
-        subsurface_water_balance,
-        model.domain.land.parameters,
-        dt,
-    )
+    compute_flow_balance!(subsurface_flow, subsurface_water_balance, model.domain, dt)
 end
 
 """
@@ -588,12 +579,7 @@ function compute_flow_routing_balance!(
         dt,
     )
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
-    compute_flow_balance!(
-        subsurface_flow,
-        subsurface_water_balance,
-        model.domain.land.parameters,
-        dt,
-    )
+    compute_flow_balance!(subsurface_flow, subsurface_water_balance, model.domain, dt)
 end
 
 """

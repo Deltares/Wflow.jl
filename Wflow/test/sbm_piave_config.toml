@@ -34,6 +34,7 @@ atmosphere_air__temperature = "temp"
 
 [input.static]
 land_surface__slope = "Slope"
+land_surface__elevation = "wflow_dem"
 river__length = "wflow_riverlength"
 river__slope = "RiverSlope"
 river_water_flow__manning_n_parameter = "N_River"

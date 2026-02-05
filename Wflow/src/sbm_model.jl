@@ -61,21 +61,21 @@ function update!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     (; kv_profile) = land.soil.parameters
+    (; boundary_conditions) = routing.subsurface_flow
 
     update_until_recharge!(model)
     # exchange of recharge [mm dt⁻¹] between SBM soil model and subsurface flow domain
-    routing.subsurface_flow.boundary_conditions.recharge .= land.soil.variables.recharge
+    boundary_conditions.recharge.variables.rate .= land.soil.variables.recharge
     if do_water_demand(config)
-        @. routing.subsurface_flow.boundary_conditions.recharge -=
+        @. boundary_conditions.recharge.variables.rate -=
             land.allocation.variables.act_groundwater_abst
     end
     # unit conversions
-    routing.subsurface_flow.boundary_conditions.recharge .*=
-        domain.land.parameters.flow_width * 0.001 * (tosecond(BASETIMESTEP) / dt)
+    boundary_conditions.recharge.variables.rate .*= 0.001 * (tosecond(BASETIMESTEP) / dt)
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, land.soil, domain.land, clock.dt / BASETIMESTEP)
+    update!(routing.subsurface_flow, land.soil, domain, clock.dt / BASETIMESTEP)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
@@ -173,10 +173,10 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             @. zi = 0.001 * land.soil.variables.zi # convert from unit [mm] to [m]
             @. storage = specific_yield * (soilthickness - zi) * domain.land.parameters.area
         elseif config.model.type == ModelType.sbm_gwf
-            (; aquifer) = routing.subsurface_flow
-            aquifer.variables.storage .=
-                saturated_thickness(aquifer) .* aquifer.parameters.area .*
-                storativity(aquifer)
+            (; subsurface_flow) = routing
+            subsurface_flow.variables.storage .=
+                saturated_thickness(subsurface_flow) .* subsurface_flow.parameters.area .*
+                storativity(subsurface_flow)
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
         (; flow_width, flow_length) = domain.river.parameters

@@ -96,6 +96,7 @@ river_bank_water__elevation = "RiverZ"
 
 land_surface_water_flow__manning_n_parameter = "N"
 land_surface__slope = "Slope"
+land_surface__elevation = "wflow_dem"
 
 reservoir_surface__area = "reservoir_area"
 reservoir_water_demand__required_downstream_volume_flow_rate = "ResDemand"

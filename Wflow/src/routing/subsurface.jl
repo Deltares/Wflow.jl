@@ -2,11 +2,13 @@
 @with_kw struct LateralSsfVariables
     n::Int
     zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
+    head::Vector{Float64} = fill(MISSING_VALUE, n)         # Hydraulic head [m]
     exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)       # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{Float64} = zeros(n)                   # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    q_net::Vector{Float64} = zeros(n)                      # Net flow (boundaries) [m³ d⁻¹]
     storage::Vector{Float64}                               # Subsurface storage that can be released [m³]
 end
 
@@ -17,6 +19,8 @@ end
     soilthickness::Vector{Float64}      # Soil thickness [m]
     specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_fc) [-]
     specific_yield_dyn::Vector{Float64} # Dynamic specific yield [-]
+    area::Vector{Float64}               # Area of cell [m²]
+    top::Vector{Float64}                # Top of subsurface flow layer [m]
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"
@@ -25,8 +29,8 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSF{Kh} <: AbstractSubsurfaceFlowModel
-    boundary_conditions::LateralSsfBC
+@with_kw struct LateralSSF{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+    boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
     variables::LateralSsfVariables
 end
@@ -59,7 +63,16 @@ function LateralSsfParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
     soil::SbmSoilParameters,
+    area::Vector{Float64},
 )
+    elevation = ncread(
+        dataset,
+        config,
+        "land_surface__elevation";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     khfrac = ncread(
         dataset,
         config,
@@ -97,18 +110,16 @@ function LateralSsfParameters(
         soilthickness,
         specific_yield,
         specific_yield_dyn,
+        area,
+        top = elevation,
     )
     return ssf_parameters
 end
 
 "Initialize lateral subsurface flow model variables"
-function LateralSsfVariables(
-    ssf::LateralSsfParameters,
-    zi::Vector{Float64},
-    area::Vector{Float64},
-)
+function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
     n = length(zi)
-    storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * area
+    storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * ssf.area
     variables = LateralSsfVariables(; n, zi, storage)
     return variables
 end
@@ -122,23 +133,38 @@ function LateralSSF(
 )
     (; indices) = domain.network
     (; area) = domain.parameters
-    parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
+    parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
     zi = 0.001 * soil.variables.zi
-    variables = LateralSsfVariables(parameters, zi, area)
-    boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
+    variables = LateralSsfVariables(parameters, zi)
+    n_cells = length(indices)
+    recharge = Recharge(; n = n_cells)
+    boundary_conditions = SubsurfaceFlowBC(; recharge)
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end
 
-"Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::Float64)
-    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
-        domain.network
-    (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters
+function update_fluxes!(model::LateralSSF, domain::Domain, dt::Float64)
+    for bc in get_boundaries(model.boundary_conditions)
+        indices = get_boundary_index(bc, domain)
+        flux!(bc, model, indices, dt)
+    end
+    return nothing
+end
 
-    (; recharge) = model.boundary_conditions
-    (; ssfin, ssf, to_river, zi, exfiltwater, ssfmax, storage) = model.variables
-    (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) = model.parameters
+"Update lateral subsurface model for a single timestep"
+function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Float64)
+    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
+        domain.land.network
+    (; flow_length, flow_width, area, flow_fraction_to_river, slope) =
+        domain.land.parameters
+
+    (; ssfin, ssf, to_river, zi, head, exfiltwater, ssfmax, storage, q_net) =
+        model.variables
+    (; specific_yield, specific_yield_dyn, top, soilthickness, kh_profile) =
+        model.parameters
+
+    model.variables.q_net .= 0.0
+    update_fluxes!(model, domain, dt)
 
     ns = length(order_of_subdomains)
     for k in 1:ns
@@ -159,7 +185,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
                     ssfin[v],
                     ssf[v],
                     zi[v],
-                    recharge[v],
+                    q_net[v],
                     slope[v],
                     specific_yield[v],
                     soilthickness[v],
@@ -171,6 +197,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
                     soil,
                     v,
                 )
+                head[v] = top[v] - zi[v]
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
         end
