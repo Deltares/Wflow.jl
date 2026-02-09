@@ -23,11 +23,6 @@ end
     top::Vector{Float64}                # Top of subsurface flow layer [m]
 end
 
-"Struct for storing lateral subsurface flow model boundary conditions"
-@with_kw struct LateralSsfBC
-    recharge::Vector{Float64} # Net recharge to saturated store [m² d⁻¹]
-end
-
 "Lateral subsurface flow model"
 @with_kw struct LateralSSF{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     boundary_conditions::B
