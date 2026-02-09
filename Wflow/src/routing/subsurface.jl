@@ -163,6 +163,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
         model.variables
     (; specific_yield, specific_yield_dyn, top, soilthickness, kh_profile) =
         model.parameters
+    (; river) = model.boundary_conditions
 
     model.variables.q_net .= 0.0
     update_fluxes!(model, domain, dt)
@@ -172,16 +173,21 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
         threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
-                # for a river cell without a reservoir part of the upstream subsurface flow
-                # goes to the river (flow_fraction_to_river) and part goes to the subsurface
-                # flow reservoir (1.0 - flow_fraction_to_river) upstream nodes with a
-                # reservoir are excluded
-                ssfin[v] = sum_at(
-                    i -> ssf[i] * (1.0 - flow_fraction_to_river[i]),
-                    upstream_nodes[n],
-                )
-                to_river[v] =
-                    sum_at(i -> ssf[i] * flow_fraction_to_river[i], upstream_nodes[n])
+                if isnothing(river)
+                    # for a river cell without a reservoir part of the upstream subsurface flow
+                    # goes to the river (flow_fraction_to_river) and part goes to the subsurface
+                    # flow reservoir (1.0 - flow_fraction_to_river) upstream nodes with a
+                    # reservoir are excluded
+                    ssfin[v] = sum_at(
+                        i -> ssf[i] * (1.0 - flow_fraction_to_river[i]),
+                        upstream_nodes[n],
+                    )
+                    to_river[v] =
+                        sum_at(i -> ssf[i] * flow_fraction_to_river[i], upstream_nodes[n])
+                else
+                    ssfin[v] = sum_at(i -> ssf[i], upstream_nodes[n])
+                end
+
                 ssf[v], zi[v], exfiltwater[v], specific_yield_dyn[v] = kinematic_wave_ssf(
                     ssfin[v],
                     ssf[v],
