@@ -105,8 +105,8 @@ function RainfallErosionEurosemModel(
 )
     n = length(indices)
     parameters = RainfallErosionEurosemParameters(dataset, config, indices)
-    model = RainfallErosionEurosemModel(; n, parameters)
-    return model
+    rainfall_erosion = RainfallErosionEurosemModel(; n, parameters)
+    return rainfall_erosion
 end
 
 "Update EUROSEM rainfall erosion model boundary conditions for a single timestep"
@@ -223,8 +223,8 @@ function RainfallErosionAnswersModel(
 )
     n = length(indices)
     parameters = RainfallErosionAnswersParameters(dataset, config, indices)
-    model = RainfallErosionAnswersModel(; n, parameters)
-    return model
+    rainfall_erosion = RainfallErosionAnswersModel(; n, parameters)
+    return rainfall_erosion
 end
 
 "Update ANSWERS rainfall erosion model boundary conditions for a single timestep"

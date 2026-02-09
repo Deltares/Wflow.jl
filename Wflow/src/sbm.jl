@@ -65,7 +65,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand = NoDemand(; n)
     end
 
-    land_hydrology_model = LandHydrologySBM(;
+    land = LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -76,7 +76,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand,
         allocation,
     )
-    return land_hydrology_model
+    return land
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"

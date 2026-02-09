@@ -121,8 +121,8 @@ function GlacierHbvModel(
 )
     parameters = GlacierHbvParameters(dataset, config, indices, dt)
     variables = GlacierVariables(dataset, config, indices)
-    model = GlacierHbvModel(; boundary_conditions, parameters, variables)
-    return model
+    glacier = GlacierHbvModel(; boundary_conditions, parameters, variables)
+    return glacier
 end
 
 "Update glacier HBV model for a single timestep"

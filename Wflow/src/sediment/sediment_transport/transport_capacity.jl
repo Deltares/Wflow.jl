@@ -97,8 +97,8 @@ function TransportCapacityGoversModel(
 )
     n = length(indices)
     parameters = TransportCapacityGoversParameters(dataset, config, indices)
-    model = TransportCapacityGoversModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityGoversModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Govers overland flow transport capacity model for a single timestep"
@@ -182,8 +182,8 @@ function TransportCapacityYalinModel(
 )
     n = length(indices)
     parameters = TransportCapacityYalinParameters(dataset, config, indices)
-    model = TransportCapacityYalinModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityYalinModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Yalin overland flow transport capacity model for a single timestep"
@@ -331,8 +331,8 @@ function TransportCapacityYalinDifferentiationModel(
 )
     n = length(indices)
     parameters = TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
-    model = TransportCapacityYalinDifferentiationModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityYalinDifferentiationModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Yalin differentiated overland flow transport capacity model for a single timestep"
@@ -512,8 +512,8 @@ function TransportCapacityBagnoldModel(
 )
     n = length(indices)
     parameters = TransportCapacityBagnoldParameters(dataset, config, indices)
-    model = TransportCapacityBagnoldModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityBagnoldModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Bagnold river transport capacity model for a single timestep"
@@ -558,8 +558,8 @@ function TransportCapacityEngelundModel(
 )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
-    model = TransportCapacityEngelundModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityEngelundModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Engelund and Hansen river transport capacity model for a single timestep"
@@ -660,8 +660,8 @@ function TransportCapacityKodatieModel(
 )
     n = length(indices)
     parameters = TransportCapacityKodatieParameters(dataset, config, indices)
-    model = TransportCapacityKodatieModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityKodatieModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Kodatie river transport capacity model for a single timestep"
@@ -707,8 +707,8 @@ function TransportCapacityYangModel(
 )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
-    model = TransportCapacityYangModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityYangModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Yang river transport capacity model for a single timestep"
@@ -752,8 +752,8 @@ function TransportCapacityMolinasModel(
 )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
-    model = TransportCapacityMolinasModel(; n, parameters)
-    return model
+    transport_capacity = TransportCapacityMolinasModel(; n, parameters)
+    return transport_capacity
 end
 
 "Update Molinas and Wu river transport capacity model for a single timestep"

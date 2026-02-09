@@ -57,8 +57,8 @@ function RiverErosionJulianTorresModel(
 )
     n = length(indices)
     parameters = RiverErosionParameters(dataset, config, indices)
-    model = RiverErosionJulianTorresModel(; n, parameters)
-    return model
+    rainfall_erosion = RiverErosionJulianTorresModel(; n, parameters)
+    return rainfall_erosion
 end
 
 "Update river erosion model boundary conditions"

@@ -117,8 +117,8 @@ function SnowHbvModel(
 )
     n = length(indices)
     parameters = SnowHbvParameters(dataset, config, indices, dt)
-    model = SnowHbvModel(; n, parameters)
-    return model
+    snow = SnowHbvModel(; n, parameters)
+    return snow
 end
 
 "Update boundary condition (effective precipitation provided by an interception model) of a snow model for a single timestep"

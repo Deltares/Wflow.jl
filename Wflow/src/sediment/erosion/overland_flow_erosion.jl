@@ -76,8 +76,8 @@ function OverlandFlowErosionAnswersModel(
 )
     n = length(indices)
     parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
-    model = OverlandFlowErosionAnswersModel(; n, parameters)
-    return model
+    overland_flow_erosion = OverlandFlowErosionAnswersModel(; n, parameters)
+    return overland_flow_erosion
 end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"

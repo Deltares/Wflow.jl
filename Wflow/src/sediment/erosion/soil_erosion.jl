@@ -119,8 +119,8 @@ function SoilErosionModel(
 )
     n = length(indices)
     parameters = SoilErosionParameters(dataset, config, indices)
-    model = SoilErosionModel(; n, parameters)
-    return model
+    soil_erosion = SoilErosionModel(; n, parameters)
+    return soil_erosion
 end
 
 "Update boundary conditions for soil erosion model"

@@ -650,8 +650,8 @@ function SbmSoilModel(
     n = length(indices)
     parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     variables = SbmSoilVariables(n, parameters)
-    model = SbmSoilModel(; n, parameters, variables)
-    return model
+    soil = SbmSoilModel(; n, parameters, variables)
+    return soil
 end
 
 "Return soil fraction"

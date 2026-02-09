@@ -46,8 +46,8 @@ function GashInterceptionModel(
     n = length(indices)
     parameters = GashParameters(; e_r, vegetation_parameter_set)
     variables = InterceptionVariables(; n)
-    model = GashInterceptionModel(; parameters, variables)
-    return model
+    interception = GashInterceptionModel(; parameters, variables)
+    return interception
 end
 
 "Update Gash interception model for a single timestep"
@@ -96,8 +96,9 @@ end
 "Initialize Rutter interception model"
 function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
     variables = InterceptionVariables(; n)
-    model = RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
-    return model
+    interception =
+        RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
+    return interception
 end
 
 "Update Rutter interception model for a single timestep"
