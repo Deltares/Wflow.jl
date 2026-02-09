@@ -729,7 +729,6 @@ function update!(model::SedimentRiverTransportModel, domain::DomainRiver, dt::Fl
 
             # From transport capacity exceedance
             excess_sediment = max(input_sediment - transport_capacity[v], 0.0)
-            (v == 4) && @show input_sediment
             if excess_sediment > 0.0
                 compute_transport_capacity_deposition(
                     excess_sediment,
