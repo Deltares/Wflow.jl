@@ -1175,7 +1175,6 @@ Update storage and water depth for a single river cell.
         abstraction_to_add
 
     # Compute and apply water depths
-    @show land.variables.storage[i]
     river_h, land_h, river_storage =
         compute_water_depths(land.variables.storage[i], river_idx, i, river, domain)
     river.variables.h[river_idx] = river_h
@@ -1196,7 +1195,6 @@ Update storage and water depth for a single land cell (non-river).
 )
     # Compute and apply storage change
     storage_change = compute_land_storage_change(land, domain.network, i, dt)
-    @show storage_change
     land.variables.storage[i] += storage_change
 
     # Handle negative storage

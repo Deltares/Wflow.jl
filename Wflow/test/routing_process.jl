@@ -494,7 +494,7 @@ end
 
     Wflow.update_land_cell_storage_and_depth!(land, domain.land, 2, dt)
     @test land.variables.storage[2] ≈ 1450.0
-    @show land.variables.h[2] ≈ 0.002685185185185185
+    @test land.variables.h[2] ≈ 0.002685185185185185
 end
 
 @testitem "local inertial long channel MacDonald (1997)" begin
