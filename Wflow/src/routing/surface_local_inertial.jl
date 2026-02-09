@@ -1229,7 +1229,6 @@ function local_inertial_update_water_depth!(
         if river_location[i]
             # Process river cells (excluding reservoir outlets)
             if !reservoir_outlet[i]
-                @infiltrate
                 update_river_cell_storage_and_depth!(land, river, domain, i, dt)
             end
         else
