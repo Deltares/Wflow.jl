@@ -56,12 +56,12 @@ end
 
 "Update boundary conditions of the open water runoff model for a single timestep"
 function update_bc_runoff!(
-    model::OpenWaterRunoff,
+    runoff::OpenWaterRunoff,
     external_models::NamedTuple,
     routing::Routing,
     network::NetworkRiver,
 )
-    (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
+    (; water_flux_surface, waterdepth_river, waterdepth_land) = runoff.boundary_conditions
     (; land_indices) = network
     (; snow, glacier, interception) = external_models
 
@@ -78,15 +78,15 @@ end
 
 "Update the open water runoff model for a single timestep"
 function update_open_water_runoff!(
-    model::OpenWaterRunoff,
+    runoff::OpenWaterRunoff,
     atmospheric_forcing::AtmosphericForcing,
     parameters::LandParameters,
 )
     (; potential_evaporation) = atmospheric_forcing
     (; runoff_river, net_runoff_river, runoff_land, ae_openw_r, ae_openw_l) =
-        model.variables
+        runoff.variables
     (; river_fraction, water_fraction) = parameters
-    (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
+    (; water_flux_surface, waterdepth_river, waterdepth_land) = runoff.boundary_conditions
 
     @. runoff_river = min(1.0, river_fraction) * water_flux_surface
     @. runoff_land = min(1.0, water_fraction) * water_flux_surface

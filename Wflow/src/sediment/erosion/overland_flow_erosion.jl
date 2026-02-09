@@ -82,23 +82,23 @@ end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"
 function update_bc_overland_flow!(
-    model::OverlandFlowErosionAnswersModel,
+    overland_flow_erosion::OverlandFlowErosionAnswersModel,
     hydrological_forcing::HydrologicalForcing,
 )
-    (; q) = model.boundary_conditions
+    (; q) = overland_flow_erosion.boundary_conditions
     (; q_land) = hydrological_forcing
     @. q = q_land
 end
 
 "Update ANSWERS overland flow erosion model for a single timestep"
 function update_overland_flow_erosion!(
-    model::OverlandFlowErosionAnswersModel,
+    overland_flow_erosion::OverlandFlowErosionAnswersModel,
     geometry::LandParameters,
     dt::Float64,
 )
-    (; q) = model.boundary_conditions
-    (; usle_k, usle_c, answers_overland_flow_factor) = model.parameters
-    (; soil_erosion_rate) = model.variables
+    (; q) = overland_flow_erosion.boundary_conditions
+    (; usle_k, usle_c, answers_overland_flow_factor) = overland_flow_erosion.parameters
+    (; soil_erosion_rate) = overland_flow_erosion.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i

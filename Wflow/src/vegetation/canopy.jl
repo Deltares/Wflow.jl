@@ -52,18 +52,18 @@ end
 
 "Update Gash interception model for a single timestep"
 function update_interception!(
-    model::GashInterceptionModel,
+    interception::GashInterceptionModel,
     atmospheric_forcing::AtmosphericForcing,
 )
     (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameter_set
+        interception.parameters.vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
-        model.variables
+        interception.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
-    e_r = model.parameters.e_r
+    e_r = interception.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model.parameters.vegetation_parameter_set)
+        update_canopy_parameters!(interception.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
@@ -102,15 +102,15 @@ end
 
 "Update Rutter interception model for a single timestep"
 function update_interception!(
-    model::RutterInterceptionModel,
+    interception::RutterInterceptionModel,
     atmospheric_forcing::AtmosphericForcing,
 )
-    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
+    (; leaf_area_index, canopygapfraction, cmax, kc) = interception.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
-        model.variables
+        interception.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model.parameters)
+        update_canopy_parameters!(interception.parameters)
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -147,5 +147,7 @@ function update_canopy_parameters!(parameters::VegetationParameters)
 end
 
 "Return potential transpiration rate based on the interception rate"
-get_potential_transpiration(model::AbstractInterceptionModel) =
-    @. max(0.0, model.variables.canopy_potevap - model.variables.interception_rate)
+get_potential_transpiration(interception::AbstractInterceptionModel) = @. max(
+    0.0,
+    interception.variables.canopy_potevap - interception.variables.interception_rate,
+)

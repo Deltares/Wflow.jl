@@ -34,11 +34,11 @@ end
 
 "Update total sediment flux in overland flow model boundary conditions"
 function update_bc_sediment_land_transport!(
-    model::SedimentLandTransportModel,
+    sediment_flux::SedimentLandTransportModel,
     erosion_model::SoilErosionModel,
     transport_capacity_model::AbstractTransportCapacityModel,
 )
-    (; erosion, transport_capacity) = model.boundary_conditions
+    (; erosion, transport_capacity) = sediment_flux.boundary_conditions
     (; soil_erosion_rate) = erosion_model.variables
     @. erosion = soil_erosion_rate
 
@@ -47,9 +47,12 @@ function update_bc_sediment_land_transport!(
 end
 
 "Update total sediment flux in overland flow model for a single timestep"
-function update_sediment_overland!(model::SedimentLandTransportModel, network::NetworkLand)
-    (; erosion, transport_capacity) = model.boundary_conditions
-    (; sediment_rate, deposition) = model.variables
+function update_sediment_overland!(
+    sediment_flux::SedimentLandTransportModel,
+    network::NetworkLand,
+)
+    (; erosion, transport_capacity) = sediment_flux.boundary_conditions
+    (; sediment_rate, deposition) = sediment_flux.variables
 
     accucapacityflux!(sediment_rate, erosion, network, transport_capacity)
     deposition .= erosion
@@ -128,7 +131,7 @@ end
 
 "Update differentiated sediment flux in overland flow model boundary conditions"
 function update_bc_sediment_land_transport!(
-    model::SedimentLandTransportDifferentiationModel,
+    sediment_flux::SedimentLandTransportDifferentiationModel,
     erosion_model::SoilErosionModel,
     transport_capacity_model::TransportCapacityYalinDifferentiationModel,
 )
@@ -143,7 +146,7 @@ function update_bc_sediment_land_transport!(
         transport_capacity_sand,
         transport_capacity_sagg,
         transport_capacity_lagg,
-    ) = model.boundary_conditions
+    ) = sediment_flux.boundary_conditions
     (;
         clay_erosion_rate,
         silt_erosion_rate,
@@ -167,7 +170,7 @@ end
 
 "Update differentiated sediment flux in overland flow model for a single timestep"
 function update_sediment_overland!(
-    model::SedimentLandTransportDifferentiationModel,
+    sediment_flux::SedimentLandTransportDifferentiationModel,
     network::NetworkLand,
 )
     (;
@@ -181,7 +184,7 @@ function update_sediment_overland!(
         transport_capacity_sand,
         transport_capacity_sagg,
         transport_capacity_lagg,
-    ) = model.boundary_conditions
+    ) = sediment_flux.boundary_conditions
     (;
         sediment_rate,
         deposition,
@@ -195,7 +198,7 @@ function update_sediment_overland!(
         deposition_sagg,
         lagg,
         deposition_lagg,
-    ) = model.variables
+    ) = sediment_flux.variables
 
     accucapacityflux!(clay, erosion_clay, network, transport_capacity_clay)
     deposition_clay .= erosion_clay

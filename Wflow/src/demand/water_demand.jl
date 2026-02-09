@@ -878,7 +878,7 @@ groundwater_storage(subsurface_flow::GroundwaterFlow) =
 
 """
     update_water_allocation!(
-    model::AllocationLand,
+    allocation::AllocationLand,
     demand::Demand,
     routing::Routing,
     domain::Domain,

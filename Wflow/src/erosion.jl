@@ -43,14 +43,14 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
 end
 
 "Update soil loss model for a single timestep"
-function update_land!(model::SoilLoss, parameters::LandParameters, dt::Float64)
+function update_land!(land::SoilLoss, parameters::LandParameters, dt::Float64)
     (;
         atmospheric_forcing,
         hydrological_forcing,
         rainfall_erosion,
         overland_flow_erosion,
         soil_erosion,
-    ) = model
+    ) = land
 
     #TODO add interception/canopygapfraction calculation here for eurosem
     #need SBM refactor

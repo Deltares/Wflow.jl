@@ -30,17 +30,17 @@ end
 
 "Update total sediment reaching the river model boundary conditions"
 function update_bc_sediment_to_river!(
-    model::SedimentToRiverModel,
+    to_river::SedimentToRiverModel,
     transport_model::SedimentLandTransportModel,
 )
-    (; deposition) = model.boundary_conditions
+    (; deposition) = to_river.boundary_conditions
     @. deposition = transport_model.variables.deposition
 end
 
 "Update total sediment reaching the river model for a single timestep"
-function update_sediment_to_river!(model::SedimentToRiverModel, rivers::Vector{Bool})
-    (; deposition) = model.boundary_conditions
-    (; sediment_rate) = model.variables
+function update_sediment_to_river!(to_river::SedimentToRiverModel, rivers::Vector{Bool})
+    (; deposition) = to_river.boundary_conditions
+    (; sediment_rate) = to_river.variables
 
     zeros = fill(0.0, length(sediment_rate))
     sediment_rate .= ifelse.(rivers, deposition, zeros)
@@ -96,7 +96,7 @@ end
 
 "Update differentiated sediment reaching the river model boundary conditions"
 function update_bc_sediment_to_river!(
-    model::SedimentToRiverDifferentiationModel,
+    to_river::SedimentToRiverDifferentiationModel,
     transport_model::SedimentLandTransportDifferentiationModel,
 )
     (;
@@ -105,7 +105,7 @@ function update_bc_sediment_to_river!(
         deposition_sand,
         deposition_sagg,
         deposition_lagg,
-    ) = model.boundary_conditions
+    ) = to_river.boundary_conditions
     @. deposition_clay = transport_model.variables.deposition_clay
     @. deposition_silt = transport_model.variables.deposition_silt
     @. deposition_sand = transport_model.variables.deposition_sand
@@ -115,7 +115,7 @@ end
 
 "Update differentiated sediment reaching the river model for a single timestep"
 function update_sediment_to_river!(
-    model::SedimentToRiverDifferentiationModel,
+    to_river::SedimentToRiverDifferentiationModel,
     rivers::Vector{Bool},
 )
     (;
@@ -124,9 +124,9 @@ function update_sediment_to_river!(
         deposition_sand,
         deposition_sagg,
         deposition_lagg,
-    ) = model.boundary_conditions
+    ) = to_river.boundary_conditions
     (; sediment_rate, clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) =
-        model.variables
+        to_river.variables
 
     for (i, river) in enumerate(rivers)
         if river

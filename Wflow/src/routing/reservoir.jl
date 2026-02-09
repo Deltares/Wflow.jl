@@ -25,9 +25,9 @@
     # rating curve exponent [-]
     e::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # data for storage curve
-    sh::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
+    sh::Vector{Union{SH,Missing}} = Vector{Union{SH,Missing}}(missing, length(area))
     # data for rating curve
-    hq::Vector{Union{HQ, Missing}} = Vector{Union{HQ, Missing}}(missing, length(area))
+    hq::Vector{Union{HQ,Missing}} = Vector{Union{HQ,Missing}}(missing, length(area))
     # column index of rating curve data hq
     col_index_hq::Vector{Int} = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
@@ -49,44 +49,44 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         dataset,
         config,
         "reservoir_surface__area";
-        optional = false,
-        sel = indices_outlet,
-        type = Float64,
+        optional=false,
+        sel=indices_outlet,
+        type=Float64,
     )
     waterlevel = ncread(
         dataset,
         config,
         "reservoir_water_surface__initial_elevation";
-        optional = false,
-        sel = indices_outlet,
-        type = Float64,
+        optional=false,
+        sel=indices_outlet,
+        type=Float64,
     )
     storfunc = ncread(
         dataset,
         config,
         "reservoir_water__storage_curve_type_count";
-        optional = false,
-        sel = indices_outlet,
-        type = Int,
+        optional=false,
+        sel=indices_outlet,
+        type=Int,
     )
     storfunc = to_enumx.(ReservoirProfileType.T, storfunc)
     outflowfunc = ncread(
         dataset,
         config,
         "reservoir_water__rating_curve_type_count";
-        optional = false,
-        sel = indices_outlet,
-        type = Int,
+        optional=false,
+        sel=indices_outlet,
+        type=Int,
     )
     outflowfunc = to_enumx.(ReservoirOutflowType.T, outflowfunc)
     linked_reslocs = ncread(
         dataset,
         config,
         "reservoir_lower_location__count";
-        sel = indices_outlet,
-        defaults = 0,
-        type = Int,
-        fill = 0,
+        sel=indices_outlet,
+        defaults=0,
+        type=Int,
+        fill=0,
     )
 
     n_reservoirs = length(area)
@@ -94,13 +94,13 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         dataset,
         config,
         "reservoir_location__count";
-        optional = false,
-        sel = indices_outlet,
-        type = Int,
+        optional=false,
+        sel=indices_outlet,
+        type=Int,
     )
     @info "Read `$n_reservoirs` reservoir locations."
 
-    parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
+    parameters = ReservoirParameters(; id=reslocs, area, outflowfunc, storfunc)
 
     if ReservoirOutflowType.free_weir in outflowfunc ||
        ReservoirOutflowType.modified_puls in outflowfunc
@@ -108,25 +108,25 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             dataset,
             config,
             "reservoir_water_flow_threshold_level__elevation";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
         b = ncread(
             dataset,
             config,
             "reservoir_water__rating_curve_coefficient";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
         e = ncread(
             dataset,
             config,
             "reservoir_water__rating_curve_exponent";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
     end
     if ReservoirOutflowType.simple in outflowfunc
@@ -134,41 +134,41 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             dataset,
             config,
             "reservoir_water_demand__required_downstream_volume_flow_rate";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
         maxrelease = ncread(
             dataset,
             config,
             "reservoir_water_release_below_spillway__max_volume_flow_rate";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
         maxstorage = ncread(
             dataset,
             config,
             "reservoir_water__max_volume";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
         targetfullfrac = ncread(
             dataset,
             config,
             "reservoir_water__target_full_volume_fraction";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
         targetminfrac = ncread(
             dataset,
             config,
             "reservoir_water__target_min_volume_fraction";
-            optional = false,
-            sel = indices_outlet,
-            type = Float64,
+            optional=false,
+            sel=indices_outlet,
+            type=Float64,
         )
     end
 
@@ -250,14 +250,14 @@ function ReservoirVariables(
         dataset,
         config,
         "reservoir_water__outgoing_observed_volume_flow_rate";
-        sel = indices_outlet,
-        defaults = MISSING_VALUE,
-        type = Float64,
-        fill = MISSING_VALUE,
+        sel=indices_outlet,
+        defaults=MISSING_VALUE,
+        type=Float64,
+        fill=MISSING_VALUE,
     )
     variables = ReservoirVariables(;
         waterlevel,
-        storage = initialize_storage(storfunc, area, waterlevel, sh),
+        storage=initialize_storage(storfunc, area, waterlevel, sh),
         outflow_obs,
     )
     return variables
@@ -282,9 +282,9 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         dataset,
         config,
         "reservoir_water__external_inflow_volume_flow_rate";
-        sel = indices_outlet,
-        defaults = 0.0,
-        type = Float64,
+        sel=indices_outlet,
+        defaults=0.0,
+        type=Float64,
     )
     n = length(indices_outlet)
     bc = ReservoirBC(; n, external_inflow)
@@ -313,7 +313,7 @@ function waterlevel(
     storfunc::ReservoirProfileType.T,
     area::Float64,
     storage::Float64,
-    sh::Union{SH, Missing},
+    sh::Union{SH,Missing},
 )
     if storfunc == ReservoirProfileType.linear
         waterlevel = storage / area
@@ -342,7 +342,7 @@ function initialize_storage(
     storfunc::Vector{ReservoirProfileType.T},
     area::Vector{Float64},
     waterlevel::Vector{Float64},
-    sh::Vector{Union{SH, Missing}},
+    sh::Vector{Union{SH,Missing}},
 )
     storage = similar(area)
     for i in eachindex(storage)
@@ -381,13 +381,13 @@ update_index_hq!(reservoir, clock::Clock) = nothing
 
 "Update reservoir with rating curve type (`ouflowfunc`) 4 for a single timestep"
 function update_reservoir_simple(
-    model::Reservoir,
+    reservoir::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
-    res_v = model.variables
+    res_p = reservoir.parameters
+    res_v = reservoir.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
     storage = res_v.storage[i] + (inflow * dt) + precipitation - actevap
@@ -415,13 +415,13 @@ Update reservoir with rating curve type (`ouflowfunc`) 3 (Modified Puls approach
 single timestep.
 """
 function update_reservoir_modified_puls(
-    model::Reservoir,
+    reservoir::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
-    res_v = model.variables
+    res_p = reservoir.parameters
+    res_v = reservoir.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
     res_factor = res_p.area[i] / (dt * pow(res_p.b[i], 0.5))
@@ -447,13 +447,13 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 1 (HQ data) for a single timestep."
 function update_reservoir_hq(
-    model::Reservoir,
+    reservoir::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
-    res_v = model.variables
+    res_p = reservoir.parameters
+    res_v = reservoir.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
@@ -475,13 +475,13 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 2 (free weir) for a single timestep."
 function update_reservoir_free_weir(
-    model::Reservoir,
+    reservoir::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_p = model.parameters
-    res_v = model.variables
+    res_p = reservoir.parameters
+    res_v = reservoir.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
     lo = res_p.lower_reservoir_ind[i]
@@ -532,12 +532,12 @@ end
 
 "Update reservoir using observed outflow for a single timestep."
 function update_reservoir_outflow_obs(
-    model::Reservoir,
+    reservoir::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    res_v = model.variables
+    res_v = reservoir.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
     storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
@@ -553,15 +553,15 @@ This is called from within the river routing scheme, therefore updating only for
 element rather than all at once.
 """
 function update_reservoir!(
-    model::Reservoir,
+    reservoir::Reservoir,
     i::Int,
     inflow::Float64,
     dt::Float64,
     dt_forcing::Float64,
 )
-    res_bc = model.boundary_conditions
-    res_p = model.parameters
-    res_v = model.variables
+    res_bc = reservoir.boundary_conditions
+    res_p = reservoir.parameters
+    res_v = reservoir.variables
 
     # limit reservoir evaporation based on total available volume [m³]
     precipitation = 0.001 * res_bc.precipitation[i] * (dt / dt_forcing) * res_p.area[i]
@@ -570,7 +570,7 @@ function update_reservoir!(
     actevap = min(available_storage, evap) # [m³/dt]
 
     boundary_vars = (; precipitation, actevap, inflow)
-    update_reservoir_args = (model, i, boundary_vars, dt)
+    update_reservoir_args = (reservoir, i, boundary_vars, dt)
 
     if !isnan(res_v.outflow_obs[i])
         outflow, storage = update_reservoir_outflow_obs(update_reservoir_args...)
@@ -617,7 +617,7 @@ function log_message_observed_outflow(reservoir::Reservoir)
 end
 
 "Check if observed outflow is used for reservoirs"
-function using_observed_outflow(reservoir::Union{Reservoir, Nothing}, config::Config)
+function using_observed_outflow(reservoir::Union{Reservoir,Nothing}, config::Config)
     par = "reservoir_water__outgoing_observed_volume_flow_rate"
     check =
         !isnothing(reservoir) &&

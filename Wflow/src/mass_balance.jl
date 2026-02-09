@@ -100,10 +100,10 @@ function compute_mass_balance_error(
 end
 
 "Compute total storage of land hydrolology model `LandHydrologySBM` at index `i`."
-function compute_total_storage(model::LandHydrologySBM, i::Int)
-    (; total_soilwater_storage) = model.soil.variables
-    (; canopy_storage) = model.interception.variables
-    (; snow, glacier, demand) = model
+function compute_total_storage(land::LandHydrologySBM, i::Int)
+    (; total_soilwater_storage) = land.soil.variables
+    (; canopy_storage) = land.interception.variables
+    (; snow, glacier, demand) = land
 
     snow_storage = get_snow_storage(snow)[i] + get_snow_water(snow)[i]
     glacier_storage = get_glacier_store(glacier)[i] * get_glacier_fraction(glacier)[i]
@@ -120,40 +120,40 @@ function compute_total_storage(model::LandHydrologySBM, i::Int)
 end
 
 "Compute total storage of land hydrology model `LandHydrologySBM`."
-function compute_total_storage!(model::LandHydrologySBM, water_balance::MassBalance)
+function compute_total_storage!(land::LandHydrologySBM, water_balance::MassBalance)
     (; storage_prev) = water_balance
     for i in eachindex(storage_prev)
-        storage_prev[i] = compute_total_storage(model, i)
+        storage_prev[i] = compute_total_storage(land, i)
     end
     return nothing
 end
 
 """
-    get_storage(model::LocalInertialRiverFlow, i)
-    get_storage(model::KinWaveRiverFlow, i)
+    get_storage(river_flow::LocalInertialRiverFlow, i)
+    get_storage(river_flow::KinWaveRiverFlow, i)
 
 Return storage of a river flow model at index `i`. For `LocalInertialRiverFlow` floodplain
 storage is added to river storage if an optional floodplain is included.
 """
-function get_storage(model::LocalInertialRiverFlow, i)
-    (; storage) = model.variables
-    if isnothing(model.floodplain)
+function get_storage(river_flow::LocalInertialRiverFlow, i)
+    (; storage) = river_flow.variables
+    if isnothing(river_flow.floodplain)
         return storage[i]
     else
-        total_storage = storage[i] + model.floodplain.variables.storage[i]
+        total_storage = storage[i] + river_flow.floodplain.variables.storage[i]
         return total_storage
     end
 end
-get_storage(model::KinWaveRiverFlow, i) = model.variables.storage[i]
+get_storage(river_flow::KinWaveRiverFlow, i) = river_flow.variables.storage[i]
 
 """
 Save river (+ floodplain) storage at previous time step as `storage_prev` of river
 `water_balance`.
 """
-function storage_prev!(model::AbstractRiverFlowModel, water_balance::MassBalance)
+function storage_prev!(river_flow::AbstractRiverFlowModel, water_balance::MassBalance)
     (; storage_prev) = water_balance
     for i in eachindex(storage_prev)
-        storage_prev[i] = get_storage(model, i)
+        storage_prev[i] = get_storage(river_flow, i)
     end
     return nothing
 end
@@ -210,18 +210,18 @@ function storage_prev!(model, ::NoMassBalance)
 end
 
 "Compute total incoming vertical flux of land hydrology `SBM` at index `i`."
-function vertical_in(model::LandHydrologySBM, i::Int)
-    (; precipitation) = model.atmospheric_forcing
-    (; allocation) = model
+function vertical_in(land::LandHydrologySBM, i::Int)
+    (; precipitation) = land.atmospheric_forcing
+    (; allocation) = land
     total_in = precipitation[i] + get_irrigation_allocated(allocation)[i]
     return total_in
 end
 
 "Compute total outgoing vertical flux of land hydrology `SBM` at index `i`."
-function vertical_out(model::LandHydrologySBM, i::Int)
-    (; allocation) = model
-    (; net_runoff, actevap, actleakage) = model.soil.variables
-    (; net_runoff_river) = model.runoff.variables
+function vertical_out(land::LandHydrologySBM, i::Int)
+    (; allocation) = land
+    (; net_runoff, actevap, actleakage) = land.soil.variables
+    (; net_runoff_river) = land.runoff.variables
     total_out =
         net_runoff[i] +
         actevap[i] +

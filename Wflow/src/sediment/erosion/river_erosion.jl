@@ -63,23 +63,23 @@ end
 
 "Update river erosion model boundary conditions"
 function update_bc_water_level!(
-    model::RiverErosionJulianTorresModel,
+    potential_erosion::RiverErosionJulianTorresModel,
     hydrological_forcing::HydrologicalForcing,
 )
-    (; waterlevel) = model.boundary_conditions
+    (; waterlevel) = potential_erosion.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
     @. waterlevel = waterlevel_river
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
 function update_river_erosion!(
-    model::RiverErosionJulianTorresModel,
+    potential_erosion::RiverErosionJulianTorresModel,
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; waterlevel) = model.boundary_conditions
-    (; d50) = model.parameters
-    (; bed, bank) = model.variables
+    (; waterlevel) = potential_erosion.boundary_conditions
+    (; d50) = potential_erosion.parameters
+    (; bed, bank) = potential_erosion.variables
 
     n = length(waterlevel)
     threaded_foreach(1:n; basesize = 1000) do i
