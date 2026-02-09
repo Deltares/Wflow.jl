@@ -57,29 +57,29 @@ function RiverErosionJulianTorresModel(
 )
     n = length(indices)
     parameters = RiverErosionParameters(dataset, config, indices)
-    model = RiverErosionJulianTorresModel(; n, parameters)
-    return model
+    rainfall_erosion = RiverErosionJulianTorresModel(; n, parameters)
+    return rainfall_erosion
 end
 
 "Update river erosion model boundary conditions"
-function update_boundary_conditions!(
-    model::RiverErosionJulianTorresModel,
+function update_bc_water_level!(
+    potential_erosion::RiverErosionJulianTorresModel,
     hydrological_forcing::HydrologicalForcing,
 )
-    (; waterlevel) = model.boundary_conditions
+    (; waterlevel) = potential_erosion.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
     @. waterlevel = waterlevel_river
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
-function update!(
-    model::RiverErosionJulianTorresModel,
+function update_river_erosion!(
+    potential_erosion::RiverErosionJulianTorresModel,
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; waterlevel) = model.boundary_conditions
-    (; d50) = model.parameters
-    (; bed, bank) = model.variables
+    (; waterlevel) = potential_erosion.boundary_conditions
+    (; d50) = potential_erosion.parameters
+    (; bed, bank) = potential_erosion.variables
 
     n = length(waterlevel)
     threaded_foreach(1:n; basesize = 1000) do i

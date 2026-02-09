@@ -20,7 +20,7 @@ function surface_routing!(model)
         dt,
     )
     # run kinematic wave overland flow
-    update!(overland_flow, domain.land, dt)
+    update_overland_flow!(overland_flow, domain.land, dt)
 
     # update lateral inflow river flow
     update_lateral_inflow!(
@@ -41,7 +41,7 @@ function surface_routing!(model)
         @debug log_message_observed_outflow(reservoir)
     end
     # update river flow
-    update!(river_flow, domain, clock)
+    update_river_flow!(river_flow, domain, clock)
     return nothing
 end
 
@@ -62,12 +62,7 @@ function surface_routing!(
     (; reservoir) = river_flow.boundary_conditions
 
     dt = tosecond(clock.dt)
-    update_boundary_conditions!(
-        overland_flow,
-        (; soil, runoff, subsurface_flow),
-        domain,
-        dt,
-    )
+    update_bc_runoff!(overland_flow, (; soil, runoff, subsurface_flow), domain, dt)
     # update reservoir inflow (subsurface flow), inflow from river and overland flow is
     # added within the river and overland routing schemes
     update_inflow!(reservoir, river_flow, subsurface_flow, domain.reservoir.network)
@@ -75,7 +70,7 @@ function surface_routing!(
         @debug log_message_observed_outflow(reservoir)
     end
     # update overland and river flow
-    update!(overland_flow, river_flow, domain, clock)
+    update_overland_flow!(overland_flow, river_flow, domain, clock)
 
     return nothing
 end

@@ -76,29 +76,29 @@ function OverlandFlowErosionAnswersModel(
 )
     n = length(indices)
     parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
-    model = OverlandFlowErosionAnswersModel(; n, parameters)
-    return model
+    overland_flow_erosion = OverlandFlowErosionAnswersModel(; n, parameters)
+    return overland_flow_erosion
 end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"
-function update_boundary_conditions!(
-    model::OverlandFlowErosionAnswersModel,
+function update_bc_overland_flow!(
+    overland_flow_erosion::OverlandFlowErosionAnswersModel,
     hydrological_forcing::HydrologicalForcing,
 )
-    (; q) = model.boundary_conditions
+    (; q) = overland_flow_erosion.boundary_conditions
     (; q_land) = hydrological_forcing
     @. q = q_land
 end
 
 "Update ANSWERS overland flow erosion model for a single timestep"
-function update!(
-    model::OverlandFlowErosionAnswersModel,
+function update_overland_flow_erosion!(
+    overland_flow_erosion::OverlandFlowErosionAnswersModel,
     geometry::LandParameters,
     dt::Float64,
 )
-    (; q) = model.boundary_conditions
-    (; usle_k, usle_c, answers_overland_flow_factor) = model.parameters
-    (; soil_erosion_rate) = model.variables
+    (; q) = overland_flow_erosion.boundary_conditions
+    (; usle_k, usle_c, answers_overland_flow_factor) = overland_flow_erosion.parameters
+    (; soil_erosion_rate) = overland_flow_erosion.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i

@@ -131,14 +131,20 @@ function LateralSSF(
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::Float64)
+function update_subsurface_flow!(
+    subsurface_flow::LateralSSF,
+    soil::SbmSoilModel,
+    domain::DomainLand,
+    dt::Float64,
+)
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters
 
-    (; recharge) = model.boundary_conditions
-    (; ssfin, ssf, to_river, zi, exfiltwater, ssfmax, storage) = model.variables
-    (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) = model.parameters
+    (; recharge) = subsurface_flow.boundary_conditions
+    (; ssfin, ssf, to_river, zi, exfiltwater, ssfmax, storage) = subsurface_flow.variables
+    (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) =
+        subsurface_flow.parameters
 
     ns = length(order_of_subdomains)
     for k in 1:ns
@@ -179,12 +185,12 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
 end
 
 # wrapper methods
-get_water_depth(model::LateralSSF) = model.variables.zi
-get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
+get_water_depth(subsurface_flow::LateralSSF) = subsurface_flow.variables.zi
+get_exfiltwater(subsurface_flow::LateralSSF) = subsurface_flow.variables.exfiltwater
 
-get_flux_to_river(model::LateralSSF, inds::Vector{Int}) =
-    model.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+get_flux_to_river(subsurface_flow::LateralSSF, inds::Vector{Int}) =
+    subsurface_flow.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
 
-get_inflow(model::LateralSSF) = model.variables.ssfin
-get_outflow(model::LateralSSF) = model.variables.ssf
-get_storage(model::LateralSSF) = model.variables.storage
+get_inflow(subsurface_flow::LateralSSF) = subsurface_flow.variables.ssfin
+get_outflow(subsurface_flow::LateralSSF) = subsurface_flow.variables.ssf
+get_storage(subsurface_flow::LateralSSF) = subsurface_flow.variables.storage

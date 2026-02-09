@@ -591,7 +591,7 @@ function average_flux_vars!(
     return nothing
 end
 
-function update!(
+function update_subsurface_flow!(
     gwf::GroundwaterFlow{A},
     soil::SbmSoilModel,
     dt::Float64,
@@ -613,7 +613,7 @@ function update!(
     return nothing
 end
 
-function update!(
+function update_subsurface_flow!(
     gwf::GroundwaterFlow{A},
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T;
