@@ -349,6 +349,48 @@ end
     @test model.floodplain.variables.storage ≈ [0.0, 178700.0]
 end
 
+@testitem "unit: update_directional_flow!" begin
+    n = 3
+    land = Wflow.LocalInertialOverlandFlow(;
+        timestepping = Wflow.TimeStepping(),
+        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n),
+        parameters = Wflow.LocalInertialOverlandFlowParameters(;
+            n,
+            ywidth = fill(900.0, n),
+            xwidth = [250.0, 300.0, 450.0],
+            zx_max = [750.0, 900.0, 800.0],
+            theta = 1.0,
+            h_thresh = 1e-3,
+            zy_max = [800.0, 800.0, 800.0],
+            mannings_n_sq = [0.06, 0.06, 0.06],
+            z = [800.0, 800.0, 800.0],
+            froude_limit = true,
+        ),
+        variables = Wflow.LocalInertialOverlandFlowVariables(;
+            n,
+            qx0 = [1e-3, 2e-3, 3e-3],
+            h = [0.03, 0.02, 0.05],
+        ),
+    )
+    domain = Wflow.Domain(;
+        land = Wflow.DomainLand(;
+            network = Wflow.NetworkLand(;
+                edge_indices = Wflow.EdgeConnectivity(; xu = [2], xd = [3]),
+            ),
+            parameters = Wflow.LandParameters(;
+                x_length = fill(600.0, n),
+                y_length = fill(900.0, n),
+            ),
+        ),
+    )
+    i = 1
+    dt = 60.0
+    is_x_direction = true
+
+    Wflow.update_directional_flow!(land, domain, i, dt, is_x_direction)
+    @test land.variables.qx_av[1] ≈ 26493.90166029366
+end
+
 @testitem "local inertial long channel MacDonald (1997)" begin
     using QuadGK: quadgk
     using Graphs: DiGraph, add_edge!, ne

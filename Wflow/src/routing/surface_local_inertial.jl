@@ -564,8 +564,6 @@ function local_inertial_river_update!(
     dt_forcing::Float64,
     update_h::Bool,
 )
-    @infiltrate
-
     # Update river channel flow
     update_river_channel_flow!(model, domain.river, dt)
 
@@ -914,6 +912,82 @@ function update!(
 end
 
 """
+Update flow for a single direction in the local inertial overland flow model.
+`is_x_direction`: true for x-direction (xu/xd), false for y-direction (yu/yd)
+"""
+@inline function update_directional_flow!(
+    land::LocalInertialOverlandFlow,
+    domain::Domain,
+    i::Int,
+    dt::Float64,
+    is_x_direction::Bool,
+)
+    indices = domain.land.network.edge_indices
+    (; x_length, y_length) = domain.land.parameters
+    land_v = land.variables
+    land_p = land.parameters
+
+    # Select direction-specific parameters based on the boolean flag
+    if is_x_direction
+        upstream_idx = indices.xu[i]
+        downstream_idx = indices.xd[i]
+        width = land_p.ywidth[i]
+        z_max = land_p.zx_max[i]
+        length_vec = x_length
+        q_current = land_v.qx
+        q_prev = land_v.qx0
+        q_av = land_v.qx_av
+    else
+        upstream_idx = indices.yu[i]
+        downstream_idx = indices.yd[i]
+        width = land_p.xwidth[i]
+        z_max = land_p.zy_max[i]
+        length_vec = y_length
+        q_current = land_v.qy
+        q_prev = land_v.qy0
+        q_av = land_v.qy_av
+    end
+
+    # the effective flow width is zero when the river width exceeds the cell width and
+    # floodplain flow is not calculated.
+    if upstream_idx <= land_p.n && width != 0.0
+        zs_current = land_p.z[i] + land_v.h[i]
+        zs_upstream = land_p.z[upstream_idx] + land_v.h[upstream_idx]
+        zs_max = max(zs_current, zs_upstream)
+        hf = (zs_max - z_max)
+
+        if hf > land_p.h_thresh
+            length = 0.5 * (length_vec[i] + length_vec[upstream_idx]) # can be precalculated
+            q_current[i] = local_inertial_flow(
+                land_p.theta,
+                q_prev[i],
+                q_prev[downstream_idx],
+                q_prev[upstream_idx],
+                zs_current,
+                zs_upstream,
+                hf,
+                width,
+                length,
+                land_p.mannings_n_sq[i],
+                land_p.froude_limit,
+                dt,
+            )
+            # limit q in case water is not available
+            if land_v.h[i] <= 0.0
+                q_current[i] = min(q_current[i], 0.0)
+            end
+            if land_v.h[upstream_idx] <= 0.0
+                q_current[i] = max(q_current[i], 0.0)
+            end
+        else
+            q_current[i] = 0.0
+        end
+        q_av[i] += q_current[i] * dt
+    end
+    return nothing
+end
+
+"""
 Update fluxes for overland flow `LocalInertialOverlandFlow` model for a single timestep
 `dt`.
 """
@@ -922,96 +996,18 @@ function local_inertial_update_fluxes!(
     domain::Domain,
     dt::Float64,
 )
-    indices = domain.land.network.edge_indices
-    (; x_length, y_length) = domain.land.parameters
     land_v = land.variables
     land_p = land.parameters
 
     land_v.qx0 .= land_v.qx
     land_v.qy0 .= land_v.qy
 
-    # update qx
     @batch per = thread minbatch = 6000 for i in 1:(land_p.n)
-        yu = indices.yu[i]
-        yd = indices.yd[i]
-        xu = indices.xu[i]
-        xd = indices.xd[i]
+        # update qx (x-direction)
+        update_directional_flow!(land, domain, i, dt, true)
 
-        # the effective flow width is zero when the river width exceeds the cell width (dy
-        # for flow in x dir) and floodplain flow is not calculated.
-        if xu <= land_p.n && land_p.ywidth[i] != 0.0
-            zs_x = land_p.z[i] + land_v.h[i]
-            zs_xu = land_p.z[xu] + land_v.h[xu]
-            zs_max = max(zs_x, zs_xu)
-            hf = (zs_max - land_p.zx_max[i])
-
-            if hf > land_p.h_thresh
-                length = 0.5 * (x_length[i] + x_length[xu]) # can be precalculated
-                land_v.qx[i] = local_inertial_flow(
-                    land_p.theta,
-                    land_v.qx0[i],
-                    land_v.qx0[xd],
-                    land_v.qx0[xu],
-                    zs_x,
-                    zs_xu,
-                    hf,
-                    land_p.ywidth[i],
-                    length,
-                    land_p.mannings_n_sq[i],
-                    land_p.froude_limit,
-                    dt,
-                )
-                # limit qx in case water is not available
-                if land_v.h[i] <= 0.0
-                    land_v.qx[i] = min(land_v.qx[i], 0.0)
-                end
-                if land_v.h[xu] <= 0.0
-                    land_v.qx[i] = max(land_v.qx[i], 0.0)
-                end
-            else
-                land_v.qx[i] = 0.0
-            end
-            land_v.qx_av[i] += land_v.qx[i] * dt
-        end
-
-        # update qy
-
-        # the effective flow width is zero when the river width exceeds the cell width (dx
-        # for flow in y dir) and floodplain flow is not calculated.
-        if yu <= land_p.n && land_p.xwidth[i] != 0.0
-            zs_y = land_p.z[i] + land_v.h[i]
-            zs_yu = land_p.z[yu] + land_v.h[yu]
-            zs_max = max(zs_y, zs_yu)
-            hf = (zs_max - land_p.zy_max[i])
-
-            if hf > land_p.h_thresh
-                length = 0.5 * (y_length[i] + y_length[yu]) # can be precalculated
-                land_v.qy[i] = local_inertial_flow(
-                    land_p.theta,
-                    land_v.qy0[i],
-                    land_v.qy0[yd],
-                    land_v.qy0[yu],
-                    zs_y,
-                    zs_yu,
-                    hf,
-                    land_p.xwidth[i],
-                    length,
-                    land_p.mannings_n_sq[i],
-                    land_p.froude_limit,
-                    dt,
-                )
-                # limit qy in case water is not available
-                if land_v.h[i] <= 0.0
-                    land_v.qy[i] = min(land_v.qy[i], 0.0)
-                end
-                if land_v.h[yu] <= 0.0
-                    land_v.qy[i] = max(land_v.qy[i], 0.0)
-                end
-            else
-                land_v.qy[i] = 0.0
-            end
-            land_v.qy_av[i] += land_v.qy[i] * dt
-        end
+        # update qy (y-direction)
+        update_directional_flow!(land, domain, i, dt, false)
     end
     return nothing
 end
