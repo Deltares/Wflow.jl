@@ -125,20 +125,26 @@ function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
 end
 
 "Initialize lateral subsurface flow model"
-function LateralSSF(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainLand,
-    soil::SbmSoilModel,
-)
-    (; indices) = domain.network
-    (; area) = domain.parameters
+function LateralSSF(dataset::NCDataset, config::Config, domain::Domain, soil::SbmSoilModel)
+    (; land, river, drain) = domain
+    (; indices) = land.network
+    (; area) = domain.land.parameters
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
     zi = 0.001 * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi)
     n_cells = length(indices)
     recharge = Recharge(; n = n_cells)
-    boundary_conditions = SubsurfaceFlowBC(; recharge)
+    if config.model.river_subsurface_exchange_head_based__flag
+        river = GwfRiver(dataset, config, river.network.indices)
+    else
+        river = nothing
+    end
+    if config.model.drain__flag
+        drain = Drainage(dataset, config, drain.network.indices)
+    else
+        drain = nothing
+    end
+    boundary_conditions = SubsurfaceFlowBC(; recharge, river, drain)
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end

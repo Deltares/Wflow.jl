@@ -8,7 +8,7 @@ function initialize_subsurface_flow(
     ::SbmModel,
 )
     (; parameters) = domain.land
-    subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
+    subsurface_flow = LateralSSF(dataset, config, domain, soil)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
