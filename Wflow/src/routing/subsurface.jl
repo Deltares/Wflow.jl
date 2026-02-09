@@ -7,8 +7,8 @@
     ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹]
     ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)       # Maximum subsurface flow [m² d⁻¹]
-    to_river::Vector{Float64} = zeros(n)                   # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    q_net::Vector{Float64} = zeros(n)                      # Net flow (boundaries) [m³ d⁻¹]
+    to_river::Vector{Float64} = fill(MISSING_VALUE, n)     # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    q_net::Vector{Float64} = fill(MISSING_VALUE, n)        # Net flow (boundaries) [m³ d⁻¹]
     storage::Vector{Float64}                               # Subsurface storage that can be released [m³]
 end
 
