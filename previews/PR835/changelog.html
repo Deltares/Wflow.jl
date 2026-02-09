@@ -472,11 +472,15 @@ window.Quarto = {
 <p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
 <section id="unreleased" class="level2">
 <h2 class="anchored" data-anchor-id="unreleased">Unreleased</h2>
+<p>The change of using drainable and dynamic fillable porosity for computing water table changes (#730) instead of using the effective porosity (difference between saturated and residual water content) can have a relatively large impact on model results, generally resulting in higher peak flow, lower baseflow and higher actual evapotranspiration.</p>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<ul>
+<li>Drainable porosity or specific yield, defined as the difference between <code>theta_s</code> (saturated water content) and <code>theta_fc</code> (water content at field capacity) is now used to compute the change of a falling water table for subsurface flow concepts <code>LateralSSF</code> and <code>UnconfinedAquifer</code>. For the change of a rising water table of these concepts a dynamic fillable porosity (based on <code>theta_s</code> and the water content of unsaturated soil layers) is used. This results in a better integration of the <code>SBM</code> soil model (unsaturated zone) with these subsurface flow concepts as specific yield is typically represented by drainable porosity for these concepts and not by the effective porosity (difference between saturated and residual water content) of the previous implementation. Water content at field capacity <code>theta_fc</code> is a new optional input parameter, when this parameter is not provided <code>theta_fc</code> is computed as the water content at a pressure head of -100 cm using the Brooks and Corey water retention model.</li>
+</ul>
 </section>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
