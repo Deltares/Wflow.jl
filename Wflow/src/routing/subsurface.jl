@@ -2,7 +2,7 @@
 @with_kw struct LateralSsfVariables
     n::Int
     zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
-    head::Vector{Float64} = fill(MISSING_VALUE, n)         # Hydraulic head [m]
+    head::Vector{Float64}                                  # Hydraulic head [m]
     exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
     ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹]
     ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹]
@@ -115,7 +115,8 @@ end
 function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
     n = length(zi)
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * ssf.area
-    variables = LateralSsfVariables(; n, zi, storage)
+    head = @. ssf.top - zi
+    variables = LateralSsfVariables(; n, zi, storage, head)
     return variables
 end
 
