@@ -89,7 +89,7 @@ end
 """
 Update of the total water storage at the end of each timestep per model cell.
 """
-function update_total_water_storage!(model::AbstractModel{<:SbmModel})
+function update_total_water_storage!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; routing, land, domain) = model
 
     update_total_water_storage!(land, domain, routing)
