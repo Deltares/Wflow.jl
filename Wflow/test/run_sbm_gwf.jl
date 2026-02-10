@@ -43,7 +43,8 @@
         @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test sbm.soil.variables.runoff[1] == 0.0
         @test sbm.soil.variables.soilevap[1] == 0.0
-        @test sbm.soil.variables.transpiration[1] ≈ 0.30587632831650247
+        @test sbm.soil.variables.total_storage[1] ≈ 594.859200902034
+        @test sbm.soil.variables.total_storage[6] ≈ 665.0260781409222 # river cell
     end
 
     # run the second timestep
@@ -55,6 +56,8 @@
         @test sbm.soil.variables.runoff[1] == 0.0
         @test sbm.soil.variables.soilevap[1] == 0.0
         @test sbm.soil.variables.transpiration[4] ≈ 0.9545461724219301
+        @test sbm.soil.variables.total_storage[1] ≈ 594.8298097968526
+        @test sbm.soil.variables.total_storage[6] ≈ 639.6309342994089 # river cell
     end
 
     @testset "overland flow (kinematic wave)" begin
