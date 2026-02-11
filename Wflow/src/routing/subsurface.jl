@@ -217,8 +217,16 @@ end
 get_water_depth(model::LateralSSF) = model.variables.zi
 get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
-get_flux_to_river(model::LateralSSF, inds::Vector{Int}) =
-    model.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+function get_flux_to_river(model::LateralSSF, inds::Vector{Int})
+    (; river) = model.boundary_conditions
+    dt = tosecond(BASETIMESTEP) # conversion to [m³ s⁻¹]
+    flux = if isnothing(river)
+        model.variables.to_river[inds] ./ dt
+    else
+        -river.variables.flux_av ./ dt
+    end
+    return flux
+end
 
 get_inflow(model::LateralSSF) = model.variables.ssfin
 get_outflow(model::LateralSSF) = model.variables.ssf
