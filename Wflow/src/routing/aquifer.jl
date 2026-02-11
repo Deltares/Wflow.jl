@@ -460,20 +460,29 @@ function update_head!(gwf::GroundwaterFlow, soil::SbmSoilModel, dt::Float64)
     return nothing
 end
 
-function set_flux_vars!(gwf::GroundwaterFlow)
+function set_flux_vars_bc!(gwf::AbstractSubsurfaceFlowModel)
     for bc in get_boundaries(gwf.boundary_conditions)
         !isnothing(bc) && (bc.variables.flux_av .= 0.0)
     end
+    return nothing
+end
+
+function set_flux_vars!(gwf::GroundwaterFlow)
+    set_flux_vars_bc!(gwf)
     gwf.variables.exfiltwater .= 0.0
     gwf.variables.q_in_av .= 0.0
     gwf.variables.q_out_av .= 0.0
     return nothing
 end
 
-function average_flux_vars!(gwf::GroundwaterFlow, dt::Float64)
+function average_flux_vars_bc!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
     for bc in get_boundaries(gwf.boundary_conditions)
         !isnothing(bc) && (bc.variables.flux_av ./= dt)
     end
+end
+
+function average_flux_vars!(gwf::GroundwaterFlow, dt::Float64)
+    average_flux_vars_bc!(gwf, dt)
     gwf.variables.q_in_av ./= dt
     gwf.variables.q_out_av ./= dt
     return nothing

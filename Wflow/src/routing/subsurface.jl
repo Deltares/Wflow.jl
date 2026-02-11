@@ -167,6 +167,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
     (; river) = model.boundary_conditions
 
     model.variables.q_net .= 0.0
+    set_flux_vars_bc!(model)
     update_fluxes!(model, domain, dt)
 
     ns = length(order_of_subdomains)
@@ -210,6 +211,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
             end
         end
     end
+    average_flux_vars_bc!(model, dt)
     return nothing
 end
 
