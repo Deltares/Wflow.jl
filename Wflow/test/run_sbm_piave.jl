@@ -207,6 +207,51 @@ end
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
 end
 
+@testitem "Piave activate river boundary (river subsurface exchange)" begin
+    using Statistics: mean
+
+    tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.river_subsurface_exchange_head_based__flag = true
+    config.input.static["river_bottom__elevation"] = "zb_river"
+    config.input.static["river_water__infiltration_conductance"] = "riverbed_cond"
+    config.input.static["river_water__exfiltration_conductance"] = "riverbed_cond"
+    model = Wflow.Model(config)
+    (; subsurface_flow) = model.routing
+    (; river, recharge) = subsurface_flow.boundary_conditions
+
+    Wflow.run_timestep!(model)
+
+    @testset "First timestep" begin
+        @test subsurface_flow.variables.head[1] ≈ 1.5649026290675192
+        @test mean(subsurface_flow.variables.head) ≈ 1106.4839304917205
+        @test subsurface_flow.variables.zi[1] ≈ 0.054097448180100476
+        @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
+              subsurface_flow.variables.head[1]
+        @test river.variables.flux_av[1] ≈ 38960.837855724705
+        @test river.variables.flux[1] == river.variables.flux_av[1]
+        @test mean(river.variables.flux_av) ≈ -52437.509847286565
+        @test recharge.variables.rate[1] ≈ -0.0002922905062717429
+        @test mean(recharge.variables.rate) ≈ 0.0009271689030318317
+    end
+
+    Wflow.run_timestep!(model)
+
+    @testset "Second timestep" begin
+        @test subsurface_flow.variables.head[1] ≈ 1.5631486163556658
+        @test mean(subsurface_flow.variables.head) ≈ 1106.4853009101732
+        @test subsurface_flow.variables.zi[1] ≈ 0.055851460891953884
+        @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
+              subsurface_flow.variables.head[1]
+        @test river.variables.flux_av[1] ≈ 46443.577851554335
+        @test river.variables.flux[1] == river.variables.flux_av[1]
+        @test mean(river.variables.flux_av) ≈ 13720.723422644025
+        @test recharge.variables.rate[1] ≈ -0.0002166409023816541
+        @test mean(recharge.variables.rate) ≈ 0.0010621209588103314
+    end
+end
+
 @testitem "Piave: reservoir without external negative inflow (sbm model)" begin
     # test cyclic reservoir external inflow
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
