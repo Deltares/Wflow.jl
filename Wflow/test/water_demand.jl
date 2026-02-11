@@ -37,6 +37,7 @@
         c = [SVector(9.195682525634766, 9.297739028930664, 9.597416877746582)],
         nlayers = [3],
         theta_s = [0.4417283535003662],
+        theta_fc = [0.26063963369395],
         theta_r = [0.09082602709531784],
         hb = [to_SI(-10.0, CM)],
         infiltcapsoil = [to_SI(334.45526123046875, MM_PER_DT; dt_val = dt)],
@@ -53,11 +54,11 @@
     k = 1
 
     depletion, readily_available_water = Wflow.water_demand_root_zone(soil, i, k)
-    @test depletion ≈ to_SI(8.343548901322073, MM)
-    @test readily_available_water ≈ to_SI(4.288641862240691, MM)
+    @test depletion ≈ to_SI(8.490680329931607, MM)
+    @test readily_available_water ≈ to_SI(4.435773290850226, MM)
     irri_dem_gross = depletion / dt
     demand_gross = Wflow.compute_demand_gross(model, soil, irri_dem_gross, i)
-    @test demand_gross ≈ to_SI(8.343548901322073, MM_PER_DT; dt_val = dt)
+    @test demand_gross ≈ to_SI(8.490680329931607, MM_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: update_demand_gross! (Paddy)" begin

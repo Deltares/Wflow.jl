@@ -991,3 +991,59 @@ The sine of the slope in radians;
 sin(arctan(x)) = x / √(1 + x²)
 """
 sin_slope(slope) = slope / sqrt(1 + slope^2)
+
+"""
+Return water table change `dh` and exfiltration rate `exfilt`. For a falling water table
+`dh` is based on subsurface net flux `net_flux` and specific yield `specific_yield`. For a
+rising water table `dh` is based on `net_flux` and the unsaturated store capacity (per soil
+layer). For a rising water table a dynamic specific yield is computed.
+"""
+function water_table_change(
+    soil::SbmSoilModel,
+    net_flux::Float64,
+    specific_yield::Float64,
+    i::Int,
+    dt::Float64,
+)
+    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
+    (; theta_s, theta_r) = soil.parameters
+
+    # effective porosity (difference between saturated and residual water content)
+    # [-] = [-] - [-]
+    theta_e = theta_s[i] - theta_r[i]
+
+    if net_flux <= 0.0
+        # [m] = [m s⁻¹] * [s] / [-]
+        dh = net_flux * dt / specific_yield
+    else
+        # [m]
+        dh = 0.0
+        for k in n_unsatlayers[i]:-1:1
+            # [m s⁻¹] = max([m] * [-] - [m], [m])
+            capacity =
+                max(ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k], 0.0) / dt
+            # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])
+            flux_layer = min(net_flux, capacity)
+            if capacity <= net_flux
+                # if unsaturated layer is fully saturated dh equals layer thickness
+                # [m] += [m]
+                dh += ustorelayerthickness[i][k]
+            else
+                # [-] = [-] - [m] / [m]
+                sy = theta_e - (ustorelayerdepth[i][k] / ustorelayerthickness[i][k])
+                # [m] += [m s⁻¹] * [s] / [-]
+                dh += flux_layer * dt / sy
+            end
+            net_flux -= flux_layer
+            net_flux ≤ 0.0 && break
+        end
+    end
+    # [m s⁻¹] = max([m s⁻¹], [m s⁻¹])
+    exfilt = max(net_flux, 0.0)
+    return dh, exfilt
+end
+
+"Set lower bound for drainable porosity"
+function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
+    return max(theta_s - theta_fc, lower_bound)
+end

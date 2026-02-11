@@ -448,7 +448,7 @@ end
 
     model, domain, graph, order, n = get_objects()
 
-    input_particles = Wflow.calculate_sediment_input.(Ref(model), Ref(graph), dt, order)
+    input_particles = Wflow.compute_sediment_input.(Ref(model), Ref(graph), dt, order)
     input_particles_expected =
         to_SI([1.125e-8, 5.75e-9, 5.75e-9, 5.75e-9, 5.75e-9, 0.0], TON_PER_DT; dt_val = dt)
     @test all(x -> collect(x) ≈ input_particles_expected, input_particles)
@@ -468,7 +468,7 @@ end
     @test all(≈(to_SI(5.3e-9, TON)), store_sediment)
 
     erosion_particles =
-        Wflow.calculate_direct_river_erosion.(
+        Wflow.compute_direct_river_erosion.(
             Ref(model),
             sediment_need,
             store_sediment,
@@ -481,7 +481,7 @@ end
           [erosion_particles_expected, zeros(6), erosion_particles_expected, zeros(6)]
 
     store_erosion =
-        Wflow.calculate_store_erosion!.(Ref(model.variables), sediment_need, dt, order)
+        Wflow.compute_store_erosion!.(Ref(model.variables), sediment_need, dt, order)
     store_erosion_expected =
         to_SI([0.0, 0.0, 0.0, 0.0, 0.0, 5.3e-9], TON_PER_DT; dt_val = dt)
     @test collect.(store_erosion) ≈
@@ -493,7 +493,7 @@ end
     @test model.variables.erosion ≈ [erosion_expected, 0.0, erosion_expected, 0.0]
 
     # Index 1: reservoir outlet
-    deposition_particles_1 = Wflow.calculate_reservoir_deposition(
+    deposition_particles_1 = Wflow.compute_reservoir_deposition(
         model,
         domain.parameters,
         input_particles[1][1:6],
@@ -514,7 +514,7 @@ end
     excess_sediment =
         max(input_particles[3][1] - model.boundary_conditions.transport_capacity[3], 0.0)
     @test excess_sediment == 0.0
-    deposition_particles_3 = Wflow.calculate_natural_deposition(
+    deposition_particles_3 = Wflow.compute_natural_deposition(
         model,
         domain.parameters,
         input_particles[3][1:6],
@@ -532,7 +532,286 @@ end
     excess_sediment =
         max(sum(input_particles[4]) - model.boundary_conditions.transport_capacity[4], 0.0)
     @test excess_sediment ≈ to_SI(1.125e-8, TON_PER_DT; dt_val = dt)
-    deposition_particles_4 = Wflow.calculate_transport_capacity_deposition(
+    deposition_particles_4 = Wflow.compute_transport_capacity_deposition(
+        excess_sediment,
+        input_particles[4][1:6],
+        erosion_particles[4],
+    )
+    deposition_particles_4_expected =
+        to_SI([0.0, 0.0, 5.5e-9, 0.0, 5.75e-9, 0.0], TON_PER_DT; dt_val = dt)
+    @test collect(deposition_particles_4) ≈ deposition_particles_4_expected
+
+    deposition_particles = [
+        deposition_particles_1,
+        deposition_particles_2,
+        deposition_particles_3,
+        deposition_particles_4,
+    ]
+
+    fwaterout =
+        Wflow.water_outflow_fraction.(
+            model.boundary_conditions.waterlevel,
+            model.boundary_conditions.q,
+            domain.parameters.flow_width,
+            domain.parameters.flow_length,
+            dt,
+        )
+    @test fwaterout ≈ [1.0, 1.0, 1.0, 0.49915507604315607]
+
+    Wflow.update_variables!.(
+        Ref(model.variables),
+        input_particles,
+        erosion_particles,
+        deposition_particles,
+        fwaterout,
+        dt,
+        order,
+    )
+
+    perform_tests(model.variables)
+
+    # Perform calculations again by directly calling update!
+    model, domain, _, _, _ = get_objects()
+    Wflow.update!(model, domain, dt)
+    perform_tests(model.variables)
+end
+
+@testitem "unit: update SedimentConcentrationsRiverModel" begin
+    using Wflow: to_SI, Unit
+    G_PER_M3 = Unit(; g = 1, m = -3)
+    μM = Unit(; μm = 1)
+
+    n = 1
+    model = Wflow.SedimentConcentrationsRiverModel(;
+        n,
+        boundary_conditions = Wflow.SedimentConcentrationsRiverBC(;
+            n,
+            q = [2.5],
+            waterlevel = [0.2],
+            clay = [0.0],
+            silt = [0.0],
+            sand = [to_SI(1.0e-10, G_PER_M3)],
+            sagg = [0.0],
+            lagg = [to_SI(2.0e-12, G_PER_M3)],
+            gravel = [to_SI(3.0e-14, G_PER_M3)],
+        ),
+        parameters = Wflow.SedimentConcentrationsRiverParameters(;
+            dm_clay = [to_SI(2.0, μM)],
+            dm_silt = [to_SI(10.0, μM)],
+            dm_sand = [to_SI(200.0, μM)], # dm < dsuspf
+            dm_sagg = [to_SI(30.0, μM)],
+            dm_lagg = [to_SI(500.0, μM)], # dsuspf < dm < dbedf
+            dm_gravel = [to_SI(2000.0, μM)], # dbedf < dm
+        ),
+    )
+    parameters = Wflow.RiverParameters(; slope = [1e-3])
+    dt = 86400.0
+
+    Wflow.update!(model, parameters, dt)
+    @test model.variables.suspended[1] ≈ to_SI(4.675925925925926e-10, G_PER_M3)
+    @test model.variables.bed[1] ≈ to_SI(4.768518518518557e-12, G_PER_M3)
+    @test model.variables.total[1] ≈ to_SI(4.723611111111112e-10, G_PER_M3)
+end
+
+@testitem "unit: update SedimentRiverTransportModel" begin
+    using Wflow: to_SI, TON_PER_DT, Unit
+    using Graphs: DiGraph
+    μM = Unit(; μm = 1)
+    TON = Unit(; t = 1)
+
+    dt = 86400.0
+
+    function get_objects()
+        n = 4
+        erosion_land_val = to_SI(5.75e-9, TON_PER_DT; dt_val = dt)
+        model = Wflow.SedimentRiverTransportModel(;
+            n,
+            boundary_conditions = Wflow.SedimentRiverTransportBC(;
+                n,
+                waterlevel = fill(0.0105, n),
+                q = fill(0.002, n),
+                transport_capacity = to_SI(
+                    [5e-7, 5e-7, 5e-7, 2.3e-8],
+                    TON_PER_DT;
+                    dt_val = dt,
+                ),
+                erosion_land_clay = fill(erosion_land_val, n),
+                erosion_land_silt = fill(erosion_land_val, n),
+                erosion_land_sand = fill(erosion_land_val, n),
+                erosion_land_sagg = fill(erosion_land_val, n),
+                erosion_land_lagg = fill(erosion_land_val, n),
+                potential_erosion_river_bed = fill(to_SI(1e-8, TON_PER_DT; dt_val = dt), n),
+                potential_erosion_river_bank = fill(
+                    to_SI(2e-8, TON_PER_DT; dt_val = dt),
+                    n,
+                ),
+            ),
+            parameters = Wflow.SedimentRiverTransportParameters(;
+                clay_fraction = fill(0.15, n),
+                silt_fraction = fill(0.25, n),
+                sand_fraction = fill(0.35, n),
+                gravel_fraction = fill(0.45, n),
+                dm_clay = fill(to_SI(2.0, μM), n),
+                dm_silt = fill(to_SI(10.0, μM), n),
+                dm_sand = fill(to_SI(200.0, μM), n),
+                dm_sagg = fill(to_SI(30.0, μM), n),
+                dm_lagg = fill(to_SI(500.0, μM), n),
+                dm_gravel = fill(to_SI(2000.0, μM), n),
+                reservoir_outlet = [true, false, false, false],
+                reservoir_area = fill(6e5, n),
+                reservoir_trapping_efficiency = fill(0.5, n),
+            ),
+            variables = Wflow.SedimentRiverTransportVariables(;
+                n,
+                leftover_clay = fill(to_SI(5.5e-9, TON), n),
+                store_gravel = fill(to_SI(5.3e-9, TON), n),
+            ),
+        )
+
+        order = collect(1:n)
+        graph = DiGraph(n)
+        domain = Wflow.DomainRiver(;
+            network = Wflow.NetworkRiver(; order, graph),
+            parameters = Wflow.RiverParameters(;
+                slope = fill(1e-3, n),
+                flow_width = fill(4.2, n),
+                flow_length = [785.0, 785.0, 785.0, 7850.0],
+                reservoir_coverage = [false, true, false, false],
+            ),
+        )
+        return model, domain, graph, order, n
+    end
+
+    function perform_tests(variables)
+        @test variables.sediment_rate ≈ to_SI(
+            [0.0, 3.425e-8, 7.117955566856165e-9, 1.1480566748992592e-8],
+            TON_PER_DT;
+            dt_val = dt,
+        )
+        @test variables.clay_rate ≈ to_SI(
+            [0.0, 1.125e-8, 7.117955535300039e-9, 5.615494605485506e-9],
+            TON_PER_DT;
+            dt_val = dt,
+        )
+        @test variables.silt_rate ≈ to_SI(
+            [0.0, 5.75e-9, 3.1556126423175254e-17, 2.8701416872481476e-9],
+            TON_PER_DT;
+            dt_val = dt,
+        )
+        @test variables.sand_rate ≈
+              to_SI([0.0, 5.75e-9, 0.0, 1.247887690107893e-10], TON_PER_DT; dt_val = dt)
+        @test variables.sagg_rate ≈
+              to_SI([0.0, 5.75e-9, 0.0, 2.8701416872481476e-9], TON_PER_DT; dt_val = dt)
+        @test variables.lagg_rate ≈ to_SI([0.0, 5.75e-9, 0.0, 0.0], TON_PER_DT; dt_val = dt)
+        @test variables.gravel_rate ≈ [0.0, 0.0, 0.0, 0.0]
+        @test variables.deposition ≈ to_SI(
+            [7.555e-8, 0.0, 6.843204443314384e-8, 1.125e-8],
+            TON_PER_DT;
+            dt_val = dt,
+        )
+        @test variables.erosion ≈
+              to_SI([4.13e-8, 0.0, 4.13e-8, 0.0], TON_PER_DT; dt_val = dt)
+        @test variables.leftover_clay ≈ to_SI([0.0, 0.0, 0.0, 5.634505394514494e-9], TON)
+        @test variables.leftover_silt ≈ to_SI([0.0, 0.0, 0.0, 2.8798583127518526e-9], TON)
+        @test variables.leftover_sand ≈ to_SI([0.0, 0.0, 0.0, 1.2521123098921128e-10], TON)
+        @test variables.leftover_sagg ≈ to_SI([0.0, 0.0, 0.0, 2.8798583127518526e-9], TON)
+        @test variables.leftover_lagg ≈ zeros(4)
+        @test variables.leftover_gravel ≈ zeros(4)
+        @test variables.store_clay ≈ to_SI([1.575e-8, 0.0, 8.63204446469996e-9, 0.0], TON)
+        @test variables.store_silt ≈ to_SI([1.325e-8, 0.0, 1.3249999968443875e-8, 0.0], TON)
+        @test variables.store_sand ≈ to_SI([1.625e-8, 0.0, 1.625e-8, 5.5e-9], TON)
+        @test variables.store_sagg ≈ to_SI([5.75e-9, 0.0, 5.75e-9, 0.0], TON)
+        @test variables.store_lagg ≈ to_SI([5.75e-9, 0.0, 5.75e-9, 5.75e-9], TON)
+        @test variables.store_gravel ≈ to_SI([1.88e-8, 5.3e-9, 1.88e-8, 5.3e-9], TON)
+    end
+
+    model, domain, graph, order, n = get_objects()
+
+    input_particles = Wflow.compute_sediment_input.(Ref(model), Ref(graph), dt, order)
+    input_particles_expected =
+        to_SI([1.125e-8, 5.75e-9, 5.75e-9, 5.75e-9, 5.75e-9, 0.0], TON_PER_DT; dt_val = dt)
+    @test all(x -> collect(x) ≈ input_particles_expected, input_particles)
+
+    sediment_need =
+        max.(
+            model.boundary_conditions.transport_capacity .- sum(input_particles_expected),
+            0.0,
+        )
+    sediment_need[2] = 0.0
+    @test sediment_need ≈ to_SI([4.6575e-7, 0.0, 4.6575e-7, 0.0], TON_PER_DT; dt_val = dt)
+
+    store_sediment = sum(
+        getfield(model.variables, name) for
+        name in propertynames(model.variables) if startswith(string(name), "store")
+    )
+    @test all(≈(to_SI(5.3e-9, TON)), store_sediment)
+
+    erosion_particles =
+        Wflow.compute_direct_river_erosion.(
+            Ref(model),
+            sediment_need,
+            store_sediment,
+            dt,
+            order,
+        )
+    erosion_particles_expected =
+        to_SI([4.5e-9, 7.5e-9, 1.05e-8, 0.0, 0.0, 1.35e-8], TON_PER_DT; dt_val = dt)
+    @test collect.(erosion_particles) ≈
+          [erosion_particles_expected, zeros(6), erosion_particles_expected, zeros(6)]
+
+    store_erosion =
+        Wflow.compute_store_erosion!.(Ref(model.variables), sediment_need, dt, order)
+    store_erosion_expected =
+        to_SI([0.0, 0.0, 0.0, 0.0, 0.0, 5.3e-9], TON_PER_DT; dt_val = dt)
+    @test collect.(store_erosion) ≈
+          [store_erosion_expected, zeros(6), store_erosion_expected, zeros(6)]
+
+    erosion_particles = [erosion_particles[i] .+ store_erosion[i] for i in 1:n]
+    @. model.variables.erosion = sum(erosion_particles)
+    erosion_expected = to_SI(4.13e-8, TON_PER_DT; dt_val = dt)
+    @test model.variables.erosion ≈ [erosion_expected, 0.0, erosion_expected, 0.0]
+
+    # Index 1: reservoir outlet
+    deposition_particles_1 = Wflow.compute_reservoir_deposition(
+        model,
+        domain.parameters,
+        input_particles[1][1:6],
+        erosion_particles[1],
+        1,
+    )
+    deposition_particles_1_expected = to_SI(
+        [1.575e-8, 1.325e-8, 1.625e-8, 5.75e-9, 5.75e-9, 1.88e-8],
+        TON_PER_DT;
+        dt_val = dt,
+    )
+    @test collect(deposition_particles_1) ≈ deposition_particles_1_expected
+
+    # Index 2: reservoir coverage
+    deposition_particles_2 = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+    # Index 3: natural deposition in the river
+    excess_sediment =
+        max(input_particles[3][1] - model.boundary_conditions.transport_capacity[3], 0.0)
+    @test excess_sediment == 0.0
+    deposition_particles_3 = Wflow.compute_natural_deposition(
+        model,
+        domain.parameters,
+        input_particles[3][1:6],
+        erosion_particles[3],
+        3,
+    )
+    deposition_particles_3_expected = to_SI(
+        [8.63204446469996e-9, 1.3249999968443875e-8, 1.625e-8, 5.75e-9, 5.75e-9, 1.88e-8],
+        TON_PER_DT;
+        dt_val = dt,
+    )
+    @test collect(deposition_particles_3) ≈ deposition_particles_3_expected
+
+    # Index 4: deposition in the river from transport capacity exceeding
+    excess_sediment =
+        max(sum(input_particles[4]) - model.boundary_conditions.transport_capacity[4], 0.0)
+    @test excess_sediment ≈ to_SI(1.125e-8, TON_PER_DT; dt_val = dt)
+    deposition_particles_4 = Wflow.compute_transport_capacity_deposition(
         excess_sediment,
         input_particles[4][1:6],
         erosion_particles[4],

@@ -34,11 +34,13 @@
         Wflow.set_reservoir_vars!(res)
         Wflow.update!(res, 1, 100.0, dt)
         @test res.variables.outflow[1] ≈ 91.3783714867453
-        @test res.variables.outflow_av.cumulative[1] == res.variables.outflow[1] * dt
+        @test res.variables.outflow_av.cumulative_material[1] ==
+              res.variables.outflow[1] * dt
         @test res.variables.storage[1] ≈ 2.0e7
         @test res.boundary_conditions.precipitation[1] ≈ to_SI(4.2, MM_PER_DT; dt_val = dt)
         @test res.boundary_conditions.evaporation[1] ≈ to_SI(1.5, MM_PER_DT; dt_val = dt)
-        @test res.variables.actevap.cumulative[1] ≈ to_SI(1.5, MM_PER_DT; dt_val = dt) * dt
+        @test res.variables.actevap.cumulative_material[1] ≈
+              to_SI(1.5, MM_PER_DT; dt_val = dt) * dt
     end
 
     # reset storage and waterlevel and set observed outflow
@@ -48,7 +50,7 @@
     @testset "Update reservoir simple (outflowfunc = 4) with observed outflow" begin
         Wflow.set_reservoir_vars!(res)
         Wflow.update!(res, 1, 100.0, dt)
-        Wflow.average_reservoir_vars!(res, 86400.0)
+        Wflow.average_reservoir_vars!(res)
         @test res.variables.outflow[1] ≈ 80.0
         @test Wflow.get_average(res.variables.outflow_av)[1] == res.variables.outflow[1]
         @test res.variables.storage[1] ≈ 2.0983091296454795e7
@@ -95,7 +97,7 @@ end
     res_bc = res.boundary_conditions
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 2500.0, dt)
-    Wflow.average_reservoir_vars!(res, dt)
+    Wflow.average_reservoir_vars!(res)
     @test Wflow.waterlevel(
         res_p.storfunc[1],
         res_p.area[1],
@@ -108,7 +110,7 @@ end
     @test res_v.waterlevel[1] ≈ 19.672653848925634
     @test res_bc.precipitation[1] ≈ to_SI(20.0, MM_PER_DT; dt_val = dt)
     @test res_bc.evaporation[1] ≈ to_SI(3.2, MM_PER_DT; dt_val = dt)
-    @test res_v.actevap.cumulative[1] ≈ to_SI(3.2, MM_PER_DT; dt_val = dt) * dt
+    @test res_v.actevap.cumulative_material[1] ≈ to_SI(3.2, MM_PER_DT; dt_val = dt) * dt
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
@@ -174,7 +176,7 @@ end
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 500.0, dt)
     Wflow.update!(res, 2, 500.0, dt)
-    Wflow.average_reservoir_vars!(res, dt)
+    Wflow.average_reservoir_vars!(res)
     res_v = res.variables
     res_bc = res.boundary_conditions
     @test res_v.outflow ≈ [214.80170846121263, 236.83281600000214]
@@ -183,12 +185,12 @@ end
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 500.0, dt)
     Wflow.update!(res, 2, 500.0, dt)
-    Wflow.average_reservoir_vars!(res, dt)
+    Wflow.average_reservoir_vars!(res)
     @test res_v.outflow ≈ [-259.8005149014703, 239.66710359986183]
     @test Wflow.get_average(res_v.outflow_av) ≈ [-259.8005149014703, 499.4676185013321]
     @test res_v.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8]
     @test res_v.waterlevel ≈ [395.239782021054, 395.21771942667266]
-    @test res_v.actevap.cumulative ≈
+    @test res_v.actevap.cumulative_material ≈
           [to_SI(2.0, MM_PER_DT; dt_val = dt) * dt, to_SI(2.0, MM_PER_DT; dt_val = dt) * dt]
 end
 
@@ -227,7 +229,7 @@ end
     )
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 1500.0, dt)
-    Wflow.average_reservoir_vars!(res, dt)
+    Wflow.average_reservoir_vars!(res)
     res_p = res.parameters
     res_v = res.variables
     @test Wflow.waterlevel(

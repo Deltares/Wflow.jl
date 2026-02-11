@@ -82,13 +82,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Excess water for non-compacted soil fraction",
         tags = [:soil_output],
     ),
-    "soil_surface_water_unsaturated_zone__exfiltration_volume_flux" =>
-        ParameterMetadata(;
-            lens = @optic(_.land.soil.variables.exfiltustore),
-            unit = Unit(; mm = 1, dt = -1),
-            description = "Water exfiltrating from unsaturated store because of rising water table",
-            tags = [:soil_output],
-        ),
     "soil_surface_water_saturated_zone__exfiltration_volume_flux" =>
         ParameterMetadata(;
             lens = @optic(_.land.soil.variables.exfiltsatwater),

@@ -146,10 +146,18 @@ over time.
     fresh_average::Bool = true
 end
 
-function add_to_cumulative!(v::AverageVector, i::Int, flux::Number, dt::Number)
+function add_to_cumulative!(
+    v::AverageVector,
+    i::Int,
+    flux::Number,
+    dt::Number;
+    accumulate_time::Bool = true,
+)
     v.fresh_average = false
     v.cumulative_material[i] += flux * dt
-    v.cumulative_time[i] += dt
+    if accumulate_time
+        v.cumulative_time[i] += dt
+    end
 end
 
 function average!(v::AverageVector)

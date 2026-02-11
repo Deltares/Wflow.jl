@@ -142,13 +142,13 @@ function kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx)
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, theta_e, d, dt, dx, dw, ssfmax, kh_profile, i)
+    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, sy, d, dt, dx, dw, ssfmax, kh_profile, soil, i)
 
 Kinematic wave for lateral subsurface flow for a single cell and timestep. The hydraulic
 conductivity profile `kh_profile` is either `KhExponential` or `KhExponentialConstant`.
 
-Returns lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate
-`exfilt`.
+Returns lateral subsurface flow `ssf`, water table depth `zi`, exfiltration rate `exfilt`
+and dynamic specific yield `sy_d`.
 """
 function kinematic_wave_ssf(
     ssfin,
@@ -156,13 +156,14 @@ function kinematic_wave_ssf(
     zi_prev,
     r,
     slope,
-    theta_e,
+    sy,
     d,
     dt,
     dx,
     dw,
     ssfmax,
     kh_profile::Union{KhExponential, KhExponentialConstant},
+    soil::SbmSoilModel,
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
@@ -171,6 +172,8 @@ function kinematic_wave_ssf(
         # initial estimate
         # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
         ssf = (ssf_prev + ssfin) / 2.0
+        # effective/drainabale porosity
+        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
         # newton-raphson
         # [m s⁻¹]
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
@@ -184,16 +187,21 @@ function kinematic_wave_ssf(
         ssf = min(ssf, (ssfmax * dw))
         # estimate water table depth zi, exfiltration rate and constrain zi and
         # lower boundary ssf
-        # [m] = [m] - ([m³ s⁻¹] * [s] + [m² s⁻¹] * [s] * [m] - [m³ s⁻¹] * [s]) / ([m] * [m]) / [-]
-        zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
+        # [m s⁻¹] = ([m³ s⁻¹] + [m² s⁻¹] * [m] - [m³ s⁻¹]) / ([m] * [m])
+        net_flux = (ssfin + r * dx - ssf) / (dw * dx)
+        dh, exfilt = water_table_change(soil, net_flux, sy, i, dt)
+        # [m] = [m] - [m]
+        zi = zi_prev - dh
+        # [-] = ([m s⁻¹] - [m s⁻¹]) * [s] / [m]
+        sy_d = dh > 0.0 ? (net_flux - exfilt) * dt / dh : sy
         if zi > d
-            # TODO: I'm not completely sure of the correctness of the dt division here
-            # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s])
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d) / dt, KIN_WAVE_MIN_FLOW)
+            # [m³ s⁻¹] = ([m] * [m]) * [-] * ([m] - [m]) / [s]
+            ssf_excess = (dw * dx) * sy_d * (zi - d) / dt
+            # [m³ s⁻¹] = max([m³ s⁻¹] - [m³ s⁻¹], [m³ s⁻¹])
+            ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
         end
-        exfilt = min(zi, 0.0) * -theta_e
+        # [m] = clamp([m], [m], [m])
         zi = clamp(zi, 0.0, d)
-
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
         # computation
         max_delta_zi = 0.1
@@ -202,6 +210,8 @@ function kinematic_wave_ssf(
             dt_s = dt / its
             ssf_sum = 0.0
             exfilt_sum = 0.0
+            net_flux_sum = 0.0
+            zi_start = zi_prev
             for _ in 1:its
                 # [m s⁻¹]
                 celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
@@ -214,36 +224,46 @@ function kinematic_wave_ssf(
                 ssf = min(ssf, ssfmax * dw)
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
-                # [m] = [m] - ([m³ s⁻¹] * [s] + [m² s⁻¹] * [s] * [m] - [m³ s⁻¹] * [s]) / ([m] * [m]) / [-]
-                zi =
-                    zi_prev -
-                    (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx) / theta_e
+                net_flux = (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx)
+                # [m], [m s⁻¹]
+                dh, exfilt = water_table_change(soil, net_flux, sy, i, dt)
+                # [m] = [m] - [m]
+                zi = zi_prev - dh
                 if zi > d
-                    # TODO: I'm not completely sure of the correctness of the dt division here
-                    # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s], [m³ s⁻¹])
-                    ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
+                    # [m³ s⁻¹] = ([m] * [m]) * [-] * ([m] - [m]) / [s]
+                    ssf_excess = (dw * dx) * sy_d * (zi - d) / dt_s
+                    # [m³ s⁻¹] = max([m³ s⁻¹] - [m³ s⁻¹], [m³ s⁻¹])
+                    ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
                 end
-                exfilt_sum += min(zi, 0.0) * -theta_e
+                # [m] = clamp([m], [m], [m])
                 zi = clamp(zi, 0.0, d)
+                # update unsaturated zone
+                update_ustorelayerdepth!(soil, zi_prev, zi, i)
+                exfilt_sum += exfilt
+                net_flux_sum += net_flux
                 ssf_sum += ssf
                 ssf_prev = ssf
                 zi_prev = zi
             end
             ssf = ssf_sum / its
             exfilt = exfilt_sum
+            dh = zi_start - zi
+            sy_d = dh > 0.0 ? (net_flux_sum - exfilt_sum) / dh : sy
+        else
+            update_ustorelayerdepth!(soil, zi_prev, zi, i)
         end
-
-        return ssf, zi, exfilt
+        return ssf, zi, exfilt, sy_d
     end
 end
 
 """
-    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, theta_e, d, dt, dx, dw, ssfmax, kh_profile, i)
+    kinematic_wave_ssf(ssfin, ssf_prev, zi_prev, r, slope, sy, d, dt, dx, dw, ssfmax, kh_profile, soil, i)
 
 Kinematic wave for lateral subsurface flow for a single cell and timestep with a `KhLayered`
 conductivity profile, using (average) hydraulic conductivity `kh`.
 
-Return lateral subsurface flow `ssf`, water table depth `zi` and exfiltration rate `exfilt`.
+Return lateral subsurface flow `ssf`, water table depth `zi`, exfiltration rate `exfilt` and
+dynamic specific yield `sy_d`.
 """
 function kinematic_wave_ssf(
     ssfin,
@@ -251,13 +271,14 @@ function kinematic_wave_ssf(
     zi_prev,
     r,
     slope,
-    theta_e,
+    sy,
     d,
     dt,
     dx,
     dw,
     ssfmax,
     kh_profile::KhLayered,
+    soil::SbmSoilModel,
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
@@ -266,6 +287,8 @@ function kinematic_wave_ssf(
         # initial estimate
         # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
         ssf_ini = (ssf_prev + ssfin) / 2.0
+        # effective/drainabale porosity
+        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
         # newton-raphson
         # [m s⁻¹] = ([-] * [m s⁻¹]) / [-]
         celerity = (slope * kh_profile.kh[i]) / theta_e
@@ -274,21 +297,32 @@ function kinematic_wave_ssf(
         # [m³ s⁻¹]
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # constrain maximum lateral subsurface flow rate ssf
-        # [m³ s⁻¹] = min([m³ s⁻¹], [m² s⁻¹] * [m])
-        ssf = min(ssf, ssfmax * dw)
+        # [m³ s⁻¹] = min([m³ s⁻¹], ([m² s⁻¹] * [m]))
+        ssf = min(ssf, (ssfmax * dw))
+
         # estimate water table depth zi, exfiltration rate and constrain zi and lower
         # boundary ssf
-        # [m] = [m] - ([m³ s⁻¹] * [s] + [m² s⁻¹] * [s] * [m] - [m³ s⁻¹] * [s]) / ([m] * [m]) / [-]
-        zi = zi_prev - (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx) / theta_e
+        # [m s⁻¹] = ([m³ s⁻¹] + [m² s⁻¹] * [m] - [m³ s⁻¹]) / ([m] * [m])
+        net_flux = (ssfin + r * dx - ssf) / (dw * dx)
+        # [m], [m s⁻¹]
+        dh, exfilt = water_table_change(soil, net_flux, sy, i, dt)
+        # [m] = [m] - [m]
+        zi = zi_prev - dh
+        # [-] = ([m s⁻¹] - [m s⁻¹]) * [s] / [m]
+        sy_d = dh > 0.0 ? (net_flux - exfilt) * dt / dh : sy
         if zi > d
-            # TODO: I'm not completely sure of the correctness of the dt division here
-            # [m³ s⁻¹] = max([m³ s⁻¹] - ([m] * [m]) * [-] * ([m] - [m]) / [s], [m³ s⁻¹])
-            ssf = max(ssf - (dw * dx) * theta_e * (zi - d), KIN_WAVE_MIN_FLOW)
+            # [m³ s⁻¹] = ([m] * [m]) * [-] * ([m] - [m]) / [s]
+            ssf_excess = (dw * dx) * sy_d * (zi - d) / dt
+            # [m³ s⁻¹] = max([m³ s⁻¹] - [m³ s⁻¹], [m³ s⁻¹])
+            ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
         end
-        exfilt = min(zi, 0.0) * -theta_e
+        # [m] = clamp([m], [m], [m])
         zi = clamp(zi, 0.0, d)
 
-        return ssf, zi, exfilt
+        # update unsaturated zone
+        update_ustorelayerdepth!(soil, zi_prev, zi, i)
+
+        return ssf, zi, exfilt, sy_d
     end
 end
 
