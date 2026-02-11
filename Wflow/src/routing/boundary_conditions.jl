@@ -71,7 +71,12 @@ function GwfRiver(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     return river
 end
 
-function flux!(river::GwfRiver, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float64)
+function flux!(
+    river::GwfRiver,
+    gwf::AbstractSubsurfaceFlowModel,
+    indices::Vector{Int},
+    dt::Float64,
+)
     for (i, index) in enumerate(indices)
         head = gwf.variables.head[index]
         stage = river.variables.stage[i]
@@ -136,7 +141,12 @@ function Drainage(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     return drains
 end
 
-function flux!(drainage::Drainage, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float64)
+function flux!(
+    drainage::Drainage,
+    gwf::AbstractSubsurfaceFlowModel,
+    indices::Vector{Int},
+    dt::Float64,
+)
     for (i, index) in enumerate(indices)
         cond = drainage.parameters.conductance[i]
         delta_head = min(0, drainage.parameters.elevation[i] - gwf.variables.head[index])
