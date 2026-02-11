@@ -238,6 +238,17 @@ function flux!(well::Well, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float
     return nothing
 end
 
+function update_river_storage_stage!(river_bc::GwfRiver, river_flow::AbstractRiverFlowModel)
+    for i in eachindex(river_bc.variables.stage)
+        river_bc.variables.stage[i] =
+            river_flow.variables.h[i] + river_bc.parameters.bottom[i]
+        river_bc.variables.storage[i] = river_flow.variables.storage[i]
+    end
+    return nothing
+end
+
+update_river_storage_stage!(river_bc::Nothing, river_flow::AbstractRiverFlowModel) = nothing
+
 flux!(::Nothing, ::AbstractSubsurfaceFlowModel, ::Vector{Int}, ::Float64) = nothing
 
 get_boundary_index(::Recharge, domain::Domain) = domain.land.network.land_indices

@@ -70,16 +70,8 @@ function update!(model::AbstractModel{<:SbmGwfModel})
 
     update!(land, routing, domain, config, dt)
 
-    # set river stage and storage (groundwater boundary) based on river flow routing
-    # variables
-    for i in eachindex(boundary_conditions.river.variables.stage)
-        boundary_conditions.river.variables.stage[i] =
-            routing.river_flow.variables.h[i] +
-            boundary_conditions.river.parameters.bottom[i]
-        boundary_conditions.river.variables.storage[i] =
-            routing.river_flow.variables.storage[i]
-    end
-
+    # set river stage and storage (groundwater boundary)
+    update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
     # determine stable time step for groundwater flow
     dt_gwf = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
 

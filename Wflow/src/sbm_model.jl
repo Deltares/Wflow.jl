@@ -65,6 +65,9 @@ function update!(model::AbstractModel{<:SbmModel})
     (; boundary_conditions) = routing.subsurface_flow
 
     update!(land, routing, domain, config, dt)
+
+    # set river stage and storage (subsurface flow boundary)
+    update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
     # exchange of recharge [mm dt⁻¹] between SBM soil model and subsurface flow domain
     boundary_conditions.recharge.variables.rate .= land.soil.variables.recharge
     if do_water_demand(config)
