@@ -84,6 +84,7 @@ end
     kinematic_wave__adaptive_time_step_flag::Bool = false
     river_kinematic_wave__time_step::Float64 = 900.0
     land_kinematic_wave__time_step::Float64 = 3600.0
+    river_subsurface_exchange_head_based__flag::Bool = false
     # Local inertial routing
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7

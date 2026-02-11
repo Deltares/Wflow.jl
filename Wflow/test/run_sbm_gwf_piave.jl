@@ -105,7 +105,7 @@ end
         @test all(re -> abs(re) < 0.06, land_water_balance.relative_error)
         inds = findall(
             x -> !iszero(x),
-            Wflow.saturated_thickness(model.routing.subsurface_flow.aquifer),
+            Wflow.saturated_thickness(model.routing.subsurface_flow),
         )
         @test length(inds) == 7499
         @test all(e -> abs(e) < 1e-9, land_water_balance.error[inds])
@@ -125,7 +125,7 @@ end
         @test all(re -> abs(re) < 0.04, land_water_balance.relative_error)
         inds = findall(
             x -> !iszero(x),
-            Wflow.saturated_thickness(model.routing.subsurface_flow.aquifer),
+            Wflow.saturated_thickness(model.routing.subsurface_flow),
         )
         @test length(inds) == 7499
         @test all(e -> abs(e) < 1e-9, land_water_balance.error[inds])
