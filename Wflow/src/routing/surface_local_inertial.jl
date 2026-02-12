@@ -539,10 +539,10 @@ end
 Update floodplain water depth and storage (no-op for Nothing floodplain).
 """
 update_water_depth_and_storage!(
-    ::Nothing,
-    ::LocalInertialRiverFlow,
-    ::DomainRiver,
-    ::Float64,
+    floodplain::Nothing,
+    model::LocalInertialRiverFlow,
+    domain::DomainRiver,
+    dt::Float64,
 ) = nothing
 
 """
@@ -645,11 +645,11 @@ function update!(
     while t < dt
         dt_s = stable_timestep(model, flow_length)
         dt_s = check_timestepsize(dt_s, t, dt)
-        local_inertial_river_update!(model, domain, dt_s, dt, update_h)
+        local_inertial_river_update!(model, domain, dt_s, update_h)
         t += dt_s
     end
-    average_flow_vars!(model)
-    average_reservoir_vars!(reservoir)
+    average_flow_vars!(model, dt)
+    average_reservoir_vars!(reservoir, dt)
 
     if !isnothing(model.floodplain)
         average!(model.floodplain.variables.q_av, dt)

@@ -371,7 +371,7 @@ get_evaporation(model::Paddy) = model.variables.evaporation
 Update `runoff` based on the water depth `h_max` (paddy field starts spilling), and update
 the water depth `h` of the paddy irrigation model for a single timestep.
 """
-function update_runoff!(model::Paddy, runoff, dt::Number)
+function update_runoff!(model::Paddy, runoff, dt::Float64)
     for i in eachindex(model.parameters.irrigation_areas)
         if model.parameters.irrigation_areas[i]
             # [m s⁻¹] = max([m s⁻¹] - [m] / [s], 0.0)
@@ -383,7 +383,7 @@ function update_runoff!(model::Paddy, runoff, dt::Number)
     end
     return nothing
 end
-update_runoff!(model::NoIrrigationPaddy, runoff, dt::Number) = nothing
+update_runoff!(model::NoIrrigationPaddy, runoff, dt::Float64) = nothing
 
 """
     update_demand_gross!(model::Paddy)
@@ -440,7 +440,7 @@ function compute_irrigation_depth(model::Paddy, i::Int)
     return irr_depth_paddy
 end
 
-update_demand_gross!(model::NoIrrigationPaddy) = nothing
+update_demand_gross!(model::NoIrrigationPaddy, dt::Float64) = nothing
 
 "Struct to store water demand model variables"
 @with_kw struct DemandVariables
@@ -1047,7 +1047,7 @@ update_water_allocation!(
 Update total irrigation gross water demand `irri_demand_gross`, total non-irrigation gross
 water demand `nonirri_demand_gross` and total gross water demand `total_gross_demand`.
 """
-function update_demand_gross!(model::Demand)
+function update_demand_gross!(model::Demand, dt::Float64)
     (; nonpaddy, paddy, domestic, industry, livestock) = model
     (; irri_demand_gross, nonirri_demand_gross, total_gross_demand) = model.variables
     # get gross water demands
@@ -1065,7 +1065,7 @@ function update_demand_gross!(model::Demand)
     return nothing
 end
 
-update_demand_gross!(model::NoDemand) = nothing
+update_demand_gross!(model::NoDemand, dt::Float64) = nothing
 
 """
     update_water_demand!(model::Demand, soil::SbmSoilModel)
@@ -1084,7 +1084,7 @@ function update_water_demand!(model::Demand, soil::SbmSoilModel, dt::Number)
 
     update_demand_gross!(nonpaddy, soil, dt)
     update_demand_gross!(paddy, dt)
-    update_demand_gross!(model)
+    update_demand_gross!(model, dt)
 
     return nothing
 end

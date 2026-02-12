@@ -51,7 +51,7 @@
     @testset "Update reservoir simple (outflowfunc = 4) with observed outflow" begin
         Wflow.set_reservoir_vars!(res)
         Wflow.update!(res, 1, 100.0, dt)
-        Wflow.average_reservoir_vars!(res)
+        Wflow.average_reservoir_vars!(res, dt)
         @test res.variables.outflow[1] ≈ 80.0
         @test Wflow.get_average(res.variables.outflow_av)[1] == res.variables.outflow[1]
         @test res.variables.storage[1] ≈ 2.0983091296454795e7
@@ -98,7 +98,7 @@ end
     res_bc = res.boundary_conditions
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 2500.0, dt)
-    Wflow.average_reservoir_vars!(res)
+    Wflow.average_reservoir_vars!(res, dt)
     @test Wflow.waterlevel(
         res_p.storfunc[1],
         res_p.area[1],
@@ -234,7 +234,7 @@ end
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 500.0, dt)
     Wflow.update!(res, 2, 500.0, dt)
-    Wflow.average_reservoir_vars!(res)
+    Wflow.average_reservoir_vars!(res, dt)
     res_v = res.variables
     res_bc = res.boundary_conditions
     @test res_v.outflow ≈ [214.80170846121263, 236.83281600000214]
@@ -243,7 +243,7 @@ end
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 500.0, dt)
     Wflow.update!(res, 2, 500.0, dt)
-    Wflow.average_reservoir_vars!(res)
+    Wflow.average_reservoir_vars!(res, dt)
     @test res_v.outflow ≈ [-259.8005149014703, 239.66710359986183]
     @test Wflow.get_average(res_v.outflow_av) ≈ [-259.8005149014703, 499.4676185013321]
     @test res_v.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8]
@@ -287,7 +287,7 @@ end
     )
     Wflow.set_reservoir_vars!(res)
     Wflow.update!(res, 1, 1500.0, dt)
-    Wflow.average_reservoir_vars!(res)
+    Wflow.average_reservoir_vars!(res, dt)
     res_p = res.parameters
     res_v = res.variables
     @test Wflow.waterlevel(

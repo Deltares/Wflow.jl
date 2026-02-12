@@ -75,18 +75,18 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
         config,
         "river_water_flow__manning_n_parameter",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     bankfull_depth =
-        ncread(dataset, config, "river_bank_water__depth", Routing; sel=indices)
+        ncread(dataset, config, "river_bank_water__depth", Routing; sel = indices)
 
     flow_params = ManningFlowParameters(; mannings_n, slope)
-    parameters = RiverFlowParameters(; flow=flow_params, bankfull_depth)
+    parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth)
     return parameters
 end
 
 "Struct for storing river flow model boundary conditions"
-@with_kw struct RiverFlowBC{R<:Union{Reservoir,Nothing}}
+@with_kw struct RiverFlowBC{R <: Union{Reservoir, Nothing}}
     n::Int
     # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     external_inflow::Vector{Float64}
@@ -105,7 +105,7 @@ function RiverFlowBC(
     dataset::NCDataset,
     config::Config,
     network::NetworkRiver,
-    reservoir::Union{Reservoir,Nothing},
+    reservoir::Union{Reservoir, Nothing},
 )
     (; indices) = network
     external_inflow = ncread(
@@ -113,7 +113,7 @@ function RiverFlowBC(
         config,
         "river_water__external_inflow_volume_flow_rate",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     n = length(indices)
     bc = RiverFlowBC(; n, external_inflow, reservoir)
@@ -121,7 +121,7 @@ function RiverFlowBC(
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlow{R<:RiverFlowBC,A<:AbstractAllocationModel} <:
+@with_kw struct KinWaveRiverFlow{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
                 AbstractRiverFlowModel
     timestepping::TimeStepping
     boundary_conditions::R
@@ -136,12 +136,12 @@ function KinWaveRiverFlow(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir::Union{Reservoir,Nothing},
+    reservoir::Union{Reservoir, Nothing},
 )
     (; indices) = domain.network
     n = length(indices)
 
-    timestepping = init_kinematic_wave_timestepping(config, n; domain="river")
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
     allocation = do_water_demand(config) ? AllocationRiver(; n) : NoAllocationRiver(n)
 
@@ -204,11 +204,11 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
         config,
         "land_surface_water_flow__manning_n_parameter",
         Routing;
-        sel=indices,
+        sel = indices,
     )
 
     n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain="land")
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
     parameters = ManningFlowParameters(; mannings_n, slope)
     overland_flow = KinWaveOverlandFlow(; n, timestepping, parameters)
 
@@ -231,7 +231,7 @@ function set_reservoir_vars!(reservoir::Reservoir)
     zero!(actevap)
     return nothing
 end
-set_reservoir_vars!(reservoir) = nothing
+set_reservoir_vars!(reservoir::Any) = nothing
 
 """
 Helper function to compute the average of reservoir variables. This is done at the end of
@@ -246,7 +246,7 @@ function average_reservoir_vars!(reservoir::Reservoir, dt::Float64)
     average!(actual_external_abstraction_av, dt)
     return nothing
 end
-average_reservoir_vars!(reservoir) = nothing
+average_reservoir_vars!(reservoir::Any, dt::Float64) = nothing
 
 """
     set_flow_vars!(model::AbstractRiverFlowModel)
@@ -290,7 +290,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir part of the upstream surface flow
@@ -324,7 +324,7 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
 
                 # update h, only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
-                    # [m²] = [s^3/5 m^1/5] * [m³ s⁻¹] ^ (3/5)
+                    # [m²] = [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵
                     crossarea = alpha[v] * pow(q[v], beta)
                     # [m] = [m²] / [m]
                     h[v] = crossarea / surface_flow_width[v]
@@ -450,7 +450,7 @@ function kinwave_river_update!(model::KinWaveRiverFlow, domain::DomainRiver, dt:
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # qin by outflow from upstream reservoir location is added
@@ -536,7 +536,7 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock, dt::Numb
         t += dt_s
     end
 
-    average_reservoir_vars!(reservoir)
+    average_reservoir_vars!(reservoir, dt)
     average_flow_vars!(model, dt)
     average!(qin_av, dt)
     return nothing
@@ -555,7 +555,7 @@ function stable_timestep(
     model::S,
     flow_length::Vector{Float64},
     p::Float64,
-) where {S<:Union{KinWaveOverlandFlow,KinWaveRiverFlow}}
+) where {S <: Union{KinWaveOverlandFlow, KinWaveRiverFlow}}
     (; q) = model.variables
     (; alpha, beta) = model.parameters
     (; stable_timesteps) = model.timestepping
@@ -650,7 +650,7 @@ Update overland and subsurface flow contribution to inflow of a reservoir model 
 flow model `AbstractRiverFlowModel` for a single timestep.
 """
 function update_inflow!(
-    model::Union{Reservoir,Nothing},
+    model::Union{Reservoir, Nothing},
     river_flow::AbstractRiverFlowModel,
     external_models::NamedTuple,
     network::NetworkReservoir,
