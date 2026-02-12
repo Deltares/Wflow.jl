@@ -138,38 +138,25 @@ over time.
     const n::Int
     # Cumulative value [u]
     const cumulative_material::Vector{Float64} = zeros(n)
-    # Cumulative time [s]
-    const cumulative_time::Vector{Float64} = zeros(n)
     # Average value [u s⁻¹]
     const average::Vector{Float64} = zeros(n)
     # Whether the average was freshly calculated
     fresh_average::Bool = true
 end
 
-function add_to_cumulative!(
-    v::AverageVector,
-    i::Int,
-    flux::Number,
-    dt::Number;
-    accumulate_time::Bool = true,
-)
+function add_to_cumulative!(v::AverageVector, i::Int, flux::Number, dt::Number)
     v.fresh_average = false
     v.cumulative_material[i] += flux * dt
-    if accumulate_time
-        v.cumulative_time[i] += dt
-    end
 end
 
-function average!(v::AverageVector)
+function average!(v::AverageVector, dt::Float64)
     v.fresh_average = true
-    for i in 1:(v.n)
-        time = v.cumulative_time[i]
-        if iszero(time)
-            v.average[i] = 0.0
-        else
-            v.average[i] = v.cumulative_material[i] / time
-        end
+    if iszero(dt)
+        v.average .= 0
+    else
+        @. v.average = v.cumulative_material / dt
     end
+    return v.average
 end
 
 function set_average!(v::AverageVector, input::AbstractVector)
@@ -186,7 +173,7 @@ function get_average(v::AverageVector)
     return v.average
 end
 
-zero!(v::AverageVector) = (v.cumulative_material .= 0.0; v.cumulative_time .= 0.0)
+zero!(v::AverageVector) = (v.cumulative_material .= 0.0)
 Base.eltype(::AverageVector) = Float64
 Base.iterate(v::AverageVector) = iterate(get_average(v))
 Base.iterate(v::AverageVector, state) = iterate(v.average, state)

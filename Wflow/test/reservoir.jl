@@ -1,5 +1,6 @@
-@testitem "Update reservoir simple" begin
-    using Wflow: ReservoirProfileType, ReservoirOutflowType, Unit, to_SI, MM_PER_DT
+@testitem "unit: update reservoir simple" begin
+    using Wflow: ReservoirProfileType, ReservoirOutflowType
+    using Wflow: to_SI, MM_PER_DT
     dt = 86400.0
     # Simple reservoir (outflowfunc = 4)
     n = 1
@@ -57,8 +58,8 @@
     end
 end
 
-@testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
-    using Wflow: to_SI, Unit, MM_PER_DT, ReservoirProfileType, ReservoirOutflowType
+@testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
+    using Wflow: ReservoirProfileType, ReservoirOutflowType, to_SI, MM_PER_DT
     # Reservoir Modified Puls approach (outflowfunc = 3)
     n = 1
     dt = 86400.0
@@ -111,6 +112,63 @@ end
     @test res_bc.precipitation[1] ≈ to_SI(20.0, MM_PER_DT; dt_val = dt)
     @test res_bc.evaporation[1] ≈ to_SI(3.2, MM_PER_DT; dt_val = dt)
     @test res_v.actevap.cumulative_material[1] ≈ to_SI(3.2, MM_PER_DT; dt_val = dt) * dt
+end
+
+@testitem "update_reservoir!" begin
+    using Wflow: to_SI, MM_PER_DT
+    using Graphs: DiGraph, add_edge!
+
+    dt = 86400.0
+
+    n = 1
+    reservoir = Wflow.Reservoir(;
+        boundary_conditions = Wflow.ReservoirBC(;
+            n,
+            external_inflow = [-1.0],
+            inflow_overland = [0.02],
+            inflow_subsurface = [0.04],
+            inflow = Wflow.AverageVector(; n = 1, average = [0.06]),
+            precipitation = [to_SI(0.5, MM_PER_DT; dt_val = dt)],
+            evaporation = [to_SI(0.1, MM_PER_DT; dt_val = dt)],
+        ),
+        parameters = Wflow.ReservoirParameters(;
+            id = [1],
+            storfunc = [Wflow.ReservoirProfileType.linear],
+            outflowfunc = [Wflow.ReservoirOutflowType.simple],
+            area = [6.0e4],
+            threshold = [0.0],
+            b = [0.0],
+            e = [0.0],
+        ),
+        variables = Wflow.ReservoirVariables(;
+            waterlevel = [1.0],
+            storage = [4.5e7],
+            outflow = [3.0],
+            outflow_av = Wflow.AverageVector(; n = 1, average = [2.0]),
+            outflow_obs = [1.0],
+            actevap = Wflow.AverageVector(;
+                n = 1,
+                average = [to_SI(0.01, MM_PER_DT; dt_val = dt)],
+            ),
+        ),
+    )
+
+    river_flow_vars = Wflow.FlowVariables(; n = 2, q = [0.04, 0.04])
+
+    graph = DiGraph(2)
+    add_edge!(graph, 1, 2)
+    network = Wflow.NetworkRiver(; graph, reservoir_indices = [1])
+
+    v = 1
+    dt = 1000.0
+
+    Wflow.update_reservoir!(reservoir, river_flow_vars, network, v, dt)
+    @test river_flow_vars.qin[2] ≈ 1.0
+    @test reservoir.boundary_conditions.actual_external_abstraction_av.cumulative_material[1] ≈
+          1e3
+    @test reservoir.variables.storage[1] ≈ 4.4998100277777776e7
+    @test reservoir.variables.waterlevel[1] ≈ 0.9683379629629354
+    @test reservoir.variables.outflow[1] ≈ 1.0
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin

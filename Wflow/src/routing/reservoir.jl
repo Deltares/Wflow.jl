@@ -529,7 +529,7 @@ function update_reservoir_free_weir(
 
         # update values for the lower reservoir in place
         res_v.outflow[lo] = -outflow
-        add_to_cumulative!(res_v.outflow_av, lo, -outflow, dt; accumulate_time = false)
+        add_to_cumulative!(res_v.outflow_av, lo, -outflow, dt)
         res_v.storage[lo] = lower_res_storage
         waterlevel[lo] = lower_res_waterlevel
     end

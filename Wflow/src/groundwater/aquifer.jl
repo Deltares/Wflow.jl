@@ -624,13 +624,14 @@ function set_flux_vars!(gwf::GroundwaterFlow{A}) where {A<:AbstractAquifer}
 end
 
 function average_flux_vars!(
-    gwf::GroundwaterFlow{A}
+    gwf::GroundwaterFlow{A},
+    dt::Float64,
 ) where {A<:AbstractAquifer}
     for boundary in get_boundaries(gwf.boundaries)
-        !isnothing(boundary) && average!(boundary.variables.flux_av)
+        !isnothing(boundary) && average!(boundary.variables.flux_av, dt)
     end
-    average!(gwf.aquifer.variables.q_in_av)
-    average!(gwf.aquifer.variables.q_out_av)
+    average!(gwf.aquifer.variables.q_in_av, dt)
+    average!(gwf.aquifer.variables.q_out_av, dt)
     return nothing
 end
 
@@ -652,11 +653,9 @@ function update!(
         update_ustorelayerdepth!(soil, gwf)
         t += dt_s
     end
-    average_flux_vars!(gwf)
+    average_flux_vars!(gwf, dt)
     return nothing
 end
-
-
 
 function update!(
     gwf::GroundwaterFlow{A},

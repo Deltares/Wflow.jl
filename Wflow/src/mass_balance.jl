@@ -346,8 +346,8 @@ function compute_flow_balance!(
     (; precipitation, inflow) = reservoir.boundary_conditions
     (; area) = reservoir.parameters
 
-    average!(inflow)
-    average!(actevap)
+    average!(inflow, dt)
+    average!(actevap, dt)
 
     for i in eachindex(storage_prev)
         # [m³ s⁻¹] = [m³ s⁻¹] + [m s⁻¹] * [m²]
