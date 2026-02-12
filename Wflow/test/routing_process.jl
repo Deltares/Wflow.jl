@@ -271,7 +271,6 @@ end
         ),
         parameters = Wflow.RiverFlowParameters(;
             flow = Wflow.ManningFlowParameters(;
-                n,
                 beta = 0.6,
                 slope = [0.01],
                 mannings_n = [0.03],
@@ -298,14 +297,13 @@ end
         parameters = Wflow.RiverParameters(; flow_width = [30.0], flow_length = [800.0]),
     )
     dt = 1200.0
-    dt_forcing = 86400.0
 
-    Wflow.kinwave_river_update!(model, domain, dt, dt_forcing)
+    Wflow.kinwave_river_update!(model, domain, dt)
 
     @test model.variables.q ≈ [0.1598124775930105]
     @test model.variables.h[1] ≈ 0.055464507410878765
     @test model.variables.storage[1] ≈ 1331.1481778610903
-    @test model.variables.q_av[1] ≈ 191.7749731116126
+    @test model.variables.q_av.cumulative_material[1] ≈ 191.7749731116126
 end
 
 @testitem "unit: local_inertial_river_update!" begin
