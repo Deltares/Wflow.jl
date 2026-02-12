@@ -63,7 +63,7 @@ cmd = "julia --project={{cwd}} --eval='using Pkg; Pkg.instantiate()'"
 
 [tasks.generate-sbom]
 depends-on = ["instantiate-julia"]
-cmd = "julia --project utils/sbom/sbom-generation.jl"
+cmd = "julia --project utils/sbom-generation.jl"
 inputs = ["Manifest.toml"]
 outputs = ["Wflow.spdx.json"]
 
