@@ -110,6 +110,10 @@
 end
 
 @testitem "unit: aquifer, boundary conditions" begin
+    using Wflow: to_SI, Unit
+    M_PER_DAY = Unit(; m = 1, d = -1)
+    M3_PER_DAY = Unit(; m = 3, d = -1)
+    DAY = Unit(; d = 1)
     include("testing_utils.jl")
     @testset "harmonicmean_conductance" begin
         # harmonicmean_conductance(kH1, kH2, l1, l2, width)
@@ -146,18 +150,32 @@ end
     @testset "horizontal_conductance" begin
         @test (
             Wflow.horizontal_conductance(1, 2, 1, conf_aqf, connectivity) ==
-            Wflow.harmonicmean_conductance(10.0 * 10.0, 10.0 * 10.0, 5.0, 5.0, 10.0)
+            Wflow.harmonicmean_conductance(
+                to_SI(10.0, M_PER_DAY) * 10.0,
+                to_SI(10.0, M_PER_DAY) * 10.0,
+                5.0,
+                5.0,
+                10.0,
+            )
         )
     end
 
     @testset "conductance" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         @test Wflow.conductance(conf_aqf, 2, 3, 3, conductivity_profile, connectivity) ==
-              100.0
+              to_SI(100.0, M_PER_DAY)
         @test Wflow.conductance(unconf_aqf, 2, 3, 3, conductivity_profile, connectivity) ==
-              100.0  # upstream sat. thickness
+              to_SI(100.0, M_PER_DAY)  # upstream sat. thickness
         @test Wflow.conductance(unconf_aqf, 1, 2, 1, conductivity_profile, connectivity) ==
-              75.0  # upstream sat. thickness
+              to_SI(75.0, M_PER_DAY)  # upstream sat. thickness
+
+        conductivity_profile = Wflow.GwfConductivityProfileType.exponential
+        @test Wflow.conductance(conf_aqf, 2, 3, 3, conductivity_profile, connectivity) ==
+              to_SI(100.0, M_PER_DAY)
+        @test Wflow.conductance(unconf_aqf, 2, 3, 3, conductivity_profile, connectivity) ==
+              to_SI(0.0036872291336950496, M_PER_DAY)
+        @test Wflow.conductance(unconf_aqf, 1, 2, 1, conductivity_profile, connectivity) ==
+              0.0
     end
 
     @testset "check_flux-confined" begin
@@ -177,7 +195,7 @@ end
     @testset "stable_timestep" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         cfl = 0.25
-        @test Wflow.stable_timestep(conf_aqf, conductivity_profile, cfl) == 0.25
+        @test Wflow.stable_timestep(conf_aqf, conductivity_profile, cfl) == to_SI(0.25, DAY)
     end
 
     # Parametrization in setup is as follows:
@@ -193,7 +211,7 @@ end
         Wflow.flux!(conf_aqf, connectivity, conductivity_profile, dt)
         # kD = 10 * 10 = 100
         # dH = 7.5, 12.5
-        @test conf_aqf.variables.q_net == [750.0, 500.0, -1250.0]
+        @test conf_aqf.variables.q_net ≈ to_SI([750.0, 500.0, -1250.0], M3_PER_DAY)
     end
 
     @testset "flux-unconfined" begin
@@ -202,23 +220,23 @@ end
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         Wflow.flux!(unconf_aqf, connectivity, conductivity_profile, dt)
         # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
-        @test unconf_aqf.variables.q_net == [562.5, 687.5, -1250.0]
+        @test unconf_aqf.variables.q_net ≈ to_SI([562.5, 687.5, -1250.0], M3_PER_DAY)
     end
 
     @testset "river" begin
         dt = 1.0
         n = 2
         parameters = Wflow.GwfRiverParameters(;
-            infiltration_conductance = [100.0, 100.0],
-            exfiltration_conductance = [200.0, 200.0],
-            bottom = [1.0, 1.0],
+            infiltration_conductance = fill(100.0, n),
+            exfiltration_conductance = fill(200.0, n),
+            bottom = fill(1.0, n),
         )
         variables = Wflow.GwfRiverVariables(;
             n,
-            stage = [2.0, 2.0],
-            storage = [20.0, 20.0],
-            flux = [0.0, 0.0],
-            flux_av = [0.0, 0.0],
+            stage = fill(2.0, n),
+            storage = fill(20.0, n),
+            flux = zeros(n),
+            flux_av = Wflow.AverageVector(; n),
         )
         river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
         conf_aqf.variables.q_net .= 0.0
@@ -235,7 +253,11 @@ end
         n = 2
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
-        variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
+        variables = Wflow.DrainageVariables(;
+            n,
+            flux = [0.0, 0.0],
+            flux_av = Wflow.AverageVector(; n = 2),
+        )
         drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(drainage, conf_aqf, dt)
@@ -249,7 +271,7 @@ end
         variables = Wflow.HeadBoundaryVariables(;
             head = [2.0, 2.0],
             flux = [0.0, 0.0],
-            flux_av = [0.0, 0.0],
+            flux_av = Wflow.AverageVector(; n = 2),
         )
 
         headboundary = Wflow.HeadBoundary(; parameters, variables, index = [1, 2])
@@ -262,12 +284,7 @@ end
     @testset "recharge" begin
         dt = 1.0
         n = 3
-        variables = Wflow.RechargeVariables(;
-            n,
-            rate = [1.0e-3, 1.0e-3, 1.0e-3],
-            flux = [0.0, 0.0, 0.0],
-            flux_av = [0.0, 0.0, 0.0],
-        )
+        variables = Wflow.RechargeVariables(; n, rate = fill(1e-3, n))
         recharge = Wflow.Recharge(; n, variables, index = [1, 2, 3])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(recharge, conf_aqf, dt)
@@ -279,7 +296,7 @@ end
         variables = Wflow.WellVariables(;
             volumetric_rate = [-1000.0],
             flux = [0.0],
-            flux_av = [0.0],
+            flux_av = Wflow.AverageVector(; n = 1),
         )
         well = Wflow.Well(; variables, index = [1])
         conf_aqf.variables.q_net .= 0.0
@@ -289,6 +306,8 @@ end
 end
 
 @testitem "integration: steady 1D" begin
+    using Wflow: to_SI, Unit
+    DAY = Unit(; d = 1)
     include("testing_utils.jl")
     connectivity, aquifer, _ = homogenous_aquifer(3, 1)
     variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
@@ -305,18 +324,21 @@ end
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
 
-    Wflow.update!(gwf, 12.5, conductivity_profile)
+    Wflow.update!(gwf, to_SI(12.5, DAY), conductivity_profile)
     @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
 end
 
 @testitem "integration: unconfined transient 1D" begin
-    include("testing_utils.jl")
+    using Wflow: to_SI, Unit
     using StaticArrays: SVector
+    include("testing_utils.jl")
+    M_PER_DAY = Unit(; m = 1, d = -1)
+    DAY = Unit(; d = 1)
 
     nrow = 1
     ncol = 9
     shape = (nrow, ncol)
-    conductivity = 200.0
+    conductivity = to_SI(200.0, M_PER_DAY)
     top = 150.0
     bottom = 0.0
     specific_yield = 0.15
@@ -341,8 +363,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     parameters = Wflow.UnconfinedAquiferParameters(;
@@ -386,7 +408,7 @@ end
         theta_r = fill(0.05, n),
     )
 
-    time = 20.0
+    time = to_SI(20.0, DAY)
     t = 0.0
     (; cfl) = gwf.timestepping
     while t < time
@@ -409,12 +431,15 @@ end
 end
 
 @testitem "integration: unconfined transient 1D, exponential conductivity" begin
-    include("testing_utils.jl")
+    using Wflow: to_SI, Unit, MM_PER_DT
     using StaticArrays: SVector
+    DAY = Unit(; d = 1)
+    include("testing_utils.jl")
+    dt = 86400.0
     nrow = 1
     ncol = 9
     shape = (nrow, ncol)
-    conductivity = 200.0
+    conductivity = to_SI(200.0, MM_PER_DT; dt_val = dt)
     top = 150.0
     bottom = 0.0
     specific_yield = 0.15
@@ -439,8 +464,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     parameters = Wflow.UnconfinedAquiferParameters(;
@@ -484,7 +509,7 @@ end
         theta_r = fill(0.05, n),
     )
 
-    time = 20.0
+    time = to_SI(20.0, DAY)
     t = 0.0
     (; cfl) = gwf.timestepping
     while t < time
@@ -507,13 +532,16 @@ end
 end
 
 @testitem "integration: confined transient radial 2D" begin
+    using Wflow: to_SI, Unit, MM_PER_DT, M3_PER_DAY
+    DAY = Unit(; d = 1)
     include("testing_utils.jl")
+    dt = 86400.0
     halfnrow = 20
     wellrow = halfnrow + 1
     nrow = halfnrow * 2 + 1
     ncol = nrow
     shape = (nrow, ncol)
-    conductivity = 5.0
+    conductivity = to_SI(5.0, MM_PER_DT; dt_val = dt)
     top = 10.0
     bottom = 0.0
     transmissivity = (top - bottom) * conductivity
@@ -522,7 +550,7 @@ end
     specific_storage = 0.015
     storativity = 0.15
     aquifer_length = cellsize * ncol
-    discharge = -50.0
+    discharge = to_SI(-50.0, M3_PER_DAY)
     conductivity_profile = Wflow.GwfConductivityProfileType.uniform
 
     # Domain, geometry
@@ -547,8 +575,8 @@ end
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     aquifer = Wflow.ConfinedAquifer(; parameters, variables)
@@ -558,8 +586,11 @@ end
     variables = Wflow.ConstantHeadVariables(; head = fill(10.0, size(indices)))
     constanthead = Wflow.ConstantHead(; variables, index = indices)
     # Place a well in the middle of the domain
-    variables =
-        Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0], flux_av = [0.0])
+    variables = Wflow.WellVariables(;
+        volumetric_rate = [discharge],
+        flux = [0.0],
+        flux_av = Wflow.AverageVector(; n = 1),
+    )
     well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
     gwf = Wflow.GroundwaterFlow(;
@@ -570,7 +601,7 @@ end
         boundaries = Wflow.AquiferBoundaries(; well),
     )
 
-    time = 20.0
+    time = to_SI(20.0, DAY)
     Wflow.update!(gwf, time, conductivity_profile)
 
     # test for symmetry on x and y axes

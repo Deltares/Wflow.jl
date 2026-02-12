@@ -13,12 +13,12 @@ function Model(config::Config, type::SbmModel)
     clock = Clock(config, reader)
 
     @info "General model settings." (;
-        snow = config.model.snow__flag,
-        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
-        glacier = config.model.glacier__flag,
-        reservoirs = config.model.reservoir__flag,
-        pits = config.model.pit__flag,
-        water_demand = do_water_demand(config),
+        snow=config.model.snow__flag,
+        gravitational_snow_transport=config.model.snow_gravitational_transport__flag,
+        glacier=config.model.glacier__flag,
+        reservoirs=config.model.reservoir__flag,
+        pits=config.model.pit__flag,
+        water_demand=do_water_demand(config),
     )...
 
     domain = Domain(dataset, config, type)
@@ -28,13 +28,13 @@ function Model(config::Config, type::SbmModel)
     mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
 
     (; maxlayers) = land_hydrology.soil.parameters
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land=land_hydrology, routing, mass_balance)
     writer = Writer(
         config,
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim=(name="layer", value=Float64.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -61,21 +61,21 @@ function update!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     (; kv_profile) = land.soil.parameters
+    (; flow_width) = domain.land.parameters
+    (; recharge_area) = routing.subsurface_flow.boundary_conditions
 
     update_until_recharge!(model)
-    # exchange of recharge [mm dt⁻¹] between SBM soil model and subsurface flow domain
-    routing.subsurface_flow.boundary_conditions.recharge .= land.soil.variables.recharge
+    # exchange of recharge between SBM soil model and subsurface flow domain
+    # [m² s⁻¹] = [m s⁻¹] * [m]
+    @. recharge_area = land.soil.variables.recharge * flow_width
     if do_water_demand(config)
-        @. routing.subsurface_flow.boundary_conditions.recharge -=
-            land.allocation.variables.act_groundwater_abst
+        # [m² s⁻¹] -= [m s⁻¹] * [m]
+        @. recharge_area -= land.allocation.variables.act_groundwater_abst * flow_width
     end
-    # unit conversions
-    routing.subsurface_flow.boundary_conditions.recharge .*=
-        domain.land.parameters.flow_width * 0.001 * (tosecond(BASETIMESTEP) / dt)
-    routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
+    routing.subsurface_flow.variables.zi .= land.soil.variables.zi
     # update lateral subsurface flow domain (kinematic wave)
-    kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, land.soil, domain.land, clock.dt / BASETIMESTEP)
+    kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile)
+    update!(routing.subsurface_flow, land.soil, domain.land, dt)
     update_after_subsurfaceflow!(model)
     update_total_water_storage!(model)
     return nothing
@@ -101,12 +101,14 @@ Update SBM model after subsurface flow for a single timestep. This function is a
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
 function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
-    (; routing, land) = model
+    (; routing, land, clock) = model
     (; soil, runoff, demand) = land
     (; subsurface_flow) = routing
 
+    dt = tosecond(clock.dt)
+
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow))
+    update!(soil, (; runoff, demand, subsurface_flow), dt)
 
     surface_routing!(model)
 
@@ -123,7 +125,7 @@ function update_total_water_storage!(model::AbstractModel{<:SbmModel})
     return nothing
 end
 
-function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+function set_states!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
     (; routing, land, domain, config) = model
     land_v = routing.overland_flow.variables
     river_v = routing.river_flow.variables
@@ -135,7 +137,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float64, dimname = :layer)
+        set_states!(instate_path, model; dimname=:layer)
 
         update_diagnostic_vars!(land.soil)
 
@@ -170,10 +172,12 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         if config.model.type == ModelType.sbm
             (; zi, storage) = routing.subsurface_flow.variables
             (; specific_yield, soilthickness) = routing.subsurface_flow.parameters
-            @. zi = 0.001 * land.soil.variables.zi # convert from unit [mm] to [m]
+            @. zi = land.soil.variables.zi
+            # [m³] = [-] * ([m] - [m]) * [m²]
             @. storage = specific_yield * (soilthickness - zi) * domain.land.parameters.area
         elseif config.model.type == ModelType.sbm_gwf
             (; aquifer) = routing.subsurface_flow
+            # [m³] = [m] * [m²] * [-]
             aquifer.variables.storage .=
                 saturated_thickness(aquifer) .* aquifer.parameters.area .*
                 storativity(aquifer)

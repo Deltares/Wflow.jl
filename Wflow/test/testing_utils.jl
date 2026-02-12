@@ -1,5 +1,6 @@
 using Statistics: mean
 using SpecialFunctions: expint
+using Wflow: to_SI, Unit
 
 "Return the first row of a Wflow output CSV file as a NamedTuple"
 function csv_first_row(path)
@@ -70,8 +71,10 @@ function homogenous_aquifer(nrow, ncol)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
     ncell = connectivity.ncell
 
+    M_PER_DAY = Unit(; m = 1, d = -1)
+
     parameters = Wflow.ConfinedAquiferParameters(;
-        k = fill(10.0, ncell),
+        k = fill(to_SI(10.0, M_PER_DAY), ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
@@ -83,15 +86,11 @@ function homogenous_aquifer(nrow, ncol)
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
-        q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
     )
     conf_aqf = Wflow.ConfinedAquifer(; parameters, variables)
 
     parameters = Wflow.UnconfinedAquiferParameters(;
-        k = fill(10.0, ncell),
+        k = fill(to_SI(10.0, M_PER_DAY), ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
@@ -105,8 +104,8 @@ function homogenous_aquifer(nrow, ncol)
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     unconf_aqf = Wflow.UnconfinedAquifer(; parameters, variables)

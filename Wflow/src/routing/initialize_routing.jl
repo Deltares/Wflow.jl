@@ -42,15 +42,7 @@ function initialize_subsurface_flow(
     (; x_length, y_length, area) = land.parameters
 
     n_cells = length(indices)
-
-    elevation = ncread(
-        dataset,
-        config,
-        "land_surface__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
+    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
 
     # unconfined aquifer
     if config.model.constanthead__flag
@@ -63,7 +55,8 @@ function initialize_subsurface_flow(
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
 
     # cold state for groundwater head based on water table depth zi
-    initial_head = elevation .- soil.variables.zi / 1000.0
+    # [m] = [m] - [m]
+    initial_head = elevation .- soil.variables.zi
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if config.model.constanthead__flag
         initial_head[constant_head.index] = constant_head.variables.head
@@ -81,7 +74,7 @@ function initialize_subsurface_flow(
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
             soil.parameters
 
-        @. zi = (elevation - min(elevation, initial_head)) * 1000.0
+        @. zi = elevation - min(elevation, initial_head)
         @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
         @. ustorecapacity = soilwatercapacity - satwaterdepth
         @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
@@ -89,10 +82,11 @@ function initialize_subsurface_flow(
         @. total_soilwater_storage = satwaterdepth
     end
 
-    bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
+    # [m] = [m] - [m]
+    bottom = elevation .- soil.parameters.soilthickness
+    conductance = zeros(connectivity.nconnection)
     specific_yield =
         @. lower_bound_drainable_porosity(soil.parameters.theta_s, soil.parameters.theta_fc)
-    conductance = zeros(connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
         config,
