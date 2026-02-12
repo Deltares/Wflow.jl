@@ -1109,11 +1109,11 @@ function capillary_flux!(model::SbmSoilModel, dt::Float64)
 end
 
 """
-    leakage!(model::SbmSoilModel)
+    leakage!(model::SbmSoilModel, dt::Float64)
 
 Update the actual leakage rate `actleakage` of the SBM soil model for a single timestep.
 """
-function leakage!(model::SbmSoilModel)
+function leakage!(model::SbmSoilModel, dt::Float64)
     v = model.variables
     p = model.parameters
 
@@ -1126,7 +1126,8 @@ function leakage!(model::SbmSoilModel)
             i,
             p.nlayers[i],
         )
-        deeptransfer = min(v.drainable_waterdepth[i], deepksat)
+
+        deeptransfer = min(v.drainable_waterdepth[i] / dt, deepksat)
         v.actleakage[i] = max(0.0, min(p.maxleakage[i], deeptransfer))
     end
     return nothing
@@ -1184,7 +1185,7 @@ function update!(
     @. v.ustorecapacity = p.soilwatercapacity - v.satwaterdepth - v.ustoredepth
     # capillary flux and leakage
     capillary_flux!(model, dt)
-    leakage!(model)
+    leakage!(model, dt)
     # recharge rate to the saturated store
     @. v.recharge =
         (v.transfer - v.actcapflux - v.actleakage - v.actevapsat - v.soilevapsat)
@@ -1245,7 +1246,7 @@ function update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
     p = model.parameters
     v = model.variables
 
-    zi = get_water_depth(subsurface_flow) * 1000.0 # convert from [m] to [mm]
+    zi = get_water_depth(subsurface_flow)
 
     n = length(model.variables.zi)
     threaded_foreach(1:n; basesize = 1000) do i

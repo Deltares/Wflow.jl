@@ -142,8 +142,7 @@ function field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
     theta_fc = 0.0
     total_depth = 0.0
     for i in 1:n_layers
-        theta_fc +=
-            vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
+        theta_fc += vwc_brooks_corey(-1.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
         total_depth += layer_thickness[i]
     end
     return theta_fc / total_depth
