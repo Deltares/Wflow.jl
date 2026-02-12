@@ -247,6 +247,67 @@ end
     @test flux == flux_
 end
 
+@testitem "unit: kinwave_river_update!" begin
+    using Graphs: DiGraph, add_edge!
+    n = 2
+    model = Wflow.KinWaveRiverFlow(;
+        timestepping = Wflow.TimeStepping(),
+        boundary_conditions = Wflow.RiverFlowBC(;
+            n,
+            external_inflow = [-0.1],
+            reservoir = Wflow.Reservoir(;
+                boundary_conditions = Wflow.ReservoirBC(; n, external_inflow = [0.02]),
+                parameters = Wflow.ReservoirParameters(;
+                    id = [1],
+                    storfunc = [Wflow.ReservoirProfileType.linear],
+                    outflowfunc = [Wflow.ReservoirOutflowType.simple],
+                    area = [2500.0],
+                ),
+                variables = Wflow.ReservoirVariables(;
+                    waterlevel = [3.0],
+                    storage = [7500.0],
+                ),
+            ),
+        ),
+        parameters = Wflow.RiverFlowParameters(;
+            flow = Wflow.ManningFlowParameters(;
+                n,
+                beta = 0.6,
+                slope = [0.01],
+                mannings_n = [0.03],
+                alpha_pow = 0.4,
+                alpha_term = [0.5],
+                alpha = [5.0],
+            ),
+            bankfull_depth = [10.0],
+        ),
+        variables = Wflow.FlowVariables(; n, q = [0.2]),
+        allocation = Wflow.NoAllocationRiver(n),
+    )
+    graph = DiGraph(2)
+    add_edge!(graph, 1, 2)
+    domain = Wflow.DomainRiver(;
+        network = Wflow.NetworkRiver(;
+            graph,
+            order_of_subdomains = [[1]],
+            order_subdomain = [[1]],
+            subdomain_indices = [[1]],
+            upstream_nodes = [[]],
+            reservoir_indices = [1],
+        ),
+        parameters = Wflow.RiverParameters(; flow_width = [30.0], flow_length = [800.0]),
+    )
+    dt = 1200.0
+    dt_forcing = 86400.0
+
+    Wflow.kinwave_river_update!(model, domain, dt, dt_forcing)
+
+    @test model.variables.q ≈ [0.1598124775930105]
+    @test model.variables.h[1] ≈ 0.055464507410878765
+    @test model.variables.storage[1] ≈ 1331.1481778610903
+    @test model.variables.q_av[1] ≈ 191.7749731116126
+end
+
 @testitem "unit: local_inertial_river_update!" begin
     using Wflow: to_SI, MM_PER_DT, MM
     dt = 86400.0
