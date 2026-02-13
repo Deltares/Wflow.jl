@@ -639,3 +639,35 @@ get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF, inds::Vector{Int}) =
 # Exclude subsurface flow from `GroundwaterFlow`.
 get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow, inds::Vector{Int}) =
     zeros(length(inds))
+
+"""
+Update overland flow water level and discharge for KinWaveOverlandFlow model based on
+surface water infiltration.
+"""
+function correct_overland_flow_level!(
+    model::SbmSoilModel,
+    overland_flow::KinWaveOverlandFlow,
+    domain::Domain,
+    config::Config,
+)
+    v = model.variables
+
+    if config.model.reinfiltration_surfacewater__flag
+        (; surface_flow_width) = domain.land.parameters
+        n = length(surface_flow_width)
+        threaded_foreach(1:n; basesize = 1000) do i
+            q, h = correct_overland_flow_level(
+                overland_flow.variables.h[i],
+                v.infilt_surfacewater[i],
+                domain.land.parameters.river_fraction[i],
+                surface_flow_width[i],
+                overland_flow.parameters.alpha[i],
+                overland_flow.parameters.beta,
+            )
+            if !isnothing(q)
+                overland_flow.variables.flow.q[i] = q
+                overland_flow.variables.h[i] = h
+            end
+        end
+    end
+end
