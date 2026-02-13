@@ -43,6 +43,7 @@ test-wflow-server = { cmd = "julia --project=server --eval 'using Pkg; Pkg.test(
     "instantiate-wflow-server",
 ] }
 instantiate-wflow-server = "julia --project=server --eval 'using Pkg; Pkg.instantiate()'"
+run-land-surface-temp-test = { cmd = "julia --project=Wflow Wflow/test/land_surface_temperature.jl" }
 # Docs
 install-ci = { depends-on = ["install-julia", "update-registry-julia"] }
 quarto-check = { cmd = "quarto check all" }
