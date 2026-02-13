@@ -4,6 +4,8 @@
 abstract type AbstractLandSurfaceTemperatureModel end
 struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
 
+const density_water = 1000.0 # kg/m³
+
 "Struct for storing LST model variables"
 @with_kw struct LandSurfaceTemperatureVariables
     aerodynamic_resistance::Vector{Float64} = Float64[]      # Aerodynamic resistance (s/m)
@@ -134,7 +136,7 @@ get_LandSurfaceTemperature(model::AbstractLandSurfaceTemperatureModel) =
 
 """ 'latent heat of vaporization' :: λ=2501 - 2.375 Ta (A1) """
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
-    return 2501.0 - 2.375 * air_temperature
+    return (2501.0 - 2.375 * air_temperature) * 1000.0 # J/kg converted fro kj.kg
 end
 """ 'latent heat flux' :: LE=λ x ρwater x ET (3)"""
 function compute_latent_heat_flux(
@@ -151,13 +153,16 @@ function compute_latent_heat_flux(
         latent_heat_of_vaporization * density_water * actual_evapotranspiration_ms
     return latent_heat_flux
 end
-""" 'sensible heat flux' :: H  ≈ RNet - LE """
+""" 'sensible heat flux' :: H  ≈ RNet - LE - G"""
 function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
     # Handle NaN values in net radiation
     if isnan(net_radiation)
         return 0.0
     end
-    sensible_heat_flux = net_radiation - latent_heat_flux
+    #TODO:run the snow module assimilate soil temperature
+    # allowing a better estimate for G, currently G is daytime proportional to (0.1 nighttime, 0.5 daytime)
+    G = 0.1 * net_radiation
+    sensible_heat_flux = net_radiation - latent_heat_flux - G
     return sensible_heat_flux
 end
 """ 
@@ -202,7 +207,7 @@ function wind_and_aero_resistance(
 
     elseif canopy_height >= 1.0
         z0m_ratio = 1.23e-1 * (canopy_height / 2.0) #z0m increases with canopy height
-        ref_h = 0.12
+        ref_h = 0.33
         dh_ratio = 2.0 / 3.0
         z0h_ratio = 0.2
     end
@@ -225,7 +230,7 @@ function wind_and_aero_resistance(
         f_h = log((813 / canopy_height) - 5.45)
         ku = 0.305 / (f_h * (f_h + 2.3))
         ga = ku * wind_speed_ref
-        ra = (1 / ga) / 10.0
+        ra = 1 / ga
     end
 
     return max(ra, 1.0)

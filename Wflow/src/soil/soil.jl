@@ -423,7 +423,7 @@ function SbmSoilParameters(
     soilthickness = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     lens =
-        lens_input_parameter(config, "soil~compacted_surface_water__infiltration_capacity")
+        lens_input_parameter(config, "soil_compacted_surface_water__infiltration_capacity")
     infiltcappath =
         ncread(dataset, config, lens; sel = indices, defaults = 10.0, type = Float64) .*
         (dt / BASETIMESTEP)
@@ -463,7 +463,7 @@ function SbmSoilParameters(
     # soil infiltration capacity based on kv_0 and kvfrac upper soil layer
     infiltcapsoil = kv_0 .* @view kvfrac[1, :]
     # fraction compacted area
-    lens = lens_input_parameter(config, "soil~compacted__area_fraction")
+    lens = lens_input_parameter(config, "soil_compacted__area_fraction")
     pathfrac = ncread(dataset, config, lens; sel = indices, type = Float64)
 
     # vegetation parameters

@@ -49,8 +49,17 @@ Config(dict::AbstractDict) = Config(dict, nothing)
 function optional_keys(config::Config)
     if !haskey(config, "logging")
         config.logging = Dict{String, Any}()
-    elseif !haskey(config, "time")
+    end
+    if !haskey(config, "time")
         config.time = Dict{String, Any}()
+    end
+    # default model type to "sbm" if not specified
+    if !haskey(config, "model")
+        config.model = Dict{String, Any}()
+    end
+    model_dict = Dict(config.model)
+    if !haskey(model_dict, "type")
+        config.model.type = "sbm"
     end
     return config
 end
