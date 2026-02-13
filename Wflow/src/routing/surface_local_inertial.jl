@@ -646,7 +646,6 @@ end
     infiltration_volume::Vector{Float64} = zeros(n) # amount of infiltration from surface water [m³]
 end
 
-
 "Local inertial overland flow model using the local inertial method"
 @with_kw struct LocalInertialOverlandFlow <: AbstractOverlandFlowModel
     timestepping::TimeStepping
@@ -1348,10 +1347,7 @@ function correct_overland_flow_level!(
     (; infilt_surfacewater) = model.variables
     (; area) = domain.land.parameters
 
-    do_surface_water_infiltration =
-        get(config.model, "reinfiltration_surfacewater", false)::Bool
-
-    if do_surface_water_infiltration
+    if config.model.reinfiltration_surfacewater__flag
         # Update the boundary condition for surface water infiltration
         # This will be used in local_inertial_update_water_depth!
         overland_flow.boundary_conditions.infiltration_volume .=

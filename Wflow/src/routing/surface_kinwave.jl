@@ -652,10 +652,7 @@ function correct_overland_flow_level!(
 )
     v = model.variables
 
-    do_surface_water_infiltration =
-        get(config.model, "reinfiltration_surfacewater", false)::Bool
-
-    if do_surface_water_infiltration
+    if config.model.reinfiltration_surfacewater__flag
         (; surface_flow_width) = domain.land.parameters
         n = length(surface_flow_width)
         threaded_foreach(1:n; basesize = 1000) do i
