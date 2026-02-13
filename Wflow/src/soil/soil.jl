@@ -1177,7 +1177,6 @@ function update!(
     config::Config,
     dt::Float64,
 )
-
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
     (; water_flux_surface) = model.boundary_conditions
@@ -1195,12 +1194,11 @@ function update!(
     )
 
     # update available for infiltration in case surface water infiltration is enabled
-    #TODO fix flag
     update_available_for_infiltration!(
         model,
         domain,
         runoff,
-        config.model.reinfiltration_surfacewater__flag
+        config.model.reinfiltration_surfacewater__flag,
     )
 
     infiltration!(model)
