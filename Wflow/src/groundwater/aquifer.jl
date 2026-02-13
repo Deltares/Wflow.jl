@@ -674,7 +674,7 @@ function update!(
         update_head!(gwf, dt_s)
         t += dt_s
     end
-    average_flux_vars!(gwf)
+    average_flux_vars!(gwf, dt)
     return nothing
 end
 

@@ -581,7 +581,7 @@ function compute_flow_balance!(
 
     for i in eachindex(head_prev)
         total_in = q_in_av_average[i] + flux_in[i]
-        total_out = q_out_av_average[i] + flux_out[i] + exfiltwater * area[i]
+        total_out = q_out_av_average[i] + flux_out[i] + exfiltwater[i] * area[i]
         storage_rate = specific_yield_dyn[i] * (head[i] - head_prev[i]) * area[i]
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)

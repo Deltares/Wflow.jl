@@ -510,10 +510,9 @@ function SbmSoilParameters(
         theta_fc = ncread(
             dataset,
             config,
-            "soil_water__field_capacity_volume_fraction";
-            optional = false,
+            "soil_water__field_capacity_volume_fraction",
+            LandHydrologySBM;
             sel = indices,
-            type = Float64,
         )
     else
         theta_fc = field_capacity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
@@ -772,6 +771,7 @@ function unsaturated_zone_flow!(model::SbmSoilModel, dt)
                     # [m] + [m s⁻¹] * [s]
                     v.ustorelayerdepth[i][m] + v.infiltsoilpath[i] * dt
                 else
+                    # [m] + [m s⁻¹] * [s]
                     v.ustorelayerdepth[i][m] + flow_rate * dt
                 end
                 # [m], [m s⁻¹]

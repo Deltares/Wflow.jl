@@ -413,6 +413,11 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Residual water content",
         tags = [:soil_input],
     ),
+    "soil_water__field_capacity_volume_fraction" => ParameterMetadata(;
+        lens = @optic(_.land.soil.parameters.theta_fc),
+        description = "Field capacity (water content)",
+        tags = [:soil_input],
+    ),
     "soil_surface_water__vertical_saturated_hydraulic_conductivity" =>
         ParameterMetadata(;
             lens = @optic(_.land.soil.parameters.kv_profile.kv_0),

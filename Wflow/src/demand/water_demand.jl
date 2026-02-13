@@ -980,7 +980,7 @@ function update_water_allocation!(
     # from reservoir, including an update of waterlevel
     if !isnothing(reservoir)
         @. abstraction[inds_reservoir] = 0.0
-        @. reservoir.variables.storage -= act_surfacewater_abst_vol[inds_reservoir]
+        @. reservoir.variables.storage -= act_surfacewater_abst_vol[inds_reservoir] * dt
         @. reservoir.variables.waterlevel = waterlevel(
             reservoir.parameters.storfunc,
             reservoir.parameters.area,

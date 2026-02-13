@@ -93,7 +93,8 @@ function GlacierHbvParameters(
         LandHydrologySBM;
         sel = indices,
     )
-    max_snow_to_glacier = 8.0 * tosecond(dt)
+    # 8 mm dt⁻¹
+    max_snow_to_glacier = 8.0e-3 * tosecond(dt)
     return GlacierHbvParameters(;
         g_ttm,
         g_cfmax,
