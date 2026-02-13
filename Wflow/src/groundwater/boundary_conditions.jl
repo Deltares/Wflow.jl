@@ -18,20 +18,11 @@ check_flux(flux::Float64, aquifer::ConfinedAquifer, index::Int) = flux
 end
 
 @with_kw struct GwfRiverVariables
-    stage::Vector{Float64} # [m]
-    storage::Vector{Float64} # [m³]
-    flux::Vector{Float64}  # [m³ d⁻¹]
-    flux_av::Vector{Float64}  # [m³ d⁻¹]
-end
-
-function GwfRiverVariables(n::Int)
-    variables = GwfRiverVariables(;
-        stage = fill(MISSING_VALUE, n),
-        storage = fill(MISSING_VALUE, n),
-        flux = fill(MISSING_VALUE, n),
-        flux_av = fill(MISSING_VALUE, n),
-    )
-    return variables
+    n::Int
+    stage::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
+    storage::Vector{Float64} = fill(MISSING_VALUE, n) # [m³]
+    flux::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
+    flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
 end
 
 @with_kw struct GwfRiver <: AquiferBoundaryCondition
@@ -46,19 +37,35 @@ function GwfRiver(
     indices::Vector{CartesianIndex{2}},
     index::Vector{Int},
 )
-    lens = lens_input_parameter(config, "river_water__infiltration_conductance")
-    infiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
-
-    lens = lens_input_parameter(config, "river_water__exfiltration_conductance")
-    exfiltration_conductance = ncread(dataset, config, lens; sel = indices, type = Float64)
-
-    lens = lens_input_parameter(config, "river_bottom__elevation")
-    bottom = ncread(dataset, config, lens; sel = indices, type = Float64)
+    infiltration_conductance = ncread(
+        dataset,
+        config,
+        "river_water__infiltration_conductance";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
+    exfiltration_conductance = ncread(
+        dataset,
+        config,
+        "river_water__exfiltration_conductance";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
+    bottom = ncread(
+        dataset,
+        config,
+        "river_bottom__elevation";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
     n = length(indices)
-    variables = GwfRiverVariables(n)
+    variables = GwfRiverVariables(; n)
     river = GwfRiver(parameters, variables, index)
     return river
 end
@@ -91,8 +98,9 @@ end
 end
 
 @with_kw struct DrainageVariables
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    n::Int
+    flux::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
+    flux_av::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
 end
 
 @with_kw struct Drainage <: AquiferBoundaryCondition
@@ -107,19 +115,29 @@ function Drainage(
     indices::Vector{CartesianIndex{2}},
     index::Vector{Int},
 )
-    lens = lens_input_parameter(config, "land_drain__elevation")
-    drain_elevation =
-        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
-
-    lens = lens_input_parameter(config, "land_drain__conductance")
-    drain_conductance =
-        ncread(dataset, config, lens; sel = indices, type = Float64, fill = MISSING_VALUE)
+    drain_elevation = ncread(
+        dataset,
+        config,
+        "land_drain__elevation";
+        optional = false,
+        sel = indices,
+        type = Float64,
+        fill = MISSING_VALUE,
+    )
+    drain_conductance = ncread(
+        dataset,
+        config,
+        "land_drain__conductance";
+        optional = false,
+        sel = indices,
+        type = Float64,
+        fill = MISSING_VALUE,
+    )
     elevation = drain_elevation[index]
     conductance = drain_conductance[index]
     parameters = DrainageParameters(; elevation, conductance)
     n = length(index)
-    variables =
-        DrainageVariables(; flux = fill(MISSING_VALUE, n), flux_av = fill(MISSING_VALUE, n))
+    variables = DrainageVariables(; n)
 
     drains = Drainage(parameters, variables, index)
     return drains
@@ -167,25 +185,16 @@ function flux!(headboundary::HeadBoundary, aquifer::Aquifer, dt::Float64)
 end
 
 @with_kw struct RechargeVariables
-    rate::Vector{Float64} # [m d⁻¹]
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    n::Int
+    rate::Vector{Float64} = fill(MISSING_VALUE, n) # [m d⁻¹]
+    flux::Vector{Float64} = zeros(n) # [m³ d⁻¹]
+    flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹]
 end
 
 @with_kw struct Recharge <: AquiferBoundaryCondition
-    variables::RechargeVariables
-    index::Vector{Int}  # [-]
-end
-
-function Recharge(
-    rate::Vector{Float64},
-    flux::Vector{Float64},
-    flux_av::Vector{Float64},
-    index::Vector{Int},
-)
-    variables = RechargeVariables(rate, flux, flux_av)
-    recharge = Recharge(variables, index)
-    return recharge
+    n::Int
+    variables::RechargeVariables = RechargeVariables(; n)
+    index::Vector{Int} = collect(1:n)  # [-]
 end
 
 function flux!(recharge::Recharge, aquifer::Aquifer, dt::Float64)
@@ -222,3 +231,5 @@ function flux!(well::Well, aquifer::Aquifer, dt::Float64)
     end
     return nothing
 end
+
+flux!(::Nothing, ::Aquifer, ::Float64) = nothing

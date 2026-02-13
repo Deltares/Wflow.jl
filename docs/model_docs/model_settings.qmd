@@ -19,12 +19,17 @@ The Table below shows the general model settings applicable for all model types.
 ## Model types `sbm` and `sbm_gwf`
 The Tables in this subsection show the available models settings for the model types `sbm` and `sbm_gwf`.
 
+### Water mass balance
+| Setting | Description | Unit | Default |
+| ----- | ----- | -- | -- |
+| `water_mass_balance__flag` | Include water mass balance error computations | - | `false` |
+
 ### Land Hydrology `SBM`
 | Setting | Description | Unit | Default |
 | ----- | ----- | -- | -- |
 | `snow__flag` | Include snow modelling | - | `false` |
-| `snow_gravitional_transport__flag` | Include gravitional lateral snow transport | - | `false` |
-| `glacier__flag` | Include glacier modelling | - | false |
+| `snow_gravitational_transport__flag` | Include gravitational lateral snow transport | - | `false` |
+| `glacier__flag` | Include glacier modelling | - | `false` |
 | `soil_infiltration_reduction__flag` | Enable reduction factor applied to the soil infiltration capacity | - | `false` |
 | `soil_layer__thickness` | Thickness of soil layers | mm | [100, 300, 800] |
 | `saturated_hydraulic_conductivity_profile` | Saturated hydraulic conductivity depth profile for `SBM` `soil` model (also used for kinematic wave lateral subsurface flow) | - | "exponential" |
@@ -33,8 +38,8 @@ The Tables in this subsection show the available models settings for the model t
 ### Routing method
 | Setting | Description | Unit | Default |
 | --- | ----- | - | - |
-| `land_routing` | Routing approach for overland flow: ["kinematic-wave", "local-inertial"] | - | "kinematic-wave" |
-| `river_routing` | Routing approach for river flow: ["kinematic-wave", "local-inertial"] | - | "kinematic-wave" |
+| `land_routing` | Routing approach for overland flow: ["kinematic_wave", "local_inertial"] | - | "kinematic_wave" |
+| `river_routing` | Routing approach for river flow: ["kinematic_wave", "local_inertial"] | - | "kinematic_wave" |
 : {.striped .hover}
 
 ### Kinematic wave routing
@@ -44,8 +49,8 @@ The Tables in this subsection show the available models settings for the model t
 | `river_streamorder__min_count` | Minimum stream order to delineate subbasins for river domain (for multi-threading computing purposes)  | - | 6 |
 | `land_streamorder__min_count` | Minimum stream order to delineate subbasins for land domain (for multi-threading computing purposes)  | - | 5 |
 | `kinematic_wave__adaptive_time_step_flag` | Enable kinematic wave adaptive (internal) time stepping  | - | `false` |
-| `river_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for river domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | Δt |
-| `land_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for land domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | Δt |
+| `river_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for river domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | 900.0 |
+| `land_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for land domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | 3600.0 |
 : {.striped .hover}
 
 ### Local inertial routing
@@ -53,12 +58,11 @@ The Tables in this subsection show the available models settings for the model t
 | --- | ----- | - | - |
 | `river_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step river flow routing (CFL condition) | - | 0.7 |
 | `land_local_inertial_flow__alpha_coefficient` | Stability coefficient for internal model time step overland flow routing (CFL condition) | - | 0.7 |
-| `land_local_inertial_flow__theta_coefficient` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 0.8 |
+| `land_local_inertial_flow__theta_coefficient` | Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow | - | 1.0 |
 | `river_water_flow_threshold__depth` | Water depth threshold for calculating river flow between cells | m | 0.001 |
 | `land_surface_water_flow_threshold__depth` | Water depth threshold for calculating overland flow between cells | m | 0.001 |
 | `river_water_flow__froude_limit_flag` | Limit river flow to subcritical-critical according to Froude number | - | `true` |
 | `land_surface_water_flow__froude_limit_flag` | Limit overland flow to subcritical-critical according to Froude number | - | `true` |
-| `river_water_flow__froude_limit_flag` | Limit river flow to subcritical-critical according to Froude number | - | `true` |
 | `floodplain_1d__flag` | Include 1D floodplain schematization for local inertial river routing | - | `false` |
 : {.striped .hover}
 
@@ -82,4 +86,3 @@ The Table below shows the model settings for the model type `sediment`.
 | `land_transport` | Overland flow transport capacity method: ["yalinpart", "govers", "yalin"]  | - | "yalin" |
 | `river_transport` | River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]  | - | "bagnold"  |
 : {.striped .hover}
-

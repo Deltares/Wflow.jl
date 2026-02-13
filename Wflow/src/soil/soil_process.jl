@@ -70,45 +70,6 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
 end
 
 """
-    unsatzone_flow_sbm(
-        ustorelayerdepth,
-        soilwatercapacity,
-        satwaterdepth,
-        kv_z,
-        usl,
-        theta_s,
-        theta_r,
-    )
-
-The transfer of water from the unsaturated store `ustorelayerdepth` to the saturated store
-`satwaterdepth` is controlled by the vertical saturated hydraulic conductivity `kv_z` at the
-water table and the ratio between `ustorelayerdepth` and the saturation deficit
-(`soilwatercapacity` minus `satwaterdepth`). This is the original Topog_SBM vertical
-transfer formulation.
-
-"""
-function unsatzone_flow_sbm(
-    ustorelayerdepth,
-    soilwatercapacity,
-    satwaterdepth,
-    kv_z,
-    usl,
-    theta_s,
-    theta_r,
-)
-    sd = soilwatercapacity - satwaterdepth
-    if sd <= 0.00001
-        ast = 0.0
-    else
-        st = kv_z * min(ustorelayerdepth, usl * (theta_s - theta_r)) / sd
-        ast = min(st, ustorelayerdepth)
-        ustorelayerdepth = ustorelayerdepth - ast
-    end
-
-    return ustorelayerdepth, ast
-end
-
-"""
     vwc_brooks_corey(h, hb, theta_s, theta_r, c)
 
 Return volumetric water content based on the Brooks-Corey soil hydraulic model.
@@ -143,16 +104,15 @@ end
 Return soil water pressure head `h3` of Feddes root water uptake reduction function.
 """
 function feddes_h3(h3_high, h3_low, tpot, Δt)
-    # value of h3 is a function of potential transpiration [mm/d]
+    # value of h3 is a function of potential transpiration [mm d⁻¹]
     tpot_daily = tpot * (tosecond(BASETIMESTEP) / Δt)
-    if (tpot_daily >= 0.0) && (tpot_daily <= 1.0)
-        h3 = h3_low
-    elseif (tpot_daily > 1.0) && (tpot_daily < 5.0)
-        h3 = h3_high + ((h3_low - h3_high) * (5.0 - tpot_daily)) / (5.0 - 1.0)
+    return if tpot_daily <= 1.0
+        h3_low
+    elseif tpot_daily < 5.0
+        h3_low + (h3_high - h3_low) * (tpot_daily - 1.0) / (5.0 - 1.0)
     else
-        h3 = h3_high
+        h3_high
     end
-    return h3
 end
 
 """
@@ -162,26 +122,21 @@ Root water uptake reduction factor based on Feddes.
 """
 function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
-    if alpha_h1 == 0.0
-        if (h <= h4) || (h > h1)
-            alpha = 0.0
-        elseif (h > h2) && (h <= h1)
-            alpha = (h - h1) / (h2 - h1)
-        elseif (h >= h3) && (h <= h2)
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
+    return if h < h4
+        0.0
+    elseif h < h3
+        (h - h4) / (h3 - h4)
+    elseif iszero(alpha_h1)
+        if h < h2
+            1.0
+        elseif h < h1
+            (h1 - h) / (h1 - h2)
+        else
+            0.0
         end
     else
-        if h <= h4
-            alpha = 0.0
-        elseif h >= h3
-            alpha = 1.0
-        elseif (h >= h4) && (h < h3)
-            alpha = (h - h4) / (h3 - h4)
-        end
+        1.0
     end
-    return alpha
 end
 
 """

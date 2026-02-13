@@ -2,57 +2,32 @@ abstract type AbstractRunoffModel end
 
 "Struct for storing open water runoff variables"
 @with_kw struct OpenWaterRunoffVariables
+    n::Int
     # Runoff from river based on riverfrac [mm Δt⁻¹]
-    runoff_river::Vector{Float64}
+    runoff_river::Vector{Float64} = fill(MISSING_VALUE, n)
     # Net runoff from river [mm Δt⁻¹]
-    net_runoff_river::Vector{Float64}
+    net_runoff_river::Vector{Float64} = fill(MISSING_VALUE, n)
     # Runoff from land based on waterfrac [mm Δt⁻¹]
-    runoff_land::Vector{Float64}
+    runoff_land::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual evaporation from open water (land) [mm Δt⁻¹]
-    ae_openw_l::Vector{Float64}
+    ae_openw_l::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual evaporation from river [mm Δt⁻¹]
-    ae_openw_r::Vector{Float64}
-end
-
-"Initialize open water runoff model variables"
-function OpenWaterRunoffVariables(n::Int)
-    return OpenWaterRunoffVariables(;
-        runoff_river = fill(MISSING_VALUE, n),
-        runoff_land = fill(MISSING_VALUE, n),
-        ae_openw_l = fill(MISSING_VALUE, n),
-        ae_openw_r = fill(MISSING_VALUE, n),
-        net_runoff_river = fill(MISSING_VALUE, n),
-    )
+    ae_openw_r::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing open water runoff boundary conditions"
 @with_kw struct OpenWaterRunoffBC
-    water_flux_surface::Vector{Float64} # [mm dt-1]
-    waterdepth_land::Vector{Float64} # [mm]
-    waterdepth_river::Vector{Float64} # [mm]
-end
-
-"Initialize open water runoff boundary conditions"
-function OpenWaterRunoffBC(n::Int)
-    return OpenWaterRunoffBC(;
-        water_flux_surface = fill(MISSING_VALUE, n),
-        waterdepth_land = fill(MISSING_VALUE, n),
-        waterdepth_river = zeros(n),
-    )
+    n::Int
+    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n) # [mm dt-1]
+    waterdepth_land::Vector{Float64} = fill(MISSING_VALUE, n) # [mm]
+    waterdepth_river::Vector{Float64} = zeros(n) # [mm]
 end
 
 "Open water runoff model"
 @with_kw struct OpenWaterRunoff <: AbstractRunoffModel
-    boundary_conditions::OpenWaterRunoffBC
-    variables::OpenWaterRunoffVariables
-end
-
-"Initialize open water runoff model"
-function OpenWaterRunoff(n::Int)
-    variables = OpenWaterRunoffVariables(n)
-    boundary_conditions = OpenWaterRunoffBC(n)
-    model = OpenWaterRunoff(; boundary_conditions, variables)
-    return model
+    n::Int
+    boundary_conditions::OpenWaterRunoffBC = OpenWaterRunoffBC(; n)
+    variables::OpenWaterRunoffVariables = OpenWaterRunoffVariables(; n)
 end
 
 "Return the water flux at the surface (boundary condition) when snow is not modelled"

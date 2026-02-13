@@ -82,7 +82,7 @@ models there are two ways to include subsurface flow:
    SBM model (`soil__thickness` [mm], `soil_water__saturated_volume_fraction` [-] and
    `soil_water__residual_volume_fraction` [-]) and the land slope `land_surface__slope`
    input parameter. The parameter
-   `subsurface_water__horizontal-to-vertical_saturated_hydraulic_conductivity_ratio` [-] is
+   `subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio` [-] is
    used to calculate the horizontal hydraulic conductivity at the soil surface `kh_0`.
 2. Groundwater flow (see section [Groundwater flow
    component](../model_docs/routing/gwf.qmd)) as part of the `sbm_gwf` model type. For the

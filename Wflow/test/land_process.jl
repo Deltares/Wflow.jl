@@ -1,5 +1,5 @@
-using Dates
-@testset "vertical processes" begin
+@testitem "vertical processes" begin
+    using Dates
     @test all(
         isapprox.(
             Wflow.rainfall_interception_gash(3.0, 0.11, 0.24, 18.0, 1.5, 4.0),
@@ -29,12 +29,6 @@ using Dates
         isapprox.(
             Wflow.unsatzone_flow_layer(43.5, 256.0, 135.0, 12.6),
             (43.49983744545384, 0.00016255454615829025),
-        ),
-    )
-    @test all(
-        isapprox.(
-            Wflow.unsatzone_flow_sbm(67.0, 950.0, 600.0, 250.0, 200.0, 0.6, 0.1),
-            (19.142857142857146, 47.857142857142854),
         ),
     )
     @test all(

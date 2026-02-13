@@ -35,4 +35,3 @@ expectations, which then can get parsed with these Delft-FEWS log parsing settin
     <debugLinePattern >* [Debug] *</debugLinePattern >
 </logFile>
 ```
-

@@ -19,21 +19,17 @@ Initialize the model. Reads the input settings and data as defined in the Config
 generated from the configuration file `config_file`. Will return a Model that is ready to
 run.
 """
-
-function BMI.initialize(::Type{<:Model}, config_file)
+function BMI.initialize(::Type{<:Model}, config_file::AbstractString)
     config = Config(config_file)
     model_type = config.model.type
 
-    if model_type ∉ ("sbm", "sbm_gwf", "sediment")
-        error("Unknown model type $model_type.")
-    end
     @info "Initialize model variables for model type `$model_type`."
 
-    type = if model_type == "sbm"
+    type = if model_type == ModelType.sbm
         SbmModel()
-    elseif model_type == "sbm_gwf"
+    elseif model_type == ModelType.sbm_gwf
         SbmGwfModel()
-    elseif model_type == "sediment"
+    elseif model_type == ModelType.sediment
         SedimentModel()
     end
     model = Model(config, type)
@@ -84,7 +80,7 @@ function BMI.finalize(model::Model)
 end
 
 function BMI.get_component_name(model::Model)
-    return model.config.model.type
+    return string(model.config.model.type)
 end
 
 function BMI.get_input_item_count(model::Model)
@@ -104,11 +100,11 @@ exchanged.
 """
 function BMI.get_input_var_names(model::Model)
     (; config, land) = model
-    if haskey(config, "API") && haskey(config.API, "variables")
+    if do_api(config)
         var_names = config.API.variables
         idx = []
         for (i, var) in enumerate(var_names)
-            if occursin("soil_layer~", var)
+            if startswith(var, "soil_layer_") && occursin(r"soil_layer_\d+_", var)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
@@ -133,7 +129,7 @@ function BMI.get_output_var_names(model::Model)
     return BMI.get_input_var_names(model)
 end
 
-function BMI.get_var_grid(model::Model, name::String)
+function BMI.get_var_grid(::Model, name::String)
     return if occursin("reservoir", name)
         0
     elseif occursin("drain", name)
@@ -177,22 +173,21 @@ function BMI.get_var_location(model::Model, name::String)
 end
 
 function BMI.get_current_time(model::Model)
-    (; config) = model
-    calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.time.starttime, calendar)
-    return 0.001 * Dates.value(model.clock.time - starttime)
+    (; config, clock) = model
+    (; starttime, calendar) = config.time
+    starttime = cftime(starttime, calendar)
+    return 0.001 * Dates.value(clock.time - starttime)
 end
 
-function BMI.get_start_time(model::Model)
+function BMI.get_start_time(::Model)
     return 0.0
 end
 
 function BMI.get_end_time(model::Model)
-    (; config) = model
-    calendar = get(config, "calendar", "standard")::String
-    starttime = cftime(config.time.starttime, calendar)
-    endtime = cftime(config.time.endtime, calendar)
-    return 0.001 * Dates.value(endtime - starttime)
+    (; starttime, endtime, calendar) = model.config.time
+    starttime_ = cftime(starttime, calendar)
+    endtime_ = cftime(endtime, calendar)
+    return 0.001 * Dates.value(endtime_ - starttime_)
 end
 
 function BMI.get_time_units(model::Model)
@@ -200,7 +195,7 @@ function BMI.get_time_units(model::Model)
 end
 
 function BMI.get_time_step(model::Model)
-    return Float64(model.config.time.timestepsecs)
+    return model.config.time.timestepsecs
 end
 
 function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
@@ -212,7 +207,7 @@ function BMI.get_value_ptr(model::Model, name::String)
     (; land, domain) = model
     n = length(active_indices(domain, name))
 
-    if occursin("soil_layer~", name)
+    if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         name_2d, ind = soil_layer_standard_name(name)
         lens = standard_name_map(land)[name_2d].lens
         model_vals = lens(model)
@@ -369,7 +364,7 @@ function save_state(model::Model)
 end
 
 function get_start_unix_time(model::Model)
-    return datetime2unix(DateTime(model.config.time.starttime))
+    return datetime2unix(model.config.time.starttime)
 end
 
 # BMI helper functions.
@@ -379,11 +374,20 @@ of svectors) and the layer index `layer_index` based on a standard `name` repres
 layer of a layered soil model variable.
 """
 function soil_layer_standard_name(name::AbstractString)
-    layer_part = split(name, "_")[2]
-    j = split(layer_part, "~")[2]
-    name_layered = replace(name, "~" * j => "")
-    layer_index = tryparse(Int, j)
-    return name_layered, layer_index
+    # Parse new naming format: soil_layer_N_water_... where N is the layer number
+    parts = split(name, "_")
+    if length(parts) >= 3 && parts[1] == "soil" && parts[2] == "layer"
+        layer_number = parts[3]
+        layer_index = tryparse(Int, layer_number)
+        if !isnothing(layer_index)
+            # Remove the layer number to get the base name
+            name_layered = join([parts[1], parts[2], parts[4:end]...], "_")
+            return name_layered, layer_index
+        end
+    end
+    # Fallback for unexpected format
+    @warn "Unable to parse layer standard name: $name"
+    return name, nothing
 end
 
 """
@@ -409,7 +413,7 @@ end
 
 grid_element_type(model, var::PropertyLens) = "node"
 
-function grid_element_type(model, lens::ComposedFunction)
+function grid_element_type(model::Model, lens::ComposedFunction)
     lens_components = decompose(lens)
     var = lens_components[1]
     element_type = if PropertyLens(:river_flow) in lens_components

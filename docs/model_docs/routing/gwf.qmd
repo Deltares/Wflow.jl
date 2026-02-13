@@ -118,7 +118,7 @@ criterion we refer to the paper of Chu and Willis (1984).
 Using the default value for the stability criterion from Chu and Willis (1984) can cause in
 some cases numerical instabilities, for example source and sink flux terms are not included.
 We recommend to check for possible numerical instabilities, especially when fluxes from
-aquifer boundaries (e.g. river) can be large. 
+aquifer boundaries (e.g. river) can be large.
 :::
 
 
@@ -134,9 +134,8 @@ via the flux, but the head is set directly instead.
 
 The groundwater flow component of model type `sbm_gwf` consists of a single layer unconfined
 aquifer. The list of input parameters for an unconfined aquifer can be found
-[here](../parameters_routing.qmd#input-gwf-unconfined). Hydraulic head $\SIb{\phi}{m}$ is a
-[state variable](../parameters_routing.qmd#state-gwf-unconfined) and [output
-variable](../parameters_routing.qmd#output-gwf-unconfined).
+[here](../parameters_routing.qmd#input-gwf-unconfined). Hydraulic head $\SIb{\phi}{m}$ is an
+output and state [variable](../parameters_routing.qmd#state-gwf-unconfined).
 
 Below an example of setting the `conductivity_profile` and input parameters in the TOML
 configuration file for an unconfined aquifer:
@@ -161,7 +160,7 @@ TOML file as follows:
 constanthead__flag = true # optional, default is "false"
 
 [input.static]
-"model_boundary_condition~constant_hydraulic_head" = "constant_head"
+model_constant_boundary_condition__hydraulic_head = "constant_head"
 ```
 
 ## Aquifer boundary conditions

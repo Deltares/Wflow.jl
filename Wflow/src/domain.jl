@@ -12,7 +12,7 @@
     surface_flow_width::Vector{Float64} = Float64[]
     # flow length [m]
     flow_length::Vector{Float64} = Float64[]
-    # flow fraction to river [-] 
+    # flow fraction to river [-]
     flow_fraction_to_river::Vector{Float64} = Float64[]
     # slope [-]
     slope::Vector{Float64} = Float64[]
@@ -77,27 +77,24 @@ each domain that can used by different model components.
 end
 
 "Initialize `Domain` for model types `sbm` and `sbm_gwf`"
-function Domain(
-    dataset::NCDataset,
-    config::Config,
-    modelsettings::NamedTuple,
-    routing_types::NamedTuple,
-)
-    network_land = NetworkLand(dataset, config, modelsettings)
-    if routing_types.land == "kinematic-wave" ||
-       routing_types.subsurface == "kinematic-wave"
+function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfModel})
+    (; land_routing, river_routing) = config.model
+
+    network_land = NetworkLand(dataset, config)
+    if land_routing == RoutingType.kinematic_wave ||
+       subsurface_routing(config) == RoutingType.kinematic_wave
         network_land = network_subdomains(config, network_land)
     end
 
     network_river =
-        NetworkRiver(dataset, config, network_land; do_pits = modelsettings.pits)
-    if routing_types.river == "kinematic-wave"
+        NetworkRiver(dataset, config, network_land; do_pits = config.model.pit__flag)
+    if river_routing == RoutingType.kinematic_wave
         network_river = network_subdomains(config, network_river)
     end
 
     pits = zeros(Bool, network_land.modelsize)
     nriv = length(network_river.indices)
-    if modelsettings.reservoirs
+    if config.model.reservoir__flag
         network_reservoir, inds_reservoir_map2river =
             NetworkReservoir(dataset, config, network_river)
         pits[network_reservoir.indices_outlet] .= true
@@ -107,22 +104,22 @@ function Domain(
     end
     @reset network_river.reservoir_indices = inds_reservoir_map2river
 
-    if routing_types.river == "kinematic-wave"
+    if river_routing == RoutingType.kinematic_wave
         @reset network_river.upstream_nodes =
             filter_upsteam_nodes(network_river.graph, pits[network_river.indices])
-    elseif routing_types.river == "local-inertial"
+    elseif river_routing == RoutingType.local_inertial
         nodes_at_edge, index_pit = NodesAtEdge(network_river)
         @reset network_river.nodes_at_edge = nodes_at_edge
         @reset network_river.pit_indices = network_river.indices[index_pit]
         @reset network_river.edges_at_node = EdgesAtNode(network_river)
     end
 
-    if routing_types.land == "kinematic-wave" ||
-       routing_types.subsurface == "kinematic-wave"
+    if land_routing == RoutingType.kinematic_wave ||
+       subsurface_routing(config) == RoutingType.kinematic_wave
         @reset network_land.upstream_nodes =
             filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
     end
-    if routing_types.land == "local-inertial"
+    if land_routing == RoutingType.local_inertial
         @reset network_land.edge_indices = EdgeConnectivity(network_land)
         @reset network_land.river_indices =
             network_river.reverse_indices[network_land.indices]
@@ -141,14 +138,14 @@ function Domain(
     @reset domain.land.parameters = land_params
     @reset domain.river.parameters = river_params
 
-    if modelsettings.drains
+    if config.model.drain__flag
         (; indices) = domain.land.network
         (; surface_flow_width) = domain.land.parameters
         @reset domain.drain.network =
             NetworkDrain(dataset, config, indices, surface_flow_width)
     end
 
-    if modelsettings.water_demand
+    if do_water_demand(config)
         allocation_area_indices, river_allocation_indices =
             get_allocation_area_indices(dataset, config, domain)
         @reset domain.land.network.allocation_area_indices = allocation_area_indices
@@ -161,12 +158,13 @@ function Domain(
     end
 
     if nthreads() > 1
-        (; min_streamorder_land, min_streamorder_river) = modelsettings
-        if routing_types.river == "kinematic-wave"
-            @info "Parallel execution of kinematic wave" min_streamorder_land min_streamorder_river
-        elseif routing_types.land == "kinematic-wave" ||
-               routing_types.subsurface == "kinematic-wave"
-            @info "Parallel execution of kinematic wave" min_streamorder_land
+        min_streamorder_land = config.model.land_streamorder__min_count
+        min_streamorder_river = config.model.river_streamorder__min_count
+        if river_routing == RoutingType.kinematic_wave
+            @info "Parallel execution of kinematic wave." min_streamorder_land min_streamorder_river
+        elseif land_routing == RoutingType.kinematic_wave ||
+               subsurface_routing(config) == RoutingType.kinematic_wave
+            @info "Parallel execution of kinematic wave." * min_streamorder_land
         end
     end
 
@@ -174,8 +172,8 @@ function Domain(
 end
 
 "Initialize `Domain` for model type `sediment`"
-function Domain(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
-    network_land = NetworkLand(dataset, config, modelsettings)
+function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
+    network_land = NetworkLand(dataset, config)
     network_river = NetworkRiver(dataset, config, network_land)
 
     domain_land = DomainLand(; network = network_land)
@@ -258,16 +256,34 @@ end
 "Initialize (shared) river parameters"
 function RiverParameters(dataset::NCDataset, config::Config, network::NetworkRiver)
     (; indices) = network
-    lens = lens_input_parameter(config, "river__length"; optional = false)
-    flow_length = ncread(dataset, config, lens; sel = indices, type = Float64)
+    flow_length = ncread(
+        dataset,
+        config,
+        "river__length";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     minimum(flow_length) > 0 || error("river length must be positive on river cells")
 
-    lens = lens_input_parameter(config, "river__width"; optional = false)
-    flow_width = ncread(dataset, config, lens; sel = indices, type = Float64)
+    flow_width = ncread(
+        dataset,
+        config,
+        "river__width";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     minimum(flow_width) > 0 || error("river width must be positive on river cells")
 
-    lens = lens_input_parameter(config, "river__slope"; optional = false)
-    slope = ncread(dataset, config, lens; sel = indices, type = Float64)
+    slope = ncread(
+        dataset,
+        config,
+        "river__slope";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    )
     clamp!(slope, 0.00001, Inf)
 
     river_parameters = RiverParameters(; flow_width, flow_length, slope)
@@ -295,9 +311,14 @@ function get_water_fraction(
     network::NetworkLand,
     river_fraction::Vector{Float64},
 )
-    lens = lens_input_parameter(config, "land~water-covered__area_fraction")
-    water_fraction =
-        ncread(dataset, config, lens; sel = network.indices, defaults = 0.0, type = Float64)
+    water_fraction = ncread(
+        dataset,
+        config,
+        "land_water_covered__area_fraction";
+        sel = network.indices,
+        defaults = 0.0,
+        type = Float64,
+    )
     water_fraction = max.(water_fraction .- river_fraction, 0.0)
     return water_fraction
 end
@@ -310,13 +331,26 @@ function get_river_fraction(
     river_location::Vector{Bool},
     area::Vector{Float64},
 )
-    logging = false
-    lens = lens_input_parameter(config, "river__width"; optional = false)
-    river_width_2d = ncread(dataset, config, lens; type = Float64, fill = 0, logging)
+    river_width_2d = ncread(
+        dataset,
+        config,
+        "river__width";
+        optional = false,
+        type = Float64,
+        fill = 0,
+        logging = false,
+    )
     river_width = river_width_2d[network.indices]
 
-    lens = lens_input_parameter(config, "river__length"; optional = false)
-    river_length_2d = ncread(dataset, config, lens; type = Float64, fill = 0, logging)
+    river_length_2d = ncread(
+        dataset,
+        config,
+        "river__length";
+        optional = false,
+        type = Float64,
+        fill = 0,
+        logging = false,
+    )
     river_length = river_length_2d[network.indices]
 
     n = length(river_location)
@@ -338,23 +372,35 @@ function get_cell_lengths(dataset::NCDataset, config::Config, network::NetworkLa
     y = permutedims(repeat(y_coords; outer = (1, length(x_coords))))[network.indices]
     celllength = abs(mean(diff(x_coords)))
 
-    cell_length_in_meter = get(config.model, "cell_length_in_meter__flag", false)::Bool
-    x_length, y_length = cell_lengths(y, celllength, cell_length_in_meter)
+    x_length, y_length =
+        cell_lengths(y, celllength, config.model.cell_length_in_meter__flag)
     return x_length, y_length
 end
 
 "Return land surface slope"
 function get_landsurface_slope(dataset::NCDataset, config::Config, network::NetworkLand)
-    lens = lens_input_parameter(config, "land_surface__slope"; optional = false)
-    slope = ncread(dataset, config, lens; sel = network.indices, type = Float64)
+    slope = ncread(
+        dataset,
+        config,
+        "land_surface__slope";
+        optional = false,
+        sel = network.indices,
+        type = Float64,
+    )
     clamp!(slope, 0.00001, Inf)
     return slope
 end
 
 "Return river mask"
 function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
-    lens = lens_input(config, "river_location__mask"; optional = false)
-    river_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+    river_2d = ncread(
+        dataset,
+        config,
+        "river_location__mask";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
     river_location = river_2d[network.indices]
     return river_location
 end
@@ -364,30 +410,29 @@ function reservoir_mask(
     dataset::NCDataset,
     config::Config,
     network::NetworkLand;
-    region = "location",
+    region::String = "location",
 )
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
     reservoirs = fill(0, length(network.indices))
-    if do_reservoirs
-        lens = lens_input(config, "reservoir_$(region)__count"; optional = false)
-        reservoirs =
-            ncread(dataset, config, lens; sel = network.indices, type = Float64, fill = 0)
+    if config.model.reservoir__flag
+        reservoirs = ncread(
+            dataset,
+            config,
+            "reservoir_$(region)__count";
+            optional = false,
+            sel = network.indices,
+            type = Float64,
+            fill = 0,
+        )
     end
     reservoirs = Vector{Bool}(reservoirs .> 0)
     return reservoirs
 end
 
 "Mask reservoir coverage based on mask value `mask_value`"
-function mask_reservoir_coverage!(
-    mask::AbstractMatrix,
-    config::Config,
-    domain::Domain;
-    mask_value = 0,
-)
-    do_reservoirs = get(config.model, "reservoir__flag", false)::Bool
-    if do_reservoirs
+function mask_reservoir_coverage!(mask::AbstractMatrix, config::Config, domain::Domain)
+    if config.model.reservoir__flag
         inds_cov = collect(Iterators.flatten(domain.reservoir.network.indices_coverage))
-        mask[inds_cov] .= mask_value
+        mask[inds_cov] .= 0
     end
     return nothing
 end
@@ -395,9 +440,15 @@ end
 "Return indices of 1D land and river domains per allocation area number."
 function get_allocation_area_indices(dataset::NCDataset, config::Config, domain::Domain)
     (; indices) = domain.land.network
-    lens = lens_input_parameter(config, "land_water_allocation_area__count")
-    logging = false
-    areas = ncread(dataset, config, lens; sel = indices, defaults = 1, type = Int, logging)
+    areas = ncread(
+        dataset,
+        config,
+        "land_water_allocation_area__count";
+        sel = indices,
+        defaults = 1,
+        type = Int,
+        logging = false,
+    )
     unique_areas = unique(areas)
     allocation_area_inds = Vector{Int}[]
     river_allocation_area_inds = Vector{Int}[]
