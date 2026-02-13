@@ -77,11 +77,12 @@ function update_land_surface_temperature(
             )
 
         # Calculate aerodynamic resistance using wind speed at canopy height
+        canopy_height = max(vegetation_parameters.canopy_height[i], 0.12)
         land_surface_temperature_model.variables.aerodynamic_resistance[i] =
             wind_and_aero_resistance(
                 atmospheric_forcing.wind_speed[i],
                 wind_measurement_height,
-                vegetation_parameters.canopy_height[i],
+                canopy_height,
             )
 
         # Calculate LST
@@ -140,6 +141,7 @@ function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
     config::Config,
+    density_water::Float64 = 1000.0, # kg/m3
 )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     # Convert actual_evapotranspiration from mm/Δt to m/s
@@ -153,7 +155,6 @@ end
 function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
     # Handle NaN values in net radiation
     if isnan(net_radiation)
-        @warn "Net radiation is NaN, setting sensible heat flux to 0"
         return 0.0
     end
     sensible_heat_flux = net_radiation - latent_heat_flux
@@ -192,25 +193,21 @@ function wind_and_aero_resistance(
         z_measured = canopy_height
     end
 
-    # Ensure minimum canopy height using Allen FAO reference
-    canopy_height = max(canopy_height, 0.12)
-
     # Simplified empirical d/h ratios and roughness height adjustments
-    if canopy_height < 1
+    if canopy_height < 1.0
         ref_h = 0.12
         dh_ratio = 2.0 / 3.0
         z0m_ratio = 1.23e-1
         z0h_ratio = 0.1
 
-    elseif canopy_height >= 1
+    elseif canopy_height >= 1.0
         z0m_ratio = 1.23e-1 * (canopy_height / 2.0) #z0m increases with canopy height
         ref_h = 0.12
         dh_ratio = 2.0 / 3.0
         z0h_ratio = 0.2
-    else
-        error("Canopy height $canopy_height is not supported")
     end
 
+    # Calculate canopy height and roughness height
     d = dh_ratio * ref_h
     z0m = z0m_ratio * ref_h
     z0h = z0h_ratio * z0m  # Canopy sublayer roughness
@@ -219,11 +216,11 @@ function wind_and_aero_resistance(
     wind_speed_ref =
         max(wind_speed_measured * (log(zm_ref / z0m) / log(z_measured / z0m)), 0.5)
 
-    if canopy_height < 1
+    if canopy_height < 1.0
         # Aerodynamic resistance using reference height
         # ra = (log((zm_ref - d) / z0m)) * (log((zm_ref - d) / z0h)) / (k^2 * wind_speed_ref)
         ra = log((zm_ref - d) / z0m) / (k^2 * wind_speed_ref)
-    elseif canopy_height >= 1
+    elseif canopy_height >= 1.0
         #AWRA05
         f_h = log((813 / canopy_height) - 5.45)
         ku = 0.305 / (f_h * (f_h + 2.3))
@@ -231,12 +228,7 @@ function wind_and_aero_resistance(
         ra = (1 / ga) / 10.0
     end
 
-    # Ensure positive aerodynamic resistance
-    if ra <= 0
-        error("Aerodynamic resistance is negative: $ra")
-    end
-
-    return ra, wind_speed_ref
+    return max(ra, 1.0)
 end
 
 """ 'land surface temperature' :: Ts=(H ra) /(ρacp)+Ta,(4)"""
@@ -247,14 +239,6 @@ function compute_land_surface_temperature(
     density_air::Float64 = 1.225,
     specific_heat_capacity_air::Float64 = 1005.0,
 )
-    # Handle invalid aerodynamic resistance values
-    if isnan(aerodynamic_resistance) ||
-       isinf(aerodynamic_resistance) ||
-       aerodynamic_resistance <= 0
-        @warn "Invalid aerodynamic resistance: $aerodynamic_resistance, using air temperature as land surface temperature"
-        return air_temperature
-    end
-
     land_surface_temperature =
         (sensible_heat_flux * aerodynamic_resistance) /
         (density_air * specific_heat_capacity_air) + air_temperature
