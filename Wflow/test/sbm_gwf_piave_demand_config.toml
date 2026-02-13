@@ -100,7 +100,6 @@ subsurface_surface_water__horizontal_saturated_hydraulic_conductivity = "kh_surf
 river_bottom__elevation = "zb_river"
 river_water__infiltration_conductance = "riverbed_cond"
 river_water__exfiltration_conductance = "riverbed_cond"
-subsurface_water__specific_yield = "specific_yield"
 subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter = "gwf_f"
 
 [input.cyclic]

@@ -30,7 +30,7 @@ function Model(config::Config, type::SbmGwfModel)
 
     land_hydrology = LandHydrologySBM(dataset, config, domain.land)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
-    mass_balance = HydrologicalMassBalance(domain, config)
+    mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
 
     modelmap = (land = land_hydrology, routing, mass_balance)
     (; maxlayers) = land_hydrology.soil.parameters
@@ -67,7 +67,6 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     (; subsurface_flow, overland_flow) = routing
     (; boundaries) = subsurface_flow
 
-
     dt = tosecond(clock.dt)
 
     update!(land, routing, domain, config, dt)
@@ -93,7 +92,7 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     end
 
     # update groundwater domain
-    update!(subsurface_flow, dt_gwf, config.model.conductivity_profile)
+    update!(subsurface_flow, soil, dt_gwf, config.model.conductivity_profile)
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update!(soil, (; runoff, demand, subsurface_flow, overland_flow), domain, config)

@@ -160,19 +160,17 @@ end
               75.0  # upstream sat. thickness
     end
 
-    @testset "minimum_head-confined" begin
+    @testset "check_flux-confined" begin
         original_head = copy(conf_aqf.variables.head)
         conf_aqf.variables.head[1] = -10.0
         @test Wflow.check_flux(-1.0, conf_aqf, 1) == -1.0
-        @test Wflow.minimum_head(conf_aqf)[1] == -10.0
         conf_aqf.variables.head .= original_head
     end
 
-    @testset "minimum_head-unconfined" begin
+    @testset "check_flux-unconfined" begin
         original_head = copy(unconf_aqf.variables.head)
         unconf_aqf.variables.head[1] = -10.0
         @test Wflow.check_flux(-1.0, unconf_aqf, 1) == 0.0
-        @test Wflow.minimum_head(conf_aqf)[1] == 0.0
         unconf_aqf.variables.head .= original_head
     end
 
@@ -297,49 +295,23 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
     conductivity_profile = Wflow.GwfConductivityProfileType.uniform
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
+    gwf = Wflow.GroundwaterFlow(;
+        timestepping,
+        aquifer,
+        connectivity,
+        constanthead,
+        boundaries = Wflow.AquiferBoundaries(),
+    )
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
 
-    dt = 12.5 # days
-    t = 0.0
-    while t < dt
-        global t
-        dt_s = 0.25
-        gwf.aquifer.variables.q_net .= 0.0
-        Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, dt_s)
-        t = t + dt_s
-    end
-    @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
-end
-
-@testitem "integration: steady 1D, exponential conductivity" begin
-    include("testing_utils.jl")
-    connectivity, aquifer, _ = homogenous_aquifer(3, 1)
-    variables = Wflow.ConstantHeadVariables(; head = [2.0, 4.0])
-    constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
-    conductivity_profile = Wflow.GwfConductivityProfileType.exponential
-    timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
-    # Set constant head (dirichlet) boundaries
-    gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
-
-    dt = 12.5 # days
-    t = 0.0
-    while t < dt
-        global t
-        dt_s = 0.25
-        gwf.aquifer.variables.q_net .= 0.0
-        Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, dt_s)
-        t = t + dt_s
-    end
+    Wflow.update!(gwf, 12.5, conductivity_profile)
     @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
 end
 
 @testitem "integration: unconfined transient 1D" begin
     include("testing_utils.jl")
+    using StaticArrays: SVector
 
     nrow = 1
     ncol = 9
@@ -379,6 +351,7 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
+        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(gwf_f, ncell),
     )
 
@@ -387,7 +360,31 @@ end
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
+    gwf = Wflow.GroundwaterFlow(;
+        timestepping,
+        aquifer,
+        connectivity,
+        constanthead,
+        boundaries = Wflow.AquiferBoundaries(),
+    )
+
+    N = 1
+    n = ncell
+    zi = @. 1000.0 * (aquifer.parameters.top - aquifer.variables.head)
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = SVector.(zi),
+        ustorelayerdepth = SVector.(zeros(n)),
+        n_unsatlayers = fill(N, n),
+        zi,
+        # Parameters
+        maxlayers = N,
+        nlayers = fill(1, n),
+        theta_s = fill(0.45, n),
+        theta_r = fill(0.05, n),
+    )
 
     time = 20.0
     t = 0.0
@@ -398,8 +395,8 @@ end
         dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, dt_s)
-        t = t + dt_s
+        Wflow.update_head!(gwf, soil, dt_s)
+        t += dt_s
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.aquifer.variables.head) .> 0.0)
     end
@@ -413,6 +410,7 @@ end
 
 @testitem "integration: unconfined transient 1D, exponential conductivity" begin
     include("testing_utils.jl")
+    using StaticArrays: SVector
     nrow = 1
     ncol = 9
     shape = (nrow, ncol)
@@ -451,6 +449,7 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
+        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(gwf_f, ncell),
     )
 
@@ -459,7 +458,31 @@ end
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(; timestepping, aquifer, connectivity, constanthead)
+    gwf = Wflow.GroundwaterFlow(;
+        timestepping,
+        aquifer,
+        connectivity,
+        constanthead,
+        boundaries = Wflow.AquiferBoundaries(),
+    )
+
+    N = 1
+    n = ncell
+    zi = @. 1000.0 * (aquifer.parameters.top - aquifer.variables.head)
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = SVector.(zi),
+        ustorelayerdepth = SVector.(zeros(n)),
+        n_unsatlayers = fill(N, n),
+        zi,
+        # Parameters
+        maxlayers = N,
+        nlayers = fill(1, n),
+        theta_s = fill(0.45, n),
+        theta_r = fill(0.05, n),
+    )
 
     time = 20.0
     t = 0.0
@@ -470,8 +493,8 @@ end
         dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, dt_s)
-        t = t + dt_s
+        Wflow.update_head!(gwf, soil, dt_s)
+        t += dt_s
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.aquifer.variables.head) .> 0.0)
     end
@@ -548,17 +571,7 @@ end
     )
 
     time = 20.0
-    t = 0.0
-    (; cfl) = gwf.timestepping
-    while t < time
-        global t
-        gwf.aquifer.variables.q_net .= 0.0
-        dt_s = Wflow.stable_timestep(gwf.aquifer, conductivity_profile, cfl)
-        dt_s = Wflow.check_timestepsize(dt_s, t, time)
-        Wflow.update_fluxes!(gwf, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, dt_s)
-        t = t + dt_s
-    end
+    Wflow.update!(gwf, time, conductivity_profile)
 
     # test for symmetry on x and y axes
     head = reshape(gwf.aquifer.variables.head, shape)
