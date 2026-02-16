@@ -74,6 +74,8 @@ const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
 const GRAVITATIONAL_ACCELERATION = 9.80665 # m s⁻²
+const WATER_DENSITY = 1e3 # [kg m⁻³]
+const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
 
 mutable struct Clock{T}
     time::T

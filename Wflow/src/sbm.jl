@@ -151,7 +151,7 @@ function update!(
 
     # Update land surface temperature if enabled
     if config.model.land_surface_temperature__flag
-        update!(
+        update_land_surface_temperature!(
             land_surface_temperature,
             soil,
             atmospheric_forcing,

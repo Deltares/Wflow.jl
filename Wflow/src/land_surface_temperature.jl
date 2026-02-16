@@ -1,53 +1,35 @@
-# after Devi Purnamasari et al. 2025 
+# after Devi Purnamasari et al. 2025
 # https://doi.org/10.5194/hess-29-1483-2025
 
 abstract type AbstractLandSurfaceTemperatureModel end
 struct NoLandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel end
 
-const density_water = 1000.0 # kg/m³
-
-"Struct for storing LST model variables"
+"Struct for storing land surface temperature model variables"
 @with_kw struct LandSurfaceTemperatureVariables
-    aerodynamic_resistance::Vector{Float64} = Float64[]      # Aerodynamic resistance (s/m)
-    latent_heat_flux::Vector{Float64} = Float64[]      # Latent heat flux (W/m2)
-    sensible_heat_flux::Vector{Float64} = Float64[]       # Sensible heat flux (W/m2)
-    latent_heat_of_vaporization::Vector{Float64} = Float64[]  # Latent heat of vaporization (J/kg)
-    land_surface_temperature::Vector{Float64} = Float64[]     # Land surface temperature (K)
-    net_radiation::Vector{Float64} = Float64[]               # Net radiation (W/m2)
-    net_shortwave_radiation::Vector{Float64} = Float64[]     # Net shortwave radiation (W/m2)
-    net_longwave_radiation::Vector{Float64} = Float64[]      # Net longwave radiation (W/m2)
-end
-
-"Initialize Land Surface Temperature model variables"
-function LandSurfaceTemperatureVariables(n::Int)
-    return LandSurfaceTemperatureVariables(;
-        aerodynamic_resistance = fill(MISSING_VALUE, n),
-        latent_heat_flux = fill(MISSING_VALUE, n),
-        sensible_heat_flux = fill(MISSING_VALUE, n),
-        latent_heat_of_vaporization = fill(MISSING_VALUE, n),
-        land_surface_temperature = fill(MISSING_VALUE, n),
-        net_radiation = fill(MISSING_VALUE, n),
-        net_shortwave_radiation = fill(MISSING_VALUE, n),
-        net_longwave_radiation = fill(MISSING_VALUE, n),
-    )
+    n::Int
+    aerodynamic_resistance::Vector{Float64} = fill(MISSING_VALUE, n)        # Aerodynamic resistance (s/m)
+    latent_heat_flux::Vector{Float64} = fill(MISSING_VALUE, n)              # Latent heat flux (W/m2)
+    sensible_heat_flux::Vector{Float64} = fill(MISSING_VALUE, n)            # Sensible heat flux (W/m2)
+    latent_heat_of_vaporization::Vector{Float64} = fill(MISSING_VALUE, n)   # Latent heat of vaporization (J/kg)
+    land_surface_temperature::Vector{Float64} = fill(MISSING_VALUE, n)      # Land surface temperature (K)
+    net_radiation::Vector{Float64} = fill(MISSING_VALUE, n)                 # Net radiation (W/m2)
+    net_shortwave_radiation::Vector{Float64} = fill(MISSING_VALUE, n)       # Net shortwave radiation (W/m2)
+    net_longwave_radiation::Vector{Float64} = fill(MISSING_VALUE, n)        # Net longwave radiation (W/m2)
 end
 
 @with_kw struct LandSurfaceTemperatureModel <: AbstractLandSurfaceTemperatureModel
     variables::LandSurfaceTemperatureVariables
 end
 
-"""
-Initialize LandSurfaceTemperatureModel with parameters from Gridded parameters file
-"""
+"Initialize land surface temperature model."
 function LandSurfaceTemperatureModel(n::Int)
-    vars = LandSurfaceTemperatureVariables(n)
-    return LandSurfaceTemperatureModel(; variables = vars)
+    variables = LandSurfaceTemperatureVariables(; n)
+    lst_model = LandSurfaceTemperatureModel(; variables)
+    return lst_model
 end
 
-"""
-Update LST model for a single timestep using pre-calculated net radiation from forcing
-"""
-function update_land_surface_temperature(
+"Update land surface temperarure model for a single timestep."
+function update_land_surface_temperature!(
     land_surface_temperature_model::LandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
@@ -99,27 +81,7 @@ function update_land_surface_temperature(
     return nothing
 end
 
-"""
-Update LST model for a single timestep
-"""
-function update!(
-    land_surface_temperature_model::LandSurfaceTemperatureModel,
-    soil_model::SbmSoilModel,
-    atmospheric_forcing::AtmosphericForcing,
-    vegetation_parameters::VegetationParameters,
-    config::Config,
-)
-    update_land_surface_temperature(
-        land_surface_temperature_model,
-        soil_model,
-        atmospheric_forcing,
-        vegetation_parameters,
-        config,
-    )
-    return nothing
-end
-
-function update!(
+function update_land_surface_temperature!(
     model::NoLandSurfaceTemperatureModel,
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
@@ -130,29 +92,30 @@ function update!(
 end
 
 # wrapper methods
-get_LandSurfaceTemperature(model::NoLandSurfaceTemperatureModel) = 0.0
-get_LandSurfaceTemperature(model::AbstractLandSurfaceTemperatureModel) =
+get_land_surface_temperature(model::NoLandSurfaceTemperatureModel) = 0.0
+get_land_surface_temperature(model::AbstractLandSurfaceTemperatureModel) =
     model.variables.land_surface_temperature
 
 """ 'latent heat of vaporization' :: λ=2501 - 2.375 Ta (A1) """
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
     return (2501.0 - 2.375 * air_temperature) * 1000.0 # J/kg converted fro kj.kg
 end
+
 """ 'latent heat flux' :: LE=λ x ρwater x ET (3)"""
 function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
     config::Config,
-    density_water::Float64 = 1000.0, # kg/m3
 )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     # Convert actual_evapotranspiration from mm/Δt to m/s
     actual_evapotranspiration_ms =
         (actual_evapotranspiration / 1000.0) / Float64(config.time.timestepsecs)
     latent_heat_flux =
-        latent_heat_of_vaporization * density_water * actual_evapotranspiration_ms
+        latent_heat_of_vaporization * WATER_DENSITY * actual_evapotranspiration_ms
     return latent_heat_flux
 end
+
 """ 'sensible heat flux' :: H  ≈ RNet - LE - G"""
 function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
     # Handle NaN values in net radiation
@@ -165,8 +128,9 @@ function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Fl
     sensible_heat_flux = net_radiation - latent_heat_flux - G
     return sensible_heat_flux
 end
-""" 
-'aerodynamic resistance' :: ra = (ln(z/z0m) - psi_m) / (k^2 * u) 
+
+"""
+'aerodynamic resistance' :: ra = (ln(z/z0m) - psi_m) / (k^2 * u)
 no clean way yet to deal with variable canopy height empirically
 
 | Cover type        | Typical d/h   | Reference                                    |
@@ -183,9 +147,8 @@ Seasonal and structural variability
 Forest cap avoids z - d < 0 issues
 Alternative aerodynamic conductance calculation from AWRA05
 https://www.researchgate.net/publication/233757155_AWRA_Technical_Report_3_Landscape_Model_version_05_Technical_Description
-    
-"""
 
+"""
 function wind_and_aero_resistance(
     wind_speed_measured::Float64,
     z_measured::Float64,
