@@ -34,12 +34,10 @@ function update_land_surface_temperature!(
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     vegetation_parameters::VegetationParameters,
-    config::Config,
+    wind_measurement_height::Float64,
+    dt::Float64,
 )
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
-
-    # Get wind measurement height from config (default to 10 m if not specified)
-    wind_measurement_height = config.model.land_surface_wind__speed_reference_height
 
     for i in 1:n
         # Use pre-calculated net radiation from forcing
@@ -50,7 +48,7 @@ function update_land_surface_temperature!(
             compute_latent_heat_flux(
                 atmospheric_forcing.temperature[i],
                 soil_model.variables.actevap[i],
-                config,
+                dt,
             )
 
         # Calculate sensible heat flux
@@ -86,7 +84,8 @@ function update_land_surface_temperature!(
     soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     vegetation_parameters::VegetationParameters,
-    config::Config,
+    wind_measurement_height::Float64,
+    dt::Float64,
 )
     return nothing
 end
@@ -105,12 +104,11 @@ end
 function compute_latent_heat_flux(
     air_temperature::Float64,
     actual_evapotranspiration::Float64,
-    config::Config,
+    dt::Float64,
 )
     latent_heat_of_vaporization = compute_latent_heat_of_vaporization(air_temperature)
     # Convert actual_evapotranspiration from mm/Δt to m/s
-    actual_evapotranspiration_ms =
-        (actual_evapotranspiration / 1000.0) / Float64(config.time.timestepsecs)
+    actual_evapotranspiration_ms = (actual_evapotranspiration / 1000.0) / dt
     latent_heat_flux =
         latent_heat_of_vaporization * WATER_DENSITY * actual_evapotranspiration_ms
     return latent_heat_flux

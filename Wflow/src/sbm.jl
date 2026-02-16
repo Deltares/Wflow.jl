@@ -151,12 +151,14 @@ function update!(
 
     # Update land surface temperature if enabled
     if config.model.land_surface_temperature__flag
+        wind_measurement_height = config.model.land_surface_wind__speed_reference_height
         update_land_surface_temperature!(
             land_surface_temperature,
             soil,
             atmospheric_forcing,
             model.vegetation_parameters,
-            config,
+            wind_measurement_height,
+            dt,
         )
     end
 

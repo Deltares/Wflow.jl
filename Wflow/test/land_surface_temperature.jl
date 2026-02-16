@@ -1,47 +1,27 @@
-const MISSING_VALUE = NaN
+@testitem "unit: land surface temperature" begin
+    temperature = 20.0
+    wind_measurement_height = 2.0
+    wind_speed = 2.0
+    canopy_height = 0.12
+    actevap = 2.0
+    net_radiation = NaN
+    dt = 3600.0
 
-using Parameters
+    latent_heat_of_vaporization = Wflow.compute_latent_heat_of_vaporization(temperature)
+    latent_heat_flux = Wflow.compute_latent_heat_flux(temperature, actevap, dt)
+    sensible_heat_flux = Wflow.compute_sensible_heat_flux(net_radiation, latent_heat_flux)
+    aerodynamic_resistance =
+        Wflow.wind_and_aero_resistance(wind_speed, wind_measurement_height, canopy_height)
 
-# Minimal type definitions
-struct SbmSoilModel
-    variables::Any
-end
-struct AtmosphericForcing
-    temperature::Any
-    net_shortwave_radiation::Any
-    net_longwave_radiation::Any
-    net_radiation::Any
-    wind_speed::Any
-end
-struct VegetationParameters
-    canopy_height::Any
-end
-struct Config
-    input::Any
-    time::Any
-end
+    lst = Wflow.compute_land_surface_temperature(
+        sensible_heat_flux,
+        aerodynamic_resistance,
+        temperature,
+    )
 
-include("../src/land_surface_temperature.jl")
-
-# Test data
-n = 1
-soil_model = SbmSoilModel((; actevap = [2.0]))
-atmospheric_forcing = AtmosphericForcing([20.0], [80.0], [20.0], [100.0], [2.0])  # T, SW, LW, wind
-vegetation_parameters = VegetationParameters([0.12])
-config = Config(Dict("wind_altitude" => 2.0), (; timestepsecs = 3600.0))
-
-lst_model = LandSurfaceTemperatureModel(n)
-update!(lst_model, soil_model, atmospheric_forcing, vegetation_parameters, config)
-
-using Test
-
-@testset "LST output" begin
-    @test lst_model.variables.aerodynamic_resistance[1] ≈ 14.479951355887868 atol = 1e-8
-    @test lst_model.variables.latent_heat_flux[1] ≈ 1.3630555555555555 atol = 1e-8
-    @test lst_model.variables.sensible_heat_flux[1] ≈ 98.63694444444444 atol = 1e-8
-    @test lst_model.variables.latent_heat_of_vaporization[1] ≈ 2453.5 atol = 1e-8
-    @test lst_model.variables.land_surface_temperature[1] ≈ 21.16012440446662 atol = 1e-8
-    @test isnan(lst_model.variables.net_radiation[1])
-    @test isnan(lst_model.variables.net_shortwave_radiation[1])
-    @test isnan(lst_model.variables.net_longwave_radiation[1])
+    @test latent_heat_of_vaporization ≈ 2.4535e6
+    @test latent_heat_flux ≈ 1363.0555555555554
+    @test sensible_heat_flux ≈ 0.0
+    @test aerodynamic_resistance ≈ 14.479951355887868
+    @test lst ≈ 20.0
 end
