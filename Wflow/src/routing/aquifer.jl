@@ -88,7 +88,6 @@ end
     bottom::Vector{Float64}             # bottom of groundwater layer [m]
     area::Vector{Float64}               # area of cell [m²]
     specific_yield::Vector{Float64}     # specific yield (theta_s - theta_fc) [m m⁻¹]
-    specific_yield_dyn::Vector{Float64} # dynamic specific yield [m m⁻¹]
     f::Vector{Float64}                  # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
@@ -123,16 +122,7 @@ function GroundwaterFlowParameters(
     else
         f = Float64[]
     end
-    specific_yield_dyn = fill(MISSING_VALUE, length(specific_yield))
-    parameters = GroundwaterFlowParameters(;
-        k,
-        top,
-        bottom,
-        area,
-        specific_yield,
-        specific_yield_dyn,
-        f,
-    )
+    parameters = GroundwaterFlowParameters(; k, top, bottom, area, specific_yield, f)
     return parameters
 end
 
@@ -436,14 +426,13 @@ end
 
 function update_head!(gwf::GroundwaterFlow, soil::SbmSoilModel, dt::Float64)
     (; head, exfiltwater, q_net) = gwf.variables
-    (; area, specific_yield, specific_yield_dyn) = gwf.parameters
+    (; area, specific_yield) = gwf.parameters
 
     for i in eachindex(head)
         net_flux = q_net[i] / area[i] * dt
         dh, exfilt = water_table_change(soil, net_flux, specific_yield[i], i)
         head[i] += dh
         exfiltwater[i] += exfilt
-        specific_yield_dyn[i] = dh > 0.0 ? (net_flux - exfilt) / dh : specific_yield[i]
     end
     # Set constant head (dirichlet) boundaries
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head

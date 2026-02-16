@@ -88,6 +88,13 @@ function ssf_celerity(zi, slope, theta_e, kh_profile::KhExponentialConstant, i)
     return celerity
 end
 
+"Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity profile `KhLayered`"
+function ssf_celerity(zi, slope, theta_e, kh_profile::KhLayered, i)
+    (; kh) = kh_profile
+    celerity = (slope * kh[i]) / theta_e
+    return celerity
+end
+
 """
 Return kinematic wave subsurface flow `ssf` for a single cell and timestep using the Newton-
 Raphson method.
@@ -158,9 +165,8 @@ function kinematic_wave_ssf(
         net_flux = (ssfin * dt + q_net * dt - ssf * dt) / (dw * dx)
         dh, exfilt = water_table_change(soil, net_flux, sy, i)
         zi = zi_prev - dh
-        sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         if zi > d
-            ssf_excess = (dw * dx) * sy_d * (zi - d) / dt
+            ssf_excess = (dw * dx) * sy * (zi - d) / dt
             ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
         end
         zi = clamp(zi, 0.0, d)
@@ -187,7 +193,7 @@ function kinematic_wave_ssf(
                 dh, exfilt = water_table_change(soil, net_flux, sy, i)
                 zi = zi_prev - dh
                 if zi > d
-                    ssf_excess = (dw * dx) * sy_d * (zi - d) / dt_s
+                    ssf_excess = (dw * dx) * sy * (zi - d) / dt_s
                     ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
                 end
                 zi = clamp(zi, 0.0, d)
@@ -203,14 +209,14 @@ function kinematic_wave_ssf(
             end
             ssf = ssf_sum / its
             exfilt = exfilt_sum
+            net_flux = net_flux_sum
             dh = zi_start - zi
-            sy_d = dh > 0.0 ? (net_flux_sum - exfilt_sum) / dh : sy
         else
             zi_prev_mm = zi_prev * 1000.0
             zi_mm = zi * 1000.0
             update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
         end
-        return ssf, zi, exfilt, sy_d
+        return ssf, zi, exfilt, net_flux
     end
 end
 
@@ -247,7 +253,7 @@ function kinematic_wave_ssf(
         # effective/drainabale porosity
         theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
         # newton-raphson
-        celerity = (slope * kh_profile.kh[i]) / theta_e
+        celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
         constant_term = (dt / dx) * ssfin + ssf_prev / celerity + q_net * (dt / dx)
         ssf = kw_ssf_newton_raphson(ssf_ini, constant_term, celerity, dt, dx)
         # constrain maximum lateral subsurface flow rate ssf
@@ -270,7 +276,7 @@ function kinematic_wave_ssf(
         zi_mm = zi * 1000.0
         update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
 
-        return ssf, zi, exfilt, sy_d
+        return ssf, zi, exfilt, net_flux
     end
 end
 

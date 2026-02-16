@@ -10,22 +10,6 @@
     h::Vector{Float64} = zeros(n)            # Water depth [m]
 end
 
-"Initialize timestepping for kinematic wave (river and overland flow models)"
-function init_kinematic_wave_timestepping(config::Config, n::Int; domain::String)
-    adaptive = config.model.kinematic_wave__adaptive_time_step_flag
-    @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
-
-    if adaptive
-        stable_timesteps = zeros(n)
-        timestepping = TimeStepping(; stable_timesteps, adaptive)
-    else
-        dt_fixed = getfield(config.model, Symbol("$(domain)_kinematic_wave__time_step"))
-        @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
-        timestepping = TimeStepping(; dt_fixed, adaptive)
-    end
-    return timestepping
-end
-
 "Struct for storing Manning flow parameters"
 @with_kw struct ManningFlowParameters
     n::Int
@@ -519,8 +503,9 @@ model using a nonlinear scheme (Chow et al., 1988).
 
 A stable time step is computed for each vector element based on the Courant timestep size
 criterion. A quantile of the vector is computed based on probability `p` to remove potential
-very low timestep sizes. Li et al. (1975) found that the nonlinear scheme is unconditonally
-stable and that a wide range of dt/dx values can be used without loss of accuracy.
+very small timestep sizes. Li et al. (1975) found that the nonlinear scheme is
+unconditonally stable and that a wide range of dt/dx values can be used without loss of
+accuracy.
 """
 function stable_timestep(
     model::S,
@@ -637,7 +622,7 @@ end
 get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow, inds::Vector{Int}) =
     model.variables.q_av[inds]
 get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    model.variables.ssf[inds] ./ tosecond(BASETIMESTEP)
+    model.variables.ssf_av[inds] ./ tosecond(BASETIMESTEP)
 
 # Exclude subsurface flow from `GroundwaterFlow`.
 get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow, inds::Vector{Int}) =

@@ -302,7 +302,6 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
-        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(gwf_f, ncell),
     )
 
@@ -402,7 +401,6 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
-        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(gwf_f, ncell),
     )
 

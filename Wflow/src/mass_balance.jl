@@ -166,7 +166,7 @@ function storage_prev!(reservoir::Reservoir, water_balance::MassBalance)
 end
 
 function watertable_prev!(subsurface_flow::LateralSSF, water_balance::MassBalance)
-    water_balance.zi_prev .= subsurface_flow.variables.zi
+    water_balance.zi_prev .= subsurface_flow.variables.storage
 end
 
 function watertable_prev!(subsurface_flow::GroundwaterFlow, water_balance::MassBalance)
@@ -485,17 +485,16 @@ function compute_flow_balance!(
     dt::Float64,
 )
     (; error, relative_error, zi_prev) = water_balance
-    (; ssfin, ssf, exfiltwater, zi) = subsurface_flow.variables
-    (; specific_yield_dyn) = subsurface_flow.parameters
+    (; ssfin_av, ssf_av, net_flux) = subsurface_flow.variables
     (; recharge) = subsurface_flow.boundary_conditions
     (; area) = domain.land.parameters
 
     f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(zi_prev)
-        total_in = ssfin[i] * f_conv
-        total_out = ssf[i] * f_conv + exfiltwater[i] * area[i]
-        total_in, total_out = add_inflow(total_in, total_out, recharge.variables.flux[i])
-        storage_rate = specific_yield_dyn[i] * (zi_prev[i] - zi[i]) * area[i]
+        total_in = ssfin_av[i] * f_conv
+        total_out = ssf_av[i] * f_conv
+        total_in, total_out = add_inflow(total_in, total_out, recharge.variables.flux_av[i])
+        storage_rate = net_flux[i] * area[i]
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
@@ -512,20 +511,19 @@ function compute_flow_balance!(
     domain::Domain,
     dt::Float64,
 )
-    (; head_prev, error, relative_error) = water_balance
-    (; head, q_in_av, q_out_av, exfiltwater) = subsurface_flow.variables
-    (; area, specific_yield_dyn) = subsurface_flow.parameters
+    (; error, relative_error) = water_balance
+    (; q_in_av, q_out_av, q_net) = subsurface_flow.variables
 
-    n = length(head_prev)
+    n = length(q_net)
     flux_in = zeros(n)
     flux_out = zeros(n)
     flux_in, flux_out = sum_boundary_fluxes(subsurface_flow, domain)
 
     f_conv = dt / tosecond(BASETIMESTEP)
-    for i in eachindex(head_prev)
+    for i in eachindex(q_net)
         total_in = (q_in_av[i] + flux_in[i]) * f_conv
-        total_out = f_conv * (q_out_av[i] + flux_out[i]) + exfiltwater[i] * area[i]
-        storage_rate = specific_yield_dyn[i] * (head[i] - head_prev[i]) * area[i]
+        total_out = f_conv * (q_out_av[i] + flux_out[i])
+        storage_rate = q_net[i] * f_conv
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
