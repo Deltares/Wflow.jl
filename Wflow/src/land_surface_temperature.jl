@@ -90,11 +90,6 @@ function update_land_surface_temperature!(
     return nothing
 end
 
-# wrapper methods
-get_land_surface_temperature(model::NoLandSurfaceTemperatureModel) = 0.0
-get_land_surface_temperature(model::AbstractLandSurfaceTemperatureModel) =
-    model.variables.land_surface_temperature
-
 """ 'latent heat of vaporization' :: λ=2501 - 2.375 Ta (A1) """
 function compute_latent_heat_of_vaporization(air_temperature::Float64)
     return (2501.0 - 2.375 * air_temperature) * 1000.0 # J/kg converted fro kj.kg
