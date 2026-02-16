@@ -531,6 +531,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "soil_wet_root__sigmoid_function_shape_parameter" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.rootdistpar),
+        unit = Unit(; mm = -1),
         default = -500.0,
         description = "Controls sharpness of transition between fully wet and fully dry roots",
         tags = [:soil_input],

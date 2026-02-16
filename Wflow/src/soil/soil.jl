@@ -744,13 +744,13 @@ function infiltration!(model::SbmSoilModel, dt::Number)
 end
 
 """
-    unsaturated_zone_flow!(model::SbmSoilModel)
+    unsaturated_zone_flow!(model::SbmSoilModel, dt::Float64)
 
 Update unsaturated storage `ustorelayerdepth` and the `transfer` of water from the unsaturated
 to the saturated store of the SBM soil model for a single timestep, based on the Brooks-Corey
 approach.
 """
-function unsaturated_zone_flow!(model::SbmSoilModel, dt)
+function unsaturated_zone_flow!(model::SbmSoilModel, dt::Float64)
     v = model.variables
     p = model.parameters
 
@@ -956,7 +956,8 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
 
         v.ae_ustore[i] = actevapustore
         v.actevapsat[i] = actevapsat
-        v.drainable_waterdepth[i] = v.drainable_waterdepth[i] - actevapsat
+        # [m] -= [m s⁻¹] * [s]
+        v.drainable_waterdepth[i] -= actevapsat * dt
         v.transpiration[i] = actevapustore + actevapsat
     end
     return nothing
