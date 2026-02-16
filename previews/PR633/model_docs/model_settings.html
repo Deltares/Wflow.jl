@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -32,18 +32,19 @@ ul.task-list li input[type="checkbox"] {
 <link href="../_static/logo.png" rel="icon" type="image/png">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-e2603ff5cfd09a8a129b1ad434859879.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -257,7 +258,8 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
@@ -404,8 +406,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Reservoirs and Lakes</span></a>
+  <a href="../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -422,6 +424,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -455,6 +463,12 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -470,6 +484,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#general" id="toc-general" class="nav-link active" data-scroll-target="#general">General</a></li>
   <li><a href="#model-types-sbm-and-sbm_gwf" id="toc-model-types-sbm-and-sbm_gwf" class="nav-link" data-scroll-target="#model-types-sbm-and-sbm_gwf">Model types <code>sbm</code> and <code>sbm_gwf</code></a>
   <ul class="collapse">
+  <li><a href="#water-mass-balance" id="toc-water-mass-balance" class="nav-link" data-scroll-target="#water-mass-balance">Water mass balance</a></li>
   <li><a href="#land-hydrology-sbm" id="toc-land-hydrology-sbm" class="nav-link" data-scroll-target="#land-hydrology-sbm">Land Hydrology <code>SBM</code></a></li>
   <li><a href="#routing-method" id="toc-routing-method" class="nav-link" data-scroll-target="#routing-method">Routing method</a></li>
   <li><a href="#kinematic-wave-routing" id="toc-kinematic-wave-routing" class="nav-link" data-scroll-target="#kinematic-wave-routing">Kinematic wave routing</a></li>
@@ -547,18 +562,39 @@ ul.task-list li input[type="checkbox"] {
 <td>-</td>
 <td><code>false</code></td>
 </tr>
-<tr class="odd">
-<td><code>lake__flag</code></td>
-<td>Include lake modelling</td>
-<td>-</td>
-<td><code>false</code></td>
-</tr>
 </tbody>
 </table>
 </section>
 <section id="model-types-sbm-and-sbm_gwf" class="level2">
 <h2 class="anchored" data-anchor-id="model-types-sbm-and-sbm_gwf">Model types <code>sbm</code> and <code>sbm_gwf</code></h2>
 <p>The Tables in this subsection show the available models settings for the model types <code>sbm</code> and <code>sbm_gwf</code>.</p>
+<section id="water-mass-balance" class="level3">
+<h3 class="anchored" data-anchor-id="water-mass-balance">Water mass balance</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 35%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Setting</th>
+<th>Description</th>
+<th>Unit</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>water_mass_balance__flag</code></td>
+<td>Include water mass balance error computations</td>
+<td>-</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="land-hydrology-sbm" class="level3">
 <h3 class="anchored" data-anchor-id="land-hydrology-sbm">Land Hydrology <code>SBM</code></h3>
 <table class="table-striped table-hover caption-top table">
@@ -584,8 +620,8 @@ ul.task-list li input[type="checkbox"] {
 <td><code>false</code></td>
 </tr>
 <tr class="even">
-<td><code>snow_gravitional_transport__flag</code></td>
-<td>Include gravitional lateral snow transport</td>
+<td><code>snow_gravitational_transport__flag</code></td>
+<td>Include gravitational lateral snow transport</td>
 <td>-</td>
 <td><code>false</code></td>
 </tr>
@@ -593,7 +629,7 @@ ul.task-list li input[type="checkbox"] {
 <td><code>glacier__flag</code></td>
 <td>Include glacier modelling</td>
 <td>-</td>
-<td>false</td>
+<td><code>false</code></td>
 </tr>
 <tr class="even">
 <td><code>soil_infiltration_reduction__flag</code></td>
@@ -636,15 +672,15 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>land_routing</code></td>
-<td>Routing approach for overland flow: [“kinematic-wave”, “local-inertial”]</td>
+<td>Routing approach for overland flow: [“kinematic_wave”, “local_inertial”]</td>
 <td>-</td>
-<td>“kinematic-wave”</td>
+<td>“kinematic_wave”</td>
 </tr>
 <tr class="even">
 <td><code>river_routing</code></td>
-<td>Routing approach for river flow: [“kinematic-wave”, “local-inertial”]</td>
+<td>Routing approach for river flow: [“kinematic_wave”, “local_inertial”]</td>
 <td>-</td>
-<td>“kinematic-wave”</td>
+<td>“kinematic_wave”</td>
 </tr>
 </tbody>
 </table>
@@ -695,13 +731,13 @@ ul.task-list li input[type="checkbox"] {
 <td><code>river_kinematic_wave__time_step</code></td>
 <td>Enable kinematic wave fixed internal time stepping for river domain (<code>kinematic_wave__adaptive_time_step_flag</code> = <code>false</code>)</td>
 <td>s</td>
-<td>Δt</td>
+<td>900.0</td>
 </tr>
 <tr class="even">
 <td><code>land_kinematic_wave__time_step</code></td>
 <td>Enable kinematic wave fixed internal time stepping for land domain (<code>kinematic_wave__adaptive_time_step_flag</code> = <code>false</code>)</td>
 <td>s</td>
-<td>Δt</td>
+<td>3600.0</td>
 </tr>
 </tbody>
 </table>
@@ -740,7 +776,7 @@ ul.task-list li input[type="checkbox"] {
 <td><code>land_local_inertial_flow__theta_coefficient</code></td>
 <td>Weighting factor that adjusts the amount of artificial numerical diffusion for local inertial overland flow</td>
 <td>-</td>
-<td>0.8</td>
+<td>1.0</td>
 </tr>
 <tr class="even">
 <td><code>river_water_flow_threshold__depth</code></td>
@@ -767,12 +803,6 @@ ul.task-list li input[type="checkbox"] {
 <td><code>true</code></td>
 </tr>
 <tr class="even">
-<td><code>river_water_flow__froude_limit_flag</code></td>
-<td>Limit river flow to subcritical-critical according to Froude number</td>
-<td>-</td>
-<td><code>true</code></td>
-</tr>
-<tr class="odd">
 <td><code>floodplain_1d__flag</code></td>
 <td>Include 1D floodplain schematization for local inertial river routing</td>
 <td>-</td>
@@ -816,6 +846,12 @@ ul.task-list li input[type="checkbox"] {
 <td>Include constant head boundary condition</td>
 <td>-</td>
 <td><code>false</code></td>
+</tr>
+<tr class="even">
+<td><code>subsurface_water_flow__alpha_coefficient</code></td>
+<td>Stability coefficient for internal model time step groundwater flow</td>
+<td>-</td>
+<td>0.25</td>
 </tr>
 </tbody>
 </table>
@@ -941,13 +977,14 @@ ul.task-list li input[type="checkbox"] {
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

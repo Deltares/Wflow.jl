@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,18 +67,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../_static/logo.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-e2603ff5cfd09a8a129b1ad434859879.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -132,7 +133,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -321,7 +322,8 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Wflow.jl</span>
@@ -468,8 +470,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Reservoirs and Lakes</span></a>
+  <a href="../../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -486,6 +488,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -517,6 +525,12 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../../model_docs/parameters_routing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Routing concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
   </div>
 </li>
       </ul>
@@ -583,30 +597,30 @@ window.Quarto = {
   \alpha = \left(\frac{n P_\mathrm{w}^{\frac{2}{3}}}{\sqrt{c_\mathrm{slope}}}\right)^\beta \ \text{and} \ \beta = 0.6,
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{P_\mathrm{w}}{m}\)</span> is the wetted perimeter, <span class="math inline">\(c_\mathrm{slope}\)</span> (<span class="math inline">\(c_\mathrm{land\ slope}\)</span> for overland flow and <span class="math inline">\(c_\mathrm{river\ slope}\)</span> for river flow) is the slope <span class="math inline">\(\SIb{}{m\ m^{-1}}\)</span>, and <span class="math inline">\(n\)</span> (<span class="math inline">\(n_\mathrm{land}\)</span> for overland flow and <span class="math inline">\(n_\mathrm{river}\)</span> for river flow) is Manning’s coefficient <span class="math inline">\(\SIb{}{s\ m^{-\frac{1}{3}}}\)</span>. The wetted perimeter <span class="math inline">\(\subtext{P}{w}\)</span> for river flow is calculated by adding the river width (<span class="math inline">\(\subtext{w}{river}\)</span>) and 2 times half of the river bankfull depth (<span class="math inline">\(\subtext{h}{bankfull}\)</span>). A bankfull river depth map (default value is <span class="math inline">\(\SI{1}{m}\)</span>) for the river can be provided as follows in the TOML configuration file:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_bank_water__depth</span> <span class="op">=</span> <span class="st">"riverdepth"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_bank_water__depth</span> <span class="op">=</span> <span class="st">"riverdepth"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For overland flow, <span class="math inline">\(\subtext{P}{w}\)</span> is set equal to the effective flow width, determined by dividing the grid cell area by the flow length and subtracting <span class="math inline">\(\subtext{w}{river}\)</span>.</p>
 <p>The kinematic wave equations are solved with a nonlinear scheme using Newton’s method. By default, the iterations are performed until a stable solution is reached (<span class="math inline">\(\epsilon &lt;
 10^{-12}\)</span>). The internal time stepping is based on the Courant number or a fixed time step size <span class="math inline">\(\SIb{}{s}\)</span>. To enable a fixed internal time step for the kinematic wave the following lines can be inserted in the TOML file of the model:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Adaptive (internal) time stepping for the kinematic wave</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">false</span>    <span class="co"># optional, default is false</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed internal timestep for river flow (river cells)</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">river_kinematic_wave__time_step</span> <span class="op">=</span> <span class="dv">900</span>        <span class="co"># optional, default is model timestep</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">river_kinematic_wave__time_step</span> <span class="op">=</span> <span class="dv">900</span>        <span class="co"># optional, default is 900</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed internal timestep for overland flow (land cells)</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_kinematic_wave__time_step</span> <span class="op">=</span> <span class="dv">3600</span>        <span class="co"># optional, default is model timestep</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_kinematic_wave__time_step</span> <span class="op">=</span> <span class="dv">3600</span>        <span class="co"># optional, default 3600</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of the model:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Adaptive (internal) time stepping for the kinematic wave</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is false</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><a href="../../model_docs/routing/waterbodies.html">Reservoir and lake</a> models can be included as part of the river kinematic wave network.</p>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><a href="../../model_docs/routing/reservoirs.html">Reservoir</a> models representing reservoirs, (natural) lakes or other water storage features can be included as part of the river kinematic wave network.</p>
 </section>
 <section id="external-inflows" class="level2">
 <h2 class="anchored" data-anchor-id="external-inflows">External inflows</h2>
-<p>External inflows <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> for example water supply or abstractions can be added to the kinematic wave for river flow routing, as a cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">"river_water_inflow~external__volume_flow_rate"</span> <span class="op">=</span> <span class="st">"river_inflow"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>These inflows are added or subtracted from the upstream inflow before running the kinematic wave to solve the impact on resulting river flow <span class="math inline">\(\SIb{Q}{m^3\ s^{-1}}\)</span>. In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of <span class="math inline">\(0.80\)</span> applied to sum of upstream inflow, lateral inflow and river storage, all terms expresssed in unit <span class="math inline">\(\SI{}{m^3\ s^{-1}}\)</span>.</p>
+<p>External inflows <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> for example water supply or abstractions can be added to the kinematic wave for river flow routing, as a static or cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water__external_inflow_volume_flow_rate</span> <span class="op">=</span> <span class="st">"river_inflow"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>These inflows are added or subtracted from the lateral inflow before running the kinematic wave to solve the impact on resulting river flow <span class="math inline">\(\SIb{Q}{m^3\ s^{-1}}\)</span>. In case of an abstraction (negative inflow), the abstraction is limited by a fixed scaling factor of <span class="math inline">\(0.80\)</span> applied to river storage. Negative external inflows are satisfied first, and the remaining river storage is available for internal abstractions as part of water demand and allocation computations.</p>
 </section>
 <section id="abstractions" class="level2">
 <h2 class="anchored" data-anchor-id="abstractions">Abstractions</h2>
@@ -632,16 +646,16 @@ window.Quarto = {
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{c_\mathrm{land\ slope}}{m\ m^{-1}}\)</span> is the land slope, <span class="math inline">\(\SIb{\subtext{Q}{subsurface}}{m^3\ d^{-1}}\)</span> is subsurface flow, <span class="math inline">\(\SIb{K_\mathrm{h0}}{m\ d^{-1}}\)</span> is the saturated hydraulic conductivity at the soil surface, <span class="math inline">\(\SIb{\subtext{z}{ssf, watertable}}{m}\)</span> is the water table depth, <span class="math inline">\(\SIb{\subtext{z}{ssf,soil}}{m}\)</span> is the soil depth, <span class="math inline">\(\SIb{f_\mathrm{ssf, Kv}}{m^{-1}}\)</span> is a scaling parameter that controls the decrease of <span class="math inline">\(K_\mathrm{h0}\)</span> with depth and <span class="math inline">\(\SIb{\subtext{z}{ssf,exp}}{m}\)</span> is the depth from soil surface for which the exponential decline of <span class="math inline">\(K_\mathrm{h0}\)</span> is valid. For the <code>exponential</code> profile, <span class="math inline">\(\subtext{z}{ssf,exp}\)</span> is equal to <span class="math inline">\(\subtext{z}{ssf,soil}\)</span>.</p>
 <p>Combining with the following continuity equation: <span class="math display">\[
-    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
+    (\theta_s-\theta_{fc})w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{r}}{-}\)</span> are the saturated and residual soil water contents, respectively. Substituting for <span class="math inline">\(h (\frac{\partial Q}{\partial h})\)</span>, gives:</p>
+<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{fc}}{-}\)</span> are the saturated soil water content and soil water content at field capacity, respectively. The difference between <span class="math inline">\(\theta_s\)</span> and <span class="math inline">\(\theta_{fc}\)</span> represents the drainable porosity or specific yield and is assumed to be constant. Substituting for <span class="math inline">\(h(\frac{\partial Q}{\partial h})\)</span>, gives:</p>
 <p><span class="math display">\[
   \frac{\partial \subtext{Q}{subsurface}}{\partial t} = -c\frac{\partial \subtext{Q}{subsurface}}{\partial x} + cwR
 \]</span></p>
 <p>where celerity <span class="math inline">\(c\)</span> is calculated as follows: <span class="math display">\[
-    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
-    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
-    + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} &amp; \text{if $\subtext{z}{ssf,watertable} &lt; \subtext{z}{ssf,exp}$}\\
+    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}\begin{cases}
+    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}} &amp; \text{if
+    $\subtext{z}{ssf,watertable} &lt; \subtext{z}{ssf,exp}$}\\
     \\
     e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} &amp; \text{if $\subtext{z}{ssf,watertable} \ge \subtext{z}{ssf,exp}$}.
     \end{cases}
@@ -652,9 +666,10 @@ window.Quarto = {
 \]</span></p>
 <p>and celerity <span class="math inline">\(c\)</span> is given by:</p>
 <p><span class="math display">\[
-    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_r}.
+    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}.
 \]</span></p>
-<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
+<p>The water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> is based on the change in subsurface storage and the drainable porosity for a falling water table and the fillable porosity for a rising water table, see also the following <a href="../../model_docs/land/landhydrology_sbm.html#water-table-change">section</a>. Using the fillable porosity for a rising water table prevents mass balance errors for the entire soil (unsaturated and saturated zone) when the fillable porosity is not equal to the drainable porosity used for the computation of lateral subsurface flow.</p>
+<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method. For the <code>exponential</code> and <code>exponential_constant</code> profiles, the kinematic wave celerity <span class="math inline">\(c\)</span> is a function of the water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> and for these profiles the kinematic wave equation is solved using Newton’s method with an iteration criterion set to a maximum allowed water table depth change of <span class="math inline">\(\SI{0.1}{m}\)</span>. This iteration criterion is applied to each model cell independently to compute and route subsurface flow for each model timestep (routing is not done at an internal timestep, see also the note below).</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -672,19 +687,19 @@ Note
 <section id="multi-threading" class="level2">
 <h2 class="anchored" data-anchor-id="multi-threading">Multi-Threading</h2>
 <p>The kinematic wave calculations for surface - and subsurface flow routing can be executed in parallel using multiple threads. In the model section of the TOML file, a minimum stream order can be provided to define subbasins for the river (default is 6) and land domain (default is 5). Subbasins are created at all confluences where each branch has a minimal stream order. Based on the subbasins a directed acyclic graph is created that controls the order of execution and which subbasins can run in parallel.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_streamorder__min_count</span> <span class="op">=</span> <span class="dv">5</span> <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_streamorder__min_count</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_streamorder__min_count</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="subbasin-flow" class="level2">
 <h2 class="anchored" data-anchor-id="subbasin-flow">Subbasin flow</h2>
 <p>Normally the the kinematic wave is continuous throughout the model. By using the <code>pit__flag</code> entry and <code>basin_pit_location__mask</code> in the model and input sections of the TOML file all flow is at the subbasin only (upstream of the pit locations, defined by the netCDF variable <code>wflow_pits</code> in the example below) and no flow is transferred from one subbasin to another. This can be convenient when connecting the result of the model to a water allocation model such as Ribasim.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">basin_pit_location__mask</span> <span class="op">=</span> <span class="st">"wflow_pits"</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pit__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pit__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
@@ -768,13 +783,14 @@ Note
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -32,18 +32,19 @@ ul.task-list li input[type="checkbox"] {
 <link href="../_static/logo.png" rel="icon" type="image/png">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-e2603ff5cfd09a8a129b1ad434859879.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-1a65bbd430d8bfc66faef75116c39d03.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -257,7 +258,8 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../_static/logo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Wflow.jl</span>
@@ -404,8 +406,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../model_docs/routing/waterbodies.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Reservoirs and Lakes</span></a>
+  <a href="../model_docs/routing/reservoirs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reservoirs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -422,6 +424,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true">
@@ -455,6 +463,12 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Routing concepts</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../model_docs/parameters_mass_balance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mass balance</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -483,7 +497,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#vegetation" id="toc-vegetation" class="nav-link" data-scroll-target="#vegetation">Vegetation</a>
   <ul class="collapse">
   <li><a href="#input-2" id="toc-input-2" class="nav-link" data-scroll-target="#input-2">Input</a></li>
-  <li><a href="#input-cyclic-lai" id="toc-input-cyclic-lai" class="nav-link" data-scroll-target="#input-cyclic-lai">Input static and cyclic</a></li>
+  <li><a href="#input-cyclic-lai" id="toc-input-cyclic-lai" class="nav-link" data-scroll-target="#input-cyclic-lai">Static or cyclic/forcing input</a></li>
   <li><a href="#states-2" id="toc-states-2" class="nav-link" data-scroll-target="#states-2">States</a></li>
   <li><a href="#output-2" id="toc-output-2" class="nav-link" data-scroll-target="#output-2">Output</a></li>
   </ul></li>
@@ -613,7 +627,7 @@ td, th {
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>snowpack__degree-day_coefficient</code></td>
+<td><code>snowpack__degree_day_coefficient</code></td>
 <td>Degree-day factor for snowmelt</td>
 <td>mm ᵒC⁻¹ Δt⁻¹</td>
 <td>3.75 mm ᵒC⁻¹ day⁻¹</td>
@@ -644,12 +658,12 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>snowpack~dry__leq-depth</code></td>
+<td><code>snowpack_dry_snow__leq_depth</code></td>
 <td>Liquid-water equivalent of dry snow</td>
 <td>mm</td>
 </tr>
 <tr class="even">
-<td><code>snowpack~liquid__depth</code></td>
+<td><code>snowpack_liquid_water__depth</code></td>
 <td>Liquid water content in the snow pack</td>
 <td>mm</td>
 </tr>
@@ -673,7 +687,17 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>snowpack__leq-depth</code></td>
+<td><code>snowpack_dry_snow__leq_depth</code></td>
+<td>Liquid-water equivalent of dry snow</td>
+<td>mm</td>
+</tr>
+<tr class="even">
+<td><code>snowpack_liquid_water__depth</code></td>
+<td>Liquid water content in the snow pack</td>
+<td>mm</td>
+</tr>
+<tr class="odd">
+<td><code>snowpack__leq_depth</code></td>
 <td>Liquid-water equivalent of snow pack (SWE)</td>
 <td>mm</td>
 </tr>
@@ -712,7 +736,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>glacier_ice__initial_leq-depth</code></td>
+<td><code>glacier_ice__initial_leq_depth</code></td>
 <td>Initial glacier liquid-water equivalent (cold state)</td>
 <td>mm</td>
 <td>5500.0</td>
@@ -724,13 +748,13 @@ td, th {
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td><code>glacier_ice__degree-day_coefficient</code></td>
+<td><code>glacier_ice__degree_day_coefficient</code></td>
 <td>Degree-day factor for melt from glacier</td>
 <td>mm ᵒC⁻¹ Δt⁻¹</td>
 <td>3.0 mm ᵒC⁻¹ day⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>glacier_firn_accumulation__snowpack~dry_leq-depth_fraction</code></td>
+<td><code>glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction</code></td>
 <td>Fraction of the snowpack on top of the glacier converted into ice</td>
 <td>Δt⁻¹</td>
 <td>0.001 day⁻¹</td>
@@ -756,7 +780,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>glacier_ice__leq-depth</code></td>
+<td><code>glacier_ice__leq_depth</code></td>
 <td>Glacier liquid-water equivalent</td>
 <td>mm</td>
 </tr>
@@ -775,6 +799,11 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
+<td><code>glacier_ice__leq_depth</code></td>
+<td>Glacier liquid-water equivalent</td>
+<td>mm</td>
+</tr>
+<tr class="even">
 <td><code>glacier_ice__melt_volume_flux</code></td>
 <td>Melt from the glacier</td>
 <td>mm Δt⁻¹</td>
@@ -816,7 +845,7 @@ td, th {
 <td>1.0</td>
 </tr>
 <tr class="odd">
-<td><code>vegetation__specific-leaf_storage</code></td>
+<td><code>vegetation__specific_leaf_storage</code></td>
 <td>Specific leaf storage</td>
 <td>mm</td>
 <td>-</td>
@@ -828,13 +857,13 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>vegetation_canopy__light-extinction_coefficient</code></td>
+<td><code>vegetation_canopy__light_extinction_coefficient</code></td>
 <td>Extinction coefficient (to calculate canopy gap fraction)</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio</code></td>
+<td><code>vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio</code></td>
 <td>Gash interception model parameter</td>
 <td>-</td>
 <td>0.1</td>
@@ -855,7 +884,7 @@ td, th {
 </table>
 </section>
 <section id="input-cyclic-lai" class="level3">
-<h3 class="anchored" data-anchor-id="input-cyclic-lai">Input static and cyclic</h3>
+<h3 class="anchored" data-anchor-id="input-cyclic-lai">Static or cyclic/forcing input</h3>
 <table class="table-striped table-hover caption-top table">
 <thead>
 <tr class="header">
@@ -867,7 +896,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>vegetation__leaf-area_index</code></td>
+<td><code>vegetation__leaf_area_index</code></td>
 <td>Leaf area index</td>
 <td>m² m⁻²</td>
 <td>-</td>
@@ -911,16 +940,21 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
+<td><code>vegetation_canopy_water__depth</code></td>
+<td>Canopy storage</td>
+<td>mm</td>
+</tr>
+<tr class="even">
 <td><code>vegetation_canopy_water__stemflow_volume_flux</code></td>
 <td>Stemflow</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>vegetation_canopy_water__throughfall_volume_flux</code></td>
 <td>Throughfall</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>vegetation_canopy_water__interception_volume_flux</code></td>
 <td>Interception</td>
 <td>mm Δt⁻¹</td>
@@ -933,6 +967,7 @@ td, th {
 <h2 class="anchored" data-anchor-id="soil">Soil</h2>
 <section id="input-3" class="level3">
 <h3 class="anchored" data-anchor-id="input-3">Input</h3>
+<p>Note that the input parameter water content at field capacity (<code>soil_water__field_capacity_volume_fraction</code>) is optional. When not provided the water content is computed at a pressure head of -100 cm using the Brooks and Corey water retention model.</p>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 41%">
@@ -950,7 +985,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>soil_vertical_saturated_hydraulic_conductivity_profile~exponential_below-surface__depth</code></td>
+<td><code>soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
 <td>Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an <code>exponential_constant</code> saturated hydraulic conductivity profile is used</td>
 <td>mm</td>
 <td>-</td>
@@ -962,7 +997,7 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>soil_vertical_saturated_hydraulic_conductivity_profile~layered_below-surface__depth</code></td>
+<td><code>soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth</code></td>
 <td>Depth from soil surface for which <code>layered</code> profile is valid, when a <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
 <td>mm</td>
 <td>-</td>
@@ -992,91 +1027,91 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="even">
+<td><code>soil_water__field_capacity_volume_fraction</code></td>
+<td>Field capacity (water content)</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr class="odd">
 <td><code>soil_surface_water__vertical_saturated_hydraulic_conductivity</code></td>
 <td>Vertical saturated hydraulic conductivity at soil surface</td>
 <td>mm Δt⁻¹</td>
 <td>-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter</code></td>
 <td>Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth</td>
 <td>mm⁻¹</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_water__air_entry_pressure_head</code></td>
 <td>Air entry pressure head of soil</td>
 <td>cm</td>
 <td>-10.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~1</code></td>
+<tr class="even">
+<td><code>vegetation_root__feddes_critical_pressure_head_h1</code></td>
 <td>Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>0.0</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~2</code></td>
+<tr class="odd">
+<td><code>vegetation_root__feddes_critical_pressure_head_h2</code></td>
 <td>Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-100.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~3~high</code></td>
+<tr class="even">
+<td><code>vegetation_root__feddes_critical_pressure_head_h3_high</code></td>
 <td>Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-400.0</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~3~low</code></td>
+<tr class="odd">
+<td><code>vegetation_root__feddes_critical_pressure_head_h3_low</code></td>
 <td>Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-1000.0</td>
 </tr>
-<tr class="odd">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~4</code></td>
+<tr class="even">
+<td><code>vegetation_root__feddes_critical_pressure_head_h4</code></td>
 <td>Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
 <td>cm</td>
 <td>-16000.0</td>
 </tr>
-<tr class="even">
-<td><code>vegetation_root__feddes_critial_pressure_head_h~1_reduction_coefficient</code></td>
+<tr class="odd">
+<td><code>vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient</code></td>
 <td>Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
 <td>-</td>
 <td>1.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil__thickness</code></td>
 <td>Soil thickness</td>
 <td>mm</td>
 <td>-</td>
 </tr>
-<tr class="even">
-<td><code>soil~compacted_surface_water__infiltration_capacity</code></td>
+<tr class="odd">
+<td><code>compacted_soil_surface_water__infiltration_capacity</code></td>
 <td>Infiltration capacity of compacted areas</td>
 <td>mm Δt⁻¹</td>
 <td>10 mm day⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil~non-compacted_surface_water__infiltration_capacity</code></td>
-<td>Soil infiltration capacity</td>
-<td>mm Δt⁻¹</td>
-<td>100.0 mm day⁻¹</td>
-</tr>
 <tr class="even">
-<td><code>soil_water_sat-zone_bottom__max_leakage_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_bottom__max_leakage_volume_flux</code></td>
 <td>Maximum leakage from saturated zone</td>
 <td>mm Δt⁻¹</td>
 <td>0.0 mm day⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil_layer_water__brooks-corey_exponent</code></td>
+<td><code>soil_layer_water__brooks_corey_exponent</code></td>
 <td>Brooks-Corey power coefficient per soil layer</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>land~water-covered__area_fraction</code></td>
+<td><code>land_water_covered__area_fraction</code></td>
 <td>Fraction of open water (excluding rivers)</td>
 <td>-</td>
 <td>0.0</td>
@@ -1088,13 +1123,13 @@ td, th {
 <td>1.0</td>
 </tr>
 <tr class="even">
-<td><code>soil~compacted__area_fraction</code></td>
+<td><code>compacted_soil__area_fraction</code></td>
 <td>Fraction of compacted soil area</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>soil_root~wet__sigmoid_function_shape_parameter</code></td>
+<td><code>soil_wet_root__sigmoid_function_shape_parameter</code></td>
 <td>Controls sharpness of transition between fully wet and fully dry roots</td>
 <td>-</td>
 <td>-500.0</td>
@@ -1106,13 +1141,13 @@ td, th {
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_top_capillary-rise__max_water-table_depth</code></td>
+<td><code>soil_water_saturated_zone_top__capillary_rise_max_water_table_depth</code></td>
 <td>Maximum water table depth for capillary rise</td>
 <td>mm</td>
 <td>2000.0</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_sat-zone_top_capillary-rise__averianov_exponent</code></td>
+<td><code>soil_water_saturated_zone_top__capillary_rise_averianov_exponent</code></td>
 <td>Averianov exponent controlling capillary rise</td>
 <td>-</td>
 <td>2.0</td>
@@ -1142,12 +1177,12 @@ td, th {
 <td>ᵒC</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_sat-zone__depth</code></td>
+<td><code>soil_water_saturated_zone__depth</code></td>
 <td>Amount of water in the saturated store</td>
 <td>mm</td>
 </tr>
 <tr class="odd">
-<td><code>soil_layer_water_unsat-zone__depth</code></td>
+<td><code>soil_layer_water_unsaturated_zone__depth</code></td>
 <td>Amount of water in the unsaturated store, per soil layer</td>
 <td>mm</td>
 </tr>
@@ -1171,52 +1206,62 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
+<td><code>soil_surface__temperature</code></td>
+<td>Soil surface temperature, only when snow is modelled</td>
+<td>ᵒC</td>
+</tr>
+<tr class="even">
+<td><code>soil_water_saturated_zone__depth</code></td>
+<td>Amount of water in the saturated store</td>
+<td>mm</td>
+</tr>
+<tr class="odd">
+<td><code>soil_layer_water_unsaturated_zone__depth</code></td>
+<td>Amount of water in the unsaturated store, per soil layer</td>
+<td>mm</td>
+</tr>
+<tr class="even">
 <td><code>land_surface__evapotranspiration_volume_flux</code></td>
 <td>Total actual evapotranspiration</td>
 <td>mm</td>
 </tr>
-<tr class="even">
-<td><code>land_water~storage~total__depth</code></td>
-<td>Total water storage (excluding floodplains, lakes and reservoirs)</td>
+<tr class="odd">
+<td><code>land_water_storage__total_depth</code></td>
+<td>Total water storage (excluding floodplains and reservoirs)</td>
 <td>mm</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_water__infiltration_volume_flux</code></td>
 <td>Actual infiltration into the unsaturated zone</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_water__transpiration_volume_flux</code></td>
 <td>Transpiration from vegetation</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>soil_surface_water__runoff_volume_flux</code></td>
 <td>Total surface runoff from infiltration and saturation excess</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>soil_surface_water__net_runoff_volume_flux</code></td>
 <td>Net surface runoff (after open water evaporation)</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil~compacted_surface_water__excess_volume_flux</code></td>
+<tr class="even">
+<td><code>compacted_soil_surface_water__excess_volume_flux</code></td>
 <td>Excess water for compacted soil fraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>soil~non-compacted_surface_water__excess_volume_flux</code></td>
+<tr class="odd">
+<td><code>non_compacted_soil_surface_water__excess_volume_flux</code></td>
 <td>Excess water for non-compacted soil fraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>soil_surface_water_unsat-zone__exfiltration_volume_flux</code></td>
-<td>Water exfiltrating from unsaturated store because of rising water table</td>
-<td>mm Δt⁻¹</td>
-</tr>
 <tr class="even">
-<td><code>soil_surface_water_sat-zone__exfiltration_volume_flux</code></td>
+<td><code>soil_surface_water_saturated_zone__exfiltration_volume_flux</code></td>
 <td>Water exfiltrating from saturated store during saturation excess conditions</td>
 <td>mm Δt⁻¹</td>
 </tr>
@@ -1231,47 +1276,47 @@ td, th {
 <td>%</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_root-zone__volume_fraction</code></td>
+<td><code>soil_water_root_zone__volume_fraction</code></td>
 <td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_root-zone__volume_percentage</code></td>
+<td><code>soil_water_root_zone__volume_percentage</code></td>
 <td>Volumetric water content in root zone (including residual water content and saturated zone)</td>
 <td>%</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_root-zone__depth</code></td>
+<td><code>soil_water_root_zone__depth</code></td>
 <td>Root water storage in unsaturated and saturated zone (excluding residual water content)</td>
 <td>mm</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_unsat-zone__depth</code></td>
+<td><code>soil_water_unsaturated_zone__depth</code></td>
 <td>Amount of water in the unsaturated store</td>
 <td>mm</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_top__capillary_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_top__capillary_volume_flux</code></td>
 <td>Actual capillary rise</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_sat-zone_top__recharge_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_top__recharge_volume_flux</code></td>
 <td>Downward flux from unsaturated to saturated zone</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_top__net_recharge_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_top__net_recharge_volume_flux</code></td>
 <td>Net recharge to saturated zone</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>soil_water_sat-zone_bottom__leakage_volume_flux</code></td>
+<td><code>soil_water_saturated_zone_bottom__leakage_volume_flux</code></td>
 <td>Actual leakage from saturated store</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>soil_water_sat-zone_top__depth</code></td>
+<td><code>soil_water_saturated_zone_top__depth</code></td>
 <td>Pseudo-water table depth (top of the saturated zone)</td>
 <td>mm</td>
 </tr>
@@ -1283,8 +1328,8 @@ td, th {
 <h2 class="anchored" data-anchor-id="water-demand">Water demand</h2>
 <section id="non-irrigation" class="level3">
 <h3 class="anchored" data-anchor-id="non-irrigation">Non-irrigation</h3>
-<section id="input-static-and-cyclic" class="level4">
-<h4 class="anchored" data-anchor-id="input-static-and-cyclic">Input static and cyclic</h4>
+<section id="static-or-cyclicforcing-input" class="level4">
+<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input">Static or cyclic/forcing input</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -1302,37 +1347,37 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~domestic__gross_water_demand_volume_flux</code></td>
+<td><code>domestic__gross_water_demand_volume_flux</code></td>
 <td>Gross domestic water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>land~domestic__net_water_demand_volume_flux</code></td>
+<td><code>domestic__net_water_demand_volume_flux</code></td>
 <td>Net domestic water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td><code>land~industry__gross_water_demand_volume_flux</code></td>
+<td><code>industry__gross_water_demand_volume_flux</code></td>
 <td>Gross industry water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>land~industry__net_water_demand_volume_flux</code></td>
+<td><code>industry__net_water_demand_volume_flux</code></td>
 <td>Net industry water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="odd">
-<td><code>land~livestock__gross_water_demand_volume_flux</code></td>
+<td><code>livestock__gross_water_demand_volume_flux</code></td>
 <td>Gross livestock water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
 </tr>
 <tr class="even">
-<td><code>land~livestock__net_water_demand_volume_flux</code></td>
+<td><code>livestock__net_water_demand_volume_flux</code></td>
 <td>Net livestock water demand</td>
 <td>mm Δt⁻¹</td>
 <td>0.0</td>
@@ -1362,19 +1407,19 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__irrigation_efficiency</code></td>
+<td><code>irrigated_non_paddy__irrigation_efficiency</code></td>
 <td>Irrigation efficiency</td>
 <td>-</td>
-<td>-</td>
+<td>1.0</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-non-paddy_area__count</code></td>
+<td><code>irrigated_non_paddy_area__count</code></td>
 <td>Irrigation areas (non-paddy)</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__max_irrigation_rate</code></td>
+<td><code>irrigated_non_paddy__max_irrigation_rate</code></td>
 <td>Maximum irrigation rate</td>
 <td>mm Δt⁻¹</td>
 <td>25.0 mm day⁻¹</td>
@@ -1382,8 +1427,8 @@ td, th {
 </tbody>
 </table>
 </section>
-<section id="input-static-and-cyclic-1" class="level4">
-<h4 class="anchored" data-anchor-id="input-static-and-cyclic-1">Input static and cyclic</h4>
+<section id="static-or-cyclicforcing-input-1" class="level4">
+<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-1">Static or cyclic/forcing input</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -1401,7 +1446,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__irrigation_trigger_flag</code></td>
+<td><code>irrigated_non_paddy__irrigation_trigger_flag</code></td>
 <td>Irrigation trigger (off or on, 0 or 1)</td>
 <td>-</td>
 <td>-</td>
@@ -1426,7 +1471,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-non-paddy__gross_water_demand_volume_flux</code></td>
+<td><code>irrigated_non_paddy__gross_water_demand_volume_flux</code></td>
 <td>Irrigation (non-paddy) gross demand</td>
 <td>mm Δt⁻¹</td>
 </tr>
@@ -1455,37 +1500,37 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-paddy__min_depth</code></td>
+<td><code>irrigated_paddy__min_depth</code></td>
 <td>Minimum required water depth in the irrigated paddy fields</td>
 <td>mm</td>
 <td>20.0</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-paddy__optimal_depth</code></td>
+<td><code>irrigated_paddy__optimal_depth</code></td>
 <td>Optimal water depth in the irrigated paddy fields</td>
 <td>mm</td>
 <td>50.0</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated-paddy__max_depth</code></td>
+<td><code>irrigated_paddy__max_depth</code></td>
 <td>Water depth when paddy field starts spilling water (overflow)</td>
 <td>mm</td>
 <td>80.0</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-paddy__irrigation_efficiency</code></td>
+<td><code>irrigated_paddy__irrigation_efficiency</code></td>
 <td>Irrigation efficiency</td>
 <td>-</td>
-<td>-</td>
+<td>1.0</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated-paddy_area__count</code></td>
+<td><code>irrigated_paddy_area__count</code></td>
 <td>Irrigation areas (paddy)</td>
 <td>-</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td><code>land~irrigated-paddy__max_irrigation_rate</code></td>
+<td><code>irrigated_paddy__max_irrigation_rate</code></td>
 <td>Maximum irrigation rate</td>
 <td>mm Δt⁻¹</td>
 <td>25.0 mm day⁻¹</td>
@@ -1493,8 +1538,8 @@ td, th {
 </tbody>
 </table>
 </section>
-<section id="input-static-and-cyclic-2" class="level4">
-<h4 class="anchored" data-anchor-id="input-static-and-cyclic-2">Input static and cyclic</h4>
+<section id="static-or-cyclicforcing-input-2" class="level4">
+<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-2">Static or cyclic/forcing input</h4>
 <table class="table-striped table-hover caption-top table">
 <colgroup>
 <col style="width: 42%">
@@ -1512,7 +1557,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-paddy__irrigation_trigger_flag</code></td>
+<td><code>irrigated_paddy__irrigation_trigger_flag</code></td>
 <td>Irrigation trigger (off or on, 0 or 1)</td>
 <td>-</td>
 <td>-</td>
@@ -1532,7 +1577,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land_surface_water~paddy__depth</code></td>
+<td><code>paddy_surface_water__depth</code></td>
 <td>Water depth in paddy field</td>
 <td>mm</td>
 </tr>
@@ -1556,7 +1601,12 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land~irrigated-paddy__gross_water_demand_volume_flux</code></td>
+<td><code>paddy_surface_water__depth</code></td>
+<td>Water depth in paddy field</td>
+<td>mm</td>
+</tr>
+<tr class="even">
+<td><code>irrigated_paddy__gross_water_demand_volume_flux</code></td>
 <td>Irrigation (paddy) gross demand</td>
 <td>mm Δt⁻¹</td>
 </tr>
@@ -1616,27 +1666,27 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>land_surface_water_abstraction__volume_flux</code></td>
+<td><code>land_surface_water__abstraction_volume_flux</code></td>
 <td>Actual surface water abstraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>subsurface_water_abstraction__volume_flux</code></td>
+<td><code>subsurface_water__abstraction_volume_flux</code></td>
 <td>Actual groundwater abstraction</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>land~irrigated__allocated_water_volume_flux</code></td>
+<td><code>land__allocated_irrigation_water_volume_flux</code></td>
 <td>Allocated water for irrigation</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="even">
-<td><code>land~non-irrigated__allocated_water_volume_flux</code></td>
+<td><code>land__allocated_non_irrigation_water_volume_flux</code></td>
 <td>Allocated water for non-irrigation</td>
 <td>mm Δt⁻¹</td>
 </tr>
 <tr class="odd">
-<td><code>land~non-irrigation__return_flow_volume_flux</code></td>
+<td><code>land__non_irrigation_return_flow_volume_flux</code></td>
 <td>Return flow from non-irrgation sectors</td>
 <td>mm Δt⁻¹</td>
 </tr>
@@ -1713,13 +1763,14 @@ td, th {
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
