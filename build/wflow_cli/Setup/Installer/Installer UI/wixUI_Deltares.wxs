@@ -6,7 +6,7 @@
       <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8"/>
       <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
       <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" Red="0" Green="0" Blue="0" />
-      
+
       <TextStyle Id="WixUI_Font_Banner_Description" FaceName="Tahoma" Size="8" Red="0" Green="0" Blue="0" />
 
       <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
@@ -48,7 +48,7 @@
       <Publish Dialog="MaintenanceTypeDlgDeltares" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlgDeltares">1</Publish>
       <Publish Dialog="MaintenanceTypeDlgDeltares" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlgDeltares">1</Publish>
     </UI>
-    
+
     <UIRef Id="WixUI_Common" />
   </Fragment>
 </Wix>

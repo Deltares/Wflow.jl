@@ -1,5 +1,9 @@
 "Soil loss model"
-@with_kw struct SoilLoss{RE, OFE, SE} <: AbstractLandModel
+@with_kw struct SoilLoss{
+    RE <: AbstractRainfallErosionModel,
+    OFE <: AbstractOverlandFlowErosionModel,
+    SE <: AbstractSoilErosionModel,
+} <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     hydrological_forcing::HydrologicalForcing
     rainfall_erosion::RE
@@ -9,37 +13,26 @@ end
 
 "Initialize soil loss model"
 function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
+    (; rainfall_erosion, overland_flow_erosion) = config.model
     n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(n)
-    hydrological_forcing = HydrologicalForcing(n)
+    atmospheric_forcing = AtmosphericForcing(; n)
+    hydrological_forcing = HydrologicalForcing(; n)
 
     # Rainfall erosion
-    rainfallerosionmodel = get(config.model, "rainfall_erosion", "answers")::String
-    if rainfallerosionmodel == "answers"
+    if rainfall_erosion == RainfallErosionType.answers
         rainfall_erosion = RainfallErosionAnswersModel(dataset, config, indices)
-    elseif rainfallerosionmodel == "eurosem"
+    elseif rainfall_erosion == RainfallErosionType.eurosem
         rainfall_erosion = RainfallErosionEurosemModel(dataset, config, indices)
-    else
-        error("Unknown rainfall erosion model: $rainfallerosionmodel")
     end
 
     # Overland flow erosion
-    overlandflowerosionmodel = get(config.model, "overland_flow_erosion", "answers")::String
-    if overlandflowerosionmodel == "answers"
-        overland_flow_erosion = OverlandFlowErosionAnswersModel(dataset, config, indices)
-    else
-        error("Unknown overland flow erosion model: $overlandflowerosionmodel")
-    end
+    overland_flow_erosion = OverlandFlowErosionAnswersModel(dataset, config, indices)
 
     # Total soil erosion and particle differentiation
     soil_erosion = SoilErosionModel(dataset, config, indices)
 
-    soil_loss = SoilLoss{
-        typeof(rainfall_erosion),
-        typeof(overland_flow_erosion),
-        typeof(soil_erosion),
-    }(;
+    soil_loss = SoilLoss(;
         atmospheric_forcing,
         hydrological_forcing,
         rainfall_erosion,

@@ -31,20 +31,20 @@ this `API` section, that lists the variables that wflow can exchange through BMI
 [API]
 variables = [
    "river_water__volume_flow_rate",
-   "soil_water_unsat-zone__depth",
+   "soil_water_unsaturated_zone__depth",
    "soil_water__transpiration_volume_flux",
-   "soil_layer~1_water_unsat-zone__depth",
-   "soil_layer~2_water_unsat-zone__depth",
-   "soil_layer~3_water_unsat-zone__depth",
-   "soil_layer~4_water_unsat-zone__depth",
+   "soil_layer_1_water_unsaturated_zone__depth",
+   "soil_layer_2_water_unsaturated_zone__depth",
+   "soil_layer_3_water_unsaturated_zone__depth",
+   "soil_layer_4_water_unsaturated_zone__depth",
 ]
 ```
 
 Variables with a third dimension, for example `layer` as part of the `SBM` `soil` model, are
 exposed as two-dimensional grids through the wflow BMI implementation. For these variables
 the index of this third dimension is required, by adding `k` to the `layer` part of the
-variable standard name (`k` refers to the index of the third dimension): `layer~k`. For
-example, the variable `soil_layer~1_water_unsat-zone__depth` refers to the amount of water
+variable standard name (`k` refers to the index of the third dimension): `layer_k`. For
+example, the variable `soil_layer_1_water_unsaturated_zone__depth` refers to the amount of water
 in the unsaturated store of the first soil layer of the `SBM` `soil` model.
 
 The model state and output variable standard names are provided in the "Model parameters and

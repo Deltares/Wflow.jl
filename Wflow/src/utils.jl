@@ -23,26 +23,49 @@ Sigmoid "S"-shaped curve.
 
 # Arguments
 - `x::Real`: input
-- `a::Real`: determines the centre level
-- `b::Real`: determines the amplitude of the curve
+- `a::Real`: determines the center level
+- `b::Real`: determines the amplitude of the curve (range: (0, b⁻¹))
 - `c::Real`: determines the steepness or "stepwiseness" of the curve.
              The higher c the sharper the function. A negative c reverses the function.
 """
-function scurve(x, a, b, c)
-    s = one(x) / (b + exp(-c * (x - a)))
+function scurve(x::Real, a::Real, b::Real, c::Real)::Real
+    s = inv(b + exp(-c * (x - a)))
     return s
 end
 
+function to_enumx(T, i::Int)
+    options = instances(T)
+    n_options = length(options)
+    if 1 ≤ i ≤ n_options
+        return options[i]
+    else
+        options_repr = repr(MIME("text/plain"), T)
+        throw(
+            error(
+                "Cannot convert $i to $T, there are only $n_options options:\n$options_repr.",
+            ),
+        )
+    end
+end
+
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
-function set_pit_ldd(pits_2d, ldd, indices; pit = 5)
+function set_pit_ldd(
+    pits_2d::AbstractMatrix{Bool},
+    ldd::Vector{UInt8},
+    indices::Vector{CartesianIndex{2}};
+    pit::Integer = 5,
+)::Vector{UInt8}
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
-    ldd[index] .= pit
+    ldd[index] .= UInt8(pit)
     return ldd
 end
 
 "Filter upstream neighbors of graph based on logical vector"
-function filter_upsteam_nodes(graph, vec_logical::Vector{Bool})
+function filter_upsteam_nodes(
+    graph::SimpleDiGraph{Int},
+    vec_logical::Vector{Bool},
+)::Vector{Vector{Int}}
     upstream_nodes = Vector{Int}[]
     for v in topological_sort_by_dfs(graph)
         ups_nodes = inneighbors(graph, v)
@@ -63,7 +86,10 @@ These map from the 1D internal domain to the 2D external domain.
 the 1D internal domain, providing an Int which can be used as a linear index. Values of 0
 represent inactive cells.
 """
-function active_indices(subcatch_2d::AbstractMatrix, nodata)
+function active_indices(
+    subcatch_2d::AbstractMatrix,
+    nodata,
+)::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
     A = subcatch_2d
     all_inds = CartesianIndices(size(A))
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
@@ -76,11 +102,9 @@ function active_indices(subcatch_2d::AbstractMatrix, nodata)
     return indices, reverse_indices
 end
 
-function active_indices(domain::Domain, key::AbstractString)
+function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIndex{2}}
     if occursin("reservoir", key)
         return domain.reservoir.network.indices_outlet
-    elseif occursin("lake", key)
-        return domain.lake.network.indices_outlet
     elseif occursin("river", key) || occursin("floodplain", key)
         return domain.river.network.indices
     elseif occursin("drain", key)
@@ -90,7 +114,7 @@ function active_indices(domain::Domain, key::AbstractString)
     end
 end
 
-function lattometres(lat::Real)
+function lattometres(lat::Real)::Tuple{Float64, Float64}
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
     m3 = 1.175         # latitude calculation term 3
@@ -106,7 +130,11 @@ function lattometres(lat::Real)
     return longlen, latlen
 end
 
-function cell_lengths(y::AbstractVector, celllength::Real, cell_length_in_meter::Bool)
+function cell_lengths(
+    y::AbstractVector{<:Real},
+    celllength::Real,
+    cell_length_in_meter::Bool,
+)::Tuple{Vector{Float64}, Vector{Float64}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -133,7 +161,12 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states!(instate_path, model; type = nothing, dimname = nothing)
+function set_states!(
+    instate_path::AbstractString,
+    model;
+    type = nothing,
+    dimname = nothing,
+)::Nothing
     (; domain, land, config) = model
 
     # Check if required states are covered
@@ -168,7 +201,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object
-                lens = standard_name_map(land)[state].lens
+                lens = get_lens(state, land)
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
@@ -182,7 +215,7 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = standard_name_map(land)[state].lens
+                lens = get_lens(state, land)
                 lens(model)[1:n] .= A
             else
                 error(
@@ -195,16 +228,36 @@ function set_states!(instate_path, model; type = nothing, dimname = nothing)
     return nothing
 end
 
+function get_var(config::Config, parameter::AbstractString; optional = true)
+    if hasfield(InputSection, Symbol(parameter))
+        var = getfield(config.input, Symbol(parameter))
+    elseif haskey(config.input.location_maps, parameter)
+        var = config.input.location_maps[parameter]
+    elseif haskey(config.input.static, parameter)
+        var = config.input.static[parameter]
+    elseif haskey(config.input.cyclic, parameter)
+        var = config.input.cyclic[parameter]
+    elseif optional
+        var = nothing
+    else
+        error(
+            "Required input model parameter with standard name '$parameter' not set in TOML file",
+        )
+    end
+    return var
+end
+
 """
-    ncread(nc, config::Config, parameter::NamedTuple; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
-`parameter` specifying the internal standard `name` in the TOML configuration file and a
-`lens` to access the external netCDF variable name in the nested `config` object. Supports
-various keyword arguments to get selections of data in desired types, with or without
-missing values.
+model `parameter` (standard name) specified in the TOML configuration file. Supports various
+keyword arguments to get selections of data in desired types, with or without missing
+values.
 
 # Arguments
+- `optional=true`: By default specifying a model `parameter` in the TOML file is optional.
+        Set to false if the model `parameter` is required.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
 - `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
@@ -221,7 +274,8 @@ missing values.
 function ncread(
     nc,
     config::Config,
-    parameter::NamedTuple;
+    parameter::AbstractString;
+    optional = true,
     sel = nothing,
     defaults = nothing,
     type = nothing,
@@ -230,10 +284,12 @@ function ncread(
     dimname = nothing,
     logging = true,
 )
-    # for optional parameters (`lens` set to `nothing`) default values are used.
-    if isnothing(parameter.lens)
-        @info "Set `$(parameter.name)` using default value `$defaults`."
-        @assert !isnothing(defaults)
+    var = get_var(config, parameter; optional)
+
+    # for optional parameters default values are used.
+    if isnothing(var)
+        @info "Set `$parameter` using default value `$defaults`."
+        @assert !isnothing(defaults) parameter
         if !isnothing(type)
             defaults = convert(type, defaults)
         end
@@ -242,11 +298,6 @@ function ncread(
         else
             return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
         end
-    else
-        # get var (netCDF variable or type Config) from TOML file.
-        # if var has type Config, input parameters can be changed.
-        var = parameter.lens(config)
-        var = var isa AbstractDict ? Config(var, pathof(config)) : var
     end
 
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
@@ -261,43 +312,37 @@ function ncread(
         error("Unrecognized dimension name $dimname")
     end
 
-    # If var has type Config, input parameters can be changed (through scale, offset and
-    # input netCDF var) or set to a uniform value (providing a value). Otherwise, input
-    # NetCDF var is read directly.
-    var, mod = ncvar_name_modifier(var; config = config)
+    var = convert(InputEntry, var)
+    (; value, layer, scale, offset) = var
+    variable_info(var)
 
-    if !isnothing(mod.value)
-        @info "Set `$(parameter.name)` using uniform value `$(mod.value)` from TOML file."
+    if !isnothing(value)
+        @info "Set `$parameter` using uniform value `$value` from TOML file."
         if isnothing(dimname)
             # set to one uniform value
-            return Base.fill(mod.value, length(sel))
-        elseif length(mod.value) == 1
+            return Base.fill(only(value), length(sel))
+        elseif length(value) == 1
             # set to one uniform value (parameter with third dimension of size 1)
-            return Base.fill(mod.value, (nc.dim[String(dimname)], length(sel)))
-        elseif length(mod.value) > 1
+            return Base.fill(only(value), (nc.dim[String(dimname)], length(sel)))
+        elseif length(value) > 1
             # set to multiple uniform values (parameter with third dimension of size > 1)
-            @assert length(mod.value) == nc.dim[String(dimname)]
-            return repeat(mod.value, 1, length(sel))
+            @assert length(value) == nc.dim[String(dimname)]
+            return repeat(value, 1, length(sel))
         end
     else
         if logging
-            @info "Set `$(parameter.name)` using netCDF variable `$var`."
+            @info "Set `$parameter` using netCDF variable `$var`."
         end
-        A = read_standardized(nc, var, dim_sel)
-        if !isnothing(mod.index)
+        A = read_standardized(nc, variable_name(var), dim_sel)
+        if !isnothing(layer)
             # the modifier index is only set in combination with scale and offset for SVectors,
             # provided through the TOML file.
-            if length(mod.index) > 1
-                # if index, scale and offset is provided in the TOML as a list.
-                for i in 1:length(mod.index)
-                    A[:, :, mod.index[i]] =
-                        A[:, :, mod.index[i]] .* mod.scale[i] .+ mod.offset[i]
-                end
-            else
-                A[:, :, mod.index] = A[:, :, mod.index] .* mod.scale .+ mod.offset
+            # if index, scale and offset is provided in the TOML as a list.
+            for i in eachindex(layer)
+                A[:, :, layer[i]] = A[:, :, layer[i]] .* scale[i] .+ offset[i]
             end
-        elseif mod.scale != 1.0 || mod.offset != 0.0
-            A = A .* mod.scale .+ mod.offset
+        elseif scale != 1.0 || offset != 0.0
+            A = A .* scale .+ offset
         end
     end
 
@@ -336,52 +381,17 @@ function ncread(
 end
 
 """
-Return `NamedTuple` with internal standard `name` and a `lens` to access the external static
-or cyclic input model parameter name in the nested `config` object (parsed TOML file). By
-default specifying a model parameter is `optional` in the TOML file.
-"""
-function lens_input_parameter(config::Config, p::AbstractString; optional = true)
-    do_cyclic = haskey(config.input, "cyclic")
-    if haskey(config.input.static, p)
-        return (name = p, lens = @optic(_.input.static[p]))
-    elseif do_cyclic && haskey(config.input.cyclic, p)
-        return (name = p, lens = @optic(_.input.cyclic[p]))
-    elseif optional
-        return (name = p, lens = nothing)
-    else
-        error(
-            """Required input static or cyclic model parameter with standard name $p not set 
-            in TOML file (below `[input.static]` or `[input.cyclic]` section)""",
-        )
-    end
-end
-
-"""
-Return `NamedTuple` with internal standard `name` and a `lens` to access the external input
-(not directly part of a model) parameter name in the nested `config` object (parsed TOML
-file). By default specifying a model parameter is `optional` in the TOML file.
-"""
-function lens_input(config::Config, p::AbstractString; optional = true)
-    if haskey(config.input, p)
-        return (name = p, lens = @optic(_.input[p]))
-    elseif optional
-        return (name = p, lens = nothing)
-    else
-        error(
-            """Required input model parameter with standard name $p not set in TOML file 
-            (below `[input]` section)""",
-        )
-    end
-end
-
-"""
     set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)
 
 Calculate actual soil thickness of layers based on a reference depth (e.g. soil depth or
 water table depth) `reference_depth`, a SVector `cum_depth` with cumulative soil depth starting
 at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 """
-function set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness::SVector)
+function set_layerthickness(
+    reference_depth::Real,
+    cum_depth::SVector,
+    thickness::SVector,
+)::SVector
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
         if reference_depth > cum_depth[i + 1]
@@ -393,7 +403,7 @@ function set_layerthickness(reference_depth::Real, cum_depth::SVector, thickness
     return thicknesslayers
 end
 
-function number_of_active_layers(thickness::SVector)
+function number_of_active_layers(thickness::SVector)::Int
     nlayers = length(thickness) - sum(isnan.(thickness))
     return nlayers
 end
@@ -405,7 +415,7 @@ Return the flow length for a non square grid. Input `ldd` (drainage network), `x
 (length of cells in x direction), `y_length` (length of cells in y direction). Output is
 flow length.
 """
-function get_flow_length(ldd, x_length, y_length)
+function get_flow_length(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # take into account non-square cells
     # if ldd is 8 or 2 use y_length
     # if ldd is 4 or 6 use x_length
@@ -425,7 +435,7 @@ Return the flow width for a non square grid. Input `ldd` (drainage network), `x_
 (length of cells in x direction), `y_length` (length of cells in y direction). Output is
 flow width.
 """
-function get_flow_width(ldd, x_length, y_length)
+function get_flow_width(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # take into account non-square cells
     # if ldd is 8 or 2 use x_length
     # if ldd is 4 or 6 use y_length
@@ -445,35 +455,29 @@ Return the surface flow width. Input `flow_width` (flow width), `flow_length` (f
 `land_area` (area covered by land (excluding river coverage)) and `river_location` (river
 cell, boolean). Output is surface flow width `surface_width`.
 """
-function get_surface_width(flow_width, flow_length, land_area, river_location)
+function get_surface_width(
+    flow_width::Real,
+    flow_length::Real,
+    land_area::Real,
+    river_location::Bool,
+)::Real
     surface_width = river_location ? land_area / flow_length : flow_width
     return surface_width
 end
 
 # 2.5x faster power method
 "Faster method for exponentiation"
-pow(x, y) = exp(y * log(x))
+pow(x::Real, y::Real)::Real = exp(y * log(x))
 
-"Return the sum of the array `A` at indices `inds`"
-function sum_at(A, inds)
-    v = zero(eltype(A))
-    for i in inds
-        v += A[i]
-    end
-    return v
+function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
+    mapreduce(i -> A[i], +, inds; init = zero(T))
 end
 
-"Return the sum of the function `f` at indices `inds`"
-function sum_at(f::Function, inds, T)
-    v = zero(T)
-    for i in inds
-        v += f(i)
-    end
-    return v
-end
+sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
+    mapreduce(f, +, inds; init = zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
-function svectorscopy(x::Matrix{T}, ::Val{N}) where {T, N}
+function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
     size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
     return copy(reinterpret(SVector{N, T}, vec(x)))
@@ -486,7 +490,12 @@ Return flow `fraction` to a river cell (at index `j`) based on the ratio of the 
 `slope` at index `j` to the sum of the land surface `slope` at index `j` and at river cell
 index `i`.
 """
-function get_flow_fraction_to_river(graph, ldd, inds_river, slope)
+function get_flow_fraction_to_river(
+    graph::SimpleDiGraph{Int},
+    ldd::Vector{UInt8},
+    inds_river::Vector{Int},
+    slope::Vector{<:Real},
+)::Vector{Float64}
     n = length(slope)
     fraction = zeros(n)
     for i in inds_river
@@ -509,7 +518,7 @@ Used in the structs of arrays to ensure all vectors are of equal length.
 `equal_size_vectors(([4,5], [4,5]))` would pass.
 `equal_size_vectors((1, [4,5], [4,5]))` would also pass, since `1` is not an AbstractVector.
 """
-function equal_size_vectors(x)
+function equal_size_vectors(x::Tuple)
     # all vectors in this struct should be the same size
     inds_vec = findall(arg -> isa(arg, AbstractVector), x)
     n = length(x[inds_vec[1]])
@@ -545,7 +554,9 @@ tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 
 Return the source node `src` and destination node `dst` of each edge of a directed `graph`.
 """
-function adjacent_nodes_at_edge(graph)
+function adjacent_nodes_at_edge(
+    graph::SimpleDiGraph{Int},
+)::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
     _edges = collect(edges(graph))
     return (src = src.(_edges), dst = dst.(_edges))
 end
@@ -555,7 +566,10 @@ end
 
 Return the source edge `src` and destination edge `dst` of each node of a directed `graph`.
 """
-function adjacent_edges_at_node(graph, nodes_at_edge)
+function adjacent_edges_at_node(
+    graph::SimpleDiGraph{Int},
+    nodes_at_edge,
+)::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
@@ -567,7 +581,7 @@ function adjacent_edges_at_node(graph, nodes_at_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
-function add_vertex_edge_graph!(graph, pits)
+function add_vertex_edge_graph!(graph::SimpleDiGraph{Int}, pits::Vector{Int})::Nothing
     n = nv(graph)
     for (i, v) in enumerate(pits)
         add_vertex!(graph)
@@ -584,17 +598,17 @@ edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is co
 subtracting the river width `flow_width` from the cell edges. For diagonal directions, the
 `flow_width` is split between the two adjacent cell edges. A cell edge at linear index `idx`
 is defined as the edge between node `idx` and the adjacent node (+ CartesianIndex(1, 0)) for
-x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `waterbody_outlet` (reservoir
-or lake), the effective flow width is set to zero.
+x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `reservoir_outlet`
+(reservoir), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
     we_x::Vector{Float64},
     we_y::Vector{Float64},
     domain::Domain,
-)
+)::Nothing
     (; local_drain_direction, indices) = domain.river.network
     (; edge_indices, reverse_indices) = domain.land.network
-    (; flow_width, waterbody_outlet) = domain.river.parameters
+    (; flow_width, reservoir_outlet) = domain.river.parameters
     reverse_indices = reverse_indices[indices]
 
     graph = flowgraph(local_drain_direction, indices, PCR_DIR)
@@ -608,54 +622,54 @@ function set_effective_flowwidth!(
         idx = reverse_indices[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
-            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
-            we_y[idx] = waterbody_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
+            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
-            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
             we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    waterbody_outlet[v] ? 0.0 :
+                    reservoir_outlet[v] ? 0.0 :
                     max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
             end
-            we_x[idx] = waterbody_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
         end
     end
     return nothing
 end
 
 "Return julian day of year (leap days are not counted)"
-function julian_day(time)
+function julian_day(time::TimeType)::Int
     # for all years February 28 is day 59 and March 1 is day 60.
     day = dayofyear(time) - (isleapyear(time) && dayofyear(time) > 60)
     return day
@@ -674,7 +688,7 @@ Run function `f` in parallel by spawning tasks (nthreads <= 8), each task iterat
 chunk of size `basesize`. For nthreads > 8 run function `f` in parallel with
 `Polyester@batch` with `minbatch` equal to `basesize`.
 """
-function threaded_foreach(f, x::AbstractArray; basesize::Integer)
+function threaded_foreach(f::Function, x::AbstractArray; basesize::Integer)::Nothing
     if Threads.nthreads() <= 8
         len = length(x)
         partitions = _partition(len, basesize)
@@ -932,7 +946,7 @@ function initialize_lateral_ssf!(
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
-        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+        kh_max *= khfrac[i] * 0.001 * 0.001
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
@@ -978,7 +992,62 @@ end
 Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
 Otherwise return a `default` value.
 """
-function bounded_divide(x, y; max = 1.0, default = 0.0)
+function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
     z = y > 0.0 ? min(x / y, max) : default
     return z
+end
+
+"""
+The sine of the slope in radians;
+sin(arctan(x)) = x / √(1 + x²)
+"""
+sin_slope(slope) = slope / sqrt(1 + slope^2)
+
+"""
+Return water table change `dh` and exfiltration rate `exfilt`. For a falling water table
+`dh` is based on subsurface net flux `net_flux` and specific yield `specific_yield`. For a
+rising water table `dh` is based on `net_flux` and the unsaturated store capacity (per soil
+layer). For a rising water table a dynamic specific yield is computed.
+"""
+function water_table_change(
+    soil::SbmSoilModel,
+    net_flux::Float64,
+    specific_yield::Float64,
+    i::Int,
+)
+    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
+    (; theta_s, theta_r) = soil.parameters
+
+    # effective porosity (difference between saturated and residual water content)
+    theta_e = theta_s[i] - theta_r[i]
+
+    if net_flux <= 0.0
+        dh = net_flux / specific_yield
+    else
+        dh = 0.0
+        f_conv = 0.001 # convert units from [mm] to [m]
+        for k in n_unsatlayers[i]:-1:1
+            capacity = max(
+                f_conv * (ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k]),
+                0.0,
+            )
+            flux_layer = min(net_flux, capacity)
+            if capacity <= net_flux
+                # if unsaturated layer is fully saturated dh equals layer thickness
+                dh += f_conv * ustorelayerthickness[i][k]
+            else
+                sy = theta_e - (ustorelayerdepth[i][k] / ustorelayerthickness[i][k])
+                dh += flux_layer / sy
+            end
+            net_flux -= flux_layer
+            net_flux == 0.0 && break
+        end
+    end
+    exfilt = max(net_flux, 0.0)
+    return dh, exfilt
+end
+
+"Set lower bound for drainable porosity"
+function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
+    return max(theta_s - theta_fc, lower_bound)
 end

@@ -10,6 +10,12 @@ example so we are able to reproduce the issue. Furthermore, we welcome contribut
 the [ColPrac guide for collaborative practices](https://github.com/SciML/ColPrac). New
 contributors should make sure to read that guide.
 
+To get started with local development, install Julia and pre-commit by running the command below.
+
+```sh
+pixi run install
+```
+
 ## Style/decisions
 
 - For improved code readability, we decided to avoid non-ASCII characters for naming variables,

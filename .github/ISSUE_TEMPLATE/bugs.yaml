@@ -14,7 +14,7 @@ body:
           required: true
         - label: >
             I have checked that this bug exists on the latest version of Wflow.
-          required: true           
+          required: true
   - type: textarea
     id: example
     attributes:

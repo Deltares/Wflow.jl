@@ -1,67 +1,31 @@
 "Struct to store atmospheric forcing variables"
 @with_kw struct AtmosphericForcing
+    n::Int
     # Precipitation [mm Δt⁻¹]
-    precipitation::Vector{Float64} = Float64[]
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Potential reference evapotranspiration [mm Δt⁻¹]
-    potential_evaporation::Vector{Float64} = Float64[]
+    potential_evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
     # Temperature [ᵒC]
-    temperature::Vector{Float64} = Float64[]
+    temperature::Vector{Float64} = fill(MISSING_VALUE, n)
     # Downward shortwave radiation [W m-2]
     shortwave_radiation_in::Vector{Float64} = Float64[]
     # Wind speed [m s-1]
     wind_speed::Vector{Float64} = Float64[]
-    # Net radiation [W m-2] (pre-calculated in hydromt_wflow preprocessing)
+    # Net radiation [W m-2]
     net_radiation::Vector{Float64} = Float64[]
-end
-
-"Initialize atmospheric forcing"
-function AtmosphericForcing(config::Config, n::Int)
-    do_land_surface_temperature =
-        get(config.model, "land_surface_temperature__flag", false)::Bool
-
-    atmos_forcing = AtmosphericForcing(;
-        precipitation = fill(MISSING_VALUE, n),
-        potential_evaporation = fill(MISSING_VALUE, n),
-        temperature = fill(MISSING_VALUE, n),
-    )
-
-    if do_land_surface_temperature
-        @reset atmos_forcing.shortwave_radiation_in = fill(MISSING_VALUE, n)
-        @reset atmos_forcing.wind_speed = fill(MISSING_VALUE, n)
-        @reset atmos_forcing.net_radiation = fill(MISSING_VALUE, n)
-    end
-
-    return atmos_forcing
 end
 
 "Struct to store hydrological forcing variables"
 @with_kw struct HydrologicalForcing
+    n::Int
     # Rainfall interception by the vegetation [mm]
-    interception::Vector{Float64}
+    interception::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow depth [m]
-    waterlevel_land::Vector{Float64}
+    waterlevel_land::Vector{Float64} = fill(MISSING_VALUE, n)
     # Overland flow discharge [m3 s-1]
-    q_land::Vector{Float64}
+    q_land::Vector{Float64} = fill(MISSING_VALUE, n)
     # River depth [m]
-    waterlevel_river::Vector{Float64}
+    waterlevel_river::Vector{Float64} = fill(MISSING_VALUE, n)
     # River discharge [m3 s-1]
-    q_river::Vector{Float64}
-end
-
-"Initialize hydrological forcing"
-function HydrologicalForcing(
-    n::Int;
-    interception::Vector{Float64} = fill(MISSING_VALUE, n),
-    waterlevel_land::Vector{Float64} = fill(MISSING_VALUE, n),
-    q_land::Vector{Float64} = fill(MISSING_VALUE, n),
-    waterlevel_river::Vector{Float64} = fill(MISSING_VALUE, n),
-    q_river::Vector{Float64} = fill(MISSING_VALUE, n),
-)
-    return HydrologicalForcing(;
-        interception,
-        waterlevel_land,
-        q_land,
-        waterlevel_river,
-        q_river,
-    )
+    q_river::Vector{Float64} = fill(MISSING_VALUE, n)
 end

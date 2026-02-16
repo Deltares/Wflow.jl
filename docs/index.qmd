@@ -4,6 +4,7 @@ toc: false
 include-in-header:
   - text: |
       <style>figure { padding: 3em 0 0em 0; }</style>
+engine: julia
 format:
   html
 ---
@@ -82,3 +83,21 @@ wflow was developed in Python on top of the PCRaster Python extension. The Pytho
 
 ```
 :::
+
+## Attribution
+
+
+```{julia}
+# | code-fold: true
+# | output: asis
+using TOML
+
+# Load the Project.toml file from Wflow.jl to extract dependencies
+project = TOML.parsefile("../Wflow/Project.toml")
+
+# Extract and print dependencies (sorted by name)
+println("This project relies on the following (direct) Julia dependencies:\n")
+for name in sort(collect(keys(project["deps"])))
+    println("- $name")
+end
+```

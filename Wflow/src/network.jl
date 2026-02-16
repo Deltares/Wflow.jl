@@ -65,8 +65,8 @@ end
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     # maps from the land domain to the river domain (zero value represents no river)
     river_indices::Vector{Int} = Int[]
-    # maps from the land domain to the river domain excluding reservoir and lake locations
-    river_inds_excl_waterbody::Vector{Int} = Int[]
+    # maps from the land domain to the river domain excluding reservoir locations
+    river_inds_excl_reservoir::Vector{Int} = Int[]
     # 2D staggered grid edge indices
     edge_indices::EdgeConnectivity = EdgeConnectivity()
     # maps `order_subdomain` to traversion order of the complete domain
@@ -79,13 +79,18 @@ end
 Initialize `NetworkLand` fields related to catchment (active indices model domain) and land
 drainage network.
 """
-function NetworkLand(dataset::NCDataset, config::Config, modelsettings::NamedTuple)
-    lens = lens_input(config, "subbasin_location__count"; optional = false)
-    subcatch_2d = ncread(dataset, config, lens; allow_missing = true)
+function NetworkLand(dataset::NCDataset, config::Config)
+    subcatch_2d = ncread(
+        dataset,
+        config,
+        "subbasin_location__count";
+        optional = false,
+        allow_missing = true,
+    )
     indices, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
     graph, local_drain_direction =
-        get_drainage_network(dataset, config, indices; do_pits = modelsettings.pits)
+        get_drainage_network(dataset, config, indices; do_pits = config.model.pit__flag)
     order = topological_sort_by_dfs(graph)
     streamorder = stream_order(graph, order)
 
@@ -108,13 +113,12 @@ domain.
 """
 function network_subdomains(config::Config, network::NetworkLand)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
-    min_streamorder = get(config.model, "land_streamorder__min_count", 5)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
         network.order,
         pit_inds,
         network.streamorder,
-        min_streamorder,
+        config.model.land_streamorder__min_count,
     )
     @reset network.order_of_subdomains = order_of_subdomains
     @reset network.order_subdomain = toposort_subdomain
@@ -150,15 +154,27 @@ function get_drainage_network(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}};
-    do_pits = false,
-    logging = true,
+    do_pits::Bool = false,
+    logging::Bool = true,
 )
-    lens = lens_input(config, "basin__local_drain_direction"; optional = false)
-    ldd_2d = ncread(dataset, config, lens; allow_missing = true, logging)
+    ldd_2d = ncread(
+        dataset,
+        config,
+        "basin__local_drain_direction";
+        optional = false,
+        allow_missing = true,
+        logging,
+    )
     ldd = convert(Array{UInt8}, ldd_2d[indices])
     if do_pits
-        lens = lens_input(config, "basin_pit_location__mask"; optional = false)
-        pits_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+        pits_2d = ncread(
+            dataset,
+            config,
+            "basin_pit_location__mask";
+            optional = false,
+            type = Bool,
+            fill = false,
+        )
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
     graph = flowgraph(ldd, indices, PCR_DIR)
@@ -179,8 +195,6 @@ end
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal river domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # maps lakes to the river domain (zero value represents no lake)
-    lake_indices::Vector{Int} = Int[]
     # land domain indices masked by river domain (zero value represents no river)
     land_indices::Vector{Int} = Int[]
     # maps 1D pits (local drain direction) to the 2D model (external) domain
@@ -213,12 +227,18 @@ function NetworkRiver(
     network::NetworkLand;
     do_pits = false,
 )
-    logging = false
-    lens = lens_input(config, "river_location__mask"; optional = false)
-    river_location_2d = ncread(dataset, config, lens; type = Bool, fill = false, logging)
+    river_location_2d = ncread(
+        dataset,
+        config,
+        "river_location__mask";
+        optional = false,
+        type = Bool,
+        fill = false,
+        logging = false,
+    )
     indices, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction =
-        get_drainage_network(dataset, config, indices; do_pits, logging)
+        get_drainage_network(dataset, config, indices; do_pits, logging = false)
     order = topological_sort_by_dfs(graph)
     river_location = river_location_2d[network.indices]
     land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
@@ -243,14 +263,13 @@ nthreads > 1 to run the kinematic wave parallel, otherwise it is equal to the co
 domain.
 """
 function network_subdomains(config::Config, network::NetworkRiver)
-    min_streamorder = get(config.model, "river_streamorder__min_count", 6)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
         network.order,
         pit_inds,
         network.streamorder,
-        min_streamorder,
+        config.model.river_streamorder__min_count,
     )
     @reset network.order_of_subdomains = order_of_subdomains
     @reset network.order_subdomain = toposort_subdomain
@@ -273,40 +292,52 @@ function EdgesAtNode(network::NetworkRiver)
     return edges_at_node
 end
 
-"Struct for storing network information water body (reservoir or lake)."
-@kwdef struct NetworkWaterBody
-    # list of 2D indices representing water body area (coverage)
+"Struct for storing network information reservoir."
+@kwdef struct NetworkReservoir
+    # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
-    # list of 2D indices representing water body outlet
+    # list of 2D indices representing reservoir outlet
     indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # maps from the 2D model (external) domain to a list of water bodies
+    # maps from the 2D model (external) domain to a list of reservoirs
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
-    # maps from the 1D river domain to a list of water bodies (zero value represents no water body)
+    # maps from the 1D land domain to a list of reservoirs
+    land_indices::Vector{Int} = Int[]
+    # maps from the 1D river domain to a list of reservoirs
     river_indices::Vector{Int} = Int[]
 end
 
-"Initialize `NetworkWaterBody`"
-function NetworkWaterBody(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    waterbody_type::String,
-)
+"Initialize `NetworkReservoir`"
+function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRiver)
+    (; indices) = network
     logging = false
-    # allow waterbody only in river cells
-    # note that these locations are only the waterbody outlet pixels
-    lens = lens_input(config, "$(waterbody_type)_location__count"; optional = false)
-    locs = ncread(dataset, config, lens; sel = indices, type = Int, fill = 0, logging)
+    # allow reservoir only in river cells
+    # note that these locations are only the reservoir outlet pixels
+    locs = ncread(
+        dataset,
+        config,
+        "reservoir_location__count";
+        optional = false,
+        sel = indices,
+        type = Int,
+        fill = 0,
+        logging,
+    )
 
-    # this holds the same ids as locs, but covers the entire reservoir or lake
-    lens = lens_input(config, "$(waterbody_type)_area__count"; optional = false)
-    coverage_2d = ncread(dataset, config, lens; allow_missing = true, logging)
-    # for each waterbody, a list of 2D indices, needed for getting the mean precipitation
+    # this holds the same ids as locs, but covers the entire reservoir
+    coverage_2d = ncread(
+        dataset,
+        config,
+        "reservoir_area__count";
+        optional = false,
+        allow_missing = true,
+        logging,
+    )
+    # for each reservoir, a list of 2D indices, needed for getting the mean precipitation
     inds_coverage = Vector{CartesianIndex{2}}[]
     rev_inds = zeros(Int, size(coverage_2d))
 
-    # construct a map from the rivers to the waterbody and
-    # a map of the waterbody to the 2D model grid
+    # construct a map from the rivers to the reservoir and
+    # a map of the reservoir to the 2D model grid
     inds_map2river = fill(0, length(indices))
     inds = CartesianIndex{2}[]
     counter = 0
@@ -318,18 +349,21 @@ function NetworkWaterBody(
             inds_map2river[i] = counter
             rev_inds[ind] = counter
 
-            # get all indices related to this waterbody outlet
+            # get all indices related to this reservoir outlet
             # done in this loop to ensure that the order is equal to the order in the
-            # waterbody model struct
+            # reservoir model struct
             cov = findall(isequal(id), coverage_2d)
             push!(inds_coverage, cov)
         end
     end
-    network = NetworkWaterBody(;
+    river_indices = findall(x -> x ≠ 0, inds_map2river)
+    land_indices = network.land_indices[river_indices]
+    network = NetworkReservoir(;
         indices_outlet = inds,
         indices_coverage = inds_coverage,
         reverse_indices = rev_inds,
-        river_indices = findall(x -> x ≠ 0, inds_map2river),
+        river_indices,
+        land_indices,
     )
     return network, inds_map2river
 end
@@ -353,8 +387,14 @@ function NetworkDrain(
     surface_flow_width::Vector{Float64},
 )
     n_cells = length(indices)
-    lens = lens_input_parameter(config, "land_drain_location__mask")
-    drain_2d = ncread(dataset, config, lens; type = Bool, fill = false)
+    drain_2d = ncread(
+        dataset,
+        config,
+        "land_drain_location__mask";
+        optional = false,
+        type = Bool,
+        fill = false,
+    )
     drain = drain_2d[indices]
 
     # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)

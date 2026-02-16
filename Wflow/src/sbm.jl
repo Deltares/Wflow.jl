@@ -1,5 +1,9 @@
+abstract type AbstractDemandModel end
+abstract type AbstractAllocationModel end
+
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D, A} <: AbstractLandModel
+@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+                AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -18,54 +22,62 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     dt = Second(config.time.timestepsecs)
     n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(config, n)
+    atmospheric_forcing = AtmosphericForcing(; n)
+    do_land_surface_temperature = config.model.land_surface_temperature__flag
+    if do_land_surface_temperature
+        @reset atmospheric_forcing.shortwave_radiation_in = fill(MISSING_VALUE, n)
+        @reset atmospheric_forcing.wind_speed = fill(MISSING_VALUE, n)
+        @reset atmospheric_forcing.net_radiation = fill(MISSING_VALUE, n)
+    end
     vegetation_parameters = VegetationParameters(dataset, config, indices)
     if dt >= Hour(23)
         interception =
             GashInterceptionModel(dataset, config, indices, vegetation_parameters)
+        @info "Using the Gash interception model since dt >= 23 hours."
     else
         interception = RutterInterceptionModel(vegetation_parameters, n)
+        @info "Using the modified Rutter interception model since dt < 23 hours."
     end
 
-    do_snow = get(config.model, "snow__flag", false)::Bool
+    do_snow = config.model.snow__flag
+    do_glacier = config.model.glacier__flag
     if do_snow
         snow = SnowHbvModel(dataset, config, indices, dt)
     else
-        snow = NoSnowModel()
+        snow = NoSnowModel(n)
     end
-    do_land_surface_temperature =
-        get(config.model, "land_surface_temperature__flag", false)::Bool
-    if do_land_surface_temperature
-        land_surface_temperature = LandSurfaceTemperatureModel(n)
-    else
-        land_surface_temperature = NoLandSurfaceTemperatureModel()
-    end
-    do_glacier = get(config.model, "glacier__flag", false)::Bool
     if do_snow && do_glacier
         glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
         glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
-    elseif do_snow == false && do_glacier == true
+    elseif !do_snow && do_glacier
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
             "glacier modelling, set `snow__flag` to `true` in the Model section of the TOML file.",
         )
-        glacier = NoGlacierModel()
+        glacier = NoGlacierModel(n)
     else
-        glacier = NoGlacierModel()
+        glacier = NoGlacierModel(n)
     end
-    runoff = OpenWaterRunoff(n)
+    runoff = OpenWaterRunoff(; n)
 
     soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt)
     @. vegetation_parameters.rootingdepth =
         min(soil.parameters.soilthickness * 0.99, vegetation_parameters.rootingdepth)
 
-    do_water_demand = haskey(config.model, "water_demand")
-    allocation =
-        do_water_demand ? AllocationLand(dataset, config, indices) : NoAllocationLand()
-    demand = do_water_demand ? Demand(dataset, config, indices, dt) : NoDemand()
+    if do_water_demand(config)
+        allocation = AllocationLand(dataset, config, indices)
+        demand = Demand(dataset, config, indices, dt)
+    else
+        allocation = NoAllocationLand(n)
+        demand = NoDemand(; n)
+    end
+    if do_land_surface_temperature
+        land_surface_temperature = LandSurfaceTemperatureModel(n)
+    else
+        land_surface_temperature = NoLandSurfaceTemperatureModel()
+    end
 
-    args = (demand, allocation)
-    land_hydrology_model = LandHydrologySBM{typeof.(args)...}(;
+    land_hydrology_model = LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -88,7 +100,6 @@ function update!(
     config::Config,
     dt::Float64,
 )
-    do_water_demand = haskey(config.model, "water_demand")::Bool
     (; parameters) = domain.land
     (;
         glacier,
@@ -106,15 +117,8 @@ function update!(
 
     update_boundary_conditions!(snow, (; interception))
     update!(snow, atmospheric_forcing)
-
-    # lateral snow transport
-    if get(config.model, "snow_gravitional_transport__flag", false)::Bool
-        lateral_snow_transport!(
-            snow.variables.snow_storage,
-            snow.variables.snow_water,
-            parameters.slope,
-            domain.land.network,
-        )
+    if config.model.snow_gravitational_transport__flag
+        lateral_snow_transport!(snow, domain.land)
     end
 
     update!(glacier, atmospheric_forcing)
@@ -127,7 +131,7 @@ function update!(
     )
     update!(runoff, atmospheric_forcing, parameters)
 
-    if do_water_demand
+    if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
         (; h3_high, h3_low) = soil.parameters
         potential_transpiration .= get_potential_transpiration(interception)
@@ -146,9 +150,7 @@ function update!(
     update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
 
     # Update land surface temperature if enabled
-    do_land_surface_temperature =
-        get(config.model, "land_surface_temperature__flag", false)::Bool
-    if do_land_surface_temperature
+    if config.model.land_surface_temperature__flag
         update!(
             land_surface_temperature,
             soil,
@@ -189,7 +191,7 @@ function update_total_water_storage!(
     # Burn the river routing values
     for (i, index_river) in enumerate(domain.river.network.land_indices)
         total_storage[index_river] = (
-            (river_flow.variables.h_av[i] * flow_width[i] * flow_length[i]) /
+            (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
             (area[index_river]) * 1000 # Convert to mm
         )
     end
@@ -205,7 +207,7 @@ function update_total_water_storage!(
     threaded_foreach(1:n; basesize = 1000) do i
         sub_surface = ustoredepth[i] + satwaterdepth[i]
         lateral = (
-            overland_flow.variables.h_av[i] * (1 - river_fraction[i]) * 1000 # convert to mm
+            overland_flow.variables.h[i] * (1 - river_fraction[i]) * 1000 # convert to mm
         )
 
         # Add everything to the total water storage

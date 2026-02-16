@@ -1,75 +1,219 @@
-const dt_sec = 86400.0
-const ldd_MISSING_VALUE = 255
+@testitem "unit: kinematic_wave" begin
+    alpha = 2.586
+    beta = 0.6
+    dt = 600.0
+    dx = 1061.375
 
-# read the staticmaps into memory
-nc = NCDataset(staticmaps_rhine_path)
-# helper function to get the axis order and directionality right
-read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
-ldd_2d = read_right(nc, "ldd")
+    # Case !(q_in + q_prev + q_lat ≈ 0.0)
+    q_in = 1.104e-6
+    q_prev = 0.0
+    q_lat = 1.142e-6
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) ≈
+          1.09308660753423e-6
 
-inds, _ = Wflow.active_indices(ldd_2d, ldd_MISSING_VALUE)
-n = length(inds)
+    # Case q_in + q_prev + q_lat ≈ 0.0
+    q_in = 0.0
+    q_prev = 0.0
+    q_lat = 0.0
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) == 0.0
+end
 
-# take out only the active cells
-ldd = ldd_2d[inds]
-slope = read_right(nc, "slope")[inds]
-N = read_right(nc, "N")[inds]
-Qold = read_right(nc, "Qold")[inds]
-Bw = read_right(nc, "Bw")[inds]
-waterlevel = read_right(nc, "waterlevel")[inds]
-DCL = read_right(nc, "DCL")[inds]
-close(nc)
+@testitem "unit: ssf_celerity" begin
+    zi = 0.3
+    theta_e = 0.274
+    slope = 0.00586
+    i = 1
 
-# create the directed acyclic graph from the drainage direction array
-graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
-# a topological sort is used for visiting nodes in order from upstream to downstream
-toposort = topological_sort_by_dfs(graph)
-sink = toposort[end]
-@test ldd[sink] == 5  # the most downstream node must be a sink
+    # Case kh_profile::KhExponential
+    kh_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈ 0.3010012323985728
 
-# calculate parameters of kinematic wave
-const q = 0.000001
-const beta = 0.6
-const AlpPow = (2.0 / 3.0) * beta
-AlpTermR = (N ./ sqrt.(slope)) .^ beta
-P = Bw + (2.0 * waterlevel)
-alpha = AlpTermR .* P .^ AlpPow
+    # Case kh_profile::KhExponentialConstant
+    kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈ 0.3603676427614705
+end
 
-Q = zeros(n)
-Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+@testitem "unit: kw_ssf_newton_raphson" begin
+    ssf = 754.993
+    constant_term = 77.774
+    celerity = 12.254
+    dt = 1.0
+    dx = 1103.816
 
-@testset "flow rate" begin
+    @test Wflow.kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx) ≈
+          942.5785713676884
+end
+
+@testitem "kinematic wave overland flow" begin
+    using NCDatasets: NCDataset
+    using Graphs: topological_sort_by_dfs
+
+    dt_sec = 86400.0
+    ldd_MISSING_VALUE = 255
+
+    # read the staticmaps into memory
+    nc = NCDataset("data/input/staticmaps-rhine.nc")
+    # helper function to get the axis order and directionality right
+    read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
+    ldd_2d = read_right(nc, "ldd")
+
+    inds, _ = Wflow.active_indices(ldd_2d, ldd_MISSING_VALUE)
+    n = length(inds)
+
+    # take out only the active cells
+    ldd = ldd_2d[inds]
+    slope = read_right(nc, "slope")[inds]
+    N = read_right(nc, "N")[inds]
+    Qold = read_right(nc, "Qold")[inds]
+    Bw = read_right(nc, "Bw")[inds]
+    waterlevel = read_right(nc, "waterlevel")[inds]
+    DCL = read_right(nc, "DCL")[inds]
+    close(nc)
+
+    # create the directed acyclic graph from the drainage direction array
+    graph = Wflow.flowgraph(ldd, inds, Wflow.PCR_DIR)
+    # a topological sort is used for visiting nodes in order from upstream to downstream
+    toposort = topological_sort_by_dfs(graph)
+    sink = toposort[end]
+    @test ldd[sink] == 5  # the most downstream node must be a sink
+
+    # calculate parameters of kinematic wave
+    q = 0.000001
+    beta = 0.6
+    AlpPow = (2.0 / 3.0) * beta
+    AlpTermR = (N ./ sqrt.(slope)) .^ beta
+    P = Bw + (2.0 * waterlevel)
+    alpha = AlpTermR .* P .^ AlpPow
+
+    Q = zeros(n)
+    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
     @test Q[toposort[n - 100]] ≈ 3945.762718338739
     @test Q[sink] ≈ 4131.101474418251
 end
 
-@testset "kinematic wave subsurface flow" begin
-    kh_profile = Wflow.KhExponential([18021.0], [0.0017669756])
-    @test all(
-        isapprox.(
-            Wflow.kinematic_wave_ssf(
-                210128378079.0733,
-                215395179156.82645,
-                1540.34273559,
-                1.238,
-                0.25,
-                0.346,
-                1800.0,
-                1.0,
-                1697.05 * 1000.0,
-                1200.0 * 1000.0,
-                2443723.716252628,
-                kh_profile,
-                1,
-            ),
-            (7.410313985168225e10, 1540.1496836278836, -0.0),
-        ),
+@testitem "unit: kinematic_wave_ssf" begin
+    using StaticArrays: SVector
+    include("testing_utils.jl")
+    n = 1
+    N = 4
+
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 119.83408703759733, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [519.8340870375973],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
     )
+
+    ssfin = 0.0
+    ssf_prev = 25953.147860945584
+    zi_prev = 0.5198340870375974
+    r = 0.4346106913943182
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
+    d = 2.0
+    dt = 1.0
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 79.62016166711079
+    kh_profile = Wflow.KhExponential([205.5965576171875], [1.0141291422769427])
+    i = 1
+
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        r,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil,
+        i,
+    )
+    @test ssf ≈ 22100.628024231868
+    @test zi ≈ 0.7029236021516849
+    @test exfilt ≈ 0.0
+    @test sy_d ≈ 0.20423455984891598
+
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 348.31246153148595, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 58.42501219303608, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [758.8905603985703],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+    )
+
+    ssfin = 0.0
+    ssf_prev = 54175.65003911068
+    zi_prev = 0.7588905603985703
+    r = 0.6928420612599803
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
+    d = 2.0
+    dt = 1.0
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 153.46698446681825
+    kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
+    i = 1
+
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        r,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil,
+        1,
+    )
+
+    @test ssf ≈ 44680.57723298823
+    @test zi ≈ 1.130798471269119
+    @test exfilt ≈ 0.0
+    @test sy_d ≈ 0.20423455984891598
 end
 
-@testset "accucapacity" begin
+@testitem "unit: accucapacity" begin
+    using Graphs: DiGraph, add_edge!
     # test based on a subset of the examples at
     # https://pcraster.geo.uu.nl/pcraster/4.3.0/documentation/pcraster_manual/sphinx/op_accucapacity.html#examples
     # of the node at (row 3, column 2) and upstream nodes
@@ -84,18 +228,22 @@ end
     # example 1, accucapacityflux
     material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
     capacity = fill(1.5, 6)
-    flux, new_material = Wflow.accucapacityflux(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
     @test new_material != material
     @test new_material == [0.0, 0.5, 0.5, 0.0, 3.5, 1.5]
     @test flux == Float64[0.5, 1.5, 1.5, 1, 1.5, 1.5]
+    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    @test flux == flux_
 
     # example 2, accucapacityflux
     material = fill(10.0, 6)
     capacity = Float64[2, 30, 30, 2, 30, 2]
-    flux, new_material = Wflow.accucapacityflux(material, network, capacity)
+    flux, new_material = Wflow.accucapacityflux_state(material, network, capacity)
     @test new_material != material
     @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
     @test flux == Float64[2, 10, 10, 2, 30, 2]
+    flux_ = Wflow.accucapacityflux(material, network, capacity)
+    @test flux == flux_
 
     # example 1, accucapacitystate
     material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
@@ -112,8 +260,12 @@ end
     @test new_material == [8.0, 0.0, 0.0, 10.0, 0.0, 40.0]
 end
 
-@testset "local inertial long channel MacDonald (1997)" begin
-    g = 9.80665
+@testitem "local inertial long channel MacDonald (1997)" begin
+    using QuadGK: quadgk
+    using Graphs: DiGraph, add_edge!, ne
+    using Statistics: mean
+    using Wflow: GRAVITATIONAL_ACCELERATION
+
     L = 1000.0
     dx = 5.0
     n = Int(L / dx)
@@ -121,13 +273,15 @@ end
     # analytical solution MacDonald (1997) for channel with length L of 1000.0 m, Manning's
     # n of 0.03, constant inflow of 20.0 m3/s at upper boundary and channel width of 10.0 m
     # water depth profile h(x)
-    h(x) = (4 / g)^(1.0 / 3.0) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2.0))
+    h(x) = cbrt(4 / GRAVITATIONAL_ACCELERATION) * (1.0 + 0.5 * exp(-16.0 * (x / L - 0.5)^2))
     # spatial derivative of h(x)
     h_acc(x) =
-        -(4 / g)^(1.0 / 3.0) * 16.0 / L * (x / L - 0.5) * exp(-16 * (x / L - 0.5)^2.0)
+        -cbrt(4 / GRAVITATIONAL_ACCELERATION) * 16.0 / L *
+        (x / L - 0.5) *
+        exp(-16 * (x / L - 0.5)^2)
     # solution for channel slope s(x)
     s(x) =
-        (1.0 - 4.0 / (g * h(x)^(3.0))) * h_acc(x) +
+        (1.0 - 4.0 / (GRAVITATIONAL_ACCELERATION * h(x)^3)) * h_acc(x) +
         0.36 * (2 * h(x) + 10.0)^(4.0 / 3.0) / ((10.0 * h(x))^(10.0 / 3.0))
 
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
@@ -176,7 +330,7 @@ end
     params_river = Wflow.RiverParameters(;
         flow_width = width,
         flow_length = dl,
-        waterbody_outlet = zeros(n),
+        reservoir_outlet = zeros(n),
     )
     domain_river = Wflow.DomainRiver(; network = river_network, parameters = params_river)
     domain = Wflow.Domain(; river = domain_river)
@@ -188,24 +342,25 @@ end
 
     timestepping = Wflow.TimeStepping(; cfl = 0.7)
     parameters = Wflow.LocalInertialRiverFlowParameters(;
-        n = n,
+        n,
         ne = _ne,
         active_n = collect(1:(n - 1)),
         active_e = collect(1:_ne),
-        g = 9.80665,
-        h_thresh = h_thresh,
-        zb_max = zb_max,
-        mannings_n_sq = mannings_n_sq,
+        h_thresh,
+        zb_max,
+        mannings_n_sq,
         mannings_n = n_river,
         flow_width_at_edge = width_at_edge,
         flow_length_at_edge = length_at_edge,
         bankfull_storage = fill(Wflow.MISSING_VALUE, n),
         bankfull_depth = fill(Wflow.MISSING_VALUE, n),
-        zb = zb,
-        froude_limit = froude_limit,
+        zb,
+        froude_limit,
     )
 
     variables = Wflow.LocalInertialRiverFlowVariables(;
+        n,
+        n_edges = _ne,
         q0 = zeros(_ne),
         q = zeros(_ne),
         q_av = zeros(_ne),
@@ -215,23 +370,13 @@ end
         zs_src = zeros(_ne),
         zs_dst = zeros(_ne),
         hf = zeros(_ne),
-        h_av = zeros(n),
         a = zeros(_ne),
         r = zeros(_ne),
         storage = fill(0.0, n),
-        storage_av = fill(0.0, n),
         error = zeros(n),
     )
 
-    boundary_conditions = Wflow.RiverFlowBC(;
-        inflow = zeros(n),
-        actual_external_abstraction_av = zeros(n),
-        abstraction = zeros(n),
-        inflow_waterbody = zeros(n),
-        inwater = zeros(n),
-        reservoir = nothing,
-        lake = nothing,
-    )
+    boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
 
     sw_river = Wflow.LocalInertialRiverFlow(;
         timestepping,
@@ -239,7 +384,7 @@ end
         parameters,
         variables,
         floodplain = nothing,
-        allocation = nothing,
+        allocation = Wflow.NoAllocationRiver(n),
     )
 
     # run until steady state is reached
@@ -249,7 +394,7 @@ end
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
         dt = Wflow.stable_timestep(sw_river, flow_length)
-        Wflow.local_inertial_river_update!(sw_river, domain, dt, 86400.0, 0, true)
+        Wflow.local_inertial_river_update!(sw_river, domain, dt, 86400.0, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon
             break
@@ -258,4 +403,60 @@ end
 
     # test for mean absolute error [cm]
     @test mean(abs.(sw_river.variables.h .- h_a)) * 100.0 ≈ 1.873574206931199
+end
+
+@testitem "unit: local_inertial_flow" begin
+    # Case of general area
+    q0 = 0.0004713562869434079
+    zs0 = 206.10117949049967
+    zs1 = 201.9003737619653
+    hf = 0.0011733869840497846
+    A = 0.04970535373017763
+    R = 0.0011733219820725962
+    length = 533.453125
+    mannings_n_sq = 0.0008999999597668652
+    froude_limit = true
+    dt = 89.29563868855615
+
+    @test Wflow.local_inertial_flow(
+        q0,
+        zs0,
+        zs1,
+        hf,
+        A,
+        R,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    ) ≈ 0.005331926324969742
+
+    # Case of rectangular area
+    theta = 1.0
+    q0 = 0.0001769756305800402
+    qd = 0.0
+    qu = 0.0
+    zs0 = 601.4761297394623
+    zs1 = 601.4730243288751
+    hf = 0.00310727852479431
+    width = 620.6649135473787
+    length = 926.602742473319
+    mannings_n_sq = 0.1773345894316103
+    froude_limit = true
+    dt = 49.774905820268735
+
+    @test Wflow.local_inertial_flow(
+        theta,
+        q0,
+        qd,
+        qu,
+        zs0,
+        zs1,
+        hf,
+        width,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    ) ≈ 0.00017992597962222483
 end

@@ -2,27 +2,17 @@ abstract type AbstractInterceptionModel end
 
 "Struct for storing interception model variables"
 @with_kw struct InterceptionVariables
+    n::Int
     # Canopy potential evaporation [mm Δt⁻¹]
-    canopy_potevap::Vector{Float64}
+    canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Interception loss by evaporation [mm Δt⁻¹]
-    interception_rate::Vector{Float64}
+    interception_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Canopy storage [mm]
-    canopy_storage::Vector{Float64}
+    canopy_storage::Vector{Float64} = zeros(n)
     # Stemflow [mm Δt⁻¹]
-    stemflow::Vector{Float64}
+    stemflow::Vector{Float64} = fill(MISSING_VALUE, n)
     # Throughfall [mm Δt⁻¹]
-    throughfall::Vector{Float64}
-end
-
-"Initialize interception model variables"
-function InterceptionVariables(n::Int)
-    return InterceptionVariables(;
-        canopy_potevap = fill(MISSING_VALUE, n),
-        interception_rate = fill(MISSING_VALUE, n),
-        canopy_storage = zeros(n),
-        stemflow = fill(MISSING_VALUE, n),
-        throughfall = fill(MISSING_VALUE, n),
-    )
+    throughfall::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing Gash interception model parameters"
@@ -45,16 +35,18 @@ function GashInterceptionModel(
     indices::Vector{CartesianIndex{2}},
     vegetation_parameter_set::VegetationParameters,
 )
-    lens = lens_input_parameter(
+    e_r = ncread(
+        dataset,
         config,
-        "vegetation_canopy_water__mean_evaporation-to-mean_precipitation_ratio",
+        "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio";
+        sel = indices,
+        defaults = 0.1,
+        type = Float64,
     )
-    e_r = ncread(dataset, config, lens; sel = indices, defaults = 0.1, type = Float64)
     n = length(indices)
-    params =
-        GashParameters(; e_r = e_r, vegetation_parameter_set = vegetation_parameter_set)
-    vars = InterceptionVariables(n)
-    model = GashInterceptionModel(; parameters = params, variables = vars)
+    parameters = GashParameters(; e_r, vegetation_parameter_set)
+    variables = InterceptionVariables(; n)
+    model = GashInterceptionModel(; parameters, variables)
     return model
 end
 
@@ -68,7 +60,7 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
     e_r = model.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model)
+        update_canopy_parameters!(model.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
@@ -100,21 +92,19 @@ end
 
 "Initialize Rutter interception model"
 function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
-    vars = InterceptionVariables(n)
-    model =
-        RutterInterceptionModel(; parameters = vegetation_parameter_set, variables = vars)
+    variables = InterceptionVariables(; n)
+    model = RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
     return model
 end
 
 "Update Rutter interception model for a single timestep"
 function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameter_set
+    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model)
+        update_canopy_parameters!(model.parameters)
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -132,7 +122,7 @@ function update!(model::RutterInterceptionModel, atmospheric_forcing::Atmospheri
 end
 
 "Update canopy parameters `cmax` and `canopygapfraction` based on `leaf_area_index` for a single timestep"
-function update_canopy_parameters!(model::AbstractInterceptionModel)
+function update_canopy_parameters!(parameters::VegetationParameters)
     (;
         leaf_area_index,
         storage_wood,
@@ -140,7 +130,7 @@ function update_canopy_parameters!(model::AbstractInterceptionModel)
         storage_specific_leaf,
         canopygapfraction,
         cmax,
-    ) = model.parameters.vegetation_parameter_set
+    ) = parameters
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i

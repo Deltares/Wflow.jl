@@ -2,6 +2,7 @@ using PackageCompiler
 using TOML
 using LibGit2
 using Pkg
+using LicenseCheck
 
 # change directory to this script's location
 cd(@__DIR__)
@@ -10,6 +11,7 @@ project_dir = "../wflow_cli"
 license_file = "../../LICENSE"
 output_dir = "wflow_bundle"
 git_repo = "../.."
+sbom_file = "../../Wflow.spdx.json"
 
 create_app(
     project_dir,
@@ -22,4 +24,4 @@ create_app(
 )
 
 include("add_metadata.jl")
-add_metadata(project_dir, license_file, output_dir, git_repo)
+add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file)
