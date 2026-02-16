@@ -38,11 +38,11 @@ function update_land_surface_temperature!(
 )
     n = length(land_surface_temperature_model.variables.land_surface_temperature)
 
-    # Get wind measurement height from config (default to 10m if not specified)
-    wind_measurement_height = Float64(get(config.input, "wind_altitude", 10.0))
+    # Get wind measurement height from config (default to 10 m if not specified)
+    wind_measurement_height = config.model.land_surface_wind__speed_reference_height
 
     for i in 1:n
-        # Use pre-calculated net radiation from forcing (calculated in hydromt_wflow preprocessing)
+        # Use pre-calculated net radiation from forcing
         land_surface_temperature_model.variables.latent_heat_of_vaporization[i] =
             compute_latent_heat_of_vaporization(atmospheric_forcing.temperature[i])
 
@@ -69,7 +69,7 @@ function update_land_surface_temperature!(
                 canopy_height,
             )
 
-        # Calculate LST
+        # Calculate land surface temperature
         land_surface_temperature_model.variables.land_surface_temperature[i] =
             compute_land_surface_temperature(
                 land_surface_temperature_model.variables.sensible_heat_flux[i],
