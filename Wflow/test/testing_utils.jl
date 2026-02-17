@@ -1,5 +1,7 @@
 using Statistics: mean
 using SpecialFunctions: expint
+using Wflow: to_SI, Unit
+using StaticArrays: SVector
 
 "Return the first row of a Wflow output CSV file as a NamedTuple"
 function csv_first_row(path)
@@ -29,7 +31,7 @@ function run_piave(model, steps)
         Wflow.run_timestep!(model)
         ssf_storage[i] = mean(model.routing.subsurface_flow.variables.storage)
         riv_storage[i] = mean(model.routing.river_flow.variables.storage)
-        q[i] = model.routing.river_flow.variables.q_av[1]
+        q[i] = model.routing.river_flow.variables.q_av.average[1]
     end
     return q, riv_storage, ssf_storage
 end
@@ -70,8 +72,10 @@ function homogenous_aquifer(nrow, ncol)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
     ncell = connectivity.ncell
 
+    M_PER_DAY = Unit(; m = 1, d = -1)
+
     parameters = Wflow.ConfinedAquiferParameters(;
-        k = fill(10.0, ncell),
+        k = fill(to_SI(10.0, M_PER_DAY), ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
@@ -83,15 +87,11 @@ function homogenous_aquifer(nrow, ncol)
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
-        q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
     )
     conf_aqf = Wflow.ConfinedAquifer(; parameters, variables)
 
     parameters = Wflow.UnconfinedAquiferParameters(;
-        k = fill(10.0, ncell),
+        k = fill(to_SI(10.0, M_PER_DAY), ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
@@ -105,8 +105,8 @@ function homogenous_aquifer(nrow, ncol)
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_in_av = Wflow.AverageVector(; n = ncell),
+        q_out_av = Wflow.AverageVector(; n = ncell),
         exfiltwater = fill(0.0, ncell),
     )
     unconf_aqf = Wflow.UnconfinedAquifer(; parameters, variables)
@@ -123,7 +123,7 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     if !haskey(kwargs, :vegetation_parameter_set)
         kwargs[:vegetation_parameter_set] = Wflow.VegetationParameters(;
-            rootingdepth = [],
+            rootingdepth = get(kwargs, :rootingdepth, []),
             leaf_area_index = nothing,
             storage_wood = nothing,
             kext = nothing,
@@ -134,8 +134,22 @@ function init_sbm_soil_model(n, N; kwargs...)
         )
     end
 
+    if !haskey(kwargs, :maxlayers)
+        kwargs[:maxlayers] = 0
+    end
+
     # Vectors of SVectors
-    for field_name in [:vwc, :vwc_perc, :act_thickl, :rootfraction, :kvfrac, :c, :sumlayers]
+    for field_name in [
+        :ustorelayerdepth,
+        :ustorelayerthickness,
+        :vwc,
+        :vwc_perc,
+        :act_thickl,
+        :rootfraction,
+        :kvfrac,
+        :c,
+        :sumlayers,
+    ]
         if !haskey(kwargs, field_name)
             kwargs[field_name] = SVector{N, Float64}[]
         end
@@ -188,7 +202,10 @@ function init_sbm_soil_model(n, N; kwargs...)
         filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilParameters), kwargs)
     parameters = Wflow.SbmSoilParameters(; kwargs_parameters...)
 
-    return Wflow.SbmSoilModel(; n, variables, parameters)
+    kwargs_bc = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilBC), kwargs)
+    boundary_conditions = Wflow.SbmSoilBC(; kwargs_bc...)
+
+    return Wflow.SbmSoilModel(; n, variables, parameters, boundary_conditions)
 end
 
 """
@@ -200,3 +217,6 @@ data required in certain functions has to be supplied (e.g. in the form of Named
     boundary_conditions::B = nothing
     variables::V = nothing
 end
+
+Wflow.to_SI(x::Union{Float64, Vector{Float64}}, name::AbstractString; kwargs...) =
+    to_SI(x, Wflow.get_unit(name; allow_not_found = false); kwargs...)

@@ -20,16 +20,24 @@ function infiltration(
     infiltcappath,
     ustorecapacity,
     f_infiltration_reduction,
+    dt,
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and paved areas (path).
+    # [m s⁻¹] = [m s⁻¹] * [-]
     soilinf = potential_infiltration * (1.0 - pathfrac)
     pathinf = potential_infiltration * pathfrac
 
+    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
     max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
-    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
-    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
 
+    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
+    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
+
+    # [m s⁻¹] = min([m s⁻¹] + [m s⁻¹], max(0.0, [m] / [s]))
+    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity / dt))
+
+    # [m s⁻¹] = ([m s⁻¹] - [m s⁻¹]) + ([m s⁻¹] - [m s⁻¹])
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
     return infiltsoilpath, infiltexcess
@@ -43,30 +51,50 @@ is controlled by the vertical saturated hydraulic conductivity `kv_z` (bottom la
 table), the effective saturation degree of the layer (ratio `usd` and `l_sat`), and a
 Brooks-Corey power coefficient `c`.
 """
-function unsatzone_flow_layer(usd, kv_z, l_sat, c)
-    if usd <= 0.0
+function unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, c, dt)
+    if ustorelayerdepth <= 0.0
         return 0.0, 0.0
     end
     # Excess soil water:
     # first transfer soil water > maximum soil water capacity layer (iteration is not
-    # required because of steady theta (usd))
-    st_sat = max(0.0, usd - l_sat)
-    st = kv_z * min(pow(usd / l_sat, c), 1.0)
-    sum_ast = min(st, st_sat)
-    usd -= sum_ast
+    # required because of steady theta (ustorelayerdepth))
+
+    # [m] = max(0, [m] - [m])
+    st_sat = max(0.0, ustorelayerdepth - l_sat)
+
+    # [m s⁻¹] = [m s⁻¹] * [-]
+    st = kv_z * bounded_power(ustorelayerdepth / l_sat, c)
+    # [m s⁻¹] = min([m s⁻¹], [m] / [s])
+    sum_ast = min(st, st_sat / dt)
+    # [m] -= [m s⁻¹] * [s]
+    ustorelayerdepth -= sum_ast * dt
 
     # number of iterations (to reduce "overshooting") based on fixed maximum change in soil
     # water per iteration step (0.2 mm / model timestep)
-    remainder = min(st - sum_ast, usd)
-    its = Int(cld(remainder, 0.2))
+    # [m] = min([m s⁻¹] * [s], [m])
+    remainder = min((st - sum_ast) * dt, ustorelayerdepth)
+    # [-]
+    its = Int(cld(remainder, 2e-4))
     for _ in 1:its
-        st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
-        ast = min(st, usd)
-        usd -= ast
+        # [m s⁻¹] = ([m s⁻¹] / [-]) * [-]
+        st = (kv_z / its) * bounded_power(ustorelayerdepth / l_sat, c)
+        # [m s⁻¹] = min([m s⁻¹], [m] / [s])
+        ast = min(st, ustorelayerdepth / dt)
+        # [m] -= [m]
+        ustorelayerdepth -= ast * dt
+        # [m s⁻¹] += [m s⁻¹]
         sum_ast += ast
+        if ustorelayerdepth < 0
+            if ustorelayerdepth < -eps()
+                error()
+            else
+                ustorelayerdepth = 0.0
+                break
+            end
+        end
     end
 
-    return usd, sum_ast
+    return ustorelayerdepth, sum_ast
 end
 
 """
@@ -75,13 +103,15 @@ end
 Return volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
 function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
-    if h < hb
+    return if h < hb
+        # [-] = [-] / [-]
         par_lambda = 2.0 / (c - 3.0)
-        vwc = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
+        # [-] = [-] * ([-] / [-])^[-] + [-]
+        (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
     else
-        vwc = theta_s
+        # [-]
+        theta_s
     end
-    return vwc
 end
 
 """
@@ -90,10 +120,12 @@ end
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    # [-]
     par_lambda = 2 / (c - 3.0)
     h = if par_lambda > 0
         # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
         # part of the numerical vwc calculation
+        # [m] = [m] / (([-] / [-])^inv([-]))
         hb / pow(vwc / (theta_s - theta_r), inv(par_lambda))
     else
         hb
@@ -110,8 +142,7 @@ function field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
     theta_fc = 0.0
     total_depth = 0.0
     for i in 1:n_layers
-        theta_fc +=
-            vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
+        theta_fc += vwc_brooks_corey(-1.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
         total_depth += layer_thickness[i]
     end
     return theta_fc / total_depth
@@ -122,9 +153,9 @@ end
 
 Return soil water pressure head `h3` of Feddes root water uptake reduction function.
 """
-function feddes_h3(h3_high, h3_low, tpot, Δt)
+function feddes_h3(h3_high, h3_low, tpot_SI)
     # value of h3 is a function of potential transpiration [mm d⁻¹]
-    tpot_daily = tpot * (tosecond(BASETIMESTEP) / Δt)
+    tpot_daily = from_SI(tpot_SI, MM_PER_DAY)
     return if tpot_daily <= 1.0
         h3_low
     elseif tpot_daily < 5.0
@@ -193,7 +224,8 @@ function infiltration_reduction_factor(
 )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)
-        f_infiltration_reduction = scurve(tsoil, 0.0, bb, 8.0) + cf_soil
+        f_infiltration_reduction =
+            scurve(tsoil, to_SI(0.0, ABSOLUTE_DEGREES), bb, 8.0) + cf_soil
     else
         f_infiltration_reduction = 1.0
     end
@@ -201,7 +233,7 @@ function infiltration_reduction_factor(
 end
 
 "Return soil evaporation from the unsaturated store"
-function soil_evaporation_unsatured_store(
+function soil_evaporation_unsaturated_store(
     potential_soilevaporation,
     ustorelayerdepth,
     ustorelayerthickness,
@@ -213,29 +245,34 @@ function soil_evaporation_unsatured_store(
         soilevapunsat = 0.0
     elseif n_unsatlayers == 1
         # Check if groundwater level lies below the surface
+        # [m s⁻¹] = [m s⁻¹] * min([-], [m] / ([m] * [-]))
         soilevapunsat =
             potential_soilevaporation * min(1.0, ustorelayerdepth / (zi * theta_effective))
     else
         # In case first layer contains no saturated storage
+        # [m s⁻¹] = [m s⁻¹] * min([-], [m] / ([m] * [-]))
         soilevapunsat =
             potential_soilevaporation *
-            min(1.0, ustorelayerdepth / (ustorelayerthickness * (theta_effective)))
+            min(1.0, ustorelayerdepth / (ustorelayerthickness * theta_effective))
     end
     return soilevapunsat
 end
 
 "Return soil evaporation from the saturated store"
-function soil_evaporation_satured_store(
+function soil_evaporation_saturated_store(
     potential_soilevaporation,
     n_unsatlayers,
     layerthickness,
     zi,
     theta_drainable,
+    dt,
 )
     if n_unsatlayers in (0, 1)
+        # [m s⁻¹] = [m s⁻¹] * min([-], ([m] - [m])/[m])
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
-        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable)
+        # [m s⁻¹] = min([m s⁻¹], ([m] - [m]) * [-] / [s])
+        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable / dt)
     else
         soilevapsat = 0.0
     end

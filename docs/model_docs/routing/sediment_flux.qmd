@@ -144,7 +144,7 @@ $$
 C_{\max} = \subtext{c}{sp}  \left( \dfrac{\mathrm{prf} Q}{h W} \right)^{\subtext{\mathrm{sp}}{exp}}
 $$
 
-where $\SIb{C_{\max}}{kg\ L^{-1}}$ (or $\SIb{}{ton\ m^{-1}}$) is the sediment concentration,
+where $\SIb{C_{\max}}{kg\ L^{-1}}$ (or $\SIb{}{ton\ m^{-3}}$) is the sediment concentration,
 $\SIb{Q}{m^3\ s^{-1}}$ is the surface runoff in the river cell, $\SIb{h}{m}$ is the river
 water level, $\SIb{W}{m}$ is the river width and $\subtext{c}{sp}$, $\mathrm{prf}$ and
 $\subtext{\mathrm{sp}}{exp}$ are calibration parameters. The $\mathrm{prf}$ coefficient is
@@ -174,7 +174,7 @@ $$
 
 where $C_w$ is the sediment concentration by weight, $\SIb{\rho}{g\ m^{-3}}$ and
 $\SIb{\rho_{s}}{g\ m^{-3}}$ are the fluid and sediment density (here respectively equal to
-$\SI{1000}{g\ m^{-3}}$ and $\SI{2650}{g\ m^{-3}}$), $\SIb{u}{m\ s^{-1}}$ is the water mean
+$\SI{1.0 \times 10^6}{g\ m^{-3}}$ and $\SI{2.65 \times 10^6}{g\ m^{-3}}$), $\SIb{u}{m\ s^{-1}}$ is the water mean
 velocity, $S$ is the river slope, $g$ is the acceleration due to gravity, $\SIb{D_{50}}{m}$
 is the river mean diameter and $\theta$ is the Shields parameter.
 
@@ -230,8 +230,10 @@ $$
 where $\psi$ is the universal stream power given by:
 
 $$
-   \psi = \dfrac{\psi^{3}}{\left(\dfrac{\rho_{s}}{\rho}-1\right) g h \omega_{s,50}  \left[ \log_{10}\left(\dfrac{h}{D_{50}}\right)\right]^{2}}
+   \psi = \dfrac{V^3}{\left(\dfrac{\rho_{s}}{\rho}-1\right) g h \omega_{s,50}  \left[ \log_{10}\left(\dfrac{h}{D_{50}}\right)\right]^{2}}
 $$
+
+for some velocity V (see the original publication by Molinas & Wu, this was copied from a wrong formula in the SWAT documentation).
 
 Once the maximum concentration $C_{\max}$ is established with one of the above transport
 formula, the model then determines if there is erosion of the river bed and bank. In order

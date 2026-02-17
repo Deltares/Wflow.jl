@@ -3,26 +3,26 @@ abstract type AbstractSoilErosionModel end
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
     n::Int
-    # Total soil erosion rate [t dt-1]
+    # Total soil erosion rate [t dt⁻¹ => kg s⁻¹]
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total clay erosion rate [t dt-1]
+    # Total clay erosion rate [t dt⁻¹ => kg s⁻¹]
     clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total silt erosion rate [t dt-1]
+    # Total silt erosion rate [t dt⁻¹ => kg s⁻¹]
     silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total sand erosion rate [t dt-1]
+    # Total sand erosion rate [t dt⁻¹ => kg s⁻¹]
     sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total small aggregates erosion rate [t dt-1]
+    # Total small aggregates erosion rate [t dt⁻¹ => kg s⁻¹]
     sagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total large aggregates erosion rate [t dt-1]
+    # Total large aggregates erosion rate [t dt⁻¹ => kg s⁻¹]
     lagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
     n::Int
-    # Rainfall erosion rate [t dt-1]
+    # Rainfall erosion rate [t dt⁻¹ => kg s⁻¹]
     rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Overland flow erosion rate [t dt-1]
+    # Overland flow erosion rate [t dt⁻¹ => kg s⁻¹]
     overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -46,51 +46,31 @@ function SoilErosionParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    clay_fraction = ncread(
-        dataset,
-        config,
-        "soil_clay__mass_fraction";
-        sel = indices,
-        defaults = 0.4,
-        type = Float64,
-    )
-    silt_fraction = ncread(
-        dataset,
-        config,
-        "soil_silt__mass_fraction";
-        sel = indices,
-        defaults = 0.3,
-        type = Float64,
-    )
-    sand_fraction = ncread(
-        dataset,
-        config,
-        "soil_sand__mass_fraction";
-        sel = indices,
-        defaults = 0.3,
-        type = Float64,
-    )
+    clay_fraction =
+        ncread(dataset, config, "soil_clay__mass_fraction", SoilLoss; sel = indices)
+    silt_fraction =
+        ncread(dataset, config, "soil_silt__mass_fraction", SoilLoss; sel = indices)
+    sand_fraction =
+        ncread(dataset, config, "soil_sand__mass_fraction", SoilLoss; sel = indices)
     sagg_fraction = ncread(
         dataset,
         config,
-        "soil_small_aggregates__mass_fraction";
+        "soil_small_aggregates__mass_fraction",
+        SoilLoss;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     lagg_fraction = ncread(
         dataset,
         config,
-        "soil_large_aggregates__mass_fraction";
+        "soil_large_aggregates__mass_fraction",
+        SoilLoss;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction
     if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
-        error("Particle fractions in the soil must sum to 1")
+        error("Particle fractions in the soil must sum to 1.")
     end
     soil_parameters = SoilErosionParameters(;
         clay_fraction,
@@ -127,12 +107,16 @@ end
 function update_boundary_conditions!(
     model::SoilErosionModel,
     rainfall_erosion::AbstractRainfallErosionModel,
-    overland_flow_erosion::AbstractOverlandFlowErosionModel,
+    overland_flow_erosion::OverlandFlowErosionAnswersModel,
 )
+    # [kg s⁻¹]
     re = rainfall_erosion.variables.soil_erosion_rate
+    # [kg s⁻¹]
     ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
+    # [kg s⁻¹] = [kg s⁻¹]
     @. rainfall_erosion = re
+    # [kg s⁻¹] = [kg s⁻¹]
     @. overland_flow_erosion = ole
 end
 
@@ -152,6 +136,7 @@ function update!(model::SoilErosionModel)
 
     n = length(rainfall_erosion)
     threaded_foreach(1:n; basesize = 1000) do i
+        # [kg s⁻¹]
         soil_erosion_rate[i],
         clay_erosion_rate[i],
         silt_erosion_rate[i],

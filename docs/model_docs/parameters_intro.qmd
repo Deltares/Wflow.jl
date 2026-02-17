@@ -1,5 +1,8 @@
 ---
 title: Introduction
+engine: julia
+execute:
+  cache: false
 ---
 
 This section provides an overview of all model parameters, states and variables in tables
@@ -43,11 +46,10 @@ model output variable.
 The table below lists static input maps that are not directly part of wflow models and are
 required to run wflow.
 
-| Standard Name | Description | Unit | Default value |
-| ---- | ----- | - | -- |
-| `basin__local_drain_direction` | Local drain direction (1-9) | - | - |
-| `subbasin_location__count` | Subbasin ids | - | - |
-| `river_location__mask` | River mask (0-1) | - | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+include("../docs_utils.jl")
+generate_table(Wflow.Domain, :generic_input_map; relative_widths = [4, 5, 1, 2])
+```
 
 For reservoir generic input see [reservoir-input](./parameters_routing.qmd#input-generic-reservoir).

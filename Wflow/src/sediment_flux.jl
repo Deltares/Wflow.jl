@@ -53,19 +53,17 @@ function OverlandFlowSediment(
         indices,
     )
 
+    n = length(indices)
+
     if do_river || land_transport == LandTransportType.yalinpart
-        sediment_flux = SedimentLandTransportDifferentiationModel(indices)
-        to_river = SedimentToRiverDifferentiationModel(indices)
+        sediment_flux = SedimentLandTransportDifferentiationModel(; n)
+        to_river = SedimentToRiverDifferentiationModel(; n)
     else
-        sediment_flux = SedimentLandTransportModel(indices)
-        to_river = SedimentToRiverModel(indices)
+        sediment_flux = SedimentLandTransportModel(; n)
+        to_river = SedimentToRiverModel(; n)
     end
 
-    overland_flow_sediment = OverlandFlowSediment{
-        typeof(transport_capacity),
-        typeof(sediment_flux),
-        typeof(to_river),
-    }(;
+    overland_flow_sediment = OverlandFlowSediment(;
         hydrological_forcing,
         transport_capacity,
         sediment_flux,
@@ -92,27 +90,23 @@ function update!(
         model.transport_capacity,
     )
     # Compute transport
-    update!(model.sediment_flux, domain.network)
+    update!(model.sediment_flux, domain.network, dt)
 
     # Update boundary conditions before computing sediment reaching the river
     update_boundary_conditions!(model.to_river, model.sediment_flux)
     # Compute sediment reaching the river
-    update!(model.to_river, domain.parameters.river_location)
+    update!(model.to_river, domain.parameters.river_location, dt)
 end
 
 ### River ###
 "Sediment transport in river model"
-@with_kw struct RiverSediment{
-    TTR <: AbstractTransportCapacityModel,
-    ER <: AbstractRiverErosionModel,
-    SFR <: AbstractSedimentRiverTransportModel,
-    CR <: AbstractSedimentConcentrationsRiverModel,
-} <: AbstractRiverFlowModel
+@with_kw struct RiverSediment{TTR <: AbstractTransportCapacityModel} <:
+                AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TTR
-    potential_erosion::ER
-    sediment_flux::SFR
-    concentrations::CR
+    potential_erosion::RiverErosionJulianTorresModel
+    sediment_flux::SedimentRiverTransportModel
+    concentrations::SedimentConcentrationsRiverModel
 end
 
 const river_transport_method =

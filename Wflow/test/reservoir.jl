@@ -1,16 +1,17 @@
-@testitem "Update reservoir simple" begin
+@testitem "unit: update reservoir simple" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
+    using Wflow: to_SI
+    dt = 86400.0
     # Simple reservoir (outflowfunc = 4)
     n = 1
     res_bc = Wflow.ReservoirBC(;
         n,
-        inflow = [0.0],
-        external_inflow = [0.0],
-        actual_external_abstraction_av = [0.0],
-        inflow_overland = [0.0],
-        inflow_subsurface = [0.0],
-        precipitation = [4.2],
-        evaporation = [1.5],
+        precipitation = [
+            to_SI(4.2, "reservoir_water__precipitation_volume_flux"; dt_val = dt),
+        ],
+        evaporation = [
+            to_SI(1.5, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt),
+        ],
     )
     res_params = Wflow.ReservoirParameters(;
         id = [1],
@@ -36,14 +37,21 @@
     )
     @testset "Update reservoir simple (outflowfunc = 4)" begin
         Wflow.set_reservoir_vars!(res)
-        Wflow.update!(res, 1, 100.0, 86400.0, 86400.0)
-        Wflow.average_reservoir_vars!(res, 86400.0)
+        Wflow.update!(res, 1, 100.0, dt)
         @test res.variables.outflow[1] ≈ 91.3783714867453
-        @test res.variables.outflow_av[1] == res.variables.outflow[1]
+        @test res.variables.outflow_av.cumulative_material[1] ==
+              res.variables.outflow[1] * dt
         @test res.variables.storage[1] ≈ 2.0e7
-        @test res.boundary_conditions.precipitation[1] ≈ 4.2
-        @test res.boundary_conditions.evaporation[1] ≈ 1.5
-        @test res.variables.actevap[1] ≈ 1.5
+        @test res.boundary_conditions.precipitation[1] ≈
+              to_SI(4.2, "reservoir_water__precipitation_volume_flux"; dt_val = dt)
+        @test res.boundary_conditions.evaporation[1] ≈
+              to_SI(1.5, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt)
+        @test res.variables.actevap.cumulative_material[1] ≈
+              to_SI(
+            1.5,
+            "reservoir_water__potential_evaporation_volume_flux";
+            dt_val = dt,
+        ) * dt
     end
 
     # reset storage and waterlevel and set observed outflow
@@ -52,27 +60,27 @@
     res.variables.waterlevel[1] = 10.208598234556407
     @testset "Update reservoir simple (outflowfunc = 4) with observed outflow" begin
         Wflow.set_reservoir_vars!(res)
-        Wflow.update!(res, 1, 100.0, 86400.0, 86400.0)
-        Wflow.average_reservoir_vars!(res, 86400.0)
+        Wflow.update!(res, 1, 100.0, dt)
+        Wflow.average_reservoir_vars!(res, dt)
         @test res.variables.outflow[1] ≈ 80.0
-        @test res.variables.outflow_av[1] == res.variables.outflow[1]
+        @test Wflow.get_average(res.variables.outflow_av)[1] == res.variables.outflow[1]
         @test res.variables.storage[1] ≈ 2.0983091296454795e7
     end
 end
 
-@testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
-    using Wflow: ReservoirProfileType, ReservoirOutflowType
+@testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
+    using Wflow: ReservoirProfileType, ReservoirOutflowType, to_SI
     # Reservoir Modified Puls approach (outflowfunc = 3)
     n = 1
+    dt = 86400.0
     res_bc = Wflow.ReservoirBC(;
         n,
-        inflow = [0.0],
-        external_inflow = [0.0],
-        actual_external_abstraction_av = [0.0],
-        inflow_overland = [0.0],
-        inflow_subsurface = [0.0],
-        precipitation = [20.0],
-        evaporation = [3.2],
+        precipitation = [
+            to_SI(20.0, "reservoir_water__precipitation_volume_flux"; dt_val = dt),
+        ],
+        evaporation = [
+            to_SI(3.2, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt),
+        ],
     )
     res_params = Wflow.ReservoirParameters(;
         id = [1],
@@ -83,14 +91,15 @@ end
         b = [0.22],
         e = [2.0],
     )
+    waterlevel = [18.5]
     res_vars = Wflow.ReservoirVariables(;
         storage = Wflow.initialize_storage(
-            [ReservoirProfileType.linear],
-            [180510409.0],
-            [18.5],
+            res_params.storfunc,
+            res_params.area,
+            waterlevel,
             res_params.sh,
         ),
-        waterlevel = [18.5],
+        waterlevel,
     )
 
     res = Wflow.Reservoir(;
@@ -102,8 +111,8 @@ end
     res_v = res.variables
     res_bc = res.boundary_conditions
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 2500.0, 86400.0, 86400.0)
-    Wflow.average_reservoir_vars!(res, 86400.0)
+    Wflow.update!(res, 1, 2500.0, dt)
+    Wflow.average_reservoir_vars!(res, dt)
     @test Wflow.waterlevel(
         res_p.storfunc[1],
         res_p.area[1],
@@ -111,16 +120,91 @@ end
         res_p.sh[1],
     ) ≈ 19.672653848925634
     @test res_v.outflow[1] ≈ 85.14292808113598
-    @test res_v.outflow_av ≈ res_v.outflow
+    @test Wflow.get_average(res_v.outflow_av) ≈ res_v.outflow
     @test res_v.storage[1] ≈ 3.55111879238499e9
     @test res_v.waterlevel[1] ≈ 19.672653848925634
-    @test res_bc.precipitation[1] ≈ 20.0
-    @test res_bc.evaporation[1] ≈ 3.2
-    @test res_v.actevap[1] ≈ 3.2
+    @test res_bc.precipitation[1] ≈
+          to_SI(20.0, "reservoir_water__precipitation_volume_flux"; dt_val = dt)
+    @test res_bc.evaporation[1] ≈
+          to_SI(3.2, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt)
+    @test res_v.actevap.cumulative_material[1] ≈
+          to_SI(3.2, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt) * dt
+end
+
+@testitem "update_reservoir!" begin
+    using Wflow: to_SI
+    using Graphs: DiGraph, add_edge!
+
+    dt = 86400.0
+
+    n = 1
+    reservoir = Wflow.Reservoir(;
+        boundary_conditions = Wflow.ReservoirBC(;
+            n,
+            external_inflow = [-1.0],
+            inflow_overland = [0.02],
+            inflow_subsurface = [0.04],
+            inflow = Wflow.AverageVector(; n = 1, average = [0.06]),
+            precipitation = [
+                to_SI(0.5, "reservoir_water__precipitation_volume_flux"; dt_val = dt),
+            ],
+            evaporation = [
+                to_SI(
+                    0.1,
+                    "reservoir_water__potential_evaporation_volume_flux";
+                    dt_val = dt,
+                ),
+            ],
+        ),
+        parameters = Wflow.ReservoirParameters(;
+            id = [1],
+            storfunc = [Wflow.ReservoirProfileType.linear],
+            outflowfunc = [Wflow.ReservoirOutflowType.simple],
+            area = [6.0e4],
+            threshold = [0.0],
+            b = [0.0],
+            e = [0.0],
+        ),
+        variables = Wflow.ReservoirVariables(;
+            waterlevel = [1.0],
+            storage = [4.5e7],
+            outflow = [3.0],
+            outflow_av = Wflow.AverageVector(; n = 1, average = [2.0]),
+            outflow_obs = [1.0],
+            actevap = Wflow.AverageVector(;
+                n = 1,
+                average = [
+                    to_SI(
+                        0.01,
+                        "reservoir_water__potential_evaporation_volume_flux";
+                        dt_val = dt,
+                    ),
+                ],
+            ),
+        ),
+    )
+
+    river_flow_vars = Wflow.FlowVariables(; n = 2, q = [0.04, 0.04])
+
+    graph = DiGraph(2)
+    add_edge!(graph, 1, 2)
+    network = Wflow.NetworkRiver(; graph, reservoir_indices = [1])
+
+    v = 1
+    dt = 1000.0
+
+    Wflow.update_reservoir!(reservoir, river_flow_vars, network, v, dt)
+    @test river_flow_vars.qin[2] ≈ 1.0
+    @test reservoir.boundary_conditions.actual_external_abstraction_av.cumulative_material[1] ≈
+          1e3
+    @test reservoir.variables.storage[1] ≈ 4.4998100277777776e7
+    @test reservoir.variables.waterlevel[1] ≈ 0.9683379629629354
+    @test reservoir.variables.outflow[1] ≈ 1.0
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
-    using Wflow: ReservoirProfileType, ReservoirOutflowType
+    using Wflow: to_SI, ReservoirProfileType, ReservoirOutflowType
+    dt = 86400.0
     # Linked reservoirs with free weir (outflowfunc = 1)
     datadir = joinpath(@__DIR__, "data")
     sh = Vector{Union{Wflow.SH, Missing}}([
@@ -150,25 +234,27 @@ end
     )
     res_params.maxstorage[2] = Wflow.maximum_storage(res_params, 2)
 
+    waterlevel = [395.03027, 394.87833]
     res_vars = Wflow.ReservoirVariables(;
-        waterlevel = [395.03027, 394.87833],
+        waterlevel,
         storage = Wflow.initialize_storage(
-            fill(ReservoirProfileType.interpolation, 2),
+            res_params.storfunc,
             [472461536.0, 60851088.0],
-            [395.03027, 394.87833],
+            waterlevel,
             sh,
         ),
     )
     n = 2
     res_bc = Wflow.ReservoirBC(;
-        n,
-        inflow = [0.0, 0.0],
-        external_inflow = [0.0, 0.0],
-        actual_external_abstraction_av = [0.0, 0.0],
-        inflow_subsurface = [0.0, 0.0],
-        inflow_overland = [0.0, 0.0],
-        precipitation = [10.0, 10.0],
-        evaporation = [2.0, 2.0],
+        n = 2,
+        precipitation = [
+            to_SI(10.0, "reservoir_water__precipitation_volume_flux"; dt_val = dt),
+            to_SI(10.0, "reservoir_water__precipitation_volume_flux"; dt_val = dt),
+        ],
+        evaporation = [
+            to_SI(2.0, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt),
+            to_SI(2.0, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt),
+        ],
     )
 
     res = Wflow.Reservoir(;
@@ -177,41 +263,42 @@ end
         variables = res_vars,
     )
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 500.0, 86400.0, 86400.0)
-    Wflow.update!(res, 2, 500.0, 86400.0, 86400.0)
-    Wflow.average_reservoir_vars!(res, 86400.0)
+    Wflow.update!(res, 1, 500.0, dt)
+    Wflow.update!(res, 2, 500.0, dt)
+    Wflow.average_reservoir_vars!(res, dt)
     res_v = res.variables
     res_bc = res.boundary_conditions
     @test res_v.outflow ≈ [214.80170846121263, 236.83281600000214]
-    @test res_v.outflow_av ≈ res_v.outflow
+    @test Wflow.get_average(res_v.outflow_av) ≈ res_v.outflow
     @test res_v.storage ≈ [1.2737435094769483e9, 2.6019755340159863e8]
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 500.0, 86400.0, 86400.0)
-    Wflow.update!(res, 2, 500.0, 86400.0, 86400.0)
-    Wflow.average_reservoir_vars!(res, 86400.0)
+    Wflow.update!(res, 1, 500.0, dt)
+    Wflow.update!(res, 2, 500.0, dt)
+    Wflow.average_reservoir_vars!(res, dt)
     @test res_v.outflow ≈ [-259.8005149014703, 239.66710359986183]
-    @test res_v.outflow_av ≈ [-259.8005149014703, 499.4676185013321]
+    @test Wflow.get_average(res_v.outflow_av) ≈ [-259.8005149014703, 499.4676185013321]
     @test res_v.storage ≈ [1.3431699662524352e9, 2.6073035986708355e8]
-    @test res_v.storage ≈ res_v.storage
     @test res_v.waterlevel ≈ [395.239782021054, 395.21771942667266]
-    @test res_v.actevap ≈ [2.0, 2.0]
+    @test res_v.actevap.cumulative_material ≈ [
+        to_SI(2.0, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt) * dt,
+        to_SI(2.0, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt) * dt,
+    ]
 end
 
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
 @testitem "Overflowing reservoir with SH and HQ" begin
-    using Wflow: ReservoirProfileType, ReservoirOutflowType
-    using Accessors: @reset
+    using Wflow: to_SI, ReservoirProfileType, ReservoirOutflowType
     datadir = joinpath(@__DIR__, "data")
     n = 1
+    dt = 86400.0
     res_bc = Wflow.ReservoirBC(;
         n,
-        inflow = [0.0],
-        external_inflow = [0.0],
-        actual_external_abstraction_av = [0.0],
-        inflow_overland = [0.0],
-        inflow_subsurface = [0.0],
-        precipitation = [10.0],
-        evaporation = [2.0],
+        precipitation = [
+            to_SI(10.0, "reservoir_water__precipitation_volume_flux"; dt_val = dt),
+        ],
+        evaporation = [
+            to_SI(2.0, "reservoir_water__potential_evaporation_volume_flux"; dt_val = dt),
+        ],
     )
     sh = Vector{Union{Wflow.SH, Missing}}([
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
@@ -228,7 +315,7 @@ end
         hq,
         col_index_hq = [15],
     )
-    @reset res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
+    res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
     res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
     res = Wflow.Reservoir(;
         boundary_conditions = res_bc,
@@ -236,8 +323,8 @@ end
         variables = res_vars,
     )
     Wflow.set_reservoir_vars!(res)
-    Wflow.update!(res, 1, 1500.0, 86400.0, 86400.0)
-    Wflow.average_reservoir_vars!(res, 86400.0)
+    Wflow.update!(res, 1, 1500.0, dt)
+    Wflow.average_reservoir_vars!(res, dt)
     res_p = res.parameters
     res_v = res.variables
     @test Wflow.waterlevel(
@@ -247,7 +334,7 @@ end
         res_p.sh[1],
     ) ≈ 398.0 atol = 1e-2
     @test res_v.outflow ≈ [1303.67476852]
-    @test res_v.outflow_av ≈ res_v.outflow
+    @test Wflow.get_average(res_v.outflow_av) ≈ res_v.outflow
     @test res_v.storage ≈ [4.293225e8]
     @test res_v.waterlevel ≈ [398.000000]
 end

@@ -59,6 +59,7 @@ using LoggingExtras:
     Warn,
     with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
@@ -67,6 +68,7 @@ using StaticArrays: SVector, pushfirst, setindex
 using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
+import Subscripts
 
 const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
 const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
@@ -128,6 +130,57 @@ struct SbmModel <: AbstractModelType end         # "sbm" type / sbm_model.jl
 struct SbmGwfModel <: AbstractModelType end      # "sbm_gwf" type / sbm_gwf_model.jl
 struct SedimentModel <: AbstractModelType end    # "sediment" type / sediment_model.jl
 
+"""
+The AverageVector is a struct for computing averages of a some quantity with unit [u]
+over time.
+"""
+@kwdef mutable struct AverageVector
+    const n::Int
+    # Cumulative value [u]
+    const cumulative_material::Vector{Float64} = zeros(n)
+    # Average value [u s⁻¹]
+    const average::Vector{Float64} = zeros(n)
+    # Whether the average was freshly calculated
+    fresh_average::Bool = true
+end
+
+function add_to_cumulative!(v::AverageVector, i::Int, flux::Number, dt::Number)
+    v.fresh_average = false
+    v.cumulative_material[i] += flux * dt
+end
+
+function average!(v::AverageVector, dt::Float64)
+    v.fresh_average = true
+    if iszero(dt)
+        v.average .= 0
+    else
+        @. v.average = v.cumulative_material / dt
+    end
+    return v.average
+end
+
+function set_average!(v::AverageVector, input::AbstractVector)
+    v.fresh_average = true
+    v.average .= input
+end
+
+function get_average(v::AverageVector)
+    if !v.fresh_average
+        error(
+            "The average isn't fresh; new value was added to the cumulative before averaging.",
+        )
+    end
+    return v.average
+end
+
+zero!(v::AverageVector) = (v.cumulative_material .= 0.0)
+Base.eltype(::AverageVector) = Float64
+Base.iterate(v::AverageVector) = iterate(get_average(v))
+Base.iterate(v::AverageVector, state) = iterate(v.average, state)
+Base.length(v::AverageVector) = length(v.average)
+Base.collect(v::AverageVector) = v.average
+
+include("units.jl")
 include("config_structure.jl")
 include("config_utils.jl")
 include("config_init.jl")
@@ -184,6 +237,8 @@ end
 # prevent a large printout of model components and arrays
 Base.show(io::IO, ::AbstractModel{T}) where {T} = print(io, "model of type ", T)
 
+const MISSING_VALUE = Float64(NaN)
+
 include("forcing.jl")
 include("vegetation/parameters.jl")
 include("vegetation/rainfall_interception.jl")
@@ -224,7 +279,19 @@ include("sediment_flux.jl")
 include("sediment_model.jl")
 include("routing/initialize_routing.jl")
 include("sbm_gwf_model.jl")
-include("standard_name.jl")
+include("standard_name/standard_name_utils.jl")
+include("standard_name/standard_name_domain.jl")
+include("standard_name/standard_name_routing.jl")
+include("standard_name/standard_name_sbm.jl")
+include("standard_name/standard_name_sediment.jl")
+
+const standard_name_maps = (
+    ("sbm", Wflow.sbm_standard_name_map),
+    ("sediment", Wflow.sediment_standard_name_map),
+    ("domain", Wflow.domain_standard_name_map),
+    ("routing", Wflow.routing_standard_name_map),
+)
+
 include("utils.jl")
 include("bmi.jl")
 include("subdomains.jl")

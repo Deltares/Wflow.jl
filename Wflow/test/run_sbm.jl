@@ -1,4 +1,5 @@
 @testitem "Run SBM" begin
+    using Wflow: to_SI, ABSOLUTE_DEGREES, MM_PER_DT
     using Dates
     using Statistics: mean
     include("testing_utils.jl")
@@ -6,6 +7,7 @@
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
+    dt = Float64(config.time.timestepsecs)
 
     model = Wflow.Model(config)
     (; domain) = model
@@ -76,7 +78,7 @@
     @testset "first timestep" begin
         sbm = model.land.soil
         snow = model.land.snow
-        @test snow.parameters.tt[50063] ≈ 0.0
+        @test snow.parameters.tt[50063] ≈ to_SI(0.0, ABSOLUTE_DEGREES)
 
         @test model.clock.iteration == 1
 
@@ -100,11 +102,16 @@
         snow = model.land.snow
         @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546
         @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095
-        @test mean(sbm.variables.net_runoff) ≈ 0.22092252199097845
-        @test mean(sbm.variables.runoff) ≈ 0.22129098393293603
-        @test mean(sbm.variables.soilevap) ≈ 0.018738226205510525
-        @test mean(sbm.variables.actevap) ≈ 0.2744312454440506
-        @test mean(sbm.variables.actinfilt) ≈ 0.08861928614420159
+        @test mean(sbm.variables.net_runoff) ≈
+              to_SI(0.22092252199097845, MM_PER_DT; dt_val = dt)
+        @test mean(sbm.variables.runoff) ≈
+              to_SI(0.22129098393293603, MM_PER_DT; dt_val = dt)
+        @test mean(sbm.variables.soilevap) ≈
+              to_SI(0.018738226205510525, MM_PER_DT; dt_val = dt)
+        @test mean(sbm.variables.actevap) ≈
+              to_SI(0.2744312454440506, MM_PER_DT; dt_val = dt)
+        @test mean(sbm.variables.actinfilt) ≈
+              to_SI(0.08861928614420159, MM_PER_DT; dt_val = dt)
         @test snow.variables.snow_storage[5] ≈ 3.843412524052313
         @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949
         @test sbm.variables.total_storage[50063] ≈ 559.9633189802773
@@ -202,7 +209,7 @@ end
     end
 
     @testset "river flow at basin outlets and downstream of one pit" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_av.average
         @test q[4009] ≈ 8.426694842173548 # pit/ outlet, CartesianIndex(141, 228)
         @test q[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
         @test q[2508] ≈ 131.40631419288573 # pit/ outlet
@@ -211,11 +218,13 @@ end
 end
 
 @testitem "Changing forcing and cyclic LAI parameter" begin
+    using Wflow: to_SI, MM_PER_DT
     # Run unchanged
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
 
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
@@ -229,19 +238,11 @@ end
 
     # Run changed
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] =
-        Wflow.init_config_section(
-            Wflow.InputEntry,
-            Dict("scale" => 2.0, "netcdf_variable_name" => "precip"),
-        )
+        Dict("scale" => 2.0, "netcdf_variable_name" => "precip")
     config.input.forcing["land_surface_water__potential_evaporation_volume_flux"] =
-        Wflow.init_config_section(
-            Wflow.InputEntry,
-            Dict("scale" => 3.0, "offset" => 1.50, "netcdf_variable_name" => "pet"),
-        )
-    config.input.cyclic["vegetation__leaf_area_index"] = Wflow.init_config_section(
-        Wflow.InputEntry,
-        Dict("scale" => 1.6, "netcdf_variable_name" => "LAI"),
-    )
+        Dict("scale" => 3.0, "offset" => 1.50, "netcdf_variable_name" => "pet")
+    config.input.cyclic["vegetation__leaf_area_index"] =
+        Dict("scale" => 1.6, "netcdf_variable_name" => "LAI")
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
@@ -250,10 +251,14 @@ end
         res = model.routing.river_flow.boundary_conditions.reservoir
         land = model.land
         @test land.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
-        @test (land.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
-              3.0f0
+        @test (
+            land.atmospheric_forcing.potential_evaporation[100] -
+            to_SI(1.50, MM_PER_DT; dt_val = dt)
+        ) / evap[100] ≈ 3.0f0
         @test land.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.6f0
-        @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0f0
+        @test (
+            res.boundary_conditions.evaporation[2] - to_SI(1.50, MM_PER_DT; dt_val = dt)
+        ) / res_evap[2] ≈ 3.0f0
     end
 end
 
@@ -272,13 +277,13 @@ end
     @testset "kinematic wave routing: river and reservoir external inflow (cyclic)" begin
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
-        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
+        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av.average[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_av[44] ≈ 10.156053077341845
+        @test model.routing.river_flow.variables.q_av.average[44] ≈ 10.156053077341845
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
-        @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
-        @test reservoir.boundary_conditions.inflow[2] ≈ -0.9054049318713108
-        @test reservoir.variables.outflow_av[2] ≈ 3.000999922024245
+        @test reservoir.boundary_conditions.actual_external_abstraction_av.average[2] == 1.0
+        @test reservoir.boundary_conditions.inflow.average[2] ≈ -0.9054049318713108
+        @test reservoir.variables.outflow_av.average[2] ≈ 3.000999922024245
     end
 end
 
@@ -297,13 +302,13 @@ end
     @testset "local inertial routing: river and reservoir external inflow (cyclic)" begin
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
-        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av[44] ==
+        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av.average[44] ==
               0.0
-        @test model.routing.river_flow.variables.q_av[44] ≈ 10.119602100591411
+        @test model.routing.river_flow.variables.q_av.average[44] ≈ 10.119602100591411
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
-        @test reservoir.boundary_conditions.actual_external_abstraction_av[2] == 1.0
-        @test reservoir.boundary_conditions.inflow[2] ≈ -0.9090882985601229
-        @test reservoir.variables.outflow_av[2] ≈ 3.000999922022744
+        @test reservoir.boundary_conditions.actual_external_abstraction_av.average[2] == 1.0
+        @test reservoir.boundary_conditions.inflow.average[2] ≈ -0.9090882985601229
+        @test reservoir.variables.outflow_av.average[2] ≈ 3.000999922022744
     end
 end
 
@@ -319,33 +324,36 @@ end
     (; q_av) = model.routing.river_flow.variables
     @testset "river external negative inflow" begin
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 1.5965227273142157
-        @test q_av[44] ≈ 1.4328200140906533
+        @test actual_external_abstraction_av.average[44] ≈ 1.5965227273142157
+        @test q_av.average[44] ≈ 1.4328200140906533
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 5.416747895349456
-        @test q_av[44] ≈ 4.000700150630984
+        @test actual_external_abstraction_av.average[44] ≈ 5.416747895349456
+        @test q_av.average[44] ≈ 4.000700150630984
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 9.756847289612736
+        @test actual_external_abstraction_av.average[44] ≈ 9.756847289612736
         @test external_inflow[44] == -10.0
-        @test q_av[44] ≈ 7.275452569433593
+        @test q_av.average[44] ≈ 7.275452569433593
     end
 end
 
 @testitem "Fixed forcing (precipitation = 2.5)" begin
+    using Wflow: to_SI, MM_PER_DT
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     config.input.forcing["atmosphere_water__precipitation_volume_flux"] = 2.5
     model = Wflow.Model(config)
+    dt = Wflow.tosecond(model.clock.dt)
     Wflow.load_fixed_forcing!(model)
 
     @testset "fixed precipitation forcing (initialize)" begin
-        @test maximum(model.land.atmospheric_forcing.precipitation) ≈ 2.5
+        @test maximum(model.land.atmospheric_forcing.precipitation) ≈
+              to_SI(2.5, MM_PER_DT; dt_val = dt)
         @test minimum(model.land.atmospheric_forcing.precipitation) ≈ 0.0
         @test all(
             isapprox.(
                 model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation,
-                2.5,
+                to_SI(2.5, MM_PER_DT; dt_val = dt),
             ),
         )
     end
@@ -353,12 +361,13 @@ end
     Wflow.run_timestep!(model)
 
     @testset "fixed precipitation forcing (first timestep)" begin
-        @test maximum(model.land.atmospheric_forcing.precipitation) ≈ 2.5
+        @test maximum(model.land.atmospheric_forcing.precipitation) ≈
+              to_SI(2.5, MM_PER_DT; dt_val = dt)
         @test minimum(model.land.atmospheric_forcing.precipitation) ≈ 0.0
         @test all(
             isapprox.(
                 model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.precipitation,
-                2.5,
+                to_SI(2.5, MM_PER_DT; dt_val = dt),
             ),
         )
     end
@@ -376,7 +385,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river flow and depth (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_av.average
         @test sum(q) ≈ 3692.1984174051863
         @test q[1622] ≈ 7.260572774917902e-5
         @test q[43] ≈ 11.248731903973153
@@ -385,7 +394,7 @@ end
         @test h[1622] ≈ 0.00191277920611667
         @test h[43] ≈ 0.447403557220214
         @test h[501] ≈ 0.37810388857945015
-        q_channel = model.routing.river_flow.variables.q_channel_av
+        q_channel = model.routing.river_flow.variables.q_channel_av.average
         @test q ≈ q_channel
     end
 end
@@ -401,15 +410,15 @@ end
     (; q_av) = model.routing.river_flow.variables
     @testset "river external negative inflow (local inertial)" begin
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 3.0038267868094692
-        @test q_av[44] ≈ 0.0007694313441619584
+        @test actual_external_abstraction_av.average[44] ≈ 3.0038267868094692
+        @test q_av.average[44] ≈ 0.0007694313441619584
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 9.420226369186521
-        @test q_av[44] ≈ 0.009169625606576883
+        @test actual_external_abstraction_av.average[44] ≈ 9.420226369186521
+        @test q_av.average[44] ≈ 0.009169625606576883
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av[44] ≈ 9.999999999999991
-        @test external_inflow[44] == -10.0
-        @test q_av[44] ≈ 6.917023458482667
+        @test actual_external_abstraction_av.average[44] ≈ 9.999999999999991
+        @test external_inflow.average[44] == -10.0
+        @test q_av.average.average[44] ≈ 6.917023458482667
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -424,7 +433,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river and overland flow and depth (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
+        q = model.routing.river_flow.variables.q_av.average
         @test sum(q) ≈ 2415.8565080484427
         @test q[1622] ≈ 7.289953869913158e-5
         @test q[43] ≈ 5.235679976913814
@@ -603,6 +612,7 @@ end
 
         @testset "exponential profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.exponential)
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -617,6 +627,7 @@ end
 
         @testset "exponential constant profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.exponential_constant)
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -639,6 +650,7 @@ end
 
         @testset "layered profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.layered)
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters
@@ -656,6 +668,7 @@ end
         config = get_config(Wflow.VerticalConductivityProfile.layered_exponential)
 
         @testset "layered exponential profile" begin
+            config.dir_output = mktempdir()
             model = Wflow.Model(config)
             (; soil) = model.land
             (; kv_profile) = soil.parameters

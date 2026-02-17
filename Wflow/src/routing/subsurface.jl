@@ -1,27 +1,40 @@
 "Struct for storing lateral subsurface flow model variables"
 @with_kw struct LateralSsfVariables
     n::Int
-    zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
-    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹]
-    ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹]
-    ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)       # Maximum subsurface flow [m² d⁻¹]
-    to_river::Vector{Float64} = zeros(n)                   # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    storage::Vector{Float64}                               # Subsurface storage that can be released [m³]
+    # Pseudo-water table depth [m] (top of the saturated zone)
+    zi::Vector{Float64}
+    # Exfiltration [m dt⁻¹ => m s⁻¹] (groundwater above surface level, saturated excess conditions)
+    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Subsurface flow [m³ d⁻¹ => m³ s⁻¹]
+    ssf::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Inflow from upstream cells [m³ d⁻¹ => m³ s⁻¹]
+    ssfin::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Maximum subsurface flow [m² d⁻¹ => m² s⁻¹]
+    ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
+    to_river::Vector{Float64} = zeros(n)
+    # Subsurface storage [m³]
+    storage::Vector{Float64}
 end
 
 "Struct for storing lateral subsurface flow model parameters"
 @with_kw struct LateralSsfParameters{Kh}
-    kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]
-    khfrac::Vector{Float64}             # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
-    soilthickness::Vector{Float64}      # Soil thickness [m]
-    specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_fc) [-]
-    specific_yield_dyn::Vector{Float64} # Dynamic specific yield [-]
+    # Horizontal hydraulic conductivity profile type [-]
+    kh_profile::Kh
+    # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
+    khfrac::Vector{Float64}
+    # Soil thickness [m]
+    soilthickness::Vector{Float64}
+    # Specific yield (theta_s - theta_fc) [-]
+    specific_yield::Vector{Float64}
+    # Dynamic specific yield [-]
+    specific_yield_dyn::Vector{Float64}
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"
 @with_kw struct LateralSsfBC
-    recharge::Vector{Float64} # Net recharge to saturated store [m² d⁻¹]
+    n::Int
+    recharge_area::Vector{Float64} = fill(MISSING_VALUE, n) # Net recharge to saturated store [m² d⁻¹ => m² s⁻¹]
 end
 
 "Lateral subsurface flow model"
@@ -33,7 +46,7 @@ end
 
 "Exponential depth profile of horizontal hydraulic conductivity at the soil surface"
 struct KhExponential
-    # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
+    # Horizontal hydraulic conductivity at soil surface [m d⁻¹ => m s⁻¹]
     kh_0::Vector{Float64}
     # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
     f::Vector{Float64}
@@ -49,7 +62,7 @@ end
 
 "Layered depth profile of horizontal hydraulic conductivity"
 struct KhLayered
-    # Horizontal hydraulic conductivity [m d⁻¹]
+    # Horizontal hydraulic conductivity [m d⁻¹ => m s⁻¹]
     kh::Vector{Float64}
 end
 
@@ -63,27 +76,26 @@ function LateralSsfParameters(
     khfrac = ncread(
         dataset,
         config,
-        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio";
-        optional = false,
-        sel = indices,
-        type = Float64,
+        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
+        Routing;
+        sel=indices,
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
-    soilthickness = soilthickness .* 0.001
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
-    factor_dt = BASETIMESTEP / Second(config.time.timestepsecs)
     if kh_profile_type == VerticalConductivityProfile.exponential
         (; kv_0, f) = soil.kv_profile
-        kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        kh_profile = KhExponential(kh_0, f .* 1000.0)
+        # [m s⁻¹] = [-] * [m s⁻¹]
+        kh_0 = @. khfrac * kv_0
+        kh_profile = KhExponential(kh_0, f)
     elseif kh_profile_type == VerticalConductivityProfile.exponential_constant
         (; z_exp) = soil.kv_profile
         (; kv_0, f) = soil.kv_profile.exponential
-        kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        exp_profile = KhExponential(kh_0, f .* 1000.0)
-        kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
+        # [m s⁻¹] = [-] * [m s⁻¹]
+        kh_0 = @. khfrac * kv_0
+        exp_profile = KhExponential(kh_0, f)
+        kh_profile = KhExponentialConstant(exp_profile, z_exp)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
         n_cells = length(khfrac)
@@ -108,6 +120,7 @@ function LateralSsfVariables(
     area::Vector{Float64},
 )
     n = length(zi)
+    # [m³] = [-] * ([m] - [m]) * [m²]
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * area
     variables = LateralSsfVariables(; n, zi, storage)
     return variables
@@ -123,9 +136,9 @@ function LateralSSF(
     (; indices) = domain.network
     (; area) = domain.parameters
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
-    zi = 0.001 * soil.variables.zi
+    zi = soil.variables.zi
     variables = LateralSsfVariables(parameters, zi, area)
-    boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
+    boundary_conditions = LateralSsfBC(; n=length(zi))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end
@@ -136,13 +149,13 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
         domain.network
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters
 
-    (; recharge) = model.boundary_conditions
-    (; ssfin, ssf, to_river, zi, exfiltwater, ssfmax, storage) = model.variables
+    (; recharge_area) = model.boundary_conditions
+    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) = model.variables
     (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) = model.parameters
 
     ns = length(order_of_subdomains)
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir part of the upstream subsurface flow
@@ -159,7 +172,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
                     ssfin[v],
                     ssf[v],
                     zi[v],
-                    recharge[v],
+                    recharge_area[v],
                     slope[v],
                     specific_yield[v],
                     soilthickness[v],
@@ -171,6 +184,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
                     soil,
                     v,
                 )
+                # [m] = [-] * ([m] - [m]) * [m²]
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
         end
@@ -182,8 +196,7 @@ end
 get_water_depth(model::LateralSSF) = model.variables.zi
 get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
-get_flux_to_river(model::LateralSSF, inds::Vector{Int}) =
-    model.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
+get_flux_to_river(model::LateralSSF, inds::Vector{Int}) = model.variables.to_river[inds]
 
 get_inflow(model::LateralSSF) = model.variables.ssfin
 get_outflow(model::LateralSSF) = model.variables.ssf
