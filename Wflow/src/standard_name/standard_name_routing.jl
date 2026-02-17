@@ -437,7 +437,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
             lens = @optic(_.routing.subsurface_flow.aquifer.parameters.f),
-            unit = Unit(; mm = -1),
+            unit = Unit(; m = -1),
             description = "Factor controlling the reduction of horizontal conductivity with depth",
             tags = [:groundwater_unconfined_aquifer_input],
         ),

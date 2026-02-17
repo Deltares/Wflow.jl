@@ -31,7 +31,7 @@ function run_piave(model, steps)
         Wflow.run_timestep!(model)
         ssf_storage[i] = mean(model.routing.subsurface_flow.variables.storage)
         riv_storage[i] = mean(model.routing.river_flow.variables.storage)
-        q[i] = model.routing.river_flow.variables.q_av[1]
+        q[i] = model.routing.river_flow.variables.q_av.average[1]
     end
     return q, riv_storage, ssf_storage
 end
@@ -217,3 +217,6 @@ data required in certain functions has to be supplied (e.g. in the form of Named
     boundary_conditions::B = nothing
     variables::V = nothing
 end
+
+Wflow.to_SI(x::Union{Float64, Vector{Float64}}, name::AbstractString; kwargs...) =
+    to_SI(x, Wflow.get_unit(name; allow_not_found = false); kwargs...)

@@ -1019,7 +1019,7 @@ function water_table_change(
         # [m]
         dh = 0.0
         for k in n_unsatlayers[i]:-1:1
-            # [m s⁻¹] = max([m] * [-] - [m], [m])
+            # [m s⁻¹] = max([m] * [-] - [m], [m]) / [s]
             capacity =
                 max(ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k], 0.0) / dt
             # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])

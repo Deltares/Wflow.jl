@@ -173,6 +173,7 @@ function kinematic_wave_ssf(
         # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
         ssf = (ssf_prev + ssfin) / 2.0
         # effective/drainabale porosity
+        # [-] = [-] - [-]
         theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
         # newton-raphson
         # [m s⁻¹]
@@ -189,6 +190,7 @@ function kinematic_wave_ssf(
         # lower boundary ssf
         # [m s⁻¹] = ([m³ s⁻¹] + [m² s⁻¹] * [m] - [m³ s⁻¹]) / ([m] * [m])
         net_flux = (ssfin + r * dx - ssf) / (dw * dx)
+        # [m], [m s⁻¹]
         dh, exfilt = water_table_change(soil, net_flux, sy, i, dt)
         # [m] = [m] - [m]
         zi = zi_prev - dh
@@ -208,9 +210,13 @@ function kinematic_wave_ssf(
         its = Int(cld(abs(max(zi, 0.0) - zi_prev), max_delta_zi))
         if its > 1
             dt_s = dt / its
+            # [m s⁻¹]
             ssf_sum = 0.0
+            # [m s⁻¹]
             exfilt_sum = 0.0
+            # [m s⁻¹]
             net_flux_sum = 0.0
+            # [m]
             zi_start = zi_prev
             for _ in 1:its
                 # [m s⁻¹]
@@ -224,7 +230,8 @@ function kinematic_wave_ssf(
                 ssf = min(ssf, ssfmax * dw)
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
-                net_flux = (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx)
+                # [m s⁻¹] = ([m³ s⁻¹] * [s] + [m² s⁻¹] * [s] * [m] - [m³ s⁻¹] * [s]) / ([m] * [m] * [s])
+                net_flux = (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx * dt)
                 # [m], [m s⁻¹]
                 dh, exfilt = water_table_change(soil, net_flux, sy, i, dt)
                 # [m] = [m] - [m]
@@ -239,16 +246,25 @@ function kinematic_wave_ssf(
                 zi = clamp(zi, 0.0, d)
                 # update unsaturated zone
                 update_ustorelayerdepth!(soil, zi_prev, zi, i)
+                # [m s⁻¹] += [m s⁻¹]
                 exfilt_sum += exfilt
+                # [m s⁻¹] += [m s⁻¹]
                 net_flux_sum += net_flux
+                # [m s⁻¹] += [m s⁻¹]
                 ssf_sum += ssf
+                # [m s⁻¹] = [m s⁻¹]
                 ssf_prev = ssf
+                # [m] = [m]
                 zi_prev = zi
             end
+            # [m s⁻¹] = [m s⁻¹] / [-]
             ssf = ssf_sum / its
+            # [m s⁻¹] = [m s⁻¹] / [-]
             exfilt = exfilt_sum
+            # [m] = [m] - [m]
             dh = zi_start - zi
-            sy_d = dh > 0.0 ? (net_flux_sum - exfilt_sum) / dh : sy
+            # [-] = ([m s⁻¹] - [m s⁻¹]) * [s] / [m]
+            sy_d = dh > 0.0 ? (net_flux_sum - exfilt_sum) * dt / dh : sy
         else
             update_ustorelayerdepth!(soil, zi_prev, zi, i)
         end

@@ -330,7 +330,7 @@ end
 Get the unit by checking all `*_standard_name_map` dictionaries
 and make sure that there is no ambiguity.
 """
-function get_unit(variable_name::AbstractString)::Unit
+function get_unit(variable_name::AbstractString; allow_not_found = true)::Unit
     unit = nothing
 
     for standard_name_map in (
@@ -348,5 +348,14 @@ function get_unit(variable_name::AbstractString)::Unit
             end
         end
     end
-    return isnothing(unit) ? Unit() : unit
+
+    return if isnothing(unit)
+        if allow_not_found
+            Unit()
+        else
+            error("Unit not found for $variable_name.")
+        end
+    else
+        unit
+    end
 end
