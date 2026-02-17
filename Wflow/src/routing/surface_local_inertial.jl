@@ -251,8 +251,7 @@ get_inflow_reservoir(
 ) = model.variables.q_av[inds] .+ model.variables.to_river[inds]
 
 get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    (model.variables.ssf_av[inds] .+ model.variables.to_river[inds]) ./
-    tosecond(BASETIMESTEP)
+    (model.variables.q_av[inds] .+ model.variables.to_river[inds]) ./ tosecond(BASETIMESTEP)
 
 "Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(

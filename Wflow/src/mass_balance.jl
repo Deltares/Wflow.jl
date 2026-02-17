@@ -485,14 +485,14 @@ function compute_flow_balance!(
     dt::Float64,
 )
     (; error, relative_error, zi_prev) = water_balance
-    (; ssfin_av, ssf_av, net_flux) = subsurface_flow.variables
+    (; q_in_av, q_av, net_flux) = subsurface_flow.variables
     (; recharge) = subsurface_flow.boundary_conditions
     (; area) = domain.land.parameters
 
     f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(zi_prev)
-        total_in = ssfin_av[i] * f_conv
-        total_out = ssf_av[i] * f_conv
+        total_in = q_in_av[i] * f_conv
+        total_out = q_av[i] * f_conv
         total_in, total_out = add_inflow(total_in, total_out, recharge.variables.flux_av[i])
         storage_rate = net_flux[i] * area[i]
         error[i], relative_error[i] =

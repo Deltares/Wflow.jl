@@ -209,8 +209,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.subsurface_flow.variables.exfiltwater),
         unit = "m dt-1",
     ),
+    "subsurface_water__instantaneous_volume_flow_rate" =>
+        (lens = @optic(_.routing.subsurface_flow.variables.q), unit = "m3 d-1"),
     "subsurface_water__volume_flow_rate" =>
-        (lens = @optic(_.routing.subsurface_flow.variables.ssf), unit = "m3 d-1"),
+        (lens = @optic(_.routing.subsurface_flow.variables.q_av), unit = "m3 d-1"),
     "subsurface_water__to_river_volume_flow_rate" =>
         (lens = @optic(_.routing.subsurface_flow.variables.to_river), unit = "m3 d-1"),
     "subsurface_water_mass_balance_error__volume_flow_rate" => (

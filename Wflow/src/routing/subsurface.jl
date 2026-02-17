@@ -1,18 +1,18 @@
 "Struct for storing lateral subsurface flow model variables"
 @with_kw struct LateralSsfVariables
     n::Int
-    zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
-    head::Vector{Float64}                                  # Hydraulic head [m]
-    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    ssf::Vector{Float64} = fill(MISSING_VALUE, n)          # Subsurface flow [m³ d⁻¹]
-    ssf_av::Vector{Float64} = fill(MISSING_VALUE, n)       # Average subsurface flow [m³ d⁻¹] for model timestep Δt
-    ssfin::Vector{Float64} = fill(MISSING_VALUE, n)        # Inflow from upstream cells [m³ d⁻¹]
-    ssfin_av::Vector{Float64} = fill(MISSING_VALUE, n)     # Average inflow from upstream cells [m³ d⁻¹] for model timestep Δt
-    ssfmax::Vector{Float64} = fill(MISSING_VALUE, n)       # Maximum subsurface flow [m² d⁻¹]
-    to_river::Vector{Float64} = fill(MISSING_VALUE, n)     # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    q_net::Vector{Float64} = fill(MISSING_VALUE, n)        # Net flow (boundaries) [m³ d⁻¹]
-    net_flux::Vector{Float64} = fill(MISSING_VALUE, n)     # Net flux [m Δt⁻¹]
-    storage::Vector{Float64}                               # Subsurface storage that can be released [m³]
+    zi::Vector{Float64}                                     # Pseudo-water table depth [m] (top of the saturated zone)
+    head::Vector{Float64}                                   # Hydraulic head [m]
+    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)   # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    q::Vector{Float64} = fill(MISSING_VALUE, n)             # Subsurface flow [m³ d⁻¹]
+    q_av::Vector{Float64} = fill(MISSING_VALUE, n)          # Average subsurface flow [m³ d⁻¹] for model timestep Δt
+    q_in::Vector{Float64} = fill(MISSING_VALUE, n)          # Inflow from upstream cells [m³ d⁻¹]
+    q_in_av::Vector{Float64} = fill(MISSING_VALUE, n)       # Average inflow from upstream cells [m³ d⁻¹] for model timestep Δt
+    q_max::Vector{Float64} = fill(MISSING_VALUE, n)         # Maximum subsurface flow [m² d⁻¹]
+    to_river::Vector{Float64} = fill(MISSING_VALUE, n)      # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    q_net::Vector{Float64} = fill(MISSING_VALUE, n)         # Net flow (boundaries) [m³ d⁻¹]
+    net_flux::Vector{Float64} = fill(MISSING_VALUE, n)      # Net flux [m Δt⁻¹]
+    storage::Vector{Float64}                                # Subsurface storage that can be released [m³]
 end
 
 "Struct for storing lateral subsurface flow model parameters"
@@ -167,15 +167,15 @@ function kinwave_subsurface_update!(
         domain.land.parameters
 
     (;
-        ssfin,
-        ssfin_av,
-        ssf,
-        ssf_av,
+        q_in,
+        q_in_av,
+        q,
+        q_av,
         to_river,
         zi,
         head,
         exfiltwater,
-        ssfmax,
+        q_max,
         storage,
         q_net,
         net_flux,
@@ -193,20 +193,20 @@ function kinwave_subsurface_update!(
                     # goes to the river (flow_fraction_to_river) and part goes to the subsurface
                     # flow reservoir (1.0 - flow_fraction_to_river) upstream nodes with a
                     # reservoir are excluded
-                    ssfin[v] = sum_at(
-                        i -> ssf[i] * (1.0 - flow_fraction_to_river[i]),
+                    q_in[v] = sum_at(
+                        i -> q[i] * (1.0 - flow_fraction_to_river[i]),
                         upstream_nodes[n],
                     )
                     to_river[v] +=
-                        sum_at(i -> ssf[i] * flow_fraction_to_river[i], upstream_nodes[n]) *
+                        sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) *
                         dt
                 else
-                    ssfin[v] = sum_at(i -> ssf[i], upstream_nodes[n])
+                    q_in[v] = sum_at(i -> q[i], upstream_nodes[n])
                 end
 
-                ssf[v], zi[v], _exfiltwater, netflux = kinematic_wave_ssf(
-                    ssfin[v],
-                    ssf[v],
+                q[v], zi[v], _exfiltwater, netflux = kinematic_wave_ssf(
+                    q_in[v],
+                    q[v],
                     zi[v],
                     q_net[v],
                     slope[v],
@@ -215,13 +215,13 @@ function kinwave_subsurface_update!(
                     dt,
                     flow_length[v],
                     flow_width[v],
-                    ssfmax[v],
+                    q_max[v],
                     kh_profile,
                     soil,
                     v,
                 )
-                ssfin_av[v] += ssfin[v] * dt
-                ssf_av[v] += ssf[v] * dt
+                q_in_av[v] += q_in[v] * dt
+                q_av[v] += q[v] * dt
                 exfiltwater[v] += _exfiltwater
                 net_flux[v] += netflux
                 head[v] = top[v] - zi[v]
@@ -236,12 +236,12 @@ Update lateral subsurface model for a single timestep `dt`. Timestepping within 
 either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Float64)
-    (; ssfin_av, ssf_av, to_river, exfiltwater, net_flux) = model.variables
+    (; q_in_av, q_av, to_river, exfiltwater, net_flux) = model.variables
     (; adaptive) = model.timestepping
 
-    ssf_av .= 0.0
+    q_av .= 0.0
     to_river .= 0.0
-    ssfin_av .= 0.0
+    q_in_av .= 0.0
     exfiltwater .= 0.0
     net_flux .= 0.0
 
@@ -255,9 +255,9 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
         kinwave_subsurface_update!(model, soil, domain, dt_s)
         t += dt_s
     end
-    ssf_av ./= dt
+    q_av ./= dt
     to_river ./= dt
-    ssfin_av ./= dt
+    q_in_av ./= dt
     average_flux_vars_bc!(model, dt)
     return nothing
 end
@@ -313,6 +313,6 @@ function get_flux_to_river(model::LateralSSF, inds::Vector{Int})
     return flux
 end
 
-get_inflow(model::LateralSSF) = model.variables.ssfin_av
-get_outflow(model::LateralSSF) = model.variables.ssf_av
+get_inflow(model::LateralSSF) = model.variables.q_in_av
+get_outflow(model::LateralSSF) = model.variables.q_av
 get_storage(model::LateralSSF) = model.variables.storage

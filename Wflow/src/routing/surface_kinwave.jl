@@ -622,7 +622,7 @@ end
 get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow, inds::Vector{Int}) =
     model.variables.q_av[inds]
 get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    model.variables.ssf_av[inds] ./ tosecond(BASETIMESTEP)
+    model.variables.q_av[inds] ./ tosecond(BASETIMESTEP)
 
 # Exclude subsurface flow from `GroundwaterFlow`.
 get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow, inds::Vector{Int}) =
