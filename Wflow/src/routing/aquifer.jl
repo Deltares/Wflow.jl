@@ -438,12 +438,8 @@ function update_head!(gwf::GroundwaterFlow, soil::SbmSoilModel, dt::Float64)
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.variables.head .= minimum_head(gwf)
-    # Compute exfiltration rate and make sure head is not above surface for unconfined aquifer
-    gwf.variables.exfiltwater .+=
-        (gwf.variables.head .- maximum_head(gwf)) .* storativity(gwf)
-    gwf.variables.head .= maximum_head(gwf)
     # Adjust exfiltration rate for constant head boundaries
-    gwf.variables.exfiltwater[gwf.constanthead.index] .= 0.0
+    exfiltwater[gwf.constanthead.index] .= 0.0
     gwf.variables.storage .=
         saturated_thickness(gwf) .* gwf.parameters.area .* storativity(gwf)
     return nothing
