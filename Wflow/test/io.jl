@@ -229,7 +229,7 @@ end
     @test "soil_water_saturated_zone__depth" in required_states
     @test "soil_layer_water_unsaturated_zone__depth" in required_states
     @test "vegetation_canopy_water__depth" in required_states
-    @test "subsurface_water__volume_flow_rate" in required_states
+    @test "subsurface_water__instantaneous_volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "reservoir_water_surface__elevation" in required_states
     @test "snowpack_liquid_water__depth" in required_states
@@ -315,7 +315,7 @@ end
         @test lens(model)[50063] ≈ 0.0
         lens = Wflow.get_lens("soil_water_saturated_zone__depth", land)
         @test lens(model)[50063] ≈ 558.8578304603327
-        lens = Wflow.get_lens("subsurface_water__volume_flow_rate", land)
+        lens = Wflow.get_lens("subsurface_water__instantaneous_volume_flow_rate", land)
         @test lens(model)[10606] ≈ 39.972334552895816
         lens = Wflow.get_lens("river_water__instantaneous_volume_flow_rate", land)
         @test lens(model)[149] ≈ 53.48673634956338
