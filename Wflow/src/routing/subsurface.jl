@@ -10,8 +10,8 @@
     q_in_av::Vector{Float64} = fill(MISSING_VALUE, n)       # Average inflow from upstream cells [m³ d⁻¹] for model timestep Δt
     q_max::Vector{Float64} = fill(MISSING_VALUE, n)         # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{Float64} = fill(MISSING_VALUE, n)      # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    q_net::Vector{Float64} = fill(MISSING_VALUE, n)         # Net flow (boundaries) [m³ d⁻¹]
-    net_flux::Vector{Float64} = fill(MISSING_VALUE, n)      # Net flux [m Δt⁻¹]
+    q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n)    # Net flow for boundaries subsurface flow [m³ d⁻¹]
+    q_net::Vector{Float64} = fill(MISSING_VALUE, n)         # Net flow (total) [m³ d⁻¹]
     storage::Vector{Float64}                                # Subsurface storage that can be released [m³]
 end
 
@@ -177,8 +177,8 @@ function kinwave_subsurface_update!(
         exfiltwater,
         q_max,
         storage,
+        q_net_bnds,
         q_net,
-        net_flux,
     ) = model.variables
     (; specific_yield, top, soilthickness, kh_profile) = model.parameters
     (; river) = model.boundary_conditions
@@ -208,7 +208,7 @@ function kinwave_subsurface_update!(
                     q_in[v],
                     q[v],
                     zi[v],
-                    q_net[v],
+                    q_net_bnds[v],
                     slope[v],
                     specific_yield[v],
                     soilthickness[v],
@@ -223,7 +223,7 @@ function kinwave_subsurface_update!(
                 q_in_av[v] += q_in[v] * dt
                 q_av[v] += q[v] * dt
                 exfiltwater[v] += _exfiltwater
-                net_flux[v] += netflux
+                q_net[v] += netflux * area[v] # convert to m³/dt
                 head[v] = top[v] - zi[v]
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
@@ -236,19 +236,19 @@ Update lateral subsurface model for a single timestep `dt`. Timestepping within 
 either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Float64)
-    (; q_in_av, q_av, to_river, exfiltwater, net_flux) = model.variables
+    (; q_in_av, q_av, to_river, exfiltwater, q_net) = model.variables
     (; adaptive) = model.timestepping
 
     q_av .= 0.0
     to_river .= 0.0
     q_in_av .= 0.0
     exfiltwater .= 0.0
-    net_flux .= 0.0
+    q_net .= 0.0
 
     set_flux_vars_bc!(model)
     t = 0.0
     while t < dt
-        model.variables.q_net .= 0.0
+        model.variables.q_net_bnds .= 0.0
         dt_s = adaptive ? stable_timestep(model, domain.land) : model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         update_fluxes!(model, domain, dt_s)
@@ -258,6 +258,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
     q_av ./= dt
     to_river ./= dt
     q_in_av ./= dt
+    q_net ./= dt
     average_flux_vars_bc!(model, dt)
     return nothing
 end

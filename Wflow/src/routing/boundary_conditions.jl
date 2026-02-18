@@ -91,7 +91,7 @@ function flux!(
             flux = check_flux(cond * delta_head, gwf, index)
         end
         river.variables.flux[i] = flux
-        gwf.variables.q_net[index] += flux
+        gwf.variables.q_net_bnds[index] += flux
         river.variables.storage[i] -= dt * flux
         river.variables.flux_av[i] += dt * flux
     end
@@ -153,7 +153,7 @@ function flux!(
         flux = check_flux(cond * delta_head, gwf, index)
         drainage.variables.flux[i] = flux
         drainage.variables.flux_av[i] += dt * flux
-        gwf.variables.q_net[index] += flux
+        gwf.variables.q_net_bnds[index] += flux
     end
     return nothing
 end
@@ -185,7 +185,7 @@ function flux!(
         flux = check_flux(cond * delta_head, gwf, index)
         headboundary.variables.flux[i] = flux
         headboundary.variables.flux_av[i] += dt * flux
-        gwf.variables.q_net[index] += flux
+        gwf.variables.q_net_bnds[index] += flux
     end
     return nothing
 end
@@ -213,7 +213,7 @@ function flux!(
             check_flux(recharge.variables.rate[i] * gwf.parameters.area[index], gwf, index)
         recharge.variables.flux[i] = flux
         recharge.variables.flux_av[i] += dt * flux
-        gwf.variables.q_net[index] += flux
+        gwf.variables.q_net_bnds[index] += flux
     end
     return nothing
 end
@@ -233,7 +233,7 @@ function flux!(well::Well, gwf::GroundwaterFlow, indices::Vector{Int}, dt::Float
         flux = check_flux(well.variables.volumetric_rate[i], gwf, index)
         well.variables.flux[i] = flux
         well.variables.flux_av[i] += dt * flux
-        gwf.variables.q_net[index] += flux
+        gwf.variables.q_net_bnds[index] += flux
     end
     return nothing
 end

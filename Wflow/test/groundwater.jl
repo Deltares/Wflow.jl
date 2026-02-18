@@ -184,14 +184,14 @@ end
             flux_av = [0.0, 0.0],
         )
         river = Wflow.GwfRiver(; parameters, variables)
-        gwf.variables.q_net .= 0.0
+        gwf.variables.q_net_bnds .= 0.0
         index = [1, 3]
         Wflow.flux!(river, gwf, index, dt)
         # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
         # river storage (20.0)
-        @test gwf.variables.q_net[1] == 20.0
+        @test gwf.variables.q_net_bnds[1] == 20.0
         # drainage, flux is (stage - head) * exf_cond
-        @test gwf.variables.q_net[3] == (2.0 - 20.0) * 200.0
+        @test gwf.variables.q_net_bnds[3] == (2.0 - 20.0) * 200.0
     end
 
     @testset "drainage" begin
@@ -201,11 +201,11 @@ end
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
         variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
         drainage = Wflow.Drainage(; parameters, variables)
-        gwf.variables.q_net .= 0.0
+        gwf.variables.q_net_bnds .= 0.0
         index = [1, 2]
         Wflow.flux!(drainage, gwf, index, dt)
-        @test gwf.variables.q_net[1] == 0.0
-        @test gwf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
+        @test gwf.variables.q_net_bnds[1] == 0.0
+        @test gwf.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
     end
 
     @testset "headboundary" begin
@@ -218,11 +218,11 @@ end
         )
 
         headboundary = Wflow.HeadBoundary(; parameters, variables)
-        gwf.variables.q_net .= 0.0
+        gwf.variables.q_net_bnds .= 0.0
         index = [1, 2]
         Wflow.flux!(headboundary, gwf, index, dt)
-        @test gwf.variables.q_net[1] == 100.0 * (2.0 - 0.0)
-        @test gwf.variables.q_net[2] == 100.0 * (2.0 - 7.5)
+        @test gwf.variables.q_net_bnds[1] == 100.0 * (2.0 - 0.0)
+        @test gwf.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
     end
 
     @testset "recharge" begin
@@ -235,10 +235,10 @@ end
             flux_av = [0.0, 0.0, 0.0],
         )
         recharge = Wflow.Recharge(; n, variables)
-        gwf.variables.q_net .= 0.0
+        gwf.variables.q_net_bnds .= 0.0
         index = [1, 2, 3]
         Wflow.flux!(recharge, gwf, index, dt)
-        @test all(gwf.variables.q_net .== 1.0e-3 * 100.0)
+        @test all(gwf.variables.q_net_bnds .== 1.0e-3 * 100.0)
     end
 
     @testset "well" begin
@@ -249,10 +249,10 @@ end
             flux_av = [0.0],
         )
         well = Wflow.Well(; variables)
-        gwf.variables.q_net .= 0.0
+        gwf.variables.q_net_bnds .= 0.0
         index = [2]
         Wflow.flux!(well, gwf, index, dt)
-        @test gwf.variables.q_net[2] == -1000.0
+        @test gwf.variables.q_net_bnds[2] == -1000.0
     end
 end
 

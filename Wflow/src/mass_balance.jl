@@ -8,19 +8,17 @@ time step `storage_prev` required for mass balance computation.
 @with_kw struct MassBalance <: AbstractMassBalance
     n::Int # number of cells/nodes
     storage_prev::Vector{Float64} = zeros(n)
-    zi_prev::Vector{Float64} = []
-    head_prev::Vector{Float64} = []
     error::Vector{Float64} = zeros(n)
     relative_error::Vector{Float64} = zeros(n)
 end
 
 function MassBalance(::LateralSSF, n::Int)
-    mass_balance = MassBalance(; n, storage_prev = [], zi_prev = zeros(n))
+    mass_balance = MassBalance(; n, storage_prev = [])
     return mass_balance
 end
 
 function MassBalance(::GroundwaterFlow, n::Int)
-    mass_balance = MassBalance(; n, storage_prev = [], head_prev = zeros(n))
+    mass_balance = MassBalance(; n, storage_prev = [])
     return mass_balance
 end
 
@@ -164,23 +162,14 @@ Save reservoir storage at previous time step as `storage_prev` of reservoir `wat
 function storage_prev!(reservoir::Reservoir, water_balance::MassBalance)
     water_balance.storage_prev .= reservoir.variables.storage
 end
-
-function watertable_prev!(subsurface_flow::LateralSSF, water_balance::MassBalance)
-    water_balance.zi_prev .= subsurface_flow.variables.storage
-end
-
-function watertable_prev!(subsurface_flow::GroundwaterFlow, water_balance::MassBalance)
-    water_balance.head_prev .= subsurface_flow.variables.head
-end
-
+-
 """
     storage_prev!(model, ::HydrologicalMassBalance)
     storage_prev!(model, ::NoMassBalance)
 
-Save storage at previous time step as `storage_prev` for river, reservoir, overland and
-subsurface flow routing and `land` hydrology model as part of water mass balance
-`HydrologicalMassBalance`. For `NoMassBalance` storage at previous time step is not
-required.
+Save storage at previous time step as `storage_prev` for river, reservoir and overland flow
+routing and `land` hydrology model as part of water mass balance `HydrologicalMassBalance`.
+For `NoMassBalance` storage at previous time step is not required.
 """
 function storage_prev!(model, ::HydrologicalMassBalance)
     (;
@@ -197,7 +186,6 @@ function storage_prev!(model, ::HydrologicalMassBalance)
     compute_total_storage!(land, land_water_balance)
     storage_prev!(river_flow, river_water_balance)
     overland_water_balance.storage_prev .= overland_flow.variables.storage
-    watertable_prev!(subsurface_flow, subsurface_water_balance)
     storage_prev!(reservoir, reservoir_water_balance)
     return nothing
 end
@@ -474,39 +462,20 @@ function compute_flow_balance!(
     end
 end
 
-"""
-Compute water mass balance error and relative error for subsurface flow kinematic wave
-routing.
-"""
-function compute_flow_balance!(
-    subsurface_flow::LateralSSF,
-    water_balance::MassBalance,
-    domain::Domain,
-    dt::Float64,
-)
-    (; error, relative_error, zi_prev) = water_balance
-    (; q_in_av, q_av, net_flux) = subsurface_flow.variables
-    (; recharge) = subsurface_flow.boundary_conditions
-    (; area) = domain.land.parameters
+function constant_head_boundary_error!(model::GroundwaterFlow, water_balance::MassBalance)
+    (; error, relative_error) = water_balance
 
-    f_conv = dt / tosecond(BASETIMESTEP)
-    for i in eachindex(zi_prev)
-        total_in = q_in_av[i] * f_conv
-        total_out = q_av[i] * f_conv
-        total_in, total_out = add_inflow(total_in, total_out, recharge.variables.flux_av[i])
-        storage_rate = net_flux[i] * area[i]
-        error[i], relative_error[i] =
-            compute_mass_balance_error(total_in, total_out, storage_rate)
-    end
+    index_const_head = model.constanthead.index
+    error[index_const_head] .= 0.0
+    relative_error[index_const_head] .= 0.0
+    return nothing
 end
 
-"""
-Compute water mass balance error and relative error for single layer subsurface flow
-`GroundwaterFlow` in an unconfined aquifer. Errors for subsurface flow constant head
-boundaries are set at zero.
-"""
+constant_head_boundary_error!(model::LateralSSF, water_balance::MassBalance) = nothing
+
+"Compute water mass balance error and relative error for a subsurface flow model."
 function compute_flow_balance!(
-    subsurface_flow::GroundwaterFlow,
+    subsurface_flow::AbstractSubsurfaceFlowModel,
     water_balance::MassBalance,
     domain::Domain,
     dt::Float64,
@@ -527,9 +496,7 @@ function compute_flow_balance!(
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
-    index_const_head = subsurface_flow.constanthead.index
-    error[index_const_head] .= 0.0
-    relative_error[index_const_head] .= 0.0
+    constant_head_boundary_error!(subsurface_flow, water_balance)
     return nothing
 end
 

@@ -77,6 +77,7 @@ instead.
     conductance::Vector{Float64}                   # conductance [m² d⁻¹]
     storage::Vector{Float64}                       # total storage of water that can be released [m³]
     q_net::Vector{Float64} = zeros(n)              # net flow (groundwater and boundaries) [m³ d⁻¹]
+    q_net_bnds::Vector{Float64} = zeros(n)         # net flow boundaries [m³ d⁻¹]
     q_in_av::Vector{Float64} = zeros(n)            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
     q_av::Vector{Float64} = zeros(n)               # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
     exfiltwater::Vector{Float64} = zeros(n)        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
@@ -421,6 +422,7 @@ function update_fluxes!(
         indices = get_boundary_index(bc, domain)
         flux!(bc, gwf, indices, dt)
     end
+    gwf.variables.q_net .+= gwf.variables.q_net_bnds
     return nothing
 end
 
@@ -486,6 +488,7 @@ function update!(
     t = 0.0
     while t < dt
         gwf.variables.q_net .= 0.0
+        gwf.variables.q_net_bnds .= 0.0
         dt_s = stable_timestep(gwf, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
         update_fluxes!(gwf, domain, conductivity_profile, dt_s)
@@ -507,7 +510,7 @@ function get_flux_to_river(subsurface_flow::GroundwaterFlow, inds::Vector{Int})
     return flux
 end
 
-function sum_boundary_fluxes(gwf::GroundwaterFlow, domain::Domain; exclude = nothing)
+function sum_boundary_fluxes(gwf::AbstractSubsurfaceFlowModel, domain::Domain; exclude = nothing)
     (; boundary_conditions) = gwf
     n = length(gwf.variables.storage)
     flux_in = zeros(n)
