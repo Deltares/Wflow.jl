@@ -22,7 +22,7 @@ function Model(config::Config, type::SedimentModel)
     routing = Routing(dataset, config, domain, soilloss)
     mass_balance = NoMassBalance()
 
-    modelmap = (land = soilloss, routing, mass_balance)
+    modelmap = (land=soilloss, routing, mass_balance)
     writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 
@@ -45,19 +45,19 @@ function Model(config::Config, type::SedimentModel)
 end
 
 "update `sediment` model for a single timestep"
-function update!(model::AbstractModel{<:SedimentModel})
+function update_model!(model::AbstractModel{<:SedimentModel})
     (; routing, land, domain, config, clock) = model
     dt = tosecond(clock.dt)
 
     # Soil erosion
-    update!(land, domain.land.parameters, dt)
+    update_land!(land, domain.land.parameters, dt)
 
     # Overland flow sediment transport
-    update!(routing.overland_flow, land.soil_erosion, domain.land, dt)
+    update_overland_flow!(routing.overland_flow, land.soil_erosion, domain.land, dt)
 
     # River sediment transport
     if config.model.run_river_model__flag
-        update!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
+        update_river_flow!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
     end
 
     return nothing
@@ -70,7 +70,7 @@ function set_states!(model::AbstractModel{<:SedimentModel})
     if !config.model.cold_start__flag
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float64)
+        set_states!(instate_path, model; type=Float64)
     else
         @info "Set initial conditions from default values."
     end

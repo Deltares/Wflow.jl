@@ -38,24 +38,24 @@
     end
 
     @testset "first timestep" begin
-        sbm = model.land
+        (; soil) = model.land
 
         @test model.clock.iteration == 1
-        @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104
-        @test sbm.soil.variables.runoff[1] == 0.0
-        @test sbm.soil.variables.soilevap[1] == 0.0
-        @test sbm.soil.variables.transpiration[1] ≈ 0.30587632831650247
+        @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
+        @test soil.variables.runoff[1] == 0.0
+        @test soil.variables.soilevap[1] == 0.0
+        @test soil.variables.transpiration[1] ≈ 0.30587632831650247
     end
 
     # run the second timestep
     Wflow.run_timestep!(model)
 
     @testset "second timestep" begin
-        sbm = model.land
-        @test sbm.soil.parameters.theta_s[1] ≈ 0.44999998807907104
-        @test sbm.soil.variables.runoff[1] == 0.0
-        @test sbm.soil.variables.soilevap[1] == 0.0
-        @test sbm.soil.variables.transpiration[4] ≈ 0.9545461724219301
+        (; soil) = model.land
+        @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
+        @test soil.variables.runoff[1] == 0.0
+        @test soil.variables.soilevap[1] == 0.0
+        @test soil.variables.transpiration[4] ≈ 0.9545461724219301
     end
 
     @testset "overland flow (kinematic wave)" begin
@@ -180,36 +180,37 @@ end
     Wflow.run_timestep!(model)
 
     @testset "second timestep warm start" begin
-        sbm = model.land
-        @test sbm.soil.variables.runoff[1] == 0.0
-        @test sbm.soil.variables.soilevap[1] ≈ 0.28488618656022874
-        @test sbm.soil.variables.transpiration[1] ≈ 1.0122634204681036
+        (; variables) = model.land.soil
+        @test variables.runoff[1] == 0.0
+        @test variables.soilevap[1] ≈ 0.28488618656022874
+        @test variables.transpiration[1] ≈ 1.0122634204681036
     end
 
     @testset "river domain warm start (kinematic wave)" begin
         q = model.routing.river_flow.variables.q_av
-        river = model.routing.river_flow
+        (; river_flow) = model.routing
         @test sum(q) ≈ 0.011927558704212266
         @test q[6] ≈ 0.002439237560893128
-        @test river.variables.storage[6] ≈ 2.2297897880708595
-        @test river.boundary_conditions.inwater[6] ≈ -1.4361419680049275e-5
+        @test river_flow.variables.storage[6] ≈ 2.2297897880708595
+        @test river_flow.boundary_conditions.inwater[6] ≈ -1.4361419680049275e-5
         @test q[13] ≈ 6.915367636708339e-5
         @test q[domain.river.network.order[end]] ≈ 0.0024769176125029905
     end
 
     @testset "groundwater warm start" begin
-        gw = model.routing.subsurface_flow
-        @test gw.boundaries.river.variables.stage[1] ≈ 1.2030201719029363
-        @test gw.aquifer.variables.head[17:21] ≈ [
+        (; subsurface_flow) = model.routing
+        @test subsurface_flow.boundaries.river.variables.stage[1] ≈ 1.2030201719029363
+        @test subsurface_flow.aquifer.variables.head[17:21] ≈ [
             1.226363413451762,
             1.2844302137711752,
             1.7999999523162842,
             1.5860343731919113,
             1.2068931431179248,
         ]
-        @test gw.boundaries.river.variables.flux[1] ≈ -6.472282449944586
-        @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
-        @test gw.boundaries.recharge.variables.rate[19] ≈ -0.0014241196552847502
+        @test subsurface_flow.boundaries.river.variables.flux[1] ≈ -6.472282449944586
+        @test subsurface_flow.boundaries.drain.variables.flux[1] ≈ 0.0
+        @test subsurface_flow.boundaries.recharge.variables.rate[19] ≈
+              -0.0014241196552847502
     end
 
     Wflow.close_files(model; delete_output = false)

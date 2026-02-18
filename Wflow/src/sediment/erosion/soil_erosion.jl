@@ -119,28 +119,28 @@ function SoilErosionModel(
 )
     n = length(indices)
     parameters = SoilErosionParameters(dataset, config, indices)
-    model = SoilErosionModel(; n, parameters)
-    return model
+    soil_erosion = SoilErosionModel(; n, parameters)
+    return soil_erosion
 end
 
 "Update boundary conditions for soil erosion model"
-function update_boundary_conditions!(
-    model::SoilErosionModel,
+function update_bc_soil_erosion!(
+    soil_erosion::SoilErosionModel,
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::AbstractOverlandFlowErosionModel,
 )
     re = rainfall_erosion.variables.soil_erosion_rate
     ole = overland_flow_erosion.variables.soil_erosion_rate
-    (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
+    (; rainfall_erosion, overland_flow_erosion) = soil_erosion.boundary_conditions
     @. rainfall_erosion = re
     @. overland_flow_erosion = ole
 end
 
 "Update soil erosion model for a single timestep"
-function update!(model::SoilErosionModel)
-    (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
+function update_soil_erosion!(soil_erosion::SoilErosionModel)
+    (; rainfall_erosion, overland_flow_erosion) = soil_erosion.boundary_conditions
     (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
-        model.parameters
+        soil_erosion.parameters
     (;
         soil_erosion_rate,
         clay_erosion_rate,
@@ -148,7 +148,7 @@ function update!(model::SoilErosionModel)
         sand_erosion_rate,
         sagg_erosion_rate,
         lagg_erosion_rate,
-    ) = model.variables
+    ) = soil_erosion.variables
 
     n = length(rainfall_erosion)
     threaded_foreach(1:n; basesize = 1000) do i

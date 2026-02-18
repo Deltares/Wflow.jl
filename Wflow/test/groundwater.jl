@@ -305,7 +305,7 @@ end
     # Set constant head (dirichlet) boundaries
     gwf.aquifer.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
 
-    Wflow.update!(gwf, 12.5, conductivity_profile)
+    Wflow.update_subsurface_flow!(gwf, 12.5, conductivity_profile)
     @test gwf.aquifer.variables.head ≈ [2.0, 3.0, 4.0]
 end
 
@@ -571,7 +571,7 @@ end
     )
 
     time = 20.0
-    Wflow.update!(gwf, time, conductivity_profile)
+    Wflow.update_subsurface_flow!(gwf, time, conductivity_profile)
 
     # test for symmetry on x and y axes
     head = reshape(gwf.aquifer.variables.head, shape)

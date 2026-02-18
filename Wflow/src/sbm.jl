@@ -65,7 +65,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand = NoDemand(; n)
     end
 
-    land_hydrology_model = LandHydrologySBM(;
+    land = LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -76,12 +76,12 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand,
         allocation,
     )
-    return land_hydrology_model
+    return land
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(
-    model::LandHydrologySBM,
+function update_land!(
+    land::LandHydrologySBM,
     routing::Routing,
     domain::Domain,
     config::Config,
@@ -89,25 +89,25 @@ function update!(
 )
     (; parameters) = domain.land
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
-        model
+        land
 
-    update!(interception, atmospheric_forcing)
+    update_interception!(interception, atmospheric_forcing)
 
-    update_boundary_conditions!(snow, (; interception))
-    update!(snow, atmospheric_forcing)
+    update_bc_snow!(snow, (; interception))
+    update_snow!(snow, atmospheric_forcing)
     if config.model.snow_gravitational_transport__flag
         lateral_snow_transport!(snow, domain.land)
     end
 
-    update!(glacier, atmospheric_forcing)
+    update_glacier!(glacier, atmospheric_forcing)
 
-    update_boundary_conditions!(
+    update_bc_runoff!(
         runoff,
         (; glacier, snow, interception),
         routing,
         domain.river.network,
     )
-    update!(runoff, atmospheric_forcing, parameters)
+    update_open_water_runoff!(runoff, atmospheric_forcing, parameters)
 
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
@@ -119,13 +119,9 @@ function update!(
     update_water_allocation!(allocation, demand, routing, domain, dt)
 
     soil_fraction!(soil, glacier, parameters)
-    update_boundary_conditions!(
-        soil,
-        atmospheric_forcing,
-        (; interception, runoff, demand, allocation),
-    )
+    update_bc_soil!(soil, atmospheric_forcing, (; interception, runoff, demand, allocation))
 
-    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update_soil_first!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end
@@ -140,12 +136,12 @@ Update the total water storage per cell at the end of a timestep.
 - `routing`: Containing routing models.
 """
 function update_total_water_storage!(
-    model::LandHydrologySBM,
+    land::LandHydrologySBM,
     domain::Domain,
     routing::Routing,
 )
     (; overland_flow, river_flow) = routing
-    (; interception, snow, glacier, soil, demand) = model
+    (; interception, snow, glacier, soil, demand) = land
     (; total_storage, ustoredepth, satwaterdepth) = soil.variables
 
     (; river_fraction, area) = domain.land.parameters

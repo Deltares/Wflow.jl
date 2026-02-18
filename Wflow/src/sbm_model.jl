@@ -57,7 +57,7 @@ function Model(config::Config, type::SbmModel)
 end
 
 "update the `sbm` model type for a single timestep"
-function update!(model::AbstractModel{<:SbmModel})
+function update_model!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
     (; kv_profile) = land.soil.parameters
@@ -75,8 +75,13 @@ function update!(model::AbstractModel{<:SbmModel})
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update!(routing.subsurface_flow, land.soil, domain.land, clock.dt / BASETIMESTEP)
-    update_after_subsurfaceflow!(model)
+    update_subsurface_flow!(
+        routing.subsurface_flow,
+        land.soil,
+        domain.land,
+        clock.dt / BASETIMESTEP,
+    )
+    update_after_subsurface_flow!(model)
     update_total_water_storage!(model)
     return nothing
 end
@@ -90,7 +95,7 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
-    update!(land, routing, domain, config, dt)
+    update_land!(land, routing, domain, config, dt)
     return nothing
 end
 
@@ -100,13 +105,13 @@ end
 Update SBM model after subsurface flow for a single timestep. This function is also
 accessible through BMI, to couple the SBM model to an external groundwater model.
 """
-function update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
+function update_after_subsurface_flow!(model::AbstractModel{<:SbmModel})
     (; routing, land) = model
     (; soil, runoff, demand) = land
     (; subsurface_flow) = routing
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow))
+    update_soil_second!(soil, (; runoff, demand, subsurface_flow))
 
     surface_routing!(model)
 

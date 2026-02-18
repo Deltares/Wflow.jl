@@ -61,14 +61,14 @@ function Model(config::Config, type::SbmGwfModel)
 end
 
 "update the `sbm_gwf` model type for a single timestep"
-function update!(model::AbstractModel{<:SbmGwfModel})
+function update_model!(model::AbstractModel{<:SbmGwfModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; boundaries) = routing.subsurface_flow
 
     dt = tosecond(clock.dt)
 
-    update!(land, routing, domain, config, dt)
+    update_land!(land, routing, domain, config, dt)
 
     # set river stage and storage (groundwater boundary) based on river flow routing
     # variables
@@ -91,10 +91,15 @@ function update!(model::AbstractModel{<:SbmGwfModel})
     end
 
     # update groundwater domain
-    update!(routing.subsurface_flow, soil, dt_gwf, config.model.conductivity_profile)
+    update_subsurface_flow!(
+        routing.subsurface_flow,
+        soil,
+        dt_gwf,
+        config.model.conductivity_profile,
+    )
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
+    update_soil_second!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
 
     surface_routing!(model)
 
