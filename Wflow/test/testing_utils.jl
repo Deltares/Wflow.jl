@@ -80,7 +80,7 @@ function homogenous_aquifer(nrow, ncol)
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
         q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
     )
 

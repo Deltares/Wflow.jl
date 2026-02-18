@@ -78,7 +78,7 @@ instead.
     storage::Vector{Float64}                       # total storage of water that can be released [m³]
     q_net::Vector{Float64} = zeros(n)              # net flow (groundwater and boundaries) [m³ d⁻¹]
     q_in_av::Vector{Float64} = zeros(n)            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
-    q_out_av::Vector{Float64} = zeros(n)           # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
+    q_av::Vector{Float64} = zeros(n)               # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
     exfiltwater::Vector{Float64} = zeros(n)        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 
@@ -366,7 +366,7 @@ function flux!(
             flow = cond * delta_head
             gwf.variables.q_net[i] -= flow
             if flow > 0.0
-                gwf.variables.q_out_av[i] += flow * dt
+                gwf.variables.q_av[i] += flow * dt
             else
                 gwf.variables.q_in_av[i] -= flow * dt
             end
@@ -456,7 +456,7 @@ function set_flux_vars!(gwf::GroundwaterFlow)
     set_flux_vars_bc!(gwf)
     gwf.variables.exfiltwater .= 0.0
     gwf.variables.q_in_av .= 0.0
-    gwf.variables.q_out_av .= 0.0
+    gwf.variables.q_av .= 0.0
     return nothing
 end
 
@@ -469,7 +469,7 @@ end
 function average_flux_vars!(gwf::GroundwaterFlow, dt::Float64)
     average_flux_vars_bc!(gwf, dt)
     gwf.variables.q_in_av ./= dt
-    gwf.variables.q_out_av ./= dt
+    gwf.variables.q_av ./= dt
     return nothing
 end
 
@@ -528,5 +528,5 @@ function sum_boundary_fluxes(gwf::GroundwaterFlow, domain::Domain; exclude = not
     return flux_in, flux_out
 end
 get_inflow(gwf::GroundwaterFlow) = gwf.variables.q_in_av
-get_outflow(gwf::GroundwaterFlow) = gwf.variables.q_out_av
+get_outflow(gwf::GroundwaterFlow) = gwf.variables.q_av
 get_storage(gwf::GroundwaterFlow) = gwf.variables.storage

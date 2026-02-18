@@ -512,7 +512,7 @@ function compute_flow_balance!(
     dt::Float64,
 )
     (; error, relative_error) = water_balance
-    (; q_in_av, q_out_av, q_net) = subsurface_flow.variables
+    (; q_in_av, q_av, q_net) = subsurface_flow.variables
 
     n = length(q_net)
     flux_in = zeros(n)
@@ -522,7 +522,7 @@ function compute_flow_balance!(
     f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(q_net)
         total_in = (q_in_av[i] + flux_in[i]) * f_conv
-        total_out = f_conv * (q_out_av[i] + flux_out[i])
+        total_out = f_conv * (q_av[i] + flux_out[i])
         storage_rate = q_net[i] * f_conv
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
