@@ -210,7 +210,7 @@ function kinematic_wave_ssf(
         its = Int(cld(abs(max(zi, 0.0) - zi_prev), max_delta_zi))
         if its > 1
             dt_s = dt / its
-            # [m s⁻¹]
+            # [m³ s⁻¹]
             ssf_sum = 0.0
             # [m s⁻¹]
             exfilt_sum = 0.0
@@ -250,14 +250,14 @@ function kinematic_wave_ssf(
                 exfilt_sum += exfilt
                 # [m s⁻¹] += [m s⁻¹]
                 net_flux_sum += net_flux
-                # [m s⁻¹] += [m s⁻¹]
+                # [m³ s⁻¹] += [m³ s⁻¹]
                 ssf_sum += ssf
-                # [m s⁻¹] = [m s⁻¹]
+                # [m³ s⁻¹] = [m³ s⁻¹]
                 ssf_prev = ssf
                 # [m] = [m]
                 zi_prev = zi
             end
-            # [m s⁻¹] = [m s⁻¹] / [-]
+            # [m³ s⁻¹] = [m³ s⁻¹] / [-]
             ssf = ssf_sum / its
             # [m s⁻¹] = [m s⁻¹] / [-]
             exfilt = exfilt_sum

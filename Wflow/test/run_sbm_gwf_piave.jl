@@ -77,7 +77,8 @@
         @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
         @test sum(surfacewater_alloc) ≈ to_SI(1646.0546466090132, MM_PER_DT; dt_val = dt)
         @test sum(act_groundwater_abst) ≈ to_SI(350.07246029268623, MM_PER_DT; dt_val = dt)
-        @test paddy.variables.h[[25, 42, 45]] ≈ [38.99648725170036, 0.0, 27.60970255170497]
+        @test paddy.variables.h[[25, 42, 45]] ≈
+              to_SI([38.99648725170036, 0.0, 27.60970255170497], MM)
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈
               to_SI([0.0, 25.0, 0.0], MM_PER_DT; dt_val = dt)

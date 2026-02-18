@@ -101,8 +101,9 @@ function precipitation_hbv(precipitation, temperature, tti, tt; rfcf = 1.0, sfcf
     rainfrac = if iszero(tti)
         Float64(temperature > tt)
     else
+        # [-] = ([K] - ([K] - [K] / [-])) / [K]
         frac = (temperature - (tt - tti / 2.0)) / tti
-        rainfrac = clamp(frac, 0.0, 1.0)
+        clamp(frac, 0.0, 1.0)
     end
 
     # fraction of precipitation which falls as snow

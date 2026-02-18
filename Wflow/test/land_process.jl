@@ -19,6 +19,7 @@
             precipitation,
             canopy_storage_in,
             max_evaporation,
+            dt,
         )
     @test throughfall == precipitation
     @test interception == 0.0
@@ -35,6 +36,7 @@
             precipitation,
             canopy_storage_in,
             max_evaporation,
+            dt,
         )
     @test throughfall ≈
           to_SI(13.568, "vegetation_canopy_water__throughfall_volume_flux"; dt_val = dt)
@@ -54,6 +56,7 @@
             precipitation,
             canopy_storage_in,
             max_evaporation,
+            dt,
         )
     @test throughfall ≈
           to_SI(0.24, "vegetation_canopy_water__throughfall_volume_flux"; dt_val = dt)

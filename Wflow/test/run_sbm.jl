@@ -1,5 +1,7 @@
 @testitem "Run SBM" begin
-    using Wflow: to_SI, ABSOLUTE_DEGREES, MM_PER_DT
+    using Wflow: to_SI, ABSOLUTE_DEGREES, MM_PER_DT, MM, Unit
+    CM = Unit(; cm = 1)
+    M_PER_DAY = Unit(; m = 1, d = -1)
     using Dates
     using Statistics: mean
     include("testing_utils.jl")
@@ -76,22 +78,243 @@
     end
 
     @testset "first timestep" begin
-        sbm = model.land.soil
-        snow = model.land.snow
-        @test snow.parameters.tt[50063] ≈ to_SI(0.0, ABSOLUTE_DEGREES)
+        (; interception, snow, runoff, soil) = model.land
+        (; subsurface_flow) = model.routing
 
         @test model.clock.iteration == 1
 
-        @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546
-        @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095
-        @test mean(sbm.variables.runoff) ≈ 0.04033701711287029
-        @test mean(sbm.variables.soilevap) ≈ 0.02122698830889417
-        @test mean(sbm.variables.actevap) ≈ 0.33545623834952143
-        @test mean(sbm.variables.actinfilt) ≈ 1.6444774688444848
-        @test snow.variables.snow_storage[5] ≈ 3.768513390588815
-        @test mean(snow.variables.snow_storage) ≈ 0.038019723676094325
-        @test sbm.variables.total_storage[50063] ≈ 559.886196102425
-        @test sbm.variables.total_storage[429] ≈ 599.6375723706255 # river cell
+        # Interception
+        test_means(interception.parameters, Dict(:e_r => 0.2381398056521972))
+        test_means(
+            interception.parameters.vegetation_parameter_set,
+            Dict(
+                :kc => 1.0,
+                :storage_wood => to_SI(0.19583714217432435, MM),
+                :canopygapfraction => 0.5076891913529586,
+                :storage_specific_leaf => to_SI(0.08942700997221185, MM),
+                :leaf_area_index => 1.0624380387861794,
+                :cmax => to_SI(0.2888534265722341, MM),
+                :kext => 0.6741606033862981,
+                :rootingdepth => to_SI(370.1426593311398, MM),
+            ),
+        )
+        test_means(
+            interception.variables,
+            Dict(
+                :stemflow => to_SI(0.0962877848464674, MM_PER_DT; dt_val = dt),
+                :canopy_storage => 0.0,
+                :canopy_potevap => to_SI(0.3142309029479176, MM_PER_DT; dt_val = dt),
+                :interception_rate => to_SI(0.3138827922906597, MM_PER_DT; dt_val = dt),
+                :throughfall => to_SI(1.6122206031467872, MM_PER_DT; dt_val = dt),
+            ),
+        )
+
+        # Snow
+        @test snow.variables.snow_storage[5] ≈ to_SI(3.768513390588815, MM)
+        @test snow.parameters.tt[50063] ≈ to_SI(0.0, ABSOLUTE_DEGREES)
+
+        test_means(
+            snow.parameters,
+            Dict(
+                :whc => 0.1,
+                :cfmax => to_SI(3.75653, Unit(; mm = 1, degC = -1, dt = -1); dt_val = dt),
+                :tt => to_SI(0.0, ABSOLUTE_DEGREES),
+                :ttm => to_SI(0.0, ABSOLUTE_DEGREES),
+                :tti => 2.0,
+            ),
+        )
+        test_means(
+            snow.variables,
+            Dict(
+                :swe => to_SI(0.04059539652492171, MM),
+                :runoff => to_SI(1.6679129914683328, MM_PER_DT; dt_val = dt),
+                :snow_in => to_SI(3.688075238243213e-7, MM_PER_DT; dt_val = dt),
+                :snow_melt => 0.0,
+                :snow_out => to_SI(3.688075238243213e-7, MM_PER_DT; dt_val = dt),
+                :snow_storage => to_SI(0.03801972367609432, MM),
+                :snow_water => to_SI(0.0025756728488273866, MM),
+            ),
+        )
+
+        # Runoff
+        test_means(
+            runoff.boundary_conditions,
+            Dict(
+                :waterdepth_river => 0.0,
+                :water_flux_surface => to_SI(1.6679129914683328, MM_PER_DT; dt_val = dt),
+                :waterdepth_land => 0.0,
+            ),
+        )
+        test_means(
+            runoff.variables,
+            Dict(
+                :ae_openw_r => 0.0,
+                :runoff_river => to_SI(0.02192394495624879, MM_PER_DT; dt_val = dt),
+                :net_runoff_river => to_SI(0.02192394495624879, MM_PER_DT; dt_val = dt),
+                :ae_openw_l => 0.0,
+                :runoff_land => to_SI(0.001511577667599544, MM_PER_DT; dt_val = dt),
+            ),
+        )
+
+        # Soil
+        @test soil.variables.total_storage[50063] ≈ to_SI(559.886196102425, MM)
+        @test soil.variables.total_storage[429] ≈ to_SI(599.6375723706255, MM) # river cell
+        @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
+        @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
+
+        test_means(
+            soil.boundary_conditions,
+            Dict(
+                :potential_soilevaporation =>
+                    to_SI(0.31617207529997243, MM_PER_DT; dt_val = dt),
+                :water_flux_surface => to_SI(1.6444774688444848, MM_PER_DT; dt_val = dt),
+                :potential_transpiration =>
+                    to_SI(0.0003481106572579187, MM_PER_DT; dt_val = dt),
+            ),
+        )
+        test_means(
+            soil.parameters,
+            Dict(
+                :theta_s => 0.4409211971535584,
+                :soilthickness => to_SI(1837.833713668117, MM),
+                :h1 => 0.0,
+                :cap_n => 2.0,
+                :sumlayers =>
+                    to_SI.(
+                        SVector((
+                            0.0,
+                            100.0,
+                            399.97241953958815,
+                            1156.6640303676966,
+                            1984.2496012545644,
+                        )),
+                        Ref(MM),
+                    ),
+                :c => SVector((
+                    9.428788533549843,
+                    9.821687673542042,
+                    10.240060684266773,
+                    10.24248827673959,
+                )),
+                :h4 => to_SI(-16000.0, CM),
+                :w_soil => 0.11249999999999985,
+                :hb => to_SI(-10.0, CM),
+                :kvfrac => SVector((1.0, 1.0, 1.0, 1.0)),
+                :h3_low => to_SI(-1000.0, CM),
+                :soil_fraction => 0.49508064804427593,
+                :cap_hmax => to_SI(2000.0, MM),
+                :act_thickl =>
+                    to_SI.(
+                        SVector((
+                            100.0,
+                            299.97241953958815,
+                            756.6640303676965,
+                            784.2496012545644,
+                        )),
+                        Ref(MM),
+                    ),
+                :pathfrac => 0.0129736199199603,
+                :h3_high => to_SI(-400.0, CM),
+                :infiltcappath => to_SI(5.0, MM_PER_DT; dt_val = dt),
+                :infiltcapsoil => to_SI(418.6617132363326, MM_PER_DT; dt_val = dt),
+                :cf_soil => 0.038,
+                :theta_fc => 0.30670581485821735,
+                :maxleakage => 0.0,
+                :h2 => to_SI(-100.0, CM),
+                :rootdistpar => to_SI(-500.0, Unit(; mm = -1)),
+                :alpha_h1 => 1.0,
+                :soilwatercapacity => to_SI(505.7182462428663, MM),
+                :rootfraction => SVector((
+                    0.2769545250424278,
+                    0.7118645592933596,
+                    0.011101016337365556,
+                    0.0,
+                )),
+                :theta_r => 0.16574578136033039,
+            ),
+        )
+        test_means(
+            soil.variables,
+            Dict(
+                :transfer => to_SI(1.1890024449871777e-8, MM_PER_DT; dt_val = dt),
+                :drainable_waterdepth => to_SI(210.2789323014635, MM),
+                :infiltexcess => 0.0,
+                :actinfilt => to_SI(1.6444774688444848, MM_PER_DT; dt_val = dt),
+                :ustorelayerdepth => to_SI(
+                    [1.6280832346593193, 0.6460862670135344, 0.23103976228101625, 0.0],
+                    MM,
+                ),
+                :h3 => to_SI(-1000.0, CM),
+                :excesswaterpath => to_SI(1.1043212987511903e-19, MM_PER_DT; dt_val = dt),
+                :recharge => to_SI(-0.0022571810325012027, MM_PER_DT; dt_val = dt),
+                :ustorelayerthickness => to_SI(
+                    [99.3509423527741, 190.22782953886028, 89.8015331913427, 0.0],
+                    MM,
+                ),
+                :soilevap => to_SI(0.02122698830889416, MM_PER_DT; dt_val = dt),
+                :net_runoff => to_SI(0.04033701711287029, MM_PER_DT; dt_val = dt),
+                :actinfiltpath => to_SI(0.02144198548416092, MM_PER_DT; dt_val = dt),
+                :ustorecapacity => to_SI(74.42171691684314, MM),
+                :ae_ustore => 0.0,
+                :vwc_root => 0.24099999255961077,
+                :runoff => to_SI(0.04033701711287029, MM_PER_DT; dt_val = dt),
+                :exfiltsatwater => to_SI(0.03882543944527075, MM_PER_DT; dt_val = dt),
+                :total_soilwater_storage => to_SI(431.2965293260232, MM),
+                :soilevapsat => to_SI(0.0019107351725580284, MM_PER_DT; dt_val = dt),
+                :excesswatersoil => to_SI(7.743485700487166e-18, MM_PER_DT; dt_val = dt),
+                :ustoredepth => to_SI(2.50520926395387, MM),
+                :rootstore => to_SI(29.03737411323857, MM),
+                :infiltsoilpath => to_SI(1.6444774688444848, MM_PER_DT; dt_val = dt),
+                :zi => to_SI(278.73782910028507, MM),
+                :vwc_percroot => 54.55735722947444,
+                :total_storage => to_SI(431.55733671295263, MM),
+                :actleakage => 0.0,
+                :actevap => to_SI(0.33545623834952143, MM_PER_DT; dt_val = dt),
+                :satwaterdepth => to_SI(428.79132006206936, MM),
+                :transpiration => to_SI(0.0003464577499676236, MM_PER_DT; dt_val = dt),
+                :actinfiltsoil => to_SI(1.6230354833603235, MM_PER_DT; dt_val = dt),
+                :actcapflux => 0.0,
+                :vwc_perc =>
+                    [41.86055714460927, 63.23920727815791, 99.92432179078311, 100.0],
+                :tsoil => to_SI(9.243668273365222, ABSOLUTE_DEGREES),
+                :excesswater => to_SI(-4.435303615944536e-20, MM_PER_DT; dt_val = dt),
+                :f_infiltration_reduction => 1.0,
+                :actevapsat => to_SI(0.0003464577499676236, MM_PER_DT; dt_val = dt),
+                :vwc => [
+                    0.1842331927167544,
+                    0.27939237676857903,
+                    0.4405326102482261,
+                    0.4383915015384879,
+                ],
+            ),
+        )
+
+        # Subsurface
+        test_means(
+            subsurface_flow.parameters,
+            Dict(
+                :soilthickness => 1.8378337136681173,
+                :specific_yield => 0.134215382295341,
+                :khfrac => 100.0,
+                :specific_yield_dyn => 0.18809013342973288,
+            ),
+        )
+        test_means(
+            subsurface_flow.parameters.kh_profile,
+            Dict(:f => 3.303715296489842, :kh_0 => to_SI(41.86617132363326, M_PER_DAY)),
+        )
+        test_means(
+            subsurface_flow.variables,
+            Dict(
+                :zi => 0.2787378291002851,
+                :to_river => 83.98143291277904,
+                :ssfin => 1205.6076607372684,
+                :storage => 118195.04455118616,
+                :ssfmax => 3.149179231329745,
+                :ssf => 1289.6589215389067,
+                :exfiltwater => 3.8825439445270756e-5,
+            ),
+        )
     end
 
     # run the second timestep
@@ -112,22 +335,23 @@
               to_SI(0.2744312454440506, MM_PER_DT; dt_val = dt)
         @test mean(sbm.variables.actinfilt) ≈
               to_SI(0.08861928614420159, MM_PER_DT; dt_val = dt)
-        @test snow.variables.snow_storage[5] ≈ 3.843412524052313
-        @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949
-        @test sbm.variables.total_storage[50063] ≈ 559.9633189802773
-        @test sbm.variables.total_storage[429] ≈ 620.6174448020174  # river cell
+        @test snow.variables.snow_storage[5] ≈ to_SI(3.843412524052313, MM)
+        @test mean(snow.variables.snow_storage) ≈ to_SI(0.03461317061870949, MM)
+        @test sbm.variables.total_storage[50063] ≈ to_SI(559.9633189802773, MM)
+        @test sbm.variables.total_storage[429] ≈ to_SI(620.6174448020174, MM)  # river cell
     end
 
     @testset "subsurface flow" begin
         ssf = model.routing.subsurface_flow.variables.ssf
-        @test sum(ssf) ≈ 6.250079949202134e7
-        @test ssf[domain.land.network.order[1]] ≈ 699.3636285243076
-        @test ssf[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
-        @test ssf[domain.land.network.order[end]] ≈ 287.61501877867994
+        @test sum(ssf) ≈ to_SI(6.250079949202134e7, M3_PER_DAY)
+        @test ssf[domain.land.network.order[1]] ≈ to_SI(699.3636285243076, M3_PER_DAY)
+        @test ssf[domain.land.network.order[end - 100]] ≈
+              to_SI(2395.6159482448143, M3_PER_DAY)
+        @test ssf[domain.land.network.order[end]] ≈ t_SI(287.61501877867994, M3_PER_DAY)
     end
 
     @testset "overland flow" begin
-        q = model.routing.overland_flow.variables.q_av
+        q = Wflow.get_average(model.routing.overland_flow.variables.q_av)
         @test sum(q) ≈ 264.6944359620204
         @test q[26625] ≈ 0.0
         @test q[39308] ≈ 0.0
@@ -135,7 +359,7 @@
     end
 
     @testset "river flow" begin
-        q = model.routing.river_flow.variables.q_av
+        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
         @test sum(q) ≈ 3696.5789619579173
         @test q[1622] ≈ 0.0007502850311515928
         @test q[43] ≈ 11.458528971675033
@@ -145,12 +369,14 @@
     @testset "reservoir simple" begin
         res = model.routing.river_flow.boundary_conditions.reservoir
         @test res.variables.outflow[1] ≈ 0.2174998614438593
-        @test res.variables.outflow_av[1] ≈ 0.21749986282401396
-        @test res.boundary_conditions.inflow[1] ≈ 0.0005130607130643568
+        @test Wflow.get_average(res.variables.outflow_av)[1] ≈ 0.21749986282401396
+        @test Wflow.get_average(res.boundary_conditions.inflow)[1] ≈ 0.0005130607130643568
         @test res.variables.storage[1] ≈ 2.751299001489657f7
-        @test res.variables.actevap[1] ≈ 0.5400000810623169
-        @test res.boundary_conditions.precipitation[1] ≈ 0.17999997735023499
-        @test res.boundary_conditions.evaporation[1] ≈ 0.5400000810623169
+        @test res.variables.actevap[1] ≈ to_SI(0.5400000810623169, MM_PER_DT; dt_val = dt)
+        @test res.boundary_conditions.precipitation[1] ≈
+              to_SI(0.17999997735023499, MM_PER_DT; dt_val = dt)
+        @test res.boundary_conditions.evaporation[1] ≈
+              to_SI(0.5400000810623169, MM_PER_DT; dt_val = dt)
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -166,10 +392,10 @@
 
     @testset "lateral snow transport off" begin
         snow = model.land.snow
-        @test snow.variables.snow_storage[5] ≈ 3.7686103651001375
-        @test mean(snow.variables.snow_storage) ≈ 0.03801972367609432
-        @test mean(snow.variables.snow_water) ≈ 0.0025756728488273866
-        @test mean(snow.variables.swe) ≈ 0.0405953965249217
+        @test snow.variables.snow_storage[5] ≈ to_SI(3.7686103651001375, MM)
+        @test mean(snow.variables.snow_storage) ≈ to_SI(0.03801972367609432, MM)
+        @test mean(snow.variables.snow_water) ≈ to_SI(0.0025756728488273866, MM)
+        @test mean(snow.variables.swe) ≈ to_SI(0.0405953965249217, MM)
     end
 
     # test without snow model
@@ -722,7 +948,10 @@ end
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
         @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
         @test all(re -> abs(re) < 6.6e11, overland_water_balance.relative_error)
-        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_av)
+        inds = findall(
+            x -> x > 1e-3,
+            Wflow.get_average(model.routing.overland_flow.variables.q_av),
+        )
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
@@ -735,11 +964,17 @@ end
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
         @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
         @test all(re -> abs(re) < 5.4e11, routing.overland_water_balance.relative_error)
-        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_av)
+        inds = findall(
+            x -> x > 1e-3,
+            Wflow.get_average(model.routing.overland_flow.variables.q_av),
+        )
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 3e-5, river_water_balance.error)
         @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
-        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_av)
+        inds = findall(
+            x -> x > 1e-3,
+            Wflow.get_average(model.routing.river_flow.variables.q_av),
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
         @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)

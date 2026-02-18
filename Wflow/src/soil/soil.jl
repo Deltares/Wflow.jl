@@ -125,7 +125,7 @@ end
     cf_soil::Vector{Float64}
     # Fraction of compacted area  [-]
     pathfrac::Vector{Float64}
-    # Controls how roots are linked to water table [-]
+    # Controls how roots are linked to water table [mm⁻¹ => m⁻¹]
     rootdistpar::Vector{Float64}
     # Fraction of the root length density in each soil layer [-]
     rootfraction::Vector{SVector{N, Float64}}
@@ -822,9 +822,12 @@ function soil_evaporation!(model::SbmSoilModel, dt::Float64)
         # Update the additional atmospheric demand
         # [m s⁻¹] -= [m s⁻¹]
         potsoilevap -= soilevapunsat
-        # [m]
-        v.ustorelayerdepth[i] =
-            setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][1] - soilevapunsat, 1)
+        # [m] = [m] - [m s⁻¹] * [s]
+        v.ustorelayerdepth[i] = setindex(
+            v.ustorelayerdepth[i],
+            v.ustorelayerdepth[i][1] - soilevapunsat * dt,
+            1,
+        )
         # [-]
         theta_drainable = lower_bound_drainable_porosity(p.theta_s[i], p.theta_fc[i])
         # [m s⁻¹]
@@ -927,7 +930,7 @@ function transpiration!(model::SbmSoilModel, dt::Float64)
             )
             # [m s⁻¹] = [m] * [-] / [s]
             maxextr = v.ustorelayerdepth[i][k] * availcap / dt
-            # [m s⁻¹] = min([-] * [-] * [m s⁻¹])
+            # [m s⁻¹] = min([-] * [-] * [m s⁻¹], [m s⁻¹])
             actevapustore_layer =
                 min(alpha * rootfraction_unsat_scaled * potential_transpiration[i], maxextr)
             # [m] = [m] - [m s⁻¹] * [s]
@@ -1176,10 +1179,13 @@ function update!(
     transpiration!(model, dt)
     # actual infiltration and excess water
     actual_infiltration!(model, dt)
-    @. v.excesswater = water_flux_surface - v.actinfilt - v.infiltexcess
+    # [m s⁻¹] = [m s⁻¹] - [m s⁻¹] - [m s⁻¹]
+    @. v.excesswater = (water_flux_surface - v.actinfilt) - v.infiltexcess
     actual_infiltration_soil_path!(model)
+    # [m s⁻¹] = max([m s⁻¹] * ([-] - [-]) - [m s⁻¹], [m s⁻¹])
     @. v.excesswatersoil =
         max(water_flux_surface * (1.0 - p.pathfrac) - v.actinfiltsoil, 0.0)
+    # [m s⁻¹] = max([m s⁻¹] * [-] - [m s⁻¹], [m s⁻¹])
     @. v.excesswaterpath = max(water_flux_surface * p.pathfrac - v.actinfiltpath, 0.0)
     # recompute the unsaturated store and ustorecapacity (for capillary flux)
     ustoredepth!(model)
@@ -1188,9 +1194,11 @@ function update!(
     capillary_flux!(model, dt)
     leakage!(model, dt)
     # recharge rate to the saturated store
+    # [m s⁻¹] = ([m s⁻¹] - [m s⁻¹] - [m s⁻¹] - [m s⁻¹] - [m s⁻¹])
     @. v.recharge =
         (v.transfer - v.actcapflux - v.actleakage - v.actevapsat - v.soilevapsat)
     # total actual evapotranspiration
+    # [m s⁻¹] = [m s⁻¹] + [m s⁻¹] + [m s⁻¹] + [m s⁻¹] + [m s⁻¹]
     v.actevap .=
         v.soilevap .+ v.transpiration .+ runoff.variables.ae_openw_r .+
         runoff.variables.ae_openw_l .+ get_evaporation(demand.paddy)
@@ -1312,7 +1320,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple, dt::Number)
                 )
             else
                 # [-]
-                setindex(vwc, p.theta_s[i], k)
+                vwc = setindex(vwc, p.theta_s[i], k)
             end
             # [%]
             vwc_perc = setindex(vwc_perc, from_SI(vwc[k] / p.theta_s[i], PERCENTAGE), k)

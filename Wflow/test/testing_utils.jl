@@ -220,3 +220,35 @@ end
 
 Wflow.to_SI(x::Union{Float64, Vector{Float64}}, name::AbstractString; kwargs...) =
     to_SI(x, Wflow.get_unit(name; allow_not_found = false); kwargs...)
+
+no_nan(x::Float64) = isnan(x) ? 0.0 : x
+get_mean(f::Vector{Float64}) = mean(filter(!isnan, f)) |> no_nan
+get_mean(f::Vector{SVector{N, Float64}}) where {N} =
+    no_nan.(
+        SVector{N}([mean(filter(!isnan, [v[i] for v in f])) for i in 1:length(first(f))])
+    )
+
+function get_means(obj)
+    d = Dict{Symbol, Union{Float64, SVector{N, Float64} where N}}()
+    for s in propertynames(obj)
+        f = getfield(obj, s)
+        if f isa Union{Vector{Float64}, Vector{SVector{N, Float64}} where {N}}
+            d[s] = get_mean(f)
+        end
+    end
+    return d
+end
+
+function test_means(obj::Any, means::Dict{Symbol})
+    failed = Symbol[]
+    for (s, v) in means
+        v_obj = get_mean(getfield(obj, s))
+        if !(v_obj ≈ v)
+            push!(failed, s)
+            err = v - v_obj
+            fac = v ./ v_obj
+            println("$s: err = $err, fac = $fac")
+        end
+    end
+    @test isempty(failed)
+end

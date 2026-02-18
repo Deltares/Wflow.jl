@@ -65,15 +65,9 @@
             [1, 2, 3],
             [0.10, 0.15, 0.20],
         ) ≈ getindex.(model.land.soil.variables.vwc, 2)[1:3]
-        @test BMI.get_value_at_indices(
-            model,
-            "river_water__instantaneous_volume_flow_rate",
-            zeros(3),
-            [1, 100, 5617],
-        ) ≈ to_SI!(
-            [0.6061460608597447, 7.474882551045692, 0.02313783328532491],
-            get_unit(var_name),
-        )
+        var_name = "river_water__instantaneous_volume_flow_rate"
+        @test BMI.get_value_at_indices(model, var_name, zeros(3), [1, 100, 5617]) ≈
+              to_SI([0.6061460608597447, 7.474882551045692, 0.02313783328532491], var_name)
         BMI.set_value(
             model,
             "soil_water_saturated_zone_top__depth",

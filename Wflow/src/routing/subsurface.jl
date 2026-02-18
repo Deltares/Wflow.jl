@@ -78,7 +78,7 @@ function LateralSsfParameters(
         config,
         "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
         Routing;
-        sel=indices,
+        sel = indices,
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
@@ -138,7 +138,7 @@ function LateralSSF(
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
     zi = soil.variables.zi
     variables = LateralSsfVariables(parameters, zi, area)
-    boundary_conditions = LateralSsfBC(; n=length(zi))
+    boundary_conditions = LateralSsfBC(; n = length(zi))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)
     return ssf
 end
@@ -155,17 +155,19 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
 
     ns = length(order_of_subdomains)
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir part of the upstream subsurface flow
                 # goes to the river (flow_fraction_to_river) and part goes to the subsurface
                 # flow reservoir (1.0 - flow_fraction_to_river) upstream nodes with a
                 # reservoir are excluded
+                # [m³ s⁻¹] = ∑ [m³ s⁻¹] * [-]
                 ssfin[v] = sum_at(
                     i -> ssf[i] * (1.0 - flow_fraction_to_river[i]),
                     upstream_nodes[n],
                 )
+                # [m³ s⁻¹] = ∑ [m³ s⁻¹] * [-]
                 to_river[v] =
                     sum_at(i -> ssf[i] * flow_fraction_to_river[i], upstream_nodes[n])
                 ssf[v], zi[v], exfiltwater[v], specific_yield_dyn[v] = kinematic_wave_ssf(

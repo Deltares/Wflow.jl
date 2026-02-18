@@ -78,19 +78,20 @@ function unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, c, dt)
     for _ in 1:its
         # [m s⁻¹] = ([m s⁻¹] / [-]) * [-]
         st = (kv_z / its) * bounded_power(ustorelayerdepth / l_sat, c)
-        # [m s⁻¹] = min([m s⁻¹], [m] / [s])
-        ast = min(st, ustorelayerdepth / dt)
-        # [m] -= [m]
-        ustorelayerdepth -= ast * dt
-        # [m s⁻¹] += [m s⁻¹]
-        sum_ast += ast
-        if ustorelayerdepth < 0
-            if ustorelayerdepth < -eps()
-                error()
-            else
-                ustorelayerdepth = 0.0
-                break
-            end
+        # [m s⁻¹] = [m] / [s]
+        st_max = ustorelayerdepth / dt
+
+        if st < st_max
+            # [m] -= [m s⁻¹] * [s]
+            ustorelayerdepth -= st * dt
+            # [m s⁻¹] += [m s⁻¹]
+            sum_ast += st
+        else
+            # [m]
+            ustorelayerdepth = 0
+            # [m s⁻¹] += [m s⁻¹]
+            sum_ast += st_max
+            break
         end
     end
 
@@ -219,8 +220,8 @@ Otherwise, `f_infiltration_reduction` is set to 1.0.
 function infiltration_reduction_factor(
     tsoil,
     cf_soil;
-    modelsnow = false,
-    soil_infiltration_reduction = false,
+    modelsnow=false,
+    soil_infiltration_reduction=false,
 )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)

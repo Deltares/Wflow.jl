@@ -167,6 +167,7 @@ function update_demand_gross!(model::NonPaddy, soil::SbmSoilModel, dt::Float64)
             # [m]
             irri_dem_gross_depth = 0.0
             for k in 1:n_unsatlayers[i]
+                # [m], [m]
                 depletion, readily_available_water = water_demand_root_zone(soil, i, k)
 
                 # check if maximum irrigation rate has been applied at the previous time step.

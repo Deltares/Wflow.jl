@@ -696,6 +696,7 @@ Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using m
 factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
 """
 function hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)
+    # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * [m])
     kv_z = kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
     return kv_z
 end
@@ -703,23 +704,28 @@ end
 function hydraulic_conductivity_at_depth(p::KvExponentialConstant, kvfrac, z, i, n)
     (; kv_0, f) = p.exponential
     if z < p.z_exp[i]
+        # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * [m])
         kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * z)
     else
+        # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * [m])
         kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * p.z_exp[i])
     end
     return kv_z
 end
 
 function hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
+    # [m s⁻¹] = [-] * [m s⁻¹]
     kv_z = kvfrac[i][n] * p.kv[i][n]
     return kv_z
 end
 
 function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
     return if z < p.z_layered[i]
+        # [-] * [m s⁻¹]
         kvfrac[i][n] * p.kv[i][n]
     else
         n = p.nlayers_kv[i]
+        # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * ([m] - [m]))
         kvfrac[i][n] * p.kv[i][n] * exp(-p.f[i] * (z - p.z_layered[i]))
     end
 end
@@ -855,7 +861,9 @@ function initialize_lateral_ssf!(
     (; soilthickness) = subsurface.parameters
     (; slope, flow_width) = parameters
 
+    # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * [-]
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
+    # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * ([-] - [-]) * [m]
     @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
@@ -871,17 +879,21 @@ function initialize_lateral_ssf!(
     (; soilthickness) = subsurface.parameters
     (; slope, flow_width) = parameters
 
+    # [m² s⁻¹] = [m s⁻¹] * [-] * [-] * ([m] - [m])
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(ssf)
+        # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * [-] + [m² s⁻¹]
         ssfmax[i] =
             ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * z_exp[i])) + ssf_constant[i]
         if zi[i] < z_exp[i]
+            # [m³ s⁻¹] = ((([m s⁻¹] * [-]) / [m⁻¹]) * [-] + [m² s⁻¹]) * [m]
             ssf[i] =
                 (
                     ((kh_0[i] * slope[i]) / f[i]) *
                     (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + ssf_constant[i]
                 ) * flow_width[i]
         else
+            # [m³ s⁻¹] = [m s⁻¹] * [-] * [-] * ([m] - [m]) * [m]
             ssf[i] =
                 kh_0[i] *
                 exp(-f[i] * zi[i]) *

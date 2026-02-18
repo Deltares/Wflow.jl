@@ -481,8 +481,11 @@ function compute_flow_balance!(
     q_av_average = get_average(q_av)
 
     for i in eachindex(storage_prev)
+        # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹]
         total_in = inwater[i] + qin_av_average[i]
+        # [m³ s⁻¹]
         total_out = q_av_average[i]
+        # [m³ s⁻¹] = ([m³] - [m³]) / [s]
         storage_rate = (storage[i] - storage_prev[i]) / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
@@ -557,11 +560,15 @@ function compute_flow_balance!(
     (; recharge_area) = subsurface_flow.boundary_conditions
     (; flow_length, area) = parameters
     for i in eachindex(zi_prev)
+        # [m³ s⁻¹]
         total_in = ssfin[i]
+        # [m³ s⁻¹] = [m³ s⁻¹] + [m s⁻¹] * [m²]
         total_out = ssf[i] + exfiltwater[i] * area[i]
+        # [m³ s⁻¹], [m³ s⁻¹]
         total_in, total_out =
-            add_inflow(total_in, total_out, dt * recharge_area[i] * flow_length[i])
-        storage_rate = specific_yield_dyn[i] * (zi_prev[i] - zi[i]) * area[i]
+            add_inflow(total_in, total_out, recharge_area[i] * flow_length[i])
+        # [m³ s⁻¹] = [-] * ([m] - [m]) * [m²] / [s]
+        storage_rate = specific_yield_dyn[i] * (zi_prev[i] - zi[i]) * area[i] / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
@@ -588,9 +595,12 @@ function compute_flow_balance!(
     q_out_av_average = get_average(q_out_av)
 
     for i in eachindex(head_prev)
+        # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹]
         total_in = q_in_av_average[i] + flux_in[i]
+        # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹] + [m s⁻¹] * [m²]
         total_out = q_out_av_average[i] + flux_out[i] + exfiltwater[i] * area[i]
-        storage_rate = specific_yield_dyn[i] * (head[i] - head_prev[i]) * area[i]
+        # [m³ s⁻¹] = [-] * ([m] - [m]) * [m²] / [s]
+        storage_rate = specific_yield_dyn[i] * (head[i] - head_prev[i]) * area[i] / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
