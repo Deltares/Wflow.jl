@@ -502,8 +502,6 @@ end
 
 get_water_depth(gwf::GroundwaterFlow) = gwf.parameters.top .- gwf.variables.head
 
-get_exfiltwater(gwf::GroundwaterFlow) = gwf.variables.exfiltwater
-
 function get_flux_to_river(subsurface_flow::GroundwaterFlow, inds::Vector{Int})
     (; river) = subsurface_flow.boundary_conditions
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
@@ -530,6 +528,3 @@ function sum_boundary_fluxes(gwf::AbstractSubsurfaceFlowModel, domain::Domain; e
     end
     return flux_in, flux_out
 end
-get_inflow(gwf::GroundwaterFlow) = gwf.variables.q_in_av
-get_outflow(gwf::GroundwaterFlow) = gwf.variables.q_av
-get_storage(gwf::GroundwaterFlow) = gwf.variables.storage

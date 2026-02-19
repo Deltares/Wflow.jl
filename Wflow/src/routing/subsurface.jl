@@ -301,7 +301,6 @@ end
 
 # wrapper methods
 get_water_depth(model::LateralSSF) = model.variables.zi
-get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
 
 function get_flux_to_river(model::LateralSSF, inds::Vector{Int})
     (; river) = model.boundary_conditions
@@ -313,7 +312,3 @@ function get_flux_to_river(model::LateralSSF, inds::Vector{Int})
     end
     return flux
 end
-
-get_inflow(model::LateralSSF) = model.variables.q_in_av
-get_outflow(model::LateralSSF) = model.variables.q_av
-get_storage(model::LateralSSF) = model.variables.storage

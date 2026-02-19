@@ -217,37 +217,12 @@ function vertical_out(model::LandHydrologySBM, i::Int)
 end
 
 """
-Compute water mass balance error and relative error for `land` hydrology `SBM` of model type
-`SbmModel`.
+Compute water mass balance error and relative error for `land` hydrology `SBM`. Errors for
+subsurface flow constant head boundaries are set at zero.
 """
-function compute_land_hydrology_balance!(model::AbstractModel{<:SbmModel})
-    (; storage_prev, error, relative_error) = model.mass_balance.land_water_balance
-    (; snow) = model.land
-    (; area) = model.domain.land.parameters
-    (; subsurface_flow) = model.routing
-
-    for i in eachindex(storage_prev)
-        f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)
-        subsurface_flux_in = get_inflow(subsurface_flow)[i] * f_conv
-        total_in = subsurface_flux_in + vertical_in(model.land, i) + get_snow_in(snow)[i]
-
-        subsurface_flux_out = get_outflow(subsurface_flow)[i] * f_conv
-        vertical_flux_out = vertical_out(model.land, i)
-        total_out = subsurface_flux_out + vertical_flux_out + get_snow_out(snow)[i]
-        storage = compute_total_storage(model.land, i)
-        storage_rate = storage - storage_prev[i]
-        error[i], relative_error[i] =
-            compute_mass_balance_error(total_in, total_out, storage_rate)
-    end
-    return nothing
-end
-
-"""
-Compute water mass balance error and relative error for `land` hydrology `SBM` of model type
-`SbmGwfModel`. Errors for subsurface flow constant head boundaries are set at zero.
-"""
-function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
-    (; storage_prev, error, relative_error) = model.mass_balance.land_water_balance
+function compute_land_hydrology_balance!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+    (; land_water_balance) = model.mass_balance
+    (; storage_prev, error, relative_error) = land_water_balance
     (; snow) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
@@ -259,13 +234,13 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
 
     for i in eachindex(storage_prev)
         f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)
-        subsurface_flux_in = get_inflow(subsurface_flow)[i] * f_conv
+        subsurface_flux_in = subsurface_flow.variables.q_in_av[i] * f_conv
         total_in =
             subsurface_flux_in +
             vertical_in(model.land, i) +
             get_snow_in(snow)[i] +
             boundaries_flow_in[i] * f_conv
-        subsurface_flux_out = get_outflow(subsurface_flow)[i] * f_conv
+        subsurface_flux_out = subsurface_flow.variables.q_av[i] * f_conv
         vertical_flux_out = vertical_out(model.land, i)
         total_out =
             subsurface_flux_out +
@@ -277,9 +252,7 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
-    k = subsurface_flow.constanthead.index
-    error[k] .= 0.0
-    relative_error[k] .= 0.0
+    constant_head_boundary_error!(subsurface_flow, land_water_balance)
     return nothing
 end
 
