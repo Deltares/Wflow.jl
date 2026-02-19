@@ -15,7 +15,7 @@ function surface_routing!(model)
     update_lateral_inflow!(
         overland_flow,
         (; soil, allocation, subsurface_flow),
-        domain.land.parameters.area,
+        domain,
         config,
         dt,
     )

@@ -123,7 +123,7 @@ end
     ssfin = 0.0
     ssf_prev = 25953.147860945584
     zi_prev = 0.5198340870375974
-    r = 0.4346106913943182
+    q_net = 485.4666924404467
     slope = 0.4522336721420288
     sy = 0.20423455984891598
     d = 2.0
@@ -134,11 +134,11 @@ end
     kh_profile = Wflow.KhExponential([205.5965576171875], [1.0141291422769427])
     i = 1
 
-    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
-        r,
+        q_net,
         slope,
         sy,
         d,
@@ -153,7 +153,7 @@ end
     @test ssf ≈ 22100.628024231868
     @test zi ≈ 0.7029236021516849
     @test exfilt ≈ 0.0
-    @test sy_d ≈ 0.20423455984891598
+    @test net_flux ≈ -0.037393206532277116
 
     soil = init_sbm_soil_model(
         n,
@@ -178,7 +178,7 @@ end
     ssfin = 0.0
     ssf_prev = 54175.65003911068
     zi_prev = 0.7588905603985703
-    r = 0.6928420612599803
+    q_net = 773.9150244657355
     slope = 0.4522336721420288
     sy = 0.20423455984891598
     d = 2.0
@@ -189,11 +189,11 @@ end
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
     i = 1
 
-    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
-        r,
+        q_net,
         slope,
         sy,
         d,
@@ -209,7 +209,7 @@ end
     @test ssf ≈ 44680.57723298823
     @test zi ≈ 1.130798471269119
     @test exfilt ≈ 0.0
-    @test sy_d ≈ 0.20423455984891598
+    @test net_flux ≈ -0.07595644848097641
 end
 
 @testitem "unit: accucapacity" begin

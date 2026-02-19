@@ -1246,7 +1246,7 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
     p = model.parameters
     v = model.variables
 
-    exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0 # convert from [m] to [mm]
+    exfiltsatwater = subsurface_flow.variables.exfiltwater * 1000.0 # convert from [m] to [mm]
     rootingdepth = get_rootingdepth(model)
 
     n = length(v.zi)
