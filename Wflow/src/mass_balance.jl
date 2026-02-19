@@ -483,9 +483,6 @@ function compute_flow_balance!(
     (; error, relative_error) = water_balance
     (; q_in_av, q_av, q_net) = subsurface_flow.variables
 
-    n = length(q_net)
-    flux_in = zeros(n)
-    flux_out = zeros(n)
     flux_in, flux_out = sum_boundary_fluxes(subsurface_flow, domain)
 
     f_conv = dt / tosecond(BASETIMESTEP)
