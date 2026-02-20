@@ -131,6 +131,7 @@ function init_sbm_soil_model(n, N; kwargs...)
             canopygapfraction = [],
             cmax = [],
             kc = [],
+            canopy_height = [],
         )
     end
 

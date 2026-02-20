@@ -74,6 +74,9 @@ end
     saturated_hydraulic_conductivity_profile::VerticalConductivityProfile.T =
         VerticalConductivityProfile.exponential
     water_mass_balance__flag::Bool = false
+    # Land surface temperature
+    land_surface_temperature__flag::Bool = false
+    land_surface_wind__speed_reference_height::Float64 = 10.0
     # Routing method
     land_routing::RoutingType.T = RoutingType.kinematic_wave
     river_routing::RoutingType.T = RoutingType.kinematic_wave

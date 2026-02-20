@@ -203,9 +203,6 @@ function transport_capacity_yalin(
     return transport_capacity
 end
 
-const WATER_DENSITY = 1e3 # [kg m⁻³]
-const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
-
 """
     transportability_yalin_differentiation(
         waterlevel,

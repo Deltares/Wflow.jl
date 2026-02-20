@@ -43,6 +43,7 @@
             canopygapfraction = [0.5],
             cmax = [0.0],
             kc = [1.0],
+            canopy_height = [0.12],
         ),
     )
 

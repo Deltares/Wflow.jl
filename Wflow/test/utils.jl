@@ -70,8 +70,9 @@ end
     configs_sbm = Wflow.Config[]
     configs_sediment = Wflow.Config[]
 
-    # Initialize the first model with mass balance
+    # Initialize the first model with mass balance and land surface temperature
     do_mass_balance = true
+    do_land_surface_temperature = true
     for file_name in [
         "sbm_config.toml",
         "sbm_gwf_config.toml",
@@ -84,6 +85,9 @@ end
         if do_mass_balance
             config.model.water_mass_balance__flag = true
             global do_mass_balance = false
+        end
+        if do_land_surface_temperature
+            config.model.land_surface_temperature__flag = true
         end
         push!(configs_sbm, config)
     end

@@ -12,6 +12,8 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
     ),
     "land_surface__evapotranspiration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.actevap), unit = "mm dt-1"),
+    "land_surface__albedo" =>
+        (lens = @optic(_.domain.land.parameters.albedo), unit = "-"),
     "land_water_storage__total_depth" =>
         (lens = @optic(_.land.soil.variables.total_storage), unit = "mm"),
     "land_water_mass_balance_error__volume_flux" =>
@@ -20,6 +22,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.mass_balance.land_water_balance.relative_error), unit = "-"),
     "atmosphere_air__temperature" =>
         (lens = @optic(_.land.atmospheric_forcing.temperature), unit = "°C"),
+    "land_surface_incoming_shortwave_radiation__energy_flux" => (
+        lens = @optic(_.land.atmospheric_forcing.shortwave_radiation_in),
+        unit = "W m-2",
+    ),
     "vegetation__leaf_area_index" =>
         (lens = @optic(_.land.vegetation_parameters.leaf_area_index), unit = "m2 m-2"),
     "vegetation_canopy_water__depth" =>
@@ -203,6 +209,34 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.zi), unit = "mm"),
     "soil_surface__temperature" =>
         (lens = @optic(_.land.soil.variables.tsoil), unit = "ᵒC"),
+    "land_surface__temperature" => (
+        lens = @optic(_.land.land_surface_temperature.variables.land_surface_temperature),
+        unit = "ᵒC",
+    ),
+    "land_surface_net_shortwave_radiation__energy_flux" => (
+        lens = @optic(_.land.land_surface_temperature.variables.net_shortwave_radiation),
+        unit = "W m-2",
+    ),
+    "land_surface_net_longwave_radiation__energy_flux" => (
+        lens = @optic(_.land.land_surface_temperature.variables.net_longwave_radiation),
+        unit = "W m-2",
+    ),
+    "land_surface_air_latent_heat_of_evaporation__energy_flux" => (
+        lens = @optic(_.land.land_surface_temperature.variables.latent_heat_flux),
+        unit = "W m-2",
+    ),
+    "land_surface_air_net_sensible_heat__energy_flux" => (
+        lens = @optic(_.land.land_surface_temperature.variables.sensible_heat_flux),
+        unit = "W m-2",
+    ),
+    "land_surface_total_net_radiation__energy_flux" =>
+        (lens = @optic(_.land.atmospheric_forcing.net_radiation), unit = "W m-2"),
+    "land_surface_air_flow__speed" =>
+        (lens = @optic(_.land.atmospheric_forcing.wind_speed), unit = "m s-1"),
+    "atmosphere_bottom_air__bulk_momentum_aerodynamic_resistance" => (
+        lens = @optic(_.land.land_surface_temperature.variables.aerodynamic_resistance),
+        unit = "s m-1",
+    ),
     "subsurface_water_saturated_zone_top__depth" =>
         (lens = @optic(_.routing.subsurface_flow.variables.zi), unit = "m"),
     "subsurface_water__exfiltration_volume_flux" => (

@@ -16,6 +16,8 @@
     rootingdepth::Vector{Float64}
     # Crop coefficient Kc [-]
     kc::Vector{Float64}
+    # Canopy height [m]
+    canopy_height::Vector{Float64}
 end
 
 "Initialize (shared) vegetation parameters"
@@ -39,6 +41,14 @@ function VegetationParameters(
         "vegetation__crop_factor";
         sel = indices,
         defaults = 1.0,
+        type = Float64,
+    )
+    canopy_height = ncread(
+        dataset,
+        config,
+        "vegetation_canopy__height";
+        sel = indices,
+        defaults = 0.12,
         type = Float64,
     )
     if do_cyclic(config) && haskey(config.input.cyclic, "vegetation__leaf_area_index")
@@ -75,6 +85,7 @@ function VegetationParameters(
             cmax = fill(MISSING_VALUE, n),
             rootingdepth,
             kc,
+            canopy_height,
         )
     else
         canopygapfraction = ncread(
@@ -102,6 +113,7 @@ function VegetationParameters(
             cmax,
             rootingdepth,
             kc,
+            canopy_height,
         )
     end
     return vegetation_parameter_set
