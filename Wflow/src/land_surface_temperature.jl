@@ -111,10 +111,6 @@ end
 
 """ 'sensible heat flux' :: H  ≈ RNet - LE - G"""
 function compute_sensible_heat_flux(net_radiation::Float64, latent_heat_flux::Float64)
-    # Handle NaN values in net radiation
-    if isnan(net_radiation)
-        return 0.0
-    end
     #TODO:run the snow module assimilate soil temperature
     # allowing a better estimate for G, currently G is daytime proportional to (0.1 nighttime, 0.5 daytime)
     G = 0.1 * net_radiation
