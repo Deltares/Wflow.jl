@@ -189,7 +189,7 @@ function wind_and_aero_resistance(
         ra = 1 / ga
     end
 
-    return max(ra, 1.0)
+    return max(ra, 10.0)
 end
 
 """ 'land surface temperature' :: Ts=(H ra) /(ρacp)+Ta,(4)"""
