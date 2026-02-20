@@ -3,8 +3,8 @@
     wind_measurement_height = 2.0
     wind_speed = 2.0
     canopy_height = 0.12
-    actevap = 2.0
-    net_radiation = NaN
+    actevap = 0.12
+    net_radiation = 300.0
     dt = 3600.0
 
     latent_heat_of_vaporization = Wflow.compute_latent_heat_of_vaporization(temperature)
@@ -20,8 +20,8 @@
     )
 
     @test latent_heat_of_vaporization ≈ 2.4535e6
-    @test latent_heat_flux ≈ 1363.0555555555554
-    @test sensible_heat_flux ≈ 0.0
+    @test latent_heat_flux ≈ 81.78333333333332
+    @test sensible_heat_flux ≈ 188.2166666666667
     @test aerodynamic_resistance ≈ 14.479951355887868
-    @test lst ≈ 20.0
+    @test lst ≈ 22.21372174044122
 end

@@ -1,0 +1,8 @@
+[workspace]
+projects = ["Wflow", "docs", "server", "build/create_binaries", "build/wflow_cli"]
+
+[deps]
+PkgToSoftwareBOM = "6254a0f9-6143-4104-aa2e-fd339a2830a6"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
