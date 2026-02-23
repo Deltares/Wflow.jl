@@ -1,6 +1,6 @@
 using Statistics: mean
 using SpecialFunctions: expint
-using Wflow: to_SI, Unit
+using Wflow: to_SI, Unit, AverageVector
 using StaticArrays: SVector
 
 "Return the first row of a Wflow output CSV file as a NamedTuple"
@@ -227,6 +227,7 @@ get_mean(f::Vector{SVector{N, Float64}}) where {N} =
     no_nan.(
         SVector{N}([mean(filter(!isnan, [v[i] for v in f])) for i in 1:length(first(f))])
     )
+get_mean(f::AverageVector) = get_mean(Wflow.get_average(f))
 
 function get_means(obj)
     d = Dict{Symbol, Union{Float64, SVector{N, Float64} where N}}()
@@ -250,5 +251,5 @@ function test_means(obj::Any, means::Dict{Symbol})
             println("$s: err = $err, fac = $fac")
         end
     end
-    @test isempty(failed)
+    return isempty(failed)
 end

@@ -167,6 +167,9 @@ end
     using Wflow: to_SI, Unit, MM_PER_DT, TON_PER_DT, MM
     GRAM_PER_JOULE = Unit(; g = 1, J = -1)
     GRAM_PER_M3 = Unit(; g = 1, m = -3)
+    μM = Unit(; μm = 1)
+    TON = Unit(; t = 1)
+    include("testing_utils.jl")
     ### Test the sediment model with a different configuration file ###
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
@@ -178,27 +181,381 @@ end
 
     Wflow.run_timestep!(model)
 
-    @testset "first timestep sediment model eurosem (land part)" begin
-        eros = model.land
+    @testset "First timestep: forcing" begin
+        (; atmospheric_forcing, hydrological_forcing) = model.land
 
-        @test eros.atmospheric_forcing.precipitation[1] ≈
+        @test atmospheric_forcing.precipitation[1] ≈
               to_SI(4.086122035980225, MM_PER_DT; dt_val = dt)
-        @test eros.hydrological_forcing.interception[1] ≈
+        @test hydrological_forcing.interception[1] ≈
               to_SI(0.6329902410507202, MM_PER_DT; dt_val = dt)
-        @test eros.hydrological_forcing.q_land[1] ≈ 0.0
-        @test eros.rainfall_erosion.parameters.soil_detachability[1] ≈
-              to_SI(2.0, GRAM_PER_JOULE)
-        @test eros.rainfall_erosion.parameters.eurosem_exponent[1] ≈ 2.0
-        @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
-        @test eros.overland_flow_erosion.variables.soil_erosion_rate[1] ≈ 0.0
-        @test eros.rainfall_erosion.variables.soil_erosion_rate[1] ≈
+        @test hydrological_forcing.q_land[1] ≈ 0.0
+
+        @test test_means(
+            atmospheric_forcing,
+            Dict(:precipitation => to_SI(2.015508979822029, MM_PER_DT; dt_val = dt)),
+        )
+        @test test_means(
+            hydrological_forcing,
+            Dict(
+                :interception => to_SI(0.4767731664871101, MM_PER_DT; dt_val = dt),
+                :waterlevel_land => 2.669102444877212e-5,
+                :q_land => 0.0008427802189709429,
+                :waterlevel_river => 0.0,
+                :q_river => 0.0,
+            ),
+        )
+    end
+
+    @testset "First timestep: rainfall erosion" begin
+        (; rainfall_erosion) = model.land
+
+        @test rainfall_erosion.parameters.eurosem_exponent[1] ≈ 2.0
+        @test rainfall_erosion.variables.soil_erosion_rate[1] ≈
               to_SI(0.01232301374083337, TON_PER_DT; dt_val = dt)
-        @test mean(eros.overland_flow_erosion.variables.soil_erosion_rate) ≈
-              to_SI(0.00861079076689589, TON_PER_DT; dt_val = dt)
-        @test mean(eros.rainfall_erosion.variables.soil_erosion_rate) ≈
+        @test mean(rainfall_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.0014726364432116048, TON_PER_DT; dt_val = dt)
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+
+        @test test_means(
+            rainfall_erosion.boundary_conditions,
+            Dict(
+                :waterlevel => 2.669102444877212e-5,
+                :interception => to_SI(0.4767731664871101, MM_PER_DT; dt_val = dt),
+                :precipitation => to_SI(2.015508979822029, MM_PER_DT; dt_val = dt),
+            ),
+        )
+        @test test_means(
+            rainfall_erosion.parameters,
+            Dict(
+                :canopygapfraction => 0.1,
+                :canopyheight => 10.246395046934293,
+                :soil_detachability => to_SI(1.9100919738700581, GRAM_PER_JOULE),
+                :soilcover_fraction => 0.013012199593097453,
+                :eurosem_exponent => 2.0,
+            ),
+        )
+        @test test_means(
+            rainfall_erosion.variables,
+            Dict(
+                :soil_erosion_rate => to_SI(0.0014726364432116048, TON_PER_DT; dt_val = dt),
+            ),
+        )
+    end
+
+    @testset "First timestep: soil erosion" begin
+        (; soil_erosion) = model.land
+
+        @test mean(soil_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.010083427210107495, TON_PER_DT; dt_val = dt)
+
+        @test test_means(
+            soil_erosion.boundary_conditions,
+            Dict(
+                :overland_flow_erosion =>
+                    to_SI(0.008610790766895889, TON_PER_DT; dt_val = dt),
+                :rainfall_erosion => to_SI(0.0014726364432116048, TON_PER_DT; dt_val = dt),
+            ),
+        )
+        @test test_means(
+            soil_erosion.parameters,
+            Dict(
+                :clay_fraction => 0.043157121493024087,
+                :sand_fraction => 0.19049260624776837,
+                :sagg_fraction => 0.42007166542989277,
+                :silt_fraction => 0.05922145470619702,
+                :lagg_fraction => 0.28705715197829496,
+            ),
+        )
+        @test test_means(
+            soil_erosion.variables,
+            Dict(
+                :lagg_erosion_rate => to_SI(0.0029391389444339325, TON_PER_DT; dt_val = dt),
+                :sand_erosion_rate => to_SI(0.0033809412861155515, TON_PER_DT; dt_val = dt),
+                :soil_erosion_rate => to_SI(0.010083427210107496, TON_PER_DT; dt_val = dt),
+                :silt_erosion_rate =>
+                    to_SI(0.00047599597358497295, TON_PER_DT; dt_val = dt),
+                :clay_erosion_rate => to_SI(0.0002992471128831566, TON_PER_DT; dt_val = dt),
+                :sagg_erosion_rate => to_SI(0.0029881038855770546, TON_PER_DT; dt_val = dt),
+            ),
+        )
+    end
+
+    @testset "First timestep: overland flow erosion" begin
+        (; overland_flow_erosion) = model.land
+
+        @test overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
+        @test overland_flow_erosion.variables.soil_erosion_rate[1] ≈ 0.0
+
+        @test test_means(
+            overland_flow_erosion.boundary_conditions,
+            Dict(:q => 0.0008427802189709429),
+        )
+        @test test_means(
+            overland_flow_erosion.parameters,
+            Dict(
+                :answers_overland_flow_factor => 0.8999999761581421,
+                :usle_k => 0.010302870616816031,
+                :usle_c => 0.1264203163327229,
+            ),
+        )
+        @test test_means(
+            overland_flow_erosion.variables,
+            Dict(
+                :soil_erosion_rate => to_SI(0.008610790766895889, TON_PER_DT; dt_val = dt),
+            ),
+        )
+    end
+
+    @testset "First timestep: overland flow" begin
+        (; overland_flow) = model.routing
+
+        # Forcing
+        @test test_means(
+            overland_flow.hydrological_forcing,
+            Dict(
+                :interception => to_SI(0.4767731664871101, MM_PER_DT; dt_val = dt),
+                :waterlevel_land => 2.669102444877212e-5,
+                :q_land => 0.0008427802189709429,
+                :waterlevel_river => 0.0,
+                :q_river => 0.0,
+            ),
+        )
+
+        # Transport capacity
+        @test test_means(
+            overland_flow.transport_capacity.boundary_conditions,
+            Dict(:waterlevel => 2.669102444877212e-5, :q => 0.0008427802189709429),
+        )
+        @test test_means(
+            overland_flow.transport_capacity.parameters,
+            Dict(
+                :density => 2650.0,
+                :dm_clay => to_SI(2.0, μM),
+                :dm_sagg => to_SI(30.0, μM),
+                :dm_lagg => to_SI(500.0, μM),
+                :dm_silt => to_SI(10.0, μM),
+                :dm_sand => to_SI(200.0, μM),
+            ),
+        )
+        @test test_means(
+            overland_flow.transport_capacity.variables,
+            Dict(
+                :silt => to_SI(1.098473093768654e6, TON_PER_DT; dt_val = dt),
+                :clay => to_SI(1.098516937562334e6, TON_PER_DT; dt_val = dt),
+                :sagg => to_SI(1.098465788005255e6, TON_PER_DT; dt_val = dt),
+                :lagg => to_SI(1.098462358701705e6, TON_PER_DT; dt_val = dt),
+                :sand => to_SI(1.0984626857710436e6, TON_PER_DT; dt_val = dt),
+                :sediment_transport_capacity =>
+                    to_SI(5.492380863808992e6, TON_PER_DT; dt_val = dt),
+            ),
+        )
+
+        # Sediment flux
+        @test test_means(
+            overland_flow.sediment_flux.boundary_conditions,
+            Dict(
+                :erosion_clay => to_SI(0.00029924711288315653, TON_PER_DT; dt_val = dt),
+                :transport_capacity_clay =>
+                    to_SI(1.098516937562334e6, TON_PER_DT; dt_val = dt),
+                :erosion_silt => to_SI(0.00047599597358497295, TON_PER_DT; dt_val = dt),
+                :erosion_lagg => to_SI(0.002939138944433933, TON_PER_DT; dt_val = dt),
+                :transport_capacity_silt =>
+                    to_SI(1.098473093768654e6, TON_PER_DT; dt_val = dt),
+                :erosion_sagg => to_SI(0.002988103885577053, TON_PER_DT; dt_val = dt),
+                :transport_capacity_sand =>
+                    to_SI(1.0984626857710436e6, TON_PER_DT; dt_val = dt),
+                :transport_capacity_sagg =>
+                    to_SI(1.098465788005255e6, TON_PER_DT; dt_val = dt),
+                :transport_capacity_lagg =>
+                    to_SI(1.098462358701705e6, TON_PER_DT; dt_val = dt),
+                :erosion_sand => to_SI(0.0033809412861155515, TON_PER_DT; dt_val = dt),
+            ),
+        )
+        @test test_means(
+            overland_flow.sediment_flux.variables,
+            Dict(
+                :silt => to_SI(0.0012034950050889219, TON_PER_DT; dt_val = dt),
+                :sediment_rate => to_SI(0.02646981333732639, TON_PER_DT; dt_val = dt),
+                :deposition_silt => to_SI(0.00047599597358497295, TON_PER_DT; dt_val = dt),
+                :deposition_lagg => to_SI(0.002939138944433933, TON_PER_DT; dt_val = dt),
+                :deposition_sand => to_SI(0.0033809412861155515, TON_PER_DT; dt_val = dt),
+                :sagg => to_SI(0.007518357216337384, TON_PER_DT; dt_val = dt),
+                :lagg => to_SI(0.007585602108527664, TON_PER_DT; dt_val = dt),
+                :clay => to_SI(0.0007578784574900395, TON_PER_DT; dt_val = dt),
+                :deposition => to_SI(0.010083427202594667, TON_PER_DT; dt_val = dt),
+                :deposition_clay => to_SI(0.00029924711288315653, TON_PER_DT; dt_val = dt),
+                :deposition_sagg => to_SI(0.002988103885577053, TON_PER_DT; dt_val = dt),
+                :sand => to_SI(0.009404480549882391, TON_PER_DT; dt_val = dt),
+            ),
+        )
+
+        # To river
+        @test test_means(
+            overland_flow.to_river.boundary_conditions,
+            Dict(
+                :deposition_sand => to_SI(0.0033809412861155515, TON_PER_DT; dt_val = dt),
+                :deposition_sagg => to_SI(0.002988103885577053, TON_PER_DT; dt_val = dt),
+                :deposition_silt => to_SI(0.00047599597358497295, TON_PER_DT; dt_val = dt),
+                :deposition_lagg => to_SI(0.002939138944433933, TON_PER_DT; dt_val = dt),
+                :deposition_clay => to_SI(0.00029924711288315653, TON_PER_DT; dt_val = dt),
+            ),
+        )
+        @test test_means(
+            overland_flow.to_river.variables,
+            Dict(
+                :sagg_rate => to_SI(0.002496392427907965, TON_PER_DT; dt_val = dt),
+                :lagg_rate => to_SI(0.0025143486502600633, TON_PER_DT; dt_val = dt),
+                :sand_rate => to_SI(0.0030165319515708493, TON_PER_DT; dt_val = dt),
+                :sediment_rate => to_SI(0.00867918329675698, TON_PER_DT; dt_val = dt),
+                :clay_rate => to_SI(0.0002501736617445959, TON_PER_DT; dt_val = dt),
+                :silt_rate => to_SI(0.00040173660527350653, TON_PER_DT; dt_val = dt),
+            ),
+        )
+    end
+
+    @testset "`First timestep: river erosion" begin
+        (; river_flow) = model.routing
+
+        # Forcing
+        @test test_means(
+            river_flow.hydrological_forcing,
+            Dict(
+                :interception => 0.0,
+                :waterlevel_land => 0.0,
+                :q_land => 0.0,
+                :waterlevel_river => 0.05777413367369656,
+                :q_river => 0.1528727680637441,
+            ),
+        )
+
+        # Transport capacity
+        @test test_means(
+            river_flow.transport_capacity.boundary_conditions,
+            Dict(:waterlevel => 0.05777413367369656, :q => 0.1528727680637441),
+        )
+        @test test_means(
+            river_flow.transport_capacity.parameters,
+            Dict(:density => 2650.0, :d50 => to_SI(0.11542705629386542, MM)),
+        )
+        @test test_means(
+            river_flow.transport_capacity.variables,
+            Dict(
+                :sediment_transport_capacity =>
+                    to_SI(0.024940013212734955, TON_PER_DT; dt_val = dt),
+            ),
+        )
+
+        # Potential erosion
+        @test test_means(
+            river_flow.potential_erosion.boundary_conditions,
+            Dict(:waterlevel => 0.05777413367369656),
+        )
+        @test test_means(
+            river_flow.potential_erosion.parameters,
+            Dict(:d50 => to_SI(0.11542705629386542, MM)),
+        )
+        @test test_means(
+            river_flow.potential_erosion.variables,
+            Dict(
+                :bed => to_SI(139.44427204500616, TON_PER_DT; dt_val = dt),
+                :bank => to_SI(1.8953470656803122, TON_PER_DT; dt_val = dt),
+            ),
+        )
+
+        # Sediment flux
+        @test test_means(
+            river_flow.sediment_flux.boundary_conditions,
+            Dict(
+                :q => 0.1528727680637441,
+                :waterlevel => 0.05777413367369656,
+                :erosion_land_sagg => to_SI(0.0221033366693814, TON_PER_DT; dt_val = dt),
+                :erosion_land_lagg => to_SI(0.022262323062514834, TON_PER_DT; dt_val = dt),
+                :erosion_land_sand => to_SI(0.026708709958470814, TON_PER_DT; dt_val = dt),
+                :potential_erosion_river_bank =>
+                    to_SI(1.8953470656803122, TON_PER_DT; dt_val = dt),
+                :transport_capacity => to_SI(0.024940013212734955, TON_PER_DT; dt_val = dt),
+                :erosion_land_silt => to_SI(0.003557020658893805, TON_PER_DT; dt_val = dt),
+                :erosion_land_clay => to_SI(0.0022150654718924695, TON_PER_DT; dt_val = dt),
+                :potential_erosion_river_bed =>
+                    to_SI(139.44427204500616, TON_PER_DT; dt_val = dt),
+            ),
+        )
+        @test test_means(
+            river_flow.sediment_flux.parameters,
+            Dict(
+                :reservoir_area => 1865.8546640141467,
+                :sand_fraction => 0.2251547318080376,
+                :gravel_fraction => 0.05000000074505806,
+                :clay_fraction => 0.17458002217884722,
+                :silt_fraction => 0.5502652340921862,
+                :reservoir_trapping_efficiency => 1.0,
+                :dm_gravel => to_SI(2000.0, μM),
+                :dm_sand => to_SI(200.0, μM),
+                :dm_sagg => to_SI(30.0, μM),
+                :dm_lagg => to_SI(500.0, μM),
+                :dm_clay => to_SI(2.0, μM),
+                :dm_silt => to_SI(10.0, μM),
+            ),
+        )
+        @test test_means(
+            river_flow.sediment_flux.variables,
+            Dict(
+                :deposition => to_SI(0.07952559155864818, TON_PER_DT; dt_val = dt),
+                :erosion => to_SI(0.0026791396544776722, TON_PER_DT; dt_val = dt),
+                :leftover_gravel => 0.0,
+                :leftover_clay => to_SI(3.916043968626082e-9, TON),
+                :leftover_lagg => to_SI(1.9500782501449444e-15, TON),
+                :leftover_sagg => to_SI(3.741274625469958e-15, TON),
+                :leftover_sand => to_SI(8.753169499245311e-16, TON),
+                :leftover_silt => to_SI(4.643328043695461e-16, TON),
+                :sagg_rate => to_SI(0.0011473618310256493, TON_PER_DT; dt_val = dt),
+                :sand_rate => to_SI(0.00028353005582982047, TON_PER_DT; dt_val = dt),
+                :sediment_rate => to_SI(0.023905673898158595, TON_PER_DT; dt_val = dt),
+                :silt_rate => to_SI(0.010106572997892053, TON_PER_DT; dt_val = dt),
+                :lagg_rate => to_SI(0.00010707745313511598, TON_PER_DT; dt_val = dt),
+                :clay_rate => to_SI(0.012261131560275957, TON_PER_DT; dt_val = dt),
+                :gravel_rate => 0.0,
+                :store_clay => to_SI(0.0026169325235485177, TON),
+                :store_gravel => to_SI(0.0001339569862170842, TON),
+                :store_lagg => to_SI(0.022262323062512884, TON),
+                :store_sagg => to_SI(0.022103336669377652, TON),
+                :store_sand => to_SI(0.027135750167760687, TON),
+                :store_silt => to_SI(0.00527329214923135, TON),
+            ),
+        )
+
+        # Concentrations
+        @test test_means(
+            river_flow.concentrations.boundary_conditions,
+            Dict(
+                :waterlevel => 0.05777413367369656,
+                :q => 0.1528727680637441,
+                :silt => to_SI(0.010106572997892053, TON_PER_DT; dt_val = dt),
+                :clay => to_SI(0.012261131560275957, TON_PER_DT; dt_val = dt),
+                :sagg => to_SI(0.0011473618310256493, TON_PER_DT; dt_val = dt),
+                :sand => to_SI(0.00028353005582982047, TON_PER_DT; dt_val = dt),
+                :lagg => to_SI(0.00010707745313511598, TON_PER_DT; dt_val = dt),
+                :gravel => 0.0,
+            ),
+        )
+        @test test_means(
+            river_flow.concentrations.parameters,
+            Dict(
+                :dm_clay => to_SI(2.0, μM),
+                :dm_gravel => to_SI(2000.0, μM),
+                :dm_sagg => to_SI(30.0, μM),
+                :dm_lagg => to_SI(500.0, μM),
+                :dm_silt => to_SI(10.0, μM),
+                :dm_sand => to_SI(200.0, μM),
+            ),
+        )
+        @test test_means(
+            river_flow.concentrations.variables,
+            Dict(
+                :suspended => to_SI(0.14755963695058993, GRAM_PER_M3; dt_val = dt),
+                :bed => to_SI(0.0001145940858844022, GRAM_PER_M3; dt_val = dt),
+                :total => to_SI(0.14767423103647434, GRAM_PER_M3; dt_val = dt),
+            ),
+        )
     end
 
     # run the second timestep

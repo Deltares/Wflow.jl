@@ -1,6 +1,4 @@
 @testitem "Run" begin
-    using Test
-    using Wflow
     using Dates
     using NCDatasets
 
@@ -65,13 +63,18 @@
     varnames = setdiff(keys(endstate_restart), keys(endstate_restart.dim))
     @testset "restart" begin
         @test length(varnames) > 10
+        failed = String[]
         for varname in varnames
             a = endstate_one_run[varname][:]
             b = endstate_restart[varname][:]
             maxdiff = maximum(abs.(skipmissing(b - a)))
             tol = varname == "volume_reservoir" ? 1e-8 : 1e-9
-            @test maxdiff < tol
+            if maxdiff ≥ tol
+                push!(failed, varname)
+                println("$varname: $maxdiff ≥ $tol")
+            end
         end
+        @test isempty(failed)
     end
 
     # the fews_run restart should match the other restart exactly

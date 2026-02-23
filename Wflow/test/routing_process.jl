@@ -109,50 +109,32 @@ end
     M_PER_DAY = Unit(; m = 1, d = -1)
     M2_PER_DAY = Unit(; m = 2, d = -1)
     include("testing_utils.jl")
+    using StaticArrays: SVector
+    include("testing_utils.jl")
     n = 1
     N = 4
 
-    soil = init_sbm_soil_model(
-        n,
-        N;
-        # Variables
-        ustorelayerthickness = [
-            to_SI.(SVector(100.0, 300.0, 119.83408703759733, NaN), Ref(MM)),
-        ],
-        ustorelayerdepth = [
-            to_SI.(
-                SVector(0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0),
-                Ref("soil_layer_water_unsaturated_zone__depth"),
-            ),
-        ],
-        n_unsatlayers = [3],
-        zi = [to_SI(519.8340870375973, "subsurface_water_saturated_zone_top__depth")],
-        # Parameters
-        maxlayers = 4,
-        sumlayers = [to_SI.(SVector(0.0, 100.0, 400.0, 1200.0, 2000.0), Ref(MM))],
-        nlayers = [4],
-        theta_s = [0.48642662167549133],
-        theta_r = [0.11939866840839386],
-        theta_fc = [0.28219206182657536],
-        act_thickl = [to_SI.(SVector(100.0, 300.0, 800.0, 800.0), Ref(MM))],
-    )
+    ### Shared values
+    act_thickl = [to_SI.(SVector(100.0, 300.0, 800.0, 800.0), Ref(MM))]
+    sumlayers = [to_SI.(SVector(0.0, 100.0, 400.0, 1200.0, 2000.0), Ref(MM))]
+    maxlayers = 4
+    nlayers = [4]
+    n_unsatlayers = [3]
+    theta_s = [0.48642662167549133]
+    theta_r = [0.11939866840839386]
+    theta_fc = [0.28219206182657536]
 
     ssfin = 0.0
-    ssf_prev = to_SI(25953.147860945584, M3_PER_DAY)
-    zi_prev = to_SI(0.5198340870375974, "subsurface_water_saturated_zone_top__depth")
-    r = to_SI(0.4346106913943182, M2_PER_DAY)
     slope = 0.4522336721420288
     sy = 0.20423455984891598
     d = 2.0
     dt = to_SI(1.0, DAY)
     dx = 1117.0150713112287
     dw = 517.495693771673
-    ssfmax = to_SI(79.62016166711079, M2_PER_DAY)
-    kh_profile =
-        Wflow.KhExponential([to_SI(205.5965576171875, M_PER_DAY)], [1.0141291422769427])
     i = 1
 
-    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+    # Closure of shared values
+    kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil) = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
@@ -168,9 +150,73 @@ end
         soil,
         i,
     )
+    ###
+
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [
+            to_SI.(SVector(100.0, 300.0, 119.83408703759733, NaN), Ref(MM)),
+        ],
+        ustorelayerdepth = [
+            to_SI.(
+                SVector(0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0),
+                Ref(MM),
+            ),
+        ],
+        n_unsatlayers,
+        zi = [to_SI(519.8340870375973, MM)],
+        # Parameters
+        maxlayers,
+        sumlayers,
+        nlayers,
+        theta_s,
+        theta_r,
+        theta_fc,
+        act_thickl,
+    )
+
+    # Case: ssfin + ssf_prev ≈ 0.0 && r <= 0
+    ssf_prev = 0.0
+    r = 0.0
+    zi_prev = 0.5198340870375974
+    ssfmax = to_SI(79.62016166711079, M3_PER_DAY)
+    kh_profile =
+        Wflow.KhExponential([to_SI(205.5965576171875, M3_PER_DAY)], [1.0141291422769427])
+    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
+    @test iszero(ssf)
+    @test zi == d
+    @test iszero(exfilt)
+    @test sy_d == sy
+
+    # Case: !(ssfin + ssf_prev ≈ 0.0 && r <= 0)
+    # Case: !(zi > d)
+    ssf_prev = to_SI(25953.147860945584, M3_PER_DAY)
+    r = to_SI(0.4346106913943182, M2_PER_DAY)
+    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
     @test ssf ≈ to_SI(22100.628024231868, M3_PER_DAY)
     @test zi ≈ 0.7029236021516849
-    @test exfilt ≈ 0.0
+    @test iszero(exfilt)
+    @test sy_d ≈ 0.20423455984891598
+    @test soil.variables.n_unsatlayers[1] == 3
+    @test soil.variables.ustorelayerdepth[1] ≈
+          to_SI.(
+        SVector(0.1909439890049523, 16.27933934181815, 49.313961140731934, 0.0),
+        Ref(MM),
+    )
+    @test soil.variables.ustorelayerthickness[1][1:3] ≈
+          to_SI.(SVector(100.0, 300.0, 302.9236021516849), Ref(MM))
+    @test isnan(soil.variables.ustorelayerthickness[1][4])
+    @test soil.variables.zi[1] ≈ to_SI(702.9236021516849, MM)
+
+    # Case: !(ssfin + ssf_prev ≈ 0.0 && r <= 0)
+    # Case: (zi > d)
+    zi_prev = 2.0
+    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
+    @test ssf ≈ to_SI(485.46669244046643, M3_PER_DAY)
+    @test zi ≈ 2.0
+    @test iszero(exfilt)
     @test sy_d ≈ 0.20423455984891598
 
     soil = init_sbm_soil_model(
@@ -186,48 +232,26 @@ end
                 Ref(MM),
             ),
         ],
-        n_unsatlayers = [3],
-        zi = [758.8905603985703],
+        n_unsatlayers,
+        zi = [to_SI(758.8905603985703, MM)],
         # Parameters
-        maxlayers = 4,
-        sumlayers = [to_SI.(SVector(0.0, 100.0, 400.0, 1200.0, 2000.0), Ref(MM))],
-        nlayers = [4],
-        theta_s = [0.48642662167549133],
-        theta_r = [0.11939866840839386],
-        theta_fc = [0.28219206182657536],
-        act_thickl = [to_SI.(SVector(100.0, 300.0, 800.0, 800.0), Ref(MM))],
+        maxlayers,
+        sumlayers,
+        nlayers,
+        theta_s,
+        theta_r,
+        theta_fc,
+        act_thickl,
     )
 
-    ssfin = 0.0
     ssf_prev = to_SI(54175.65003911068, M3_PER_DAY)
     zi_prev = 0.7588905603985703
     r = to_SI(0.6928420612599803, M2_PER_DAY)
-    slope = 0.4522336721420288
-    sy = 0.20423455984891598
-    d = 2.0
-    dt = to_SI(1.0, DAY)
-    dx = 1117.0150713112287
-    dw = 517.495693771673
-    ssfmax = to_SI(153.46698446681825, M2_PER_DAY)
+    ssfmax = 153.46698446681825
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
     i = 1
 
-    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
-        ssfin,
-        ssf_prev,
-        zi_prev,
-        r,
-        slope,
-        sy,
-        d,
-        dt,
-        dx,
-        dw,
-        ssfmax,
-        kh_profile,
-        soil,
-        1,
-    )
+    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
 
     @test ssf ≈ to_SI(44680.57723298823, M3_PER_DAY)
     @test zi ≈ 1.130798471269119

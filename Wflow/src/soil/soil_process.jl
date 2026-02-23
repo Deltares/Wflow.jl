@@ -220,8 +220,8 @@ Otherwise, `f_infiltration_reduction` is set to 1.0.
 function infiltration_reduction_factor(
     tsoil,
     cf_soil;
-    modelsnow=false,
-    soil_infiltration_reduction=false,
+    modelsnow = false,
+    soil_infiltration_reduction = false,
 )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)

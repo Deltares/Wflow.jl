@@ -863,7 +863,7 @@ function initialize_lateral_ssf!(
 
     # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * [-]
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
-    # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * ([-] - [-]) * [m]
+    # [m³ s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * ([-] - [-]) * [m]
     @. ssf = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
@@ -927,12 +927,17 @@ function initialize_lateral_ssf!(
 
     kh_layered_profile!(soil, subsurface, kv_profile)
     for i in eachindex(ssf)
+        # [m³ s⁻¹] = [m s⁻¹] * ([m] - [m]) * [-] * [m]
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
+        # [m² s⁻¹]
         kh_max = 0.0
         for j in 1:nlayers[i]
+            # [m² s⁻¹] += [m s⁻¹] * [m]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
+        # [m² s⁻¹] *= [-]
         kh_max *= khfrac[i]
+        # [m² s⁻¹] = [m² s⁻¹] * [-]
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
@@ -954,19 +959,26 @@ function initialize_lateral_ssf!(
 
     kh_layered_profile!(soil, subsurface, kv_profile)
     for i in eachindex(ssf)
+        # [m³ s⁻¹] = [m s⁻¹] * ([m] - [m]) * [-] * [m]
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
+        # [m² s⁻¹]
         kh_max = 0.0
         for j in 1:nlayers[i]
             if j <= nlayers_kv[i]
+                # [m² s⁻¹] +=  # [m s⁻¹] * [m]
                 kh_max += kv[i][j] * act_thickl[i][j]
             else
+                # [m] = [m] - [m]
                 zt = soil.parameters.soilthickness[i] - z_layered[i]
                 k = max(j - 1, 1)
+                # [m² s⁻¹] += [m s⁻¹] / [m⁻¹] * [-]
                 kh_max += kv[i][k] / f[i] * (1.0 - exp(-f[i] * zt))
                 break
             end
         end
+        # [m² s⁻¹] = [m² s⁻¹] * [-]
         kh_max = kh_max * khfrac[i]
+        # [m² s⁻¹] = [m² s⁻¹] * [-]
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
@@ -1047,7 +1059,7 @@ function water_table_change(
                 dh += flux_layer * dt / sy
             end
             net_flux -= flux_layer
-            net_flux ≤ 0.0 && break
+            net_flux == 0.0 && break
         end
     end
     # [m s⁻¹] = max([m s⁻¹], [m s⁻¹])

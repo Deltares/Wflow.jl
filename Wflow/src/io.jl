@@ -290,12 +290,8 @@ function setup_scalar_netcdf(
                 attrib = ["cf_role" => "timeseries_id"],
             )
         end
-        v = if haskey(standard_name_map(land), parameter)
-            lens = get_lens(parameter, land)
-            lens(modelmap)
-        else
-            param(modelmap, parameter)
-        end
+        (; lens) = get_metadata(parameter)
+        v = lens(modelmap)
         if eltype(v) <: AbstractFloat
             defVar(
                 ds,
@@ -701,16 +697,15 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
-    (; land) = modelmap
     for (par, ncname) in ncnames_dict
-        metadata = get_metadata(par, typeof(land), Routing)
-        lens = isnothing(metadata) ? nothing : metadata.lens
-        A = if isnothing(lens)
-            param(modelmap, par)
+        metadata = get_metadata(par; allow_not_found = true)
+        A, unit = if isnothing(metadata)
+            @warn "No unit was found for $par, so the output will be expressed in standard SI units ($(join(Wflow.STANDARD_UNITS, ", ")))."
+            param(modelmap, par), Unit()
         else
-            lens(modelmap)
+            metadata.lens(modelmap), metadata.unit
         end
-        output_map[ncname] = (par = par, vector = A)
+        output_map[ncname] = (; par, vector = A, unit)
     end
     return output_map
 end
@@ -859,13 +854,8 @@ function write_netcdf_timestep(model, dataset)
     for var in writer.nc_scalar
         (; name, parameter) = var
         reducer = writer.reducer[var]
-        A = if haskey(standard_name_map(land), parameter)
-            lens = get_lens(parameter, land)
-            lens(model)
-        else
-            param(model, parameter)
-        end
-        A = from_SI(A, get_unit(parameter))
+        (; lens, unit) = get_metadata(parameter)
+        A = from_SI(lens(model), unit)
         elemtype = eltype(A)
         # could be a value, or a vector in case of map
         if elemtype <: AbstractFloat
@@ -900,8 +890,7 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     buffer = zeros(Union{Float64, Missing}, domain.land.network.modelsize)
     for (key, val) in parameters
-        (; par, vector) = val
-        unit = get_unit(key)
+        (; par, vector, unit) = val
         sel = active_indices(domain, par)
         # write the active cells vector to the 2d buffer matrix
         elemtype = eltype(vector)
@@ -1114,11 +1103,8 @@ function write_csv_row(model)
         (; parameter) = col
         reducer = writer.reducer[col]
         metadata = get_metadata(parameter, typeof(land), Routing)
-        A = if isnothing(metadata)
-            param(model, parameter)
-        else
-            metadata.lens(model)
-        end
+        (; lens, unit) = get_metadata(parameter)
+        A = lens(model)
         # v could be a value, or a vector in case of map
         if eltype(A) <: SVector
             # indexing is required in case of a SVector and CSV output
@@ -1128,7 +1114,6 @@ function write_csv_row(model)
             v = reducer(collect(A))
         end
         # Convert to proper unit
-        unit = get_unit(parameter)
         v = if v isa Number
             from_SI(v, unit; dt_val)
         else

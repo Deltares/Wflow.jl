@@ -717,12 +717,12 @@ function infiltration_reduction_factor!(
 end
 
 """
-    infiltration!(model::SbmSoilModel, dt::Number)
+    infiltration!(model::SbmSoilModel, dt::Float64)
 
 Update the infiltration rate `infiltsoilpath` and infiltration excess water rate
 `infiltexcess` of the SBM soil model for a single timestep.
 """
-function infiltration!(model::SbmSoilModel, dt::Number)
+function infiltration!(model::SbmSoilModel, dt::Float64)
     v = model.variables
     p = model.parameters
     (; water_flux_surface) = model.boundary_conditions
@@ -985,7 +985,7 @@ function actual_infiltration!(model::SbmSoilModel, dt::Float64)
         # check soil moisture balance per layer
         ustoredepth_excess = 0.0
         for k in v.n_unsatlayers[i]:-1:1
-            # [m] = = max([m], [m] - [m] * ([-] - [-]))
+            # [m] = max([m], [m] - [m] * ([-] - [-]))
             ustoredepth_excess = max(
                 0.0,
                 v.ustorelayerdepth[i][k] -

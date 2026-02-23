@@ -300,9 +300,10 @@ end
 end
 
 @testitem "unit: update SedimentConcentrationsRiverModel" begin
-    using Wflow: to_SI, Unit
+    using Wflow: to_SI, Unit, TON_PER_DT
     GRAM_PER_M3 = Unit(; g = 1, m = -3)
     μM = Unit(; μm = 1)
+    dt = 86400.0
 
     n = 1
     model = Wflow.SedimentConcentrationsRiverModel(;
@@ -311,12 +312,12 @@ end
             n,
             q = [2.5],
             waterlevel = [0.2],
-            clay = [to_SI(0.0, GRAM_PER_M3)],
-            silt = [to_SI(0.0, GRAM_PER_M3)],
-            sand = [to_SI(1.0e-10, GRAM_PER_M3)],
-            sagg = [to_SI(0.0, GRAM_PER_M3)],
-            lagg = [to_SI(2.0e-12, GRAM_PER_M3)],
-            gravel = [to_SI(3.0e-14, GRAM_PER_M3)],
+            clay = [to_SI(0.0, TON_PER_DT; dt_val = dt)],
+            silt = [to_SI(0.0, TON_PER_DT; dt_val = dt)],
+            sand = [to_SI(1.0e-10, TON_PER_DT; dt_val = dt)],
+            sagg = [to_SI(0.0, TON_PER_DT; dt_val = dt)],
+            lagg = [to_SI(2.0e-12, TON_PER_DT; dt_val = dt)],
+            gravel = [to_SI(3.0e-14, TON_PER_DT; dt_val = dt)],
         ),
         parameters = Wflow.SedimentConcentrationsRiverParameters(;
             dm_clay = [to_SI(2.0, μM)],
@@ -328,7 +329,6 @@ end
         ),
     )
     parameters = Wflow.RiverParameters(; slope = [1e-3])
-    dt = 86400.0
 
     Wflow.update!(model, parameters, dt)
     @test model.variables.suspended[1] ≈ to_SI(4.675925925925926e-10, GRAM_PER_M3)

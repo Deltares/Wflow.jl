@@ -167,7 +167,7 @@ function kinematic_wave_ssf(
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
-        return 0.0, d, 0.0
+        return 0.0, d, 0.0, sy
     else
         # initial estimate
         # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
@@ -200,14 +200,14 @@ function kinematic_wave_ssf(
             # [m³ s⁻¹] = ([m] * [m]) * [-] * ([m] - [m]) / [s]
             ssf_excess = (dw * dx) * sy_d * (zi - d) / dt
             # [m³ s⁻¹] = max([m³ s⁻¹] - [m³ s⁻¹], [m³ s⁻¹])
-            ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
+            ssf = max(ssf - ssf_excess, MIN_SSF)
         end
         # [m] = clamp([m], [m], [m])
         zi = clamp(zi, 0.0, d)
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
         # computation
         max_delta_zi = 0.1
-        its = Int(cld(abs(max(zi, 0.0) - zi_prev), max_delta_zi))
+        its = Int(ceil(round(abs(zi - zi_prev) / max_delta_zi; sigdigits = 12)))
         if its > 1
             dt_s = dt / its
             # [m³ s⁻¹]
@@ -226,7 +226,7 @@ function kinematic_wave_ssf(
                 # [m³ s⁻¹]
                 ssf = kw_ssf_newton_raphson(ssf_prev, constant_term, celerity, dt_s, dx)
                 # constrain maximum lateral subsurface flow rate ssf
-                # [m³ s⁻¹] = min([m³ s⁻¹], [m² s⁻¹] * [s])
+                # [m³ s⁻¹] = min([m³ s⁻¹], [m² s⁻¹] * [m])
                 ssf = min(ssf, ssfmax * dw)
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
@@ -240,7 +240,7 @@ function kinematic_wave_ssf(
                     # [m³ s⁻¹] = ([m] * [m]) * [-] * ([m] - [m]) / [s]
                     ssf_excess = (dw * dx) * sy_d * (zi - d) / dt_s
                     # [m³ s⁻¹] = max([m³ s⁻¹] - [m³ s⁻¹], [m³ s⁻¹])
-                    ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
+                    ssf = max(ssf - ssf_excess, MIN_SSF)
                 end
                 # [m] = clamp([m], [m], [m])
                 zi = clamp(zi, 0.0, d)
@@ -298,7 +298,7 @@ function kinematic_wave_ssf(
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
-        return 0.0, d, 0.0
+        return 0.0, d, 0.0, sy
     else
         # initial estimate
         # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
@@ -330,7 +330,7 @@ function kinematic_wave_ssf(
             # [m³ s⁻¹] = ([m] * [m]) * [-] * ([m] - [m]) / [s]
             ssf_excess = (dw * dx) * sy_d * (zi - d) / dt
             # [m³ s⁻¹] = max([m³ s⁻¹] - [m³ s⁻¹], [m³ s⁻¹])
-            ssf = max(ssf - ssf_excess, KIN_WAVE_MIN_FLOW)
+            ssf = max(ssf - ssf_excess, MIN_SSF)
         end
         # [m] = clamp([m], [m], [m])
         zi = clamp(zi, 0.0, d)
@@ -472,7 +472,7 @@ function local_inertial_flow(
     # [-] = ([m] - [m]) / [m]
     slope = (zs1 - zs0) / length
     # [m^4/3]
-    pow_R = cbrt(R^4)
+    pow_R = cbrt(R * R * R * R)
     unit = one(hf)
     # [m³ s⁻¹] = ([m³ s⁻¹] - [m s⁻²] * [m²] * [s] * [-]) / ([-] + [m s⁻²] * [s] * [(s m-1/3)²] * [m³ s⁻¹] / ([m^4/3] * [m²]))
     q = (
@@ -517,7 +517,7 @@ function local_inertial_flow(
     unit = one(T)
     half = T(0.5)
     # [m^7/3]
-    pow_hf = cbrt(hf^7)
+    pow_hf = cbrt(hf * hf * hf * hf * hf * hf * hf)
 
     # [m³ s⁻¹] = (([-] * [m³ s⁻¹] + [-] * ([-] - [-]) * ([m³ s⁻¹] + [m³ s⁻¹])) - [m s⁻²] * [m] * [m] * [s] * [-]) / ([-] + [m s⁻²] * [s] * [(s m-1/3)²] * [m³ s⁻¹] / ([m^7/3] * [m]))
     q = (

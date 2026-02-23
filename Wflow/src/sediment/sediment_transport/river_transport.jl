@@ -94,65 +94,65 @@ function SedimentRiverTransportParameters(
         config,
         "river_bottom_and_bank_clay__mass_fraction",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
     silt_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_silt__mass_fraction",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
     sand_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_sand__mass_fraction",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
     gravel_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_gravel__mass_fraction",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
     # Check that river fractions sum to 1
     river_fractions = clay_fraction + silt_fraction + sand_fraction + gravel_fraction
     if any(abs.(river_fractions .- 1.0) .> 1e-3)
         error("Particle fractions in the river bed must sum to 1")
     end
-    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel=indices)
-    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel=indices)
-    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel=indices)
+    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel = indices)
+    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel = indices)
+    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel = indices)
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
     dm_lagg = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
-    dm_gravel = ncread(dataset, config, "gravel__mean_diameter", SoilLoss; sel=indices)
+    dm_gravel = ncread(dataset, config, "gravel__mean_diameter", SoilLoss; sel = indices)
 
     # Reservoirs
     if config.model.reservoir__flag
         reservoir_outlet =
-            ncread(dataset, config, "reservoir_location__count", SoilLoss; sel=indices)
+            ncread(dataset, config, "reservoir_location__count", SoilLoss; sel = indices)
         reservoir_area =
-            ncread(dataset, config, "reservoir_surface__area", SoilLoss; sel=indices)
+            ncread(dataset, config, "reservoir_surface__area", SoilLoss; sel = indices)
         reservoir_trapping_efficiency = ncread(
             dataset,
             config,
             "reservoir_water_sediment__bedload_trapping_efficiency",
             SoilLoss;
-            sel=indices,
+            sel = indices,
         )
     else
         reservoir_outlet = zeros(n)
@@ -171,7 +171,7 @@ function SedimentRiverTransportParameters(
         dm_sagg,
         dm_lagg,
         dm_gravel,
-        reservoir_outlet=reservoir_outlet .> 0,
+        reservoir_outlet = reservoir_outlet .> 0,
         reservoir_area,
         reservoir_trapping_efficiency,
     )
@@ -400,8 +400,8 @@ Calculate sediment deposition in reservoir outlets using Camp's formula
 function compute_reservoir_deposition(
     model::SedimentRiverTransportModel,
     domain_parameters::RiverParameters,
-    input_particles::NTuple{6,Float64},
-    erosion_particles::NTuple{6,Float64},
+    input_particles::NTuple{6, Float64},
+    erosion_particles::NTuple{6, Float64},
     v::Int,
 )
     (; boundary_conditions, parameters) = model
@@ -517,8 +517,8 @@ Calculate natural river deposition using Einstein's formula (Stokes settling)
 function compute_natural_deposition(
     model::SedimentRiverTransportModel,
     domain_parameters::RiverParameters,
-    input_particles::NTuple{6,Float64},
-    erosion_particles::NTuple{6,Float64},
+    input_particles::NTuple{6, Float64},
+    erosion_particles::NTuple{6, Float64},
     v::Int,
 )
     (; boundary_conditions, parameters) = model
@@ -563,9 +563,9 @@ end
 
 function update_variables!(
     variables::SedimentRiverTransportVariables,
-    input_particles::NTuple{6,Float64},
-    erosion_particles::NTuple{6,Float64},
-    deposition_particles::NTuple{6,Float64},
+    input_particles::NTuple{6, Float64},
+    erosion_particles::NTuple{6, Float64},
+    deposition_particles::NTuple{6, Float64},
     fwaterout::Float64,
     dt::Float64,
     v::Int,
@@ -783,17 +783,17 @@ end
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
-    # Clay load [g m⁻³ => kg m⁻³]
+    # Clay load [t dt⁻¹ => kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt load [g m⁻³ => kg m⁻³]
+    # Silt load [t dt⁻¹ => kg s⁻¹]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand load [g m⁻³ => kg m⁻³]
+    # Sand load [t dt⁻¹ => kg s⁻¹]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates load [g m⁻³ => kg m⁻³]
+    # Small aggregates load [t dt⁻¹ => kg s⁻¹]
     sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates load [g m⁻³ => kg m⁻³]
+    # Large aggregates load [t dt⁻¹ => kg s⁻¹]
     lagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Gravel load [g m⁻³ => kg m⁻³]
+    # Gravel load [t dt⁻¹ => kg s⁻¹]
     gravel::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -819,24 +819,24 @@ function SedimentConcentrationsRiverParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel=indices)
-    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel=indices)
-    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel=indices)
+    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel = indices)
+    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel = indices)
+    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel = indices)
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
     dm_lagg = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter",
         SoilLoss;
-        sel=indices,
+        sel = indices,
     )
-    dm_gravel = ncread(dataset, config, "gravel__mean_diameter", SoilLoss; sel=indices)
+    dm_gravel = ncread(dataset, config, "gravel__mean_diameter", SoilLoss; sel = indices)
     conc_parameters = SedimentConcentrationsRiverParameters(;
         dm_clay,
         dm_silt,
@@ -882,6 +882,7 @@ function update_boundary_conditions!(
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Sediment flux per particle
+    # [kg s⁻¹] = [kg s⁻¹]
     @. clay = sediment_flux_model.variables.clay_rate
     @. silt = sediment_flux_model.variables.silt_rate
     @. sand = sediment_flux_model.variables.sand_rate
@@ -925,7 +926,7 @@ function update!(
             dsuspf = 1e-3 * sqrt(1.2 * common_term)
 
             # Rouse with diameter
-            # [kg m⁻³]
+            # [kg s⁻¹]
             SSclay = suspended_solid(dm_clay[i], dsuspf, dbedf, clay[i])
             SSsilt = suspended_solid(dm_silt[i], dsuspf, dbedf, silt[i])
             SSsand = suspended_solid(dm_sand[i], dsuspf, dbedf, sand[i])
@@ -933,13 +934,18 @@ function update!(
             SSlagg = suspended_solid(dm_lagg[i], dsuspf, dbedf, lagg[i])
             SSgrav = suspended_solid(dm_gravel[i], dsuspf, dbedf, gravel[i])
 
-            to_conc = 1e6 / (flow * dt)
-            # [kg m⁻³] = ∑ [kg m⁻³]
+            # [s m⁻³] = inv([m³ s⁻¹])
+            to_conc = inv(flow)
+            # [kg s⁻¹] = ∑ [kg s⁻¹]
             total_ = clay[i] + silt[i] + sagg[i] + sand[i] + lagg[i] + gravel[i]
+            # [kg m⁻³] = [kg s⁻¹] * [s m⁻³]
             total[i] = total_ * to_conc
 
+            # [kg s⁻¹] = ∑ [kg s⁻¹]
             SS = SSclay + SSsilt + SSsand + SSsagg + SSlagg + SSgrav
+            # [kg m⁻³] = [kg s⁻¹] * [s m⁻³]
             suspended[i] = SS * to_conc
+            # [kg m⁻³] = ([kg s⁻¹] - [kg s⁻¹]) * [s m⁻³]
             bed[i] = (total_ - SS) * to_conc
         else
             suspended[i] = 0.0

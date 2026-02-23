@@ -102,8 +102,35 @@ function get_metadata(name::AbstractString, land::AbstractLandModel)
     return metadata
 end
 
-get_metadata(name::AbstractString) =
-    get_metadata(name, LandHydrologySBM, Routing, SoilLoss, Domain)
+function metadata_from_lens_string(
+    lens_string::AbstractString;
+    allow_not_found::Bool,
+)::Union{ParameterMetadata, Nothing}
+    for (_, _standard_name_map) in standard_name_maps
+        for metadata in values(_standard_name_map)
+            if string(metadata.lens)[7:(end - 1)] == lens_string
+                return metadata
+            end
+        end
+    end
+    if allow_not_found
+        return nothing
+    else
+        error(
+            "`$lens_string` is not a known lens string. It might be valid but is not yet included in the standard name maps.",
+        )
+    end
+end
+
+function get_metadata(name::AbstractString; allow_not_found::Bool = false)
+    # Try as standard name map key
+    metadata = get_metadata(name, LandHydrologySBM, Routing, SoilLoss, Domain)
+    # Try as lens
+    if isnothing(metadata)
+        metadata = metadata_from_lens_string(name; allow_not_found = true)
+    end
+    return metadata
+end
 
 get_lens(name::AbstractString, model::T) where {T} = get_lens(name, T)
 get_lens(name::AbstractString, model::AbstractLandModel) = get_metadata(name, model).lens
