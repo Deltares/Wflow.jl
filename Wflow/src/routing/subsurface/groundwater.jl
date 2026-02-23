@@ -77,6 +77,7 @@ instead.
     conductance::Vector{Float64}                   # conductance [m² d⁻¹]
     storage::Vector{Float64}                       # total storage of water that can be released [m³]
     q_net::Vector{Float64} = zeros(n)              # net flow (groundwater and boundaries) [m³ d⁻¹]
+    q_net_av::Vector{Float64} = zeros(n)           # average net flow (groundwater and boundaries) [m³ d⁻¹]
     q_net_bnds::Vector{Float64} = zeros(n)         # net flow boundaries [m³ d⁻¹]
     q_in_av::Vector{Float64} = zeros(n)            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
     q_av::Vector{Float64} = zeros(n)               # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
@@ -423,6 +424,7 @@ function update_fluxes!(
         flux!(bc, gwf, indices, dt)
     end
     gwf.variables.q_net .+= gwf.variables.q_net_bnds
+    gwf.variables.q_net_av .+= gwf.variables.q_net * dt
     return nothing
 end
 
@@ -459,6 +461,7 @@ function set_flux_vars!(gwf::GroundwaterFlow)
     gwf.variables.exfiltwater .= 0.0
     gwf.variables.q_in_av .= 0.0
     gwf.variables.q_av .= 0.0
+    gwf.variables.q_net_av .= 0.0
     return nothing
 end
 
@@ -472,6 +475,7 @@ function average_flux_vars!(gwf::GroundwaterFlow, dt::Float64)
     average_flux_vars_bc!(gwf, dt)
     gwf.variables.q_in_av ./= dt
     gwf.variables.q_av ./= dt
+    gwf.variables.q_net_av ./= dt
     return nothing
 end
 

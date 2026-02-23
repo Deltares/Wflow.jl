@@ -11,7 +11,7 @@
     q_max::Vector{Float64} = fill(MISSING_VALUE, n)         # Maximum subsurface flow [m² d⁻¹]
     to_river::Vector{Float64} = fill(MISSING_VALUE, n)      # Part of subsurface flow [m³ d⁻¹] that flows to the river
     q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n)    # Net flow for boundaries subsurface flow [m³ d⁻¹]
-    q_net::Vector{Float64} = fill(MISSING_VALUE, n)         # Net flow (total) [m³ d⁻¹]
+    q_net_av::Vector{Float64} = fill(MISSING_VALUE, n)      # Average net flow (total) [m³ d⁻¹]
     storage::Vector{Float64}                                # Subsurface storage that can be released [m³]
 end
 
@@ -178,7 +178,7 @@ function kinwave_subsurface_update!(
         q_max,
         storage,
         q_net_bnds,
-        q_net,
+        q_net_av,
     ) = model.variables
     (; specific_yield, top, soilthickness, kh_profile) = model.parameters
     (; river) = model.boundary_conditions
@@ -223,7 +223,7 @@ function kinwave_subsurface_update!(
                 q_in_av[v] += q_in[v] * dt
                 q_av[v] += q[v] * dt
                 exfiltwater[v] += _exfiltwater
-                q_net[v] += netflux * area[v] # convert to m³/dt
+                q_net_av[v] += netflux * area[v]
                 head[v] = top[v] - zi[v]
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
@@ -236,14 +236,14 @@ Update lateral subsurface model for a single timestep `dt`. Timestepping within 
 either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Float64)
-    (; q_in_av, q_av, to_river, exfiltwater, q_net) = model.variables
+    (; q_in_av, q_av, to_river, exfiltwater, q_net_av) = model.variables
     (; adaptive) = model.timestepping
 
     q_av .= 0.0
     to_river .= 0.0
     q_in_av .= 0.0
     exfiltwater .= 0.0
-    q_net .= 0.0
+    q_net_av .= 0.0
 
     set_flux_vars_bc!(model)
     t = 0.0
@@ -258,7 +258,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
     q_av ./= dt
     to_river ./= dt
     q_in_av ./= dt
-    q_net ./= dt
+    q_net_av ./= dt
     average_flux_vars_bc!(model, dt)
     return nothing
 end
