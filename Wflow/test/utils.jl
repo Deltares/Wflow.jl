@@ -92,7 +92,19 @@ end
     @test relative_error ≈ -2 / 11
 end
 
-@testitem "Lenses" begin
+@testitem "unit: variable tags" begin
+    for (map_name, map) in Wflow.standard_name_maps
+        @testset "Check that each $map_name variable has at least one tag" begin
+            vars_without_tags = String[]
+            for (name, metadata) in map
+                isempty(metadata.tags) && push!(vars_without_tags, name)
+            end
+            @test isempty(vars_without_tags)
+        end
+    end
+end
+
+@testitem "unit: lenses" begin
     using Accessors: @optic
     configs = Wflow.Config[]
 
@@ -102,10 +114,16 @@ end
         "sbm_river-land-local-inertial_config.toml",
         "sbm_gwf_piave_demand_config.toml",
         "sediment_config.toml",
+        "sediment_eurosem_engelund_config.toml",
     ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
         config.model.water_mass_balance__flag = true
+        push!(configs, config)
+    end
+
+    for transport_method in ("kodatie", "govers", "yalin")
+        config = Wflow.Config(normpath(@__DIR__, "sediment_eurosem_engelund_config.toml"))
         config.dir_output = mktempdir()
         if transport_method == "kodatie"
             config.model.river_transport = transport_method
@@ -119,7 +137,7 @@ end
     models = Wflow.Model.(configs)
     for (map_name, standard_name_map) in Wflow.standard_name_maps
         @testset "Test lenses: $map_name" begin
-            invalids = String[]
+            invalid = String[]
             for (name, data) in standard_name_map
                 (; lens) = data
                 isnothing(lens) && continue
@@ -133,9 +151,9 @@ end
                         nothing
                     end
                 end
-                !valid && push!(invalids, name)
+                valid || push!(invalid, name)
             end
-            @test isempty(invalids)
+            @test isempty(invalid)
         end
     end
 
@@ -159,7 +177,7 @@ end
     ])
 end
 
-@testitem "water_table_change" begin
+@testitem "unit: water_table_change" begin
     using Wflow: to_SI, MM, Unit
     M_PER_DAY = Unit(; m = 1, d = -1)
     using StaticArrays: SVector
