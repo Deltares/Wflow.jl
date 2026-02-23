@@ -577,11 +577,11 @@ function update_water_depth_and_storage!(
         # limit negative external inflow
         if external_inflow[i] < 0.0
             # [m³ s⁻¹] = min([m³ s⁻¹], [m³] / [s] * [-])
-            abstraction = min(-external_inflow[i], river_v.storage[i] / dt * 0.80)
+            _abstraction = min(-external_inflow[i], river_v.storage[i] / dt * 0.80)
             # [m³] += [m³ s⁻¹] * [s]
-            add_to_cumulative!(actual_external_abstraction_av, i, abstraction, dt)
+            add_to_cumulative!(actual_external_abstraction_av, i, _abstraction, dt)
             # [m³ s⁻¹] = [m³ s⁻¹]
-            inflow = -abstraction
+            inflow = -_abstraction
         else
             # [m³ s⁻¹] = [m³ s⁻¹]
             inflow = external_inflow[i]

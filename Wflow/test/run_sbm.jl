@@ -855,15 +855,15 @@ end
     (; q_av) = model.routing.river_flow.variables
     @testset "river external negative inflow (local inertial)" begin
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av.average[44] ≈ 3.0038267868094692
-        @test q_av.average[44] ≈ 0.0007694313441619584
+        @test Wflow.get_average(actual_external_abstraction_av)[44] ≈ 3.0038267868094692
+        @test Wflow.get_average(q_av)[44] ≈ 0.0007694313441619584
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av.average[44] ≈ 9.420226369186521
-        @test q_av.average[44] ≈ 0.009169625606576883
+        @test Wflow.get_average(actual_external_abstraction_av)[44] ≈ 9.420226369186521
+        @test Wflow.get_average(q_av)[44] ≈ 0.009169625606576883
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av.average[44] ≈ 9.999999999999991
-        @test external_inflow.average[44] == -10.0
-        @test q_av.average.average[44] ≈ 6.917023458482667
+        @test Wflow.get_average(actual_external_abstraction_av)[44] ≈ 9.999999999999991
+        @test Wflow.get_average(external_inflow)[44] == -10.0
+        @test Wflow.get_average(q_av)[44] ≈ 6.917023458482667
     end
     Wflow.close_files(model; delete_output = false)
 end
