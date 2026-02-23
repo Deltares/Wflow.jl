@@ -90,12 +90,31 @@ end
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
-    par_lambda = 2.0 / (c - 3.0)
-    # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
-    # part of the numerical vwc calculation
-    h = hb / (pow(((vwc) / (theta_s - theta_r)), (1.0 / par_lambda)))
-    h = min(h, hb)
+    par_lambda = 2 / (c - 3.0)
+    h = if par_lambda > 0
+        # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
+        # part of the numerical vwc calculation
+        hb / pow(vwc / (theta_s - theta_r), inv(par_lambda))
+    else
+        hb
+    end
     return h
+end
+
+"""
+    field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
+
+Return water content at field capacity based on the Brooks-Corey soil hydraulic model.
+"""
+function field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
+    theta_fc = 0.0
+    total_depth = 0.0
+    for i in 1:n_layers
+        theta_fc +=
+            vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
+        total_depth += layer_thickness[i]
+    end
+    return theta_fc / total_depth
 end
 
 """
@@ -211,12 +230,12 @@ function soil_evaporation_satured_store(
     n_unsatlayers,
     layerthickness,
     zi,
-    theta_effective,
+    theta_drainable,
 )
-    if n_unsatlayers == 0 || n_unsatlayers == 1
+    if n_unsatlayers in (0, 1)
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
-        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_effective)
+        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable)
     else
         soilevapsat = 0.0
     end

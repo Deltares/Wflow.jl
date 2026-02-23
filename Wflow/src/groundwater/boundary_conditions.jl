@@ -25,7 +25,7 @@ end
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
 end
 
-@with_kw struct GwfRiver <: AquiferBoundaryCondition
+@with_kw struct GwfRiver <: AbstractAquiferBoundaryCondition
     parameters::GwfRiverParameters
     variables::GwfRiverVariables
     index::Vector{Int} # [-]
@@ -61,7 +61,7 @@ function GwfRiver(
     return river
 end
 
-function flux!(river::GwfRiver, aquifer::Aquifer, dt::Float64)
+function flux!(river::GwfRiver, aquifer::AbstractAquifer, dt::Float64)
     for (i, index) in enumerate(river.index)
         head = aquifer.variables.head[index]
         stage = river.variables.stage[i]
@@ -94,7 +94,7 @@ end
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
 end
 
-@with_kw struct Drainage <: AquiferBoundaryCondition
+@with_kw struct Drainage <: AbstractAquiferBoundaryCondition
     parameters::DrainageParameters
     variables::DrainageVariables
     index::Vector{Int} # [-]
@@ -120,7 +120,7 @@ function Drainage(
     return drains
 end
 
-function flux!(drainage::Drainage, aquifer::Aquifer, dt::Float64)
+function flux!(drainage::Drainage, aquifer::AbstractAquifer, dt::Float64)
     for (i, index) in enumerate(drainage.index)
         cond = drainage.parameters.conductance[i]
         delta_head =
@@ -143,13 +143,13 @@ end
     flux_av::Vector{Float64} # [m³ d⁻¹]
 end
 
-@with_kw struct HeadBoundary <: AquiferBoundaryCondition
+@with_kw struct HeadBoundary <: AbstractAquiferBoundaryCondition
     parameters::HeadBoundaryParameters
     variables::HeadBoundaryVariables
     index::Vector{Int} # [-]
 end
 
-function flux!(headboundary::HeadBoundary, aquifer::Aquifer, dt::Float64)
+function flux!(headboundary::HeadBoundary, aquifer::AbstractAquifer, dt::Float64)
     for (i, index) in enumerate(headboundary.index)
         cond = headboundary.parameters.conductance[i]
         delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
@@ -168,13 +168,13 @@ end
     flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹]
 end
 
-@with_kw struct Recharge <: AquiferBoundaryCondition
+@with_kw struct Recharge <: AbstractAquiferBoundaryCondition
     n::Int
     variables::RechargeVariables = RechargeVariables(; n)
     index::Vector{Int} = collect(1:n)  # [-]
 end
 
-function flux!(recharge::Recharge, aquifer::Aquifer, dt::Float64)
+function flux!(recharge::Recharge, aquifer::AbstractAquifer, dt::Float64)
     for (i, index) in enumerate(recharge.index)
         flux = check_flux(
             recharge.variables.rate[i] * aquifer.parameters.area[index],
@@ -194,12 +194,12 @@ end
     flux_av::Vector{Float64} # [m³ d⁻¹]
 end
 
-@with_kw struct Well <: AquiferBoundaryCondition
+@with_kw struct Well <: AbstractAquiferBoundaryCondition
     variables::WellVariables
     index::Vector{Int} # [-]
 end
 
-function flux!(well::Well, aquifer::Aquifer, dt::Float64)
+function flux!(well::Well, aquifer::AbstractAquifer, dt::Float64)
     for (i, index) in enumerate(well.index)
         flux = check_flux(well.variables.volumetric_rate[i], aquifer, index)
         well.variables.flux[i] = flux
@@ -209,4 +209,4 @@ function flux!(well::Well, aquifer::Aquifer, dt::Float64)
     return nothing
 end
 
-flux!(::Nothing, ::Aquifer, ::Float64) = nothing
+flux!(::Nothing, ::AbstractAquifer, ::Float64) = nothing

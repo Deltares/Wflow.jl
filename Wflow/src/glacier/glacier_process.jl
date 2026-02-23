@@ -8,8 +8,8 @@ Glacier melting is modelled using a temperature degree factor and only
 occurs if the snow storage < 10 mm.
 
 # Arguments
-- `glacierFrac` fraction covered by glaciers [-]
-- `glacierstore` volume of the glacier [mm] w.e.
+- `glacier_frac` fraction covered by glaciers [-]
+- `glacier_store` volume of the glacier [mm] w.e.
 - `snow_storage` snow storage on top of glacier [mm]
 - `temperature` air temperature [°C]
 - `ttm` temperature threshold for ice melting [°C]
