@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -72,14 +72,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-152a7eaa3a473860f82b096fdec11055.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -336,7 +336,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="../../index.html" aria-current="page"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -348,7 +348,7 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../model_docs/index.html"> 
+    <a class="nav-link active" href="../../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
@@ -404,10 +404,6 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="../../index.html" class="sidebar-logo-link">
-      </a>
-      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -650,16 +646,16 @@ window.Quarto = {
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{c_\mathrm{land\ slope}}{m\ m^{-1}}\)</span> is the land slope, <span class="math inline">\(\SIb{\subtext{Q}{subsurface}}{m^3\ d^{-1}}\)</span> is subsurface flow, <span class="math inline">\(\SIb{K_\mathrm{h0}}{m\ d^{-1}}\)</span> is the saturated hydraulic conductivity at the soil surface, <span class="math inline">\(\SIb{\subtext{z}{ssf, watertable}}{m}\)</span> is the water table depth, <span class="math inline">\(\SIb{\subtext{z}{ssf,soil}}{m}\)</span> is the soil depth, <span class="math inline">\(\SIb{f_\mathrm{ssf, Kv}}{m^{-1}}\)</span> is a scaling parameter that controls the decrease of <span class="math inline">\(K_\mathrm{h0}\)</span> with depth and <span class="math inline">\(\SIb{\subtext{z}{ssf,exp}}{m}\)</span> is the depth from soil surface for which the exponential decline of <span class="math inline">\(K_\mathrm{h0}\)</span> is valid. For the <code>exponential</code> profile, <span class="math inline">\(\subtext{z}{ssf,exp}\)</span> is equal to <span class="math inline">\(\subtext{z}{ssf,soil}\)</span>.</p>
 <p>Combining with the following continuity equation: <span class="math display">\[
-    (\theta_s-\theta_r)w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
+    (\theta_s-\theta_{fc})w\frac{\partial h}{\partial t} = -\frac{\partial \subtext{Q}{subsurface}}{\partial x} + wR
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{r}}{-}\)</span> are the saturated and residual soil water contents, respectively. Substituting for <span class="math inline">\(h (\frac{\partial Q}{\partial h})\)</span>, gives:</p>
+<p>where <span class="math inline">\(\SIb{h}{m}\)</span> is the water table height, <span class="math inline">\(\SIb{x}{m}\)</span> is the distance downslope, <span class="math inline">\(\SIb{R}{m\ d^{-1}}\)</span> is the net input rate to the saturated store, <span class="math inline">\(\SIb{\theta_{s}}{-}\)</span> and <span class="math inline">\(\SIb{\theta_{fc}}{-}\)</span> are the saturated soil water content and soil water content at field capacity, respectively. The difference between <span class="math inline">\(\theta_s\)</span> and <span class="math inline">\(\theta_{fc}\)</span> represents the drainable porosity or specific yield and is assumed to be constant. Substituting for <span class="math inline">\(h(\frac{\partial Q}{\partial h})\)</span>, gives:</p>
 <p><span class="math display">\[
   \frac{\partial \subtext{Q}{subsurface}}{\partial t} = -c\frac{\partial \subtext{Q}{subsurface}}{\partial x} + cwR
 \]</span></p>
 <p>where celerity <span class="math inline">\(c\)</span> is calculated as follows: <span class="math display">\[
-    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_r}\begin{cases}
-    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}}
-    + e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} &amp; \text{if $\subtext{z}{ssf,watertable} &lt; \subtext{z}{ssf,exp}$}\\
+    c = \frac{K_\mathrm{h0}c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}\begin{cases}
+    e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,watertable}} &amp; \text{if
+    $\subtext{z}{ssf,watertable} &lt; \subtext{z}{ssf,exp}$}\\
     \\
     e^{-f_\mathrm{ssf, Kv}\subtext{z}{ssf,exp}} &amp; \text{if $\subtext{z}{ssf,watertable} \ge \subtext{z}{ssf,exp}$}.
     \end{cases}
@@ -670,9 +666,10 @@ window.Quarto = {
 \]</span></p>
 <p>and celerity <span class="math inline">\(c\)</span> is given by:</p>
 <p><span class="math display">\[
-    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_r}.
+    c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}.
 \]</span></p>
-<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method.</p>
+<p>The water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> is based on the change in subsurface storage and the drainable porosity for a falling water table and the fillable porosity for a rising water table, see also the following <a href="../../model_docs/land/landhydrology_sbm.html#water-table-change">section</a>. Using the fillable porosity for a rising water table prevents mass balance errors for the entire soil (unsaturated and saturated zone) when the fillable porosity is not equal to the drainable porosity used for the computation of lateral subsurface flow.</p>
+<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method. For the <code>exponential</code> and <code>exponential_constant</code> profiles, the kinematic wave celerity <span class="math inline">\(c\)</span> is a function of the water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> and for these profiles the kinematic wave equation is solved using Newton’s method with an iteration criterion set to a maximum allowed water table depth change of <span class="math inline">\(\SI{0.1}{m}\)</span>. This iteration criterion is applied to each model cell independently to compute and route subsurface flow for each model timestep (routing is not done at an internal timestep, see also the note below).</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">

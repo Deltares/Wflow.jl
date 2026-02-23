@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -20,10 +20,45 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
@@ -37,14 +72,14 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-df0e259328ccecb091c97ea61d343a64.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-de23326470d527ab07850dcbc28c194f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-152a7eaa3a473860f82b096fdec11055.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -71,6 +106,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
@@ -301,7 +339,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="../index.html" aria-current="page"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -313,7 +351,7 @@ window.Quarto = {
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../model_docs/index.html"> 
+    <a class="nav-link active" href="../model_docs/index.html" aria-current="page"> 
 <span class="menu-text">Model documentation</span></a>
   </li>  
   <li class="nav-item">
@@ -369,10 +407,6 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="../index.html" class="sidebar-logo-link">
-      </a>
-      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -537,8 +571,8 @@ window.Quarto = {
   </ul></li>
   <li><a href="#sediment" id="toc-sediment" class="nav-link" data-scroll-target="#sediment">Sediment</a>
   <ul class="collapse">
-  <li><a href="#transport-capacity-overland-flow" id="toc-transport-capacity-overland-flow" class="nav-link" data-scroll-target="#transport-capacity-overland-flow">Transport capacity Overland flow</a></li>
-  <li><a href="#transport-capacity-river" id="toc-transport-capacity-river" class="nav-link" data-scroll-target="#transport-capacity-river">Transport capacity River</a></li>
+  <li><a href="#transport-capacity-overland-flow" id="toc-transport-capacity-overland-flow" class="nav-link" data-scroll-target="#transport-capacity-overland-flow">Transport capacity overland flow</a></li>
+  <li><a href="#transport-capacity-river" id="toc-transport-capacity-river" class="nav-link" data-scroll-target="#transport-capacity-river">Transport capacity river</a></li>
   <li><a href="#overland-flow-transport" id="toc-overland-flow-transport" class="nav-link" data-scroll-target="#overland-flow-transport">Overland flow transport</a></li>
   <li><a href="#river-erosion" id="toc-river-erosion" class="nav-link" data-scroll-target="#river-erosion">River erosion</a></li>
   <li><a href="#river-transport" id="toc-river-transport" class="nav-link" data-scroll-target="#river-transport">River transport</a></li>
@@ -569,54 +603,56 @@ window.Quarto = {
 </header>
 
 
-<style>
-table {
-  table-layout: fixed;
-  width: 100%;
-}
-td, th {
-  word-wrap: break-word;
-}
-</style>
 <p>Standard names for flow state variables in the Tables below that contain <code>instantaneous</code> in the <code>quantity</code> part of the standard name can be valid for an internal time step (depending on the model time simulation time step) and thus considered instantaneous compared to the model simulation time step Δt <span class="math inline">\(\SIb{}{s}\)</span>. These flow state variables can also be specified as a model output variable.</p>
 <section id="reservoirs" class="level2">
 <h2 class="anchored" data-anchor-id="reservoirs">Reservoirs</h2>
 <section id="input-generic-reservoir" class="level4">
 <h4 class="anchored" data-anchor-id="input-generic-reservoir">Generic input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_generic_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 40%">
-<col style="width: 33%">
-<col style="width: 13%">
-<col style="width: 13%">
+<col style="width: 46%">
+<col style="width: 38%">
+<col style="width: 15%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>reservoir_location__count</code></td>
-<td>Outlet of the reservoirs in which each reservoir has a unique id</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_location__count</code></td>
+<td style="text-align: left;">Outlet of the reservoirs in which each reservoir has a unique id</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_area__count</code></td>
-<td>Reservoir coverage</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_area__count</code></td>
+<td style="text-align: left;">Reservoir coverage</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="input" class="level4">
 <h4 class="anchored" data-anchor-id="input">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="4" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 40%">
 <col style="width: 33%">
@@ -624,74 +660,82 @@ td, th {
 <col style="width: 13%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>reservoir_surface__area</code></td>
-<td>Area of the reservoir</td>
-<td>m²</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_surface__area</code></td>
+<td style="text-align: left;">Area of the reservoir</td>
+<td style="text-align: left;">m²</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water__max_volume</code></td>
-<td>Maximum volume (above which water is spilled)</td>
-<td>m³</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water__max_volume</code></td>
+<td style="text-align: left;">Maximum volume (above which water is spilled)</td>
+<td style="text-align: left;">m³</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>reservoir_water__rating_curve_coefficient</code></td>
-<td>Rating curve coefficient</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__rating_curve_coefficient</code></td>
+<td style="text-align: left;">Rating curve coefficient</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water__rating_curve_exponent</code></td>
-<td>Rating curve exponent</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water__rating_curve_exponent</code></td>
+<td style="text-align: left;">Rating curve exponent</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>reservoir_water_flow_threshold_level__elevation</code></td>
-<td>Water level threshold, below this level outflow is zero</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water_flow_threshold_level__elevation</code></td>
+<td style="text-align: left;">Water level threshold, below this level outflow is zero</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_lower_location__count</code></td>
-<td>Index of lower reservoir (linked reservoir)</td>
-<td>-</td>
-<td>0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_lower_location__count</code></td>
+<td style="text-align: left;">Index of lower reservoir (linked reservoir)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0</td>
 </tr>
-<tr class="odd">
-<td><code>reservoir_water__storage_curve_type_count</code></td>
-<td>Type of reservoir storage curve</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__storage_curve_type_count</code></td>
+<td style="text-align: left;">Type of reservoir storage curve</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water__rating_curve_type_count</code></td>
-<td>Type of reservoir rating curve</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water__rating_curve_type_count</code></td>
+<td style="text-align: left;">Type of reservoir rating curve</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>reservoir_water_surface__initial_elevation</code></td>
-<td>Water level of reservoir (used for initialization)</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water_surface__initial_elevation</code></td>
+<td style="text-align: left;">Water level of reservoir (used for initialization)</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="static-or-cyclicforcing-input" class="level4">
 <h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input">Static or cyclic/forcing input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="6" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>([Wflow.Routing, Wflow.LandHydrologySBM], <span class="op">:</span>reservoir_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 40%">
 <col style="width: 33%">
@@ -699,125 +743,148 @@ td, th {
 <col style="width: 13%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>reservoir_water_demand__required_downstream_volume_flow_rate</code></td>
-<td>Minimum (environmental) flow released from reservoir</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water_demand__required_downstream_volume_flow_rate</code></td>
+<td style="text-align: left;">Minimum (environmental) flow released from reservoir</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water_release_below_spillway__max_volume_flow_rate</code></td>
-<td>Maximum amount that can be released if below spillway</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water_release_below_spillway__max_volume_flow_rate</code></td>
+<td style="text-align: left;">Maximum amount that can be released if below spillway</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>reservoir_water__target_full_volume_fraction</code></td>
-<td>Target fraction full (of max storage)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__target_full_volume_fraction</code></td>
+<td style="text-align: left;">Target fraction full (of max storage)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water__target_min_volume_fraction</code></td>
-<td>Target minimum full fraction (of max storage)</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water__target_min_volume_fraction</code></td>
+<td style="text-align: left;">Target minimum full fraction (of max storage)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>reservoir_water__external_inflow_volume_flow_rate</code></td>
-<td>External inflow reservoir (negative for abstractions)</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__outgoing_observed_volume_flow_rate</code></td>
+<td style="text-align: left;">Observed outflow reservoir</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">NaN</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water__outgoing_observed_volume_flow_rate</code></td>
-<td>Observed outflow reservoir</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water__external_inflow_volume_flow_rate</code></td>
+<td style="text-align: left;">External inflow reservoir (negative for abstractions)</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states" class="level4">
 <h4 class="anchored" data-anchor-id="states">States</h4>
-<table class="table-striped table-hover caption-top table">
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>reservoir_water_surface__elevation</code></td>
-<td>Reservoir water level</td>
-<td>m</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="output" class="level4">
-<h4 class="anchored" data-anchor-id="output">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="8" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>reservoir_water__volume</code></td>
-<td>Reservoir volume</td>
-<td>m³</td>
-</tr>
-<tr class="even">
-<td><code>reservoir_water_surface__elevation</code></td>
-<td>Reservoir water level</td>
-<td>m</td>
-</tr>
-<tr class="odd">
-<td><code>reservoir_water__outgoing_volume_flow_rate</code></td>
-<td>Outflow of the reservoir</td>
-<td>m³ s⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>reservoir_water__incoming_volume_flow_rate</code></td>
-<td>Inflow into the reservoir</td>
-<td>m³ s⁻¹</td>
-</tr>
-<tr class="odd">
-<td><code>reservoir_water__evaporation_volume_flux</code></td>
-<td>Average actual evaporation over the reservoir area</td>
-<td>mm Δt⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>reservoir_water__precipitation_volume_flux</code></td>
-<td>Average precipitation over the reservoir area</td>
-<td>mm Δt⁻¹</td>
-</tr>
-<tr class="odd">
-<td><code>reservoir_water__potential_evaporation_volume_flux</code></td>
-<td>Average potential evaporation over the reservoir area</td>
-<td>mm Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water_surface__elevation</code></td>
+<td style="text-align: left;">Reservoir water level</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+</section>
+<section id="output" class="level4">
+<h4 class="anchored" data-anchor-id="output">Output</h4>
+<div id="10" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__volume</code></td>
+<td style="text-align: left;">Reservoir water volume</td>
+<td style="text-align: left;">m³</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water_surface__elevation</code></td>
+<td style="text-align: left;">Reservoir water level</td>
+<td style="text-align: left;">m</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__outgoing_volume_flow_rate</code></td>
+<td style="text-align: left;">Outflow of the reservoir</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water__incoming_volume_flow_rate</code></td>
+<td style="text-align: left;">Inflow into the reservoir</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__evaporation_volume_flux</code></td>
+<td style="text-align: left;">Average actual evaporation over the reservoir area</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water__precipitation_volume_flux</code></td>
+<td style="text-align: left;">Average precipitation over the reservoir area</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water__potential_evaporation_volume_flux</code></td>
+<td style="text-align: left;">Average potential evaporation over the reservoir area</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
 </section>
 <section id="kinematic-wave" class="level2">
@@ -826,7 +893,13 @@ td, th {
 <h3 class="anchored" data-anchor-id="river-flow">River flow</h3>
 <section id="input-1" class="level4">
 <h4 class="anchored" data-anchor-id="input-1">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="12" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -834,50 +907,58 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river__length</code></td>
-<td>River length</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river__length</code></td>
+<td style="text-align: left;">River length</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>river__width</code></td>
-<td>River width</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river__width</code></td>
+<td style="text-align: left;">River width</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_flow__manning_n_parameter</code></td>
-<td>Manning’s roughness</td>
-<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
-<td>0.036</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_flow__manning_n_parameter</code></td>
+<td style="text-align: left;">Manning's roughness</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">0.036</td>
 </tr>
-<tr class="even">
-<td><code>river_bank_water__depth</code></td>
-<td>Bankfull river depth</td>
-<td>m</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bank_water__depth</code></td>
+<td style="text-align: left;">Bankfull river depth</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>river__slope</code></td>
-<td>River slope</td>
-<td>m m⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river__slope</code></td>
+<td style="text-align: left;">River slope</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="static-or-cyclicforcing-input-1" class="level4">
 <h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-1">Static or cyclic/forcing input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="14" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -885,107 +966,137 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__external_inflow_volume_flow_rate</code></td>
-<td>External inflow into the river (negative for abstractions)</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_water_surface__elevation</code></td>
+<td style="text-align: left;">Reservoir water level</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__external_inflow_volume_flow_rate</code></td>
+<td style="text-align: left;">External inflow into the river (negative for abstractions)</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-1" class="level4">
 <h4 class="anchored" data-anchor-id="states-1">States</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="16" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__instantaneous_volume_flow_rate</code></td>
-<td>River discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">River discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__depth</code></td>
-<td>River water depth</td>
-<td>m</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__depth</code></td>
+<td style="text-align: left;">River water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-1" class="level4">
 <h4 class="anchored" data-anchor-id="output-1">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="18" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__volume_flow_rate</code></td>
-<td>River discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">River discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__instantaneous_volume_flow_rate</code></td>
-<td>River discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__depth</code></td>
+<td style="text-align: left;">River water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="odd">
-<td><code>river_water__volume</code></td>
-<td>River water volume</td>
-<td>m³</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
+<td style="text-align: left;">River (+ floodplain) discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__depth</code></td>
-<td>River water depth</td>
-<td>m</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__volume</code></td>
+<td style="text-align: left;">River water volume</td>
+<td style="text-align: left;">m³</td>
 </tr>
-<tr class="odd">
-<td><code>river_water__lateral_inflow_volume_flow_rate</code></td>
-<td>Lateral inflow into the river</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__lateral_inflow_volume_flow_rate</code></td>
+<td style="text-align: left;">Lateral inflow to river</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__external_abstraction_volume_flow_rate</code></td>
-<td>Actual abstraction based on external negative inflow</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__external_abstraction_volume_flow_rate</code></td>
+<td style="text-align: left;">Actual abstraction based on external negative inflow</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="overland-flow" class="level3">
 <h3 class="anchored" data-anchor-id="overland-flow">Overland flow</h3>
 <section id="input-2" class="level4">
 <h4 class="anchored" data-anchor-id="input-2">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="20" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -993,195 +1104,238 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water_flow__manning_n_parameter</code></td>
-<td>Manning’s roughness</td>
-<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
-<td>0.072</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water_flow__manning_n_parameter</code></td>
+<td style="text-align: left;">Manning's roughness</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">0.072</td>
 </tr>
-<tr class="even">
-<td><code>land_surface__slope</code></td>
-<td>Land surface slope</td>
-<td>m m⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface__slope</code></td>
+<td style="text-align: left;">Land surface slope</td>
+<td style="text-align: left;">m m⁻¹</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-2" class="level4">
 <h4 class="anchored" data-anchor-id="states-2">States</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="22" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water__instantaneous_volume_flow_rate</code></td>
-<td>Discharge overland flow</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Discharge overland flow</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__depth</code></td>
-<td>Water depth overland flow</td>
-<td>m</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__depth</code></td>
+<td style="text-align: left;">Water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-2" class="level4">
 <h4 class="anchored" data-anchor-id="output-2">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="24" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water__volume_flow_rate</code></td>
-<td>Discharge overland flow</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Discharge overland flow</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__instantaneous_volume_flow_rate</code></td>
-<td>Discharge overland flow</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__depth</code></td>
+<td style="text-align: left;">Water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water__to_river_volume_flow_rate</code></td>
-<td>Discharge overland flow that flows to the river</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__volume_flow_rate</code></td>
+<td style="text-align: left;">Discharge overland flow</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__volume</code></td>
-<td>Water volume overland flow</td>
-<td>m³</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__to_river_volume_flow_rate</code></td>
+<td style="text-align: left;">Discharge overland flow that flows to the river</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water__depth</code></td>
-<td>Water depth overland flow</td>
-<td>m</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__volume</code></td>
+<td style="text-align: left;">Total surface water storage of cell (including river storage for river cells)</td>
+<td style="text-align: left;">m³</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="lateral-subsurface-flow" class="level3">
 <h3 class="anchored" data-anchor-id="lateral-subsurface-flow">Lateral subsurface flow</h3>
 <section id="input-3" class="level4">
 <h4 class="anchored" data-anchor-id="input-3">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="26" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio</code></td>
-<td>A muliplication factor applied to vertical hydraulic conductivity</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio</code></td>
+<td style="text-align: left;">A muliplication factor applied to vertical hydraulic conductivity</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>land_surface__slope</code></td>
-<td>Land surface slope</td>
-<td>m m⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface__slope</code></td>
+<td style="text-align: left;">Land surface slope</td>
+<td style="text-align: left;">m m⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-3" class="level4">
 <h4 class="anchored" data-anchor-id="states-3">States</h4>
-<table class="table-striped table-hover caption-top table">
-<thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>subsurface_water__volume_flow_rate</code></td>
-<td>Subsurface flow</td>
-<td>m³ day⁻¹</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="output-3" class="level4">
-<h4 class="anchored" data-anchor-id="output-3">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="28" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>subsurface_water__volume_flow_rate</code></td>
-<td>Subsurface flow</td>
-<td>m³ day⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>subsurface_water_saturated_zone_top__depth</code></td>
-<td>Pseudo-water table depth (top of the saturated zone)</td>
-<td>m</td>
-</tr>
-<tr class="odd">
-<td><code>subsurface_water__exfiltration_volume_flux</code></td>
-<td>Exfiltration (groundwater above surface level, saturated excess conditions)</td>
-<td>mm Δt⁻¹</td>
-</tr>
-<tr class="even">
-<td><code>subsurface_water__to_river_volume_flow_rate</code></td>
-<td>Part of subsurface flow that flows to the river</td>
-<td>m³ day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water__volume_flow_rate</code></td>
+<td style="text-align: left;">Subsurface flow</td>
+<td style="text-align: left;">m³ day⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+</section>
+<section id="output-3" class="level4">
+<h4 class="anchored" data-anchor-id="output-3">Output</h4>
+<div id="30" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water__volume_flow_rate</code></td>
+<td style="text-align: left;">Subsurface flow</td>
+<td style="text-align: left;">m³ day⁻¹</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_water_saturated_zone_top__depth</code></td>
+<td style="text-align: left;">Pseudo-water table depth (top of the saturated zone)</td>
+<td style="text-align: left;">m</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water__exfiltration_volume_flux</code></td>
+<td style="text-align: left;">Exfiltration (groundwater above surface level, saturated excess conditions)</td>
+<td style="text-align: left;">m Δt⁻¹</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_water__to_river_volume_flow_rate</code></td>
+<td style="text-align: left;">Part of subsurface flow that flows to the river</td>
+<td style="text-align: left;">m³ day⁻¹</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
 </section>
 </section>
@@ -1191,7 +1345,13 @@ td, th {
 <h3 class="anchored" data-anchor-id="river-flow-1">River flow</h3>
 <section id="input-4" class="level4">
 <h4 class="anchored" data-anchor-id="input-4">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="32" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1199,144 +1359,168 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river__length</code></td>
-<td>River length</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river__length</code></td>
+<td style="text-align: left;">River length</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>model_boundary_condition_river__length</code></td>
-<td>Boundary condition river length downstream river outlets</td>
-<td>m</td>
-<td>10 000</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river__width</code></td>
+<td style="text-align: left;">River width</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="odd">
-<td><code>river__width</code></td>
-<td>River width</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_flow__manning_n_parameter</code></td>
+<td style="text-align: left;">Manning's roughness</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">0.036</td>
 </tr>
-<tr class="even">
-<td><code>model_boundary_condition_river_bank_water__depth</code></td>
-<td>Boundary condition bankfull depth downstream river outlets</td>
-<td>m</td>
-<td>0.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bank_water__depth</code></td>
+<td style="text-align: left;">Bankfull river depth</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>river_bank_water__elevation</code></td>
-<td>Bankfull elevation of the river</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__external_inflow_volume_flow_rate</code></td>
+<td style="text-align: left;">External inflow into the river (negative for abstractions)</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">0.0</td>
 </tr>
-<tr class="even">
-<td><code>river_bank_water__depth</code></td>
-<td>Bankfull depth of the river</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>model_boundary_condition_river__length</code></td>
+<td style="text-align: left;">Boundary condition river length downstream river outlets</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">10000.0</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_flow__manning_n_parameter</code></td>
-<td>Manning’s roughness</td>
-<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
-<td>0.0036</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>model_boundary_condition_river_bank_water__depth</code></td>
+<td style="text-align: left;">Boundary condition bankfull depth downstream river outlets</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">0</td>
 </tr>
-<tr class="even">
-<td><code>river_water__external_inflow_volume_flow_rate</code></td>
-<td>External inflow into the river (negative for abstractions)</td>
-<td>m³ s⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bank_water__elevation</code></td>
+<td style="text-align: left;">Bankfull elevation of the river</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-4" class="level4">
 <h4 class="anchored" data-anchor-id="states-4">States</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="34" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__instantaneous_volume_flow_rate</code></td>
-<td>River discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">River discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__depth</code></td>
-<td>River water depth</td>
-<td>m</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__depth</code></td>
+<td style="text-align: left;">River water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-4" class="level4">
 <h4 class="anchored" data-anchor-id="output-4">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="36" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__volume_flow_rate</code></td>
-<td>River (+ floodplain) discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">River discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__instantaneous_volume_flow_rate</code></td>
-<td>River discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__depth</code></td>
+<td style="text-align: left;">River water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="odd">
-<td><code>river_water__depth</code></td>
-<td>River water depth</td>
-<td>m</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
+<td style="text-align: left;">River (+ floodplain) discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__volume</code></td>
-<td>River water volume</td>
-<td>m³</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__volume</code></td>
+<td style="text-align: left;">River water volume</td>
+<td style="text-align: left;">m³</td>
 </tr>
-<tr class="odd">
-<td><code>river_water__external_abstraction_volume_flow_rate</code></td>
-<td>Actual abstraction based on external negative inflow</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__external_abstraction_volume_flow_rate</code></td>
+<td style="text-align: left;">Actual abstraction based on external negative inflow</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="d-floodplain-flow" class="level3">
 <h3 class="anchored" data-anchor-id="d-floodplain-flow">1D floodplain flow</h3>
 <section id="input-5" class="level4">
 <h4 class="anchored" data-anchor-id="input-5">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="38" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1344,103 +1528,127 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>floodplain_water__sum_of_volume_per_depth</code></td>
-<td>Floodplain profile (cumulative volume per flood depth)</td>
-<td>m³</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>floodplain_water__sum_of_volume_per_depth</code></td>
+<td style="text-align: left;">Floodplain profile (cumulative volume per flood depth)</td>
+<td style="text-align: left;">m³</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>floodplain_water_flow__manning_n_parameter</code></td>
-<td>Manning’s roughness</td>
-<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
-<td>0.072</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>floodplain_water_flow__manning_n_parameter</code></td>
+<td style="text-align: left;">Manning's roughness</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">0.072</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-5" class="level4">
 <h4 class="anchored" data-anchor-id="states-5">States</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="40" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>floodplain_water__instantaneous_volume_flow_rate</code></td>
-<td>Floodplain discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>floodplain_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Floodplain discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>floodplain_water__depth</code></td>
-<td>Floodplain water depth</td>
-<td>m</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>floodplain_water__depth</code></td>
+<td style="text-align: left;">Floodplain water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-5" class="level4">
 <h4 class="anchored" data-anchor-id="output-5">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="42" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>floodplain_water__volume</code></td>
-<td>Floodplain volume</td>
-<td>m³</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>floodplain_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Floodplain discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>floodplain_water__depth</code></td>
-<td>Floodplain water depth</td>
-<td>m</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>floodplain_water__depth</code></td>
+<td style="text-align: left;">Floodplain water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="odd">
-<td><code>floodplain_water__volume_flow_rate</code></td>
-<td>Floodplain discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>floodplain_water__volume</code></td>
+<td style="text-align: left;">Floodplain water volume</td>
+<td style="text-align: left;">m³</td>
 </tr>
-<tr class="even">
-<td><code>floodplain_water__instantaneous_volume_flow_rate</code></td>
-<td>Floodplain discharge</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>floodplain_water__volume_flow_rate</code></td>
+<td style="text-align: left;">Floodplain discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="overland-flow-1" class="level3">
 <h3 class="anchored" data-anchor-id="overland-flow-1">Overland flow</h3>
 <section id="input-6" class="level4">
 <h4 class="anchored" data-anchor-id="input-6">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="44" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1448,101 +1656,119 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water_flow__manning_n_parameter</code></td>
-<td>Manning’s roughness</td>
-<td>s m<span class="math inline">\(^{-\frac{1}{3}}\)</span></td>
-<td>0.072</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water_flow__manning_n_parameter</code></td>
+<td style="text-align: left;">Manning's roughness</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">0.072</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water_flow__ground_elevation</code></td>
-<td>Elevation of each cell</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water_flow__ground_elevation</code></td>
+<td style="text-align: left;">Elevation of each cell</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-6" class="level4">
 <h4 class="anchored" data-anchor-id="states-6">States</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="46" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 37%">
 <col style="width: 50%">
 <col style="width: 12%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water__x_component_of_instantaneous_volume_flow_rate</code></td>
-<td>Flow in x direction</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__depth</code></td>
+<td style="text-align: left;">Water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__y_component_of_instantaneous_volume_flow_rate</code></td>
-<td>Flow in y direction</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__x_component_of_instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Flow in x direction</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water__depth</code></td>
-<td>Water depth</td>
-<td>m</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__y_component_of_instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Flow in y direction</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-6" class="level4">
 <h4 class="anchored" data-anchor-id="output-6">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="48" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water__x_component_of_instantaneous_volume_flow_rate</code></td>
-<td>Flow in x direction</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__depth</code></td>
+<td style="text-align: left;">Water depth</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__y_component_of_instantaneous_volume_flow_rate</code></td>
-<td>Flow in y direction</td>
-<td>m³ s⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__volume</code></td>
+<td style="text-align: left;">Total surface water storage of cell (including river storage for river cells)</td>
+<td style="text-align: left;">m³</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water__depth</code></td>
-<td>Water depth</td>
-<td>m</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water__x_component_of_instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Flow in x direction</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water__volume</code></td>
-<td>Total surface water storage of cell (including river storage for river cells)</td>
-<td>m³</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water__y_component_of_instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Flow in y direction</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 </section>
@@ -1552,279 +1778,354 @@ td, th {
 <h3 class="anchored" data-anchor-id="unconfined-aquifer">Unconfined aquifer</h3>
 <section id="input-gwf-unconfined" class="level4">
 <h4 class="anchored" data-anchor-id="input-gwf-unconfined">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="50" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface__elevation</code></td>
-<td>Land surface elevation conductivity</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface__elevation</code></td>
+<td style="text-align: left;">Land surface elevation</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="even">
-<td><code>subsurface_surface_water__horizontal_saturated_hydraulic_conductivity</code></td>
-<td>Horizontal conductivity</td>
-<td>m day⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_surface_water__horizontal_saturated_hydraulic_conductivity</code></td>
+<td style="text-align: left;">Horizontal conductivity</td>
+<td style="text-align: left;">m day⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>subsurface_water__specific_yield</code></td>
-<td>Specific yield</td>
-<td>m m⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water__specific_yield</code></td>
+<td style="text-align: left;">Specific yield</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter</code></td>
-<td>Factor controlling the reduction of horizontal conductivity with depth</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter</code></td>
+<td style="text-align: left;">Factor controlling the reduction of horizontal conductivity with depth</td>
+<td style="text-align: left;">m⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="state-gwf-unconfined" class="level4">
 <h4 class="anchored" data-anchor-id="state-gwf-unconfined">States</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="52" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>subsurface_water__hydraulic_head</code></td>
-<td>Groundwater head</td>
-<td>m</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water__hydraulic_head</code></td>
+<td style="text-align: left;">Groundwater head</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-7" class="level4">
 <h4 class="anchored" data-anchor-id="output-7">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="54" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>subsurface_water__hydraulic_head</code></td>
-<td>Groundwater head</td>
-<td>m</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water__hydraulic_head</code></td>
+<td style="text-align: left;">Groundwater head</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="river-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="river-boundary">River boundary</h3>
 <section id="input-gwf-river" class="level4">
 <h4 class="anchored" data-anchor-id="input-gwf-river">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="56" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_river_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__infiltration_conductance</code></td>
-<td>River bed infiltration conductance</td>
-<td>m² day⁻¹</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__infiltration_conductance</code></td>
+<td style="text-align: left;">River bed infiltration conductance</td>
+<td style="text-align: left;">m² day⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water__exfiltration_conductance</code></td>
-<td>River bed exfiltration conductance</td>
-<td>m² day⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water__exfiltration_conductance</code></td>
+<td style="text-align: left;">River bed exfiltration conductance</td>
+<td style="text-align: left;">m² day⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>river_bottom__elevation</code></td>
-<td>River bottom elevation</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bottom__elevation</code></td>
+<td style="text-align: left;">River bottom elevation</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-gwf-river" class="level4">
 <h4 class="anchored" data-anchor-id="output-gwf-river">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="58" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_river_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_water__to_subsurface_volume_flow_rate</code></td>
-<td>Exchange flux (river to aquifer)</td>
-<td>m³ day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__to_subsurface_volume_flow_rate</code></td>
+<td style="text-align: left;">Exchange flux (river to aquifer)</td>
+<td style="text-align: left;">m³ day⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="drainage-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="drainage-boundary">Drainage boundary</h3>
 <section id="input-gwf-drainage" class="level4">
 <h4 class="anchored" data-anchor-id="input-gwf-drainage">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="60" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_drainage_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_drain__elevation</code></td>
-<td>Drain elevation</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_drain__elevation</code></td>
+<td style="text-align: left;">Drain elevation</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="even">
-<td><code>land_drain__conductance</code></td>
-<td>Drain conductance</td>
-<td>m² day⁻¹</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_drain__conductance</code></td>
+<td style="text-align: left;">Drain conductance</td>
+<td style="text-align: left;">m² day⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land_drain_location__mask</code></td>
-<td>Drain location</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_drain_location__mask</code></td>
+<td style="text-align: left;">Drain location</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-gwf-drainage" class="level4">
 <h4 class="anchored" data-anchor-id="output-gwf-drainage">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="62" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_drainage_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_drain_water__to_subsurface_volume_flow_rate</code></td>
-<td>Exchange flux (drain to aquifer)</td>
-<td>m³ day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_drain_water__to_subsurface_volume_flow_rate</code></td>
+<td style="text-align: left;">Exchange flux (drain to aquifer)</td>
+<td style="text-align: left;">m³ day⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="recharge-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="recharge-boundary">Recharge boundary</h3>
 <section id="output-gwf-recharge" class="level4">
 <h4 class="anchored" data-anchor-id="output-gwf-recharge">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="64" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_recharge_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate</code></td>
-<td>Net recharge flux</td>
-<td>m³ day⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate</code></td>
+<td style="text-align: left;">Net recharge flux</td>
+<td style="text-align: left;">m³ day⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="constant-head-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="constant-head-boundary">Constant head boundary</h3>
 <section id="input-7" class="level4">
 <h4 class="anchored" data-anchor-id="input-7">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="66" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_constant_head_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 50%">
+<col style="width: 33%">
+<col style="width: 16%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>model_constant_boundary_condition__hydraulic_head</code></td>
-<td>Head of the boundary</td>
-<td>m</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>model_constant_boundary_condition__hydraulic_head</code></td>
+<td style="text-align: left;">Head of the boundary</td>
+<td style="text-align: left;">m</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 </section>
 <section id="sediment" class="level2">
 <h2 class="anchored" data-anchor-id="sediment">Sediment</h2>
 <section id="transport-capacity-overland-flow" class="level3">
-<h3 class="anchored" data-anchor-id="transport-capacity-overland-flow">Transport capacity Overland flow</h3>
+<h3 class="anchored" data-anchor-id="transport-capacity-overland-flow">Transport capacity overland flow</h3>
 <section id="input-8" class="level4">
 <h4 class="anchored" data-anchor-id="input-8">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="68" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_cap_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1832,77 +2133,85 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>sediment__particle_density</code></td>
-<td>Particle density</td>
-<td>kg m⁻³</td>
-<td>2650.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>sediment__particle_density</code></td>
+<td style="text-align: left;">Particle density</td>
+<td style="text-align: left;">kg m⁻³</td>
+<td style="text-align: left;">2650.0</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_sediment__median_diameter</code></td>
-<td>Particle median diameter</td>
-<td>mm</td>
-<td>0.1</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_sediment__median_diameter</code></td>
+<td style="text-align: left;">Particle median diameter</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">0.1</td>
 </tr>
-<tr class="odd">
-<td><code>clay__mean_diameter</code></td>
-<td>Clay mean diameter</td>
-<td>μm</td>
-<td>2.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>clay__mean_diameter</code></td>
+<td style="text-align: left;">Clay mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">2.0</td>
 </tr>
-<tr class="even">
-<td><code>silt__mean_diameter</code></td>
-<td>Silt mean diameter</td>
-<td>μm</td>
-<td>10.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>silt__mean_diameter</code></td>
+<td style="text-align: left;">Silt mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">10.0</td>
 </tr>
-<tr class="odd">
-<td><code>sand__mean_diameter</code></td>
-<td>Sand mean diameter</td>
-<td>μm</td>
-<td>200.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>sand__mean_diameter</code></td>
+<td style="text-align: left;">Sand mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">200.0</td>
 </tr>
-<tr class="even">
-<td><code>sediment_small_aggregates__mean_diameter</code></td>
-<td>Small aggregates mean diameter</td>
-<td>μm</td>
-<td>30.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>sediment_small_aggregates__mean_diameter</code></td>
+<td style="text-align: left;">Small aggregates mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">30.0</td>
 </tr>
-<tr class="odd">
-<td><code>sediment_large_aggregates__mean_diameter</code></td>
-<td>Large aggregates mean diameter</td>
-<td>μm</td>
-<td>500.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>sediment_large_aggregates__mean_diameter</code></td>
+<td style="text-align: left;">Large aggregates mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">500.0</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water_sediment__govers_transport_capacity_coefficient</code></td>
-<td>Govers transport capacity coefficient</td>
-<td>-</td>
-<td>0.000505</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water_sediment__govers_transport_capacity_coefficient</code></td>
+<td style="text-align: left;">Govers transport capacity coefficient</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">5.0e-7</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water_sediment__govers_transport_capacity_exponent</code></td>
-<td>Govers transport capacity exponent</td>
-<td>-</td>
-<td>4.27</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water_sediment__govers_transport_capacity_exponent</code></td>
+<td style="text-align: left;">Govers transport capacity exponent</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.5</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="transport-capacity-river" class="level3">
-<h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity River</h3>
+<h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity river</h3>
 <section id="input-9" class="level4">
 <h4 class="anchored" data-anchor-id="input-9">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="70" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_cap_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -1910,132 +2219,143 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_sediment__median_diameter</code></td>
-<td>Particle median diameter</td>
-<td>mm</td>
-<td>0.1</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_sediment__median_diameter</code></td>
+<td style="text-align: left;">Particle mean diameter</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="even">
-<td><code>river_water_sediment__bagnold_transport_capacity_coefficient</code></td>
-<td>Bagnold transport capacity coefficient</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_sediment__bagnold_transport_capacity_coefficient</code></td>
+<td style="text-align: left;">Bagnold transport capacity coefficient</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.0017</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sediment__bagnold_transport_capacity_exponent</code></td>
-<td>Bagnold transport capacity exponent</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sediment__bagnold_transport_capacity_exponent</code></td>
+<td style="text-align: left;">Bagnold transport capacity exponent</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.8</td>
 </tr>
-<tr class="even">
-<td><code>river_water_sediment__kodatie_transport_capacity_a_coefficient</code></td>
-<td>Kodatie transport capacity coefficient a</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_a_coefficient</code></td>
+<td style="text-align: left;">Kodatie transport capacity coefficient a</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">5.0</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sediment__kodatie_transport_capacity_b_coefficient</code></td>
-<td>Kodatie transport capacity coefficient b</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_b_coefficient</code></td>
+<td style="text-align: left;">Kodatie transport capacity coefficient b</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.6</td>
 </tr>
-<tr class="even">
-<td><code>river_water_sediment__kodatie_transport_capacity_c_coefficient</code></td>
-<td>Kodatie transport capacity coefficient c</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_c_coefficient</code></td>
+<td style="text-align: left;">Kodatie transport capacity coefficient c</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.05</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sediment__kodatie_transport_capacity_d_coefficient</code></td>
-<td>Kodatie transport capacity coefficient d</td>
-<td>-</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_d_coefficient</code></td>
+<td style="text-align: left;">Kodatie transport capacity coefficient d</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">2.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="overland-flow-transport" class="level3">
 <h3 class="anchored" data-anchor-id="overland-flow-transport">Overland flow transport</h3>
 <section id="output-8" class="level4">
 <h4 class="anchored" data-anchor-id="output-8">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="72" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>land_surface_water_sediment_transport_capacity__mass_flow_rate</code></td>
-<td>Total sediment transport capacity</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water_sediment_transport_capacity__mass_flow_rate</code></td>
+<td style="text-align: left;">Total sediment transport capacity</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water_clay_transport_capacity__mass_flow_rate</code></td>
-<td>Clay transport capacity</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water_sediment__to_river_mass_flow_rate</code></td>
+<td style="text-align: left;">Total sediment flux flowing into the river</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water_sediment__to_river_mass_flow_rate</code></td>
-<td>Total sediment flux flowing into the river</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water_clay__to_river_mass_flow_rate</code></td>
+<td style="text-align: left;">Clay flux flowing into the river</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water_clay__to_river_mass_flow_rate</code></td>
-<td>Clay flux flowing into the river</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water_silt__to_river_mass_flow_rate</code></td>
+<td style="text-align: left;">Silt flux flowing into the river</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water_silt__to_river_mass_flow_rate</code></td>
-<td>Silt flux flowing into the river</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water_sand__to_river_mass_flow_rate</code></td>
+<td style="text-align: left;">Sand flux flowing into the river</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water_sand__to_river_mass_flow_rate</code></td>
-<td>Sand flux flowing into the river</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water_small_aggregates__to_river_mass_flow_rate</code></td>
+<td style="text-align: left;">Small aggregates flux flowing into the river</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>land_surface_water_small_aggregates__to_river_mass_flow_rate</code></td>
-<td>Small aggregates flux flowing into the river</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>land_surface_water_large_aggregates__to_river_mass_flow_rate</code></td>
+<td style="text-align: left;">Large aggregates flux flowing into the river</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>land_surface_water_large_aggregates__to_river_mass_flow_rate</code></td>
-<td>Large aggregates flux flowing into the river</td>
-<td>ton Δt⁻¹</td>
-</tr>
-<tr class="odd">
-<td><code>land_surface_water_sediment__mass_flow_rate</code></td>
-<td>Total sediment flux</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>land_surface_water_sediment__mass_flow_rate</code></td>
+<td style="text-align: left;">Total sediment flux</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="river-erosion" class="level3">
 <h3 class="anchored" data-anchor-id="river-erosion">River erosion</h3>
 <section id="input-10" class="level4">
 <h4 class="anchored" data-anchor-id="input-10">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="74" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -2043,29 +2363,37 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_bottom_and_bank_sediment__median_diameter</code></td>
-<td>Median diameter in the river bed/bank</td>
-<td>mm</td>
-<td>0.1</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bottom_and_bank_sediment__median_diameter</code></td>
+<td style="text-align: left;">Median diameter in the river bed/bank</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">0.1</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 </section>
 <section id="river-transport" class="level3">
 <h3 class="anchored" data-anchor-id="river-transport">River transport</h3>
 <section id="input-11" class="level4">
 <h4 class="anchored" data-anchor-id="input-11">Input</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="76" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 28%">
@@ -2073,331 +2401,355 @@ td, th {
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
-<th>Default</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>reservoir_surface__area</code></td>
-<td>Reservoir surface area</td>
-<td>m²</td>
-<td>-</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_location__count</code></td>
+<td style="text-align: left;">Reservoir location ids</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>reservoir_water_sediment__bedload_trapping_efficiency</code></td>
-<td>Reservoir sediment bedload trapping efficiency</td>
-<td>-</td>
-<td>1.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>clay__mean_diameter</code></td>
+<td style="text-align: left;">Clay mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">2.0</td>
 </tr>
-<tr class="odd">
-<td><code>river_bottom_and_bank_clay__mass_fraction</code></td>
-<td>River bed/bank content clay</td>
-<td>-</td>
-<td>0.15</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>silt__mean_diameter</code></td>
+<td style="text-align: left;">Silt mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">10.0</td>
 </tr>
-<tr class="even">
-<td><code>river_bottom_and_bank_silt__mass_fraction</code></td>
-<td>River bed/bank content silt</td>
-<td>-</td>
-<td>0.65</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>sand__mean_diameter</code></td>
+<td style="text-align: left;">Sand mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">200.0</td>
 </tr>
-<tr class="odd">
-<td><code>river_bottom_and_bank_sand__mass_fraction</code></td>
-<td>River bed/bank content sand</td>
-<td>-</td>
-<td>0.15</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>sediment_small_aggregates__mean_diameter</code></td>
+<td style="text-align: left;">Small aggregates mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">30.0</td>
 </tr>
-<tr class="even">
-<td><code>river_bottom_and_bank_gravel__mass_fraction</code></td>
-<td>River bed/bank content gravel</td>
-<td>-</td>
-<td>0.05</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>sediment_large_aggregates__mean_diameter</code></td>
+<td style="text-align: left;">Large aggregates mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">500.0</td>
 </tr>
-<tr class="odd">
-<td><code>clay__mean_diameter</code></td>
-<td>Clay mean diameter</td>
-<td>µm</td>
-<td>2.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>reservoir_surface__area</code></td>
+<td style="text-align: left;">Reservoir surface area</td>
+<td style="text-align: left;">m²</td>
+<td style="text-align: left;">-</td>
 </tr>
-<tr class="even">
-<td><code>silt__mean_diameter</code></td>
-<td>Silt mean diameter</td>
-<td>µm</td>
-<td>10.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>reservoir_water_sediment__bedload_trapping_efficiency</code></td>
+<td style="text-align: left;">Reservoir sediment bedload trapping efficiency</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
-<td><code>sand__mean_diameter</code></td>
-<td>Sand mean diameter</td>
-<td>µm</td>
-<td>200.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bottom_and_bank_clay__mass_fraction</code></td>
+<td style="text-align: left;">River bed/bank content clay</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.15</td>
 </tr>
-<tr class="even">
-<td><code>sediment_small_aggregates__mean_diameter</code></td>
-<td>Small aggregates mean diameter</td>
-<td>µm</td>
-<td>30.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bottom_and_bank_silt__mass_fraction</code></td>
+<td style="text-align: left;">River bed/bank content silt</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.65</td>
 </tr>
-<tr class="odd">
-<td><code>sediment_large_aggregates__mean_diameter</code></td>
-<td>Large aggregates mean diameter</td>
-<td>µm</td>
-<td>500.0</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bottom_and_bank_sand__mass_fraction</code></td>
+<td style="text-align: left;">River bed/bank content sand</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.15</td>
 </tr>
-<tr class="even">
-<td><code>gravel__mean_diameter</code></td>
-<td>Gravel mean diameter</td>
-<td>µm</td>
-<td>2000.0</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bottom_and_bank_gravel__mass_fraction</code></td>
+<td style="text-align: left;">River bed/bank content gravel</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">0.05</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>gravel__mean_diameter</code></td>
+<td style="text-align: left;">Gravel mean diameter</td>
+<td style="text-align: left;">μm</td>
+<td style="text-align: left;">2000.0</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="states-7" class="level4">
 <h4 class="anchored" data-anchor-id="states-7">States</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="78" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_bed_clay__mass</code></td>
-<td>Clay stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bed_clay__mass</code></td>
+<td style="text-align: left;">Clay stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_bed_silt__mass</code></td>
-<td>Silt stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bed_silt__mass</code></td>
+<td style="text-align: left;">Silt stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_bed_sand__mass</code></td>
-<td>Sand stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bed_sand__mass</code></td>
+<td style="text-align: left;">Sand stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_bed_small_aggregates__mass</code></td>
-<td>Small aggregates stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bed_small_aggregates__mass</code></td>
+<td style="text-align: left;">Small aggregates stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_bed_large_aggregates__mass</code></td>
-<td>Large aggregates stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bed_large_aggregates__mass</code></td>
+<td style="text-align: left;">Large aggregates stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_bed_gravel__mass</code></td>
-<td>Gravel stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bed_gravel__mass</code></td>
+<td style="text-align: left;">Gravel stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_clay__mass</code></td>
-<td>Clay left in cell</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_clay__mass</code></td>
+<td style="text-align: left;">Clay left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_water_silt__mass</code></td>
-<td>Silt left in cell</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_silt__mass</code></td>
+<td style="text-align: left;">Silt left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sand__mass</code></td>
-<td>Sand left in cell</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sand__mass</code></td>
+<td style="text-align: left;">Sand left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_water_small_aggregates__mass</code></td>
-<td>Small aggregates left in cell</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_small_aggregates__mass</code></td>
+<td style="text-align: left;">Small aggregates left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_large_aggregates__mass</code></td>
-<td>Large aggregates left in cell</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_large_aggregates__mass</code></td>
+<td style="text-align: left;">Large aggregates left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_water_gravel__mass</code></td>
-<td>Gravel left in cell</td>
-<td>ton?</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_gravel__mass</code></td>
+<td style="text-align: left;">Gravel left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_clay__mass_flow_rate</code></td>
-<td>Sediment flux (clay)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_clay__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (clay)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water_silt__mass_flow_rate</code></td>
-<td>Sediment flux (silt)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_silt__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (silt)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sand__mass_flow_rate</code></td>
-<td>Sediment flux (sand)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sand__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (sand)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water_small_aggregates__mass_flow_rate</code></td>
-<td>Sediment flux (small aggregates)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_small_aggregates__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (small aggregates)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_large_aggregates__mass_flow_rate</code></td>
-<td>Sediment flux (large aggregates)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_large_aggregates__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (large aggregates)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water_gravel__mass_flow_rate</code></td>
-<td>Sediment flux (gravel)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_gravel__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (gravel)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 </section>
 <section id="output-9" class="level4">
 <h4 class="anchored" data-anchor-id="output-9">Output</h4>
-<table class="table-striped table-hover caption-top table">
+<div id="80" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
 <col style="width: 42%">
 <col style="width: 42%">
 <col style="width: 14%">
 </colgroup>
 <thead>
-<tr class="header">
-<th>Standard Name</th>
-<th>Description</th>
-<th>Unit</th>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td><code>river_bed_clay__mass</code></td>
-<td>Clay stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bed_clay__mass</code></td>
+<td style="text-align: left;">Clay stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_bed_silt__mass</code></td>
-<td>Silt stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bed_silt__mass</code></td>
+<td style="text-align: left;">Silt stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_bed_sand__mass</code></td>
-<td>Sand stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bed_sand__mass</code></td>
+<td style="text-align: left;">Sand stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_bed_small_aggregates__mass</code></td>
-<td>Small aggregates stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bed_small_aggregates__mass</code></td>
+<td style="text-align: left;">Small aggregates stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_bed_large_aggregates__mass</code></td>
-<td>Large aggregates stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_bed_large_aggregates__mass</code></td>
+<td style="text-align: left;">Large aggregates stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_bed_gravel__mass</code></td>
-<td>Gravel stored on the river bed after deposition</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_bed_gravel__mass</code></td>
+<td style="text-align: left;">Gravel stored on the river bed after deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_clay__mass</code></td>
-<td>Clay left in cell</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_clay__mass</code></td>
+<td style="text-align: left;">Clay left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_water_silt__mass</code></td>
-<td>Silt left in cell</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_silt__mass</code></td>
+<td style="text-align: left;">Silt left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sand__mass</code></td>
-<td>Sand left in cell</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sand__mass</code></td>
+<td style="text-align: left;">Sand left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_water_small_aggregates__mass</code></td>
-<td>Small aggregates left in cell</td>
-<td>ton</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_small_aggregates__mass</code></td>
+<td style="text-align: left;">Small aggregates left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_large_aggregates__mass</code></td>
-<td>Large aggregates left in cell</td>
-<td>ton</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_large_aggregates__mass</code></td>
+<td style="text-align: left;">Large aggregates left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="even">
-<td><code>river_water_gravel__mass</code></td>
-<td>Gravel left in cell</td>
-<td>ton?</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_gravel__mass</code></td>
+<td style="text-align: left;">Gravel left in cell</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_clay__mass_flow_rate</code></td>
-<td>Sediment flux (clay)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_clay__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (clay)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water_silt__mass_flow_rate</code></td>
-<td>Sediment flux (silt)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_silt__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (silt)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sand__mass_flow_rate</code></td>
-<td>Sediment flux (sand)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sand__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (sand)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water_small_aggregates__mass_flow_rate</code></td>
-<td>Sediment flux (small aggregates)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_small_aggregates__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (small aggregates)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_large_aggregates__mass_flow_rate</code></td>
-<td>Sediment flux (large aggregates)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_large_aggregates__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (large aggregates)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="even">
-<td><code>river_water_gravel__mass_flow_rate</code></td>
-<td>Sediment flux (gravel)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_gravel__mass_flow_rate</code></td>
+<td style="text-align: left;">Sediment flux (gravel)</td>
+<td style="text-align: left;">ton Δt⁻¹</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sediment__bedload_mass_concentration</code></td>
-<td>Bed load sediment concentration in the river</td>
-<td>g m⁻³</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sediment__bedload_mass_concentration</code></td>
+<td style="text-align: left;">Suspended sediment concentration in the river</td>
+<td style="text-align: left;">g m⁻³</td>
 </tr>
-<tr class="even">
-<td><code>river_water_sediment__suspended_mass_concentration</code></td>
-<td>Suspended sediemnt concentration in the river</td>
-<td>g m⁻³</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_sediment__suspended_mass_concentration</code></td>
+<td style="text-align: left;">Suspended sediment concentration in river</td>
+<td style="text-align: left;">g m⁻³</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sediment__mass_concentration</code></td>
-<td>Total sediment concentration in the river</td>
-<td>g m⁻³</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sediment__mass_concentration</code></td>
+<td style="text-align: left;">Total sediment concentration in the river</td>
+<td style="text-align: left;">g m⁻³</td>
 </tr>
-<tr class="even">
-<td><code>river_water_sediment_erosion__mass</code></td>
-<td>Total sediment erosion (from store + direct river bed/bank)</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>river_water_sediment_erosion__mass</code></td>
+<td style="text-align: left;">Total sediment erosion (from store + direct river bed/bank)</td>
+<td style="text-align: left;">ton</td>
 </tr>
-<tr class="odd">
-<td><code>river_water_sediment_deposition__mass</code></td>
-<td>Total sediment deposition</td>
-<td>ton Δt⁻¹</td>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water_sediment_deposition__mass</code></td>
+<td style="text-align: left;">Total sediment deposition</td>
+<td style="text-align: left;">ton</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 
 
 </section>
