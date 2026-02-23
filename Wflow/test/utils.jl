@@ -101,6 +101,7 @@ end
         "sbm_river-floodplain-local-inertial_config.toml",
         "sbm_river-land-local-inertial_config.toml",
         "sbm_gwf_piave_demand_config.toml",
+        "sediment_config.toml",
     ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
@@ -131,13 +132,13 @@ end
                 for model in models
                     try
                         lens(model)
-                        invalid = false
+                        valid = true
                         break
                     catch
                         nothing
                     end
                 end
-                invalid && push!(invalids, name)
+                !valid && push!(invalids, name)
             end
             @test isempty(invalids)
         end

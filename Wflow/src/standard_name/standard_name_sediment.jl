@@ -101,6 +101,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.routing.river_flow.sediment_flux.parameters.reservoir_outlet),
         fill = 0,
         description = "Reservoir location ids",
+        tags = [:sediment_river_transport_input],
     ),
     "river_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.hydrological_forcing.q_river),
