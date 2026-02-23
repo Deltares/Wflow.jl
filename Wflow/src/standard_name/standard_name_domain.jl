@@ -12,13 +12,19 @@ const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
         allow_missing = true,
         tags = [:generic_input_map],
     ),
-    "basin_pit_location__mask" =>
-        ParameterMetadata(; fill = false, description = "Pit location mask"),
+    "basin_pit_location__mask" => ParameterMetadata(;
+        fill = false,
+        description = "Pit location mask",
+        tags = [:generic_input_map],
+    ),
     "river_location__mask" => ParameterMetadata(;
         fill = false,
         description = "River mask (0-1)",
         tags = [:generic_input_map],
     ),
-    "land_water_allocation_area__count" =>
-        ParameterMetadata(; default = 1, description = "Water allocation area ids"),
+    "land_water_allocation_area__count" => ParameterMetadata(;
+        default = 1,
+        description = "Water allocation area ids",
+        tags = [:generic_input_map],
+    ),
 )

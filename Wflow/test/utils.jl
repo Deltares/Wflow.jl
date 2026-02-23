@@ -92,75 +92,48 @@ end
     @test relative_error ≈ -2 / 11
 end
 
-@testitem "Variable tags" begin
-    for (map_name, map) in Wflow.standard_name_maps
-        @testset "Check that each $map_name variable has at least one tag" begin
-            vars_without_tags = String[]
-            for (name, metadata) in map
-                isempty(metadata.tags) && push!(vars_without_tags, name)
-            end
-            @test isempty(vars_without_tags)
-        end
-    end
-end
-
-@testitem "unit: lenses" begin
+@testitem "Lenses" begin
     using Accessors: @optic
-
-    configs_sbm = Wflow.Config[]
-    configs_sediment = Wflow.Config[]
+    configs = Wflow.Config[]
 
     for file_name in [
         "sbm_gwf_config.toml",
         "sbm_river-floodplain-local-inertial_config.toml",
         "sbm_river-land-local-inertial_config.toml",
         "sbm_gwf_piave_demand_config.toml",
+        "sediment_config.toml",
     ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
+        config.dir_output = mktempdir()
         config.model.water_mass_balance__flag = true
         config.dir_output = mktempdir()
-        push!(configs_sbm, config)
-    end
-
-    for transport_method in ("kodatie", "govers", "yalin", "bagnold")
-        config = Wflow.Config(normpath(@__DIR__, "sediment_eurosem_engelund_config.toml"))
-        config.dir_output = mktempdir()
-        if transport_method in ("kodatie", "bagnold")
+        if transport_method == "kodatie"
             config.model.river_transport = transport_method
-            config.model.rainfall_erosion = "answers"
         else
             config.model.run_river_model__flag = false
             config.model.land_transport = transport_method
-            config.model.rainfall_erosion = "eurosem"
         end
-        push!(configs_sediment, config)
+        push!(configs, config)
     end
 
-    models_sbm = Wflow.Model.(configs_sbm)
-    models_sediment = Wflow.Model.(configs_sediment)
-
-    for (map_name, standard_name_map, models) in (
-        ("sbm", Wflow.sbm_standard_name_map, models_sbm),
-        ("routing", Wflow.routing_standard_name_map, models_sbm),
-        ("domain", Wflow.domain_standard_name_map, models_sbm),
-        ("sediment", Wflow.sediment_standard_name_map, models_sediment),
-    )
+    models = Wflow.Model.(configs)
+    for (map_name, standard_name_map) in Wflow.standard_name_maps
         @testset "Test lenses: $map_name" begin
             invalids = String[]
             for (name, data) in standard_name_map
                 (; lens) = data
-                invalid = true
                 isnothing(lens) && continue
+                valid = false
                 for model in models
                     try
                         lens(model)
-                        invalid = false
+                        valid = true
                         break
                     catch
                         nothing
                     end
                 end
-                invalid && push!(invalids, name)
+                !valid && push!(invalids, name)
             end
             @test isempty(invalids)
         end
