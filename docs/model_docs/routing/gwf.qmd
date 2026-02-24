@@ -2,28 +2,19 @@
 title: Groundwater flow
 ---
 
-Single layer groundwater flow requires the four following components:
+Single layer groundwater flow in an unconfined aquifer requires the four following
+components:
 
 + aquifer
 + connectivity
 + constanthead
 + boundaries
 
-The aquifer types, constanthead boundary and other boundaries (e.g. river and drainage) are
-described in more detail below. Which functionality of these components is supported by
+The unconfined aquifer, constanthead boundary and other boundaries (e.g. river and drainage)
+are described in more detail below. Which functionality of these components is supported by
 model type `sbm_gwf` is also clarified below.
 
-## Aquifer types
-Groundwater flow can occur either in a confined or unconfined aquifer. Confined aquifers are
-overlain by a poorly permeable confining layer (e.g. clay). No air can get in to fill the
-pore space so that the aquifer always remains fully saturated. For a confined aquifer, water
-will always flow along the complete height $\SIb{H}{m}$ over the aquifer and transmissivity
-$\SIb{kH}{m^2\ d^{-1}}$ is a constant ($\SIb{k}{m\ d^{-1}}$ is the horizontal hydraulic
-conductivity). Specific storage is the amount of water an aquifer releases per unit change
-in hydraulic head, per unit volume of aquifer, as the aquifer and the groundwater itself is
-compressed. Its value is much smaller than specific yield, between $10^{-5}$ (stiff) and
-$10^{-2}$ (weak).
-
+## Unconfined aquifer
 The upper boundary of an unconfined aquifer is the water table (the phreatic surface).
 Specific yield (or drainable porosity) represents the volumetric fraction the aquifer will
 yield when all water drains and the pore volume is filled by air instead. Specific yield
@@ -168,7 +159,7 @@ constanthead__flag = true # optional, default is "false"
 model_constant_boundary_condition__hydraulic_head = "constant_head"
 ```
 
-## Aquifer boundary conditions
+## Boundary conditions
 
 ### River
 The flux between river and aquifer is calculated using Darcy's law following the approach in
@@ -278,8 +269,8 @@ This boundary is not (yet) part model type `sbm_gwf`.
 :::
 
 ::: {.callout-note}
-For an unconfined aquifer the boundary fluxes are checked, in case of a dry aquifer cell a
-negative flux is not allowed.
+The boundary fluxes are checked, in case of a dry aquifer cell a negative flux is not
+allowed.
 :::
 
 ## References
