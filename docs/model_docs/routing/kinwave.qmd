@@ -198,6 +198,21 @@ For the lateral subsurface flow kinematic wave the model timestep is not adjuste
 model timestep and model grid size combinations this may result in loss of accuracy.
 :::
 
+### Boundary conditions
+
+Two head-dependent flux boundary conditions that are also used by the [groundwater
+flow](gwf.qmd#) concept, the [river](gwf.qmd#river) and [drainage](gwf.qmd#drainage)
+boundaries can also be used for lateral subsurface flow. By default, lateral subsurface flow
+can only flow into a river (slope based). By using the river boundary flow into (from a
+river) or out (into a river) of the subsurface water system is a function of the head. The
+river and drainage boundaries can be provided as follows in the TOML configuration file:
+
+```toml
+[model]
+river_subsurface_exchange_head_based__flag = true # optional river boundary, default is false
+drain__flag = true # optional drainage boundary, default is false
+```
+
 ## Multi-Threading
 The kinematic wave calculations for surface - and subsurface flow routing can be executed in
 parallel using multiple threads. In the model section of the TOML file, a minimum stream order
