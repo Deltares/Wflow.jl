@@ -672,44 +672,43 @@ window.Quarto = {
     c = \frac{\subtext{K}{h} c_\mathrm{land\ slope}}{\theta_s-\theta_{fc}}.
 \]</span></p>
 <p>The water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> is based on the change in subsurface storage and the drainable porosity for a falling water table and the fillable porosity for a rising water table, see also the following <a href="../../model_docs/land/landhydrology_sbm.html#water-table-change">section</a>. Using the fillable porosity for a rising water table prevents mass balance errors for the entire soil (unsaturated and saturated zone) when the fillable porosity is not equal to the drainable porosity used for the computation of lateral subsurface flow.</p>
-<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method. For the <code>exponential</code> and <code>exponential_constant</code> profiles, the kinematic wave celerity <span class="math inline">\(c\)</span> is a function of the water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> and for these profiles the kinematic wave equation is solved using Newton’s method with an iteration criterion set to a maximum allowed water table depth change of <span class="math inline">\(\SI{0.1}{m}\)</span>. This iteration criterion is applied to each model cell independently to compute and route subsurface flow for each model timestep (routing is not done at an internal timestep, see also the note below).</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain model timestep and model grid size combinations this may result in loss of accuracy.</p>
-</div>
-</div>
+<p>The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton’s method until a stable solution is reached. The internal time stepping is based on the Courant number or a fixed time step size <span class="math inline">\(\SIb{}{d}\)</span>. To enable a fixed internal time step for the kinematic wave the following lines can be inserted in the TOML file of the model:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Adaptive (internal) time stepping for the kinematic wave</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">false</span> <span class="co"># optional, default is false</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fixed internal timestep for subsurface flow</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_kinematic_wave__time_step</span> <span class="op">=</span> <span class="fl">0.5</span> <span class="co"># optional, default is 1.0 day</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of the model, including an alpha coefficient to enhance the stability of the simulation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Adaptive (internal) time stepping for the kinematic wave</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">kinematic_wave__adaptive_time_step_flag</span> <span class="op">=</span> <span class="cn">true</span>    <span class="co"># optional, default is false</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_kinematic_wave__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.5</span> <span class="co"># optional, default is 1.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>When head-dependent flux <a href="#boundary-conditions">boundaries</a> are included, we recommend to check for possible numerical instabilities, especially when fluxes from these boundaries (e.g.&nbsp;river) can be large, and to change the alpha coefficient accordingly. Otherwise, the default value of 1.0 for the alpha coefficient is typically used for a stable simulation.</p>
+<p>For the <code>exponential</code> and <code>exponential_constant</code> profiles, the kinematic wave celerity <span class="math inline">\(c\)</span> is a function of the water table depth <span class="math inline">\(\subtext{z}{ssf, watertable}\)</span> and for these profiles the kinematic wave equation is solved using Newton’s method with an iteration criterion set to a maximum allowed water table depth change of <span class="math inline">\(\SI{0.1}{m}\)</span>. This iteration criterion is applied to each model cell independently to compute and route subsurface flow for each (internal) model timestep.</p>
 <section id="boundary-conditions" class="level3">
 <h3 class="anchored" data-anchor-id="boundary-conditions">Boundary conditions</h3>
 <p>Two head-dependent flux boundary conditions that are also used by the <a href="../../model_docs/routing/gwf.html#">groundwater flow</a> concept, the <a href="../../model_docs/routing/gwf.html#river">river</a> and <a href="../../model_docs/routing/gwf.html#drainage">drainage</a> boundaries can also be used for lateral subsurface flow. By default, lateral subsurface flow can only flow into a river (slope based). By using the river boundary flow into (from a river) or out (into a river) of the subsurface water system is a function of the head. The river and drainage boundaries can be provided as follows in the TOML configuration file:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_subsurface_exchange_head_based__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional river boundary, default is false</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">drain__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional drainage boundary, default is false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_subsurface_exchange_head_based__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional river boundary, default is false</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">drain__flag</span> <span class="op">=</span> <span class="cn">true</span> <span class="co"># optional drainage boundary, default is false</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="multi-threading" class="level2">
 <h2 class="anchored" data-anchor-id="multi-threading">Multi-Threading</h2>
 <p>The kinematic wave calculations for surface - and subsurface flow routing can be executed in parallel using multiple threads. In the model section of the TOML file, a minimum stream order can be provided to define subbasins for the river (default is 6) and land domain (default is 5). Subbasins are created at all confluences where each branch has a minimal stream order. Based on the subbasins a directed acyclic graph is created that controls the order of execution and which subbasins can run in parallel.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_streamorder__min_count</span> <span class="op">=</span> <span class="dv">5</span> <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_streamorder__min_count</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_streamorder__min_count</span> <span class="op">=</span> <span class="dv">5</span> <span class="co"># minimum stream order to delineate subbasins for river domain, default is 6</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">land_streamorder__min_count</span> <span class="op">=</span> <span class="dv">4</span>  <span class="co"># minimum stream order to delineate subbasins for land domain, default is 5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="subbasin-flow" class="level2">
 <h2 class="anchored" data-anchor-id="subbasin-flow">Subbasin flow</h2>
 <p>Normally the the kinematic wave is continuous throughout the model. By using the <code>pit__flag</code> entry and <code>basin_pit_location__mask</code> in the model and input sections of the TOML file all flow is at the subbasin only (upstream of the pit locations, defined by the netCDF variable <code>wflow_pits</code> in the example below) and no flow is transferred from one subbasin to another. This can be convenient when connecting the result of the model to a water allocation model such as Ribasim.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">basin_pit_location__mask</span> <span class="op">=</span> <span class="st">"wflow_pits"</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pit__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># these are not directly part of the model</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">basin_pit_location__mask</span> <span class="op">=</span> <span class="st">"wflow_pits"</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="dt">pit__flag</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="limitations" class="level2">
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
