@@ -185,21 +185,41 @@ saturated zone) when the fillable porosity is not equal to the drainable porosit
 the computation of lateral subsurface flow.
 
 The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's
-method. For the `exponential` and `exponential_constant` profiles, the kinematic wave
-celerity $c$ is a function of the water table depth $\subtext{z}{ssf, watertable}$ and for
-these profiles the kinematic wave equation is solved using Newton's method with an iteration
-criterion set to a maximum allowed water table depth change of $\SI{0.1}{m}$. This iteration
-criterion is applied to each model cell independently to compute and route subsurface flow
-for each model timestep (routing is not done at an internal timestep, see also the note
-below).
+method until a stable solution is reached. The internal time stepping is based on the
+Courant number or a fixed time step size $\SIb{}{d}$. To enable a fixed internal time step
+for the kinematic wave the following lines can be inserted in the TOML file of the model:
 
-::: {.callout-note}
-For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain
-model timestep and model grid size combinations this may result in loss of accuracy.
-:::
+```toml
+[model]
+# Adaptive (internal) time stepping for the kinematic wave
+kinematic_wave__adaptive_time_step_flag = false # optional, default is false
+# Fixed internal timestep for subsurface flow
+subsurface_kinematic_wave__time_step = 0.5 # optional, default is 1.0 day
+```
+
+Kinematic wave adaptive (internal) timestepping can be set as follows in the TOML file of
+the model, including an alpha coefficient to enhance the stability of the simulation:
+
+```toml
+[model]
+# Adaptive (internal) time stepping for the kinematic wave
+kinematic_wave__adaptive_time_step_flag = true    # optional, default is false
+subsurface_kinematic_wave__alpha_coefficient = 0.5 # optional, default is 1.0
+```
+
+When head-dependent flux [boundaries](#boundary-conditions) are included, we recommend to
+check for possible numerical instabilities, especially when fluxes from these boundaries
+(e.g. river) can be large, and to change the alpha coefficient accordingly. Otherwise, the
+default value of 1.0 for the alpha coefficient is typically used for a stable simulation.
+
+For the `exponential` and `exponential_constant` profiles, the kinematic wave celerity $c$
+is a function of the water table depth $\subtext{z}{ssf, watertable}$ and for these profiles
+the kinematic wave equation is solved using Newton's method with an iteration criterion set
+to a maximum allowed water table depth change of $\SI{0.1}{m}$. This iteration criterion is
+applied to each model cell independently to compute and route subsurface flow for each
+(internal) model timestep.
 
 ### Boundary conditions
-
 Two head-dependent flux boundary conditions that are also used by the [groundwater
 flow](gwf.qmd#) concept, the [river](gwf.qmd#river) and [drainage](gwf.qmd#drainage)
 boundaries can also be used for lateral subsurface flow. By default, lateral subsurface flow
