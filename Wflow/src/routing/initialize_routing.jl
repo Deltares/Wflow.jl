@@ -124,9 +124,9 @@ function initialize_subsurface_flow(
         boundary_conditions = SubsurfaceFlowBC(; recharge = gwf_recharge, river = gwf_river)
     end
 
-    cfl = config.model.subsurface_water_flow__alpha_coefficient
-    @info "Numerical stability coefficient for groundwater flow `alpha`: `$cfl`."
-    timestepping = TimeStepping(; cfl)
+    alpha_coefficient = config.model.subsurface_water_flow__alpha_coefficient
+    @info "Numerical stability coefficient for groundwater flow `alpha`: `$alpha_coefficient`."
+    timestepping = TimeStepping(; alpha_coefficient)
 
     subsurface_flow = GroundwaterFlow(;
         timestepping,

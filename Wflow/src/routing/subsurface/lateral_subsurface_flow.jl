@@ -275,7 +275,7 @@ function stable_timestep(model::LateralSSF, domain::DomainLand)
     (; zi) = model.variables
     (; specific_yield, kh_profile) = model.parameters
     (; flow_length, slope) = domain.parameters
-    (; stable_timesteps, cfl) = model.timestepping
+    (; stable_timesteps, alpha_coefficient) = model.timestepping
 
     n = length(zi)
     stable_timesteps .= Inf
@@ -294,7 +294,7 @@ function stable_timestep(model::LateralSSF, domain::DomainLand)
         0.5
     end
 
-    dt_min = cfl * dt_min
+    dt_min = alpha_coefficient * dt_min
 
     return dt_min
 end

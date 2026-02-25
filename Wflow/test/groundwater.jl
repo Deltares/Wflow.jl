@@ -149,8 +149,8 @@ end
 
     @testset "stable_timestep" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
-        cfl = 0.25
-        @test Wflow.stable_timestep(gwf, conductivity_profile, cfl) == 0.0375
+        alpha_coefficient = 0.25
+        @test Wflow.stable_timestep(gwf, conductivity_profile, alpha_coefficient) == 0.0375
     end
 
     # Parametrization in setup is as follows:
@@ -305,7 +305,7 @@ end
         f = fill(gwf_f, ncell),
     )
 
-    timestepping = Wflow.TimeStepping(; cfl = 0.25)
+    timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
     gwf = Wflow.GroundwaterFlow(;
         timestepping,
         parameters,
@@ -335,11 +335,11 @@ end
 
     time = 20.0
     t = 0.0
-    (; cfl) = gwf.timestepping
+    (; alpha_coefficient) = gwf.timestepping
     while t < time
         global t
         gwf.variables.q_net .= 0.0
-        dt_s = Wflow.stable_timestep(gwf, conductivity_profile, cfl)
+        dt_s = Wflow.stable_timestep(gwf, conductivity_profile, alpha_coefficient)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
         Wflow.update_head!(gwf, soil, dt_s)
@@ -404,7 +404,7 @@ end
         f = fill(gwf_f, ncell),
     )
 
-    timestepping = Wflow.TimeStepping(; cfl = 0.25)
+    timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
     gwf = Wflow.GroundwaterFlow(;
         timestepping,
         parameters,
@@ -434,11 +434,11 @@ end
 
     time = 20.0
     t = 0.0
-    (; cfl) = gwf.timestepping
+    (; alpha_coefficient) = gwf.timestepping
     while t < time
         global t
         gwf.variables.q_net .= 0.0
-        dt_s = Wflow.stable_timestep(gwf, conductivity_profile, cfl)
+        dt_s = Wflow.stable_timestep(gwf, conductivity_profile, alpha_coefficient)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
         Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
         Wflow.update_head!(gwf, soil, dt_s)

@@ -1,10 +1,10 @@
 
-"Timestepping for solving kinematic wave and local inertial river and overland flow routing."
+"Timestepping for river, overland and subsurface flow routing."
 @with_kw struct TimeStepping
     stable_timesteps::Vector{Float64} = Float64[]
     dt_fixed::Float64 = 0.0
     adaptive::Bool = true
-    cfl::Float64 = 0.70
+    alpha_coefficient::Float64 = 1.0
 end
 
 "Check timestep size"
@@ -22,9 +22,9 @@ function init_kinematic_wave_timestepping(config::Config, n::Int; domain::String
     if adaptive
         stable_timesteps = zeros(n)
         if domain == "subsurface"
-            cfl = config.model.subsurface_kinematic_wave__alpha_coefficient
-            @info "Numerical stability coefficient for lateral subsurface flow `alpha`: `$cfl`."
-            timestepping = TimeStepping(; stable_timesteps, adaptive, cfl)
+            alpha_coefficient = config.model.subsurface_kinematic_wave__alpha_coefficient
+            @info "Numerical stability coefficient for lateral subsurface flow `alpha`: `$alpha_coefficient`."
+            timestepping = TimeStepping(; stable_timesteps, adaptive, alpha_coefficient)
         else
             timestepping = TimeStepping(; stable_timesteps, adaptive)
         end

@@ -340,7 +340,7 @@ end
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
 
-    timestepping = Wflow.TimeStepping(; cfl = 0.7)
+    timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7)
     parameters = Wflow.LocalInertialRiverFlowParameters(;
         n,
         ne = _ne,

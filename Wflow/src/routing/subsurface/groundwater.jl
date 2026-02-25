@@ -378,17 +378,17 @@ function flux!(
 end
 
 """
-    stable_timestep(gwf::GroundwaterFlow, conductivity_profile::GwfConductivityProfileType.T, cfl::Float64)
+    stable_timestep(gwf::GroundwaterFlow, conductivity_profile::GwfConductivityProfileType.T, alpha_coefficient::Float64)
 
 Compute a stable timestep size given the forward-in-time, central in space scheme.
 The following criterion can be found in Chu & Willis (1984):
 
-Δt * k * H / (Δx * Δy * S) <= cfl.
+Δt * k * H / (Δx * Δy * S) <= α.
 """
 function stable_timestep(
     gwf::GroundwaterFlow,
     conductivity_profile::GwfConductivityProfileType.T,
-    cfl::Float64,
+    alpha_coefficient::Float64,
 )
     dt_min = Inf
     for i in eachindex(gwf.variables.head)
@@ -405,7 +405,7 @@ function stable_timestep(
         dt = gwf.parameters.area[i] * storativity(gwf)[i] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
-    dt_min = cfl * dt_min
+    dt_min = alpha_coefficient * dt_min
     return dt_min
 end
 
@@ -486,14 +486,14 @@ function update!(
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T,
 )
-    (; cfl) = gwf.timestepping
+    (; alpha_coefficient) = gwf.timestepping
 
     set_flux_vars!(gwf)
     t = 0.0
     while t < dt
         gwf.variables.q_net .= 0.0
         gwf.variables.q_net_bnds .= 0.0
-        dt_s = stable_timestep(gwf, conductivity_profile, cfl)
+        dt_s = stable_timestep(gwf, conductivity_profile, alpha_coefficient)
         dt_s = check_timestepsize(dt_s, t, dt)
         update_fluxes!(gwf, domain, conductivity_profile, dt_s)
         update_head!(gwf, soil, dt_s)
@@ -512,7 +512,11 @@ function get_flux_to_river(subsurface_flow::GroundwaterFlow, inds::Vector{Int})
     return flux
 end
 
-function sum_boundary_fluxes(gwf::AbstractSubsurfaceFlowModel, domain::Domain; exclude = nothing)
+function sum_boundary_fluxes(
+    gwf::AbstractSubsurfaceFlowModel,
+    domain::Domain;
+    exclude = nothing,
+)
     (; boundary_conditions) = gwf
     n = length(gwf.variables.storage)
     flux_in = zeros(n)

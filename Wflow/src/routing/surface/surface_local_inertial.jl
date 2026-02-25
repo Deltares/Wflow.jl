@@ -207,8 +207,8 @@ function LocalInertialRiverFlow(
 
     # The following boundary conditions can be set at ghost nodes, downstream of river
     # outlets (pits): river length and river depth
-    cfl = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
-    timestepping = TimeStepping(; cfl)
+    alpha_coefficient = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    timestepping = TimeStepping(; alpha_coefficient)
 
     parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
     variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
@@ -655,8 +655,8 @@ end
 
 "Initialize local inertial overland flow model"
 function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::Domain)
-    cfl = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
-    timestepping = TimeStepping(; cfl)
+    alpha_coefficient = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    timestepping = TimeStepping(; alpha_coefficient)
 
     n = length(domain.land.network.indices)
     boundary_conditions = LocalInertialOverlandFlowBC(; n)
@@ -679,16 +679,17 @@ end
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
-dt = cfl * (Δx / sqrt(g max(h))
+dt = α * (Δx / sqrt(g max(h))
 """
+
 function stable_timestep(model::LocalInertialRiverFlow, flow_length::Vector{Float64})
     dt_min = Inf
-    (; cfl) = model.timestepping
+    (; alpha_coefficient) = model.timestepping
     (; n) = model.parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt =
-            cfl * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
+            alpha_coefficient * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
@@ -697,13 +698,14 @@ end
 
 function stable_timestep(model::LocalInertialOverlandFlow, parameters::LandParameters)
     dt_min = Inf
-    (; cfl) = model.timestepping
+    (; alpha_coefficient) = model.timestepping
     (; n) = model.parameters
     (; x_length, y_length, river_location) = parameters
     (; h) = model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if river_location[i] == 0
-            cfl * min(x_length[i], y_length[i]) / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
+            alpha_coefficient * min(x_length[i], y_length[i]) /
+            sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         else
             Inf
         end
