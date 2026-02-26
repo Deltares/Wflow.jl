@@ -32,10 +32,10 @@ end
 
 "Initialize Julian and Torres river erosion parameters"
 function RiverErosionParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     d50 = ncread(
         dataset,
         config,
@@ -51,10 +51,10 @@ end
 
 "Initialize Julian and Torres river erosion model"
 function RiverErosionJulianTorresModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = RiverErosionParameters(dataset, config, indices)
     model = RiverErosionJulianTorresModel(; n, parameters)
@@ -63,26 +63,26 @@ end
 
 "Update river erosion model boundary conditions"
 function update_boundary_conditions!(
-    model::RiverErosionJulianTorresModel,
-    hydrological_forcing::HydrologicalForcing,
-)
+        model::RiverErosionJulianTorresModel,
+        hydrological_forcing::HydrologicalForcing,
+    )
     (; waterlevel) = model.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
-    @. waterlevel = waterlevel_river
+    return @. waterlevel = waterlevel_river
 end
 
 "Update Julian and Torres river erosion model for a single timestep"
 function update!(
-    model::RiverErosionJulianTorresModel,
-    parameters::RiverParameters,
-    dt::Float64,
-)
+        model::RiverErosionJulianTorresModel,
+        parameters::RiverParameters,
+        dt::Float64,
+    )
     (; waterlevel) = model.boundary_conditions
     (; d50) = model.parameters
     (; bed, bank) = model.variables
 
     n = length(waterlevel)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         bed[i], bank[i] = river_erosion_julian_torres(
             waterlevel[i],
             d50[i],

@@ -42,10 +42,10 @@ end
 
 "Initialize soil erosion model parameters"
 function SoilErosionParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     clay_fraction = ncread(
         dataset,
         config,
@@ -89,7 +89,7 @@ function SoilErosionParameters(
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction
-    if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
+    if !all(f -> isapprox(f, 1.0; rtol = 1.0e-3), soil_fractions)
         error("Particle fractions in the soil must sum to 1")
     end
     soil_parameters = SoilErosionParameters(;
@@ -113,10 +113,10 @@ end
 
 "Initialize soil erosion model"
 function SoilErosionModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = SoilErosionParameters(dataset, config, indices)
     model = SoilErosionModel(; n, parameters)
@@ -125,15 +125,15 @@ end
 
 "Update boundary conditions for soil erosion model"
 function update_boundary_conditions!(
-    model::SoilErosionModel,
-    rainfall_erosion::AbstractRainfallErosionModel,
-    overland_flow_erosion::AbstractOverlandFlowErosionModel,
-)
+        model::SoilErosionModel,
+        rainfall_erosion::AbstractRainfallErosionModel,
+        overland_flow_erosion::AbstractOverlandFlowErosionModel,
+    )
     re = rainfall_erosion.variables.soil_erosion_rate
     ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = model.boundary_conditions
     @. rainfall_erosion = re
-    @. overland_flow_erosion = ole
+    return @. overland_flow_erosion = ole
 end
 
 "Update soil erosion model for a single timestep"
@@ -151,13 +151,13 @@ function update!(model::SoilErosionModel)
     ) = model.variables
 
     n = length(rainfall_erosion)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         soil_erosion_rate[i],
-        clay_erosion_rate[i],
-        silt_erosion_rate[i],
-        sand_erosion_rate[i],
-        sagg_erosion_rate[i],
-        lagg_erosion_rate[i] = total_soil_erosion(
+            clay_erosion_rate[i],
+            silt_erosion_rate[i],
+            sand_erosion_rate[i],
+            sagg_erosion_rate[i],
+            lagg_erosion_rate[i] = total_soil_erosion(
             rainfall_erosion[i],
             overland_flow_erosion[i],
             clay_fraction[i],

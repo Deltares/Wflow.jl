@@ -9,7 +9,7 @@
     q_prev = 0.0
     q_lat = 1.142e-6
     @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) ≈
-          1.09308660753423e-6
+        1.09308660753423e-6
 
     # Case q_in + q_prev + q_lat ≈ 0.0
     q_in = 0.0
@@ -41,7 +41,7 @@ end
     dx = 1103.816
 
     @test Wflow.kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx) ≈
-          942.5785713676884
+        942.5785713676884
 end
 
 @testitem "kinematic wave overland flow" begin
@@ -287,7 +287,7 @@ end
     h_a = h.([dx:dx:L;]) # water depth profile (analytical solution)
     # integrate slope to get elevation (bed level) z
     x = [dx:dx:L;]
-    zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
+    zb = first.([quadgk(s, xi, L; rtol = 1.0e-12) for xi in x])
 
     # initialize local inertial river flow model
     graph = DiGraph(n)
@@ -314,9 +314,9 @@ end
         length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n =
             (
-                n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
+            n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
                 n_river[nodes_at_edge.src[i]] * dl[nodes_at_edge.src[i]]
-            ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
+        ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
         mannings_n_sq[i] = mannings_n * mannings_n
     end
 
@@ -335,7 +335,7 @@ end
     domain_river = Wflow.DomainRiver(; network = river_network, parameters = params_river)
     domain = Wflow.Domain(; river = domain_river)
 
-    h_thresh = 1.0e-03
+    h_thresh = 1.0e-3
     froude_limit = true
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])

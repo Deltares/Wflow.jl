@@ -30,11 +30,11 @@ end
 
 "Initialize Gash interception model"
 function GashInterceptionModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    vegetation_parameter_set::VegetationParameters,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        vegetation_parameter_set::VegetationParameters,
+    )
     e_r = ncread(
         dataset,
         config,
@@ -73,13 +73,13 @@ function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericF
         canopy_potevap[i] = kc[i] * potential_evaporation[i] * (1.0 - canopygapfraction[i])
         throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
             rainfall_interception_gash(
-                cmax[i],
-                e_r[i],
-                canopygapfraction[i],
-                precipitation[i],
-                canopy_storage[i],
-                canopy_potevap[i],
-            )
+            cmax[i],
+            e_r[i],
+            canopygapfraction[i],
+            precipitation[i],
+            canopy_storage[i],
+            canopy_potevap[i],
+        )
     end
     return nothing
 end
@@ -111,12 +111,12 @@ function update!(model::RutterInterceptionModel, atmospheric_forcing::Atmospheri
         canopy_potevap[i] = kc[i] * potential_evaporation[i] * (1.0 - canopygapfraction[i])
         throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
             rainfall_interception_modrut(
-                precipitation[i],
-                canopy_potevap[i],
-                canopy_storage[i],
-                canopygapfraction[i],
-                cmax[i],
-            )
+            precipitation[i],
+            canopy_potevap[i],
+            canopy_storage[i],
+            canopygapfraction[i],
+            cmax[i],
+        )
     end
     return nothing
 end

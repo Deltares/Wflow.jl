@@ -3,7 +3,7 @@ abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
 @with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
-                AbstractLandModel
+    AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -81,12 +81,12 @@ end
 
 "Update land hydrology model with SBM soil model for a single timestep"
 function update!(
-    model::LandHydrologySBM,
-    routing::Routing,
-    domain::Domain,
-    config::Config,
-    dt::Float64,
-)
+        model::LandHydrologySBM,
+        routing::Routing,
+        domain::Domain,
+        config::Config,
+        dt::Float64,
+    )
     (; parameters) = domain.land
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         model
@@ -140,10 +140,10 @@ Update the total water storage per cell at the end of a timestep.
 - `routing`: Containing routing models.
 """
 function update_total_water_storage!(
-    model::LandHydrologySBM,
-    domain::Domain,
-    routing::Routing,
-)
+        model::LandHydrologySBM,
+        domain::Domain,
+        routing::Routing,
+    )
     (; overland_flow, river_flow) = routing
     (; interception, snow, glacier, soil, demand) = model
     (; total_storage, ustoredepth, satwaterdepth) = soil.variables
@@ -158,7 +158,7 @@ function update_total_water_storage!(
     for (i, index_river) in enumerate(domain.river.network.land_indices)
         total_storage[index_river] = (
             (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
-            (area[index_river]) * 1000 # Convert to mm
+                (area[index_river]) * 1000 # Convert to mm
         )
     end
 

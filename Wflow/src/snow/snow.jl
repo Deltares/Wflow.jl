@@ -58,20 +58,20 @@ end
 
 "Initialize snow HBV model parameters"
 function SnowHbvParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+    )
     cfmax =
         ncread(
-            dataset,
-            config,
-            "snowpack__degree_day_coefficient";
-            sel = indices,
-            defaults = 3.75,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+        dataset,
+        config,
+        "snowpack__degree_day_coefficient";
+        sel = indices,
+        defaults = 3.75,
+        type = Float64,
+    ) .* (dt / BASETIMESTEP)
     tt = ncread(
         dataset,
         config,
@@ -110,11 +110,11 @@ end
 
 "Initialize snow HBV model"
 function SnowHbvModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+    )
     n = length(indices)
     parameters = SnowHbvParameters(dataset, config, indices, dt)
     model = SnowHbvModel(; n, parameters)

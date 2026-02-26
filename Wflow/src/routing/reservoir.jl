@@ -103,7 +103,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
 
     if ReservoirOutflowType.free_weir in outflowfunc ||
-       ReservoirOutflowType.modified_puls in outflowfunc
+            ReservoirOutflowType.modified_puls in outflowfunc
         threshold = ncread(
             dataset,
             config,
@@ -197,7 +197,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             parameters.hq[i] = read_hq_csv(csv_path)
             parameters.maxstorage[i] = maximum_storage(parameters, i)
         elseif outflowfunc[i] == ReservoirOutflowType.free_weir ||
-               outflowfunc[i] == ReservoirOutflowType.modified_puls
+                outflowfunc[i] == ReservoirOutflowType.modified_puls
             parameters.threshold[i] = threshold[i]
             parameters.b[i] = b[i]
             parameters.e[i] = e[i]
@@ -210,7 +210,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         end
 
         if outflowfunc[i] == ReservoirOutflowType.modified_puls &&
-           storfunc[i] != ReservoirProfileType.linear
+                storfunc[i] != ReservoirProfileType.linear
             @warn(
                 "For the modified puls approach (outflowfunc = 3) the storfunc should be 1"
             )
@@ -238,12 +238,12 @@ end
 
 "Initialize reservoir model variables"
 function ReservoirVariables(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkReservoir,
-    parameters::ReservoirParameters,
-    waterlevel::Vector{Float64},
-)
+        dataset::NCDataset,
+        config::Config,
+        network::NetworkReservoir,
+        parameters::ReservoirParameters,
+        waterlevel::Vector{Float64},
+    )
     (; storfunc, area, sh) = parameters
     (; indices_outlet) = network
     outflow_obs = ncread(
@@ -310,11 +310,11 @@ end
 
 "Determine the water level depending on the storage function"
 function waterlevel(
-    storfunc::ReservoirProfileType.T,
-    area::Float64,
-    storage::Float64,
-    sh::Union{SH, Missing},
-)
+        storfunc::ReservoirProfileType.T,
+        area::Float64,
+        storage::Float64,
+        sh::Union{SH, Missing},
+    )
     if storfunc == ReservoirProfileType.linear
         waterlevel = storage / area
     else # storfunc == ReservoirProfileType.interpolation
@@ -339,11 +339,11 @@ end
 
 "Determine the initial storage depending on the storage function"
 function initialize_storage(
-    storfunc::Vector{ReservoirProfileType.T},
-    area::Vector{Float64},
-    waterlevel::Vector{Float64},
-    sh::Vector{Union{SH, Missing}},
-)
+        storfunc::Vector{ReservoirProfileType.T},
+        area::Vector{Float64},
+        waterlevel::Vector{Float64},
+        sh::Vector{Union{SH, Missing}},
+    )
     storage = similar(area)
     for i in eachindex(storage)
         if storfunc[i] == ReservoirProfileType.linear
@@ -365,7 +365,7 @@ function interpolate_linear(x, xp, fp)
         i1 = last(idx)
         i2 = i1 + 1
         return fp[i1] * (1.0 - (x - xp[i1]) / (xp[i2] - xp[i1])) +
-               fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
+            fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
     end
 end
 
@@ -381,11 +381,11 @@ update_index_hq!(reservoir, clock::Clock) = nothing
 
 "Update reservoir with rating curve type (`ouflowfunc`) 4 for a single timestep"
 function update_reservoir_simple(
-    model::Reservoir,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        model::Reservoir,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     res_p = model.parameters
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
@@ -415,11 +415,11 @@ Update reservoir with rating curve type (`ouflowfunc`) 3 (Modified Puls approach
 single timestep.
 """
 function update_reservoir_modified_puls(
-    model::Reservoir,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        model::Reservoir,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     res_p = model.parameters
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
@@ -447,11 +447,11 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 1 (HQ data) for a single timestep."
 function update_reservoir_hq(
-    model::Reservoir,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        model::Reservoir,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     res_p = model.parameters
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
@@ -475,11 +475,11 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 2 (free weir) for a single timestep."
 function update_reservoir_free_weir(
-    model::Reservoir,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        model::Reservoir,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     res_p = model.parameters
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
@@ -532,11 +532,11 @@ end
 
 "Update reservoir using observed outflow for a single timestep."
 function update_reservoir_outflow_obs(
-    model::Reservoir,
-    i::Int,
-    boundary_vars::NamedTuple,
-    dt::Float64,
-)
+        model::Reservoir,
+        i::Int,
+        boundary_vars::NamedTuple,
+        dt::Float64,
+    )
     res_v = model.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
@@ -553,12 +553,12 @@ This is called from within the river routing scheme, therefore updating only for
 element rather than all at once.
 """
 function update!(
-    model::Reservoir,
-    i::Int,
-    inflow::Float64,
-    dt::Float64,
-    dt_forcing::Float64,
-)
+        model::Reservoir,
+        i::Int,
+        inflow::Float64,
+        dt::Float64,
+        dt_forcing::Float64,
+    )
     res_bc = model.boundary_conditions
     res_p = model.parameters
     res_v = model.variables

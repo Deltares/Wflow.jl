@@ -1,4 +1,3 @@
-
 struct NoMassBalance <: AbstractMassBalance end
 
 """
@@ -29,9 +28,9 @@ Water mass balance error results (balance error and relative error) for river, o
 subsurface and reservoir flow routing.
 """
 @with_kw struct FlowRoutingMassBalance{
-    R <: AbstractMassBalance,
-    RT <: AbstractMassBalance,
-} <: AbstractMassBalance
+        R <: AbstractMassBalance,
+        RT <: AbstractMassBalance,
+    } <: AbstractMassBalance
     river_water_balance::R
     reservoir_water_balance::RT
     overland_water_balance::MassBalance
@@ -66,7 +65,7 @@ function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config
             reservoir_water_balance = NoMassBalance()
         end
         if land_routing == RoutingType.local_inertial &&
-           river_routing == RoutingType.local_inertial
+                river_routing == RoutingType.local_inertial
             river_water_balance = NoMassBalance()
         else
             river_water_balance = MassBalance(; n = n_river)
@@ -89,10 +88,10 @@ end
 
 "Compute mass balance error and relative error."
 function compute_mass_balance_error(
-    total_in::Float64,
-    total_out::Float64,
-    storage_rate::Float64,
-)
+        total_in::Float64,
+        total_out::Float64,
+        storage_rate::Float64,
+    )
     error = total_in - total_out - storage_rate
     average_flow_rate = (total_in + total_out) / 2.0
     relative_error = iszero(average_flow_rate) ? 0.0 : error / average_flow_rate
@@ -162,18 +161,18 @@ end
 Save reservoir storage at previous time step as `storage_prev` of reservoir `water_balance`.
 """
 function storage_prev!(reservoir::Reservoir, water_balance::MassBalance)
-    water_balance.storage_prev .= reservoir.variables.storage
+    return water_balance.storage_prev .= reservoir.variables.storage
 end
 
 function watertable_prev!(subsurface_flow::LateralSSF, water_balance::MassBalance)
-    water_balance.zi_prev .= subsurface_flow.variables.zi
+    return water_balance.zi_prev .= subsurface_flow.variables.zi
 end
 
 function watertable_prev!(
-    subsurface_flow::GroundwaterFlow{A},
-    water_balance::MassBalance,
-) where {A <: UnconfinedAquifer}
-    water_balance.head_prev .= subsurface_flow.aquifer.variables.head
+        subsurface_flow::GroundwaterFlow{A},
+        water_balance::MassBalance,
+    ) where {A <: UnconfinedAquifer}
+    return water_balance.head_prev .= subsurface_flow.aquifer.variables.head
 end
 
 """
@@ -305,10 +304,10 @@ end
 Compute reservoir water mass balance error and relative error if reservoirs are included.
 """
 function compute_flow_balance!(
-    reservoir::Reservoir,
-    water_balance::MassBalance,
-    dt::Float64,
-)
+        reservoir::Reservoir,
+        water_balance::MassBalance,
+        dt::Float64,
+    )
     (; storage_prev, error, relative_error) = water_balance
     (; storage, outflow_av, actevap) = reservoir.variables
     (; precipitation, inflow) = reservoir.boundary_conditions
@@ -329,11 +328,11 @@ compute_flow_balance!(reservoir::Nothing, water_balance::NoMassBalance, dt::Floa
 
 "Compute water mass balance error and relative error for river kinematic wave routing."
 function compute_flow_balance!(
-    river_flow::KinWaveRiverFlow,
-    water_balance::MassBalance,
-    network::NetworkRiver,
-    dt::Float64,
-)
+        river_flow::KinWaveRiverFlow,
+        water_balance::MassBalance,
+        network::NetworkRiver,
+        dt::Float64,
+    )
     (; storage_prev, error, relative_error) = water_balance
     (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
         river_flow.boundary_conditions
@@ -354,11 +353,11 @@ Compute water mass balance error and relative error for river (and floodplain) l
 inertial routing.
 """
 function compute_flow_balance!(
-    river_flow::LocalInertialRiverFlow,
-    water_balance::MassBalance,
-    network::NetworkRiver,
-    dt::Float64,
-)
+        river_flow::LocalInertialRiverFlow,
+        water_balance::MassBalance,
+        network::NetworkRiver,
+        dt::Float64,
+    )
     (; storage_prev, error, relative_error) = water_balance
     (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
         river_flow.boundary_conditions
@@ -413,10 +412,10 @@ Compute water mass balance error and relative error for overland flow kinematic 
 routing.
 """
 function compute_flow_balance!(
-    overland_flow::KinWaveOverlandFlow,
-    water_balance::MassBalance,
-    dt::Float64,
-)
+        overland_flow::KinWaveOverlandFlow,
+        water_balance::MassBalance,
+        dt::Float64,
+    )
     (; storage_prev, error, relative_error) = water_balance
     (; inwater) = overland_flow.boundary_conditions
     (; qin_av, q_av, storage) = overland_flow.variables
@@ -437,12 +436,12 @@ Compute water mass balance error and relative error for 1D river local inertial 
 computed for each land cell (total storage) considering both river and overland flow.
 """
 function compute_flow_balance!(
-    river_flow::LocalInertialRiverFlow,
-    overland_flow::LocalInertialOverlandFlow,
-    water_balance::MassBalance,
-    domain::Domain,
-    dt::Float64,
-)
+        river_flow::LocalInertialRiverFlow,
+        overland_flow::LocalInertialOverlandFlow,
+        water_balance::MassBalance,
+        domain::Domain,
+        dt::Float64,
+    )
     indices = domain.land.network.edge_indices
     inds_river = domain.land.network.river_indices
     (; storage_prev, error, relative_error) = water_balance
@@ -475,6 +474,7 @@ function compute_flow_balance!(
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
+    return
 end
 
 """
@@ -482,11 +482,11 @@ Compute water mass balance error and relative error for subsurface flow kinemati
 routing.
 """
 function compute_flow_balance!(
-    subsurface_flow::LateralSSF,
-    water_balance::MassBalance,
-    parameters::LandParameters,
-    dt::Float64,
-)
+        subsurface_flow::LateralSSF,
+        water_balance::MassBalance,
+        parameters::LandParameters,
+        dt::Float64,
+    )
     (; error, relative_error, zi_prev) = water_balance
     (; ssfin, ssf, exfiltwater, zi) = subsurface_flow.variables
     (; specific_yield_dyn) = subsurface_flow.parameters
@@ -503,6 +503,7 @@ function compute_flow_balance!(
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
+    return
 end
 
 """
@@ -511,11 +512,11 @@ Compute water mass balance error and relative error for single layer subsurface 
 boundaries are set at zero.
 """
 function compute_flow_balance!(
-    subsurface_flow::GroundwaterFlow{A},
-    water_balance::MassBalance,
-    parameters::LandParameters,
-    dt::Float64,
-) where {A <: UnconfinedAquifer}
+        subsurface_flow::GroundwaterFlow{A},
+        water_balance::MassBalance,
+        parameters::LandParameters,
+        dt::Float64,
+    ) where {A <: UnconfinedAquifer}
     (; head_prev, error, relative_error) = water_balance
     (; head, q_in_av, q_out_av, exfiltwater) = subsurface_flow.aquifer.variables
     (; area, specific_yield_dyn) = subsurface_flow.aquifer.parameters
@@ -557,7 +558,7 @@ function compute_flow_routing_balance!(model)
     compute_flow_balance!(river_flow, river_water_balance, model.domain.river.network, dt)
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
     compute_flow_balance!(overland_flow, overland_water_balance, dt)
-    compute_flow_balance!(
+    return compute_flow_balance!(
         subsurface_flow,
         subsurface_water_balance,
         model.domain.land.parameters,
@@ -572,8 +573,8 @@ inertial 1D river flow routing (subgrid channel) and local inertial 2D overland 
 routing.
 """
 function compute_flow_routing_balance!(
-    model::Model{R},
-) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
+        model::Model{R},
+    ) where {R <: Routing{<:LocalInertialOverlandFlow, <:LocalInertialRiverFlow}}
     (; river_flow, overland_flow, subsurface_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =
@@ -588,7 +589,7 @@ function compute_flow_routing_balance!(
         dt,
     )
     compute_flow_balance!(reservoir, reservoir_water_balance, dt)
-    compute_flow_balance!(
+    return compute_flow_balance!(
         subsurface_flow,
         subsurface_water_balance,
         model.domain.land.parameters,

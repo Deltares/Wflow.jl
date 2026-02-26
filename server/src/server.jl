@@ -71,6 +71,7 @@ function valid_request(json)
             break
         end
     end
+    return
 end
 
 """
@@ -80,7 +81,7 @@ Run a Wflow function through `wflow.bmi(f, handler.model)` and update Wflow Mode
 if required, depending on return type of `wflow.bmi(f, handler.model)`.
 """
 function wflow_bmi(s::ZMQ.Socket, handler::ModelHandler, f)
-    try
+    return try
         ret = wflow_bmi(f, handler.model)
         if typeof(ret) <: Wflow.Model # initialize Wflow model
             handler.model = ret
@@ -147,7 +148,7 @@ function start(port::Int)
     socket = ZMQ.Socket(context, ZMQ.REP)
     ZMQ.bind(socket, "tcp://*:$port")
 
-    try
+    return try
         while true
             # Wait for next request from client
             req = ZMQ.recv(socket)

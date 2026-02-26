@@ -16,6 +16,8 @@ install-julia = "juliaup add 1.12.5 && juliaup override set 1.12.5"
 # Prek (pre-commit)
 install-prek = "prek install --overwrite"
 prek-run = "prek run --all-files"
+# Runic (Julia formatting)
+install-runic = "julia --eval 'using Pkg; Pkg.Apps.add(\"Runic\")'"
 update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
 update-manifest-julia = "julia --project utils/update-manifest.jl"
 initialize-julia = { depends-on = [
@@ -24,7 +26,7 @@ initialize-julia = { depends-on = [
 		"Wflow",
 	] },
 ] }
-install = { depends-on = ["install-julia", "install-prek"] }
+install = { depends-on = ["install-julia", "install-prek", "install-runic"] }
 # Test data
 download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
 # Build

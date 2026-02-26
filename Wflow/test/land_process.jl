@@ -8,13 +8,13 @@
     max_evaporation = 4.0
     throughfall, interception, stem_flow, canopy_storage_out =
         Wflow.rainfall_interception_gash(
-            cmax,
-            e_r,
-            canopy_gap_fraction,
-            precipitation,
-            canopy_storage_in,
-            max_evaporation,
-        )
+        cmax,
+        e_r,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage_in,
+        max_evaporation,
+    )
     @test throughfall == precipitation
     @test interception == 0.0
     @test stem_flow == 0.0
@@ -24,13 +24,13 @@
     cmax = 3.0
     throughfall, interception, stem_flow, canopy_storage_out =
         Wflow.rainfall_interception_gash(
-            cmax,
-            e_r,
-            canopy_gap_fraction,
-            precipitation,
-            canopy_storage_in,
-            max_evaporation,
-        )
+        cmax,
+        e_r,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage_in,
+        max_evaporation,
+    )
     @test throughfall ≈ 13.568
     @test interception ≈ 4.0
     @test stem_flow ≈ 0.432
@@ -40,13 +40,13 @@
     precipitation = 1.0
     throughfall, interception, stem_flow, canopy_storage_out =
         Wflow.rainfall_interception_gash(
-            cmax,
-            e_r,
-            canopy_gap_fraction,
-            precipitation,
-            canopy_storage_in,
-            max_evaporation,
-        )
+        cmax,
+        e_r,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage_in,
+        max_evaporation,
+    )
     @test throughfall ≈ 0.24
     @test interception ≈ 0.736
     @test stem_flow ≈ 0.024
@@ -123,19 +123,19 @@ end
     temperature = 0.54
     ttm = 0.0
     cfmax = 2.5
-    whc = 0.10
+    whc = 0.1
     # Case temperature > ttm
     snow_storage_new, snow_water, snow_water_equivalent, snow_melt, runoff =
         Wflow.snowpack_hbv(
-            snow_storage,
-            snow_water,
-            snow_precip,
-            liquid_precip,
-            temperature,
-            ttm,
-            cfmax,
-            whc,
-        )
+        snow_storage,
+        snow_water,
+        snow_precip,
+        liquid_precip,
+        temperature,
+        ttm,
+        cfmax,
+        whc,
+    )
     @test snow_storage_new ≈ 207.073
     @test snow_water ≈ 20.7073
     @test snow_water_equivalent ≈ 227.7803
@@ -146,15 +146,15 @@ end
     temperature = -0.5
     snow_storage_new, snow_water, snow_water_equivalent, snow_melt, runoff =
         Wflow.snowpack_hbv(
-            snow_storage,
-            snow_water,
-            snow_precip,
-            liquid_precip,
-            temperature,
-            ttm,
-            cfmax,
-            whc,
-        )
+        snow_storage,
+        snow_water,
+        snow_precip,
+        liquid_precip,
+        temperature,
+        ttm,
+        cfmax,
+        whc,
+    )
     @test snow_storage_new ≈ 208.4855
     @test snow_water ≈ 20.84855
     @test snow_water_equivalent ≈ 229.33405

@@ -15,15 +15,17 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
         add_edge!(graph, from_node, to_node)
     end
     if is_cyclic(graph)
-        error("""One or more cycles detected in flow graph.
+        error(
+            """One or more cycles detected in flow graph.
             The provided local drainage direction map may be unsound.
             Verify that each active flow cell flows towards a pit.
-            """)
+            """
+        )
     end
     return graph
 end
 
-const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
+const KIN_WAVE_MIN_FLOW = 1.0e-30 # [m³ s⁻¹]
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
@@ -124,21 +126,21 @@ Returns lateral subsurface flow `ssf`, water table depth `zi`, exfiltration rate
 and dynamic specific yield `sy_d`.
 """
 function kinematic_wave_ssf(
-    ssfin,
-    ssf_prev,
-    zi_prev,
-    r,
-    slope,
-    sy,
-    d,
-    dt,
-    dx,
-    dw,
-    ssfmax,
-    kh_profile::Union{KhExponential, KhExponentialConstant},
-    soil::SbmSoilModel,
-    i,
-)
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        r,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile::Union{KhExponential, KhExponentialConstant},
+        soil::SbmSoilModel,
+        i,
+    )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
         return 0.0, d, 0.0
     else
@@ -223,21 +225,21 @@ Return lateral subsurface flow `ssf`, water table depth `zi`, exfiltration rate 
 dynamic specific yield `sy_d`.
 """
 function kinematic_wave_ssf(
-    ssfin,
-    ssf_prev,
-    zi_prev,
-    r,
-    slope,
-    sy,
-    d,
-    dt,
-    dx,
-    dw,
-    ssfmax,
-    kh_profile::KhLayered,
-    soil::SbmSoilModel,
-    i,
-)
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        r,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile::KhLayered,
+        soil::SbmSoilModel,
+        i,
+    )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
         return 0.0, d, 0.0
     else
@@ -384,7 +386,7 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
     maxflux = snowflux_frac .* snow_storage
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
     snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)
-    flux_in!(snow_in, snow_out, domain.network)
+    return flux_in!(snow_in, snow_out, domain.network)
 end
 
 lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
@@ -396,17 +398,17 @@ Local inertial approach for flow through area `A`. Returns the flow `q` between 
 river cells (nodes) for a single timestep.
 """
 function local_inertial_flow(
-    q0,
-    zs0,
-    zs1,
-    hf,
-    A,
-    R,
-    length,
-    mannings_n_sq,
-    froude_limit,
-    dt,
-)
+        q0,
+        zs0,
+        zs1,
+        hf,
+        A,
+        R,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    )
     slope = (zs1 - zs0) / length
     pow_R = cbrt(R * R * R * R)
     unit = one(hf)
@@ -432,19 +434,19 @@ two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almei
 (2012).
 """
 function local_inertial_flow(
-    theta,
-    q0,
-    qd,
-    qu,
-    zs0,
-    zs1,
-    hf,
-    width,
-    length,
-    mannings_n_sq,
-    froude_limit,
-    dt,
-)
+        theta,
+        q0,
+        qd,
+        qu,
+        zs0,
+        zs1,
+        hf,
+        width,
+        length,
+        mannings_n_sq,
+        froude_limit,
+        dt,
+    )
     slope = (zs1 - zs0) / length
     unit = one(theta)
     half = oftype(theta, 0.5)
@@ -453,10 +455,10 @@ function local_inertial_flow(
     q = (
         (
             (theta * q0 + half * (unit - theta) * (qu + qd)) -
-            GRAVITATIONAL_ACCELERATION * hf * width * dt * slope
+                GRAVITATIONAL_ACCELERATION * hf * width * dt * slope
         ) / (
             unit +
-            GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
+                GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
         )
     )
     # if froude number > 1.0, limit flow

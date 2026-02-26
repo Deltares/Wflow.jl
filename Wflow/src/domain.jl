@@ -82,7 +82,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
 
     network_land = NetworkLand(dataset, config)
     if land_routing == RoutingType.kinematic_wave ||
-       subsurface_routing(config) == RoutingType.kinematic_wave
+            subsurface_routing(config) == RoutingType.kinematic_wave
         network_land = network_subdomains(config, network_land)
     end
 
@@ -115,7 +115,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     end
 
     if land_routing == RoutingType.kinematic_wave ||
-       subsurface_routing(config) == RoutingType.kinematic_wave
+            subsurface_routing(config) == RoutingType.kinematic_wave
         @reset network_land.upstream_nodes =
             filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
     end
@@ -163,7 +163,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
         if river_routing == RoutingType.kinematic_wave
             @info "Parallel execution of kinematic wave." min_streamorder_land min_streamorder_river
         elseif land_routing == RoutingType.kinematic_wave ||
-               subsurface_routing(config) == RoutingType.kinematic_wave
+                subsurface_routing(config) == RoutingType.kinematic_wave
             @info "Parallel execution of kinematic wave." * min_streamorder_land
         end
     end
@@ -183,7 +183,7 @@ function Domain(dataset::NCDataset, config::Config, ::SedimentModel)
 
     land_params, river_params = initialize_shared_parameters(dataset, config, domain)
     @reset domain.land.parameters = land_params
-    @reset domain.river.parameters = river_params
+    return @reset domain.river.parameters = river_params
 end
 
 "Initialize (shared) land parameters for model type `sediment`"
@@ -306,11 +306,11 @@ end
 
 "Return open water fraction (excluding rivers)"
 function get_water_fraction(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkLand,
-    river_fraction::Vector{Float64},
-)
+        dataset::NCDataset,
+        config::Config,
+        network::NetworkLand,
+        river_fraction::Vector{Float64},
+    )
     water_fraction = ncread(
         dataset,
         config,
@@ -325,12 +325,12 @@ end
 
 "Return river fraction"
 function get_river_fraction(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkLand,
-    river_location::Vector{Bool},
-    area::Vector{Float64},
-)
+        dataset::NCDataset,
+        config::Config,
+        network::NetworkLand,
+        river_location::Vector{Bool},
+        area::Vector{Float64},
+    )
     river_width_2d = ncread(
         dataset,
         config,
@@ -407,11 +407,11 @@ end
 
 "Return reservoir mask"
 function reservoir_mask(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkLand;
-    region::String = "location",
-)
+        dataset::NCDataset,
+        config::Config,
+        network::NetworkLand;
+        region::String = "location",
+    )
     reservoirs = fill(0, length(network.indices))
     if config.model.reservoir__flag
         reservoirs = ncread(

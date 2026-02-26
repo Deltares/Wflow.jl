@@ -26,10 +26,10 @@ end
 
 "Initialize ANSWERS overland flow erosion model parameters"
 function OverlandFlowErosionAnswersParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     usle_k = ncread(
         dataset,
         config,
@@ -70,10 +70,10 @@ end
 
 "Initialize ANSWERS overland flow erosion model"
 function OverlandFlowErosionAnswersModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
     model = OverlandFlowErosionAnswersModel(; n, parameters)
@@ -82,26 +82,26 @@ end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"
 function update_boundary_conditions!(
-    model::OverlandFlowErosionAnswersModel,
-    hydrological_forcing::HydrologicalForcing,
-)
+        model::OverlandFlowErosionAnswersModel,
+        hydrological_forcing::HydrologicalForcing,
+    )
     (; q) = model.boundary_conditions
     (; q_land) = hydrological_forcing
-    @. q = q_land
+    return @. q = q_land
 end
 
 "Update ANSWERS overland flow erosion model for a single timestep"
 function update!(
-    model::OverlandFlowErosionAnswersModel,
-    geometry::LandParameters,
-    dt::Float64,
-)
+        model::OverlandFlowErosionAnswersModel,
+        geometry::LandParameters,
+        dt::Float64,
+    )
     (; q) = model.boundary_conditions
     (; usle_k, usle_c, answers_overland_flow_factor) = model.parameters
     (; soil_erosion_rate) = model.variables
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         soil_erosion_rate[i] = overland_flow_erosion_answers(
             q[i],
             usle_k[i],

@@ -123,14 +123,18 @@ end
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Linked reservoirs with free weir (outflowfunc = 1)
     datadir = joinpath(@__DIR__, "data")
-    sh = Vector{Union{Wflow.SH, Missing}}([
-        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
-        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
-    ])
-    hq = Vector{Union{Wflow.HQ, Missing}}([
-        missing,
-        Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
-    ])
+    sh = Vector{Union{Wflow.SH, Missing}}(
+        [
+            Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
+            Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
+        ]
+    )
+    hq = Vector{Union{Wflow.HQ, Missing}}(
+        [
+            missing,
+            Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
+        ]
+    )
 
     @test keys(sh[1]) == (:H, :S)
     @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
@@ -213,12 +217,16 @@ end
         precipitation = [10.0],
         evaporation = [2.0],
     )
-    sh = Vector{Union{Wflow.SH, Missing}}([
-        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
-    ])
-    hq = Vector{Union{Wflow.HQ, Missing}}([
-        Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
-    ])
+    sh = Vector{Union{Wflow.SH, Missing}}(
+        [
+            Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
+        ]
+    )
+    hq = Vector{Union{Wflow.HQ, Missing}}(
+        [
+            Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
+        ]
+    )
     res_params = Wflow.ReservoirParameters(;
         id = [1],
         area = [200_000_000],
@@ -245,9 +253,9 @@ end
         res_p.area[1],
         res_v.storage[1],
         res_p.sh[1],
-    ) ≈ 398.0 atol = 1e-2
+    ) ≈ 398.0 atol = 1.0e-2
     @test res_v.outflow ≈ [1303.67476852]
     @test res_v.outflow_av ≈ res_v.outflow
     @test res_v.storage ≈ [4.293225e8]
-    @test res_v.waterlevel ≈ [398.000000]
+    @test res_v.waterlevel ≈ [398.0]
 end

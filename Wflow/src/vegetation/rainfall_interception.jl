@@ -1,4 +1,3 @@
-
 """
     rainfall_interception_gash(cmax, e_r, canopy_gap_fraction, precipitation, canopy_storage, max_evaporation)
 
@@ -7,13 +6,13 @@ storage and `e_r` is the ratio of the average evaporation from the wet canopy an
 average precipitation intensity on a saturated canopy.
 """
 function rainfall_interception_gash(
-    cmax,
-    e_r,
-    canopy_gap_fraction,
-    precipitation,
-    canopy_storage,
-    max_evaporation,
-)
+        cmax,
+        e_r,
+        canopy_gap_fraction,
+        precipitation,
+        canopy_storage,
+        max_evaporation,
+    )
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
@@ -69,12 +68,12 @@ Interception according to a modified Rutter model. The model is solved explicitl
 is no drainage below `cmax`.
 """
 function rainfall_interception_modrut(
-    precipitation,
-    potential_evaporation,
-    canopy_storage,
-    canopy_gap_fraction,
-    cmax,
-)
+        precipitation,
+        potential_evaporation,
+        canopy_storage,
+        canopy_gap_fraction,
+        cmax,
+    )
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
     if canopy_gap_fraction < inv(1.1)
         pt = 0.1 * canopy_gap_fraction

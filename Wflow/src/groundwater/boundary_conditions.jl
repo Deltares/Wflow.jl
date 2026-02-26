@@ -32,11 +32,11 @@ end
 end
 
 function GwfRiver(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    index::Vector{Int},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        index::Vector{Int},
+    )
     infiltration_conductance = ncread(
         dataset,
         config,
@@ -110,11 +110,11 @@ end
 end
 
 function Drainage(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    index::Vector{Int},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        index::Vector{Int},
+    )
     drain_elevation = ncread(
         dataset,
         config,

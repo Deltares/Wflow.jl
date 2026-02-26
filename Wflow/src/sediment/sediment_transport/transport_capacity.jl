@@ -18,14 +18,14 @@ end
 
 "Update total transport capacity model boundary conditions"
 function update_boundary_conditions!(
-    model::AbstractTransportCapacityModel,
-    hydrological_forcing::HydrologicalForcing,
-    model_type::Symbol,
-)
+        model::AbstractTransportCapacityModel,
+        hydrological_forcing::HydrologicalForcing,
+        model_type::Symbol,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; q_land, waterlevel_land, q_river, waterlevel_river) = hydrological_forcing
 
-    if model_type == :land
+    return if model_type == :land
         @. q = q_land
         @. waterlevel = waterlevel_land
     elseif model_type == :river
@@ -48,10 +48,10 @@ end
 
 "Initialize Govers overland flow transport capacity model parameters"
 function TransportCapacityGoversParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     density = ncread(
         dataset,
         config,
@@ -91,10 +91,10 @@ end
 
 "Initialize Govers overland flow transport capacity model"
 function TransportCapacityGoversModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityGoversParameters(dataset, config, indices)
     model = TransportCapacityGoversModel(; n, parameters)
@@ -103,10 +103,10 @@ end
 
 "Update Govers overland flow transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityGoversModel,
-    parameters::LandParameters,
-    dt::Float64,
-)
+        model::TransportCapacityGoversModel,
+        parameters::LandParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; density, c_govers, n_govers) = model.parameters
     (; sediment_transport_capacity) = model.variables
@@ -114,7 +114,7 @@ function update!(
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_govers(
             q[i],
             waterlevel[i],
@@ -140,10 +140,10 @@ end
 
 "Initialize Yalin overland flow transport capacity model parameters"
 function TransportCapacityYalinParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     density = ncread(
         dataset,
         config,
@@ -176,10 +176,10 @@ end
 
 "Initialize Yalin overland flow transport capacity model"
 function TransportCapacityYalinModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityYalinParameters(dataset, config, indices)
     model = TransportCapacityYalinModel(; n, parameters)
@@ -188,10 +188,10 @@ end
 
 "Update Yalin overland flow transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityYalinModel,
-    parameters::LandParameters,
-    dt::Float64,
-)
+        model::TransportCapacityYalinModel,
+        parameters::LandParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; sediment_transport_capacity) = model.variables
@@ -199,7 +199,7 @@ function update!(
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_yalin(
             q[i],
             waterlevel[i],
@@ -249,10 +249,10 @@ end
 
 "Initialize Yalin differentiated overland flow transport capacity model parameters"
 function TransportCapacityYalinDifferentiationParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     density = ncread(
         dataset,
         config,
@@ -325,10 +325,10 @@ end
 
 "Initialize Yalin differentiated overland flow transport capacity model"
 function TransportCapacityYalinDifferentiationModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
     model = TransportCapacityYalinDifferentiationModel(; n, parameters)
@@ -337,10 +337,10 @@ end
 
 "Update Yalin differentiated overland flow transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityYalinDifferentiationModel,
-    parameters::LandParameters,
-    dt::Float64,
-)
+        model::TransportCapacityYalinDifferentiationModel,
+        parameters::LandParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = model.parameters
     (; sediment_transport_capacity, clay, silt, sand, sagg, lagg) = model.variables
@@ -348,7 +348,7 @@ function update!(
     (; slope, flow_width, river_location, reservoir_coverage) = parameters
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         dtot = transportability_yalin_differentiation(
             waterlevel[i],
             density[i],
@@ -433,10 +433,10 @@ end
 
 "Initialize common river transport capacity model parameters"
 function TransportCapacityRiverParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     density = ncread(
         dataset,
         config,
@@ -469,10 +469,10 @@ end
 
 "Initialize Bagnold transport capacity model parameters"
 function TransportCapacityBagnoldParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     c_bagnold = ncread(
         dataset,
         config,
@@ -505,10 +505,10 @@ end
 
 "Initialize Bagnold river transport capacity model"
 function TransportCapacityBagnoldModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityBagnoldParameters(dataset, config, indices)
     model = TransportCapacityBagnoldModel(; n, parameters)
@@ -517,10 +517,10 @@ end
 
 "Update Bagnold river transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityBagnoldModel,
-    parameters::RiverParameters,
-    dt::Float64,
-)
+        model::TransportCapacityBagnoldModel,
+        parameters::RiverParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; c_bagnold, e_bagnold) = model.parameters
     (; sediment_transport_capacity) = model.variables
@@ -528,7 +528,7 @@ function update!(
     n = length(q)
     # Note: slope is not used here but this allows for a consistent interface of update! functions
     # Only Bagnold does not use it
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_bagnold(
             q[i],
             waterlevel[i],
@@ -551,10 +551,10 @@ end
 
 "Initialize Engelund and Hansen river transport capacity model"
 function TransportCapacityEngelundModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
     model = TransportCapacityEngelundModel(; n, parameters)
@@ -563,16 +563,16 @@ end
 
 "Update Engelund and Hansen river transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityEngelundModel,
-    parameters::RiverParameters,
-    dt::Float64,
-)
+        model::TransportCapacityEngelundModel,
+        parameters::RiverParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; sediment_transport_capacity) = model.variables
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_engelund(
             q[i],
             waterlevel[i],
@@ -600,10 +600,10 @@ end
 
 "Initialize Kodatie river transport capacity model parameters"
 function TransportCapacityKodatieParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     a_kodatie = ncread(
         dataset,
         config,
@@ -653,10 +653,10 @@ end
 
 "Initialize Kodatie river transport capacity model"
 function TransportCapacityKodatieModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityKodatieParameters(dataset, config, indices)
     model = TransportCapacityKodatieModel(; n, parameters)
@@ -665,16 +665,16 @@ end
 
 "Update Kodatie river transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityKodatieModel,
-    parameters::RiverParameters,
-    dt::Float64,
-)
+        model::TransportCapacityKodatieModel,
+        parameters::RiverParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = model.parameters
     (; sediment_transport_capacity) = model.variables
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_kodatie(
             q[i],
             waterlevel[i],
@@ -700,10 +700,10 @@ end
 
 "Initialize Yang river transport capacity model"
 function TransportCapacityYangModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
     model = TransportCapacityYangModel(; n, parameters)
@@ -712,16 +712,16 @@ end
 
 "Update Yang river transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityYangModel,
-    parameters::RiverParameters,
-    dt::Float64,
-)
+        model::TransportCapacityYangModel,
+        parameters::RiverParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; sediment_transport_capacity) = model.variables
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_yang(
             q[i],
             waterlevel[i],
@@ -745,10 +745,10 @@ end
 
 "Initialize Molinas and Wu river transport capacity model"
 function TransportCapacityMolinasModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
     model = TransportCapacityMolinasModel(; n, parameters)
@@ -757,16 +757,16 @@ end
 
 "Update Molinas and Wu river transport capacity model for a single timestep"
 function update!(
-    model::TransportCapacityMolinasModel,
-    parameters::RiverParameters,
-    dt::Float64,
-)
+        model::TransportCapacityMolinasModel,
+        parameters::RiverParameters,
+        dt::Float64,
+    )
     (; q, waterlevel) = model.boundary_conditions
     (; density, d50) = model.parameters
     (; sediment_transport_capacity) = model.variables
 
     n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         sediment_transport_capacity[i] = transport_capacity_molinas(
             q[i],
             waterlevel[i],

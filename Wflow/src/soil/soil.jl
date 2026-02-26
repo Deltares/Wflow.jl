@@ -235,16 +235,16 @@ end
 
 "Initialize SBM soil model hydraulic conductivity depth profile"
 function sbm_kv_profiles(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    kv_0::Vector{Float64},
-    f::Vector{Float64},
-    maxlayers::Int,
-    nlayers::Vector{Int},
-    sumlayers::Vector,
-    dt::Second,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        kv_0::Vector{Float64},
+        f::Vector{Float64},
+        maxlayers::Int,
+        nlayers::Vector{Int},
+        sumlayers::Vector,
+        dt::Second,
+    )
     kv_profile_type = config.model.saturated_hydraulic_conductivity_profile
     n = length(indices)
     if kv_profile_type == VerticalConductivityProfile.exponential
@@ -261,17 +261,17 @@ function sbm_kv_profiles(
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
     elseif kv_profile_type == VerticalConductivityProfile.layered ||
-           kv_profile_type == VerticalConductivityProfile.layered_exponential
+            kv_profile_type == VerticalConductivityProfile.layered_exponential
         kv =
             ncread(
-                dataset,
-                config,
-                "soil_layer_water__vertical_saturated_hydraulic_conductivity";
-                optional = false,
-                sel = indices,
-                type = Float64,
-                dimname = :layer,
-            ) .* (dt / BASETIMESTEP)
+            dataset,
+            config,
+            "soil_layer_water__vertical_saturated_hydraulic_conductivity";
+            optional = false,
+            sel = indices,
+            type = Float64,
+            dimname = :layer,
+        ) .* (dt / BASETIMESTEP)
         if size(kv, 1) != maxlayers
             parname = param(
                 config.input.static,
@@ -311,12 +311,12 @@ end
 
 "Initialize SBM soil model parameters"
 function SbmSoilParameters(
-    dataset::NCDataset,
-    config::Config,
-    vegetation_parameter_set::VegetationParameters,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-)
+        dataset::NCDataset,
+        config::Config,
+        vegetation_parameter_set::VegetationParameters,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+    )
     config_soil_layer_thickness = config.model.soil_layer__thickness
 
     soil_layer_thickness =
@@ -328,13 +328,13 @@ function SbmSoilParameters(
 
     w_soil =
         ncread(
-            dataset,
-            config,
-            "soil_surface_temperature__weight_coefficient";
-            sel = indices,
-            defaults = 0.1125,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+        dataset,
+        config,
+        "soil_surface_temperature__weight_coefficient";
+        sel = indices,
+        defaults = 0.1125,
+        type = Float64,
+    ) .* (dt / BASETIMESTEP)
     cf_soil = ncread(
         dataset,
         config,
@@ -363,13 +363,13 @@ function SbmSoilParameters(
     )
     kv_0 =
         ncread(
-            dataset,
-            config,
-            "soil_surface_water__vertical_saturated_hydraulic_conductivity";
-            optional = false,
-            sel = indices,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+        dataset,
+        config,
+        "soil_surface_water__vertical_saturated_hydraulic_conductivity";
+        optional = false,
+        sel = indices,
+        type = Float64,
+    ) .* (dt / BASETIMESTEP)
     f = ncread(
         dataset,
         config,
@@ -444,22 +444,22 @@ function SbmSoilParameters(
     )
     infiltcappath =
         ncread(
-            dataset,
-            config,
-            "compacted_soil_surface_water__infiltration_capacity";
-            sel = indices,
-            defaults = 10.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+        dataset,
+        config,
+        "compacted_soil_surface_water__infiltration_capacity";
+        sel = indices,
+        defaults = 10.0,
+        type = Float64,
+    ) .* (dt / BASETIMESTEP)
     maxleakage =
         ncread(
-            dataset,
-            config,
-            "soil_water_saturated_zone_bottom__max_leakage_volume_flux";
-            sel = indices,
-            defaults = 0.0,
-            type = Float64,
-        ) .* (dt / BASETIMESTEP)
+        dataset,
+        config,
+        "soil_water_saturated_zone_bottom__max_leakage_volume_flux";
+        sel = indices,
+        defaults = 0.0,
+        type = Float64,
+    ) .* (dt / BASETIMESTEP)
     c = ncread(
         dataset,
         config,
@@ -641,12 +641,12 @@ end
 
 "Initialize SBM soil model"
 function SbmSoilModel(
-    dataset::NCDataset,
-    config::Config,
-    vegetation_parameter_set::VegetationParameters,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-)
+        dataset::NCDataset,
+        config::Config,
+        vegetation_parameter_set::VegetationParameters,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+    )
     n = length(indices)
     parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     variables = SbmSoilVariables(n, parameters)
@@ -656,10 +656,10 @@ end
 
 "Return soil fraction"
 function soil_fraction!(
-    soil::AbstractSoilModel,
-    glacier::AbstractGlacierModel,
-    parameters::LandParameters,
-)
+        soil::AbstractSoilModel,
+        glacier::AbstractGlacierModel,
+        parameters::LandParameters,
+    )
     (; canopygapfraction) = soil.parameters.vegetation_parameter_set
     (; soil_fraction) = soil.parameters
     (; water_fraction, river_fraction) = parameters
@@ -672,10 +672,10 @@ end
 
 "Update boundary conditions of the SBM soil model for a single timestep"
 function update_boundary_conditions!(
-    model::SbmSoilModel,
-    atmospheric_forcing::AtmosphericForcing,
-    external_models::NamedTuple,
-)
+        model::SbmSoilModel,
+        atmospheric_forcing::AtmosphericForcing,
+        external_models::NamedTuple,
+    )
     (; interception, runoff, demand, allocation) = external_models
     (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
         model.boundary_conditions
@@ -689,20 +689,20 @@ function update_boundary_conditions!(
 
     water_flux_surface .=
         max.(
-            runoff.boundary_conditions.water_flux_surface .+
+        runoff.boundary_conditions.water_flux_surface .+
             get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
             runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-            0.0,
-        )
+        0.0,
+    )
     return nothing
 end
 
 "Update soil temperature of the SBM soil model for a single timestep"
 function soil_temperature!(
-    model::SbmSoilModel,
-    snow::AbstractSnowModel,
-    temperature::Vector{Float64},
-)
+        model::SbmSoilModel,
+        snow::AbstractSnowModel,
+        temperature::Vector{Float64},
+    )
     v = model.variables
     p = model.parameters
     @. v.tsoil = soil_temperature(v.tsoil, p.w_soil, temperature)
@@ -724,10 +724,10 @@ end
 
 "Update the infiltration reduction factor of the SBM soil model for a single timestep"
 function infiltration_reduction_factor!(
-    model::SbmSoilModel;
-    modelsnow = false,
-    soil_infiltration_reduction = false,
-)
+        model::SbmSoilModel;
+        modelsnow = false,
+        soil_infiltration_reduction = false,
+    )
     v = model.variables
     p = model.parameters
 
@@ -979,7 +979,7 @@ function actual_infiltration!(model::SbmSoilModel)
             ustoredepth_excess = max(
                 0.0,
                 v.ustorelayerdepth[i][k] -
-                v.ustorelayerthickness[i][k] * (p.theta_s[i] - p.theta_r[i]),
+                    v.ustorelayerthickness[i][k] * (p.theta_s[i] - p.theta_r[i]),
             )
             v.ustorelayerdepth[i] = setindex(
                 v.ustorelayerdepth[i],
@@ -1065,7 +1065,7 @@ function capillary_flux!(model::SbmSoilModel)
                     netcapflux,
                     max(
                         v.ustorelayerthickness[i][k] * (p.theta_s[i] - p.theta_r[i]) -
-                        v.ustorelayerdepth[i][k],
+                            v.ustorelayerdepth[i][k],
                         0.0,
                     ),
                 )
@@ -1119,12 +1119,12 @@ Update the SBM soil model (infiltration, unsaturated zone flow, soil evaporation
 transpiration, capillary flux and leakage) for a single timestep.
 """
 function update!(
-    model::SbmSoilModel,
-    atmospheric_forcing::AtmosphericForcing,
-    external_models::NamedTuple,
-    config::Config,
-    dt::Float64,
-)
+        model::SbmSoilModel,
+        atmospheric_forcing::AtmosphericForcing,
+        external_models::NamedTuple,
+        config::Config,
+        dt::Float64,
+    )
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
     (; water_flux_surface) = model.boundary_conditions
@@ -1204,7 +1204,7 @@ function update_ustorelayerdepth!(soil, zi_prev, zi, i)
     v.n_unsatlayers[i] = n_unsatlayers
     v.ustorelayerdepth[i] = ustorelayerdepth
     v.ustorelayerthickness[i] = ustorelayerthickness
-    v.zi[i] = zi
+    return v.zi[i] = zi
 end
 
 """
@@ -1222,7 +1222,7 @@ function update_ustorelayerdepth!(model::SbmSoilModel, subsurface_flow)
     zi = get_water_depth(subsurface_flow) * 1000.0 # convert from [m] to [mm]
 
     n = length(model.variables.zi)
-    threaded_foreach(1:n; basesize = 1000) do i
+    return threaded_foreach(1:n; basesize = 1000) do i
         zi_prev = model.variables.zi[i]
         update_ustorelayerdepth!(model, zi_prev, zi[i], i)
     end
@@ -1268,8 +1268,8 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
                     vwc,
                     (
                         ustorelayerdepth[k] +
-                        (p.act_thickl[i][k] - ustorelayerthickness[k]) *
-                        (p.theta_s[i] - p.theta_r[i])
+                            (p.act_thickl[i][k] - ustorelayerthickness[k]) *
+                            (p.theta_s[i] - p.theta_r[i])
                     ) / p.act_thickl[i][k] + p.theta_r[i],
                     k,
                 )
@@ -1284,12 +1284,12 @@ function update!(model::SbmSoilModel, external_models::NamedTuple)
             rootstore_unsat =
                 rootstore_unsat +
                 min(
-                    1.0,
-                    (
-                        max(0.0, rootingdepth[i] - p.sumlayers[i][k]) /
+                1.0,
+                (
+                    max(0.0, rootingdepth[i] - p.sumlayers[i][k]) /
                         ustorelayerthickness[k]
-                    ),
-                ) * ustorelayerdepth[k]
+                ),
+            ) * ustorelayerdepth[k]
         end
 
         rootstore_sat = max(0.0, rootingdepth[i] - v.zi[i]) * (p.theta_s[i] - p.theta_r[i])
@@ -1358,7 +1358,7 @@ function update_diagnostic_vars!(model::SbmSoilModel)
     @. ustorecapacity = soilwatercapacity - satwaterdepth - ustoredepth
     @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
     @. n_unsatlayers = number_of_active_layers(ustorelayerthickness)
-    @. total_soilwater_storage = satwaterdepth + ustoredepth
+    return @. total_soilwater_storage = satwaterdepth + ustoredepth
 end
 
 # wrapper method
