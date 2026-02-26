@@ -155,6 +155,18 @@ function update_fluxes!(model::LateralSSF, domain::Domain, dt::Float64)
     return nothing
 end
 
+function flux_to_river!(model::LateralSSF, domain::NetworkRiver, dt::Float64)
+    (; to_river) = model.variables
+    (; river) = model.boundary_conditions
+    if isnothing(river)
+        to_river ./= dt
+    else
+        inds = domain.land_indices
+        to_river[inds] .= -river.variables.flux_av
+    end
+    return nothing
+end
+
 function kinwave_subsurface_update!(
     model::LateralSSF,
     soil::SbmSoilModel,
@@ -250,8 +262,8 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
         kinwave_subsurface_update!(model, soil, domain, dt_s)
         t += dt_s
     end
-    to_river ./= dt
     average_flux_vars!(model, dt)
+    flux_to_river!(model, domain.river.network, dt)
     return nothing
 end
 
