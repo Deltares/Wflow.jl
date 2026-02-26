@@ -10,7 +10,7 @@ example so we are able to reproduce the issue. Furthermore, we welcome contribut
 the [ColPrac guide for collaborative practices](https://github.com/SciML/ColPrac). New
 contributors should make sure to read that guide.
 
-To get started with local development, install Julia and pre-commit by running the command below.
+To get started with local development, install Julia and prek (pre-commit) by running the command below.
 
 ```sh
 pixi run install

@@ -1,5 +1,6 @@
 {
     "recommendations": [
+        "aviatesk.jetls-client",
         "julialang.language-julia",
         "ms-python.python",
         "ms-python.mypy-type-checker",

@@ -13,8 +13,9 @@ platforms = ["win-64", "linux-64"]
 # Installation
 # Julia
 install-julia = "juliaup add 1.12.5 && juliaup override set 1.12.5"
-# Pre-commit
-install-pre-commit = "pre-commit install"
+# Prek (pre-commit)
+install-prek = "prek install --overwrite"
+prek-run = "prek run --all-files"
 update-registry-julia = "julia --eval='using Pkg; Registry.update()'"
 update-manifest-julia = "julia --project utils/update-manifest.jl"
 initialize-julia = { depends-on = [
@@ -23,7 +24,7 @@ initialize-julia = { depends-on = [
 		"Wflow",
 	] },
 ] }
-install = { depends-on = ["install-julia", "install-pre-commit"] }
+install = { depends-on = ["install-julia", "install-prek"] }
 # Test data
 download-test-data = { cmd = "julia --project ../utils/download_test_data.jl", cwd = "Wflow" }
 # Build
@@ -71,7 +72,7 @@ outputs = ["Wflow.spdx.json"]
 juliaup = "*"
 python = ">=3.10"
 jupyter = ">=1.1.1,<2"
-pre-commit = "*"
+prek = "*"
 quarto = ">=1.8.26,<2"
 
 [system-requirements]
