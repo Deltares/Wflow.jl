@@ -526,6 +526,9 @@ window.Quarto = {
   <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a>
   <ul class="collapse">
   <li><a href="#unconfined-aquifer" id="toc-unconfined-aquifer" class="nav-link" data-scroll-target="#unconfined-aquifer">Unconfined aquifer</a></li>
+  </ul></li>
+  <li><a href="#subsurface-flow-boundaries" id="toc-subsurface-flow-boundaries" class="nav-link" data-scroll-target="#subsurface-flow-boundaries">Subsurface flow boundaries</a>
+  <ul class="collapse">
   <li><a href="#river-boundary" id="toc-river-boundary" class="nav-link" data-scroll-target="#river-boundary">River boundary</a></li>
   <li><a href="#drainage-boundary" id="toc-drainage-boundary" class="nav-link" data-scroll-target="#drainage-boundary">Drainage boundary</a></li>
   <li><a href="#recharge-boundary" id="toc-recharge-boundary" class="nav-link" data-scroll-target="#recharge-boundary">Recharge boundary</a></li>
@@ -1118,12 +1121,23 @@ td, th {
 <td>m m⁻¹</td>
 <td>-</td>
 </tr>
+<tr class="odd">
+<td><code>land_surface__elevation</code></td>
+<td>Land surface elevation</td>
+<td>m</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 </section>
 <section id="states-3" class="level4">
 <h4 class="anchored" data-anchor-id="states-3">States</h4>
 <table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Standard Name</th>
@@ -1133,7 +1147,7 @@ td, th {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>subsurface_water__volume_flow_rate</code></td>
+<td><code>subsurface_water__instanteneous_volume_flow_rate</code></td>
 <td>Subsurface flow</td>
 <td>m³ day⁻¹</td>
 </tr>
@@ -1169,9 +1183,14 @@ td, th {
 <tr class="odd">
 <td><code>subsurface_water__exfiltration_volume_flux</code></td>
 <td>Exfiltration (groundwater above surface level, saturated excess conditions)</td>
-<td>mm Δt⁻¹</td>
+<td>m Δt⁻¹</td>
 </tr>
 <tr class="even">
+<td><code>subsurface_water__hydraulic_head</code></td>
+<td>Hydraulic head</td>
+<td>m</td>
+</tr>
+<tr class="odd">
 <td><code>subsurface_water__to_river_volume_flow_rate</code></td>
 <td>Part of subsurface flow that flows to the river</td>
 <td>m³ day⁻¹</td>
@@ -1607,6 +1626,11 @@ td, th {
 <section id="output-7" class="level4">
 <h4 class="anchored" data-anchor-id="output-7">Output</h4>
 <table class="table-striped table-hover caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Standard Name</th>
@@ -1620,10 +1644,19 @@ td, th {
 <td>Groundwater head</td>
 <td>m</td>
 </tr>
+<tr class="even">
+<td><code>subsurface_water__exfiltration_volume_flux</code></td>
+<td>Exfiltration (groundwater above surface level, saturated excess conditions)</td>
+<td>m Δt⁻¹</td>
+</tr>
 </tbody>
 </table>
 </section>
 </section>
+</section>
+<section id="subsurface-flow-boundaries" class="level2">
+<h2 class="anchored" data-anchor-id="subsurface-flow-boundaries">Subsurface flow boundaries</h2>
+<p>Boundary conditions for both the groundwater flow and lateral subsurface flow concepts. The constant head boundary can only be applied as part of the groundwater flow concept.</p>
 <section id="river-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="river-boundary">River boundary</h3>
 <section id="input-gwf-river" class="level4">
