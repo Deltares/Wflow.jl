@@ -143,11 +143,11 @@ Composite type that represents all different aspects of a Wflow Model, such as t
 parameters, clock, configuration and input and output.
 """
 struct Model{
-    R <: Routing,
-    L <: AbstractLandModel,
-    M <: AbstractMassBalance,
-    T <: AbstractModelType,
-} <: AbstractModel{T}
+        R <: Routing,
+        L <: AbstractLandModel,
+        M <: AbstractMassBalance,
+        T <: AbstractModelType,
+    } <: AbstractModel{T}
     config::Config                  # all configuration options
     domain::Domain                  # domain connectivity (network) and shared parameters
     routing::R                      # routing model (horizontal fluxes), moves along network

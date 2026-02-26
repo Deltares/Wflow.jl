@@ -1,6 +1,7 @@
 {
     "[julia]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "aviatesk.jetls-client"
     },
     "julia.environmentPath": "./Wflow",
     "julia.numTestProcesses": 1,

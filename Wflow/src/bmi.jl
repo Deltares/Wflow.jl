@@ -222,11 +222,11 @@ function BMI.get_value_ptr(model::Model, name::String)
 end
 
 function BMI.get_value_at_indices(
-    model::Model,
-    name::String,
-    dest::Vector{Float64},
-    inds::Vector{Int},
-)
+        model::Model,
+        name::String,
+        dest::Vector{Float64},
+        inds::Vector{Int},
+    )
     dest .= BMI.get_value_ptr(model, name)[inds]
     return dest
 end
@@ -247,16 +247,16 @@ end
     Set a model variable `name` to the values in vector `src`, at indices `inds`.
 """
 function BMI.set_value_at_indices(
-    model::Model,
-    name::String,
-    inds::Vector{Int},
-    src::Vector{Float64},
-)
+        model::Model,
+        name::String,
+        inds::Vector{Int},
+        src::Vector{Float64},
+    )
     return BMI.get_value_ptr(model, name)[inds] .= src
 end
 
 function BMI.get_grid_type(model::Model, grid::Int)
-    if grid in 0:2
+    return if grid in 0:2
         "points"
     elseif grid in 3:6
         "unstructured"
@@ -266,7 +266,7 @@ function BMI.get_grid_type(model::Model, grid::Int)
 end
 
 function BMI.get_grid_rank(model::Model, grid::Int)
-    if grid in 0:6
+    return if grid in 0:6
         2
     else
         error("unknown grid type $grid")
@@ -399,9 +399,9 @@ Return the grid element type of a model variable (PropertyLens `var`) based on a
 `lens` allows access to a nested model variable.
 """
 function grid_element_type(
-    ::T,
-    var::PropertyLens,
-) where {T <: Union{LocalInertialRiverFlow, LocalInertialOverlandFlow}}
+        ::T,
+        var::PropertyLens,
+    ) where {T <: Union{LocalInertialRiverFlow, LocalInertialOverlandFlow}}
     vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
     element_type = if var in vars
         "edge"

@@ -166,15 +166,15 @@ function extract_required_states(config::Config)
     # Add required states to a tuple, similar to the keys in the output of
     # `ncnames(config.state.variables)`
     required_states = snow_states...,
-    glacier_states...,
-    interception_states...,
-    soil_states...,
-    ssf_states...,
-    land_states...,
-    river_states...,
-    floodplain_states...,
-    reservoir_states...,
-    paddy_states...
+        glacier_states...,
+        interception_states...,
+        soil_states...,
+        ssf_states...,
+        land_states...,
+        river_states...,
+        floodplain_states...,
+        reservoir_states...,
+        paddy_states...
 
     return required_states
 end

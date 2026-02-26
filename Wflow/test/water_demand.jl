@@ -95,7 +95,7 @@ end
                 act_surfacewater_abst_vol = zeros(n),
                 act_surfacewater_abst = zeros(n),
                 available_surfacewater = zeros(n),
-            )
+            ),
         ),
         boundary_conditions = (; external_inflow = [5.0]),
         variables = (; storage = [375.0]),
@@ -137,13 +137,13 @@ end
                 act_surfacewater_abst_vol = zeros(n),
                 act_surfacewater_abst = zeros(n),
                 available_surfacewater = zeros(n),
-            )
+            ),
         ),
         boundary_conditions = (;
             reservoir = (;
                 boundary_conditions = (; external_inflow = [2.0, 3.0, 4.0]),
                 variables = (; storage = [1.5531612276024342e8, 4.28e7, 7.16e7]),
-            )
+            ),
         ),
     )
 
@@ -176,11 +176,11 @@ end
     Wflow.surface_water_allocation_area!(model, demand_variables, river, domain, dt)
 
     @test river.allocation.variables.available_surfacewater ≈
-          [1.5220980030503854e8, 4.1944e7, 7.0168e7]
+        [1.5220980030503854e8, 4.1944e7, 7.0168e7]
     @test river.allocation.variables.act_surfacewater_abst_vol ≈
-          [608.1360277590558, 167.5822285897938, 280.34784035115035]
+        [608.1360277590558, 167.5822285897938, 280.34784035115035]
     @test river.allocation.variables.act_surfacewater_abst ≈
-          [1.008608685367754, 0.27797992757124085, 0.46503184145095416]
+        [1.008608685367754, 0.27797992757124085, 0.46503184145095416]
     @test model.variables.surfacewater_alloc ≈ [0.65, 0.77, 0.331]
 end
 
@@ -225,7 +225,7 @@ end
     )
 
     demand_variables =
-        Wflow.DemandVariables(; n, groundwater_demand = [23.23450, 12.261, 674.32])
+        Wflow.DemandVariables(; n, groundwater_demand = [23.2345, 12.261, 674.32])
 
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
@@ -240,8 +240,8 @@ end
     Wflow.groundwater_allocation_area!(model, demand_variables, domain)
 
     @test model.variables.act_groundwater_abst_vol ≈
-          [141483.796500842, 143733.60374878853, 142887.23392586954]
+        [141483.796500842, 143733.60374878853, 142887.23392586954]
     @test model.variables.act_groundwater_abst ≈
-          [234.58608886250354, 238.31636396144145, 236.91304717605513]
+        [234.58608886250354, 238.31636396144145, 236.91304717605513]
     @test model.variables.groundwater_alloc ≈ [23.2345, 12.261, 674.32]
 end

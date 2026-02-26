@@ -25,15 +25,15 @@ occurs if the snow storage < 10 mm.
 
 """
 function glacier_hbv(
-    glacier_frac,
-    glacier_store,
-    snow_storage,
-    temperature,
-    ttm,
-    cfmax,
-    g_sifrac,
-    max_snow_to_glacier,
-)
+        glacier_frac,
+        glacier_store,
+        snow_storage,
+        temperature,
+        ttm,
+        cfmax,
+        g_sifrac,
+        max_snow_to_glacier,
+    )
 
     # Fraction of the snow transformed into ice (HBV-light model)
     snow_to_glacier = if glacier_frac > 0.0

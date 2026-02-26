@@ -66,32 +66,38 @@
     zi_size = 0
     vwc_1_size = 0
     @testset "variable information and get and set functions" begin
-        @test request((
-            fn = "get_var_itemsize",
-            name = "subsurface_water__volume_flow_rate",
-        )) == Dict("var_itemsize" => sizeof(Float64))
+        @test request(
+            (
+                fn = "get_var_itemsize",
+                name = "subsurface_water__volume_flow_rate",
+            )
+        ) == Dict("var_itemsize" => sizeof(Float64))
         @test request((fn = "get_var_units", name = "river_water__volume_flow_rate")) ==
-              Dict("var_units" => "m3 s-1")
+            Dict("var_units" => "m3 s-1")
         @test request((fn = "get_var_location", name = "river_water__volume_flow_rate")) ==
-              Dict("var_location" => "node")
+            Dict("var_location" => "node")
         zi_nbytes =
             request((fn = "get_var_nbytes", name = "soil_water_saturated_zone_top__depth"))["var_nbytes"]
         @test zi_nbytes == 400504
-        zi_itemsize = request((
-            fn = "get_var_itemsize",
-            name = "soil_water_saturated_zone_top__depth",
-        ))["var_itemsize"]
+        zi_itemsize = request(
+            (
+                fn = "get_var_itemsize",
+                name = "soil_water_saturated_zone_top__depth",
+            )
+        )["var_itemsize"]
         zi_size = Int(zi_nbytes / zi_itemsize)
         vwc_1_nbytes =
             request((fn = "get_var_nbytes", name = "soil_layer_1_water__volume_fraction"))["var_nbytes"]
         @test vwc_1_nbytes == 400504
-        vwc_1_itemsize = request((
-            fn = "get_var_itemsize",
-            name = "soil_layer_1_water__volume_fraction",
-        ))["var_itemsize"]
+        vwc_1_itemsize = request(
+            (
+                fn = "get_var_itemsize",
+                name = "soil_layer_1_water__volume_fraction",
+            )
+        )["var_itemsize"]
         vwc_1_size = Int(vwc_1_nbytes / vwc_1_itemsize)
         @test request((fn = "get_var_grid", name = "river_water__depth")) ==
-              Dict("var_grid" => 2)
+            Dict("var_grid" => 2)
         msg = (
             fn = "get_value",
             name = "soil_water_saturated_zone_top__depth",
@@ -107,7 +113,7 @@
             inds = [1, 5, 10],
         )
         @test request(msg)["value_at_indices"] ≈
-              [1.9611737522697594, 2.4085733595005765, 3.0476204821445214]
+            [1.9611737522697594, 2.4085733595005765, 3.0476204821445214]
         msg = (
             fn = "set_value",
             name = "soil_water_saturated_zone_top__depth",
@@ -147,7 +153,7 @@
             inds = [1, 2, 3],
         )
         @test request(msg)["value_at_indices"] ≈
-              [0.12089607119560242, 0.11968416924304527, 0.14602328618707333]
+            [0.12089607119560242, 0.11968416924304527, 0.14602328618707333]
         msg = (
             fn = "set_value",
             name = "soil_layer_1_water__volume_fraction",
@@ -190,12 +196,12 @@
         @test grid_size == 50063
         msg = (fn = "get_grid_x", grid = 4, x = fill(0.0, grid_size))
         @test request(msg)["grid_x"][1:3] ≈
-              [6.826666666666673, 6.810000000000006, 6.81833333333334]
+            [6.826666666666673, 6.810000000000006, 6.81833333333334]
         msg = (fn = "get_grid_y", grid = 4, y = fill(0.0, grid_size))
         @test request(msg)["grid_y"][1:3] ≈
-              [47.8175, 47.825833333333335, 47.825833333333335]
+            [47.8175, 47.825833333333335, 47.825833333333335]
         @test request((fn = "get_grid_node_count", grid = 0)) ==
-              Dict("grid_node_count" => 2)
+            Dict("grid_node_count" => 2)
         @test request((fn = "get_grid_edge_count", grid = 3))["grid_edge_count"] == 5808
         msg = (fn = "get_grid_edge_nodes", grid = 3, edge_nodes = fill(0, 2 * 5808))
         @test request(msg)["grid_edge_nodes"][1:6] == [1, 5, 2, 1, 3, 2]

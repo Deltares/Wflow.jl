@@ -96,4 +96,5 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
             cp(license_file_path, joinpath(license_dir, pkg_entry.name); force = true)
         end
     end
+    return
 end

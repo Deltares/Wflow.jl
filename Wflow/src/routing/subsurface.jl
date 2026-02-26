@@ -55,11 +55,11 @@ end
 
 "Initialize lateral subsurface flow model parameters"
 function LateralSsfParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    soil::SbmSoilParameters,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        soil::SbmSoilParameters,
+    )
     khfrac = ncread(
         dataset,
         config,
@@ -85,7 +85,7 @@ function LateralSsfParameters(
         exp_profile = KhExponential(kh_0, f .* 1000.0)
         kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
-           kh_profile_type == VerticalConductivityProfile.layered_exponential
+            kh_profile_type == VerticalConductivityProfile.layered_exponential
         n_cells = length(khfrac)
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
@@ -103,10 +103,10 @@ end
 
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(
-    ssf::LateralSsfParameters,
-    zi::Vector{Float64},
-    area::Vector{Float64},
-)
+        ssf::LateralSsfParameters,
+        zi::Vector{Float64},
+        area::Vector{Float64},
+    )
     n = length(zi)
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * area
     variables = LateralSsfVariables(; n, zi, storage)
@@ -115,11 +115,11 @@ end
 
 "Initialize lateral subsurface flow model"
 function LateralSSF(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainLand,
-    soil::SbmSoilModel,
-)
+        dataset::NCDataset,
+        config::Config,
+        domain::DomainLand,
+        soil::SbmSoilModel,
+    )
     (; indices) = domain.network
     (; area) = domain.parameters
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)

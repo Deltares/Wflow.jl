@@ -118,7 +118,7 @@ end
         @test Wflow.harmonicmean_conductance(10.0 * 5.0, 10.0 * 0.0, 0.5, 0.5, 1.0) == 0.0
         # kD of 10 and 20 -> harmonicmean = 1/(1/10 + 1/20)
         @test Wflow.harmonicmean_conductance(10.0 * 1.0, 10.0 * 2.0, 1.0, 1.0, 1.0) ≈
-              (6.0 + 2.0 / 3.0)
+            (6.0 + 2.0 / 3.0)
     end
 
     nrow = 1
@@ -131,9 +131,9 @@ end
     @testset "saturated_thickness-confined" begin
         @test (
             Wflow.saturated_thickness(conf_aqf, 1) ==
-            Wflow.saturated_thickness(conf_aqf, 2) ==
-            Wflow.saturated_thickness(conf_aqf, 3) ==
-            10.0
+                Wflow.saturated_thickness(conf_aqf, 2) ==
+                Wflow.saturated_thickness(conf_aqf, 3) ==
+                10.0
         )
     end
 
@@ -146,18 +146,18 @@ end
     @testset "horizontal_conductance" begin
         @test (
             Wflow.horizontal_conductance(1, 2, 1, conf_aqf, connectivity) ==
-            Wflow.harmonicmean_conductance(10.0 * 10.0, 10.0 * 10.0, 5.0, 5.0, 10.0)
+                Wflow.harmonicmean_conductance(10.0 * 10.0, 10.0 * 10.0, 5.0, 5.0, 10.0)
         )
     end
 
     @testset "conductance" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         @test Wflow.conductance(conf_aqf, 2, 3, 3, conductivity_profile, connectivity) ==
-              100.0
+            100.0
         @test Wflow.conductance(unconf_aqf, 2, 3, 3, conductivity_profile, connectivity) ==
-              100.0  # upstream sat. thickness
+            100.0  # upstream sat. thickness
         @test Wflow.conductance(unconf_aqf, 1, 2, 1, conductivity_profile, connectivity) ==
-              75.0  # upstream sat. thickness
+            75.0  # upstream sat. thickness
     end
 
     @testset "check_flux-confined" begin
@@ -554,7 +554,7 @@ end
     aquifer = Wflow.ConfinedAquifer(; parameters, variables)
 
     cell_index = reshape(collect(range(1, ncell; step = 1)), shape)
-    indices = vcat(cell_index[1, :], cell_index[end, :])# , cell_index[:, 1], cell_index[:, end],)
+    indices = vcat(cell_index[1, :], cell_index[end, :]) # , cell_index[:, 1], cell_index[:, end],)
     variables = Wflow.ConstantHeadVariables(; head = fill(10.0, size(indices)))
     constanthead = Wflow.ConstantHead(; variables, index = indices)
     # Place a well in the middle of the domain

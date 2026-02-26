@@ -14,13 +14,13 @@ capacity of the soil and paved area can be reduced with the infiltration reducti
 `f_infiltration_reduction`.
 """
 function infiltration(
-    potential_infiltration,
-    pathfrac,
-    infiltcapsoil,
-    infiltcappath,
-    ustorecapacity,
-    f_infiltration_reduction,
-)
+        potential_infiltration,
+        pathfrac,
+        infiltcapsoil,
+        infiltcappath,
+        ustorecapacity,
+        f_infiltration_reduction,
+    )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and paved areas (path).
     soilinf = potential_infiltration * (1.0 - pathfrac)
@@ -186,11 +186,11 @@ smooth transition of `f_infiltration_reduction` as a function of `tsoil` and `cf
 Otherwise, `f_infiltration_reduction` is set to 1.0.
 """
 function infiltration_reduction_factor(
-    tsoil,
-    cf_soil;
-    modelsnow = false,
-    soil_infiltration_reduction = false,
-)
+        tsoil,
+        cf_soil;
+        modelsnow = false,
+        soil_infiltration_reduction = false,
+    )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)
         f_infiltration_reduction = scurve(tsoil, 0.0, bb, 8.0) + cf_soil
@@ -202,13 +202,13 @@ end
 
 "Return soil evaporation from the unsaturated store"
 function soil_evaporation_unsatured_store(
-    potential_soilevaporation,
-    ustorelayerdepth,
-    ustorelayerthickness,
-    n_unsatlayers,
-    zi,
-    theta_effective,
-)
+        potential_soilevaporation,
+        ustorelayerdepth,
+        ustorelayerthickness,
+        n_unsatlayers,
+        zi,
+        theta_effective,
+    )
     if n_unsatlayers == 0
         soilevapunsat = 0.0
     elseif n_unsatlayers == 1
@@ -226,12 +226,12 @@ end
 
 "Return soil evaporation from the saturated store"
 function soil_evaporation_satured_store(
-    potential_soilevaporation,
-    n_unsatlayers,
-    layerthickness,
-    zi,
-    theta_drainable,
-)
+        potential_soilevaporation,
+        n_unsatlayers,
+        layerthickness,
+        zi,
+        theta_drainable,
+    )
     if n_unsatlayers in (0, 1)
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
@@ -244,13 +244,13 @@ end
 
 "Return actual infiltration rate for soil `actinfiltsoil` and paved area `actinfiltpath`"
 function actual_infiltration_soil_path(
-    potential_infiltration,
-    actinfilt,
-    pathfrac,
-    infiltcapsoil,
-    infiltcappath,
-    f_infiltration_reduction,
-)
+        potential_infiltration,
+        actinfilt,
+        pathfrac,
+        infiltcapsoil,
+        infiltcappath,
+        f_infiltration_reduction,
+    )
     soilinf = potential_infiltration * (1.0 - pathfrac)
     pathinf = potential_infiltration * pathfrac
     if actinfilt > 0.0

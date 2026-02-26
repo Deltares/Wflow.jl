@@ -1,4 +1,3 @@
-
 "Map from PCRaster LDD value to a CartesianIndex"
 const PCR_DIR = [
     CartesianIndex(-1, -1),  # 1
@@ -51,11 +50,11 @@ end
 
 "Set at indices pit values (default = 5) in a gridded local drainage direction vector"
 function set_pit_ldd(
-    pits_2d::AbstractMatrix{Bool},
-    ldd::Vector{UInt8},
-    indices::Vector{CartesianIndex{2}};
-    pit::Integer = 5,
-)::Vector{UInt8}
+        pits_2d::AbstractMatrix{Bool},
+        ldd::Vector{UInt8},
+        indices::Vector{CartesianIndex{2}};
+        pit::Integer = 5,
+    )::Vector{UInt8}
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
     ldd[index] .= UInt8(pit)
@@ -64,9 +63,9 @@ end
 
 "Filter upstream neighbors of graph based on logical vector"
 function filter_upsteam_nodes(
-    graph::SimpleDiGraph{Int},
-    vec_logical::Vector{Bool},
-)::Vector{Vector{Int}}
+        graph::SimpleDiGraph{Int},
+        vec_logical::Vector{Bool},
+    )::Vector{Vector{Int}}
     upstream_nodes = Vector{Int}[]
     for v in topological_sort_by_dfs(graph)
         ups_nodes = inneighbors(graph, v)
@@ -88,9 +87,9 @@ the 1D internal domain, providing an Int which can be used as a linear index. Va
 represent inactive cells.
 """
 function active_indices(
-    subcatch_2d::AbstractMatrix,
-    nodata,
-)::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
+        subcatch_2d::AbstractMatrix,
+        nodata,
+    )::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
     A = subcatch_2d
     all_inds = CartesianIndices(size(A))
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
@@ -132,10 +131,10 @@ function lattometres(lat::Real)::Tuple{Float64, Float64}
 end
 
 function cell_lengths(
-    y::AbstractVector{<:Real},
-    celllength::Real,
-    cell_length_in_meter::Bool,
-)::Tuple{Vector{Float64}, Vector{Float64}}
+        y::AbstractVector{<:Real},
+        celllength::Real,
+        cell_length_in_meter::Bool,
+    )::Tuple{Vector{Float64}, Vector{Float64}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -163,11 +162,11 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(
-    instate_path::AbstractString,
-    model;
-    type = nothing,
-    dimname = nothing,
-)::Nothing
+        instate_path::AbstractString,
+        model;
+        type = nothing,
+        dimname = nothing,
+    )::Nothing
     (; domain, land, config) = model
 
     # Check if required states are covered
@@ -273,18 +272,18 @@ values.
 - `logging`: Generate a logging message when reading a netCDF variable. By default `true`.
 """
 function ncread(
-    nc,
-    config::Config,
-    parameter::AbstractString;
-    optional = true,
-    sel = nothing,
-    defaults = nothing,
-    type = nothing,
-    allow_missing = false,
-    fill = nothing,
-    dimname = nothing,
-    logging = true,
-)
+        nc,
+        config::Config,
+        parameter::AbstractString;
+        optional = true,
+        sel = nothing,
+        defaults = nothing,
+        type = nothing,
+        allow_missing = false,
+        fill = nothing,
+        dimname = nothing,
+        logging = true,
+    )
     var = get_var(config, parameter; optional)
 
     # for optional parameters default values are used.
@@ -389,10 +388,10 @@ water table depth) `reference_depth`, a SVector `cum_depth` with cumulative soil
 at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 """
 function set_layerthickness(
-    reference_depth::Real,
-    cum_depth::SVector,
-    thickness::SVector,
-)::SVector
+        reference_depth::Real,
+        cum_depth::SVector,
+        thickness::SVector,
+    )::SVector
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
         if reference_depth > cum_depth[i + 1]
@@ -420,7 +419,7 @@ function get_flow_length(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # take into account non-square cells
     # if ldd is 8 or 2 use y_length
     # if ldd is 4 or 6 use x_length
-    if ldd == 2 || ldd == 8
+    return if ldd == 2 || ldd == 8
         y_length
     elseif ldd == 4 || ldd == 6
         x_length
@@ -440,7 +439,7 @@ function get_flow_width(ldd::UInt8, x_length::Real, y_length::Real)::Real
     # take into account non-square cells
     # if ldd is 8 or 2 use x_length
     # if ldd is 4 or 6 use y_length
-    if ldd == 2 || ldd == 8
+    return if ldd == 2 || ldd == 8
         x_length
     elseif ldd == 4 || ldd == 6
         y_length
@@ -457,11 +456,11 @@ Return the surface flow width. Input `flow_width` (flow width), `flow_length` (f
 cell, boolean). Output is surface flow width `surface_width`.
 """
 function get_surface_width(
-    flow_width::Real,
-    flow_length::Real,
-    land_area::Real,
-    river_location::Bool,
-)::Real
+        flow_width::Real,
+        flow_length::Real,
+        land_area::Real,
+        river_location::Bool,
+    )::Real
     surface_width = river_location ? land_area / flow_length : flow_width
     return surface_width
 end
@@ -471,7 +470,7 @@ end
 pow(x::Real, y::Real)::Real = exp(y * log(x))
 
 function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
-    mapreduce(i -> A[i], +, inds; init = zero(T))
+    return mapreduce(i -> A[i], +, inds; init = zero(T))
 end
 
 sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
@@ -492,11 +491,11 @@ Return flow `fraction` to a river cell (at index `j`) based on the ratio of the 
 index `i`.
 """
 function get_flow_fraction_to_river(
-    graph::SimpleDiGraph{Int},
-    ldd::Vector{UInt8},
-    inds_river::Vector{Int},
-    slope::Vector{<:Real},
-)::Vector{Float64}
+        graph::SimpleDiGraph{Int},
+        ldd::Vector{UInt8},
+        inds_river::Vector{Int},
+        slope::Vector{<:Real},
+    )::Vector{Float64}
     n = length(slope)
     fraction = zeros(n)
     for i in inds_river
@@ -556,8 +555,8 @@ tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 Return the source node `src` and destination node `dst` of each edge of a directed `graph`.
 """
 function adjacent_nodes_at_edge(
-    graph::SimpleDiGraph{Int},
-)::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
+        graph::SimpleDiGraph{Int},
+    )::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
     _edges = collect(edges(graph))
     return (src = src.(_edges), dst = dst.(_edges))
 end
@@ -568,9 +567,9 @@ end
 Return the source edge `src` and destination edge `dst` of each node of a directed `graph`.
 """
 function adjacent_edges_at_node(
-    graph::SimpleDiGraph{Int},
-    nodes_at_edge,
-)::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
+        graph::SimpleDiGraph{Int},
+        nodes_at_edge,
+    )::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
@@ -603,10 +602,10 @@ x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `reservoir_outlet
 (reservoir), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
-    we_x::Vector{Float64},
-    we_y::Vector{Float64},
-    domain::Domain,
-)::Nothing
+        we_x::Vector{Float64},
+        we_y::Vector{Float64},
+        domain::Domain,
+    )::Nothing
     (; local_drain_direction, indices) = domain.river.network
     (; edge_indices, reverse_indices) = domain.land.network
     (; flow_width, reservoir_outlet) = domain.river.parameters
@@ -760,11 +759,11 @@ Compute equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] using verti
 conductivity profile `kv_profile`.
 """
 function kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
-    kv_profile::KvLayered,
-    dt,
-)
+        soil::SbmSoilModel,
+        subsurface::LateralSSF,
+        kv_profile::KvLayered,
+        dt,
+    )
     (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
     (; n_unsatlayers, zi) = soil.variables
     (; kh) = subsurface.parameters.kh_profile
@@ -796,11 +795,11 @@ function kh_layered_profile!(
 end
 
 function kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
-    kv_profile::KvLayeredExponential,
-    dt,
-)
+        soil::SbmSoilModel,
+        subsurface::LateralSSF,
+        kv_profile::KvLayeredExponential,
+        dt,
+    )
     (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
     (; nlayers_kv, z_layered, kv, f) = kv_profile
     (; n_unsatlayers, zi) = soil.variables
@@ -873,10 +872,10 @@ Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydr
 conductivity profile `kh_profile`.
 """
 function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    parameters::LandParameters,
-    kh_profile::KhExponential,
-)
+        subsurface::LateralSSF,
+        parameters::LandParameters,
+        kh_profile::KhExponential,
+    )
     (; kh_0, f) = kh_profile
     (; ssf, ssfmax, zi) = subsurface.variables
     (; soilthickness) = subsurface.parameters
@@ -888,10 +887,10 @@ function initialize_lateral_ssf!(
 end
 
 function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    parameters::LandParameters,
-    kh_profile::KhExponentialConstant,
-)
+        subsurface::LateralSSF,
+        parameters::LandParameters,
+        kh_profile::KhExponentialConstant,
+    )
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
     (; ssf, ssfmax, zi) = subsurface.variables
@@ -905,9 +904,9 @@ function initialize_lateral_ssf!(
         if zi[i] < z_exp[i]
             ssf[i] =
                 (
-                    ((kh_0[i] * slope[i]) / f[i]) *
+                ((kh_0[i] * slope[i]) / f[i]) *
                     (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + ssf_constant[i]
-                ) * flow_width[i]
+            ) * flow_width[i]
         else
             ssf[i] =
                 kh_0[i] *
@@ -928,12 +927,12 @@ Initialize lateral subsurface variables `ssf` and `ssfmax` using  vertical hydra
 conductivity profile `kv_profile`.
 """
 function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    soil::SbmSoilModel,
-    parameters::LandParameters,
-    kv_profile::KvLayered,
-    dt,
-)
+        subsurface::LateralSSF,
+        soil::SbmSoilModel,
+        parameters::LandParameters,
+        kv_profile::KvLayered,
+        dt,
+    )
     (; kh) = subsurface.parameters.kh_profile
     (; nlayers, act_thickl) = soil.parameters
     (; ssf, ssfmax, zi) = subsurface.variables
@@ -954,12 +953,12 @@ function initialize_lateral_ssf!(
 end
 
 function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    soil::SbmSoilModel,
-    parameters::LandParameters,
-    kv_profile::KvLayeredExponential,
-    dt,
-)
+        subsurface::LateralSSF,
+        soil::SbmSoilModel,
+        parameters::LandParameters,
+        kv_profile::KvLayeredExponential,
+        dt,
+    )
     (; ssf, ssfmax, zi) = subsurface.variables
     (; khfrac, soilthickness) = subsurface.parameters
     (; slope, flow_width) = parameters
@@ -1011,11 +1010,11 @@ rising water table `dh` is based on `net_flux` and the unsaturated store capacit
 layer). For a rising water table a dynamic specific yield is computed.
 """
 function water_table_change(
-    soil::SbmSoilModel,
-    net_flux::Float64,
-    specific_yield::Float64,
-    i::Int,
-)
+        soil::SbmSoilModel,
+        net_flux::Float64,
+        specific_yield::Float64,
+        i::Int,
+    )
     (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
     (; theta_s, theta_r) = soil.parameters
 

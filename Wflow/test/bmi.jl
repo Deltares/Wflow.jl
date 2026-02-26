@@ -1,4 +1,3 @@
-
 @testitem "BMI functions" begin
     import BasicModelInterface as BMI
     using Statistics: mean
@@ -36,12 +35,12 @@
         @test BMI.get_var_grid(model, "river_water__volume_flow_rate") == 2
         @test BMI.get_var_grid(model, "reservoir_water__outgoing_volume_flow_rate") == 0
         @test BMI.get_var_type(model, "reservoir_water__incoming_volume_flow_rate") ==
-              "Float64"
+            "Float64"
         @test BMI.get_var_units(model, "river_water__volume_flow_rate") == "m3 s-1"
         @test BMI.get_var_itemsize(model, "subsurface_water__volume_flow_rate") ==
-              sizeof(Float64)
+            sizeof(Float64)
         @test BMI.get_var_nbytes(model, "river_water__instantaneous_volume_flow_rate") ==
-              length(model.routing.river_flow.variables.q) * sizeof(Float64)
+            length(model.routing.river_flow.variables.q) * sizeof(Float64)
         @test BMI.get_var_location(model, "river_water__volume_flow_rate") == "node"
     end
 
@@ -62,7 +61,7 @@
             model,
             "soil_layer_2_water__volume_fraction",
             [1, 2, 3],
-            [0.10, 0.15, 0.20],
+            [0.1, 0.15, 0.2],
         ) ≈ getindex.(model.land.soil.variables.vwc, 2)[1:3]
         @test BMI.get_value_at_indices(
             model,
@@ -119,14 +118,14 @@
         @test BMI.get_grid_node_count(model, 0) == 2
         @test BMI.get_grid_edge_count(model, 3) == 5808
         @test BMI.get_grid_edge_nodes(model, 3, fill(0, 2 * 5808))[1:6] ==
-              [1, 5, 2, 1, 3, 2]
+            [1, 5, 2, 1, 3, 2]
     end
 
     @testset "update until and finalize" begin
         time = BMI.get_current_time(model) + 2 * BMI.get_time_step(model)
         BMI.update_until(model, time)
         @test model.clock.iteration == 3
-        time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-06
+        time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1.0e-6
         @test_throws ErrorException BMI.update_until(model, time_off)
         @test_throws ErrorException BMI.update_until(model, time - BMI.get_time_step(model))
         BMI.finalize(model)

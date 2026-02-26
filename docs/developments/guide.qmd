@@ -10,11 +10,21 @@ example so we are able to reproduce the issue. Furthermore, we welcome contribut
 the [ColPrac guide for collaborative practices](https://github.com/SciML/ColPrac). New
 contributors should make sure to read that guide.
 
-To get started with local development, install Julia and pre-commit by running the command below.
+To get started with local development, install Julia and prek (for pre-commit hooks) by running the command below.
 
 ```sh
 pixi run install
 ```
+
+## Add `.julia/bin` to your Path
+
+We use the [Runic](https://github.com/fredrikekre/Runic.jl) formatter and [JETLS](https://github.com/aviatesk/JETLS.jl/) language server as [Pkg apps](https://pkgdocs.julialang.org/v1/apps/). which we expect to be available on the Path.
+The JETLS VSCode extension will prompt for you to install JETLS, and `pixi run install` will install Runic.
+
+Repeating the note from the Pkg docs:
+
+- You need to manually make `~/.julia/bin` available on the PATH environment.
+- The path to the julia executable used is the same as the one used to install the app. If this julia installation gets removed, you might need to reinstall the app.
 
 ## Style/decisions
 

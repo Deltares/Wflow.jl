@@ -1,4 +1,3 @@
-
 """
     snowpack_hbv(snow, snowwater, snow_precip, liquid_precip, temperature, ttm, cfmax, whc; cfr = 0.05)
 
@@ -22,16 +21,16 @@ The refreezing efficiency factor `cfr` is set to 0.05.
 - `runoff`
 """
 function snowpack_hbv(
-    snow_storage,
-    snow_water,
-    snow_precip,
-    liquid_precip,
-    temperature,
-    ttm,
-    cfmax,
-    whc;
-    cfr = 0.05,
-)
+        snow_storage,
+        snow_water,
+        snow_precip,
+        liquid_precip,
+        temperature,
+        ttm,
+        cfmax,
+        whc;
+        cfr = 0.05,
+    )
     if temperature > ttm
         potential_snow_melt = cfmax * (temperature - ttm)
         snow_melt = min(potential_snow_melt, snow_storage)

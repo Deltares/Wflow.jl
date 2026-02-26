@@ -14,11 +14,11 @@ end
 
 "Extract a netCDF variable at a given time"
 function get_at(
-    ds::CFDataset,
-    var::InputEntry,
-    times::AbstractVector{<:TimeType},
-    t::TimeType,
-)
+        ds::CFDataset,
+        var::InputEntry,
+        times::AbstractVector{<:TimeType},
+        t::TimeType,
+    )
     # this behaves like a backward fill interpolation
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
@@ -248,15 +248,15 @@ end
 
 "prepare an output dataset for scalar data"
 function setup_scalar_netcdf(
-    path,
-    dataset,
-    modelmap,
-    calendar,
-    time_units,
-    extra_dim,
-    config,
-    float_type = Float32,
-)
+        path,
+        dataset,
+        modelmap,
+        calendar,
+        time_units,
+        extra_dim,
+        config,
+        float_type = Float32,
+    )
     (; land) = modelmap
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
@@ -325,12 +325,12 @@ end
 
 "set extra dimension in output netCDF file"
 function set_extradim_netcdf(
-    ds,
-    extra_dim::NamedTuple{
-        (:name, :value),
-        Tuple{String, Vector{T}},
-    } where {T <: Union{String, Float64}},
-)
+        ds,
+        extra_dim::NamedTuple{
+            (:name, :value),
+            Tuple{String, Vector{T}},
+        } where {T <: Union{String, Float64}},
+    )
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
     # values of this dimension `extra_dim.value` should be of type Float64
     if extra_dim.name == "layer"
@@ -345,17 +345,17 @@ set_extradim_netcdf(ds, extra_dim::Nothing) = nothing
 
 "prepare an output dataset for grid data"
 function setup_grid_netcdf(
-    path,
-    ncx,
-    ncy,
-    parameters,
-    calendar,
-    time_units,
-    extra_dim,
-    cell_length_in_meter;
-    float_type = Float32,
-    deflatelevel = 0,
-)
+        path,
+        ncx,
+        ncy,
+        parameters,
+        calendar,
+        time_units,
+        extra_dim,
+        cell_length_in_meter;
+        float_type = Float32,
+        deflatelevel = 0,
+    )
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
     if cell_length_in_meter
@@ -710,7 +710,7 @@ end
 
 function get_reducer_func(col, domain, args...)
     (; parameter) = col
-    if occursin("reservoir", parameter)
+    return if occursin("reservoir", parameter)
         reducer_func = reducer(col, domain.reservoir.network.reverse_indices, args...)
     elseif occursin("river", parameter)
         reducer_func = reducer(col, domain.river.network.reverse_indices, args...)
@@ -944,7 +944,7 @@ It can generate such a series from either TimeTypes given that the year is const
 it will interpret integers as either months or days of year if possible.
 """
 function timecycles(times)
-    if eltype(times) <: TimeType
+    return if eltype(times) <: TimeType
         # all timestamps are from the same year
         year1 = year(first(times))
         if !all(==(year1), year.(times))
@@ -1050,8 +1050,10 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             vector = inds[v]
             ind = rev_inds[i]
             if iszero(ind)
-                error("""inactive cell found in requested scalar output
-                    map `$map` value $v for parameter $param""")
+                error(
+                    """inactive cell found in requested scalar output
+                    map `$map` value $v for parameter $param"""
+                )
             end
             push!(vector, ind)
         end
@@ -1193,7 +1195,7 @@ function nc_dim_name(dims::Vector{Symbol}, name::Symbol)
     # direct naming
     name in dims && return name
     # list of common alternative names
-    if name == :x
+    return if name == :x
         for candidate in (:lon, :longitude)
             candidate in dims && return candidate
         end
@@ -1267,8 +1269,12 @@ function read_dims(A::CFVariable_MF, dim_sel::NamedTuple)
                     push!(data_dim_order, dim)
                 end
             else
-                throw(ArgumentError("""NetCDF dimension $dim_name has length $dim_size.
-                    Only extra dimensions of length 1 are supported."""))
+                throw(
+                    ArgumentError(
+                        """NetCDF dimension $dim_name has length $dim_size.
+                        Only extra dimensions of length 1 are supported."""
+                    )
+                )
             end
         end
     end
@@ -1320,7 +1326,7 @@ function permute_data(data, dim_names)
         desired_order = (:x, :y)
     end
     @assert dim_names ⊆ desired_order
-    if length(dim_names) == 2
+    return if length(dim_names) == 2
         if first(dim_names) == :x
             return data, dim_names
         else

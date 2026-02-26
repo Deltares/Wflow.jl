@@ -151,12 +151,12 @@ end
 
 "Return local drain direction `ldd` and directed `graph` based on `ldd`"
 function get_drainage_network(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}};
-    do_pits::Bool = false,
-    logging::Bool = true,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}};
+        do_pits::Bool = false,
+        logging::Bool = true,
+    )
     ldd_2d = ncread(
         dataset,
         config,
@@ -222,11 +222,11 @@ Initialize `NetworkRiver` fields related to river location (active indices model
 river drainage network.
 """
 function NetworkRiver(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkLand;
-    do_pits = false,
-)
+        dataset::NCDataset,
+        config::Config,
+        network::NetworkLand;
+        do_pits = false,
+    )
     river_location_2d = ncread(
         dataset,
         config,
@@ -381,11 +381,11 @@ end
 
 "Initialize `NetworkDrain`"
 function NetworkDrain(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    surface_flow_width::Vector{Float64},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        surface_flow_width::Vector{Float64},
+    )
     n_cells = length(indices)
     drain_2d = ncread(
         dataset,

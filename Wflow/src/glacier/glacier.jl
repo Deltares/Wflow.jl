@@ -11,10 +11,10 @@ end
 
 "Initialize glacier model variables"
 function GlacierVariables(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+    )
     glacier_store = ncread(
         dataset,
         config,
@@ -62,11 +62,11 @@ end
 
 "Initialize glacier HBV model parameters"
 function GlacierHbvParameters(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+    )
     g_ttm = ncread(
         dataset,
         config,
@@ -78,24 +78,24 @@ function GlacierHbvParameters(
     )
     g_cfmax =
         ncread(
-            dataset,
-            config,
-            "glacier_ice__degree_day_coefficient";
-            sel = indices,
-            defaults = 3.0,
-            type = Float64,
-            fill = 0.0,
-        ) .* (dt / BASETIMESTEP)
+        dataset,
+        config,
+        "glacier_ice__degree_day_coefficient";
+        sel = indices,
+        defaults = 3.0,
+        type = Float64,
+        fill = 0.0,
+    ) .* (dt / BASETIMESTEP)
     g_sifrac =
         ncread(
-            dataset,
-            config,
-            "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction";
-            sel = indices,
-            defaults = 0.001,
-            type = Float64,
-            fill = 0.0,
-        ) .* (dt / BASETIMESTEP)
+        dataset,
+        config,
+        "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction";
+        sel = indices,
+        defaults = 0.001,
+        type = Float64,
+        fill = 0.0,
+    ) .* (dt / BASETIMESTEP)
     glacier_frac = ncread(
         dataset,
         config,
@@ -113,12 +113,12 @@ end
 
 "Initialize glacier HBV model"
 function GlacierHbvModel(
-    dataset::NCDataset,
-    config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second,
-    boundary_conditions::SnowStateBC,
-)
+        dataset::NCDataset,
+        config::Config,
+        indices::Vector{CartesianIndex{2}},
+        dt::Second,
+        boundary_conditions::SnowStateBC,
+    )
     parameters = GlacierHbvParameters(dataset, config, indices, dt)
     variables = GlacierVariables(dataset, config, indices)
     model = GlacierHbvModel(; boundary_conditions, parameters, variables)

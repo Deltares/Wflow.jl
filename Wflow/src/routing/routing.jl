@@ -11,10 +11,10 @@ Struct for storing routing model components overland flow `overland_flow`, river
 `river_flow` and subsurface flow `subsurface_flow`.
 """
 @kwdef struct Routing{
-    O <: AbstractOverlandFlowModel,
-    R <: AbstractRiverFlowModel,
-    S <: AbstractSubsurfaceFlowModel,
-}
+        O <: AbstractOverlandFlowModel,
+        R <: AbstractRiverFlowModel,
+        S <: AbstractSubsurfaceFlowModel,
+    }
     overland_flow::O = NoOverlandFlow()
     river_flow::R = NoRiverFlow()
     subsurface_flow::S = NoSubsurfaceFlow()

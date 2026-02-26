@@ -30,11 +30,11 @@ end
 
 "Update total sediment reaching the river model boundary conditions"
 function update_boundary_conditions!(
-    model::SedimentToRiverModel,
-    transport_model::SedimentLandTransportModel,
-)
+        model::SedimentToRiverModel,
+        transport_model::SedimentLandTransportModel,
+    )
     (; deposition) = model.boundary_conditions
-    @. deposition = transport_model.variables.deposition
+    return @. deposition = transport_model.variables.deposition
 end
 
 "Update total sediment reaching the river model for a single timestep"
@@ -43,7 +43,7 @@ function update!(model::SedimentToRiverModel, rivers::Vector{Bool})
     (; sediment_rate) = model.variables
 
     zeros = fill(0.0, length(sediment_rate))
-    sediment_rate .= ifelse.(rivers, deposition, zeros)
+    return sediment_rate .= ifelse.(rivers, deposition, zeros)
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
@@ -96,9 +96,9 @@ end
 
 "Update differentiated sediment reaching the river model boundary conditions"
 function update_boundary_conditions!(
-    model::SedimentToRiverDifferentiationModel,
-    transport_model::SedimentLandTransportDifferentiationModel,
-)
+        model::SedimentToRiverDifferentiationModel,
+        transport_model::SedimentLandTransportDifferentiationModel,
+    )
     (;
         deposition_clay,
         deposition_silt,
@@ -110,7 +110,7 @@ function update_boundary_conditions!(
     @. deposition_silt = transport_model.variables.deposition_silt
     @. deposition_sand = transport_model.variables.deposition_sand
     @. deposition_sagg = transport_model.variables.deposition_sagg
-    @. deposition_lagg = transport_model.variables.deposition_lagg
+    return @. deposition_lagg = transport_model.variables.deposition_lagg
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
@@ -140,5 +140,5 @@ function update!(model::SedimentToRiverDifferentiationModel, rivers::Vector{Bool
             lagg_rate[i] = 0.0
         end
     end
-    @. sediment_rate = clay_rate + silt_rate + sand_rate + sagg_rate + lagg_rate
+    return @. sediment_rate = clay_rate + silt_rate + sand_rate + sagg_rate + lagg_rate
 end

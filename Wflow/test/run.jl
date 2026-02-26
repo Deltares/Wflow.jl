@@ -69,7 +69,7 @@
             a = endstate_one_run[varname][:]
             b = endstate_restart[varname][:]
             maxdiff = maximum(abs.(skipmissing(b - a)))
-            tol = varname == "volume_reservoir" ? 1e-8 : 1e-9
+            tol = varname == "volume_reservoir" ? 1.0e-8 : 1.0e-9
             @test maxdiff < tol
         end
     end

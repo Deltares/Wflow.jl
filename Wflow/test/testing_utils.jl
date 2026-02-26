@@ -46,8 +46,8 @@ on the left edge, and a Neumann Boundary Condition (dh/dx = 0) on the right.
 """
 function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta)
     return initial_head(x) / 1.0 +
-           (beta * conductivity * initial_head(aquifer_length) * time) /
-           (specific_yield * aquifer_length * aquifer_length)
+        (beta * conductivity * initial_head(aquifer_length) * time) /
+        (specific_yield * aquifer_length * aquifer_length)
 end
 
 """
@@ -143,38 +143,38 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     # Vectors of other types
     for field_name in [
-        # Variables
-        :ustorecapacity,
-        :satwaterdepth,
-        :drainable_waterdepth,
-        :zi,
-        :n_unsatlayers,
-        :total_soilwater_storage,
-        # Parameters
-        :nlayers,
-        :theta_s,
-        :theta_r,
-        :theta_fc,
-        :soilwatercapacity,
-        :hb,
-        :soilthickness,
-        :infiltcappath,
-        :infiltcapsoil,
-        :maxleakage,
-        :cap_hmax,
-        :cap_n,
-        :w_soil,
-        :cf_soil,
-        :pathfrac,
-        :rootdistpar,
-        :h1,
-        :h2,
-        :h3_high,
-        :h3_low,
-        :h4,
-        :alpha_h1,
-        :soil_fraction,
-    ]
+            # Variables
+            :ustorecapacity,
+            :satwaterdepth,
+            :drainable_waterdepth,
+            :zi,
+            :n_unsatlayers,
+            :total_soilwater_storage,
+            # Parameters
+            :nlayers,
+            :theta_s,
+            :theta_r,
+            :theta_fc,
+            :soilwatercapacity,
+            :hb,
+            :soilthickness,
+            :infiltcappath,
+            :infiltcapsoil,
+            :maxleakage,
+            :cap_hmax,
+            :cap_n,
+            :w_soil,
+            :cf_soil,
+            :pathfrac,
+            :rootdistpar,
+            :h1,
+            :h2,
+            :h3_high,
+            :h3_low,
+            :h4,
+            :alpha_h1,
+            :soil_fraction,
+        ]
         if !haskey(kwargs, field_name)
             kwargs[field_name] = []
         end

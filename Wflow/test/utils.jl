@@ -8,9 +8,9 @@
     @test Wflow.tosecond(Hour(2)) == 3600 * 2
     @test Wflow.tosecond(Minute(2)) == 60 * 2
     @test Wflow.tosecond(Second(2)) == 2
-    @test Wflow.tosecond(Millisecond(2)) == 2e-3
-    @test Wflow.tosecond(Microsecond(2)) == 2e-6
-    @test Wflow.tosecond(Nanosecond(2)) == 2e-9
+    @test Wflow.tosecond(Millisecond(2)) == 2.0e-3
+    @test Wflow.tosecond(Microsecond(2)) == 2.0e-6
+    @test Wflow.tosecond(Nanosecond(2)) == 2.0e-9
 end
 
 @testitem "unit: julian_day (leap days are not counted)" begin
@@ -73,12 +73,12 @@ end
     # Initialize the first model with mass balance
     do_mass_balance = true
     for file_name in [
-        "sbm_config.toml",
-        "sbm_gwf_config.toml",
-        "sbm_river-floodplain-local-inertial_config.toml",
-        "sbm_river-land-local-inertial_config.toml",
-        "sbm_gwf_piave_demand_config.toml",
-    ]
+            "sbm_config.toml",
+            "sbm_gwf_config.toml",
+            "sbm_river-floodplain-local-inertial_config.toml",
+            "sbm_river-land-local-inertial_config.toml",
+            "sbm_gwf_piave_demand_config.toml",
+        ]
         config = Wflow.Config(normpath(@__DIR__, file_name))
         config.dir_output = mktempdir()
         if do_mass_balance
@@ -98,9 +98,9 @@ end
     models_sediment = Wflow.Model.(configs_sediment)
 
     for (map_name, standard_name_map, models) in (
-        ("sbm", Wflow.sbm_standard_name_map, models_sbm),
-        ("sediment", Wflow.sediment_standard_name_map, models_sediment),
-    )
+            ("sbm", Wflow.sbm_standard_name_map, models_sbm),
+            ("sediment", Wflow.sediment_standard_name_map, models_sediment),
+        )
         @testset "Test lenses: $map_name" begin
             invalids = String[]
             for (name, data) in standard_name_map
