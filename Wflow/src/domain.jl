@@ -8,7 +8,7 @@
     area::Vector{Float64} = Float64[]
     # flow width [m]
     flow_width::Vector{Float64} = Float64[]
-    # suface flow width [m]
+    # surface flow width [m]
     surface_flow_width::Vector{Float64} = Float64[]
     # flow length [m]
     flow_length::Vector{Float64} = Float64[]
@@ -106,7 +106,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
 
     if river_routing == RoutingType.kinematic_wave
         @reset network_river.upstream_nodes =
-            filter_upsteam_nodes(network_river.graph, pits[network_river.indices])
+            filter_upstream_nodes(network_river.graph, pits[network_river.indices])
     elseif river_routing == RoutingType.local_inertial
         nodes_at_edge, index_pit = NodesAtEdge(network_river)
         @reset network_river.nodes_at_edge = nodes_at_edge
@@ -117,7 +117,7 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     if land_routing == RoutingType.kinematic_wave ||
        subsurface_routing(config) == RoutingType.kinematic_wave
         @reset network_land.upstream_nodes =
-            filter_upsteam_nodes(network_land.graph, pits[network_land.indices])
+            filter_upstream_nodes(network_land.graph, pits[network_land.indices])
     end
     if land_routing == RoutingType.local_inertial
         @reset network_land.edge_indices = EdgeConnectivity(network_land)

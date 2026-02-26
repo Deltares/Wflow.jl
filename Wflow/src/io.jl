@@ -542,8 +542,8 @@ function NCReader(config)
         @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
         nctimes = dataset["time"][:]
         times_dropped = collect(skipmissing(nctimes))
-        # check if lenght has changed (missings in time dimension are not allowed), and throw
-        # an error if the lenghts are different
+        # check if length has changed (missing in time dimension are not allowed), and throw
+        # an error if the lengths are different
         if length(times_dropped) != length(nctimes)
             error("Time dimension in `$abspath_forcing` contains missing values")
         else
@@ -1080,9 +1080,9 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
     elseif !isnothing(coordinate)
         (; x, y) = coordinate
         # find the closest cell center index
-        _, iy = findmin(abs.(y_nc .- y))
+        _, it = findmin(abs.(y_nc .- y))
         _, ix = findmin(abs.(x_nc .- x))
-        I = CartesianIndex(ix, iy)
+        I = CartesianIndex(ix, it)
         i = rev_inds[I]
         @info "Adding scalar output for coordinate." fileformat param = parameter x y
         iszero(i) && error("inactive coordinate specified for output")

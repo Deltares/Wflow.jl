@@ -188,7 +188,7 @@ end
     allocation::A                                       # Water allocation
 end
 
-"Initialize shallow water river flow model `LocalIntertialRiverFlow`"
+"Initialize shallow water river flow model `LocalInertialRiverFlow`"
 function LocalInertialRiverFlow(
     dataset::NCDataset,
     config::Config,
@@ -253,7 +253,7 @@ get_inflow_reservoir(
 get_inflow_reservoir(::LocalInertialRiverFlow, model::LateralSSF, inds::Vector{Int}) =
     (model.variables.ssf[inds] .+ model.variables.to_river[inds]) ./ tosecond(BASETIMESTEP)
 
-"Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
+"Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
     model::LocalInertialRiverFlow,
     domain::Domain,
@@ -1210,7 +1210,7 @@ end
     storage::Vector{Float64} = zeros(n)    # storage [m³]
     h::Vector{Float64}                     # water depth [m]
     error::Vector{Float64} = zeros(n)      # error storage [m³]
-    a::Vector{Float64} = zeros(n_edges)    # flow area at egde [m²]
+    a::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
     r::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
     hf::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
     q0::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step

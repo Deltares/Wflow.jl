@@ -10,3 +10,9 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.43.5
+    hooks:
+      - id: typos
+        files: \.(jl|qmd|md)$
+        exclude: publications.qmd

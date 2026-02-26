@@ -63,7 +63,7 @@ function set_pit_ldd(
 end
 
 "Filter upstream neighbors of graph based on logical vector"
-function filter_upsteam_nodes(
+function filter_upstream_nodes(
     graph::SimpleDiGraph{Int},
     vec_logical::Vector{Bool},
 )::Vector{Vector{Int}}
@@ -190,7 +190,7 @@ function set_states!(
                 end
                 A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
-                # note that this array is allowed to have missings, since not every land
+                # note that this array is allowed to have missing, since not every land
                 # column is `maxlayers` layers deep
                 if dimname == :layer
                     A = replace!(A, missing => NaN)
@@ -358,13 +358,13 @@ function ncread(
 
     if !allow_missing
         if isnothing(fill)
-            # errors if missings are found
+            # errors if missing are found
             A = nomissing(A)
             if any(isnan, A)
                 error("NaN not allowed in $var")
             end
         else
-            # replaces missings with a fill value
+            # replaces missing with a fill value
             A = nomissing(A, fill)
             # replace also NaN values with the fill value
             replace!(x -> isnan(x) ? fill : x, A)
@@ -720,7 +720,7 @@ end
     hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
     hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
 
-Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using muliplication
+Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using multiplication
 factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
 """
 function hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)
