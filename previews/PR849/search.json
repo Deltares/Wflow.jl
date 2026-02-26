@@ -906,7 +906,7 @@
     "href": "developments/guide.html",
     "title": "Developers guide",
     "section": "",
-    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.\nTo get started with local development, install Julia and prek (pre-commit) by running the command below.\npixi run install",
+    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.\nTo get started with local development, install Julia and prek (for pre-commit hooks) by running the command below.\npixi run install\nTo use the Runic formatter you have to put your .julia/bin in your PATH.",
     "crumbs": [
       "Developments",
       "Developers guide"
@@ -917,7 +917,7 @@
     "href": "developments/guide.html#contributions-and-reporting-issues",
     "title": "Developers guide",
     "section": "",
-    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.\nTo get started with local development, install Julia and prek (pre-commit) by running the command below.\npixi run install",
+    "text": "We welcome reporting of issues on our GitHub page. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the ColPrac guide for collaborative practices. New contributors should make sure to read that guide.\nTo get started with local development, install Julia and prek (for pre-commit hooks) by running the command below.\npixi run install\nTo use the Runic formatter you have to put your .julia/bin in your PATH.",
     "crumbs": [
       "Developments",
       "Developers guide"
