@@ -566,7 +566,7 @@ function set_flux_vars_bc!(gwf::AbstractSubsurfaceFlowModel)
     return nothing
 end
 
-function set_flux_vars!(gwf::GroundwaterFlow)
+function set_flux_vars!(gwf::AbstractSubsurfaceFlowModel)
     set_flux_vars_bc!(gwf)
     gwf.variables.exfiltwater .= 0.0
     gwf.variables.q_in_av .= 0.0
@@ -581,7 +581,7 @@ function average_flux_vars_bc!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
     end
 end
 
-function average_flux_vars!(gwf::GroundwaterFlow, dt::Float64)
+function average_flux_vars!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
     average_flux_vars_bc!(gwf, dt)
     gwf.variables.q_in_av ./= dt
     gwf.variables.q_av ./= dt

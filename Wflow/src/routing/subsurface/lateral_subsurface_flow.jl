@@ -236,16 +236,11 @@ Update lateral subsurface model for a single timestep `dt`. Timestepping within 
 either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Float64)
-    (; q_in_av, q_av, to_river, exfiltwater, q_net_av) = model.variables
+    (; to_river) = model.variables
     (; adaptive) = model.timestepping
 
-    q_av .= 0.0
     to_river .= 0.0
-    q_in_av .= 0.0
-    exfiltwater .= 0.0
-    q_net_av .= 0.0
-
-    set_flux_vars_bc!(model)
+    set_flux_vars!(model)
     t = 0.0
     while t < dt
         model.variables.q_net_bnds .= 0.0
@@ -255,11 +250,8 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Floa
         kinwave_subsurface_update!(model, soil, domain, dt_s)
         t += dt_s
     end
-    q_av ./= dt
     to_river ./= dt
-    q_in_av ./= dt
-    q_net_av ./= dt
-    average_flux_vars_bc!(model, dt)
+    average_flux_vars!(model, dt)
     return nothing
 end
 
