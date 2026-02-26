@@ -26,7 +26,7 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
     )
     # the Manifest.toml always gives the exact version of Wflow that was built
     cp(
-        normpath(project_dir, "Manifest.toml"),
+        normpath(git_repo, "Manifest.toml"),
         normpath(output_dir, "share/julia/Manifest.toml");
         force = true,
     )
@@ -37,10 +37,7 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
     open(normpath(output_dir, "README.md"), "a") do io
         # since the exact Wflow version may be hard to find in the Manifest.toml file
         # we can also extract that information, and add it to the README.md
-        manifest = TOML.parsefile(normpath(project_dir, "Manifest.toml"))
-        if !haskey(manifest, "manifest_format")
-            error("Manifest.toml is in the old format, run Pkg.upgrade_manifest()")
-        end
+        manifest = TOML.parsefile(normpath(git_repo, "Manifest.toml"))
         julia_version = manifest["julia_version"]
         version = TOML.parsefile(normpath(git_repo, "Wflow/Project.toml"))["version"]
         repo = GitRepo(git_repo)
