@@ -137,12 +137,13 @@ as a model output variable.
 | ------ | ---- | -- | -- |
 | `subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio` | A muliplication factor applied to vertical hydraulic conductivity | - | - |
 | `land_surface__slope` | Land surface slope | m m⁻¹ | - |
+| `land_surface__elevation` | Land surface elevation | m |
 : {.striped .hover}
 
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
+| `subsurface_water__instanteneous_volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
 : {.striped .hover}
 
 #### Output
@@ -150,7 +151,8 @@ as a model output variable.
 | --- | --- | - |
 | `subsurface_water__volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
 | `subsurface_water_saturated_zone_top__depth` | Pseudo-water table depth (top of the saturated zone) | m |
-| `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | mm Δt⁻¹ |
+| `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ |
+| `subsurface_water__hydraulic_head` | Hydraulic head | m |
 | `subsurface_water__to_river_volume_flow_rate` | Part of subsurface flow that flows to the river | m³ day⁻¹ |
 : {.striped .hover}
 
@@ -255,7 +257,12 @@ as a model output variable.
 | Standard Name | Description | Unit |
 | --- | --- | - |
 | `subsurface_water__hydraulic_head` | Groundwater head | m |
+| `subsurface_water__exfiltration_volume_flux` | Exfiltration (groundwater above surface level, saturated excess conditions) | m Δt⁻¹ |
 : {.striped .hover}
+
+## Subsurface flow boundaries
+Boundary conditions for both the groundwater flow and lateral subsurface flow concepts. The
+constant head boundary can only be applied as part of the groundwater flow concept.
 
 ### River boundary
 #### Input {#input-gwf-river}
