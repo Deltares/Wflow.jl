@@ -223,7 +223,7 @@ applied to each model cell independently to compute and route subsurface flow fo
 Two head-dependent flux boundary conditions that are also used by the [groundwater
 flow](gwf.qmd#) concept, the [river](gwf.qmd#river) and [drainage](gwf.qmd#drainage)
 boundaries can also be used for lateral subsurface flow. By default, lateral subsurface flow
-can only flow into a river (slope based). By using the river boundary flow into (from a
+can only flow into a river (slope based). By including the river boundary, flow into (from a
 river) or out (into a river) of the subsurface water system is a function of the head. The
 river and drainage boundaries can be provided as follows in the TOML configuration file:
 
