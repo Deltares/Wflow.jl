@@ -303,16 +303,11 @@ function stable_timestep(model::LateralSSF, domain::DomainLand)
     return dt_min
 end
 
-# wrapper methods
-get_water_depth(model::LateralSSF) = model.variables.zi
-
 function get_flux_to_river(model::LateralSSF, inds::Vector{Int})
-    (; river) = model.boundary_conditions
     dt = tosecond(BASETIMESTEP) # conversion to [m³ s⁻¹]
-    flux = if isnothing(river)
-        model.variables.to_river[inds] ./ dt
-    else
-        -river.variables.flux_av ./ dt
-    end
+    flux = model.variables.to_river[inds] ./ dt
     return flux
 end
+
+# wrapper method
+get_water_depth(model::LateralSSF) = model.variables.zi
