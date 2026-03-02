@@ -23,6 +23,15 @@ as follows in the TOML configuration file:
 land_surface__elevation = "wflow_dem"
 ```
 
+Supporting internal timestepping for the kinematic wave lateral subsurface flow concept
+(#827) requires that the flow state variable contains `instantaneous` in the `quantity` part
+of the standard name:
+
+```toml
+[state.variables]
+subsurface_water__instantaneous_volume_flow_rate = "ssf"
+```
+
 ### Fixed
 
 ### Changed
