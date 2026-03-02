@@ -65,7 +65,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand = NoDemand(; n)
     end
 
-    land = LandHydrologySBM(;
+    land_hydrology_model = LandHydrologySBM(;
         atmospheric_forcing,
         vegetation_parameters,
         interception,
@@ -76,12 +76,12 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand,
         allocation,
     )
-    return land
+    return land_hydrology_model
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
 function update_land!(
-    land::LandHydrologySBM,
+    land_hydrology_model::LandHydrologySBM,
     routing::Routing,
     domain::Domain,
     config::Config,
@@ -89,7 +89,7 @@ function update_land!(
 )
     (; parameters) = domain.land
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
-        land
+        land_hydrology_model
 
     update_interception!(interception, atmospheric_forcing)
 
@@ -101,7 +101,7 @@ function update_land!(
 
     update_glacier!(glacier, atmospheric_forcing)
 
-    update_bc_runoff!(
+    update_bc_open_water_runoff_model!(
         runoff,
         (; glacier, snow, interception),
         routing,
@@ -121,7 +121,7 @@ function update_land!(
     soil_fraction!(soil, glacier, parameters)
     update_bc_soil!(soil, atmospheric_forcing, (; interception, runoff, demand, allocation))
 
-    update_soil_first!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end
@@ -136,12 +136,12 @@ Update the total water storage per cell at the end of a timestep.
 - `routing`: Containing routing models.
 """
 function update_total_water_storage!(
-    land::LandHydrologySBM,
+    land_hydrology_model::LandHydrologySBM,
     domain::Domain,
     routing::Routing,
 )
     (; overland_flow, river_flow) = routing
-    (; interception, snow, glacier, soil, demand) = land
+    (; interception, snow, glacier, soil, demand) = land_hydrology_model
     (; total_storage, ustoredepth, satwaterdepth) = soil.variables
 
     (; river_fraction, area) = domain.land.parameters

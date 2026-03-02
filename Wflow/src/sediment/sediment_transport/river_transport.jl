@@ -92,33 +92,33 @@ function SedimentRiverTransportParameters(
         dataset,
         config,
         "river_bottom_and_bank_clay__mass_fraction";
-        sel=indices,
-        defaults=0.15,
-        type=Float64,
+        sel = indices,
+        defaults = 0.15,
+        type = Float64,
     )
     silt_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_silt__mass_fraction";
-        sel=indices,
-        defaults=0.65,
-        type=Float64,
+        sel = indices,
+        defaults = 0.65,
+        type = Float64,
     )
     sand_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_sand__mass_fraction";
-        sel=indices,
-        defaults=0.15,
-        type=Float64,
+        sel = indices,
+        defaults = 0.15,
+        type = Float64,
     )
     gravel_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_gravel__mass_fraction";
-        sel=indices,
-        defaults=0.05,
-        type=Float64,
+        sel = indices,
+        defaults = 0.05,
+        type = Float64,
     )
     # Check that river fractions sum to 1
     river_fractions = clay_fraction + silt_fraction + sand_fraction + gravel_fraction
@@ -129,49 +129,49 @@ function SedimentRiverTransportParameters(
         dataset,
         config,
         "clay__mean_diameter";
-        sel=indices,
-        defaults=2.0,
-        type=Float64,
+        sel = indices,
+        defaults = 2.0,
+        type = Float64,
     )
     dm_silt = ncread(
         dataset,
         config,
         "silt__mean_diameter";
-        sel=indices,
-        defaults=10.0,
-        type=Float64,
+        sel = indices,
+        defaults = 10.0,
+        type = Float64,
     )
     dm_sand = ncread(
         dataset,
         config,
         "sand__mean_diameter";
-        sel=indices,
-        defaults=200.0,
-        type=Float64,
+        sel = indices,
+        defaults = 200.0,
+        type = Float64,
     )
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter";
-        sel=indices,
-        defaults=30.0,
-        type=Float64,
+        sel = indices,
+        defaults = 30.0,
+        type = Float64,
     )
     dm_lagg = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter";
-        sel=indices,
-        defaults=500.0,
-        type=Float64,
+        sel = indices,
+        defaults = 500.0,
+        type = Float64,
     )
     dm_gravel = ncread(
         dataset,
         config,
         "gravel__mean_diameter";
-        sel=indices,
-        defaults=2000.0,
-        type=Float64,
+        sel = indices,
+        defaults = 2000.0,
+        type = Float64,
     )
 
     # Reservoirs
@@ -180,27 +180,27 @@ function SedimentRiverTransportParameters(
             dataset,
             config,
             "reservoir_location__count";
-            sel=indices,
-            type=Float64,
-            fill=0,
+            sel = indices,
+            type = Float64,
+            fill = 0,
         )
         reservoir_area = ncread(
             dataset,
             config,
             "reservoir_surface__area";
-            optional=false,
-            sel=indices,
-            type=Float64,
-            fill=0.0,
+            optional = false,
+            sel = indices,
+            type = Float64,
+            fill = 0.0,
         )
         reservoir_trapping_efficiency = ncread(
             dataset,
             config,
             "reservoir_water_sediment__bedload_trapping_efficiency";
-            sel=indices,
-            type=Float64,
-            defaults=1.0,
-            fill=0.0,
+            sel = indices,
+            type = Float64,
+            defaults = 1.0,
+            fill = 0.0,
         )
     else
         reservoir_outlet = zeros(n)
@@ -219,7 +219,7 @@ function SedimentRiverTransportParameters(
         dm_sagg,
         dm_lagg,
         dm_gravel,
-        reservoir_outlet=reservoir_outlet .> 0,
+        reservoir_outlet = reservoir_outlet .> 0,
         reservoir_area,
         reservoir_trapping_efficiency,
     )
@@ -433,8 +433,8 @@ Calculate sediment deposition in reservoir outlets using Camp's formula
 function compute_reservoir_deposition(
     sediment_flux::SedimentRiverTransportModel,
     domain_parameters::RiverParameters,
-    input_particles::NTuple{6,Float64},
-    erosion_particles::NTuple{6,Float64},
+    input_particles::NTuple{6, Float64},
+    erosion_particles::NTuple{6, Float64},
     v::Int,
 )
     (; boundary_conditions, parameters) = sediment_flux
@@ -500,8 +500,8 @@ Calculate river deposition from transport capacity exceedance (gravel to clay pr
 """
 function compute_transport_capacity_deposition(
     excess_sediment::Float64,
-    input_particles::NTuple{6,Float64},
-    erosion_particles::NTuple{6,Float64},
+    input_particles::NTuple{6, Float64},
+    erosion_particles::NTuple{6, Float64},
 )
     input_clay, input_silt, input_sand, input_sagg, input_lagg, input_gravel =
         input_particles
@@ -544,8 +544,8 @@ Calculate natural river deposition using Einstein's formula (Stokes settling)
 function compute_natural_deposition(
     sediment_flux::SedimentRiverTransportModel,
     domain_parameters::RiverParameters,
-    input_particles::NTuple{6,Float64},
-    erosion_particles::NTuple{6,Float64},
+    input_particles::NTuple{6, Float64},
+    erosion_particles::NTuple{6, Float64},
     v::Int,
 )
     (; boundary_conditions, parameters) = sediment_flux
@@ -588,9 +588,9 @@ end
 
 function update_variables!(
     variables::SedimentRiverTransportVariables,
-    input_particles::NTuple{6,Float64},
-    erosion_particles::NTuple{6,Float64},
-    deposition_particles::NTuple{6,Float64},
+    input_particles::NTuple{6, Float64},
+    erosion_particles::NTuple{6, Float64},
+    deposition_particles::NTuple{6, Float64},
     fwaterout::Float64,
     v::Int,
 )
@@ -832,49 +832,49 @@ function SedimentConcentrationsRiverParameters(
         dataset,
         config,
         "clay__mean_diameter";
-        sel=indices,
-        defaults=2.0,
-        type=Float64,
+        sel = indices,
+        defaults = 2.0,
+        type = Float64,
     )
     dm_silt = ncread(
         dataset,
         config,
         "silt__mean_diameter";
-        sel=indices,
-        defaults=10.0,
-        type=Float64,
+        sel = indices,
+        defaults = 10.0,
+        type = Float64,
     )
     dm_sand = ncread(
         dataset,
         config,
         "sand__mean_diameter";
-        sel=indices,
-        defaults=200.0,
-        type=Float64,
+        sel = indices,
+        defaults = 200.0,
+        type = Float64,
     )
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter";
-        sel=indices,
-        defaults=30.0,
-        type=Float64,
+        sel = indices,
+        defaults = 30.0,
+        type = Float64,
     )
     dm_lagg = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter";
-        sel=indices,
-        defaults=500.0,
-        type=Float64,
+        sel = indices,
+        defaults = 500.0,
+        type = Float64,
     )
     dm_gravel = ncread(
         dataset,
         config,
         "gravel__mean_diameter";
-        sel=indices,
-        defaults=2000.0,
-        type=Float64,
+        sel = indices,
+        defaults = 2000.0,
+        type = Float64,
     )
     conc_parameters = SedimentConcentrationsRiverParameters(;
         dm_clay,

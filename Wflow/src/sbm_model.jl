@@ -95,7 +95,7 @@ through BMI, to couple the SBM model to an external groundwater model.
 function update_until_recharge!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     dt = tosecond(clock.dt)
-    update_land!(land, routing, domain, config, dt)
+    update_land_hydrology_model!(land, routing, domain, config, dt)
     return nothing
 end
 
@@ -111,7 +111,7 @@ function update_after_subsurface_flow!(model::AbstractModel{<:SbmModel})
     (; subsurface_flow) = routing
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update_soil_second!(soil, (; runoff, demand, subsurface_flow))
+    update_soil_water_storage!(soil, (; runoff, demand, subsurface_flow))
 
     surface_routing!(model)
 

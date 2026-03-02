@@ -687,13 +687,12 @@ function update_bc_soil!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .=
-        max.(
-            runoff.boundary_conditions.water_flux_surface .+
-            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-            0.0,
-        )
+    water_flux_surface .= max.(
+        runoff.boundary_conditions.water_flux_surface .+
+        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+        0.0,
+    )
     return nothing
 end
 

@@ -22,7 +22,7 @@ function Model(config::Config, type::SedimentModel)
     routing = Routing(dataset, config, domain, soilloss)
     mass_balance = NoMassBalance()
 
-    modelmap = (land=soilloss, routing, mass_balance)
+    modelmap = (land = soilloss, routing, mass_balance)
     writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 
@@ -57,7 +57,12 @@ function update_model!(model::AbstractModel{<:SedimentModel})
 
     # River sediment transport
     if config.model.run_river_model__flag
-        update_river_flow!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
+        update_river_flow!(
+            routing.river_flow,
+            routing.overland_flow.to_river,
+            domain.river,
+            dt,
+        )
     end
 
     return nothing
@@ -70,7 +75,7 @@ function set_states!(model::AbstractModel{<:SedimentModel})
     if !config.model.cold_start__flag
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type=Float64)
+        set_states!(instate_path, model; type = Float64)
     else
         @info "Set initial conditions from default values."
     end

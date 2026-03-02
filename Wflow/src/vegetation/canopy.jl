@@ -46,24 +46,23 @@ function GashInterceptionModel(
     n = length(indices)
     parameters = GashParameters(; e_r, vegetation_parameter_set)
     variables = InterceptionVariables(; n)
-    interception = GashInterceptionModel(; parameters, variables)
-    return interception
+    interception_model = GashInterceptionModel(; parameters, variables)
+    return interception_model
 end
 
 "Update Gash interception model for a single timestep"
-function update_interception!(
-    interception::GashInterceptionModel,
+function update_interception_model!(
+    interception_model::GashInterceptionModel,
     atmospheric_forcing::AtmosphericForcing,
 )
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        interception.parameters.vegetation_parameter_set
-    (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
-        interception.variables
+    (; parameters, variables) = interception_model
+    (; leaf_area_index, canopygapfraction, cmax, kc) = parameters.vegetation_parameter_set
+    (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) = variables
+    e_r = parameters.e_r
     (; precipitation, potential_evaporation) = atmospheric_forcing
-    e_r = interception.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(interception.parameters.vegetation_parameter_set)
+        update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]

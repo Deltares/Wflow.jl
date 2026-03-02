@@ -99,7 +99,10 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     )
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update_soil_second!(soil, (; runoff, demand, subsurface_flow = routing.subsurface_flow))
+    update_soil_water_storage!(
+        soil,
+        (; runoff, demand, subsurface_flow = routing.subsurface_flow),
+    )
 
     surface_routing!(model)
 
