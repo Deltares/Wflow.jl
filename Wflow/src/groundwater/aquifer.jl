@@ -598,9 +598,6 @@ function update_subsurface_flow!(
     conductivity_profile::GwfConductivityProfileType.T;
 ) where {A <: UnconfinedAquifer}
     (; cfl) = gwf.timestepping
-    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
-    (; theta_s, theta_r) = soil.parameters
-
     set_flux_vars!(gwf)
     t = 0.0
     while t < dt

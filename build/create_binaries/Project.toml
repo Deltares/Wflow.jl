@@ -6,7 +6,7 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
 
 [sources]
-Wflow = {path = "../../Wflow"}
+PackageCompiler = {rev = "bundle-less-artifacts", url = "https://github.com/visr/PackageCompiler.jl"}
 
 [compat]
 PackageCompiler = "2"
