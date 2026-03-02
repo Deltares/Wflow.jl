@@ -511,6 +511,9 @@ window.Quarto = {
 <p>By default hydraulic heads are computed for the kinematic wave lateral subsurface flow concept (#827). Land surface elevation data is required for this computation and can be set as follows in the TOML configuration file:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.static]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface__elevation</span> <span class="op">=</span> <span class="st">"wflow_dem"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Supporting internal timestepping for the kinematic wave lateral subsurface flow concept (#827) requires that the flow state variable contains <code>instantaneous</code> in the <code>quantity</code> part of the standard name:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[state.variables]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ssf"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 </section>
