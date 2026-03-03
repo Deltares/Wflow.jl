@@ -14,5 +14,3 @@ repos:
     rev: v1.43.5
     hooks:
       - id: typos
-        files: \.(jl|qmd|md)$
-        exclude: publications.qmd

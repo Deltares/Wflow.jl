@@ -1,0 +1,11 @@
+[files]
+extend-exclude = [
+    "**/Manifest.toml",
+    "**/*.toml",
+    "**/publications.qmd",
+    "**/Licentie.rtf",
+]
+
+[default.extend-words]
+# Ignore false-positives
+iy = "iy"
