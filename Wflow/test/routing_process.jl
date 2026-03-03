@@ -261,24 +261,40 @@ end
 end
 
 @testitem "unit: kinwave_river_update!" begin
+    # Test river kinematic wave with graph 1 -- 2 
+    # with a reservoir at 1
     using Graphs: DiGraph, add_edge!
     n = 2
     model = Wflow.KinWaveRiverFlow(;
-        timestepping = Wflow.TimeStepping(),
+        timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n)),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
             external_inflow = [-0.1],
             reservoir = Wflow.Reservoir(;
-                boundary_conditions = Wflow.ReservoirBC(; n, external_inflow = [0.02]),
+                boundary_conditions = Wflow.ReservoirBC(;
+                    n,
+                    external_inflow = [0.02],
+                    precipitation = [4.0],
+                    evaporation = [1.0],
+                    inflow_overland = [1e-3],
+                    inflow_subsurface = [2e-3],
+                ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1],
                     storfunc = [Wflow.ReservoirProfileType.linear],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
-                    area = [2500.0],
+                    area = [1.79e6],
+                    maxrelease = [63.0],
+                    demand = [7.9],
+                    targetminfrac = [0.003],
+                    targetfullfrac = [1.0],
+                    maxstorage = [7.16e7],
                 ),
                 variables = Wflow.ReservoirVariables(;
-                    waterlevel = [3.0],
-                    storage = [7500.0],
+                    waterlevel = [40.0],
+                    storage = [7.15e7],
+                    outflow_obs = [0.0],
+                    actevap = [0.0],
                 ),
             ),
         ),
@@ -289,12 +305,12 @@ end
                 slope = [0.01],
                 mannings_n = [0.03],
                 alpha_pow = 0.4,
-                alpha_term = [0.5],
-                alpha = [5.0],
+                alpha_term = [0.3008],
+                alpha = [1.628],
             ),
             bankfull_depth = [10.0],
         ),
-        variables = Wflow.FlowVariables(; n, q = [0.2]),
+        variables = Wflow.FlowVariables(; n, q = [58.3]),
         allocation = Wflow.NoAllocationRiver(n),
     )
     graph = DiGraph(2)
@@ -310,15 +326,22 @@ end
         ),
         parameters = Wflow.RiverParameters(; flow_width = [30.0], flow_length = [800.0]),
     )
-    dt = 1200.0
+    dt = Wflow.stable_timestep(model, domain.parameters.flow_length, 0.05)
     dt_forcing = 86400.0
 
     Wflow.kinwave_river_update!(model, domain, dt, dt_forcing)
 
-    @test model.variables.q ≈ [0.1598124775930105]
-    @test model.variables.h[1] ≈ 0.055464507410878765
-    @test model.variables.storage[1] ≈ 1331.1481778610903
-    @test model.variables.q_av[1] ≈ 191.7749731116126
+    @test dt ≈ 153.6838444576967
+    @test model.variables.q ≈ [30.846893511897502]
+    @test model.variables.h[1] ≈ 0.42467823758280265
+    @test model.variables.storage[1] ≈ 10192.277701987263
+    @test model.variables.q_av[1] ≈ 4740.669184485589
+
+    (; reservoir) = model.boundary_conditions
+    @test reservoir.variables.waterlevel[1] ≈ 40.002655729492034
+    @test reservoir.variables.storage[1] ≈ 7.150475375579074e7
+    @test reservoir.variables.outflow[1] == 0.0
+    @test reservoir.variables.actevap[1] ≈ 0.00177874819974186
 end
 
 @testitem "unit: local_inertial_river_update!" begin
@@ -328,35 +351,31 @@ end
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
             external_inflow = [-1.0, -1.0],
-            inwater = [100.0, 100.0],
+            inwater = [1.0, 1.0],
             reservoir = Wflow.Reservoir(;
                 boundary_conditions = Wflow.ReservoirBC(;
                     n,
                     external_inflow = [-1.0],
-                    inflow_overland = [3000.0],
-                    inflow_subsurface = [5000.0],
-                    precipitation = [2.0],
-                    evaporation = [1.0],
+                    inflow_overland = [0.017],
+                    inflow_subsurface = [0.052],
+                    precipitation = [0.15],
+                    evaporation = [0.53],
                     inflow = [0.0],
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1, 2],
                     storfunc = [Wflow.ReservoirProfileType.linear],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
-                    area = [5.0e6, 4.0e6],
-                    maxrelease = [10.0, 10.0],
-                    demand = [1.5, 1.5],
-                    targetminfrac = [0.3, 0.3],
-                    targetfullfrac = [0.1, 0.1],
-                    maxstorage = [Inf, Inf],
-                    threshold = [0.0, 0.0],
+                    area = [9.07e6, 1.48e6],
+                    maxrelease = [1.74, 24.0],
+                    demand = [0.21, 3.0],
+                    targetminfrac = [0.35, 0.07],
+                    targetfullfrac = [0.83, 0.75],
+                    maxstorage = [3.3e7, 6.2e7],
                 ),
                 variables = Wflow.ReservoirVariables(;
-                    waterlevel = [1.0, 1.0],
-                    storage = [2.5e5, 2.5e5],
-                    outflow = [1.8, 1.8],
-                    outflow_av = [0.0, 0.0],
-                    actevap = [0.0, 0.0],
+                    waterlevel = [3.0, 31.2],
+                    storage = [2.75e7, 4.67e7],
                 ),
             ),
         ),
@@ -439,7 +458,13 @@ end
     @test model.floodplain.variables.q[1] ≈ -281.84014086002725
     @test model.floodplain.variables.q_av[1] ≈ -281840.1408600272
 
-    Wflow.update_boundary_conditions_reservoir!(model, domain, dt, dt_forcing)
+    Wflow.update_bc_reservoir_model!(
+        model.boundary_conditions.reservoir,
+        model,
+        domain,
+        dt,
+        dt_forcing,
+    )
 
     @test model.boundary_conditions.reservoir.variables.storage[1] ≈ 7.391913765967477e6
     @test model.boundary_conditions.reservoir.variables.waterlevel[1] ≈ 2.428382753193495

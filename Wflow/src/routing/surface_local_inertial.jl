@@ -423,29 +423,28 @@ update_floodplain_flow!(
 """
 Update reservoir boundary conditions for the local inertial river flow model.
 """
-function update_boundary_conditions_reservoir!(
-    model::LocalInertialRiverFlow,
+function update_bc_reservoir_model!(
+    reservoir_model::Reservoir,
+    river_flow_model::LocalInertialRiverFlow,
     domain::Domain,
     dt::Float64,
     dt_forcing::Float64,
 )
     (; edges_at_node) = domain.river.network
-    (; reservoir) = model.boundary_conditions
     inds_reservoir = domain.reservoir.network.river_indices
-    isnothing(reservoir) && return nothing
 
-    river_v = model.variables
-    res_bc = reservoir.boundary_conditions
+    river_v = river_flow_model.variables
+    res_bc = reservoir_model.boundary_conditions
 
     for v in eachindex(inds_reservoir)
         i = inds_reservoir[v]
 
-        q_in = get_inflow_reservoir(model, edges_at_node.src[i])
+        q_in = get_inflow_reservoir(river_flow_model, edges_at_node.src[i])
         # If external_inflow < 0, abstraction is limited
         if res_bc.external_inflow[v] < 0.0
             abstraction = min(
                 -res_bc.external_inflow[v],
-                (reservoir.variables.storage[v] / dt) * 0.98,
+                (reservoir_model.variables.storage[v] / dt) * 0.98,
             )
             res_bc.actual_external_abstraction_av[v] += abstraction * dt
             inflow = -abstraction
@@ -453,13 +452,20 @@ function update_boundary_conditions_reservoir!(
             inflow = res_bc.external_inflow[v]
         end
         net_inflow = q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v] + inflow
-        update!(reservoir, v, net_inflow, dt, dt_forcing)
-        river_v.q[i] = reservoir.variables.outflow[v]
+        update!(reservoir_model, v, net_inflow, dt, dt_forcing)
+        river_v.q[i] = reservoir_model.variables.outflow[v]
         # average river discharge (here accumulated for model timestep Δt)
         river_v.q_av[i] += river_v.q[i] * dt
     end
     return nothing
 end
+update_bc_reservoir_model!(
+    reservoir_model::Nothing,
+    river_flow_model::LocalInertialRiverFlow,
+    domain::Domain,
+    dt::Float64,
+    dt_forcing::Float64,
+) = nothing
 
 """
 Update floodplain water depth and storage.
@@ -564,6 +570,8 @@ function local_inertial_river_update!(
     dt_forcing::Float64,
     update_h::Bool,
 )
+    @infiltrate
+
     # Update river channel flow
     update_river_channel_flow!(model, domain.river, dt)
 
@@ -571,7 +579,13 @@ function local_inertial_river_update!(
     update_floodplain_flow!(model, domain.river, dt)
 
     # Handle reservoir boundary conditions
-    update_boundary_conditions_reservoir!(model, domain, dt, dt_forcing)
+    update_bc_reservoir_model!(
+        model.boundary_conditions.reservoir,
+        model,
+        domain,
+        dt,
+        dt_forcing,
+    )
 
     # Update water depth and storage if requested
     if update_h
@@ -1055,13 +1069,18 @@ Compute storage change for a river cell from fluxes.
     yd = indices.yd[i]
     xd = indices.xd[i]
 
-    return (
+    net_river_flow =
         sum_at(river.variables.q, edges_at_node.src[river_idx]) -
-        sum_at(river.variables.q, edges_at_node.dst[river_idx]) + land.variables.qx[xd] -
-        land.variables.qx[i] + land.variables.qy[yd] - land.variables.qy[i] +
-        land.boundary_conditions.runoff[i] -
+        sum_at(river.variables.q, edges_at_node.dst[river_idx])
+    net_land_flow =
+        land.variables.qx[xd] - land.variables.qx[i] + land.variables.qy[yd] -
+        land.variables.qy[i]
+    net_flow =
+        net_river_flow + net_land_flow + land.boundary_conditions.runoff[i] -
         river.boundary_conditions.abstraction[river_idx]
-    ) * dt
+    storage_change = net_flow * dt
+
+    return storage_change
 end
 
 """

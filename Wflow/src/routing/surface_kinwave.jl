@@ -367,11 +367,8 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     return nothing
 end
 
-"""
-run reservoir model and copy reservoir outflow to inflow (qin) of
-downstream river cell
-"""
-function update_reservoir!(
+"Run reservoir model and copy reservoir outflow to inflow (qin) of downstream river cell"
+function update_reservoir_model!(
     reservoir::Reservoir,
     river_flow_vars::FlowVariables,
     network::NetworkRiver,
@@ -472,7 +469,7 @@ function kinwave_river_update!(
                 )
 
                 if !isnothing(reservoir)
-                    update_reservoir!(
+                    update_reservoir_model!(
                         reservoir,
                         model.variables,
                         domain.network,
