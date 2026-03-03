@@ -126,11 +126,11 @@ end
 "Update boundary conditions for soil erosion model"
 function update_bc_soil_erosion_model!(
     soil_erosion_model::SoilErosionModel,
-    rainfall_erosion::AbstractRainfallErosionModel,
-    overland_flow_erosion::AbstractOverlandFlowErosionModel,
+    rainfall_erosion_model::AbstractRainfallErosionModel,
+    overland_flow_erosion_model::AbstractOverlandFlowErosionModel,
 )
-    re = rainfall_erosion.variables.soil_erosion_rate
-    ole = overland_flow_erosion.variables.soil_erosion_rate
+    re = rainfall_erosion_model.variables.soil_erosion_rate
+    ole = overland_flow_erosion_model.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
     @. rainfall_erosion = re
     @. overland_flow_erosion = ole

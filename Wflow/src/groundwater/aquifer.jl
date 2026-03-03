@@ -249,11 +249,11 @@ function saturated_thickness(aquifer::ConfinedAquifer)
 end
 
 """
-    horizontal_conductance(i, j, nzi, aquifer, C)
+    horizontal_conductance(i, j, nzi, aquifer, connectivity)
 
 Compute fully saturated horizontal conductance for a single connection between two cells
-(indexed with `i` and `j`). Geometry characteristics are taken from the
-connectivity struct `C`, using the non-zero index (nzi) of its CSC data
+(indexed with `i` and `j`). Geometry characteristics are taken from
+`connectivity`, using the non-zero index (nzi) of its CSC data
 structure.
 """
 function horizontal_conductance(
@@ -308,7 +308,14 @@ function conductance(
 end
 
 """
-    conductance(aquifer::UnconfinedAquifer, connectivity::Connectivity)
+function conductance(
+    aquifer::UnconfinedAquifer,
+    i,
+    j,
+    nzi,
+    conductivity_profile::GwfConductivityProfileType.T,
+    connectivity::Connectivity,
+)
 
 This computes the conductance for an unconfined aquifer using the "upstream
 saturated fraction" as the MODFLOW documentation calls it. In this approach, the
@@ -593,7 +600,7 @@ end
 
 function update_subsurface_flow_model!(
     gwf_model::GroundwaterFlow{A},
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T;
 ) where {A <: UnconfinedAquifer}
@@ -605,8 +612,8 @@ function update_subsurface_flow_model!(
         dt_s = stable_timestep(gwf_model.aquifer, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
         update_fluxes!(gwf_model, conductivity_profile, dt_s)
-        update_head!(gwf_model, soil, dt_s)
-        update_ustorelayerdepth!(soil, gwf_model)
+        update_head!(gwf_model, soil_model, dt_s)
+        update_ustorelayerdepth!(soil_model, gwf_model)
         t += dt_s
     end
     average_flux_vars!(gwf_model, dt)

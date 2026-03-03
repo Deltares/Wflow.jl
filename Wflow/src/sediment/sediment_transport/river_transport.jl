@@ -542,13 +542,13 @@ end
 Calculate natural river deposition using Einstein's formula (Stokes settling)
 """
 function compute_natural_deposition(
-    sediment_flux::SedimentRiverTransportModel,
+    sediment_flux_model::SedimentRiverTransportModel,
     domain_parameters::RiverParameters,
     input_particles::NTuple{6, Float64},
     erosion_particles::NTuple{6, Float64},
     v::Int,
 )
-    (; boundary_conditions, parameters) = sediment_flux
+    (; boundary_conditions, parameters) = sediment_flux_model
     (; q) = boundary_conditions
     (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) = parameters
     (; flow_length, flow_width) = domain_parameters

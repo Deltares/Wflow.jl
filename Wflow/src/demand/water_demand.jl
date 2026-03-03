@@ -157,7 +157,7 @@ get_demand_gross(nonpaddy_model::NonPaddy) = nonpaddy_model.variables.demand_gro
 get_demand_gross(irrigation_model::NoIrrigationNonPaddy) = Zeros(irrigation_model.n)
 
 """
-    update_demand_gross!(nonpaddy::NonPaddy, soil::SbmSoilModel)
+    update_demand_gross!(nonpaddy_model::NonPaddy, soil::SbmSoilModel)
 
 Update gross water demand `demand_gross` of the non-paddy irrigation model for a single
 timestep.
@@ -168,17 +168,18 @@ zone of the SBM soil model. Irrigation brings the root zone back to field capaci
 by the infiltration capacity, taking into account limited irrigation efficiency and limited
 by a maximum irrigation rate.
 """
-function update_demand_gross!(nonpaddy_model::NonPaddy, soil::SbmSoilModel)
+function update_demand_gross!(nonpaddy_model::NonPaddy, soil_model::SbmSoilModel)
     (; parameters, variables) = nonpaddy_model
     (; irrigation_areas, irrigation_trigger, maximum_irrigation_rate) = parameters
     (; demand_gross) = variables
-    (; n_unsatlayers) = soil.variables
+    (; n_unsatlayers) = soil_model.variables
 
     for i in eachindex(irrigation_areas)
         if irrigation_areas[i] && irrigation_trigger[i]
             irri_dem_gross = 0.0
             for k in 1:n_unsatlayers[i]
-                depletion, readily_available_water = water_demand_root_zone(soil, i, k)
+                depletion, readily_available_water =
+                    water_demand_root_zone(soil_model, i, k)
 
                 # check if maximum irrigation rate has been applied at the previous time step.
                 max_irri_rate_applied = demand_gross[i] == maximum_irrigation_rate[i]
@@ -190,7 +191,8 @@ function update_demand_gross!(nonpaddy_model::NonPaddy, soil::SbmSoilModel)
                     irri_dem_gross += depletion
                 end
             end
-            demand_gross[i] = compute_demand_gross(nonpaddy_model, soil, irri_dem_gross, i)
+            demand_gross[i] =
+                compute_demand_gross(nonpaddy_model, soil_model, irri_dem_gross, i)
         else
             demand_gross[i] = 0.0
         end
@@ -198,7 +200,8 @@ function update_demand_gross!(nonpaddy_model::NonPaddy, soil::SbmSoilModel)
     return nothing
 end
 
-update_demand_gross!(::NoIrrigationNonPaddy, ::SbmSoilModel) = nothing
+update_demand_gross!(nonpaddy_model::NoIrrigationNonPaddy, soil_model::SbmSoilModel) =
+    nothing
 
 "Compute water demand only for root zone through root fraction per layer"
 function water_demand_root_zone(soil::SbmSoilModel, i::Int, k::Int)
@@ -223,12 +226,12 @@ end
 
 function compute_demand_gross(
     nonpaddy_model::NonPaddy,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     irri_dem_gross::Float64,
     i::Int,
 )
-    (; pathfrac, infiltcapsoil) = soil.parameters
-    (; f_infiltration_reduction) = soil.variables
+    (; pathfrac, infiltcapsoil) = soil_model.parameters
+    (; f_infiltration_reduction) = soil_model.variables
     (; irrigation_efficiency, maximum_irrigation_rate) = nonpaddy_model.parameters
 
     infiltration_capacity =
@@ -676,7 +679,7 @@ availability for allocation areas.
 function surface_water_allocation_area!(
     allocation_model::AllocationLand,
     demand_variables::DemandVariables,
-    river::AbstractRiverFlowModel,
+    river_flow_model::AbstractRiverFlowModel,
     domain::Domain,
     dt::Float64,
 )
@@ -686,10 +689,10 @@ function surface_water_allocation_area!(
     (; area) = domain.land.parameters
 
     (; available_surfacewater, act_surfacewater_abst_vol, act_surfacewater_abst) =
-        river.allocation.variables
+        river_flow_model.allocation.variables
     (; surfacewater_alloc) = allocation_model.variables
     (; surfacewater_demand) = demand_variables
-    (; reservoir) = river.boundary_conditions
+    (; reservoir) = river_flow_model.boundary_conditions
 
     for i in eachindex(inds_river)
         # surface water_demand (allocation area)
@@ -733,7 +736,7 @@ end
 
 function available_surface_water!(
     available_surfacewater::Vector{Float64},
-    reservoir,
+    reservoir_model,
     indices_river::Vector{Int},
     indices_reservoir::Vector{Int},
     dt::Float64,
@@ -744,8 +747,8 @@ function available_surface_water!(
         if k > 0
             # for reservoir locations use reservoir storage, check for abstraction
             # through external negative inflow first and adjust available volume.
-            external_inflow = reservoir.boundary_conditions.external_inflow[k]
-            available_volume = reservoir.variables.storage[k] * 0.98
+            external_inflow = reservoir_model.boundary_conditions.external_inflow[k]
+            available_volume = reservoir_model.variables.storage[k] * 0.98
             if external_inflow < 0.0
                 if available_volume > -external_inflow * dt
                     available_volume += external_inflow * dt
@@ -1040,17 +1043,17 @@ Update the return flow fraction `returnflow_fraction` of `industry`, `domestic` 
 total gross water demand, total irrigation gross water demand and total non-irrigation gross
 water demand as part of the water `demand` model.
 """
-function update_water_demand_model!(demand_model::Demand, soil::SbmSoilModel)
+function update_water_demand_model!(demand_model::Demand, soil_model::SbmSoilModel)
     (; nonpaddy, paddy, domestic, industry, livestock) = demand_model
 
     return_flow_fraction!(industry)
     return_flow_fraction!(domestic)
     return_flow_fraction!(livestock)
 
-    update_demand_gross!(nonpaddy, soil)
+    update_demand_gross!(nonpaddy, soil_model)
     update_demand_gross!(paddy)
     update_demand_gross!(demand_model)
 
     return nothing
 end
-update_water_demand_model!(demand_model::NoDemand, soil::SbmSoilModel) = nothing
+update_water_demand_model!(demand_model::NoDemand, soil_model::SbmSoilModel) = nothing

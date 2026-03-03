@@ -656,14 +656,14 @@ end
 
 "Return soil fraction"
 function soil_fraction!(
-    soil::AbstractSoilModel,
-    glacier::AbstractGlacierModel,
+    soil_model::AbstractSoilModel,
+    glacier_model::AbstractGlacierModel,
     parameters::LandParameters,
 )
-    (; canopygapfraction) = soil.parameters.vegetation_parameter_set
-    (; soil_fraction) = soil.parameters
+    (; canopygapfraction) = soil_model.parameters.vegetation_parameter_set
+    (; soil_fraction) = soil_model.parameters
     (; water_fraction, river_fraction) = parameters
-    glacier_fraction = get_glacier_fraction(glacier)
+    glacier_fraction = get_glacier_fraction(glacier_model)
 
     @. soil_fraction =
         max(canopygapfraction - water_fraction - river_fraction - glacier_fraction, 0.0)
@@ -687,12 +687,13 @@ function update_bc_soil_model!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .= max.(
-        runoff.boundary_conditions.water_flux_surface .+
-        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-        0.0,
-    )
+    water_flux_surface .=
+        max.(
+            runoff.boundary_conditions.water_flux_surface .+
+            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+            0.0,
+        )
     return nothing
 end
 

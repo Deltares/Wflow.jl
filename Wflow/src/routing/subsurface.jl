@@ -133,7 +133,7 @@ end
 "Update lateral subsurface model for a single timestep"
 function update_subsurface_flow_model!(
     subsurface_flow_model::LateralSSF,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     domain::DomainLand,
     dt::Float64,
 )
@@ -175,7 +175,7 @@ function update_subsurface_flow_model!(
                     flow_width[v],
                     ssfmax[v],
                     kh_profile,
-                    soil,
+                    soil_model,
                     v,
                 )
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]

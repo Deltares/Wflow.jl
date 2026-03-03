@@ -759,13 +759,14 @@ Update subsurface flow contribution to inflow of a reservoir model for a river f
 """
 function update_inflow!(
     reservoir_model::Reservoir,
-    river_flow::LocalInertialRiverFlow,
+    river_flow_model::LocalInertialRiverFlow,
     subsurface_flow::AbstractSubsurfaceFlowModel,
     network::NetworkReservoir,
 )
     (; land_indices) = network
     (; inflow_subsurface) = reservoir_model.boundary_conditions
-    inflow_subsurface .= get_inflow_reservoir(river_flow, subsurface_flow, land_indices)
+    inflow_subsurface .=
+        get_inflow_reservoir(river_flow_model, subsurface_flow, land_indices)
     return nothing
 end
 update_inflow!(
