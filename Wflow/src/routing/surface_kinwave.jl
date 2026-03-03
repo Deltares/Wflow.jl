@@ -226,28 +226,28 @@ Helper function to set reservoir variables to zero. This is done at the start of
 simulation timestep, during the timestep the total (weighted) sum is computed from values at
 each internal timestep.
 """
-function set_reservoir_vars!(reservoir::Reservoir)
-    reservoir.boundary_conditions.inflow .= 0.0
-    reservoir.boundary_conditions.actual_external_abstraction_av .= 0.0
-    reservoir.variables.outflow_av .= 0.0
-    reservoir.variables.actevap .= 0.0
+function set_reservoir_vars!(reservoir_model::Reservoir)
+    reservoir_model.boundary_conditions.inflow .= 0.0
+    reservoir_model.boundary_conditions.actual_external_abstraction_av .= 0.0
+    reservoir_model.variables.outflow_av .= 0.0
+    reservoir_model.variables.actevap .= 0.0
 
     return nothing
 end
-set_reservoir_vars!(reservoir) = nothing
+set_reservoir_vars!(reservoir_model) = nothing
 
 """
 Helper function to compute the average of reservoir variables. This is done at the end of
 each simulation timestep.
 """
-function average_reservoir_vars!(reservoir::Reservoir, dt::Float64)
-    reservoir.variables.outflow_av ./= dt
-    reservoir.boundary_conditions.inflow ./= dt
-    reservoir.boundary_conditions.actual_external_abstraction_av ./= dt
+function average_reservoir_vars!(reservoir_model::Reservoir, dt::Float64)
+    reservoir_model.variables.outflow_av ./= dt
+    reservoir_model.boundary_conditions.inflow ./= dt
+    reservoir_model.boundary_conditions.actual_external_abstraction_av ./= dt
 
     return nothing
 end
-average_reservoir_vars!(reservoir, dt) = nothing
+average_reservoir_vars!(reservoir_model, dt) = nothing
 
 """
     set_flow_vars!(river_flow_model::AbstractRiverFlowModel)

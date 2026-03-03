@@ -54,7 +54,7 @@ function set_pit_ldd(
     pits_2d::AbstractMatrix{Bool},
     ldd::Vector{UInt8},
     indices::Vector{CartesianIndex{2}};
-    pit::Integer = 5,
+    pit::Integer=5,
 )::Vector{UInt8}
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
@@ -90,7 +90,7 @@ represent inactive cells.
 function active_indices(
     subcatch_2d::AbstractMatrix,
     nodata,
-)::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
+)::Tuple{Vector{CartesianIndex{2}},Matrix{Int}}
     A = subcatch_2d
     all_inds = CartesianIndices(size(A))
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
@@ -115,7 +115,7 @@ function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIn
     end
 end
 
-function lattometres(lat::Real)::Tuple{Float64, Float64}
+function lattometres(lat::Real)::Tuple{Float64,Float64}
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
     m3 = 1.175         # latitude calculation term 3
@@ -135,7 +135,7 @@ function cell_lengths(
     y::AbstractVector{<:Real},
     celllength::Real,
     cell_length_in_meter::Bool,
-)::Tuple{Vector{Float64}, Vector{Float64}}
+)::Tuple{Vector{Float64},Vector{Float64}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -165,8 +165,8 @@ and set states in `model` object. Active cells are selected with the correspondi
 function set_states!(
     instate_path::AbstractString,
     model;
-    type = nothing,
-    dimname = nothing,
+    type=nothing,
+    dimname=nothing,
 )::Nothing
     (; domain, land, config) = model
 
@@ -184,7 +184,7 @@ function set_states!(
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
                 if dimname == :layer
-                    dimensions = (x = :, y = :, layer = :, time = 1)
+                    dimensions = (x=:, y=:, layer=:, time=1)
                 else
                     error("Unrecognized dimension name $dimname")
                 end
@@ -206,7 +206,7 @@ function set_states!(
                 lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
-                A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
+                A = read_standardized(ds, ncname, (x=:, y=:, time=1))
                 A = A[sel]
                 A = nomissing(A)
                 # Convert to desired type if needed
@@ -229,7 +229,7 @@ function set_states!(
     return nothing
 end
 
-function get_var(config::Config, parameter::AbstractString; optional = true)
+function get_var(config::Config, parameter::AbstractString; optional=true)
     if hasfield(InputSection, Symbol(parameter))
         var = getfield(config.input, Symbol(parameter))
     elseif haskey(config.input.location_maps, parameter)
@@ -276,14 +276,14 @@ function ncread(
     nc,
     config::Config,
     parameter::AbstractString;
-    optional = true,
-    sel = nothing,
-    defaults = nothing,
-    type = nothing,
-    allow_missing = false,
-    fill = nothing,
-    dimname = nothing,
-    logging = true,
+    optional=true,
+    sel=nothing,
+    defaults=nothing,
+    type=nothing,
+    allow_missing=false,
+    fill=nothing,
+    dimname=nothing,
+    logging=true,
 )
     var = get_var(config, parameter; optional)
 
@@ -304,11 +304,11 @@ function ncread(
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :, time = 1)
+        dim_sel = (x=:, y=:, time=1)
     elseif dimname == :layer
-        dim_sel = (x = :, y = :, layer = :, time = 1)
+        dim_sel = (x=:, y=:, layer=:, time=1)
     elseif dimname == :flood_depth
-        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
+        dim_sel = (x=:, y=:, flood_depth=:, time=1)
     else
         error("Unrecognized dimension name $dimname")
     end
@@ -395,7 +395,7 @@ function set_layerthickness(
 )::SVector
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
-        if reference_depth > cum_depth[i + 1]
+        if reference_depth > cum_depth[i+1]
             thicknesslayers = setindex(thicknesslayers, thickness[i], i)
         elseif reference_depth - cum_depth[i] > 0.0
             thicknesslayers = setindex(thicknesslayers, reference_depth - cum_depth[i], i)
@@ -471,17 +471,17 @@ end
 pow(x::Real, y::Real)::Real = exp(y * log(x))
 
 function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
-    mapreduce(i -> A[i], +, inds; init = zero(T))
+    mapreduce(i -> A[i], +, inds; init=zero(T))
 end
 
-sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
-    mapreduce(f, +, inds; init = zero(T))
+sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number}=Float64) =
+    mapreduce(f, +, inds; init=zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
-function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
+function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N,T}} where {T,N}
     size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
-    return copy(reinterpret(SVector{N, T}, vec(x)))
+    return copy(reinterpret(SVector{N,T}, vec(x)))
 end
 
 """
@@ -547,8 +547,8 @@ julia> tosecond(Day(1))
 """
 tosecond(x::Hour) = Float64(Dates.value(Second(x)))
 tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
+tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
+tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
 
 """
     adjacent_nodes_at_edge(graph)
@@ -557,9 +557,9 @@ Return the source node `src` and destination node `dst` of each edge of a direct
 """
 function adjacent_nodes_at_edge(
     graph::SimpleDiGraph{Int},
-)::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Int},Vector{Int}}}
     _edges = collect(edges(graph))
-    return (src = src.(_edges), dst = dst.(_edges))
+    return (src=src.(_edges), dst=dst.(_edges))
 end
 
 """
@@ -570,7 +570,7 @@ Return the source edge `src` and destination edge `dst` of each node of a direct
 function adjacent_edges_at_node(
     graph::SimpleDiGraph{Int},
     nodes_at_edge,
-)::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Vector{Int}},Vector{Vector{Int}}}}
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
@@ -578,7 +578,7 @@ function adjacent_edges_at_node(
         push!(src_edge, findall(isequal(nodes[i]), nodes_at_edge.dst))
         push!(dst_edge, findall(isequal(nodes[i]), nodes_at_edge.src))
     end
-    return (src = src_edge, dst = dst_edge)
+    return (src=src_edge, dst=dst_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
@@ -753,22 +753,22 @@ function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, 
 end
 
 """
-    kh_layered_profile!(soil::SbmSoilModel, subsurface::LateralSSF, kv_profile::KvLayered, dt)
-    kh_layered_profile!(soil::SbmSoilModel, subsurface::LateralSSF, kv_profile::KvLayeredExponential, dt)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_model::LateralSSF, kv_profile::KvLayered, dt)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_model::LateralSSF, kv_profile::KvLayeredExponential, dt)
 
 Compute equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] using vertical hydraulic
 conductivity profile `kv_profile`.
 """
 function kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
+    soil_model::SbmSoilModel,
+    subsurface_model::LateralSSF,
     kv_profile::KvLayered,
     dt,
 )
-    (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
-    (; n_unsatlayers, zi) = soil.variables
-    (; kh) = subsurface.parameters.kh_profile
-    (; khfrac) = subsurface.parameters
+    (; nlayers, sumlayers, act_thickl, soilthickness) = soil_model.parameters
+    (; n_unsatlayers, zi) = soil_model.variables
+    (; kh) = subsurface_model.parameters.kh_profile
+    (; khfrac) = subsurface_model.parameters
 
     t_factor = (tosecond(BASETIMESTEP) / dt)
     for i in eachindex(kh)
@@ -796,16 +796,16 @@ function kh_layered_profile!(
 end
 
 function kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
+    soil_model::SbmSoilModel,
+    subsurface_model::LateralSSF,
     kv_profile::KvLayeredExponential,
     dt,
 )
-    (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
+    (; nlayers, sumlayers, act_thickl, soilthickness) = soil_model.parameters
     (; nlayers_kv, z_layered, kv, f) = kv_profile
-    (; n_unsatlayers, zi) = soil.variables
-    (; kh) = subsurface.parameters.kh_profile
-    (; khfrac) = subsurface.parameters
+    (; n_unsatlayers, zi) = soil_model.variables
+    (; kh) = subsurface_model.parameters.kh_profile
+    (; khfrac) = subsurface_model.parameters
     t_factor = (tosecond(BASETIMESTEP) / dt)
 
     for i in eachindex(kh)
@@ -859,27 +859,27 @@ function kh_layered_profile!(
 end
 
 kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
-    kv_profile::Union{KvExponential, KvExponentialConstant},
+    soil_model::SbmSoilModel,
+    subsurface_model::LateralSSF,
+    kv_profile::Union{KvExponential,KvExponentialConstant},
     dt,
 ) = nothing
 
 """
-    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponential)
-    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponentialConstant)
+    initialize_lateral_ssf_model!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponential)
+    initialize_lateral_ssf_model!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponentialConstant)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydraulic
 conductivity profile `kh_profile`.
 """
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
+function initialize_lateral_ssf_model!(
+    subsurface_model::LateralSSF,
     parameters::LandParameters,
     kh_profile::KhExponential,
 )
     (; kh_0, f) = kh_profile
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; soilthickness) = subsurface.parameters
+    (; ssf, ssfmax, zi) = subsurface_model.variables
+    (; soilthickness) = subsurface_model.parameters
     (; slope, flow_width) = parameters
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
@@ -887,15 +887,15 @@ function initialize_lateral_ssf!(
     return nothing
 end
 
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
+function initialize_lateral_ssf_model!(
+    subsurface_model::LateralSSF,
     parameters::LandParameters,
     kh_profile::KhExponentialConstant,
 )
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; soilthickness) = subsurface.parameters
+    (; ssf, ssfmax, zi) = subsurface_model.variables
+    (; soilthickness) = subsurface_model.parameters
     (; slope, flow_width) = parameters
 
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
@@ -921,26 +921,26 @@ function initialize_lateral_ssf!(
 end
 
 """
-    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
-    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
+    initialize_lateral_ssf_model!(subsurface_model::LateralSSF, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
+    initialize_lateral_ssf_model!(subsurface_model::LateralSSF, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using  vertical hydraulic
 conductivity profile `kv_profile`.
 """
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    soil::SbmSoilModel,
+function initialize_lateral_ssf_model!(
+    subsurface_model::LateralSSF,
+    soil_model::SbmSoilModel,
     parameters::LandParameters,
     kv_profile::KvLayered,
     dt,
 )
-    (; kh) = subsurface.parameters.kh_profile
-    (; nlayers, act_thickl) = soil.parameters
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness) = subsurface.parameters
+    (; kh) = subsurface_model.parameters.kh_profile
+    (; nlayers, act_thickl) = soil_model.parameters
+    (; ssf, ssfmax, zi) = subsurface_model.variables
+    (; khfrac, soilthickness) = subsurface_model.parameters
     (; slope, flow_width) = parameters
 
-    kh_layered_profile!(soil, subsurface, kv_profile, dt)
+    kh_layered_profile!(soil_model, subsurface_model, kv_profile, dt)
     for i in eachindex(ssf)
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         kh_max = 0.0
@@ -953,21 +953,21 @@ function initialize_lateral_ssf!(
     return nothing
 end
 
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    soil::SbmSoilModel,
+function initialize_lateral_ssf_model!(
+    subsurface_model::LateralSSF,
+    soil_model::SbmSoilModel,
     parameters::LandParameters,
     kv_profile::KvLayeredExponential,
     dt,
 )
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness) = subsurface.parameters
+    (; ssf, ssfmax, zi) = subsurface_model.variables
+    (; khfrac, soilthickness) = subsurface_model.parameters
     (; slope, flow_width) = parameters
-    (; nlayers, act_thickl) = soil.parameters
-    (; kh) = subsurface.parameters.kh_profile
+    (; nlayers, act_thickl) = soil_model.parameters
+    (; kh) = subsurface_model.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile
 
-    kh_layered_profile!(soil, subsurface, kv_profile, dt)
+    kh_layered_profile!(soil_model, subsurface_model, kv_profile, dt)
     for i in eachindex(ssf)
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         kh_max = 0.0
@@ -975,7 +975,7 @@ function initialize_lateral_ssf!(
             if j <= nlayers_kv[i]
                 kh_max += kv[i][j] * act_thickl[i][j]
             else
-                zt = soil.parameters.soilthickness[i] - z_layered[i]
+                zt = soil_model.parameters.soilthickness[i] - z_layered[i]
                 k = max(j - 1, 1)
                 kh_max += kv[i][k] / f[i] * (1.0 - exp(-f[i] * zt))
                 break
@@ -993,7 +993,7 @@ end
 Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
 Otherwise return a `default` value.
 """
-function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
+function bounded_divide(x::Real, y::Real; max::Real=1.0, default::Real=0.0)::Real
     z = y > 0.0 ? min(x / y, max) : default
     return z
 end
@@ -1011,13 +1011,13 @@ rising water table `dh` is based on `net_flux` and the unsaturated store capacit
 layer). For a rising water table a dynamic specific yield is computed.
 """
 function water_table_change(
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     net_flux::Float64,
     specific_yield::Float64,
     i::Int,
 )
-    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
-    (; theta_s, theta_r) = soil.parameters
+    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil_model.variables
+    (; theta_s, theta_r) = soil_model.parameters
 
     # effective porosity (difference between saturated and residual water content)
     theta_e = theta_s[i] - theta_r[i]
@@ -1049,6 +1049,6 @@ function water_table_change(
 end
 
 "Set lower bound for drainable porosity"
-function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
+function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound=0.02)
     return max(theta_s - theta_fc, lower_bound)
 end

@@ -109,12 +109,10 @@ end
 """
     overland_flow_erosion_answers(
         overland_flow,
-        waterlevel,
         usle_k,
         usle_c,
         answers_overland_flow_factor,
         slope,
-        soilcover_fraction,
         area,
         dt,
     )
@@ -123,7 +121,6 @@ Overland flow erosion model based on ANSWERS.
 
 # Arguments
 - `overland_flow` (overland flow [m3 s-1])
-- `waterlevel` (water level [m])
 - `usle_k` (USLE soil erodibility [t ha-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
 - `answers_overland_flow_factor` (ANSWERS overland flow factor [-])

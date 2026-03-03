@@ -58,7 +58,7 @@ function LateralSsfParameters(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    soil::SbmSoilParameters,
+    soil_model::SbmSoilParameters,
 )
     khfrac = ncread(
         dataset,
@@ -69,18 +69,18 @@ function LateralSsfParameters(
         type = Float64,
     )
 
-    (; theta_s, theta_fc, soilthickness) = soil
+    (; theta_s, theta_fc, soilthickness) = soil_model
     soilthickness = soilthickness .* 0.001
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
     factor_dt = BASETIMESTEP / Second(config.time.timestepsecs)
     if kh_profile_type == VerticalConductivityProfile.exponential
-        (; kv_0, f) = soil.kv_profile
+        (; kv_0, f) = soil_model.kv_profile
         kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
         kh_profile = KhExponential(kh_0, f .* 1000.0)
     elseif kh_profile_type == VerticalConductivityProfile.exponential_constant
-        (; z_exp) = soil.kv_profile
-        (; kv_0, f) = soil.kv_profile.exponential
+        (; z_exp) = soil_model.kv_profile
+        (; kv_0, f) = soil_model.kv_profile.exponential
         kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
         exp_profile = KhExponential(kh_0, f .* 1000.0)
         kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
@@ -118,12 +118,12 @@ function LateralSSF(
     dataset::NCDataset,
     config::Config,
     domain::DomainLand,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
 )
     (; indices) = domain.network
     (; area) = domain.parameters
-    parameters = LateralSsfParameters(dataset, config, indices, soil.parameters)
-    zi = 0.001 * soil.variables.zi
+    parameters = LateralSsfParameters(dataset, config, indices, soil_model.parameters)
+    zi = 0.001 * soil_model.variables.zi
     variables = LateralSsfVariables(parameters, zi, area)
     boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
     ssf = LateralSSF(; boundary_conditions, parameters, variables)

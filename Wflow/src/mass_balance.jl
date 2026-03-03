@@ -302,20 +302,20 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
 end
 
 """
-    compute_flow_balance!(reservoir::Reservoir, water_balance::MassBalance, dt::Float64)
-    compute_flow_balance!(reservoir::Nothing, water_balance::NoMassBalance, dt::Float64)
+    compute_flow_balance!(reservoir_model::Reservoir, water_balance::MassBalance, dt::Float64)
+    compute_flow_balance!(reservoir_model::Nothing, water_balance::NoMassBalance, dt::Float64)
 
 Compute reservoir water mass balance error and relative error if reservoirs are included.
 """
 function compute_flow_balance!(
-    reservoir::Reservoir,
+    reservoir_model::Reservoir,
     water_balance::MassBalance,
     dt::Float64,
 )
     (; storage_prev, error, relative_error) = water_balance
-    (; storage, outflow_av, actevap) = reservoir.variables
-    (; precipitation, inflow) = reservoir.boundary_conditions
-    (; area) = reservoir.parameters
+    (; storage, outflow_av, actevap) = reservoir_model.variables
+    (; precipitation, inflow) = reservoir_model.boundary_conditions
+    (; area) = reservoir_model.parameters
 
     for i in eachindex(storage_prev)
         total_in = inflow[i] + (precipitation[i] * 0.001 * area[i]) / dt

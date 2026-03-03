@@ -1,39 +1,45 @@
 
 "Initialize subsurface flow routing for model type `sbm`"
-function initialize_subsurface_flow(
+function initialize_subsurface_flow_model(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     ::SbmModel,
 )
     (; parameters) = domain.land
-    subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
+    subsurface_flow = LateralSSF(dataset, config, domain.land, soil_model)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
     if kh_profile_type == VerticalConductivityProfile.exponential ||
        kh_profile_type == VerticalConductivityProfile.exponential_constant
-        initialize_lateral_ssf!(
+        initialize_lateral_ssf_model!(
             subsurface_flow,
             parameters,
             subsurface_flow.parameters.kh_profile,
         )
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
-        (; kv_profile) = soil.parameters
+        (; kv_profile) = soil_model.parameters
         dt = Second(config.time.timestepsecs)
-        initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))
+        initialize_lateral_ssf_model!(
+            subsurface_flow,
+            soil_model,
+            parameters,
+            kv_profile,
+            tosecond(dt),
+        )
     end
     return subsurface_flow
 end
 
 "Initialize subsurface flow routing for model type `sbm_gwf`"
-function initialize_subsurface_flow(
+function initialize_subsurface_flow_model(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     ::SbmGwfModel,
 )
     (; land, river, drain) = domain
@@ -63,7 +69,7 @@ function initialize_subsurface_flow(
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
 
     # cold state for groundwater head based on water table depth zi
-    initial_head = elevation .- soil.variables.zi / 1000.0
+    initial_head = elevation .- soil_model.variables.zi / 1000.0
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if config.model.constanthead__flag
         initial_head[constant_head.index] = constant_head.variables.head
@@ -77,9 +83,9 @@ function initialize_subsurface_flow(
             ustorelayerthickness,
             n_unsatlayers,
             total_soilwater_storage,
-        ) = soil.variables
+        ) = soil_model.variables
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
-            soil.parameters
+            soil_model.parameters
 
         @. zi = (elevation - min(elevation, initial_head)) * 1000.0
         @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
@@ -89,9 +95,11 @@ function initialize_subsurface_flow(
         @. total_soilwater_storage = satwaterdepth
     end
 
-    bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
-    specific_yield =
-        @. lower_bound_drainable_porosity(soil.parameters.theta_s, soil.parameters.theta_fc)
+    bottom = elevation .- soil_model.parameters.soilthickness ./ 1000.0
+    specific_yield = @. lower_bound_drainable_porosity(
+        soil_model.parameters.theta_s,
+        soil_model.parameters.theta_fc,
+    )
     conductance = zeros(connectivity.nconnection)
     aquifer = UnconfinedAquifer(
         dataset,
@@ -172,10 +180,11 @@ function Routing(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     type,
 )
-    subsurface_flow = initialize_subsurface_flow(dataset, config, domain, soil, type)
+    subsurface_flow =
+        initialize_subsurface_flow_model(dataset, config, domain, soil_model, type)
     overland_flow = initialize_overland_flow(dataset, config, domain)
     river_flow = initialize_river_flow(dataset, config, domain)
 

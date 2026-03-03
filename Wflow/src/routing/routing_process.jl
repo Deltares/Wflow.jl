@@ -135,8 +135,8 @@ function kinematic_wave_ssf(
     dx,
     dw,
     ssfmax,
-    kh_profile::Union{KhExponential, KhExponentialConstant},
-    soil::SbmSoilModel,
+    kh_profile::Union{KhExponential,KhExponentialConstant},
+    soil_model::SbmSoilModel,
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
@@ -145,7 +145,7 @@ function kinematic_wave_ssf(
         # initial estimate
         ssf = (ssf_prev + ssfin) / 2.0
         # effective/drainabale porosity
-        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
+        theta_e = soil_model.parameters.theta_s[i] - soil_model.parameters.theta_fc[i]
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, theta_e, kh_profile, i)
         constant_term = (dt / dx) * ssfin + (1.0 / celerity) * ssf_prev + r * dt
@@ -156,7 +156,7 @@ function kinematic_wave_ssf(
         # estimate water table depth zi, exfiltration rate and constrain zi and
         # lower boundary ssf
         net_flux = (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx)
-        dh, exfilt = water_table_change(soil, net_flux, sy, i)
+        dh, exfilt = water_table_change(soil_model, net_flux, sy, i)
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         if zi > d
@@ -183,7 +183,7 @@ function kinematic_wave_ssf(
                 # estimate water table depth zi, exfiltration rate and constrain zi and
                 # lower boundary ssf
                 net_flux = (ssfin * dt_s + r * dt_s * dx - ssf * dt_s) / (dw * dx)
-                dh, exfilt = water_table_change(soil, net_flux, sy, i)
+                dh, exfilt = water_table_change(soil_model, net_flux, sy, i)
                 zi = zi_prev - dh
                 if zi > d
                     ssf_excess = (dw * dx) * sy_d * (zi - d) / dt_s
@@ -193,7 +193,7 @@ function kinematic_wave_ssf(
                 # update unsaturated zone
                 zi_prev_mm = zi_prev * 1000.0
                 zi_mm = zi * 1000.0
-                update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
+                update_ustorelayerdepth!(soil_model, zi_prev_mm, zi_mm, i)
                 exfilt_sum += exfilt
                 net_flux_sum += net_flux
                 ssf_sum += ssf
@@ -207,7 +207,7 @@ function kinematic_wave_ssf(
         else
             zi_prev_mm = zi_prev * 1000.0
             zi_mm = zi * 1000.0
-            update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
+            update_ustorelayerdepth!(soil_model, zi_prev_mm, zi_mm, i)
         end
         return ssf, zi, exfilt, sy_d
     end
@@ -235,7 +235,7 @@ function kinematic_wave_ssf(
     dw,
     ssfmax,
     kh_profile::KhLayered,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     i,
 )
     if ssfin + ssf_prev ≈ 0.0 && r <= 0.0
@@ -244,7 +244,7 @@ function kinematic_wave_ssf(
         # initial estimate
         ssf_ini = (ssf_prev + ssfin) / 2.0
         # effective/drainabale porosity
-        theta_e = soil.parameters.theta_s[i] - soil.parameters.theta_fc[i]
+        theta_e = soil_model.parameters.theta_s[i] - soil_model.parameters.theta_fc[i]
         # newton-raphson
         celerity = (slope * kh_profile.kh[i]) / theta_e
         constant_term = (dt / dx) * ssfin + ssf_prev / celerity + r * dt
@@ -255,7 +255,7 @@ function kinematic_wave_ssf(
         # estimate water table depth zi, exfiltration rate and constrain zi and lower
         # boundary ssf
         net_flux = (ssfin * dt + r * dt * dx - ssf * dt) / (dw * dx)
-        dh, exfilt = water_table_change(soil, net_flux, sy, i)
+        dh, exfilt = water_table_change(soil_model, net_flux, sy, i)
         zi = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
         if zi > d
@@ -267,7 +267,7 @@ function kinematic_wave_ssf(
         # update unsaturated zone
         zi_prev_mm = zi_prev * 1000.0
         zi_mm = zi * 1000.0
-        update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
+        update_ustorelayerdepth!(soil_model, zi_prev_mm, zi_mm, i)
 
         return ssf, zi, exfilt, sy_d
     end
@@ -372,13 +372,13 @@ function flux_in!(flux_in, flux, network)
 end
 
 """
-    lateral_snow_transport!(snow, slope, network)
+    lateral_snow_transport!(snow_model, slope, network)
 
 Lateral snow transport. Transports snow downhill. Mutates `snow_storage` and `snow_water` of
-a `snow` model.
+a `snow_model` model.
 """
-function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
-    (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
+function lateral_snow_transport!(snow_model::AbstractSnowModel, domain::DomainLand)
+    (; snow_storage, snow_water, snow_in, snow_out) = snow_model.variables
     (; slope) = domain.parameters
     snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow_storage ./ 10000.0)
     maxflux = snowflux_frac .* snow_storage
@@ -387,7 +387,7 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
     flux_in!(snow_in, snow_out, domain.network)
 end
 
-lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
+lateral_snow_transport!(snow_model::NoSnowModel, domain::DomainLand) = nothing
 
 """
     local_inertial_flow(q0, zs0, zs1, hf, A, R, length, mannings_n, g, froude_limit, dt)

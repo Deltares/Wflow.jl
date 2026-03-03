@@ -370,14 +370,14 @@ function interpolate_linear(x, xp, fp)
 end
 
 "Update the column index of reservoir rating curve HQ data"
-function update_index_hq!(reservoir::Reservoir, clock::Clock)
-    (; outflowfunc, col_index_hq) = reservoir.parameters
+function update_index_hq!(reservoir_model::Reservoir, clock::Clock)
+    (; outflowfunc, col_index_hq) = reservoir_model.parameters
     if ReservoirOutflowType.rating_curve in outflowfunc
         col_index_hq[1] = julian_day(clock.time - clock.dt)
     end
     return nothing
 end
-update_index_hq!(reservoir, clock::Clock) = nothing
+update_index_hq!(reservoir_model::Any, clock::Clock) = nothing
 
 "Update reservoir with rating curve type (`ouflowfunc`) 4 for a single timestep"
 function update_reservoir_simple(
@@ -605,12 +605,12 @@ function update_reservoir_model!(
 end
 
 "Generate log message for using observed outflow at reservoir locations"
-function log_message_observed_outflow(reservoir::Reservoir)
-    not_nan = findall(x -> !isnan(x), reservoir.variables.outflow_obs)
+function log_message_observed_outflow(reservoir_model::Reservoir)
+    not_nan = findall(x -> !isnan(x), reservoir_model.variables.outflow_obs)
     if isempty(not_nan)
         msg = "Observed outflow is not used for any reservoir location"
     else
-        ids = reservoir.parameters.id[not_nan]
+        ids = reservoir_model.parameters.id[not_nan]
         msg = "Observed outflow is used for reservoir location ids $ids"
     end
     return msg

@@ -204,11 +204,11 @@ update_demand_gross!(nonpaddy_model::NoIrrigationNonPaddy, soil_model::SbmSoilMo
     nothing
 
 "Compute water demand only for root zone through root fraction per layer"
-function water_demand_root_zone(soil::SbmSoilModel, i::Int, k::Int)
-    (; sumlayers, hb, theta_s, theta_r, theta_fc, c) = soil.parameters
-    (; ustorelayerthickness, ustorelayerdepth, h3) = soil.variables
+function water_demand_root_zone(soil_model::SbmSoilModel, i::Int, k::Int)
+    (; sumlayers, hb, theta_s, theta_r, theta_fc, c) = soil_model.parameters
+    (; ustorelayerthickness, ustorelayerdepth, h3) = soil_model.variables
 
-    rootingdepth = get_rootingdepth(soil)
+    rootingdepth = get_rootingdepth(soil_model)
 
     rootfrac =
         min(1.0, (max(0.0, rootingdepth[i] - sumlayers[i][k]) / ustorelayerthickness[i][k]))
@@ -355,7 +355,7 @@ get_demand_gross(paddy_model::Paddy) = paddy_model.variables.demand_gross
 get_demand_gross(paddy_model::NoIrrigationPaddy) = Zeros(paddy_model.n)
 
 """
-    evaporation!(paddy::Paddy, potential_evaporation)
+    evaporation!(paddy_model::Paddy, potential_evaporation)
 
 Update `evaporation` and the water depth `h` of the paddy irrigation model for a single
 timestep.
@@ -377,16 +377,16 @@ get_evaporation(paddy_model::NoIrrigationPaddy) = Zeros(paddy_model.n)
 get_evaporation(paddy_model::Paddy) = paddy_model.variables.evaporation
 
 """
-    update_runoff!(paddy::Paddy, runoff)
+    update_runoff!(paddy_model::Paddy, runoff)
 
 Update `runoff` based on the water depth `h_max` (paddy field starts spilling), and update
 the water depth `h` of the paddy irrigation model for a single timestep.
 """
-function update_runoff!(paddy::Paddy, runoff)
-    for i in eachindex(paddy.parameters.irrigation_areas)
-        if paddy.parameters.irrigation_areas[i]
-            paddy_runoff = max(runoff[i] - paddy.parameters.h_max[i], 0.0)
-            paddy.variables.h[i] = runoff[i] - paddy_runoff
+function update_runoff!(paddy_model::Paddy, runoff)
+    for i in eachindex(paddy_model.parameters.irrigation_areas)
+        if paddy_model.parameters.irrigation_areas[i]
+            paddy_runoff = max(runoff[i] - paddy_model.parameters.h_max[i], 0.0)
+            paddy_model.variables.h[i] = runoff[i] - paddy_runoff
             runoff[i] = paddy_runoff
         end
     end
@@ -395,7 +395,7 @@ end
 update_runoff!(::NoIrrigationPaddy, ::Any) = nothing
 
 """
-    update_demand_gross!(paddy::Paddy)
+    update_demand_gross!(paddy_model::Paddy)
 
 Update gross water demand `demand_gross` of the paddy irrigation model for a single
 timestep.
@@ -428,9 +428,9 @@ function update_demand_gross!(paddy_model::Paddy)
     end
 end
 
-function compute_irrigation_depth(paddy::Paddy, i::Int)
-    (; maximum_irrigation_rate, h_min, h_opt) = paddy.parameters
-    (; demand_gross, h) = paddy.variables
+function compute_irrigation_depth(paddy_model::Paddy, i::Int)
+    (; maximum_irrigation_rate, h_min, h_opt) = paddy_model.parameters
+    (; demand_gross, h) = paddy_model.variables
 
     # check if maximum irrigation rate has been applied at the previous time step.
     max_irri_rate_applied = demand_gross[i] == maximum_irrigation_rate[i]
@@ -446,7 +446,7 @@ function compute_irrigation_depth(paddy::Paddy, i::Int)
     return irr_depth_paddy
 end
 
-update_demand_gross!(paddy_model::NoIrrigationPaddy) = nothing
+update_demand_gross!(::NoIrrigationPaddy) = nothing
 
 "Struct to store water demand model variables"
 @with_kw struct DemandVariables
@@ -630,16 +630,16 @@ availability.
 function surface_water_allocation_local!(
     allocation_model::AllocationLand,
     demand_variables::DemandVariables,
-    river::AbstractRiverFlowModel,
+    river_flow_model::AbstractRiverFlowModel,
     domain::DomainLand,
     dt::Float64,
 )
     (; surfacewater_alloc) = allocation_model.variables
     (; surfacewater_demand) = demand_variables
     (; act_surfacewater_abst_vol, act_surfacewater_abst, available_surfacewater) =
-        river.allocation.variables
-    (; external_inflow) = river.boundary_conditions
-    (; storage) = river.variables
+        river_flow_model.allocation.variables
+    (; external_inflow) = river_flow_model.boundary_conditions
+    (; storage) = river_flow_model.variables
     (; area) = domain.parameters
     indices_river = domain.network.river_inds_excl_reservoir
 
@@ -1010,7 +1010,7 @@ update_water_allocation_model!(
 ) = nothing
 
 """
-    update_demand_gross!(demand::Demand)
+    update_demand_gross!(demand_model::Demand)
 
 Update total irrigation gross water demand `irri_demand_gross`, total non-irrigation gross
 water demand `nonirri_demand_gross` and total gross water demand `total_gross_demand`.
@@ -1036,7 +1036,7 @@ end
 update_demand_gross!(demand_model::NoDemand) = nothing
 
 """
-    update_water_demand_model!(demand_model::Demand, soil::SbmSoilModel)
+    update_water_demand_model!(demand_model::Demand, soil_model::SbmSoilModel)
 
 Update the return flow fraction `returnflow_fraction` of `industry`, `domestic` and
 `livestock`, gross water demand `demand_gross` of `paddy` and `nonpaddy` models, and the
