@@ -45,19 +45,24 @@ function Model(config::Config, type::SedimentModel)
 end
 
 "update `sediment` model for a single timestep"
-function update!(model::AbstractModel{<:SedimentModel})
+function update_model!(model::AbstractModel{<:SedimentModel})
     (; routing, land, domain, config, clock) = model
     dt = tosecond(clock.dt)
 
     # Soil erosion
-    update!(land, domain.land.parameters, dt)
+    update_soil_loss_model!(land, domain.land.parameters, dt)
 
     # Overland flow sediment transport
-    update!(routing.overland_flow, land.soil_erosion, domain.land, dt)
+    update_overland_flow_model!(routing.overland_flow, land.soil_erosion, domain.land, dt)
 
     # River sediment transport
     if config.model.run_river_model__flag
-        update!(routing.river_flow, routing.overland_flow.to_river, domain.river, dt)
+        update_river_sediment_model!(
+            routing.river_flow,
+            routing.overland_flow.to_river,
+            domain.river,
+            dt,
+        )
     end
 
     return nothing

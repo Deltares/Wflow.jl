@@ -74,45 +74,43 @@
     end
 
     @testset "first timestep" begin
-        sbm = model.land.soil
-        snow = model.land.snow
+        (; soil, snow) = model.land
         @test snow.parameters.tt[50063] ≈ 0.0
 
         @test model.clock.iteration == 1
 
-        @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546
-        @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095
-        @test mean(sbm.variables.runoff) ≈ 0.04033701711287029
-        @test mean(sbm.variables.soilevap) ≈ 0.02122698830889417
-        @test mean(sbm.variables.actevap) ≈ 0.33545623834952143
-        @test mean(sbm.variables.actinfilt) ≈ 1.6444774688444848
+        @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
+        @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
+        @test mean(soil.variables.runoff) ≈ 0.04033701711287029
+        @test mean(soil.variables.soilevap) ≈ 0.02122698830889417
+        @test mean(soil.variables.actevap) ≈ 0.33545623834952143
+        @test mean(soil.variables.actinfilt) ≈ 1.6444774688444848
         @test snow.variables.snow_storage[5] ≈ 3.768513390588815
         @test mean(snow.variables.snow_storage) ≈ 0.038019723676094325
-        @test sbm.variables.total_storage[50063] ≈ 559.886196102425
-        @test sbm.variables.total_storage[429] ≈ 599.6375723706255 # river cell
+        @test soil.variables.total_storage[50063] ≈ 559.886196102425
+        @test soil.variables.total_storage[429] ≈ 599.6375723706255 # river cell
     end
 
     # run the second timestep
     Wflow.run_timestep!(model)
 
     @testset "second timestep" begin
-        sbm = model.land.soil
-        snow = model.land.snow
-        @test sbm.parameters.theta_s[50063] ≈ 0.48755401372909546
-        @test sbm.parameters.theta_r[50063] ≈ 0.15943120419979095
-        @test mean(sbm.variables.net_runoff) ≈ 0.22092252199097845
-        @test mean(sbm.variables.runoff) ≈ 0.22129098393293603
-        @test mean(sbm.variables.soilevap) ≈ 0.018738226205510525
-        @test mean(sbm.variables.actevap) ≈ 0.2744312454440506
-        @test mean(sbm.variables.actinfilt) ≈ 0.08861928614420159
+        (; soil, snow) = model.land
+        @test soil.parameters.theta_s[50063] ≈ 0.48755401372909546
+        @test soil.parameters.theta_r[50063] ≈ 0.15943120419979095
+        @test mean(soil.variables.net_runoff) ≈ 0.22092252199097845
+        @test mean(soil.variables.runoff) ≈ 0.22129098393293603
+        @test mean(soil.variables.soilevap) ≈ 0.018738226205510525
+        @test mean(soil.variables.actevap) ≈ 0.2744312454440506
+        @test mean(soil.variables.actinfilt) ≈ 0.08861928614420159
         @test snow.variables.snow_storage[5] ≈ 3.843412524052313
         @test mean(snow.variables.snow_storage) ≈ 0.03461317061870949
-        @test sbm.variables.total_storage[50063] ≈ 559.9633189802773
-        @test sbm.variables.total_storage[429] ≈ 620.6174448020174  # river cell
+        @test soil.variables.total_storage[50063] ≈ 559.9633189802773
+        @test soil.variables.total_storage[429] ≈ 620.6174448020174  # river cell
     end
 
     @testset "subsurface flow" begin
-        ssf = model.routing.subsurface_flow.variables.ssf
+        (; ssf) = model.routing.subsurface_flow.variables
         @test sum(ssf) ≈ 6.250079949202134e7
         @test ssf[domain.land.network.order[1]] ≈ 699.3636285243076
         @test ssf[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
@@ -120,30 +118,30 @@
     end
 
     @testset "overland flow" begin
-        q = model.routing.overland_flow.variables.q_av
-        @test sum(q) ≈ 264.6944359620204
-        @test q[26625] ≈ 0.0
-        @test q[39308] ≈ 0.0
-        @test q[domain.land.network.order[end]] ≈ 1.0e-30
+        (; q_av) = model.routing.overland_flow.variables
+        @test sum(q_av) ≈ 264.6944359620204
+        @test q_av[26625] ≈ 0.0
+        @test q_av[39308] ≈ 0.0
+        @test q_av[domain.land.network.order[end]] ≈ 1.0e-30
     end
 
     @testset "river flow" begin
-        q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 3696.5789619579173
-        @test q[1622] ≈ 0.0007502850311515928
-        @test q[43] ≈ 11.458528971675033
-        @test q[domain.river.network.order[end]] ≈ 0.04397648668235761
+        (; q_av) = model.routing.river_flow.variables
+        @test sum(q_av) ≈ 3696.5789619579173
+        @test q_av[1622] ≈ 0.0007502850311515928
+        @test q_av[43] ≈ 11.458528971675033
+        @test q_av[domain.river.network.order[end]] ≈ 0.04397648668235761
     end
 
     @testset "reservoir simple" begin
-        res = model.routing.river_flow.boundary_conditions.reservoir
-        @test res.variables.outflow[1] ≈ 0.2174998614438593
-        @test res.variables.outflow_av[1] ≈ 0.21749986282401396
-        @test res.boundary_conditions.inflow[1] ≈ 0.0005130607130643568
-        @test res.variables.storage[1] ≈ 2.751299001489657f7
-        @test res.variables.actevap[1] ≈ 0.5400000810623169
-        @test res.boundary_conditions.precipitation[1] ≈ 0.17999997735023499
-        @test res.boundary_conditions.evaporation[1] ≈ 0.5400000810623169
+        (; reservoir) = model.routing.river_flow.boundary_conditions
+        @test reservoir.variables.outflow[1] ≈ 0.2174998614438593
+        @test reservoir.variables.outflow_av[1] ≈ 0.21749986282401396
+        @test reservoir.boundary_conditions.inflow[1] ≈ 0.0005130607130643568
+        @test reservoir.variables.storage[1] ≈ 2.751299001489657f7
+        @test reservoir.variables.actevap[1] ≈ 0.5400000810623169
+        @test reservoir.boundary_conditions.precipitation[1] ≈ 0.17999997735023499
+        @test reservoir.boundary_conditions.evaporation[1] ≈ 0.5400000810623169
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -158,7 +156,7 @@
     Wflow.run_timestep!(model)
 
     @testset "lateral snow transport off" begin
-        snow = model.land.snow
+        (; snow) = model.land
         @test snow.variables.snow_storage[5] ≈ 3.7686103651001375
         @test mean(snow.variables.snow_storage) ≈ 0.03801972367609432
         @test mean(snow.variables.snow_water) ≈ 0.0025756728488273866
@@ -175,7 +173,7 @@
     Wflow.run_timestep!(model)
 
     @testset "snow model not included" begin
-        snow = model.land.snow
+        (; snow) = model.land
         @test typeof(model.land.snow) == Wflow.NoSnowModel
     end
     Wflow.close_files(model; delete_output = false)
@@ -202,11 +200,11 @@ end
     end
 
     @testset "river flow at basin outlets and downstream of one pit" begin
-        q = model.routing.river_flow.variables.q_av
-        @test q[4009] ≈ 8.426694842173548 # pit/ outlet, CartesianIndex(141, 228)
-        @test q[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
-        @test q[2508] ≈ 131.40631419288573 # pit/ outlet
-        @test q[5808] ≈ 0.11941498848157915  # pit/ outlet
+        (; q_av) = model.routing.river_flow.variables
+        @test q_av[4009] ≈ 8.426694842173548 # pit/ outlet, CartesianIndex(141, 228)
+        @test q_av[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
+        @test q_av[2508] ≈ 131.40631419288573 # pit/ outlet
+        @test q_av[5808] ≈ 0.11941498848157915  # pit/ outlet
     end
 end
 
@@ -220,10 +218,10 @@ end
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
-    precip = copy(model.land.atmospheric_forcing.precipitation)
-    evap = copy(model.land.atmospheric_forcing.potential_evaporation)
-    lai = copy(model.land.vegetation_parameters.leaf_area_index)
-    res_evap = copy(
+    precipitation = copy(model.land.atmospheric_forcing.precipitation)
+    potential_evaporation = copy(model.land.atmospheric_forcing.potential_evaporation)
+    leaf_area_index = copy(model.land.vegetation_parameters.leaf_area_index)
+    evaporation = copy(
         model.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.evaporation,
     )
 
@@ -247,13 +245,13 @@ end
     Wflow.run_timestep!(model)
 
     @testset "changed dynamic parameters" begin
-        res = model.routing.river_flow.boundary_conditions.reservoir
-        land = model.land
-        @test land.atmospheric_forcing.precipitation[2] / precip[2] ≈ 2.0f0
-        @test (land.atmospheric_forcing.potential_evaporation[100] - 1.50) / evap[100] ≈
-              3.0f0
-        @test land.vegetation_parameters.leaf_area_index[100] / lai[100] ≈ 1.6f0
-        @test (res.boundary_conditions.evaporation[2] - 1.50) / res_evap[2] ≈ 3.0f0
+        (; reservoir) = model.routing.river_flow.boundary_conditions
+        (; land) = model
+        @test land.atmospheric_forcing.precipitation[2] / precipitation[2] ≈ 2.0f0
+        @test (land.atmospheric_forcing.potential_evaporation[100] - 1.50) /
+              potential_evaporation[100] ≈ 3.0f0
+        @test land.vegetation_parameters.leaf_area_index[100] / leaf_area_index[100] ≈ 1.6f0
+        @test (reservoir.boundary_conditions.evaporation[2] - 1.50) / evaporation[2] ≈ 3.0f0
     end
 end
 
@@ -376,17 +374,17 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river flow and depth (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 3692.1984174051863
-        @test q[1622] ≈ 7.260572774917902e-5
-        @test q[43] ≈ 11.248731903973153
-        @test q[501] ≈ 3.163313530437266
-        h = model.routing.river_flow.variables.h
+        (; q_av) = model.routing.river_flow.variables
+        @test sum(q_av) ≈ 3692.1984174051863
+        @test q_av[1622] ≈ 7.260572774917902e-5
+        @test q_av[43] ≈ 11.248731903973153
+        @test q_av[501] ≈ 3.163313530437266
+        (; h) = model.routing.river_flow.variables
         @test h[1622] ≈ 0.00191277920611667
         @test h[43] ≈ 0.447403557220214
         @test h[501] ≈ 0.37810388857945015
-        q_channel = model.routing.river_flow.variables.q_channel_av
-        @test q ≈ q_channel
+        (; q_channel_av) = model.routing.river_flow.variables
+        @test q_av ≈ q_channel_av
     end
 end
 
@@ -424,20 +422,19 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river and overland flow and depth (local inertial)" begin
-        q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 2415.8565080484427
-        @test q[1622] ≈ 7.289953869913158e-5
-        @test q[43] ≈ 5.235679976913814
-        @test q[501] ≈ 1.395242045016401
-        h = model.routing.river_flow.variables.h
+        (; q_av) = model.routing.river_flow.variables
+        @test sum(q_av) ≈ 2415.8565080484427
+        @test q_av[1622] ≈ 7.289953869913158e-5
+        @test q_av[43] ≈ 5.235679976913814
+        @test q_av[501] ≈ 1.395242045016401
+        (; h) = model.routing.river_flow.variables
         @test h[1622] ≈ 0.001915431360203216
         @test h[43] ≈ 0.30691170109894245
         @test h[501] ≈ 0.3039452016829932
-        qx = model.routing.overland_flow.variables.qx
-        qy = model.routing.overland_flow.variables.qy
+        (; qx, qy) = model.routing.overland_flow.variables
         @test qx[[26, 35, 631]] ≈ [0.17466039055941732, 0.002077783779618663, 0.0]
         @test qy[[26, 35, 631]] ≈ [0.12287975269080074, 0.019011432839373375, 0.0]
-        h = model.routing.overland_flow.variables.h
+        (; h) = model.routing.overland_flow.variables
         @test h[[26, 35, 631]] ≈ [0.07163764409112827, 0.009015112665828464, 0.0]
     end
 
@@ -451,16 +448,16 @@ end
     model = Wflow.Model(config)
 
     (; flow_length, flow_length) = model.domain.river.parameters
-    fp = model.routing.river_flow.floodplain.parameters.profile
-    river = model.routing.river_flow
-    dh = diff(fp.depth)
-    Δv = diff(fp.storage[:, 3])
-    Δa = diff(fp.a[:, 3])
+    (; profile) = model.routing.river_flow.floodplain.parameters
+    (; river_flow) = model.routing
+    dh = diff(profile.depth)
+    Δv = diff(profile.storage[:, 3])
+    Δa = diff(profile.a[:, 3])
 
     @testset "river flow (local inertial) floodplain schematization" begin
         # floodplain geometry checks (index 3)
-        @test fp.storage[:, 3] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
-        @test fp.width[:, 3] ≈ [
+        @test profile.storage[:, 3] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
+        @test profile.width[:, 3] ≈ [
             30.0,
             99.28617594254938,
             119.15260323159785,
@@ -468,7 +465,7 @@ end
             231.6754039497307,
             330.9730700179533,
         ]
-        @test fp.p[:, 3] ≈ [
+        @test profile.p[:, 3] ≈ [
             69.28617594254938,
             70.28617594254938,
             91.15260323159785,
@@ -476,7 +473,7 @@ end
             205.6754039497307,
             305.9730700179533,
         ]
-        @test fp.a[:, 3] ≈ [
+        @test profile.a[:, 3] ≈ [
             0.0,
             49.64308797127469,
             109.21938958707361,
@@ -484,78 +481,111 @@ end
             297.8700179533214,
             463.35655296229805,
         ]
-        @test dh .* fp.width[2:end, 3] * flow_length[3] ≈ Δv
-        @test fp.a[:, 3] * flow_length[3] ≈ fp.storage[:, 3]
+        @test dh .* profile.width[2:end, 3] * flow_length[3] ≈ Δv
+        @test profile.a[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
         # flood depth from flood storage (8000.0)
         flood_vol = 8000.0
-        river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
+        river_flow.variables.storage[3] =
+            flood_vol + river_flow.parameters.bankfull_storage[3]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
         @test (i1, i2) == (1, 2)
-        flood_depth = Wflow.flood_depth(fp, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
         @test flood_depth ≈ 0.46290938548779076
-        @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * flow_length[3] +
-              fp.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
+              profile.storage[i1, 3] ≈ flood_vol
         # flood depth from flood storage (12000.0)
         flood_vol = 12000.0
-        river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
+        river_flow.variables.storage[3] =
+            flood_vol + river_flow.parameters.bankfull_storage[3]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
         @test (i1, i2) == (2, 3)
-        flood_depth = Wflow.flood_depth(fp, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
         @test flood_depth ≈ 0.6619575699132112
-        @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * flow_length[3] +
-              fp.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
+              profile.storage[i1, 3] ≈ flood_vol
         # test extrapolation of segment
         flood_vol = 95000.0
-        river.variables.storage[3] = flood_vol + river.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, fp.storage[:, 3])
+        river_flow.variables.storage[3] =
+            flood_vol + river_flow.parameters.bankfull_storage[3]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
         @test (i1, i2) == (6, 6)
-        flood_depth = Wflow.flood_depth(fp, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
         @test flood_depth ≈ 2.749036625585836
-        @test (flood_depth - fp.depth[i1]) * fp.width[i2, 3] * flow_length[3] +
-              fp.storage[i1, 3] ≈ flood_vol
-        river.variables.storage[3] = 0.0 # reset storage
+        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
+              profile.storage[i1, 3] ≈ flood_vol
+        river_flow.variables.storage[3] = 0.0 # reset storage
         # flow area and wetted perimeter based on hf
         h = 0.5
-        i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-              49.64308797127469
-        @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 70.28617594254938
+        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        @test Wflow.flow_area(
+            profile.width[i2, 3],
+            profile.a[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 49.64308797127469
+        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+              70.28617594254938
         h = 1.5
-        i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-              182.032315978456
-        @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 118.62585278276481
+        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        @test Wflow.flow_area(
+            profile.width[i2, 3],
+            profile.a[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 182.032315978456
+        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+              118.62585278276481
         h = 1.7
-        i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-              228.36739676840216
-        @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 119.02585278276482
+        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        @test Wflow.flow_area(
+            profile.width[i2, 3],
+            profile.a[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 228.36739676840216
+        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+              119.02585278276482
         h = 3.2
-        i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-              695.0377019748654
-        @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 307.3730700179533
+        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        @test Wflow.flow_area(
+            profile.width[i2, 3],
+            profile.a[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 695.0377019748654
+        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+              307.3730700179533
         h = 4.0
-        i1, i2 = Wflow.interpolation_indices(h, fp.depth)
-        @test Wflow.flow_area(fp.width[i2, 3], fp.a[i1, 3], fp.depth[i1], h) ≈
-              959.816157989228
-        @test Wflow.wetted_perimeter(fp.p[i1, 3], fp.depth[i1], h) ≈ 308.9730700179533
-        @test Wflow.flow_area(fp.width[i2, 4], fp.a[i1, 4], fp.depth[i1], h) ≈
-              407.6395313908081
-        @test Wflow.wetted_perimeter(fp.p[i1, 4], fp.depth[i1], h) ≈ 90.11775307900271
+        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        @test Wflow.flow_area(
+            profile.width[i2, 3],
+            profile.a[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 959.816157989228
+        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+              308.9730700179533
+        @test Wflow.flow_area(
+            profile.width[i2, 4],
+            profile.a[i1, 4],
+            profile.depth[i1],
+            h,
+        ) ≈ 407.6395313908081
+        @test Wflow.wetted_perimeter(profile.p[i1, 4], profile.depth[i1], h) ≈
+              90.11775307900271
     end
 
     Wflow.run_timestep!(model)
     Wflow.run_timestep!(model)
 
     @testset "river flow (local inertial) with floodplain schematization simulation" begin
-        q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 3682.763689938466
-        @test q[1622] ≈ 7.260572782240141e-5
-        @test q[43] ≈ 11.248731903973168
-        @test q[501] ≈ 3.121950941199987
-        @test q[5808] ≈ 0.0022169051490145645
-        h = model.routing.river_flow.variables.h
+        (; q_av) = river_flow.variables
+        @test sum(q_av) ≈ 3682.763689938466
+        @test q_av[1622] ≈ 7.260572782240141e-5
+        @test q_av[43] ≈ 11.248731903973168
+        @test q_av[501] ≈ 3.121950941199987
+        @test q_av[5808] ≈ 0.0022169051490145645
+        (; h) = model.routing.river_flow.variables
         @test h[1622] ≈ 0.0019127792060060795
         @test h[43] ≈ 0.44740355722021324
         @test h[501] ≈ 0.37317174589196656
@@ -570,13 +600,13 @@ end
     Wflow.run_timestep!(model)
 
     @testset "change boundary condition for local inertial routing (including floodplain)" begin
-        q = model.routing.river_flow.variables.q_av
-        @test sum(q) ≈ 3682.950549280907
-        @test q[1622] ≈ 7.260572782240141e-5
-        @test q[43] ≈ 11.248731903973168
-        @test q[501] ≈ 3.121950941199987
-        @test q[5808] ≈ 0.05466707293198311
-        h = model.routing.river_flow.variables.h
+        (; q_av) = model.routing.river_flow.variables
+        @test sum(q_av) ≈ 3682.950549280907
+        @test q_av[1622] ≈ 7.260572782240141e-5
+        @test q_av[43] ≈ 11.248731903973168
+        @test q_av[501] ≈ 3.121950941199987
+        @test q_av[5808] ≈ 0.05466707293198311
+        (; h) = model.routing.river_flow.variables
         @test h[1622] ≈ 0.0019127792060060795
         @test h[43] ≈ 0.44740355722021324
         @test h[501] ≈ 0.37317174589196656
@@ -677,10 +707,10 @@ end
             model = Wflow.Model(config)
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
-            q = model.routing.river_flow.variables.q_av
-            @test sum(q) ≈ 3032.617045063436
-            @test q[1622] ≈ 0.0006987386860043929
-            @test q[43] ≈ 8.710529495056752
+            (; q_av) = model.routing.river_flow.variables
+            @test sum(q_av) ≈ 3032.617045063436
+            @test q_av[1622] ≈ 0.0006987386860043929
+            @test q_av[43] ≈ 8.710529495056752
         end
 
         Wflow.close_files(model; delete_output = false)

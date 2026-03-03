@@ -425,7 +425,7 @@ function local_inertial_flow(
 end
 
 """
-    local_inertial_flow(theta, q0, qd, qu, zs0, zs1, hf, width, length, mannings_n, g, froude_limit, dt)
+    local_inertial_flow(theta, q0, qd, qu, zs0, zs1, hf, width, length, mannings_n_sq, froude_limit, dt)
 
 Local inertial approach for flow through a rectangular area. Returns the flow `q` between
 two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almeida et al.
