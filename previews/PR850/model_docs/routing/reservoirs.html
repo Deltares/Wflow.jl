@@ -550,7 +550,7 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#modified-puls-approach" id="toc-modified-puls-approach" class="nav-link" data-scroll-target="#modified-puls-approach">Modified Puls approach</a></li>
   <li><a href="#reservoir-parameters" id="toc-reservoir-parameters" class="nav-link" data-scroll-target="#reservoir-parameters">Reservoir parameters</a></li>
-  <li><a href="#storage-and-rating-cuves-from-data" id="toc-storage-and-rating-cuves-from-data" class="nav-link" data-scroll-target="#storage-and-rating-cuves-from-data">Storage and rating cuves from data</a></li>
+  <li><a href="#storage-and-rating-curves-from-data" id="toc-storage-and-rating-curves-from-data" class="nav-link" data-scroll-target="#storage-and-rating-curves-from-data">Storage and rating curves from data</a></li>
   </ul></li>
   <li><a href="#external-inflows" id="toc-external-inflows" class="nav-link" data-scroll-target="#external-inflows">External inflows</a></li>
   <li><a href="#using-observed-outflow" id="toc-using-observed-outflow" class="nav-link" data-scroll-target="#using-observed-outflow">Using observed outflow</a></li>
@@ -691,8 +691,8 @@ Note
 </div>
 </div>
 </section>
-<section id="storage-and-rating-cuves-from-data" class="level3">
-<h3 class="anchored" data-anchor-id="storage-and-rating-cuves-from-data">Storage and rating cuves from data</h3>
+<section id="storage-and-rating-curves-from-data" class="level3">
+<h3 class="anchored" data-anchor-id="storage-and-rating-curves-from-data">Storage and rating curves from data</h3>
 <p>Storage and rating curves from field measurement can be supplied to wflow via CSV files supplied in the same folder of the TOML file. Naming of the files uses the ID of the reservoirs where data are available and is of the form <code>reservoir_sh_1.csv</code> and <code>reservoir_hq_1.csv</code> for respectively the storage and rating curves of reservoir with ID 1.</p>
 <p>The storage curve is stored in a CSV file with reservoir level <span class="math inline">\(\SIb{}{m}\)</span> in the first column <code>H</code> and corresponding reservoir storage <span class="math inline">\(\SIb{}{m^3}\)</span> in the second column <code>S</code>:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">H,</span>  S</span>
