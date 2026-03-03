@@ -157,7 +157,7 @@ get_demand_gross(nonpaddy_model::NonPaddy) = nonpaddy_model.variables.demand_gro
 get_demand_gross(irrigation_model::NoIrrigationNonPaddy) = Zeros(irrigation_model.n)
 
 """
-    update_demand_gross!(nonpaddy_model::NonPaddy, soil::SbmSoilModel)
+    update_demand_gross!(nonpaddy_model::NonPaddy, soil_model::SbmSoilModel)
 
 Update gross water demand `demand_gross` of the non-paddy irrigation model for a single
 timestep.

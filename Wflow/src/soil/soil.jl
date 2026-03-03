@@ -855,7 +855,7 @@ function soil_evaporation!(soil_model::SbmSoilModel)
 end
 
 """
-    transpiration!(soil::SbmSoilModel, dt)
+    transpiration!(soil_model::SbmSoilModel, dt)
 
 Update total `transpiration`, transpiration from the unsaturated store `ae_ustore` and
 saturated store `actevapsat` of the SBM soil model for a single timestep. Also unsaturated

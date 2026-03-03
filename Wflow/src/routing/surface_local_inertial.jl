@@ -852,14 +852,14 @@ Update fluxes for overland flow `LocalInertialOverlandFlow` model for a single t
 `dt`.
 """
 function local_inertial_update_fluxes!(
-    land::LocalInertialOverlandFlow,
+    overland_flow_model::LocalInertialOverlandFlow,
     domain::Domain,
     dt::Float64,
 )
     indices = domain.land.network.edge_indices
     (; x_length, y_length) = domain.land.parameters
-    land_v = land.variables
-    land_p = land.parameters
+    land_v = overland_flow_model.variables
+    land_p = overland_flow_model.parameters
 
     land_v.qx0 .= land_v.qx
     land_v.qy0 .= land_v.qy
@@ -956,14 +956,14 @@ river `LocalInertialRiverFlow`and overland flow `LocalInertialOverlandFlow` mode
 single timestep.
 """
 function update_inflow_reservoir!(
-    land::LocalInertialOverlandFlow,
+    overland_flow_model::LocalInertialOverlandFlow,
     reservoir::Union{Reservoir, Nothing},
     domain::Domain,
 )
     indices = domain.land.network.edge_indices
     reservoir_indices = domain.reservoir.network.land_indices
-    land_bc = land.boundary_conditions
-    land_v = land.variables
+    land_bc = overland_flow_model.boundary_conditions
+    land_v = overland_flow_model.variables
 
     for (i, j) in enumerate(reservoir_indices)
         yd = indices.yd[j]
@@ -980,8 +980,8 @@ Update storage and water depth for combined river `LocalInertialRiverFlow`and ov
 `LocalInertialOverlandFlow` models for a single timestep `dt`.
 """
 function local_inertial_update_water_depth!(
-    land::LocalInertialOverlandFlow,
-    river::LocalInertialRiverFlow,
+    overland_flow_model::LocalInertialOverlandFlow,
+    river_flow_model::LocalInertialRiverFlow,
     domain::Domain,
     dt::Float64,
 )
@@ -991,12 +991,12 @@ function local_inertial_update_water_depth!(
     (; river_location, reservoir_outlet, x_length, y_length) = domain.land.parameters
     (; flow_width, flow_length) = domain.river.parameters
 
-    river_bc = river.boundary_conditions
-    river_v = river.variables
-    river_p = river.parameters
-    land_bc = land.boundary_conditions
-    land_v = land.variables
-    land_p = land.parameters
+    river_bc = river_flow_model.boundary_conditions
+    river_v = river_flow_model.variables
+    river_p = river_flow_model.parameters
+    land_bc = overland_flow_model.boundary_conditions
+    land_v = overland_flow_model.variables
+    land_p = overland_flow_model.parameters
 
     # change in storage and water depth based on horizontal fluxes for river and land cells
     @batch per = thread minbatch = 6000 for i in 1:(land_p.n)

@@ -193,8 +193,13 @@ function Routing(
 end
 
 "Initialize `Routing` for model type `sediment`"
-function Routing(dataset::NCDataset, config::Config, domain::Domain, soil::SoilLoss)
-    overland_flow = OverlandFlowSediment(dataset, config, domain.land, soil)
+function Routing(
+    dataset::NCDataset,
+    config::Config,
+    domain::Domain,
+    soil_loss_model::SoilLoss,
+)
+    overland_flow = OverlandFlowSediment(dataset, config, domain.land, soil_loss_model)
     river_flow = RiverSediment(dataset, config, domain.river)
 
     routing = Routing(; overland_flow, river_flow)

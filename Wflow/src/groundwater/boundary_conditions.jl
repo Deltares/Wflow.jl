@@ -70,24 +70,24 @@ function GwfRiver(
     return river
 end
 
-function flux!(river::GwfRiver, aquifer::AbstractAquifer, dt::Float64)
-    for (i, index) in enumerate(river.index)
-        head = aquifer.variables.head[index]
-        stage = river.variables.stage[i]
+function flux!(gwf_river_model::GwfRiver, aquifer_model::AbstractAquifer, dt::Float64)
+    for (i, index) in enumerate(gwf_river_model.index)
+        head = aquifer_model.variables.head[index]
+        stage = gwf_river_model.variables.stage[i]
         if stage > head
-            max_infiltration_flux = river.variables.storage[i] / dt
-            cond = river.parameters.infiltration_conductance[i]
-            delta_head = min(stage - river.parameters.bottom[i], stage - head)
+            max_infiltration_flux = gwf_river_model.variables.storage[i] / dt
+            cond = gwf_river_model.parameters.infiltration_conductance[i]
+            delta_head = min(stage - gwf_river_model.parameters.bottom[i], stage - head)
             flux = min(cond * delta_head, max_infiltration_flux)
         else
-            cond = river.parameters.exfiltration_conductance[i]
+            cond = gwf_river_model.parameters.exfiltration_conductance[i]
             delta_head = stage - head
-            flux = check_flux(cond * delta_head, aquifer, index)
+            flux = check_flux(cond * delta_head, aquifer_model, index)
         end
-        river.variables.flux[i] = flux
-        aquifer.variables.q_net[index] += flux
-        river.variables.storage[i] -= dt * flux
-        river.variables.flux_av[i] += dt * flux
+        gwf_river_model.variables.flux[i] = flux
+        aquifer_model.variables.q_net[index] += flux
+        gwf_river_model.variables.storage[i] -= dt * flux
+        gwf_river_model.variables.flux_av[i] += dt * flux
     end
     return nothing
 end
