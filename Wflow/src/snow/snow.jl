@@ -130,7 +130,7 @@ function update_bc_snow_model!(snow_model::AbstractSnowModel, external_models::N
     return nothing
 end
 
-function update_bc_snow_model!(::NoSnowModel, ::NamedTuple)
+function update_bc_snow_model!(snow_model::NoSnowModel, ::NamedTuple)
     return nothing
 end
 

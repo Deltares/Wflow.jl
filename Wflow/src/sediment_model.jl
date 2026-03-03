@@ -50,14 +50,14 @@ function update_model!(model::AbstractModel{<:SedimentModel})
     dt = tosecond(clock.dt)
 
     # Soil erosion
-    update_land!(land, domain.land.parameters, dt)
+    update_soil_loss_model!(land, domain.land.parameters, dt)
 
     # Overland flow sediment transport
-    update_overland_flow!(routing.overland_flow, land.soil_erosion, domain.land, dt)
+    update_overland_flow_model!(routing.overland_flow, land.soil_erosion, domain.land, dt)
 
     # River sediment transport
     if config.model.run_river_model__flag
-        update_river_flow!(
+        update_river_sediment_model!(
             routing.river_flow,
             routing.overland_flow.to_river,
             domain.river,

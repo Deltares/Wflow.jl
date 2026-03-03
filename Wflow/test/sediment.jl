@@ -283,7 +283,7 @@ end
     parameters = Wflow.RiverParameters(; slope = [1e-3])
     dt = 86400.0
 
-    Wflow.update_river_sediment_concentration!(concentration, parameters, dt)
+    Wflow.update_river_sediment_concentration_model!(concentration, parameters, dt)
     @test concentration.variables.suspended[1] ≈ 4.675925925925926e-10
     @test concentration.variables.bed[1] ≈ 4.768518518518557e-12
     @test concentration.variables.total[1] ≈ 4.723611111111112e-10
@@ -489,6 +489,6 @@ end
 
     # Perform calculations again by directly calling update!
     sediment_flux, domain, _, _, _ = get_objects()
-    Wflow.update_sediment_river_transport!(sediment_flux, domain, dt)
+    Wflow.update_sediment_river_transport_model!(sediment_flux, domain, dt)
     perform_tests(sediment_flux.variables)
 end

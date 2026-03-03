@@ -105,37 +105,37 @@ function RainfallErosionEurosemModel(
 )
     n = length(indices)
     parameters = RainfallErosionEurosemParameters(dataset, config, indices)
-    rainfall_erosion = RainfallErosionEurosemModel(; n, parameters)
-    return rainfall_erosion
+    rainfall_erosion_model = RainfallErosionEurosemModel(; n, parameters)
+    return rainfall_erosion_model
 end
 
 "Update EUROSEM rainfall erosion model boundary conditions for a single timestep"
-function update_bc_rainfall_erosion!(
-    rainfall_erosion::RainfallErosionEurosemModel,
+function update_bc_rainfall_erosion_model!(
+    rainfall_erosion_model::RainfallErosionEurosemModel,
     atmospheric_forcing::AtmosphericForcing,
     hydrological_forcing::HydrologicalForcing,
 )
-    (; precipitation, interception, waterlevel) = rainfall_erosion.boundary_conditions
+    (; precipitation, interception, waterlevel) = rainfall_erosion_model.boundary_conditions
     @. precipitation = atmospheric_forcing.precipitation
     @. waterlevel = hydrological_forcing.waterlevel_land
     @. interception = hydrological_forcing.interception
 end
 
 "Update EUROSEM rainfall erosion model for a single timestep"
-function update_rainfall_erosion!(
-    rainfall_erosion::RainfallErosionEurosemModel,
+function update_rainfall_erosion_model!(
+    rainfall_erosion_model::RainfallErosionEurosemModel,
     parameters::LandParameters,
     dt::Float64,
 )
-    (; precipitation, interception, waterlevel) = rainfall_erosion.boundary_conditions
+    (; precipitation, interception, waterlevel) = rainfall_erosion_model.boundary_conditions
     (;
         soil_detachability,
         eurosem_exponent,
         canopyheight,
         canopygapfraction,
         soilcover_fraction,
-    ) = rainfall_erosion.parameters
-    (; soil_erosion_rate) = rainfall_erosion.variables
+    ) = rainfall_erosion_model.parameters
+    (; soil_erosion_rate) = rainfall_erosion_model.variables
 
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -223,29 +223,29 @@ function RainfallErosionAnswersModel(
 )
     n = length(indices)
     parameters = RainfallErosionAnswersParameters(dataset, config, indices)
-    rainfall_erosion = RainfallErosionAnswersModel(; n, parameters)
-    return rainfall_erosion
+    rainfall_erosion_model = RainfallErosionAnswersModel(; n, parameters)
+    return rainfall_erosion_model
 end
 
 "Update ANSWERS rainfall erosion model boundary conditions for a single timestep"
-function update_bc_rainfall_erosion!(
-    rainfall_erosion::RainfallErosionAnswersModel,
+function update_bc_rainfall_erosion_model!(
+    rainfall_erosion_model::RainfallErosionAnswersModel,
     atmospheric_forcing::AtmosphericForcing,
     ::HydrologicalForcing,
 )
-    (; precipitation) = rainfall_erosion.boundary_conditions
+    (; precipitation) = rainfall_erosion_model.boundary_conditions
     @. precipitation = atmospheric_forcing.precipitation
 end
 
 "Update ANSWERS rainfall erosion model for a single timestep"
-function update_rainfall_erosion!(
-    rainfall_erosion::RainfallErosionAnswersModel,
+function update_rainfall_erosion_model!(
+    rainfall_erosion_model::RainfallErosionAnswersModel,
     parameters::LandParameters,
     dt::Float64,
 )
-    (; precipitation) = rainfall_erosion.boundary_conditions
-    (; usle_k, usle_c, answers_rainfall_factor) = rainfall_erosion.parameters
-    (; soil_erosion_rate) = rainfall_erosion.variables
+    (; precipitation) = rainfall_erosion_model.boundary_conditions
+    (; usle_k, usle_c, answers_rainfall_factor) = rainfall_erosion_model.parameters
+    (; soil_erosion_rate) = rainfall_erosion_model.variables
 
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i

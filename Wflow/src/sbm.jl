@@ -80,7 +80,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update_land!(
+function update_land_hydrology_model!(
     land_hydrology_model::LandHydrologySBM,
     routing::Routing,
     domain::Domain,
@@ -91,15 +91,15 @@ function update_land!(
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
         land_hydrology_model
 
-    update_interception!(interception, atmospheric_forcing)
+    update_interception_model!(interception, atmospheric_forcing)
 
-    update_bc_snow!(snow, (; interception))
-    update_snow!(snow, atmospheric_forcing)
+    update_bc_snow_model!(snow, (; interception))
+    update_snow_model!(snow, atmospheric_forcing)
     if config.model.snow_gravitational_transport__flag
         lateral_snow_transport!(snow, domain.land)
     end
 
-    update_glacier!(glacier, atmospheric_forcing)
+    update_glacier_model!(glacier, atmospheric_forcing)
 
     update_bc_open_water_runoff_model!(
         runoff,
@@ -107,7 +107,7 @@ function update_land!(
         routing,
         domain.river.network,
     )
-    update_open_water_runoff!(runoff, atmospheric_forcing, parameters)
+    update_open_water_runoff_model!(runoff, atmospheric_forcing, parameters)
 
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
@@ -115,11 +115,15 @@ function update_land!(
         potential_transpiration .= get_potential_transpiration(interception)
         @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration, dt)
     end
-    update_water_demand!(demand, soil)
-    update_water_allocation!(allocation, demand, routing, domain, dt)
+    update_water_demand_model!(demand, soil)
+    update_water_allocation_model!(allocation, demand, routing, domain, dt)
 
     soil_fraction!(soil, glacier, parameters)
-    update_bc_soil!(soil, atmospheric_forcing, (; interception, runoff, demand, allocation))
+    update_bc_soil_model!(
+        soil,
+        atmospheric_forcing,
+        (; interception, runoff, demand, allocation),
+    )
 
     update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     @. soil.variables.actevap += interception.variables.interception_rate

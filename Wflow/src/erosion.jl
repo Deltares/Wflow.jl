@@ -60,12 +60,16 @@ function update_soil_loss_model!(
     #need SBM refactor
 
     # Rainfall erosion
-    update_bc_rainfall_erosion!(rainfall_erosion, atmospheric_forcing, hydrological_forcing)
-    update_rainfall_erosion!(rainfall_erosion, parameters, dt)
+    update_bc_rainfall_erosion_model!(
+        rainfall_erosion,
+        atmospheric_forcing,
+        hydrological_forcing,
+    )
+    update_rainfall_erosion_model!(rainfall_erosion, parameters, dt)
     # Overland flow erosion
     update_bc_overland_flow_erosion_model!(overland_flow_erosion, hydrological_forcing)
-    update_overland_flow_erosion!(overland_flow_erosion, parameters, dt)
+    update_overland_flow_erosion_model!(overland_flow_erosion, parameters, dt)
     # Total soil erosion and particle differentiation
-    update_bc_soil_erosion!(soil_erosion, rainfall_erosion, overland_flow_erosion)
-    update_soil_erosion!(soil_erosion)
+    update_bc_soil_erosion_model!(soil_erosion, rainfall_erosion, overland_flow_erosion)
+    update_soil_erosion_model!(soil_erosion)
 end

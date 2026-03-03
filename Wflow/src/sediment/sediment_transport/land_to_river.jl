@@ -29,18 +29,21 @@ function SedimentToRiverModel(indices::Vector{CartesianIndex{2}})
 end
 
 "Update total sediment reaching the river model boundary conditions"
-function update_bc_sediment_to_river!(
-    to_river::SedimentToRiverModel,
+function update_bc_sediment_to_river_model!(
+    to_river_model::SedimentToRiverModel,
     transport_model::SedimentLandTransportModel,
 )
-    (; deposition) = to_river.boundary_conditions
+    (; deposition) = to_river_model.boundary_conditions
     @. deposition = transport_model.variables.deposition
 end
 
 "Update total sediment reaching the river model for a single timestep"
-function update_sediment_to_river!(to_river::SedimentToRiverModel, rivers::Vector{Bool})
-    (; deposition) = to_river.boundary_conditions
-    (; sediment_rate) = to_river.variables
+function update_sediment_to_river_model!(
+    to_river_model::SedimentToRiverModel,
+    rivers::Vector{Bool},
+)
+    (; deposition) = to_river_model.boundary_conditions
+    (; sediment_rate) = to_river_model.variables
 
     zeros = fill(0.0, length(sediment_rate))
     sediment_rate .= ifelse.(rivers, deposition, zeros)
@@ -95,8 +98,8 @@ function SedimentToRiverDifferentiationModel(indices::Vector{CartesianIndex{2}})
 end
 
 "Update differentiated sediment reaching the river model boundary conditions"
-function update_bc_sediment_to_river!(
-    to_river::SedimentToRiverDifferentiationModel,
+function update_bc_sediment_to_river_model!(
+    to_river_model::SedimentToRiverDifferentiationModel,
     transport_model::SedimentLandTransportDifferentiationModel,
 )
     (;
@@ -105,7 +108,7 @@ function update_bc_sediment_to_river!(
         deposition_sand,
         deposition_sagg,
         deposition_lagg,
-    ) = to_river.boundary_conditions
+    ) = to_river_model.boundary_conditions
     @. deposition_clay = transport_model.variables.deposition_clay
     @. deposition_silt = transport_model.variables.deposition_silt
     @. deposition_sand = transport_model.variables.deposition_sand
@@ -114,8 +117,8 @@ function update_bc_sediment_to_river!(
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
-function update_sediment_to_river!(
-    to_river::SedimentToRiverDifferentiationModel,
+function update_sediment_to_river_model!(
+    to_river_model::SedimentToRiverDifferentiationModel,
     rivers::Vector{Bool},
 )
     (;
@@ -124,9 +127,9 @@ function update_sediment_to_river!(
         deposition_sand,
         deposition_sagg,
         deposition_lagg,
-    ) = to_river.boundary_conditions
+    ) = to_river_model.boundary_conditions
     (; sediment_rate, clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) =
-        to_river.variables
+        to_river_model.variables
 
     for (i, river) in enumerate(rivers)
         if river

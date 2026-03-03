@@ -132,31 +132,31 @@ function compute_total_storage!(
 end
 
 """
-    get_storage(river_flow::LocalInertialRiverFlow, i)
-    get_storage(river_flow::KinWaveRiverFlow, i)
+    get_storage(river_flow_model::LocalInertialRiverFlow, i)
+    get_storage(river_flow_model::KinWaveRiverFlow, i)
 
 Return storage of a river flow model at index `i`. For `LocalInertialRiverFlow` floodplain
 storage is added to river storage if an optional floodplain is included.
 """
-function get_storage(river_flow::LocalInertialRiverFlow, i)
-    (; storage) = river_flow.variables
-    if isnothing(river_flow.floodplain)
+function get_storage(river_flow_model::LocalInertialRiverFlow, i)
+    (; storage) = river_flow_model.variables
+    if isnothing(river_flow_model.floodplain)
         return storage[i]
     else
-        total_storage = storage[i] + river_flow.floodplain.variables.storage[i]
+        total_storage = storage[i] + river_flow_model.floodplain.variables.storage[i]
         return total_storage
     end
 end
-get_storage(river_flow::KinWaveRiverFlow, i) = river_flow.variables.storage[i]
+get_storage(river_flow_model::KinWaveRiverFlow, i) = river_flow_model.variables.storage[i]
 
 """
 Save river (+ floodplain) storage at previous time step as `storage_prev` of river
 `water_balance`.
 """
-function storage_prev!(river_flow::AbstractRiverFlowModel, water_balance::MassBalance)
+function storage_prev!(river_flow_model::AbstractRiverFlowModel, water_balance::MassBalance)
     (; storage_prev) = water_balance
     for i in eachindex(storage_prev)
-        storage_prev[i] = get_storage(river_flow, i)
+        storage_prev[i] = get_storage(river_flow_model, i)
     end
     return nothing
 end
@@ -164,12 +164,12 @@ end
 """
 Save reservoir storage at previous time step as `storage_prev` of reservoir `water_balance`.
 """
-function storage_prev!(reservoir::Reservoir, water_balance::MassBalance)
-    water_balance.storage_prev .= reservoir.variables.storage
+function storage_prev!(reservoir_model::Reservoir, water_balance::MassBalance)
+    water_balance.storage_prev .= reservoir_model.variables.storage
 end
 
-function watertable_prev!(subsurface_flow::LateralSSF, water_balance::MassBalance)
-    water_balance.zi_prev .= subsurface_flow.variables.zi
+function watertable_prev!(subsurface_flow_model::LateralSSF, water_balance::MassBalance)
+    water_balance.zi_prev .= subsurface_flow_model.variables.zi
 end
 
 function watertable_prev!(

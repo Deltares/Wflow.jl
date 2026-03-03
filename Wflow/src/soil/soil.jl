@@ -650,8 +650,8 @@ function SbmSoilModel(
     n = length(indices)
     parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
     variables = SbmSoilVariables(n, parameters)
-    soil = SbmSoilModel(; n, parameters, variables)
-    return soil
+    soil_model = SbmSoilModel(; n, parameters, variables)
+    return soil_model
 end
 
 "Return soil fraction"
@@ -671,19 +671,19 @@ function soil_fraction!(
 end
 
 "Update boundary conditions of the SBM soil model for a single timestep"
-function update_bc_soil!(
-    soil::SbmSoilModel,
+function update_bc_soil_model!(
+    soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
 )
     (; interception, runoff, demand, allocation) = external_models
     (; potential_transpiration, water_flux_surface, potential_soilevaporation) =
-        soil.boundary_conditions
+        soil_model.boundary_conditions
 
     potential_transpiration .= get_potential_transpiration(interception)
 
     @. potential_soilevaporation =
-        soil.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
+        soil_model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
@@ -698,12 +698,12 @@ end
 
 "Update soil temperature of the SBM soil model for a single timestep"
 function soil_temperature!(
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     ::AbstractSnowModel,
     temperature::Vector{Float64},
 )
-    v = soil.variables
-    p = soil.parameters
+    v = soil_model.variables
+    p = soil_model.parameters
     @. v.tsoil = soil_temperature(v.tsoil, p.w_soil, temperature)
     return nothing
 end
@@ -711,9 +711,9 @@ end
 soil_temperature!(::SbmSoilModel, ::NoSnowModel, ::Vector{Float64}) = nothing
 
 "Update total available water in the unsaturated zone of the SBM soil model for a single timestep"
-function ustoredepth!(soil::SbmSoilModel)
-    v = soil.variables
-    p = soil.parameters
+function ustoredepth!(soil_model::SbmSoilModel)
+    v = soil_model.variables
+    p = soil_model.parameters
     for i in eachindex(v.ustorelayerdepth)
         v.ustoredepth[i] = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
     end
@@ -722,12 +722,12 @@ end
 
 "Update the infiltration reduction factor of the SBM soil model for a single timestep"
 function infiltration_reduction_factor!(
-    soil::SbmSoilModel;
+    soil_model::SbmSoilModel;
     modelsnow = false,
     soil_infiltration_reduction = false,
 )
-    v = soil.variables
-    p = soil.parameters
+    v = soil_model.variables
+    p = soil_model.parameters
 
     n = length(v.tsoil)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -742,15 +742,15 @@ function infiltration_reduction_factor!(
 end
 
 """
-    infiltration!(soil::SbmSoilMsoil
+    infiltration!(soil_model::SbmSoilMsoil
 
 Update the infiltration rate `infiltsoilpath` and infiltration excess water rate
 `infiltexcess` of the SBM soil model for a single timestep.
 """
-function infiltration!(soil::SbmSoilModel)
-    v = soil.variables
-    p = soil.parameters
-    (; water_flux_surface) = soil.boundary_conditions
+function infiltration!(soil_model::SbmSoilModel)
+    v = soil_model.variables
+    p = soil_model.parameters
+    (; water_flux_surface) = soil_model.boundary_conditions
 
     n = length(v.infiltsoilpath)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -767,15 +767,15 @@ function infiltration!(soil::SbmSoilModel)
 end
 
 """
-    unsaturated_zone_flow!(soil::SbmSoilModel)
+    unsaturated_zone_flow!(soil_model::SbmSoilModel)
 
 Update unsaturated storage `ustorelayerdepth` and the `transfer` of water from the unsaturated
 to the saturated store of the SBM soil model for a single timestep, based on the Brooks-Corey
 approach.
 """
-function unsaturated_zone_flow!(soil::SbmSoilModel)
-    v = soil.variables
-    p = soil.parameters
+function unsaturated_zone_flow!(soil_model::SbmSoilModel)
+    v = soil_model.variables
+    p = soil_model.parameters
 
     n = length(v.transfer)
     threaded_foreach(1:n; basesize = 250) do i
@@ -804,17 +804,17 @@ function unsaturated_zone_flow!(soil::SbmSoilModel)
 end
 
 """
-    soil_evaporation!(soil::SbmSoilModel)
+    soil_evaporation!(soil_model::SbmSoilModel)
 
 Update soil evaporation from the saturated store `soilevapsat` and the total soil
 evaporation from the unsaturated and saturated store `soilevap` of the SBM soil model for a
 single timestep. Also unsaturated storage `ustorelayerdepth` and the saturated store
 `satwaterdepth` are updated.
 """
-function soil_evaporation!(soil::SbmSoilModel)
-    (; potential_soilevaporation) = soil.boundary_conditions
-    v = soil.variables
-    p = soil.parameters
+function soil_evaporation!(soil_model::SbmSoilModel)
+    (; potential_soilevaporation) = soil_model.boundary_conditions
+    v = soil_model.variables
+    p = soil_model.parameters
 
     n = length(potential_soilevaporation)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -860,12 +860,12 @@ Update total `transpiration`, transpiration from the unsaturated store `ae_ustor
 saturated store `actevapsat` of the SBM soil model for a single timestep. Also unsaturated
 storage `ustorelayerdepth` and the saturated store `satwaterdepth` are updated.
 """
-function transpiration!(soil::SbmSoilModel, dt::Float64)
-    (; potential_transpiration) = soil.boundary_conditions
-    v = soil.variables
-    p = soil.parameters
+function transpiration!(soil_model::SbmSoilModel, dt::Float64)
+    (; potential_transpiration) = soil_model.boundary_conditions
+    v = soil_model.variables
+    p = soil_model.parameters
 
-    rootingdepth = get_rootingdepth(soil)
+    rootingdepth = get_rootingdepth(soil_model)
     n = length(rootingdepth)
 
     threaded_foreach(1:n; basesize = 250) do i
@@ -956,7 +956,7 @@ function transpiration!(soil::SbmSoilModel, dt::Float64)
 end
 
 """
-    actual_infiltration!(soil::SbmSoilModel)
+    actual_infiltration!(soil_model::SbmSoilModel)
 
 Update the actual infiltration rate `actinfilt` of the SBM soil model for a single timestep.
 
@@ -965,9 +965,9 @@ storage per unsaturated soil layer is transferred to the layer above (or surface
 bottom to the top unsaturated soil layer. The resulting excess water `ustoredepth_excess` is
 subtracted from the infiltration rate `infiltsoilpath`.
 """
-function actual_infiltration!(soil::SbmSoilModel)
-    v = soil.variables
-    p = soil.parameters
+function actual_infiltration!(soil_model::SbmSoilModel)
+    v = soil_model.variables
+    p = soil_model.parameters
 
     n = length(v.actinfilt)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -999,15 +999,15 @@ function actual_infiltration!(soil::SbmSoilModel)
 end
 
 """
-    actual_infiltration_soil_path!(soil::SbmSoilModel)
+    actual_infiltration_soil_path!(soil_model::SbmSoilModel)
 
 Update the actual infiltration rate for soil `actinfiltsoil` and paved area `actinfiltpath`
 of the SBM soil model for a single timestep.
 """
-function actual_infiltration_soil_path!(soil::SbmSoilModel)
-    v = soil.variables
-    p = soil.parameters
-    (; water_flux_surface) = soil.boundary_conditions
+function actual_infiltration_soil_path!(soil_model::SbmSoilModel)
+    v = soil_model.variables
+    p = soil_model.parameters
+    (; water_flux_surface) = soil_model.boundary_conditions
 
     n = length(water_flux_surface)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -1024,14 +1024,14 @@ function actual_infiltration_soil_path!(soil::SbmSoilModel)
 end
 
 """
-    capillary_flux!(soil::SbmSoilModel)
+    capillary_flux!(soil_model::SbmSoilModel)
 
 Update the capillary flux `actcapflux` of the SBM soil model for a single timestep.
 """
-function capillary_flux!(soil::SbmSoilModel)
-    v = soil.variables
-    p = soil.parameters
-    rootingdepth = get_rootingdepth(soil)
+function capillary_flux!(soil_model::SbmSoilModel)
+    v = soil_model.variables
+    p = soil_model.parameters
+    rootingdepth = get_rootingdepth(soil_model)
 
     n = length(rootingdepth)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -1081,13 +1081,13 @@ function capillary_flux!(soil::SbmSoilModel)
 end
 
 """
-    leakage!(soil::SbmSoilModel)
+    leakage!(soil_model::SbmSoilModel)
 
 Update the actual leakage rate `actleakage` of the SBM soil model for a single timestep.
 """
-function leakage!(soil::SbmSoilModel)
-    v = soil.variables
-    p = soil.parameters
+function leakage!(soil_model::SbmSoilModel)
+    v = soil_model.variables
+    p = soil_model.parameters
 
     n = length(v.actleakage)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -1105,8 +1105,8 @@ function leakage!(soil::SbmSoilModel)
 end
 
 """
-    update_soil_first!(
-        soil::SbmSoilModel,
+    update_soil_water_flow!(
+        soil_model::SbmSoilModel,
         atmospheric_forcing::AtmosphericForcing,
         external_models::NamedTuple,
         config::Config,
@@ -1116,8 +1116,8 @@ end
 Update the SBM soil model (infiltration, unsaturated zone flow, soil evaporation and
 transpiration, capillary flux and leakage) for a single timestep.
 """
-function update_soil_first!(
-    soil::SbmSoilModel,
+function update_soil_water_flow!(
+    soil_model::SbmSoilModel,
     atmospheric_forcing::AtmosphericForcing,
     external_models::NamedTuple,
     config::Config,
@@ -1125,38 +1125,38 @@ function update_soil_first!(
 )
     (; snow, runoff, demand) = external_models
     (; temperature) = atmospheric_forcing
-    (; water_flux_surface) = soil.boundary_conditions
-    v = soil.variables
-    p = soil.parameters
+    (; water_flux_surface) = soil_model.boundary_conditions
+    v = soil_model.variables
+    p = soil_model.parameters
 
     # mainly required for external state changes (e.g. through BMI)
-    update_diagnostic_vars!(soil)
+    update_diagnostic_vars!(soil_model)
     # infiltration
-    soil_temperature!(soil, snow, temperature)
+    soil_temperature!(soil_model, snow, temperature)
     infiltration_reduction_factor!(
-        soil;
+        soil_model;
         modelsnow = config.model.snow__flag,
         soil_infiltration_reduction = config.model.soil_infiltration_reduction__flag,
     )
-    infiltration!(soil)
+    infiltration!(soil_model)
     # unsaturated zone flow
-    unsaturated_zone_flow!(soil)
+    unsaturated_zone_flow!(soil_model)
     # soil evaporation and transpiration
-    soil_evaporation!(soil)
-    transpiration!(soil, dt)
+    soil_evaporation!(soil_model)
+    transpiration!(soil_model, dt)
     # actual infiltration and excess water
-    actual_infiltration!(soil)
+    actual_infiltration!(soil_model)
     @. v.excesswater = water_flux_surface - v.actinfilt - v.infiltexcess
-    actual_infiltration_soil_path!(soil)
+    actual_infiltration_soil_path!(soil_model)
     @. v.excesswatersoil =
         max(water_flux_surface * (1.0 - p.pathfrac) - v.actinfiltsoil, 0.0)
     @. v.excesswaterpath = max(water_flux_surface * p.pathfrac - v.actinfiltpath, 0.0)
     # recompute the unsaturated store and ustorecapacity (for capillary flux)
-    ustoredepth!(soil)
+    ustoredepth!(soil_model)
     @. v.ustorecapacity = p.soilwatercapacity - v.satwaterdepth - v.ustoredepth
     # capillary flux and leakage
-    capillary_flux!(soil)
-    leakage!(soil)
+    capillary_flux!(soil_model)
+    leakage!(soil_model)
     # recharge rate to the saturated store
     @. v.recharge =
         (v.transfer - v.actcapflux - v.actleakage - v.actevapsat - v.soilevapsat)
@@ -1206,28 +1206,28 @@ function update_ustorelayerdepth!(soil, zi_prev, zi, i)
 end
 
 """
-    update_ustorelayerdepth!(soil::SbmSoilModel, subsurface_flow)
+    update_ustorelayerdepth!(soil_model::SbmSoilModel, subsurface_flow)
 
 Update the `SbmSoilModel` variables unsaturated store depth of soil layers
 `ustorelayerdepth`, number of unsaturated zone soil layers `n_unsatlayers`, thickness of
 unsaturated zone soil layers `ustorelayerthickness` and water table depth `zi`, based on the
 water table change computed by a subsurface flow model.
 """
-function update_ustorelayerdepth!(soil::SbmSoilModel, subsurface_flow)
-    p = soil.parameters
-    v = soil.variables
+function update_ustorelayerdepth!(soil_model::SbmSoilModel, subsurface_flow)
+    p = soil_model.parameters
+    v = soil_model.variables
 
     zi = get_water_depth(subsurface_flow) * 1000.0 # convert from [m] to [mm]
 
-    n = length(soil.variables.zi)
+    n = length(v.zi)
     threaded_foreach(1:n; basesize = 1000) do i
-        zi_prev = soil.variables.zi[i]
-        update_ustorelayerdepth!(soil, zi_prev, zi[i], i)
+        zi_prev = v.zi[i]
+        update_ustorelayerdepth!(soil_model, zi_prev, zi[i], i)
     end
 end
 
 """
-    update_soil_second!(soil::SbmSoilModel, external_models::NamedTuple)
+    update_soil_water_storage!(soil_model::SbmSoilModel, external_models::NamedTuple)
 
 Update the SBM soil model for a single timestep based on the update of a subsurface flow
 model, resulting in a change in water table depth and an exfiltration rate `exfiltwater`.
@@ -1238,14 +1238,14 @@ store `satwaterdepth` and the water exfiltrating during saturation excess condit
 `exfiltsatwater` are updated. Addionally, volumetric water content per soil layer and for
 the root zone are updated.
 """
-function update_soil_second!(soil::SbmSoilModel, external_models::NamedTuple)
+function update_soil_water_storage!(soil_model::SbmSoilModel, external_models::NamedTuple)
     (; runoff, demand, subsurface_flow) = external_models
     (; runoff_land, ae_openw_l) = runoff.variables
-    p = soil.parameters
-    v = soil.variables
+    p = soil_model.parameters
+    v = soil_model.variables
 
     exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0 # convert from [m] to [mm]
-    rootingdepth = get_rootingdepth(soil)
+    rootingdepth = get_rootingdepth(soil_model)
 
     n = length(v.zi)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -1323,12 +1323,12 @@ function update_soil_second!(soil::SbmSoilModel, external_models::NamedTuple)
 end
 
 """
-    update_diagnostic_vars!(soil::SbmSoilModel)
+    update_diagnostic_vars!(soil_model::SbmSoilModel)
 
 Update diagnostic variables of `SbmSoilModel` that are critical for subsequent computations
 and depend on state variables `satwaterdepth` and `ustorelayerdepth`.
 """
-function update_diagnostic_vars!(soil::SbmSoilModel)
+function update_diagnostic_vars!(soil_model::SbmSoilModel)
     (;
         zi,
         satwaterdepth,
@@ -1338,7 +1338,7 @@ function update_diagnostic_vars!(soil::SbmSoilModel)
         ustoredepth,
         total_soilwater_storage,
         n_unsatlayers,
-    ) = soil.variables
+    ) = soil_model.variables
     (;
         soilthickness,
         theta_s,
@@ -1347,9 +1347,9 @@ function update_diagnostic_vars!(soil::SbmSoilModel)
         soilwatercapacity,
         sumlayers,
         act_thickl,
-    ) = soil.parameters
+    ) = soil_model.parameters
 
-    ustoredepth!(soil)
+    ustoredepth!(soil_model)
     @. zi = max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
     @. drainable_waterdepth =
         (soilthickness - zi) * lower_bound_drainable_porosity(theta_s, theta_fc)
@@ -1360,4 +1360,5 @@ function update_diagnostic_vars!(soil::SbmSoilModel)
 end
 
 # wrapper method
-get_rootingdepth(soil::SbmSoilModel) = soil.parameters.vegetation_parameter_set.rootingdepth
+get_rootingdepth(soil_model::SbmSoilModel) =
+    soil_model.parameters.vegetation_parameter_set.rootingdepth

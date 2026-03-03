@@ -55,7 +55,7 @@ function get_water_flux_surface!(
 end
 
 "Update boundary conditions of the open water runoff model for a single timestep"
-function update_bc_runoff!(
+function update_bc_open_water_runoff_model!(
     open_water_runoff_model::OpenWaterRunoff,
     external_models::NamedTuple,
     routing::Routing,

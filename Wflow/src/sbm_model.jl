@@ -75,7 +75,7 @@ function update_model!(model::AbstractModel{<:SbmModel})
     routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
-    update_subsurface_flow!(
+    update_subsurface_flow_model!(
         routing.subsurface_flow,
         land.soil,
         domain.land,

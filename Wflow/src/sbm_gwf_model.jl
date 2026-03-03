@@ -68,7 +68,7 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
 
     dt = tosecond(clock.dt)
 
-    update_land!(land, routing, domain, config, dt)
+    update_land_hydrology_model!(land, routing, domain, config, dt)
 
     # set river stage and storage (groundwater boundary) based on river flow routing
     # variables
@@ -91,7 +91,7 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     end
 
     # update groundwater domain
-    update_subsurface_flow!(
+    update_subsurface_flow_model!(
         routing.subsurface_flow,
         soil,
         dt_gwf,

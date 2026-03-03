@@ -17,12 +17,12 @@ end
 end
 
 "Update total transport capacity model boundary conditions"
-function update_bc_transport_capacity!(
-    transport_capacity::AbstractTransportCapacityModel,
+function update_bc_transport_capacity_model!(
+    transport_capacity_model::AbstractTransportCapacityModel,
     hydrological_forcing::HydrologicalForcing,
     model_type::Symbol,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; q_land, waterlevel_land, q_river, waterlevel_river) = hydrological_forcing
 
     if model_type == :land
@@ -97,19 +97,19 @@ function TransportCapacityGoversModel(
 )
     n = length(indices)
     parameters = TransportCapacityGoversParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityGoversModel(; n, parameters)
-    return transport_capacity
+    transport_capacity_model = TransportCapacityGoversModel(; n, parameters)
+    return transport_capacity_model
 end
 
 "Update Govers overland flow transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityGoversModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityGoversModel,
     parameters::LandParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; density, c_govers, n_govers) = transport_capacity.parameters
-    (; sediment_transport_capacity) = transport_capacity.variables
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; density, c_govers, n_govers) = transport_capacity_model.parameters
+    (; sediment_transport_capacity) = transport_capacity_model.variables
 
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
@@ -187,14 +187,14 @@ function TransportCapacityYalinModel(
 end
 
 "Update Yalin overland flow transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityYalinModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityYalinModel,
     parameters::LandParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; density, d50) = transport_capacity.parameters
-    (; sediment_transport_capacity) = transport_capacity.variables
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; density, d50) = transport_capacity_model.parameters
+    (; sediment_transport_capacity) = transport_capacity_model.variables
 
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
@@ -331,20 +331,21 @@ function TransportCapacityYalinDifferentiationModel(
 )
     n = length(indices)
     parameters = TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityYalinDifferentiationModel(; n, parameters)
-    return transport_capacity
+    transport_capacity_model = TransportCapacityYalinDifferentiationModel(; n, parameters)
+    return transport_capacity_model
 end
 
 "Update Yalin differentiated overland flow transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityYalinDifferentiationModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityYalinDifferentiationModel,
     parameters::LandParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) = transport_capacity.parameters
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) =
+        transport_capacity_model.parameters
     (; sediment_transport_capacity, clay, silt, sand, sagg, lagg) =
-        transport_capacity.variables
+        transport_capacity_model.variables
 
     (; slope, flow_width, river_location, reservoir_coverage) = parameters
 
@@ -512,19 +513,19 @@ function TransportCapacityBagnoldModel(
 )
     n = length(indices)
     parameters = TransportCapacityBagnoldParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityBagnoldModel(; n, parameters)
-    return transport_capacity
+    transport_capacity_model = TransportCapacityBagnoldModel(; n, parameters)
+    return transport_capacity_model
 end
 
 "Update Bagnold river transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityBagnoldModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityBagnoldModel,
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; c_bagnold, e_bagnold) = transport_capacity.parameters
-    (; sediment_transport_capacity) = transport_capacity.variables
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; c_bagnold, e_bagnold) = transport_capacity_model.parameters
+    (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
     # Note: slope is not used here but this allows for a consistent interface of update! functions
@@ -558,19 +559,19 @@ function TransportCapacityEngelundModel(
 )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityEngelundModel(; n, parameters)
-    return transport_capacity
+    transport_capacity_model = TransportCapacityEngelundModel(; n, parameters)
+    return transport_capacity_model
 end
 
 "Update Engelund and Hansen river transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityEngelundModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityEngelundModel,
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; density, d50) = transport_capacity.parameters
-    (; sediment_transport_capacity) = transport_capacity.variables
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; density, d50) = transport_capacity_model.parameters
+    (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -660,19 +661,19 @@ function TransportCapacityKodatieModel(
 )
     n = length(indices)
     parameters = TransportCapacityKodatieParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityKodatieModel(; n, parameters)
-    return transport_capacity
+    transport_capacity_model = TransportCapacityKodatieModel(; n, parameters)
+    return transport_capacity_model
 end
 
 "Update Kodatie river transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityKodatieModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityKodatieModel,
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = transport_capacity.parameters
-    (; sediment_transport_capacity) = transport_capacity.variables
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = transport_capacity_model.parameters
+    (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -712,14 +713,14 @@ function TransportCapacityYangModel(
 end
 
 "Update Yang river transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityYangModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityYangModel,
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; density, d50) = transport_capacity.parameters
-    (; sediment_transport_capacity) = transport_capacity.variables
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; density, d50) = transport_capacity_model.parameters
+    (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -757,14 +758,14 @@ function TransportCapacityMolinasModel(
 end
 
 "Update Molinas and Wu river transport capacity model for a single timestep"
-function update_transport_capacity!(
-    transport_capacity::TransportCapacityMolinasModel,
+function update_transport_capacity_model!(
+    transport_capacity_model::TransportCapacityMolinasModel,
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; q, waterlevel) = transport_capacity.boundary_conditions
-    (; density, d50) = transport_capacity.parameters
-    (; sediment_transport_capacity) = transport_capacity.variables
+    (; q, waterlevel) = transport_capacity_model.boundary_conditions
+    (; density, d50) = transport_capacity_model.parameters
+    (; sediment_transport_capacity) = transport_capacity_model.variables
 
     n = length(q)
     threaded_foreach(1:n; basesize = 1000) do i
