@@ -97,7 +97,7 @@ end
         187.18720614458448,
         59.05659877245674,
     ]
-    @show model.variables.transfer[1] ≈ 4.437857871332029
+    @test model.variables.transfer[1] ≈ 4.437857871332029
 end
 
 @testitem "unit: soil_evaporation!" begin
@@ -107,23 +107,25 @@ end
     model = init_sbm_soil_model(
         n,
         N;
-        potential_soilevaporation = [3.9],
-        ustorelayerthickness = [SVector((50.0, 100.0, 50.0, 200.0, 800.0, 250.0))],
-        ustorelayerdepth = [SVector(8.3, 16.6, 7.7, 36.5, 190.7, 59.2)],
-        n_unsatlayers = [1],
-        zi = [40.0],
-        theta_s = [0.5],
-        theta_r = [0.07],
-        theta_fc = [0.25],
-        act_thickl = [SVector(50.0, 100.0, 50.0, 200.0, 800.0, 573.3)],
-        drainable_waterdepth = [100.0],
+        potential_soilevaporation = [2.8],
+        ustorelayerthickness = [SVector((50.0, 21.472680450878443, NaN, NaN, NaN, NaN))],
+        ustorelayerdepth = [
+            SVector(1.537249298366254, 4.821326813899425e-8, 0.0, 0.0, 0.0, 0.0),
+        ],
+        n_unsatlayers = [2],
+        zi = [71.47268045087844],
+        theta_s = [0.44],
+        theta_r = [0.09],
+        theta_fc = [0.275],
+        act_thickl = [SVector(50.0, 100.0, 50.0, 200.0, 800.0, 800.0)],
+        drainable_waterdepth = [321.13323174500624],
     )
 
     Wflow.soil_evaporation!(model)
 
-    @show model.variables.soilevapsat[1] ≈ 0.40360465116279065
-    @show model.variables.soilevap[1] ≈ 2.2855813953488378
-    @show model.variables.drainable_waterdepth[1] ≈ 99.5963953488372
+    @test model.variables.soilevapsat[1] == 0.0
+    @test model.variables.soilevap[1] ≈ 0.2459598877386006
+    @test model.variables.drainable_waterdepth[1] ≈ 321.13323174500624
 end
 
 @testitem "unit: transpiration!" begin
@@ -160,10 +162,10 @@ end
 
     Wflow.transpiration!(model, dt)
 
-    @show model.variables.ae_ustore[1] ≈ 0.4479021069963573
-    @show model.variables.actevapsat[1] ≈ 0.7520978930036426
-    @show model.variables.drainable_waterdepth[1] ≈ 99.24790210699636
-    @show model.variables.transpiration[1] ≈ 1.2
+    @test model.variables.ae_ustore[1] ≈ 0.4479021069963573
+    @test model.variables.actevapsat[1] ≈ 0.7520978930036426
+    @test model.variables.drainable_waterdepth[1] ≈ 99.24790210699636
+    @test model.variables.transpiration[1] ≈ 1.2
 end
 
 @testitem "unit: capillary_flux!" begin
@@ -191,7 +193,7 @@ end
 
     Wflow.capillary_flux!(model)
 
-    @show model.variables.actcapflux[1] ≈ 1.11392
+    @test model.variables.actcapflux[1] ≈ 1.11392
 end
 
 @testitem "unit: update! SbmSoilModel" begin
