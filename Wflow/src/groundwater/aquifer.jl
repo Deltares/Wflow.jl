@@ -1,5 +1,5 @@
 """
-    AbstractAquifer
+    AbstractAquiferModel
 
 Abstract type representing an aquifer, either confined or unconfined.
 
@@ -62,12 +62,12 @@ net (lumped) cell flux. Dirichlet conditions are special cased, since they
 cannot (easily) be implemented via the flux, but the head is set directly
 instead.
 """
-abstract type AbstractAquifer end
+abstract type AbstractAquiferModel end
 
 abstract type AbstractAquiferBoundaryCondition end
 
 """
-    ConfinedAquifer <: AbstractAquifer
+    ConfinedAquiferModel <: AbstractAquiferModel
 
 Confined aquifers are overlain by a poorly permeable confining layer (e.g.
 clay). No air can get in to fill the pore space so that the aquifer always
@@ -104,13 +104,13 @@ end
     exfiltwater::Vector{Float64} = zeros(n)        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 
-@with_kw struct ConfinedAquifer <: AbstractAquifer
+@with_kw struct ConfinedAquiferModel <: AbstractAquiferModel
     parameters::ConfinedAquiferParameters
     variables::AquiferVariables
 end
 
 """
-    UnconfinedAquifer <: AbstractAquifer
+    UnconfinedAquiferModel <: AbstractAquiferModel
 
 The upper boundary of an unconfined aquifer is the water table (the phreatic
 surface).
@@ -174,12 +174,12 @@ function UnconfinedAquiferParameters(
     return parameters
 end
 
-@with_kw struct UnconfinedAquifer <: AbstractAquifer
+@with_kw struct UnconfinedAquiferModel <: AbstractAquiferModel
     parameters::UnconfinedAquiferParameters
     variables::AquiferVariables
 end
 
-function UnconfinedAquifer(
+function UnconfinedAquiferModel(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
@@ -202,12 +202,12 @@ function UnconfinedAquifer(
     storage = @. (min(top, head) - bottom) * area * specific_yield
     n = length(storage)
     variables = AquiferVariables(; n, head, conductance, storage)
-    aquifer = UnconfinedAquifer(parameters, variables)
+    aquifer = UnconfinedAquiferModel(parameters, variables)
     return aquifer
 end
 
-storativity(A::UnconfinedAquifer) = A.parameters.specific_yield
-storativity(A::ConfinedAquifer) = A.parameters.storativity
+storativity(A::UnconfinedAquiferModel) = A.parameters.specific_yield
+storativity(A::ConfinedAquiferModel) = A.parameters.storativity
 
 """
     harmonicmean_conductance(kH1, kH2, l1, l2, width)
@@ -231,20 +231,20 @@ function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     end
 end
 
-function saturated_thickness(aquifer::UnconfinedAquifer, index::Int)
+function saturated_thickness(aquifer::UnconfinedAquiferModel, index::Int)
     return min(aquifer.parameters.top[index], aquifer.variables.head[index]) -
            aquifer.parameters.bottom[index]
 end
 
-function saturated_thickness(aquifer::ConfinedAquifer, index::Int)
+function saturated_thickness(aquifer::ConfinedAquiferModel, index::Int)
     return aquifer.parameters.top[index] - aquifer.parameters.bottom[index]
 end
 
-function saturated_thickness(aquifer::UnconfinedAquifer)
+function saturated_thickness(aquifer::UnconfinedAquiferModel)
     @. min(aquifer.parameters.top, aquifer.variables.head) - aquifer.parameters.bottom
 end
 
-function saturated_thickness(aquifer::ConfinedAquifer)
+function saturated_thickness(aquifer::ConfinedAquiferModel)
     @. aquifer.parameters.top - aquifer.parameters.bottom
 end
 
@@ -262,7 +262,7 @@ function horizontal_conductance(
     nzi::Int,
     aquifer::A,
     connectivity::Connectivity,
-) where {A <: AbstractAquifer}
+) where {A <: AbstractAquiferModel}
     k1 = aquifer.parameters.k[i]
     k2 = aquifer.parameters.k[j]
     H1 = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
@@ -276,7 +276,7 @@ function horizontal_conductance(
 end
 
 """
-    initialize_conductance!(aquifer::A, connectivity::Connectivity) where A <: AbstractAquifer
+    initialize_conductance!(aquifer::A, connectivity::Connectivity) where A <: AbstractAquiferModel
 
 Conductance for a confined aquifer is constant, and only has to be set once.
 For an unconfined aquifer, conductance is computed per timestep by multiplying by
@@ -285,7 +285,7 @@ degree of saturation [0.0 - 1.0].
 function initialize_conductance!(
     aquifer::A,
     connectivity::Connectivity,
-) where {A <: AbstractAquifer}
+) where {A <: AbstractAquiferModel}
     for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
@@ -297,7 +297,7 @@ function initialize_conductance!(
 end
 
 function conductance(
-    aquifer::ConfinedAquifer,
+    aquifer::ConfinedAquiferModel,
     i,
     j,
     nzi,
@@ -309,7 +309,7 @@ end
 
 """
 function conductance(
-    aquifer::UnconfinedAquifer,
+    aquifer::UnconfinedAquiferModel,
     i,
     j,
     nzi,
@@ -341,7 +341,7 @@ modular finite-difference groundwater flow model: U.S. Geological Survey
 Open-File Report 91-536, 99 p
 """
 function conductance(
-    aquifer::UnconfinedAquifer,
+    aquifer::UnconfinedAquiferModel,
     i,
     j,
     nzi,
@@ -389,7 +389,7 @@ function conductance(
 end
 
 function flux!(
-    aquifer::AbstractAquifer,
+    aquifer::AbstractAquiferModel,
     connectivity::Connectivity,
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
@@ -445,7 +445,7 @@ function ConstantHead(
 end
 
 """
-    stable_timestep(aquifer::AbstractAquifer, conductivity_profile::GwfConductivityProfileType.T)
+    stable_timestep(aquifer::AbstractAquiferModel, conductivity_profile::GwfConductivityProfileType.T)
 
 Compute a stable timestep size given the forward-in-time, central in space scheme.
 The following criterion can be found in Chu & Willis (1984):
@@ -454,7 +454,7 @@ The following criterion can be found in Chu & Willis (1984):
 where cfl = 1/4.
 """
 function stable_timestep(
-    aquifer::AbstractAquifer,
+    aquifer::AbstractAquiferModel,
     conductivity_profile::GwfConductivityProfileType.T,
     cfl::Float64,
 )
@@ -479,12 +479,12 @@ function stable_timestep(
     return dt_min
 end
 
-minimum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
-minimum_head(aquifer::UnconfinedAquifer) =
+minimum_head(aquifer::ConfinedAquiferModel) = aquifer.variables.head
+minimum_head(aquifer::UnconfinedAquiferModel) =
     max.(aquifer.variables.head, aquifer.parameters.bottom)
 
-maximum_head(aquifer::ConfinedAquifer) = aquifer.variables.head
-maximum_head(aquifer::UnconfinedAquifer) =
+maximum_head(aquifer::ConfinedAquiferModel) = aquifer.variables.head
+maximum_head(aquifer::UnconfinedAquiferModel) =
     min.(aquifer.variables.head, aquifer.parameters.top)
 
 @kwdef struct AquiferBoundaries{
@@ -502,30 +502,30 @@ end
 get_boundaries(boundaries::AquiferBoundaries) =
     (boundaries.recharge, boundaries.river, boundaries.drain, boundaries.well)
 
-@kwdef struct GroundwaterFlow{A <: AbstractAquifer, B <: AquiferBoundaries} <:
+@kwdef struct GroundwaterFlowModel{A <: AbstractAquiferModel, B <: AquiferBoundaries} <:
               AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     aquifer::A
     connectivity::Connectivity
     constanthead::ConstantHead
     boundaries::B = AquiferBoundaries()
-    function GroundwaterFlow(
+    function GroundwaterFlowModel(
         timestepping::TimeStepping,
         aquifer::A,
         connectivity::Connectivity,
         constanthead::ConstantHead,
         boundaries::B,
-    ) where {A <: AbstractAquifer, B <: AquiferBoundaries}
+    ) where {A <: AbstractAquiferModel, B <: AquiferBoundaries}
         initialize_conductance!(aquifer, connectivity)
         new{A, B}(timestepping, aquifer, connectivity, constanthead, boundaries)
     end
 end
 
 function update_fluxes!(
-    gwf_model::GroundwaterFlow{A},
+    gwf_model::GroundwaterFlowModel{A},
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
-) where {A <: AbstractAquifer}
+) where {A <: AbstractAquiferModel}
     flux!(gwf_model.aquifer, gwf_model.connectivity, conductivity_profile, dt)
     for boundary in get_boundaries(gwf_model.boundaries)
         flux!(boundary, gwf_model.aquifer, dt)
@@ -534,9 +534,9 @@ function update_fluxes!(
 end
 
 function update_head!(
-    gwf_model::GroundwaterFlow{A},
+    gwf_model::GroundwaterFlowModel{A},
     dt::Float64,
-) where {A <: AbstractAquifer}
+) where {A <: AbstractAquiferModel}
     gwf_model.aquifer.variables.head .+= (
         gwf_model.aquifer.variables.q_net ./ gwf_model.aquifer.parameters.area .* dt ./
         storativity(gwf_model.aquifer)
@@ -551,10 +551,10 @@ function update_head!(
 end
 
 function update_head!(
-    gwf_model::GroundwaterFlow{A},
+    gwf_model::GroundwaterFlowModel{A},
     soil_model::SbmSoilModel,
     dt::Float64,
-) where {A <: UnconfinedAquifer}
+) where {A <: UnconfinedAquiferModel}
     (; head, exfiltwater, q_net) = gwf_model.aquifer.variables
     (; area, specific_yield, specific_yield_dyn) = gwf_model.aquifer.parameters
 
@@ -581,7 +581,9 @@ function update_head!(
     return nothing
 end
 
-function set_flux_vars!(gwf_model::GroundwaterFlow{A}) where {A <: AbstractAquifer}
+function set_flux_vars!(
+    gwf_model::GroundwaterFlowModel{A},
+) where {A <: AbstractAquiferModel}
     for boundary in get_boundaries(gwf_model.boundaries)
         !isnothing(boundary) && (boundary.variables.flux_av .= 0.0)
     end
@@ -592,9 +594,9 @@ function set_flux_vars!(gwf_model::GroundwaterFlow{A}) where {A <: AbstractAquif
 end
 
 function average_flux_vars!(
-    gwf_model::GroundwaterFlow{A},
+    gwf_model::GroundwaterFlowModel{A},
     dt::Float64,
-) where {A <: AbstractAquifer}
+) where {A <: AbstractAquiferModel}
     for boundary in get_boundaries(gwf_model.boundaries)
         !isnothing(boundary) && (boundary.variables.flux_av ./= dt)
     end
@@ -604,11 +606,11 @@ function average_flux_vars!(
 end
 
 function update_subsurface_flow_model!(
-    gwf_model::GroundwaterFlow{A},
+    gwf_model::GroundwaterFlowModel{A},
     soil_model::SbmSoilModel,
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T;
-) where {A <: UnconfinedAquifer}
+) where {A <: UnconfinedAquiferModel}
     (; cfl) = gwf_model.timestepping
     set_flux_vars!(gwf_model)
     t = 0.0
@@ -626,10 +628,10 @@ function update_subsurface_flow_model!(
 end
 
 function update_subsurface_flow_model!(
-    gwf_model::GroundwaterFlow{A},
+    gwf_model::GroundwaterFlowModel{A},
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T;
-) where {A <: ConfinedAquifer}
+) where {A <: ConfinedAquiferModel}
     (; cfl) = gwf_model.timestepping
 
     set_flux_vars!(gwf_model)
@@ -646,25 +648,25 @@ function update_subsurface_flow_model!(
     return nothing
 end
 
-get_water_depth(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+get_water_depth(gwf_model::GroundwaterFlowModel{A}) where {A <: UnconfinedAquiferModel} =
     gwf_model.aquifer.parameters.top .- gwf_model.aquifer.variables.head
 
-get_exfiltwater(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+get_exfiltwater(gwf_model::GroundwaterFlowModel{A}) where {A <: UnconfinedAquiferModel} =
     gwf_model.aquifer.variables.exfiltwater
 
 function get_flux_to_river(
-    subsurface_flow_model::GroundwaterFlow{A},
+    subsurface_flow_model::GroundwaterFlowModel{A},
     inds::Vector{Int},
-) where {A <: UnconfinedAquifer}
+) where {A <: UnconfinedAquiferModel}
     (; river) = subsurface_flow_model.boundaries
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end
 
 function sum_boundary_fluxes(
-    gwf_model::GroundwaterFlow{A};
+    gwf_model::GroundwaterFlowModel{A};
     exclude = nothing,
-) where {A <: UnconfinedAquifer}
+) where {A <: UnconfinedAquiferModel}
     (; boundaries) = gwf_model
     n = length(gwf_model.aquifer.variables.storage)
     flux_in = zeros(n)
@@ -683,9 +685,9 @@ function sum_boundary_fluxes(
     end
     return flux_in, flux_out
 end
-get_inflow(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+get_inflow(gwf_model::GroundwaterFlowModel{A}) where {A <: UnconfinedAquiferModel} =
     gwf_model.aquifer.variables.q_in_av
-get_outflow(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+get_outflow(gwf_model::GroundwaterFlowModel{A}) where {A <: UnconfinedAquiferModel} =
     gwf_model.aquifer.variables.q_out_av
-get_storage(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+get_storage(gwf_model::GroundwaterFlowModel{A}) where {A <: UnconfinedAquiferModel} =
     gwf_model.aquifer.variables.storage

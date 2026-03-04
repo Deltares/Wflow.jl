@@ -753,15 +753,15 @@ function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, 
 end
 
 """
-    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_model::LateralSSF, kv_profile::KvLayered, dt)
-    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_model::LateralSSF, kv_profile::KvLayeredExponential, dt)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_model::LateralSSFModel, kv_profile::KvLayered, dt)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_model::LateralSSFModel, kv_profile::KvLayeredExponential, dt)
 
 Compute equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] using vertical hydraulic
 conductivity profile `kv_profile`.
 """
 function kh_layered_profile!(
     soil_model::SbmSoilModel,
-    subsurface_model::LateralSSF,
+    subsurface_model::LateralSSFModel,
     kv_profile::KvLayered,
     dt,
 )
@@ -797,7 +797,7 @@ end
 
 function kh_layered_profile!(
     soil_model::SbmSoilModel,
-    subsurface_model::LateralSSF,
+    subsurface_model::LateralSSFModel,
     kv_profile::KvLayeredExponential,
     dt,
 )
@@ -860,20 +860,20 @@ end
 
 kh_layered_profile!(
     soil_model::SbmSoilModel,
-    subsurface_model::LateralSSF,
+    subsurface_model::LateralSSFModel,
     kv_profile::Union{KvExponential,KvExponentialConstant},
     dt,
 ) = nothing
 
 """
-    initialize_lateral_ssf_model!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponential)
-    initialize_lateral_ssf_model!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponentialConstant)
+    initialize_lateral_ssf_model!(subsurface::LateralSSFModel, parameters::LandParameters, kh_profile::KhExponential)
+    initialize_lateral_ssf_model!(subsurface::LateralSSFModel, parameters::LandParameters, kh_profile::KhExponentialConstant)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydraulic
 conductivity profile `kh_profile`.
 """
 function initialize_lateral_ssf_model!(
-    subsurface_model::LateralSSF,
+    subsurface_model::LateralSSFModel,
     parameters::LandParameters,
     kh_profile::KhExponential,
 )
@@ -888,7 +888,7 @@ function initialize_lateral_ssf_model!(
 end
 
 function initialize_lateral_ssf_model!(
-    subsurface_model::LateralSSF,
+    subsurface_model::LateralSSFModel,
     parameters::LandParameters,
     kh_profile::KhExponentialConstant,
 )
@@ -921,14 +921,14 @@ function initialize_lateral_ssf_model!(
 end
 
 """
-    initialize_lateral_ssf_model!(subsurface_model::LateralSSF, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
-    initialize_lateral_ssf_model!(subsurface_model::LateralSSF, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
+    initialize_lateral_ssf_model!(subsurface_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
+    initialize_lateral_ssf_model!(subsurface_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using  vertical hydraulic
 conductivity profile `kv_profile`.
 """
 function initialize_lateral_ssf_model!(
-    subsurface_model::LateralSSF,
+    subsurface_model::LateralSSFModel,
     soil_model::SbmSoilModel,
     parameters::LandParameters,
     kv_profile::KvLayered,
@@ -954,7 +954,7 @@ function initialize_lateral_ssf_model!(
 end
 
 function initialize_lateral_ssf_model!(
-    subsurface_model::LateralSSF,
+    subsurface_model::LateralSSFModel,
     soil_model::SbmSoilModel,
     parameters::LandParameters,
     kv_profile::KvLayeredExponential,

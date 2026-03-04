@@ -136,9 +136,9 @@ function BMI.get_var_grid(::Model, name::String)
         1
     elseif occursin("river", name) || occursin("floodplain", name)
         2
-    elseif occursin("land_surface_water__x_component", name) # LocalInertialOverlandFlow
+    elseif occursin("land_surface_water__x_component", name) # LocalInertialOverlandFlowModel
         3
-    elseif occursin("land_surface_water__y_component", name) # LocalInertialOverlandFlow
+    elseif occursin("land_surface_water__y_component", name) # LocalInertialOverlandFlowModel
         4
     else
         5
@@ -401,7 +401,7 @@ Return the grid element type of a model variable (PropertyLens `var`) based on a
 function grid_element_type(
     ::T,
     var::PropertyLens,
-) where {T <: Union{LocalInertialRiverFlow, LocalInertialOverlandFlow}}
+) where {T <: Union{LocalInertialRiverFlowModel, LocalInertialOverlandFlowModel}}
     vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
     element_type = if var in vars
         "edge"

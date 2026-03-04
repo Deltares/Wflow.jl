@@ -1,5 +1,5 @@
 "Struct for storing lateral subsurface flow model variables"
-@with_kw struct LateralSsfVariables
+@with_kw struct LateralSSFVariables
     n::Int
     zi::Vector{Float64}                                    # Pseudo-water table depth [m] (top of the saturated zone)
     exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)  # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
@@ -11,7 +11,7 @@
 end
 
 "Struct for storing lateral subsurface flow model parameters"
-@with_kw struct LateralSsfParameters{Kh}
+@with_kw struct LateralSSFParameters{Kh}
     kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]
     khfrac::Vector{Float64}             # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{Float64}      # Soil thickness [m]
@@ -20,15 +20,15 @@ end
 end
 
 "Struct for storing lateral subsurface flow model boundary conditions"
-@with_kw struct LateralSsfBC
+@with_kw struct LateralSSFBC
     recharge::Vector{Float64} # Net recharge to saturated store [m² d⁻¹]
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSF{Kh} <: AbstractSubsurfaceFlowModel
-    boundary_conditions::LateralSsfBC
-    parameters::LateralSsfParameters{Kh}
-    variables::LateralSsfVariables
+@with_kw struct LateralSSFModel{Kh} <: AbstractSubsurfaceFlowModel
+    boundary_conditions::LateralSSFBC
+    parameters::LateralSSFParameters{Kh}
+    variables::LateralSSFVariables
 end
 
 "Exponential depth profile of horizontal hydraulic conductivity at the soil surface"
@@ -54,7 +54,7 @@ struct KhLayered
 end
 
 "Initialize lateral subsurface flow model parameters"
-function LateralSsfParameters(
+function LateralSSFParameters(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
@@ -91,7 +91,7 @@ function LateralSsfParameters(
     end
     specific_yield_dyn = fill(MISSING_VALUE, length(soilthickness))
     specific_yield = @. lower_bound_drainable_porosity(theta_s, theta_fc)
-    ssf_parameters = LateralSsfParameters(;
+    ssf_parameters = LateralSSFParameters(;
         kh_profile,
         khfrac,
         soilthickness,
@@ -102,19 +102,19 @@ function LateralSsfParameters(
 end
 
 "Initialize lateral subsurface flow model variables"
-function LateralSsfVariables(
-    ssf::LateralSsfParameters,
+function LateralSSFVariables(
+    ssf::LateralSSFParameters,
     zi::Vector{Float64},
     area::Vector{Float64},
 )
     n = length(zi)
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * area
-    variables = LateralSsfVariables(; n, zi, storage)
+    variables = LateralSSFVariables(; n, zi, storage)
     return variables
 end
 
 "Initialize lateral subsurface flow model"
-function LateralSSF(
+function LateralSSFModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainLand,
@@ -122,17 +122,17 @@ function LateralSSF(
 )
     (; indices) = domain.network
     (; area) = domain.parameters
-    parameters = LateralSsfParameters(dataset, config, indices, soil_model.parameters)
+    parameters = LateralSSFParameters(dataset, config, indices, soil_model.parameters)
     zi = 0.001 * soil_model.variables.zi
-    variables = LateralSsfVariables(parameters, zi, area)
-    boundary_conditions = LateralSsfBC(; recharge = fill(MISSING_VALUE, length(zi)))
-    ssf = LateralSSF(; boundary_conditions, parameters, variables)
+    variables = LateralSSFVariables(parameters, zi, area)
+    boundary_conditions = LateralSSFBC(; recharge = fill(MISSING_VALUE, length(zi)))
+    ssf = LateralSSFModel(; boundary_conditions, parameters, variables)
     return ssf
 end
 
 "Update lateral subsurface model for a single timestep"
 function update_subsurface_flow_model!(
-    subsurface_flow_model::LateralSSF,
+    subsurface_flow_model::LateralSSFModel,
     soil_model::SbmSoilModel,
     domain::DomainLand,
     dt::Float64,
@@ -186,13 +186,13 @@ function update_subsurface_flow_model!(
 end
 
 # wrapper methods
-get_water_depth(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.zi
-get_exfiltwater(subsurface_flow_model::LateralSSF) =
+get_water_depth(subsurface_flow_model::LateralSSFModel) = subsurface_flow_model.variables.zi
+get_exfiltwater(subsurface_flow_model::LateralSSFModel) =
     subsurface_flow_model.variables.exfiltwater
 
-get_flux_to_river(subsurface_flow_model::LateralSSF, inds::Vector{Int}) =
+get_flux_to_river(subsurface_flow_model::LateralSSFModel, inds::Vector{Int}) =
     subsurface_flow_model.variables.to_river[inds] ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
 
-get_inflow(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.ssfin
-get_outflow(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.ssf
-get_storage(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.storage
+get_inflow(subsurface_flow_model::LateralSSFModel) = subsurface_flow_model.variables.ssfin
+get_outflow(subsurface_flow_model::LateralSSFModel) = subsurface_flow_model.variables.ssf
+get_storage(subsurface_flow_model::LateralSSFModel) = subsurface_flow_model.variables.storage

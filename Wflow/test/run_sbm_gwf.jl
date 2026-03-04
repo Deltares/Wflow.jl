@@ -97,7 +97,7 @@
         )
         model = Wflow.Model(config)
         @test typeof.(Wflow.get_boundaries(model.routing.subsurface_flow.boundaries)) ==
-              (Wflow.Recharge, Wflow.GwfRiver, Nothing, Nothing)
+              (Wflow.RechargeModel, Wflow.GwfRiverModel, Nothing, Nothing)
     end
 
     Wflow.close_files(model; delete_output = false)

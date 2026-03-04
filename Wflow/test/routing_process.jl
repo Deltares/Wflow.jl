@@ -378,7 +378,7 @@ end
 
     boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
 
-    sw_river = Wflow.LocalInertialRiverFlow(;
+    sw_river = Wflow.LocalInertialRiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,

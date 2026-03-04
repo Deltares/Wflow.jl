@@ -8,7 +8,7 @@ function initialize_subsurface_flow_model(
     ::SbmModel,
 )
     (; parameters) = domain.land
-    subsurface_flow = LateralSSF(dataset, config, domain.land, soil_model)
+    subsurface_flow = LateralSSFModel(dataset, config, domain.land, soil_model)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
@@ -101,7 +101,7 @@ function initialize_subsurface_flow_model(
         soil_model.parameters.theta_fc,
     )
     conductance = zeros(connectivity.nconnection)
-    aquifer = UnconfinedAquifer(
+    aquifer = UnconfinedAquiferModel(
         dataset,
         config,
         indices,
@@ -114,14 +114,14 @@ function initialize_subsurface_flow_model(
     )
 
     # river boundary of unconfined aquifer
-    gwf_river = GwfRiver(dataset, config, river.network.indices, river.network.land_indices)
+    gwf_river = GwfRiverModel(dataset, config, river.network.indices, river.network.land_indices)
 
     # recharge boundary of unconfined aquifer
-    gwf_recharge = Recharge(; n = n_cells)
+    gwf_recharge = RechargeModel(; n = n_cells)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
-        gwf_drain = Drainage(dataset, config, indices, drain.network.land_indices)
+        gwf_drain = DrainageModel(dataset, config, indices, drain.network.land_indices)
         aquifer_boundaries = AquiferBoundaries(;
             recharge = gwf_recharge,
             river = gwf_river,
@@ -135,7 +135,7 @@ function initialize_subsurface_flow_model(
     @info "Numerical stability coefficient for groundwater flow `alpha`: `$cfl`."
     timestepping = TimeStepping(; cfl)
 
-    subsurface_flow = GroundwaterFlow(;
+    subsurface_flow = GroundwaterFlowModel(;
         timestepping,
         aquifer,
         connectivity,
@@ -150,9 +150,9 @@ function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Do
     (; land_routing) = config.model
 
     if land_routing == RoutingType.kinematic_wave
-        overland_flow = KinWaveOverlandFlow(dataset, config, domain.land)
+        overland_flow = KinWaveOverlandFlowModel(dataset, config, domain.land)
     elseif land_routing == RoutingType.local_inertial
-        overland_flow = LocalInertialOverlandFlow(dataset, config, domain)
+        overland_flow = LocalInertialOverlandFlowModel(dataset, config, domain)
     end
     return overland_flow
 end
@@ -166,12 +166,12 @@ function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domai
 
     reservoir =
         config.model.reservoir__flag ?
-        Reservoir(dataset, config, domain.reservoir.network) : nothing
+        ReservoirModel(dataset, config, domain.reservoir.network) : nothing
 
     if river_routing == RoutingType.kinematic_wave
-        river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)
+        river_flow = KinWaveRiverFlowModel(dataset, config, domain.river, reservoir)
     elseif river_routing == RoutingType.local_inertial
-        river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir)
+        river_flow = LocalInertialRiverFlowModel(dataset, config, domain.river, reservoir)
     end
 end
 

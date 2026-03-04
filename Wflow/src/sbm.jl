@@ -58,7 +58,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         min(soil.parameters.soilthickness * 0.99, vegetation_parameters.rootingdepth)
 
     if do_water_demand(config)
-        allocation = AllocationLand(dataset, config, indices)
+        allocation = AllocationLandModel(dataset, config, indices)
         demand = Demand(dataset, config, indices, dt)
     else
         allocation = NoAllocationLand(n)

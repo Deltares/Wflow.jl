@@ -88,7 +88,7 @@ function homogenous_aquifer(nrow, ncol)
         q_out_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
     )
-    conf_aqf = Wflow.ConfinedAquifer(; parameters, variables)
+    conf_aqf = Wflow.ConfinedAquiferModel(; parameters, variables)
 
     parameters = Wflow.UnconfinedAquiferParameters(;
         k = fill(10.0, ncell),
@@ -109,7 +109,7 @@ function homogenous_aquifer(nrow, ncol)
         q_out_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
     )
-    unconf_aqf = Wflow.UnconfinedAquifer(; parameters, variables)
+    unconf_aqf = Wflow.UnconfinedAquiferModel(; parameters, variables)
     return (connectivity, conf_aqf, unconf_aqf)
 end
 

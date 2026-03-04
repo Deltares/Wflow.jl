@@ -64,7 +64,7 @@ end
 
 """
 Struct for storing information about different model domains 'land`, `river`, `reservoir`
-and `drain` (`Drainage` boundary condition of `GroundwaterFlow`). It holds network
+and `drain` (`DrainageModel` boundary condition of `GroundwaterFlowModel`). It holds network
 information for each domain like active indices in the 2D model domain and connectivity
 information for flow routing. The `land` and `river` domains contain shared parameters for
 each domain that can used by different model components.
