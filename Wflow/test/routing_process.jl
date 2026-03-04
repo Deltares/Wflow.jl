@@ -261,7 +261,7 @@ end
 end
 
 @testitem "unit: kinwave_river_update!" begin
-    # Test river kinematic wave with graph 1 -- 2 
+    # Test river kinematic wave with graph 1 -- 2
     # with a reservoir at 1
     using Graphs: DiGraph, add_edge!
     n = 2

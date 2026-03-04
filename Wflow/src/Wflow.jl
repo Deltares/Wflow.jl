@@ -285,7 +285,7 @@ function run(config::Config)
     return model
 end
 
-function run_timestep!(model::Model; update_func = update!, write_model_output = true)
+function run_timestep!(model::Model; update_func = update_model!, write_model_output = true)
     (; mass_balance) = model
     advance!(model.clock)
     load_dynamic_input!(model)
