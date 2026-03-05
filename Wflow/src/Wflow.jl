@@ -2,6 +2,7 @@ module Wflow
 
 import BasicModelInterface as BMI
 
+using Infiltrator: @infiltrate
 using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
