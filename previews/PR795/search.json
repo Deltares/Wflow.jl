@@ -1287,7 +1287,7 @@
     "href": "model_docs/parameters_sediment.html",
     "title": "Land Sediment model",
     "section": "",
-    "text": "Code\ninclude(\"../docs_utils.jl\")\nusing Pkg\nPkg.status()\ngenerate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])\n\n\n\nStatus `~/work/Wflow.jl/Wflow.jl/docs/Project.toml`\n⌃ [13f3f980] CairoMakie v0.13.10\n  [a93c6f00] DataFrames v1.8.1\n⌃ [7073ff75] IJulia v1.34.2\n  [54e234d5] MakieExtra v0.1.69\n  [1862ce21] MarkdownTables v1.1.0\n⌃ [08abe8d2] PrettyTables v3.1.2\n  [d48b7d99] Wflow v1.1.0-dev `Wflow`\nInfo Packages marked with ⌃ have new versions available and may be upgradable.\n\n\n\n\n\n\n\n\n\n\n\n\nStandard name\nDescription\nUnit\n\n\n\n\natmosphere_water__precipitation_volume_flux\nPrecipitation\nmm Δt⁻¹",
+    "text": "Code\ninclude(\"../docs_utils.jl\")\nusing Pkg\nPkg.status()\ngenerate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])\n\n\n\nStatus `~/work/Wflow.jl/Wflow.jl/docs/Project.toml`\n⌃ [13f3f980] CairoMakie v0.13.10\n  [a93c6f00] DataFrames v1.8.1\n⌃ [7073ff75] IJulia v1.34.2\n⌃ [54e234d5] MakieExtra v0.1.69\n  [1862ce21] MarkdownTables v1.1.0\n⌃ [08abe8d2] PrettyTables v3.1.2\n  [d48b7d99] Wflow v1.1.0-dev `Wflow`\nInfo Packages marked with ⌃ have new versions available and may be upgradable.\n\n\n\n\n\n\n\n\n\n\n\n\nStandard name\nDescription\nUnit\n\n\n\n\natmosphere_water__precipitation_volume_flux\nPrecipitation\nmm Δt⁻¹",
     "crumbs": [
       "Model documentation",
       "Model parameters and variables",
@@ -1299,7 +1299,7 @@
     "href": "model_docs/parameters_sediment.html#atmospheric-forcing",
     "title": "Land Sediment model",
     "section": "",
-    "text": "Code\ninclude(\"../docs_utils.jl\")\nusing Pkg\nPkg.status()\ngenerate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])\n\n\n\nStatus `~/work/Wflow.jl/Wflow.jl/docs/Project.toml`\n⌃ [13f3f980] CairoMakie v0.13.10\n  [a93c6f00] DataFrames v1.8.1\n⌃ [7073ff75] IJulia v1.34.2\n  [54e234d5] MakieExtra v0.1.69\n  [1862ce21] MarkdownTables v1.1.0\n⌃ [08abe8d2] PrettyTables v3.1.2\n  [d48b7d99] Wflow v1.1.0-dev `Wflow`\nInfo Packages marked with ⌃ have new versions available and may be upgradable.\n\n\n\n\n\n\n\n\n\n\n\n\nStandard name\nDescription\nUnit\n\n\n\n\natmosphere_water__precipitation_volume_flux\nPrecipitation\nmm Δt⁻¹",
+    "text": "Code\ninclude(\"../docs_utils.jl\")\nusing Pkg\nPkg.status()\ngenerate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])\n\n\n\nStatus `~/work/Wflow.jl/Wflow.jl/docs/Project.toml`\n⌃ [13f3f980] CairoMakie v0.13.10\n  [a93c6f00] DataFrames v1.8.1\n⌃ [7073ff75] IJulia v1.34.2\n⌃ [54e234d5] MakieExtra v0.1.69\n  [1862ce21] MarkdownTables v1.1.0\n⌃ [08abe8d2] PrettyTables v3.1.2\n  [d48b7d99] Wflow v1.1.0-dev `Wflow`\nInfo Packages marked with ⌃ have new versions available and may be upgradable.\n\n\n\n\n\n\n\n\n\n\n\n\nStandard name\nDescription\nUnit\n\n\n\n\natmosphere_water__precipitation_volume_flux\nPrecipitation\nmm Δt⁻¹",
     "crumbs": [
       "Model documentation",
       "Model parameters and variables",
