@@ -111,16 +111,20 @@ function GlacierHbvModel(
 )
     parameters = GlacierHbvParameters(dataset, config, indices, dt)
     variables = GlacierVariables(dataset, config, indices)
-    model = GlacierHbvModel(; boundary_conditions, parameters, variables)
-    return model
+    glacier_model = GlacierHbvModel(; boundary_conditions, parameters, variables)
+    return glacier_model
 end
 
 "Update glacier HBV model for a single timestep"
-function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update_glacier_model!(
+    glacier_model::GlacierHbvModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
     (; temperature) = atmospheric_forcing
-    (; glacier_store, glacier_melt) = model.variables
-    (; snow_storage) = model.boundary_conditions
-    (; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier) = model.parameters
+    (; glacier_store, glacier_melt) = glacier_model.variables
+    (; snow_storage) = glacier_model.boundary_conditions
+    (; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier) =
+        glacier_model.parameters
 
     n = length(temperature)
 
@@ -139,14 +143,19 @@ function update!(model::GlacierHbvModel, atmospheric_forcing::AtmosphericForcing
     return nothing
 end
 
-function update!(model::NoGlacierModel, atmospheric_forcing::AtmosphericForcing)
+function update_glacier_model!(
+    glacier_model::NoGlacierModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
     return nothing
 end
 
 # wrapper methods
-get_glacier_melt(model::NoGlacierModel) = Zeros(model.n)
-get_glacier_melt(model::AbstractGlacierModel) = model.variables.glacier_melt
-get_glacier_fraction(model::NoGlacierModel) = Zeros(model.n)
-get_glacier_fraction(model::AbstractGlacierModel) = model.parameters.glacier_frac
-get_glacier_store(model::NoGlacierModel) = Zeros(model.n)
-get_glacier_store(model::AbstractGlacierModel) = model.variables.glacier_store
+get_glacier_melt(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
+get_glacier_melt(glacier_model::AbstractGlacierModel) = glacier_model.variables.glacier_melt
+get_glacier_fraction(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
+get_glacier_fraction(glacier_model::AbstractGlacierModel) =
+    glacier_model.parameters.glacier_frac
+get_glacier_store(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
+get_glacier_store(glacier_model::AbstractGlacierModel) =
+    glacier_model.variables.glacier_store

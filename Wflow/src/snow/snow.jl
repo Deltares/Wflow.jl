@@ -112,29 +112,33 @@ function SnowHbvModel(
 )
     n = length(indices)
     parameters = SnowHbvParameters(dataset, config, indices, dt)
-    model = SnowHbvModel(; n, parameters)
-    return model
+    snow_model = SnowHbvModel(; n, parameters)
+    return snow_model
 end
 
 "Update boundary condition (effective precipitation provided by an interception model) of a snow model for a single timestep"
-function update_boundary_conditions!(model::AbstractSnowModel, external_models::NamedTuple)
-    (; effective_precip) = model.boundary_conditions
+function update_bc_snow_model!(snow_model::AbstractSnowModel, external_models::NamedTuple)
+    (; effective_precip) = snow_model.boundary_conditions
     (; interception) = external_models
     @. effective_precip =
         interception.variables.throughfall + interception.variables.stemflow
     return nothing
 end
 
-function update_boundary_conditions!(model::NoSnowModel, external_models::NamedTuple)
+function update_bc_snow_model!(snow_model::NoSnowModel, ::NamedTuple)
     return nothing
 end
 
 "Update snow HBV model for a single timestep"
-function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
+function update_snow_model!(
+    snow_model::SnowHbvModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
+    (; boundary_conditions, parameters, variables) = snow_model
+    (; snow_storage, snow_water, swe, snow_melt, runoff) = variables
+    (; effective_precip, snow_precip, liquid_precip) = boundary_conditions
+    (; tt, tti, ttm, cfmax, whc) = parameters
     (; temperature) = atmospheric_forcing
-    (; snow_storage, snow_water, swe, snow_melt, runoff) = model.variables
-    (; effective_precip, snow_precip, liquid_precip) = model.boundary_conditions
-    (; tt, tti, ttm, cfmax, whc) = model.parameters
 
     n = length(temperature)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -156,18 +160,21 @@ function update!(model::SnowHbvModel, atmospheric_forcing::AtmosphericForcing)
     return nothing
 end
 
-function update!(model::NoSnowModel, atmospheric_forcing::AtmosphericForcing)
+function update_snow_model!(
+    snow_model::NoSnowModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
     return nothing
 end
 
 # wrapper methods
-get_runoff(model::NoSnowModel) = Zeros(model.n)
-get_runoff(model::AbstractSnowModel) = model.variables.runoff
-get_snow_storage(model::NoSnowModel) = Zeros(model.n)
-get_snow_storage(model::AbstractSnowModel) = model.variables.snow_storage
-get_snow_water(model::NoSnowModel) = Zeros(model.n)
-get_snow_water(model::AbstractSnowModel) = model.variables.snow_water
-get_snow_out(model::NoSnowModel) = Zeros(model.n)
-get_snow_out(model::AbstractSnowModel) = model.variables.snow_out
-get_snow_in(model::NoSnowModel) = Zeros(model.n)
-get_snow_in(model::AbstractSnowModel) = model.variables.snow_in
+get_runoff(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_runoff(snow_model::AbstractSnowModel) = snow_model.variables.runoff
+get_snow_storage(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_storage(snow_model::AbstractSnowModel) = snow_model.variables.snow_storage
+get_snow_water(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_water(snow_model::AbstractSnowModel) = snow_model.variables.snow_water
+get_snow_out(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_out(snow_model::AbstractSnowModel) = snow_model.variables.snow_out
+get_snow_in(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_in(snow_model::AbstractSnowModel) = snow_model.variables.snow_in

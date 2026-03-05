@@ -45,21 +45,23 @@ function GashInterceptionModel(
     n = length(indices)
     parameters = GashParameters(; e_r, vegetation_parameter_set)
     variables = InterceptionVariables(; n)
-    model = GashInterceptionModel(; parameters, variables)
-    return model
+    interception_model = GashInterceptionModel(; parameters, variables)
+    return interception_model
 end
 
 "Update Gash interception model for a single timestep"
-function update!(model::GashInterceptionModel, atmospheric_forcing::AtmosphericForcing)
-    (; leaf_area_index, canopygapfraction, cmax, kc) =
-        model.parameters.vegetation_parameter_set
-    (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
-        model.variables
+function update_interception_model!(
+    interception_model::GashInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
+    (; parameters, variables) = interception_model
+    (; leaf_area_index, canopygapfraction, cmax, kc) = parameters.vegetation_parameter_set
+    (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) = variables
+    e_r = parameters.e_r
     (; precipitation, potential_evaporation) = atmospheric_forcing
-    e_r = model.parameters.e_r
     n = length(precipitation)
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model.parameters.vegetation_parameter_set)
+        update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
             canopyfraction = 1.0 - canopygapfraction[i]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
@@ -92,18 +94,22 @@ end
 "Initialize Rutter interception model"
 function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
     variables = InterceptionVariables(; n)
-    model = RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
-    return model
+    interception_model =
+        RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
+    return interception_model
 end
 
 "Update Rutter interception model for a single timestep"
-function update!(model::RutterInterceptionModel, atmospheric_forcing::AtmosphericForcing)
-    (; leaf_area_index, canopygapfraction, cmax, kc) = model.parameters
+function update_interception_model!(
+    interception_model::RutterInterceptionModel,
+    atmospheric_forcing::AtmosphericForcing,
+)
+    (; leaf_area_index, canopygapfraction, cmax, kc) = interception_model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
-        model.variables
+        interception_model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
-        update_canopy_parameters!(model.parameters)
+        update_canopy_parameters!(interception_model.parameters)
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -140,5 +146,8 @@ function update_canopy_parameters!(parameters::VegetationParameters)
 end
 
 "Return potential transpiration rate based on the interception rate"
-get_potential_transpiration(model::AbstractInterceptionModel) =
-    @. max(0.0, model.variables.canopy_potevap - model.variables.interception_rate)
+get_potential_transpiration(interception_model::AbstractInterceptionModel) = @. max(
+    0.0,
+    interception_model.variables.canopy_potevap -
+    interception_model.variables.interception_rate,
+)

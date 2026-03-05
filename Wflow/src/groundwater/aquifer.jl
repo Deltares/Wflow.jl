@@ -247,11 +247,11 @@ function saturated_thickness(aquifer::ConfinedAquifer)
 end
 
 """
-    horizontal_conductance(i, j, nzi, aquifer, C)
+    horizontal_conductance(i, j, nzi, aquifer, connectivity)
 
 Compute fully saturated horizontal conductance for a single connection between two cells
-(indexed with `i` and `j`). Geometry characteristics are taken from the
-connectivity struct `C`, using the non-zero index (nzi) of its CSC data
+(indexed with `i` and `j`). Geometry characteristics are taken from
+`connectivity`, using the non-zero index (nzi) of its CSC data
 structure.
 """
 function horizontal_conductance(
@@ -306,7 +306,14 @@ function conductance(
 end
 
 """
-    conductance(aquifer::UnconfinedAquifer, connectivity::Connectivity)
+function conductance(
+    aquifer::UnconfinedAquifer,
+    i,
+    j,
+    nzi,
+    conductivity_profile::GwfConductivityProfileType.T,
+    connectivity::Connectivity,
+)
 
 This computes the conductance for an unconfined aquifer using the "upstream
 saturated fraction" as the MODFLOW documentation calls it. In this approach, the
@@ -587,70 +594,70 @@ function average_flux_vars!(
     return nothing
 end
 
-function update!(
-    gwf::GroundwaterFlow{A},
-    soil::SbmSoilModel,
+function update_subsurface_flow_model!(
+    gwf_model::GroundwaterFlow{A},
+    soil_model::SbmSoilModel,
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T;
 ) where {A <: UnconfinedAquifer}
-    (; cfl) = gwf.timestepping
-    set_flux_vars!(gwf)
+    (; cfl) = gwf_model.timestepping
+    set_flux_vars!(gwf_model)
     t = 0.0
     while t < dt
-        gwf.aquifer.variables.q_net .= 0.0
-        dt_s = stable_timestep(gwf.aquifer, conductivity_profile, cfl)
+        gwf_model.aquifer.variables.q_net .= 0.0
+        dt_s = stable_timestep(gwf_model.aquifer, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
-        update_fluxes!(gwf, conductivity_profile, dt_s)
-        update_head!(gwf, soil, dt_s)
-        update_ustorelayerdepth!(soil, gwf)
+        update_fluxes!(gwf_model, conductivity_profile, dt_s)
+        update_head!(gwf_model, soil_model, dt_s)
+        update_ustorelayerdepth!(soil_model, gwf_model)
         t += dt_s
     end
-    average_flux_vars!(gwf, dt)
+    average_flux_vars!(gwf_model, dt)
     return nothing
 end
 
-function update!(
-    gwf::GroundwaterFlow{A},
+function update_subsurface_flow_model!(
+    gwf_model::GroundwaterFlow{A},
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T;
 ) where {A <: ConfinedAquifer}
-    (; cfl) = gwf.timestepping
+    (; cfl) = gwf_model.timestepping
 
-    set_flux_vars!(gwf)
+    set_flux_vars!(gwf_model)
     t = 0.0
     while t < dt
-        gwf.aquifer.variables.q_net .= 0.0
-        dt_s = stable_timestep(gwf.aquifer, conductivity_profile, cfl)
+        gwf_model.aquifer.variables.q_net .= 0.0
+        dt_s = stable_timestep(gwf_model.aquifer, conductivity_profile, cfl)
         dt_s = check_timestepsize(dt_s, t, dt)
-        update_fluxes!(gwf, conductivity_profile, dt_s)
-        update_head!(gwf, dt_s)
+        update_fluxes!(gwf_model, conductivity_profile, dt_s)
+        update_head!(gwf_model, dt_s)
         t += dt_s
     end
-    average_flux_vars!(gwf, dt)
+    average_flux_vars!(gwf_model, dt)
     return nothing
 end
 
-get_water_depth(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.parameters.top .- gwf.aquifer.variables.head
+get_water_depth(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf_model.aquifer.parameters.top .- gwf_model.aquifer.variables.head
 
-get_exfiltwater(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.exfiltwater
+get_exfiltwater(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf_model.aquifer.variables.exfiltwater
 
 function get_flux_to_river(
-    subsurface_flow::GroundwaterFlow{A},
+    subsurface_flow_model::GroundwaterFlow{A},
     inds::Vector{Int},
 ) where {A <: UnconfinedAquifer}
-    (; river) = subsurface_flow.boundaries
+    (; river) = subsurface_flow_model.boundaries
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end
 
 function sum_boundary_fluxes(
-    gwf::GroundwaterFlow{A};
+    gwf_model::GroundwaterFlow{A};
     exclude = nothing,
 ) where {A <: UnconfinedAquifer}
-    (; boundaries) = gwf
-    n = length(gwf.aquifer.variables.storage)
+    (; boundaries) = gwf_model
+    n = length(gwf_model.aquifer.variables.storage)
     flux_in = zeros(n)
     flux_out = zeros(n)
     for boundary in get_boundaries(boundaries)
@@ -667,9 +674,9 @@ function sum_boundary_fluxes(
     end
     return flux_in, flux_out
 end
-get_inflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.q_in_av
-get_outflow(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.q_out_av
-get_storage(gwf::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
-    gwf.aquifer.variables.storage
+get_inflow(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf_model.aquifer.variables.q_in_av
+get_outflow(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf_model.aquifer.variables.q_out_av
+get_storage(gwf_model::GroundwaterFlow{A}) where {A <: UnconfinedAquifer} =
+    gwf_model.aquifer.variables.storage
