@@ -445,3 +445,87 @@ end
     @test actinfiltsoil == 0.0
     @test actinfiltpath == 0.0
 end
+
+@testitem "unit: correct_infiltration" begin
+    potential_infiltration = 10.0
+    infilt_available_surfacewater = 2.0
+    water_flux_surface = 10.0
+    actual_infiltration = 6.0
+    infiltexcess = 1.0
+
+    infilt_surfacewater,
+    actual_infiltration,
+    infiltexcess,
+    excesswater,
+    water_flux_surface = Wflow.correct_infiltration(
+        potential_infiltration,
+        infilt_available_surfacewater,
+        water_flux_surface,
+        actual_infiltration,
+        infiltexcess,
+    )
+
+    @test infilt_surfacewater ≈ 1.2
+    @test actual_infiltration ≈ 4.8
+    @test infiltexcess ≈ 0.8
+    @test water_flux_surface ≈ 8.0
+    @test excesswater ≈ 2.4
+
+    potential_infiltration = 0.0
+    infilt_available_surfacewater = 1.0
+    water_flux_surface = 3.0
+    actual_infiltration = 0.0
+    infiltexcess = 0.0
+
+    infilt_surfacewater,
+    actual_infiltration,
+    infiltexcess,
+    excesswater,
+    water_flux_surface = Wflow.correct_infiltration(
+        potential_infiltration,
+        infilt_available_surfacewater,
+        water_flux_surface,
+        actual_infiltration,
+        infiltexcess,
+    )
+
+    @test infilt_surfacewater == 0.0
+    @test actual_infiltration == 0.0
+    @test infiltexcess == 0.0
+    @test water_flux_surface ≈ 2.0
+    @test excesswater ≈ 2.0
+end
+
+@testitem "unit: correct_overland_flow_level" begin
+    overlandflow_depth = 0.02
+    infilt_surfacewater = 5.0
+    river_fraction = 0.2
+    surface_flow_width = 10.0
+    alpha = 2.0
+    beta = 0.5
+
+    q, h = Wflow.correct_overland_flow_level(
+        overlandflow_depth,
+        infilt_surfacewater,
+        river_fraction,
+        surface_flow_width,
+        alpha,
+        beta,
+    )
+
+    @test h ≈ 0.01375
+    @test q ≈ 0.0047265625
+
+    infilt_surfacewater = 0.0
+    q, h = Wflow.correct_overland_flow_level(
+        overlandflow_depth,
+        infilt_surfacewater,
+        river_fraction,
+        surface_flow_width,
+        alpha,
+        beta,
+    )
+
+    @test q === nothing
+    @test h == overlandflow_depth
+end
