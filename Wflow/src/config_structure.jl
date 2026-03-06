@@ -70,6 +70,7 @@ end
     snow_gravitational_transport__flag::Bool = false
     glacier__flag::Bool = false
     soil_infiltration_reduction__flag::Bool = false
+    reinfiltration_surfacewater__flag::Bool = false
     soil_layer__thickness::Vector{Int} = [100, 300, 800]
     saturated_hydraulic_conductivity_profile::VerticalConductivityProfile.T =
         VerticalConductivityProfile.exponential
