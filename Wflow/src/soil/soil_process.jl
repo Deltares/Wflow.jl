@@ -159,7 +159,7 @@ function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
 end
 
 """
-    soil_temperature(tsoil, w_soil, temperature))
+    soil_temperature(tsoil_prev, w_soil, temperature))
 
 Return the near surface soil temperature `tsoil` based on the near surface soil temperature
 `tsoil_prev` at the previous timestep, and the difference between air `temperature` and near
