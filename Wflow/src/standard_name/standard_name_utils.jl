@@ -1,9 +1,9 @@
 # wrapper methods for standard name mapping
-standard_name_map(model::T) where {T} = standard_name_map(T)
-standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
-standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
-standard_name_map(::Type{<:Domain}) = domain_standard_name_map
-standard_name_map(::Type{<:Routing}) = routing_standard_name_map
+get_standard_name_map(model::T) where {T} = get_standard_name_map(T)
+get_standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
+get_standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
+get_standard_name_map(::Type{<:Domain}) = domain_standard_name_map
+get_standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
 const PARAMETER_TYPES = Union{Float64, Int, Bool, Nothing}
 
@@ -19,6 +19,7 @@ Metadata associated with parameters and variables.
     from `default` or `fill`
 - `description`: The description of the parameter/variable provided in the Wflow docs
 - `allow_missing`: Whether the parameter/variable is allowed to have missing entries
+- `allow_dynamic_input`: Allow updating this parameter from input via cyclic/forcing
 - `dimname`: The name of the third dimension of the parameter/variable if it exists
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
@@ -36,6 +37,7 @@ Metadata associated with parameters and variables.
     type::Type{T} = nothing
     description::String = ""
     allow_missing::Bool = false
+    allow_dynamic_input::Bool = false
     dimname::N = nothing
     tags::Vector{Symbol} = []
     function ParameterMetadata(
@@ -46,6 +48,7 @@ Metadata associated with parameters and variables.
         type,
         description,
         allow_missing,
+        allow_dynamic_input,
         dimname::N,
         flags,
     ) where {L, D, F, N}
@@ -68,14 +71,24 @@ Metadata associated with parameters and variables.
             type,
             description,
             allow_missing,
+            allow_dynamic_input,
             dimname,
             flags,
         )
     end
 end
 
-get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model); model)
-get_metadata(name::AbstractString, L::Type) = standard_name_map(L)[name]
+function metadata_from_lens_string(
+    lens_string::AbstractString,
+    standard_name_map::OrderedDict{String, ParameterMetadata},
+)::Union{ParameterMetadata, Nothing}
+    for metadata_candidate in values(standard_name_map)
+        if string(metadata_candidate.lens)[7:(end - 1)] == lens_string
+            return metadata_candidate
+        end
+    end
+    return nothing
+end
 
 function get_metadata(
     name::AbstractString,
@@ -84,7 +97,16 @@ function get_metadata(
 )::Union{ParameterMetadata, Nothing}
     metadata = nothing
     for type in types
-        metadata_candidate = get(standard_name_map(type), name, nothing)
+        standard_name_map = get_standard_name_map(type)
+        # First see whether 'name' is a standard name within the standard name map
+        # corresponding to 'type'
+        metadata_candidate = get(standard_name_map, name, nothing)
+        # If not, see whether 'name' is a path in the model object which matches
+        # a lens in the standard name map
+        if isnothing(metadata_candidate)
+            metadata_candidate = metadata_from_lens_string(name, standard_name_map)
+        end
+
         if !isnothing(metadata_candidate)
             # Metadata was found; if a model was provided check whether
             # the lens matches
@@ -119,31 +141,39 @@ function get_metadata(
     kwargs...,
 )::Union{ParameterMetadata, Nothing}
     # Check whether it is a land variable first
-    metadata = get(standard_name_map(land), name, nothing)
+    metadata = get(get_standard_name_map(land), name, nothing)
 
     if isnothing(metadata)
         # Then check other variable types
-        for (name_map, _standard_name_map) in STANDARD_NAME_MAPS
+        for (name_map, standard_name_map) in STANDARD_NAME_MAPS
             (name_map ∈ ("sbm", "sediment")) && continue
-            metadata = get(_standard_name_map, name, nothing)
+            metadata = get(standard_name_map, name, nothing)
             !isnothing(metadata) && break
         end
     end
     return metadata
 end
 
+get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model); model)
+get_metadata(name::AbstractString, L::Type) = get_standard_name_map(L)[name]
+
 # When no model or model type is specified, search all standard name maps
 get_metadata(name::AbstractString; kwargs...) =
     get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...; kwargs...)
 
-function get_field_in_model(model, name::AbstractString)
+function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
     metadata = get_metadata(name; model)
 
     return if !isnothing(metadata)
-        # If metadata was found, `str` is a standard name
+        # If metadata was found, `str` is a standard name or a path in the model object which matches a lens
+        if check_allow_dynamic_input && !metadata.allow_dynamic_input
+            error(
+                "Tried to set '$name' dynamically via cyclic/forcing input, which is not allowed.",
+            )
+        end
         metadata.lens(model)
     else
-        # If no metadata was found `str` is either a path in the model object or invalid
+        # If no metadata was found, `str` is either a path in the model object that doesn't match a lens or is invalid
         try
             param(model, name)
         catch

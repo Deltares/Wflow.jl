@@ -177,7 +177,7 @@ function init_config_section(::Type{InputSection}, dict::AbstractDict{String})
     # Invoke default method
     input = init_config_section_default(InputSection, dict)
 
-    # check if there is overlap in specified parameters
+    # Check whether there is overlap in specified parameters
     overlap = intersect(keys(input.static), keys(input.forcing), keys(input.cyclic))
     if !isempty(overlap)
         argument_error(

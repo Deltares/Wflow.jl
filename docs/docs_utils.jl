@@ -15,7 +15,7 @@ function generate_table(model_types::Vector{<:Type}, filter_tag::Symbol; kwargs.
     data = Tuple{String, Wflow.ParameterMetadata}[]
 
     for model_type in model_types
-        standard_name_map = Wflow.standard_name_map(model_type)
+        standard_name_map = Wflow.get_standard_name_map(model_type)
         for (standard_name, metadata) in standard_name_map
             if filter_tag ∈ metadata.tags
                 push!(data, (standard_name, metadata))
