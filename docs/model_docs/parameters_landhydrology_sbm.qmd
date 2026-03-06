@@ -76,6 +76,11 @@ generate_table(Wflow.LandHydrologySBM, :vegetation_output; relative_widths = [4,
 ```
 ## Soil
 ### Input
+Note that the input parameter water content at field capacity
+(`soil_water__field_capacity_volume_fraction`) is optional. When not provided the water
+content is computed at a pressure head of -100 cm using the Brooks and Corey water retention
+model.
+
 ```{julia}
 # | code-fold: true
 generate_table(Wflow.LandHydrologySBM, :soil_input; relative_widths = [5, 5, 1, 1])

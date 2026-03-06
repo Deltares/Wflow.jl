@@ -1,4 +1,8 @@
 # NOTE: The order of the entries determines the order in the docs tables
+"""
+Mapping of (CSDMS) standard names to the metadata associated with the corresponding
+routing parameter. For more details and default values see `ParameterMetadata`.
+"""
 const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ## Reservoir parameters
     #### Generic input
@@ -22,15 +26,20 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:reservoir_input],
     ),
     "reservoir_water__max_volume" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.maxstorage
+        ),
         unit = Unit(; m = 3),
         description = "Maximum volume (above which water is spilled)",
         tags = [:reservoir_input],
     ),
     "reservoir_water__rating_curve_coefficient" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.b),
         description = "Rating curve coefficient",
         tags = [:reservoir_input],
     ),
     "reservoir_water__rating_curve_exponent" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.e),
         description = "Rating curve exponent",
         tags = [:reservoir_input],
     ),
@@ -87,6 +96,25 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Target minimum full fraction (of max storage)",
         tags = [:reservoir_static_cyclic_forcing_input],
     ),
+    "reservoir_water__outgoing_observed_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_obs
+        ),
+        unit = Unit(; m = 3, s = -1),
+        default = MISSING_VALUE,
+        fill = MISSING_VALUE,
+        description = "Observed outflow reservoir",
+        tags = [:reservoir_static_cyclic_forcing_input],
+    ),
+    "reservoir_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.external_inflow
+        ),
+        unit = Unit(; m = 3, s = -1),
+        default = 0.0,
+        description = "External inflow reservoir (negative for abstractions)",
+        tags = [:reservoir_static_cyclic_forcing_input],
+    ),
     #### States and Output
     "reservoir_water__volume" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.storage),
@@ -100,14 +128,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
         unit = Unit(; m = 1),
         description = "Reservoir water level",
-        tags = [
-            :reservoir_state,
-            :reservoir_output,
-            :kinematic_wave_river_static_cyclic_forcing_input,
-        ],
+        tags = [:reservoir_state, :reservoir_output],
     ),
     "reservoir_water__outgoing_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.outflow),
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_av
+        ),
         unit = Unit(; m = 3, s = -1),
         description = "Outflow of the reservoir",
         tags = [:reservoir_output],
@@ -147,12 +173,14 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ### River flow
     #### Input
     "river__length" => ParameterMetadata(;
+        lens = @optic(_.domain.river.parameters.flow_length),
         unit = Unit(; m = 1),
         fill = 0.0,
         description = "River length",
         tags = [:kinematic_wave_river_flow_input, :local_inertial_river_input],
     ),
     "river__width" => ParameterMetadata(;
+        lens = @optic(_.domain.river.parameters.flow_width),
         unit = Unit(; m = 1),
         fill = 0.0,
         description = "River width",
@@ -184,6 +212,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ],
     ),
     "river__slope" => ParameterMetadata(;
+        lens = @optic(_.domain.river.parameters.slope),
         unit = Unit(; m = 1 // 1),
         description = "River slope",
         tags = [:kinematic_wave_river_flow_input],
@@ -215,7 +244,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "river_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.variables.q_av),
         unit = Unit(; m = 3, s = -1),
-        description = "River (+ floodplain) discharge",
+        description = "River (+ floodplain for local inertial routing) discharge",
         tags = [:kinematic_wave_river_output, :local_inertial_river_output],
     ),
     "river_water__volume" => ParameterMetadata(;
@@ -527,5 +556,50 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         fill = MISSING_VALUE,
         description = "Head of the boundary",
         tags = [:groundwater_constant_head_boundary_input],
+    ),
+    ### Mass balance
+    "river_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.river_water_balance.error),
+        unit = Unit(; m = 3, s = -1),
+        description = "River water mass balance error",
+        tags = [:water_mass_balance_river_flow],
+    ),
+    "river_water_mass_balance_relative_error__number" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.river_water_balance.relative_error),
+        description = "River water mass balance relative error",
+        tags = [:water_mass_balance_river_flow],
+    ),
+    "reservoir_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.reservoir_water_balance.error),
+        unit = Unit(; m = 3, s = -1),
+        description = "Reservoir water mass balance error",
+        tags = [:water_mass_balance_reservoir],
+    ),
+    "reservoir_water_mass_balance_relative_error__number" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.reservoir_water_balance.relative_error),
+        description = "Reservoir water mass balance relative error",
+        tags = [:water_mass_balance_reservoir],
+    ),
+    "subsurface_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.subsurface_water_balance.error),
+        unit = Unit(; m = 3, d = -1),
+        description = "Subsurface water mass balance error",
+        tags = [:water_mass_balance_subsurface_flow],
+    ),
+    "subsurface_water_mass_balance_relative_error__number" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.subsurface_water_balance.relative_error),
+        description = "Subsurface water mass balance relative error",
+        tags = [:water_mass_balance_subsurface_flow],
+    ),
+    "land_surface_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.overland_water_balance.error),
+        unit = Unit(; m = 3, s = -1),
+        description = "Overland flow mass balance error",
+        tags = [:water_mass_balance_overland_flow],
+    ),
+    "land_surface_water_mass_balance_relative_error__number" => ParameterMetadata(;
+        lens = @optic(_.mass_balance.routing.overland_water_balance.relative_error),
+        description = "Overland flow mass balance relative error",
+        tags = [:water_mass_balance_overland_flow],
     ),
 )

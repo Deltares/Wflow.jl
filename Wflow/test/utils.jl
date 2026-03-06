@@ -122,7 +122,7 @@ end
     end
 
     models = Wflow.Model.(configs)
-    for (map_name, standard_name_map) in Wflow.standard_name_maps
+    for (map_name, standard_name_map) in Wflow.STANDARD_NAME_MAPS
         @testset "Test lenses: $map_name" begin
             invalids = String[]
             for (name, data) in standard_name_map
@@ -140,7 +140,17 @@ end
                 end
                 !valid && push!(invalids, name)
             end
-            @test isempty(invalids)
+            expected_invalids = if map_name == "sbm"
+                # The lenses associated with these standard names aren't actually invalid,
+                # these parameters are just not used in any test model
+                Set([
+                    "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
+                    "soil_layer_water__vertical_saturated_hydraulic_conductivity",
+                ])
+            else
+                Set{String}()
+            end
+            @test Set(invalids) == expected_invalids
         end
     end
 
@@ -148,7 +158,7 @@ end
     lenses = vcat(
         [
             getfield.(values(standard_name_map), :lens) for
-            (_, standard_name_map) in Wflow.standard_name_maps
+            (_, standard_name_map) in Wflow.STANDARD_NAME_MAPS
         ]...,
     )
     filter!(!isnothing, lenses)
@@ -158,14 +168,11 @@ end
             push!(duplicates, unique_lens)
         end
     end
-    @test duplicates == Set([
-        @optic(_.land.atmospheric_forcing.precipitation),
-        @optic(_.land.glacier.variables.glacier_store)
-    ])
+    @test isempty(duplicates)
 end
 
 @testitem "Variable tags" begin
-    for (map_name, map) in Wflow.standard_name_maps
+    for (map_name, map) in Wflow.STANDARD_NAME_MAPS
         @testset "Check that each $map_name variable has at least one tag" begin
             vars_without_tags = String[]
             for (name, metadata) in map

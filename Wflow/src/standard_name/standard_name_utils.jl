@@ -74,25 +74,56 @@ Metadata associated with parameters and variables.
     end
 end
 
-get_metadata(name::AbstractString, ::Type{<:Writer}) = ParameterMetadata()
-get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model))
+get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model); model)
 get_metadata(name::AbstractString, L::Type) = standard_name_map(L)[name]
 
-function get_metadata(name::AbstractString, types::Vararg{Type})
+function get_metadata(
+    name::AbstractString,
+    types::Vararg{Type};
+    model = nothing,
+)::Union{ParameterMetadata, Nothing}
+    metadata = nothing
     for type in types
-        metadata = get(standard_name_map(type), name, nothing)
-        !isnothing(metadata) && return metadata
+        metadata_candidate = get(standard_name_map(type), name, nothing)
+        if !isnothing(metadata_candidate)
+            # Metadata was found; if a model was provided check whether
+            # the lens matches
+            if !isnothing(model) && !isnothing(metadata_candidate.lens)
+                found_matching_lens = false
+                try
+                    metadata_candidate.lens(model)
+                    found_matching_lens = true
+                catch
+                end
+                if found_matching_lens
+                    !isnothing(metadata) && error(
+                        "Ambiguity found for obtaining metadata for '$name'; this key is in the standard nampe map for at least 2 of $types with a fitting lens.",
+                    )
+                    metadata = metadata_candidate
+                end
+            else
+                # If model or lens was not provided assume that the metadata matches
+                !isnothing(metadata) && error(
+                    "Ambiguity found for obtaining metadata for '$name'; this key is in the standard name map for at least 2 of $types and there was no model provided to disambiguate.",
+                )
+                metadata = metadata_candidate
+            end
+        end
     end
-    return nothing
+    return metadata
 end
 
-function get_metadata(name::AbstractString, land::AbstractLandModel)
+function get_metadata(
+    name::AbstractString,
+    land::AbstractLandModel;
+    kwargs...,
+)::Union{ParameterMetadata, Nothing}
     # Check whether it is a land variable first
     metadata = get(standard_name_map(land), name, nothing)
 
     if isnothing(metadata)
         # Then check other variable types
-        for (name_map, _standard_name_map) in standard_name_maps
+        for (name_map, _standard_name_map) in STANDARD_NAME_MAPS
             (name_map ∈ ("sbm", "sediment")) && continue
             metadata = get(_standard_name_map, name, nothing)
             !isnothing(metadata) && break
@@ -101,9 +132,22 @@ function get_metadata(name::AbstractString, land::AbstractLandModel)
     return metadata
 end
 
-get_metadata(name::AbstractString) =
-    get_metadata(name, LandHydrologySBM, Routing, SoilLoss, Domain)
+# When no model or model type is specified, search all standard name maps
+get_metadata(name::AbstractString; kwargs...) =
+    get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...; kwargs...)
 
-get_lens(name::AbstractString, model::T) where {T} = get_lens(name, T)
-get_lens(name::AbstractString, model::AbstractLandModel) = get_metadata(name, model).lens
-get_lens(name::AbstractString, ::Type{T}) where {T} = get_metadata(name, T).lens
+function get_field_in_model(model, name::AbstractString)
+    metadata = get_metadata(name; model)
+
+    return if !isnothing(metadata)
+        # If metadata was found, `str` is a standard name
+        metadata.lens(model)
+    else
+        # If no metadata was found `str` is either a path in the model object or invalid
+        try
+            param(model, name)
+        catch
+            error("Couldn't obtain a field from this model specified by '$name'.")
+        end
+    end
+end

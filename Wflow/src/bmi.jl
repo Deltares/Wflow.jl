@@ -108,7 +108,7 @@ function BMI.get_input_var_names(model::Model)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
-            if isnothing(get_metadata(var, land))
+            if isnothing(get_metadata(var, land; model))
                 push!(idx, i)
                 @warn(
                     "$var is not listed as variable for BMI exchange and removed from list"
@@ -152,7 +152,7 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
-    metadata = get_metadata(name, land)
+    metadata = get_metadata(name, land; model)
     return to_string(to_SI(metadata.unit); BMI_standard = true)
 end
 
@@ -166,7 +166,7 @@ function BMI.get_var_nbytes(model::Model, name::String)
 end
 
 function BMI.get_var_location(model::Model, name::String)
-    (; lens) = get_metadata(name)
+    (; lens) = get_metadata(name; model)
     element_type = grid_element_type(model, lens)
     return element_type
 end
@@ -208,14 +208,14 @@ function BMI.get_value_ptr(model::Model, name::String)
 
     if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         name_2d, ind = soil_layer_standard_name(name)
-        (; lens) = get_metadata(name_2d)
+        (; lens) = get_metadata(name_2d; model)
         model_vals = lens(model)
         el_type = eltype(first(model_vals))
         dim = length(first(model_vals))
         value = reshape(reinterpret(el_type, model_vals), dim, :)
         return @view value[ind, 1:n]
     else
-        (; lens) = get_metadata(name)
+        (; lens) = get_metadata(name; model)
         return @view(lens(model)[1:n])
     end
 end

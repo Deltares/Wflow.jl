@@ -123,19 +123,6 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
 # Predefined units used within the code
 const EMPTY_UNIT = Unit()
 const ABSOLUTE_DEGREES = Unit(; degC = 1, absolute_temperature = true)
-const MM_PER_MIN = Unit(; mm = 1, min = -1)
-const MM_PER_DAY = Unit(; mm = 1, d = -1)
-const MM_PER_HOUR = Unit(; mm = 1, h = -1)
-const HOUR = Unit(; h = 1)
-const MM = Unit(; mm = 1)
-const KG_PER_MIN = Unit(; kg = 1, min = -1)
-const M3_PER_MIN = Unit(; m = 3, min = -1)
-const TON_PER_DT = Unit(; t = 1, dt = -1)
-const GRAM_PER_L = Unit(; g = 1, L = 1)
-const CM_PER_S = Unit(; cm = 1, s = -1)
-const TON_PER_M3 = Unit(; t = 1, m = -3)
-const PPM = Unit(; ppm = 1)
-const M3_PER_DAY = Unit(; m = 3, d = -1)
 
 function Base.:*(u1::Unit, u2::Unit)
     absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature
@@ -282,7 +269,7 @@ end
 to_SI(x, unit::Unit; kwargs...) = x
 
 """
-Convert an array of values to the values in the corresponding SI unit in-place
+In-place conversion of an array of values to the corresponding SI unit
 """
 function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
@@ -291,7 +278,7 @@ function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = n
 end
 
 """
-Convert the given value of the SI equivalent of the given unit to the value in the given unit
+Convert a value in SI unit to the given unit
 """
 function from_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     return if unit == ABSOLUTE_DEGREES
@@ -306,38 +293,9 @@ end
 from_SI(x, unit::Unit; kwargs...) = x
 
 """
-Convert the given values of the SI equivalent of the given unit to the values in the given unit in-place
+In-place conversion of values in SI unit to the given unit
 """
-function from_SI!(
-    x::Union{AbstractArray},
-    unit::Unit;
-    dt_val::Union{Nothing, Number} = nothing,
-)
+function from_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
     @. x = from_SI(x, unit_ref; dt_val)
-end
-
-"""
-Get the unit by checking all `*_standard_name_map` dictionaries
-and make sure that there is no ambiguity.
-"""
-function get_unit(variable_name::AbstractString)::Unit
-    unit = nothing
-
-    for standard_name_map in (
-        sbm_standard_name_map,
-        sediment_standard_name_map,
-        domain_standard_name_map,
-        routing_standard_name_map,
-    )
-        nt = get(standard_name_map, variable_name, nothing)
-        if !isnothing(nt)
-            if isnothing(unit)
-                unit = nt.unit
-            else
-                @assert nt.unit == unit "Unit ambiguity found for variable name `$variable_name`: $unit, $(nt.unit)."
-            end
-        end
-    end
-    return isnothing(unit) ? Unit() : unit
 end
