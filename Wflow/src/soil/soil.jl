@@ -1393,7 +1393,7 @@ function update_soil_water_storage!(
     @. v.net_runoff = v.runoff - ae_openw_l
 
     # correct overland flow water levels in case of reinfiltration
-    correct_overland_flow_level!(model, overland_flow, domain, config)
+    correct_overland_flow_level!(soil_model, overland_flow, domain, config)
 
     return nothing
 end
