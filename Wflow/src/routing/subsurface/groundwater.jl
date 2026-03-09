@@ -589,46 +589,47 @@ function average_flux_vars!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
     return nothing
 end
 
-function update!(
-    gwf::GroundwaterFlow,
-    soil::SbmSoilModel,
+function update_subsurface_flow_model!(
+    gwf_model::GroundwaterFlow,
+    soil_model::SbmSoilModel,
     domain::Domain,
     dt::Float64,
     conductivity_profile::GwfConductivityProfileType.T,
 )
-    (; alpha_coefficient) = gwf.timestepping
+    (; alpha_coefficient) = gwf_model.timestepping
 
-    set_flux_vars!(gwf)
+    set_flux_vars!(gwf_model)
     t = 0.0
     while t < dt
-        gwf.variables.q_net .= 0.0
-        gwf.variables.q_net_bnds .= 0.0
-        dt_s = stable_timestep(gwf, conductivity_profile, alpha_coefficient)
+        gwf_model.variables.q_net .= 0.0
+        gwf_model.variables.q_net_bnds .= 0.0
+        dt_s = stable_timestep(gwf_model, conductivity_profile, alpha_coefficient)
         dt_s = check_timestepsize(dt_s, t, dt)
-        update_fluxes!(gwf, domain, conductivity_profile, dt_s)
-        update_head!(gwf, soil, dt_s)
-        update_ustorelayerdepth!(soil, gwf)
+        update_fluxes!(gwf_model, domain, conductivity_profile, dt_s)
+        update_head!(gwf_model, soil_model, dt_s)
+        update_ustorelayerdepth!(soil_model, gwf_model)
         t += dt_s
     end
-    average_flux_vars!(gwf, dt)
+    average_flux_vars!(gwf_model, dt)
     return nothing
 end
 
-get_water_depth(gwf::GroundwaterFlow) = gwf.parameters.top .- gwf.variables.head
+get_water_depth(gwf_model::GroundwaterFlow) =
+    gwf_model.parameters.top .- gwf_model.variables.head
 
-function get_flux_to_river(subsurface_flow::GroundwaterFlow, inds::Vector{Int})
-    (; river) = subsurface_flow.boundary_conditions
+function get_flux_to_river(subsurface_flow_model::GroundwaterFlow, inds::Vector{Int})
+    (; river) = subsurface_flow_model.boundary_conditions
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux
 end
 
 function sum_boundary_fluxes(
-    gwf::AbstractSubsurfaceFlowModel,
+    gwf_model::AbstractSubsurfaceFlowModel,
     domain::Domain;
     exclude = nothing,
 )
-    (; boundary_conditions) = gwf
-    n = length(gwf.variables.storage)
+    (; boundary_conditions) = gwf_model
+    n = length(gwf_model.variables.storage)
     flux_in = zeros(n)
     flux_out = zeros(n)
     for bc in get_boundaries(boundary_conditions)

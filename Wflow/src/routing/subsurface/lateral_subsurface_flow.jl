@@ -147,17 +147,21 @@ function LateralSSF(dataset::NCDataset, config::Config, domain::Domain, soil::Sb
     return ssf
 end
 
-function update_fluxes!(model::LateralSSF, domain::Domain, dt::Float64)
-    for bc in get_boundaries(model.boundary_conditions)
+function update_fluxes!(subsurface_flow_model::LateralSSF, domain::Domain, dt::Float64)
+    for bc in get_boundaries(subsurface_flow_model.boundary_conditions)
         indices = get_boundary_index(bc, domain)
-        flux!(bc, model, indices, dt)
+        flux!(bc, subsurface_flow_model, indices, dt)
     end
     return nothing
 end
 
-function flux_to_river!(model::LateralSSF, domain::NetworkRiver, dt::Float64)
-    (; to_river) = model.variables
-    (; river) = model.boundary_conditions
+function flux_to_river!(
+    subsurface_flow_model::LateralSSF,
+    domain::NetworkRiver,
+    dt::Float64,
+)
+    (; to_river) = subsurface_flow_model.variables
+    (; river) = subsurface_flow_model.boundary_conditions
     if isnothing(river)
         to_river ./= dt
     else
@@ -168,8 +172,8 @@ function flux_to_river!(model::LateralSSF, domain::NetworkRiver, dt::Float64)
 end
 
 function kinwave_subsurface_update!(
-    model::LateralSSF,
-    soil::SbmSoilModel,
+    subsurface_flow_model::LateralSSF,
+    soil_model::SbmSoilModel,
     domain::Domain,
     dt::Float64,
 )
@@ -191,9 +195,9 @@ function kinwave_subsurface_update!(
         storage,
         q_net_bnds,
         q_net_av,
-    ) = model.variables
-    (; specific_yield, top, soilthickness, kh_profile) = model.parameters
-    (; river) = model.boundary_conditions
+    ) = subsurface_flow_model.variables
+    (; specific_yield, top, soilthickness, kh_profile) = subsurface_flow_model.parameters
+    (; river) = subsurface_flow_model.boundary_conditions
 
     ns = length(order_of_subdomains)
     for k in 1:ns
@@ -229,7 +233,7 @@ function kinwave_subsurface_update!(
                     flow_width[v],
                     q_max[v],
                     kh_profile,
-                    soil,
+                    soil_model,
                     v,
                 )
                 q_in_av[v] += q_in[v] * dt
@@ -247,23 +251,30 @@ end
 Update lateral subsurface model for a single timestep `dt`. Timestepping within `dt` is
 either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::LateralSSF, soil::SbmSoilModel, domain::Domain, dt::Float64)
-    (; to_river) = model.variables
-    (; adaptive) = model.timestepping
+function update_subsurface_flow_model!(
+    subsurface_flow_model::LateralSSF,
+    soil_model::SbmSoilModel,
+    domain::Domain,
+    dt::Float64,
+)
+    (; to_river) = subsurface_flow_model.variables
+    (; adaptive) = subsurface_flow_model.timestepping
 
     to_river .= 0.0
-    set_flux_vars!(model)
+    set_flux_vars!(subsurface_flow_model)
     t = 0.0
     while t < dt
-        model.variables.q_net_bnds .= 0.0
-        dt_s = adaptive ? stable_timestep(model, domain.land) : model.timestepping.dt_fixed
+        subsurface_flow_model.variables.q_net_bnds .= 0.0
+        dt_s =
+            adaptive ? stable_timestep(subsurface_flow_model, domain.land) :
+            subsurface_flow_model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        update_fluxes!(model, domain, dt_s)
-        kinwave_subsurface_update!(model, soil, domain, dt_s)
+        update_fluxes!(subsurface_flow_model, domain, dt_s)
+        kinwave_subsurface_update!(subsurface_flow_model, soil_model, domain, dt_s)
         t += dt_s
     end
-    average_flux_vars!(model, dt)
-    flux_to_river!(model, domain.river.network, dt)
+    average_flux_vars!(subsurface_flow_model, dt)
+    flux_to_river!(subsurface_flow_model, domain.river.network, dt)
     return nothing
 end
 
@@ -275,11 +286,11 @@ A stable time step is computed for each vector element based on the Courant time
 criterion. Li et al. (1975) found that the nonlinear scheme is unconditonally stable and
 that a wide range of dt/dx values can be used without loss of accuracy.
 """
-function stable_timestep(model::LateralSSF, domain::DomainLand)
-    (; zi) = model.variables
-    (; specific_yield, kh_profile) = model.parameters
+function stable_timestep(subsurface_flow_model::LateralSSF, domain::DomainLand)
+    (; zi) = subsurface_flow_model.variables
+    (; specific_yield, kh_profile) = subsurface_flow_model.parameters
     (; flow_length, slope) = domain.parameters
-    (; stable_timesteps, alpha_coefficient) = model.timestepping
+    (; stable_timesteps, alpha_coefficient) = subsurface_flow_model.timestepping
 
     n = length(zi)
     stable_timesteps .= Inf
@@ -303,11 +314,11 @@ function stable_timestep(model::LateralSSF, domain::DomainLand)
     return dt_min
 end
 
-function get_flux_to_river(model::LateralSSF, inds::Vector{Int})
+function get_flux_to_river(subsurface_flow_model::LateralSSF, inds::Vector{Int})
     dt = tosecond(BASETIMESTEP) # conversion to [m³ s⁻¹]
-    flux = model.variables.to_river[inds] ./ dt
+    flux = subsurface_flow_model.variables.to_river[inds] ./ dt
     return flux
 end
 
 # wrapper method
-get_water_depth(model::LateralSSF) = model.variables.zi
+get_water_depth(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.zi
