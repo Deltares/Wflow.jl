@@ -23,14 +23,14 @@ end
 end
 
 "Struct to store prescribed water demand variables"
-@with_kw struct PrescibedDemand
+@with_kw struct PrescribedDemand
     demand_gross::Vector{Float64}     # gross water demand [mm Δt⁻¹]
     demand_net::Vector{Float64}       # net water demand [mm Δt⁻¹]
 end
 
 "Non-irrigation water demand model"
 @with_kw struct NonIrrigationDemand <: AbstractDemandModel
-    demand::PrescibedDemand
+    demand::PrescribedDemand
     variables::NonIrrigationDemandVariables
 end
 
@@ -67,7 +67,7 @@ function NonIrrigationDemand(
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
-    demand = PrescibedDemand(; demand_gross, demand_net)
+    demand = PrescribedDemand(; demand_gross, demand_net)
     vars = NonIrrigationDemandVariables(;
         returnflow_fraction = returnflow_f,
         returnflow = fill(Float64(0), n),

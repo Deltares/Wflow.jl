@@ -135,7 +135,7 @@ as a model output variable.
 #### Input
 | Standard Name | Description | Unit | Default |
 | ------ | ---- | -- | -- |
-| `subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio` | A muliplication factor applied to vertical hydraulic conductivity | - | - |
+| `subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio` | A multiplication factor applied to vertical hydraulic conductivity | - | - |
 | `land_surface__slope` | Land surface slope | m m⁻¹ | - |
 | `land_surface__elevation` | Land surface elevation | m |
 : {.striped .hover}

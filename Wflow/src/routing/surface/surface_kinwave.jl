@@ -517,7 +517,7 @@ model using a nonlinear scheme (Chow et al., 1988).
 A stable time step is computed for each vector element based on the Courant timestep size
 criterion. A quantile of the vector is computed based on probability `p` to remove potential
 very small timestep sizes. Li et al. (1975) found that the nonlinear scheme is
-unconditonally stable and that a wide range of dt/dx values can be used without loss of
+unconditionally stable and that a wide range of dt/dx values can be used without loss of
 accuracy.
 """
 function stable_timestep(
