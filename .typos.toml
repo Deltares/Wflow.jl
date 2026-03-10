@@ -10,3 +10,4 @@ extend-exclude = [
 # Ignore false-positives
 iy = "iy"
 puls = "puls"
+theis = "theis"
