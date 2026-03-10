@@ -484,7 +484,7 @@ end
 end
 
 "Initialize water demand model"
-function Demand(
+function DemandModel(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
