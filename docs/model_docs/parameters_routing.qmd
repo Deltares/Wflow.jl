@@ -143,7 +143,7 @@ as a model output variable.
 #### States
 | Standard Name | Description | Unit |
 | --- | --- | - |
-| `subsurface_water__instanteneous_volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
+| `subsurface_water__instantaneous_volume_flow_rate` | Subsurface flow | m³ day⁻¹ |
 : {.striped .hover}
 
 #### Output
