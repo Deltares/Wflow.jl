@@ -107,9 +107,9 @@ start a Julia session.
 ## Installing the compiled executable
 
 Binaries of `wflow_cli` can be downloaded from our website
-[download.deltares.nl](https://download.deltares.nl/en/download/wflow/), and are currently
-available for Windows. Download and install the `.msi` file. After installation, you will see
-two folders in the installation directory. Only the `bin/wflow_cli` is used. The `artifacts`
+[download.deltares.nl](https://download.deltares.nl/en/wflow/), and are currently available
+for Windows. Download and install the `.msi` file. After installation, you will see two
+folders in the installation directory. Only the `bin/wflow_cli` is used. The `artifacts`
 folder contains binary dependencies such as netCDF.
 
 ```bash
