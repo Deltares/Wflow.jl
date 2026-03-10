@@ -128,7 +128,7 @@ static parameter standard names to the external netCDF variable names. In `input
 it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In
 the example below, the model parameter standard name `vegetation__leaf_area_index` is mapped
 to the external netCDF variable "LAI". Cyclic time inputs of parameters can be different
-(e.g., daily or monthly). The `time` dimension name of these cylic input parameters in the
+(e.g., daily or monthly). The `time` dimension name of these cyclic input parameters in the
 model parameter netCDF file should start with "time". If a model parameter is not mapped,
 a default value will be used, if available.
 
@@ -151,7 +151,7 @@ reservoir_area__count = "wflow_reservoirareas"
 reservoir_location__count = "wflow_reservoirlocs"
 subbasin_location__count = "wflow_subcatch"
 
-# Ouput locations: these are not directly part of the model
+# Output locations: these are not directly part of the model
 river_gauge__count = "wflow_gauges_grdc"
 
 # Map forcing parameter standard names that vary over time to variable names in the forcing netCDF file
@@ -343,7 +343,7 @@ part of a list. You can specify as many entries as you want.
 [input]
 # Modelling domains
 subbasin_location__count = "wflow_subcatch"
-# Ouput locations: these are not directly part of the model
+# Output locations: these are not directly part of the model
 river_gauge__count = "wflow_gauges_grdc"
 
 [output.csv]

@@ -15,12 +15,12 @@ time step `storage_prev` required for mass balance computation.
 end
 
 function MassBalance(::LateralSSFModel, n::Int)
-    mass_balance = MassBalance(; n, storage_prev = [], zi_prev = zeros(n))
+    mass_balance = MassBalance(; n, storage_prev=[], zi_prev=zeros(n))
     return mass_balance
 end
 
-function MassBalance(::GroundwaterFlowModel{A}, n::Int) where {A <: UnconfinedAquiferModel}
-    mass_balance = MassBalance(; n, storage_prev = [], head_prev = zeros(n))
+function MassBalance(::GroundwaterFlowModel{A}, n::Int) where {A<:UnconfinedAquiferModel}
+    mass_balance = MassBalance(; n, storage_prev=[], head_prev=zeros(n))
     return mass_balance
 end
 
@@ -29,8 +29,8 @@ Water mass balance error results (balance error and relative error) for river, o
 subsurface and reservoir flow routing.
 """
 @with_kw struct FlowRoutingMassBalance{
-    R <: AbstractMassBalance,
-    RT <: AbstractMassBalance,
+    R<:AbstractMassBalance,
+    RT<:AbstractMassBalance,
 } <: AbstractMassBalance
     river_water_balance::R
     reservoir_water_balance::RT
@@ -61,7 +61,7 @@ function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config
         n_river = length(domain.river.network.indices)
         if config.model.reservoir__flag
             n_reservoir = length(domain.reservoir.network.indices_outlet)
-            reservoir_water_balance = MassBalance(; n = n_reservoir)
+            reservoir_water_balance = MassBalance(; n=n_reservoir)
         else
             reservoir_water_balance = NoMassBalance()
         end
@@ -69,16 +69,16 @@ function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config
            river_routing == RoutingType.local_inertial
             river_water_balance = NoMassBalance()
         else
-            river_water_balance = MassBalance(; n = n_river)
+            river_water_balance = MassBalance(; n=n_river)
         end
         routing = FlowRoutingMassBalance(;
             river_water_balance,
             reservoir_water_balance,
-            overland_water_balance = MassBalance(; n = n_land),
-            subsurface_water_balance = MassBalance(subsurface_flow, n_land),
+            overland_water_balance=MassBalance(; n=n_land),
+            subsurface_water_balance=MassBalance(subsurface_flow, n_land),
         )
         mass_balance = HydrologicalMassBalance(;
-            land_water_balance = MassBalance(; n = n_land),
+            land_water_balance=MassBalance(; n=n_land),
             routing,
         )
     else
@@ -179,7 +179,7 @@ end
 function watertable_prev!(
     subsurface_flow::GroundwaterFlowModel{A},
     water_balance::MassBalance,
-) where {A <: UnconfinedAquiferModel}
+) where {A<:UnconfinedAquiferModel}
     water_balance.head_prev .= subsurface_flow.aquifer.variables.head
 end
 
@@ -277,7 +277,7 @@ function compute_land_hydrology_balance!(model::AbstractModel{<:SbmGwfModel})
     # exclude recharge from computing total incoming and outgoing boundary fluxes for
     # groundwaterflow, other boundaries are required for the total soil water balance.
     boundaries_flow_in, boundaries_flow_out =
-        sum_boundary_fluxes(subsurface_flow; exclude = RechargeModel)
+        sum_boundary_fluxes(subsurface_flow; exclude=RechargeModel)
 
     for i in eachindex(storage_prev)
         f_conv = (model.clock.dt / BASETIMESTEP) / (area[i] * 0.001)
@@ -522,7 +522,7 @@ function compute_flow_balance!(
     water_balance::MassBalance,
     parameters::LandParameters,
     dt::Float64,
-) where {A <: UnconfinedAquiferModel}
+) where {A<:UnconfinedAquiferModel}
     (; head_prev, error, relative_error) = water_balance
     (; head, q_in_av, q_out_av, exfiltwater) = subsurface_flow_model.aquifer.variables
     (; area, specific_yield_dyn) = subsurface_flow_model.aquifer.parameters
@@ -540,7 +540,7 @@ function compute_flow_balance!(
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
-    index_const_head = subsurface_flow.constanthead.index
+    index_const_head = subsurface_flow_model.constanthead.index
     error[index_const_head] .= 0.0
     relative_error[index_const_head] .= 0.0
     return nothing
@@ -580,7 +580,7 @@ routing.
 """
 function compute_flow_routing_balance!(
     model::Model{R},
-) where {R <: Routing{<:LocalInertialOverlandFlowModel, <:LocalInertialRiverFlowModel}}
+) where {R<:Routing{<:LocalInertialOverlandFlowModel,<:LocalInertialRiverFlowModel}}
     (; river_flow, overland_flow, subsurface_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =

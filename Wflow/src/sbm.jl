@@ -2,7 +2,7 @@ abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+@with_kw struct LandHydrologySBM{D<:AbstractDemandModel,A<:AbstractAllocationModel} <:
                 AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
@@ -40,7 +40,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         snow = NoSnowModel(n)
     end
     if do_snow && do_glacier
-        glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
+        glacier_bc = SnowStateBC(; snow_storage=snow.variables.snow_storage)
         glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif !do_snow && do_glacier
         @warn string(
@@ -62,7 +62,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         demand = Demand(dataset, config, indices, dt)
     else
         allocation = NoAllocationLandModel(n)
-        demand = NoDemand(; n)
+        demand = NoDemandModel(; n)
     end
 
     land_hydrology_model = LandHydrologySBM(;
@@ -170,7 +170,7 @@ function update_total_water_storage!(
 
     # Chunk the data for parallel computing
     n = length(ustoredepth)
-    threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize=1000) do i
         sub_surface = ustoredepth[i] + satwaterdepth[i]
         lateral = (
             overland_flow.variables.h[i] * (1 - river_fraction[i]) * 1000 # convert to mm

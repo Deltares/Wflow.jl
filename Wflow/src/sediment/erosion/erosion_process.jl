@@ -45,7 +45,7 @@ function rainfall_erosion_eurosem(
     rintnsty = precip / (dt / 3600)
     # Kinetic energy of direct throughfall [J/m2/mm]
     # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
-    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
+    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed models
     # Kinetic energy of leaf drainage [J/m2/mm]
     pheff = 0.5 * canopyheight
     keleaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
@@ -146,7 +146,7 @@ function overland_flow_erosion_answers(
     sinslope = sin_slope(slope)
 
     # Overland flow erosion [kg/min]
-    # For a wide range of slope, it is better to use the sine of slope rather than tangeant
+    # For a wide range of slope, it is better to use the sine of slope rather than tangent
     erosion = answers_overland_flow_factor * usle_c * usle_k * area * sinslope * qr_land
     # [ton/timestep]
     erosion = erosion * (dt / 60) * 1e-3
