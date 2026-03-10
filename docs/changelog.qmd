@@ -238,7 +238,7 @@ resulting in higher peak flow, lower baseflow and higher actual evapotranspirati
  - Fixed internal and external broken links in docs.
  - The internal time step of the local inertial model (`stable_timestep` function) can get
   zero when `LoopVectorization` is applied (`@tturbo`) to the for loop of these functions.
-  This issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
+  This issue occurred on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
   6144 CPU (2 processors). This has been fixed by replacing `@tturbo` with `reduction` of
   `Polyester.jl`.
 - Fixed required states of the model type `sbm_gwf`: added `h_av` for the river and land
