@@ -384,7 +384,7 @@ end
         parameters,
         variables,
         floodplain = nothing,
-        allocation = Wflow.NoAllocationRiver(n),
+        allocation = Wflow.NoAllocationRiverModel(n),
     )
 
     # run until steady state is reached

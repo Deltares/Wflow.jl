@@ -1,18 +1,18 @@
 abstract type AbstractIrrigationModel end
 
-struct NoIrrigationPaddy <: AbstractIrrigationModel
+struct NoIrrigationPaddyModel <: AbstractIrrigationModel
     n::Int
 end
-struct NoIrrigationNonPaddy <: AbstractIrrigationModel
+struct NoIrrigationNonPaddyModel <: AbstractIrrigationModel
     n::Int
 end
-struct NoNonIrrigationDemand <: AbstractDemandModel
+struct NoNonIrrigationDemandModel <: AbstractDemandModel
     n::Int
 end
-struct NoAllocationLand <: AbstractAllocationModel
+struct NoAllocationLandModel <: AbstractAllocationModel
     n::Int
 end
-struct NoAllocationRiver <: AbstractAllocationModel
+struct NoAllocationRiverModel <: AbstractAllocationModel
     n::Int
 end
 
@@ -29,14 +29,14 @@ end
 end
 
 "Non-irrigation water demand model"
-@with_kw struct NonIrrigationDemand <: AbstractDemandModel
+@with_kw struct NonIrrigationDemandModel <: AbstractDemandModel
     demand::PrescibedDemand
     variables::NonIrrigationDemandVariables
 end
 
 # wrapper methods
-get_demand_gross(demand_model::NonIrrigationDemand) = demand_model.demand.demand_gross
-get_demand_gross(demand_model::NoNonIrrigationDemand) = Zeros(demand_model.n)
+get_demand_gross(demand_model::NonIrrigationDemandModel) = demand_model.demand.demand_gross
+get_demand_gross(demand_model::NoNonIrrigationDemandModel) = Zeros(demand_model.n)
 
 "Initialize non-irrigation water demand model for a water use `sector`"
 function NonIrrigationDemand(
@@ -154,7 +154,7 @@ end
 
 # wrapper methods
 get_demand_gross(nonpaddy_model::NonPaddyModel) = nonpaddy_model.variables.demand_gross
-get_demand_gross(irrigation_model::NoIrrigationNonPaddy) = Zeros(irrigation_model.n)
+get_demand_gross(irrigation_model::NoIrrigationNonPaddyModel) = Zeros(irrigation_model.n)
 
 """
     update_demand_gross!(nonpaddy_model::NonPaddyModel, soil_model::SbmSoilModel)
@@ -200,7 +200,7 @@ function update_demand_gross!(nonpaddy_model::NonPaddyModel, soil_model::SbmSoil
     return nothing
 end
 
-update_demand_gross!(nonpaddy_model::NoIrrigationNonPaddy, soil_model::SbmSoilModel) =
+update_demand_gross!(nonpaddy_model::NoIrrigationNonPaddyModel, soil_model::SbmSoilModel) =
     nothing
 
 "Compute water demand only for root zone through root fraction per layer"
@@ -350,9 +350,9 @@ end
 
 # wrapper methods
 get_water_depth(paddy_model::PaddyModel) = paddy_model.variables.h
-get_water_depth(paddy_model::NoIrrigationPaddy) = Zeros(paddy_model.n)
+get_water_depth(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n)
 get_demand_gross(paddy_model::PaddyModel) = paddy_model.variables.demand_gross
-get_demand_gross(paddy_model::NoIrrigationPaddy) = Zeros(paddy_model.n)
+get_demand_gross(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n)
 
 """
     evaporation!(paddy_model::PaddyModel, potential_evaporation)
@@ -370,10 +370,10 @@ function evaporation!(paddy_model::PaddyModel, potential_evaporation)
     end
     return nothing
 end
-evaporation!(::NoIrrigationPaddy, ::Any) = nothing
+evaporation!(::NoIrrigationPaddyModel, ::Any) = nothing
 
 # wrapper methods
-get_evaporation(paddy_model::NoIrrigationPaddy) = Zeros(paddy_model.n)
+get_evaporation(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n)
 get_evaporation(paddy_model::PaddyModel) = paddy_model.variables.evaporation
 
 """
@@ -392,7 +392,7 @@ function update_runoff!(paddy_model::PaddyModel, runoff)
     end
     return nothing
 end
-update_runoff!(::NoIrrigationPaddy, ::Any) = nothing
+update_runoff!(::NoIrrigationPaddyModel, ::Any) = nothing
 
 """
     update_demand_gross!(paddy_model::PaddyModel)
@@ -446,7 +446,7 @@ function compute_irrigation_depth(paddy_model::PaddyModel, i::Int)
     return irr_depth_paddy
 end
 
-update_demand_gross!(::NoIrrigationPaddy) = nothing
+update_demand_gross!(::NoIrrigationPaddyModel) = nothing
 
 "Struct to store water demand model variables"
 @with_kw struct DemandVariables
@@ -459,7 +459,7 @@ update_demand_gross!(::NoIrrigationPaddy) = nothing
 end
 
 "Water demand model"
-@with_kw struct Demand{
+@with_kw struct DemandModel{
     D <: AbstractDemandModel,
     I <: AbstractDemandModel,
     L <: AbstractDemandModel,
@@ -474,13 +474,13 @@ end
     variables::DemandVariables
 end
 
-@with_kw struct NoDemand <: AbstractDemandModel
+@with_kw struct NoDemandModel <: AbstractDemandModel
     n::Int
-    domestic::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
-    industry::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
-    livestock::NoNonIrrigationDemand = NoNonIrrigationDemand(n)
-    paddy::NoIrrigationPaddy = NoIrrigationPaddy(n)
-    nonpaddy::NoIrrigationNonPaddy = NoIrrigationNonPaddy(n)
+    domestic::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
+    industry::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
+    livestock::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
+    paddy::NoIrrigationPaddyModel = NoIrrigationPaddyModel(n)
+    nonpaddy::NoIrrigationNonPaddyModel = NoIrrigationNonPaddyModel(n)
 end
 
 "Initialize water demand model"
@@ -491,7 +491,7 @@ function Demand(
     dt::Second,
 )
     n = length(indices)
-    demand(name; constr = NonIrrigationDemand, constr_triv = NoNonIrrigationDemand) =
+    demand(name; constr = NonIrrigationDemand, constr_triv = NoNonIrrigationDemandModel) =
         if getfield(config.model.water_demand, Symbol("$(name)__flag"))::Bool
             if constr == NonIrrigationDemand
                 constr(dataset, config, indices, dt, name)
@@ -505,8 +505,9 @@ function Demand(
     domestic = demand("domestic")
     industry = demand("industry")
     livestock = demand("livestock")
-    paddy = demand("paddy"; constr = PaddyModel, constr_triv = NoIrrigationPaddy)
-    nonpaddy = demand("nonpaddy"; constr = NonPaddyModel, constr_triv = NoIrrigationNonPaddy)
+    paddy = demand("paddy"; constr = PaddyModel, constr_triv = NoIrrigationPaddyModel)
+    nonpaddy =
+        demand("nonpaddy"; constr = NonPaddyModel, constr_triv = NoIrrigationNonPaddyModel)
 
     variables = DemandVariables(; n)
     demand = Demand(; domestic, industry, livestock, paddy, nonpaddy, variables)
@@ -530,7 +531,7 @@ end
 
 get_nonirrigation_returnflow(allocation_model::AllocationRiver) =
     allocation_model.variables.nonirri_returnflow
-get_nonirrigation_returnflow(allocation_model::NoAllocationRiver) =
+get_nonirrigation_returnflow(allocation_model::NoAllocationRiverModel) =
     Zeros(allocation_model.n)
 
 "Struct to store land allocation allocation model parameters"
@@ -593,13 +594,15 @@ end
 # wrapper methods
 get_irrigation_allocated(allocation_model::AllocationLandModel) =
     allocation_model.variables.irri_alloc
-get_irrigation_allocated(allocation_model::NoAllocationLand) = Zeros(allocation_model.n)
+get_irrigation_allocated(allocation_model::NoAllocationLandModel) =
+    Zeros(allocation_model.n)
 get_nonirrigation_returnflow(allocation_model::AllocationLandModel) =
     allocation_model.variables.nonirri_returnflow
-get_nonirrigation_returnflow(allocation_model::NoAllocationLand) = Zeros(allocation_model.n)
+get_nonirrigation_returnflow(allocation_model::NoAllocationLandModel) =
+    Zeros(allocation_model.n)
 get_groundwater_abstraction_flux(allocation_model::AllocationLandModel) =
     allocation_model.variables.act_groundwater_abst
-get_groundwater_abstraction_flux(allocation_model::NoAllocationLand) =
+get_groundwater_abstraction_flux(allocation_model::NoAllocationLandModel) =
     Zeros(allocation_model.n)
 
 """
@@ -613,7 +616,7 @@ function return_flow_fraction(demand_gross::Float64, demand_net::Float64)
 end
 
 "Update returnflow fraction for a non-irrigation water demand model"
-function return_flow_fraction!(demand_model::NonIrrigationDemand)
+function return_flow_fraction!(demand_model::NonIrrigationDemandModel)
     (; returnflow_fraction) = demand_model.variables
     (; demand_gross, demand_net) = demand_model.demand
     @. returnflow_fraction = return_flow_fraction(demand_gross, demand_net)
@@ -621,7 +624,7 @@ function return_flow_fraction!(demand_model::NonIrrigationDemand)
 end
 
 # return zero (gross water demand) if non-irrigation water demand sector is not defined
-return_flow_fraction!(demand_model::NoNonIrrigationDemand) = nothing
+return_flow_fraction!(demand_model::NoNonIrrigationDemandModel) = nothing
 
 """
 Update water allocation for river and land domains based on local surface water (river)
@@ -858,7 +861,7 @@ end
 
 "Return and update non-irrigation sector (domestic, livestock, industry) return flow"
 function return_flow(
-    demand_model::NonIrrigationDemand,
+    demand_model::NonIrrigationDemandModel,
     nonirri_demand_gross::Vector{Float64},
     nonirri_alloc::Vector{Float64},
 )
@@ -873,7 +876,7 @@ end
 
 # return zero (return flow) if non-irrigation sector is not defined
 return_flow(
-    demand::NoNonIrrigationDemand,
+    demand::NoNonIrrigationDemandModel,
     nonirri_demand_gross::Vector{Float64},
     nonirri_alloc::Vector{Float64},
 ) = 0.0
@@ -902,7 +905,7 @@ allocation areas. Finally, non-irrigation return flows are updated.
 """
 function update_water_allocation_model!(
     allocation_model::AllocationLandModel,
-    demand::Demand,
+    demand::DemandModel,
     routing::Routing,
     domain::Domain,
     dt::Float64,
@@ -1002,20 +1005,20 @@ function update_water_allocation_model!(
 end
 
 update_water_allocation_model!(
-    allocation_model::NoAllocationLand,
-    demand::NoDemand,
+    allocation_model::NoAllocationLandModel,
+    demand::NoDemandModel,
     routing::Routing,
     domain::Domain,
     dt::Float64,
 ) = nothing
 
 """
-    update_demand_gross!(demand_model::Demand)
+    update_demand_gross!(demand_model::DemandModel)
 
 Update total irrigation gross water demand `irri_demand_gross`, total non-irrigation gross
 water demand `nonirri_demand_gross` and total gross water demand `total_gross_demand`.
 """
-function update_demand_gross!(demand_model::Demand)
+function update_demand_gross!(demand_model::DemandModel)
     (; nonpaddy, paddy, domestic, industry, livestock) = demand_model
     (; irri_demand_gross, nonirri_demand_gross, total_gross_demand) = demand_model.variables
     # get gross water demands
@@ -1033,17 +1036,17 @@ function update_demand_gross!(demand_model::Demand)
     return nothing
 end
 
-update_demand_gross!(demand_model::NoDemand) = nothing
+update_demand_gross!(demand_model::NoDemandModel) = nothing
 
 """
-    update_water_demand_model!(demand_model::Demand, soil_model::SbmSoilModel)
+    update_water_demand_model!(demand_model::DemandModel, soil_model::SbmSoilModel)
 
 Update the return flow fraction `returnflow_fraction` of `industry`, `domestic` and
 `livestock`, gross water demand `demand_gross` of `paddy` and `nonpaddy` models, and the
 total gross water demand, total irrigation gross water demand and total non-irrigation gross
 water demand as part of the water `demand` model.
 """
-function update_water_demand_model!(demand_model::Demand, soil_model::SbmSoilModel)
+function update_water_demand_model!(demand_model::DemandModel, soil_model::SbmSoilModel)
     (; nonpaddy, paddy, domestic, industry, livestock) = demand_model
 
     return_flow_fraction!(industry)
@@ -1056,4 +1059,4 @@ function update_water_demand_model!(demand_model::Demand, soil_model::SbmSoilMod
 
     return nothing
 end
-update_water_demand_model!(demand_model::NoDemand, soil_model::SbmSoilModel) = nothing
+update_water_demand_model!(demand_model::NoDemandModel, soil_model::SbmSoilModel) = nothing

@@ -193,7 +193,7 @@ function LocalInertialRiverFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir::Union{ReservoirModel, Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing},
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and edges. This information is extracted from the directed graph of the
@@ -212,7 +212,7 @@ function LocalInertialRiverFlowModel(
 
     parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
     variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
-    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
+    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
 
     if config.model.floodplain_1d__flag
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
@@ -228,7 +228,8 @@ function LocalInertialRiverFlowModel(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(n),
+        allocation = do_water_demand(config) ? AllocationRiver(n) :
+                     NoAllocationRiverModel(n),
     )
     return river_flow
 end
@@ -960,7 +961,7 @@ single timestep.
 """
 function update_inflow_reservoir!(
     overland_flow_model::LocalInertialOverlandFlowModel,
-    reservoir::Union{ReservoirModel, Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing},
     domain::Domain,
 )
     indices = domain.land.network.edge_indices
@@ -971,7 +972,7 @@ function update_inflow_reservoir!(
     for (i, j) in enumerate(reservoir_indices)
         yd = indices.yd[j]
         xd = indices.xd[j]
-        reservoir.boundary_conditions.inflow_overland[i] =
+        reservoir_model.boundary_conditions.inflow_overland[i] =
             land_bc.runoff[j] +
             (land_v.qx[xd] - land_v.qx[j] + land_v.qy[yd] - land_v.qy[j])
     end

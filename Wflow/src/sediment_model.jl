@@ -18,7 +18,7 @@ function Model(config::Config, type::SedimentModel)
     @info "General model settings." reservoirs = config.model.reservoir__flag
 
     domain = Domain(dataset, config, type)
-    soilloss = SoilLoss(dataset, config, domain.land.network.indices)
+    soilloss = SoilLossModel(dataset, config, domain.land.network.indices)
     routing = Routing(dataset, config, domain, soilloss)
     mass_balance = NoMassBalance()
 

@@ -114,7 +114,8 @@ function initialize_subsurface_flow_model(
     )
 
     # river boundary of unconfined aquifer
-    gwf_river = GwfRiverModel(dataset, config, river.network.indices, river.network.land_indices)
+    gwf_river =
+        GwfRiverModel(dataset, config, river.network.indices, river.network.land_indices)
 
     # recharge boundary of unconfined aquifer
     gwf_recharge = RechargeModel(; n = n_cells)
@@ -197,10 +198,10 @@ function Routing(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil_loss_model::SoilLoss,
+    soil_loss_model::SoilLossModel,
 )
-    overland_flow = OverlandFlowSediment(dataset, config, domain.land, soil_loss_model)
-    river_flow = RiverSediment(dataset, config, domain.river)
+    overland_flow = OverlandFlowSedimentModel(dataset, config, domain.land, soil_loss_model)
+    river_flow = RiverSedimentModel(dataset, config, domain.river)
 
     routing = Routing(; overland_flow, river_flow)
     return routing

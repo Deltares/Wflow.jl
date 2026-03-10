@@ -1,6 +1,6 @@
-function check_flux(flux::Float64, aquifer::UnconfinedAquiferModel, index::Int)
+function check_flux(flux::Float64, aquifer_model::UnconfinedAquiferModel, index::Int)
     # Check if cell is dry
-    if aquifer.variables.head[index] <= aquifer.parameters.bottom[index]
+    if aquifer_model.variables.head[index] <= aquifer_model.parameters.bottom[index]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -9,7 +9,7 @@ function check_flux(flux::Float64, aquifer::UnconfinedAquiferModel, index::Int)
 end
 
 # Do nothing for a confined aquifer: aquifer can always provide flux
-check_flux(flux::Float64, aquifer::ConfinedAquiferModel, index::Int) = flux
+check_flux(flux::Float64, aquifer_model::ConfinedAquiferModel, index::Int) = flux
 
 @with_kw struct GwfRiverParameters
     infiltration_conductance::Vector{Float64} # [m² d⁻¹]
@@ -70,7 +70,11 @@ function GwfRiverModel(
     return river
 end
 
-function flux!(gwf_river_model::GwfRiverModel, aquifer_model::AbstractAquiferModel, dt::Float64)
+function flux!(
+    gwf_river_model::GwfRiverModel,
+    aquifer_model::AbstractAquiferModel,
+    dt::Float64,
+)
     for (i, index) in enumerate(gwf_river_model.index)
         head = aquifer_model.variables.head[index]
         stage = gwf_river_model.variables.stage[i]
@@ -143,15 +147,15 @@ function DrainageModel(
     return drains
 end
 
-function flux!(drainage::DrainageModel, aquifer::AbstractAquiferModel, dt::Float64)
+function flux!(drainage::DrainageModel, aquifer_model::AbstractAquiferModel, dt::Float64)
     for (i, index) in enumerate(drainage.index)
         cond = drainage.parameters.conductance[i]
         delta_head =
-            min(0, drainage.parameters.elevation[i] - aquifer.variables.head[index])
-        flux = check_flux(cond * delta_head, aquifer, index)
+            min(0, drainage.parameters.elevation[i] - aquifer_model.variables.head[index])
+        flux = check_flux(cond * delta_head, aquifer_model, index)
         drainage.variables.flux[i] = flux
         drainage.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        aquifer_model.variables.q_net[index] += flux
     end
     return nothing
 end
@@ -172,14 +176,14 @@ end
     index::Vector{Int} # [-]
 end
 
-function flux!(headboundary::HeadBoundary, aquifer::AbstractAquiferModel, dt::Float64)
+function flux!(headboundary::HeadBoundary, aquifer_model::AbstractAquiferModel, dt::Float64)
     for (i, index) in enumerate(headboundary.index)
         cond = headboundary.parameters.conductance[i]
-        delta_head = headboundary.variables.head[i] - aquifer.variables.head[index]
-        flux = check_flux(cond * delta_head, aquifer, index)
+        delta_head = headboundary.variables.head[i] - aquifer_model.variables.head[index]
+        flux = check_flux(cond * delta_head, aquifer_model, index)
         headboundary.variables.flux[i] = flux
         headboundary.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        aquifer_model.variables.q_net[index] += flux
     end
     return nothing
 end
@@ -197,16 +201,16 @@ end
     index::Vector{Int} = collect(1:n)  # [-]
 end
 
-function flux!(recharge::RechargeModel, aquifer::AbstractAquiferModel, dt::Float64)
+function flux!(recharge::RechargeModel, aquifer_model::AbstractAquiferModel, dt::Float64)
     for (i, index) in enumerate(recharge.index)
         flux = check_flux(
-            recharge.variables.rate[i] * aquifer.parameters.area[index],
-            aquifer,
+            recharge.variables.rate[i] * aquifer_model.parameters.area[index],
+            aquifer_model,
             index,
         )
         recharge.variables.flux[i] = flux
         recharge.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        aquifer_model.variables.q_net[index] += flux
     end
     return nothing
 end
@@ -222,12 +226,12 @@ end
     index::Vector{Int} # [-]
 end
 
-function flux!(well::WellModel, aquifer::AbstractAquiferModel, dt::Float64)
+function flux!(well::WellModel, aquifer_model::AbstractAquiferModel, dt::Float64)
     for (i, index) in enumerate(well.index)
-        flux = check_flux(well.variables.volumetric_rate[i], aquifer, index)
+        flux = check_flux(well.variables.volumetric_rate[i], aquifer_model, index)
         well.variables.flux[i] = flux
         well.variables.flux_av[i] += dt * flux
-        aquifer.variables.q_net[index] += flux
+        aquifer_model.variables.q_net[index] += flux
     end
     return nothing
 end

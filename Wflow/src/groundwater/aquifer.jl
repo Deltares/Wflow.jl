@@ -231,25 +231,26 @@ function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     end
 end
 
-function saturated_thickness(aquifer::UnconfinedAquiferModel, index::Int)
-    return min(aquifer.parameters.top[index], aquifer.variables.head[index]) -
-           aquifer.parameters.bottom[index]
+function saturated_thickness(aquifer_model::UnconfinedAquiferModel, index::Int)
+    return min(aquifer_model.parameters.top[index], aquifer_model.variables.head[index]) -
+           aquifer_model.parameters.bottom[index]
 end
 
-function saturated_thickness(aquifer::ConfinedAquiferModel, index::Int)
-    return aquifer.parameters.top[index] - aquifer.parameters.bottom[index]
+function saturated_thickness(aquifer_model::ConfinedAquiferModel, index::Int)
+    return aquifer_model.parameters.top[index] - aquifer_model.parameters.bottom[index]
 end
 
-function saturated_thickness(aquifer::UnconfinedAquiferModel)
-    @. min(aquifer.parameters.top, aquifer.variables.head) - aquifer.parameters.bottom
+function saturated_thickness(aquifer_model::UnconfinedAquiferModel)
+    @. min(aquifer_model.parameters.top, aquifer_model.variables.head) -
+       aquifer_model.parameters.bottom
 end
 
-function saturated_thickness(aquifer::ConfinedAquiferModel)
-    @. aquifer.parameters.top - aquifer.parameters.bottom
+function saturated_thickness(aquifer_model::ConfinedAquiferModel)
+    @. aquifer_model.parameters.top - aquifer_model.parameters.bottom
 end
 
 """
-    horizontal_conductance(i, j, nzi, aquifer, connectivity)
+    horizontal_conductance(i, j, nzi, aquifer_model, connectivity)
 
 Compute fully saturated horizontal conductance for a single connection between two cells
 (indexed with `i` and `j`). Geometry characteristics are taken from
@@ -260,13 +261,13 @@ function horizontal_conductance(
     i::Int,
     j::Int,
     nzi::Int,
-    aquifer::A,
+    aquifer_model::A,
     connectivity::Connectivity,
 ) where {A <: AbstractAquiferModel}
-    k1 = aquifer.parameters.k[i]
-    k2 = aquifer.parameters.k[j]
-    H1 = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
-    H2 = aquifer.parameters.top[j] - aquifer.parameters.bottom[j]
+    k1 = aquifer_model.parameters.k[i]
+    k2 = aquifer_model.parameters.k[j]
+    H1 = aquifer_model.parameters.top[i] - aquifer_model.parameters.bottom[i]
+    H2 = aquifer_model.parameters.top[j] - aquifer_model.parameters.bottom[j]
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
@@ -276,40 +277,40 @@ function horizontal_conductance(
 end
 
 """
-    initialize_conductance!(aquifer::A, connectivity::Connectivity) where A <: AbstractAquiferModel
+    initialize_conductance!(aquifer_model::A, connectivity::Connectivity) where A <: AbstractAquiferModel
 
-Conductance for a confined aquifer is constant, and only has to be set once.
-For an unconfined aquifer, conductance is computed per timestep by multiplying by
+Conductance for a confined aquifer_model is constant, and only has to be set once.
+For an unconfined aquifer_model, conductance is computed per timestep by multiplying by
 degree of saturation [0.0 - 1.0].
 """
 function initialize_conductance!(
-    aquifer::A,
+    aquifer_model::A,
     connectivity::Connectivity,
 ) where {A <: AbstractAquiferModel}
     for i in 1:(connectivity.ncell)
         # Loop over connections for cell j
         for nzi in connections(connectivity, i)
             j = connectivity.rowval[nzi]
-            aquifer.variables.conductance[nzi] =
-                horizontal_conductance(i, j, nzi, aquifer, connectivity)
+            aquifer_model.variables.conductance[nzi] =
+                horizontal_conductance(i, j, nzi, aquifer_model, connectivity)
         end
     end
 end
 
 function conductance(
-    aquifer::ConfinedAquiferModel,
+    aquifer_model::ConfinedAquiferModel,
     i,
     j,
     nzi,
     conductivity_profile::GwfConductivityProfileType.T,
     connectivity::Connectivity,
 )
-    return aquifer.variables.conductance[nzi]
+    return aquifer_model.variables.conductance[nzi]
 end
 
 """
 function conductance(
-    aquifer::UnconfinedAquiferModel,
+    aquifer_model::UnconfinedAquiferModel,
     i,
     j,
     nzi,
@@ -317,7 +318,7 @@ function conductance(
     connectivity::Connectivity,
 )
 
-This computes the conductance for an unconfined aquifer using the "upstream
+This computes the conductance for an unconfined aquifer_model using the "upstream
 saturated fraction" as the MODFLOW documentation calls it. In this approach, the
 saturated thickness of a cell-to-cell is approximated using the cell with the
 highest head. This results in a consistent overestimation of the saturated
@@ -341,7 +342,7 @@ modular finite-difference groundwater flow model: U.S. Geological Survey
 Open-File Report 91-536, 99 p
 """
 function conductance(
-    aquifer::UnconfinedAquiferModel,
+    aquifer_model::UnconfinedAquiferModel,
     i,
     j,
     nzi,
@@ -350,20 +351,20 @@ function conductance(
 )
     if conductivity_profile == GwfConductivityProfileType.exponential
         # Extract required variables
-        zi1 = aquifer.parameters.top[i] - aquifer.variables.head[i]
-        zi2 = aquifer.parameters.top[j] - aquifer.variables.head[j]
-        thickness1 = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
-        thickness2 = aquifer.parameters.top[j] - aquifer.parameters.bottom[j]
+        zi1 = aquifer_model.parameters.top[i] - aquifer_model.variables.head[i]
+        zi2 = aquifer_model.parameters.top[j] - aquifer_model.variables.head[j]
+        thickness1 = aquifer_model.parameters.top[i] - aquifer_model.parameters.bottom[i]
+        thickness2 = aquifer_model.parameters.top[j] - aquifer_model.parameters.bottom[j]
         # calculate conductivity values corrected for depth of water table
         k1 =
-            (aquifer.parameters.k[i] / aquifer.parameters.f[i]) * (
-                exp(-aquifer.parameters.f[i] * zi1) -
-                exp(-aquifer.parameters.f[i] * thickness1)
+            (aquifer_model.parameters.k[i] / aquifer_model.parameters.f[i]) * (
+                exp(-aquifer_model.parameters.f[i] * zi1) -
+                exp(-aquifer_model.parameters.f[i] * thickness1)
             )
         k2 =
-            (aquifer.parameters.k[j] / aquifer.parameters.f[j]) * (
-                exp(-aquifer.parameters.f[j] * zi2) -
-                exp(-aquifer.parameters.f[j] * thickness2)
+            (aquifer_model.parameters.k[j] / aquifer_model.parameters.f[j]) * (
+                exp(-aquifer_model.parameters.f[j] * zi2) -
+                exp(-aquifer_model.parameters.f[j] * thickness2)
             )
         return harmonicmean_conductance(
             k1,
@@ -373,23 +374,23 @@ function conductance(
             connectivity.width[nzi],
         )
     elseif conductivity_profile == GwfConductivityProfileType.uniform
-        head_i = aquifer.variables.head[i]
-        head_j = aquifer.variables.head[j]
+        head_i = aquifer_model.variables.head[i]
+        head_j = aquifer_model.variables.head[j]
         if head_i >= head_j
             saturation =
-                saturated_thickness(aquifer, i) /
-                (aquifer.parameters.top[i] - aquifer.parameters.bottom[i])
+                saturated_thickness(aquifer_model, i) /
+                (aquifer_model.parameters.top[i] - aquifer_model.parameters.bottom[i])
         else
             saturation =
-                saturated_thickness(aquifer, j) /
-                (aquifer.parameters.top[j] - aquifer.parameters.bottom[j])
+                saturated_thickness(aquifer_model, j) /
+                (aquifer_model.parameters.top[j] - aquifer_model.parameters.bottom[j])
         end
-        return saturation * aquifer.variables.conductance[nzi]
+        return saturation * aquifer_model.variables.conductance[nzi]
     end
 end
 
 function flux!(
-    aquifer::AbstractAquiferModel,
+    aquifer_model::AbstractAquiferModel,
     connectivity::Connectivity,
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
@@ -399,14 +400,14 @@ function flux!(
         for nzi in connections(connectivity, i)
             # connection from i -> j
             j = connectivity.rowval[nzi]
-            delta_head = aquifer.variables.head[i] - aquifer.variables.head[j]
-            cond = conductance(aquifer, i, j, nzi, conductivity_profile, connectivity)
+            delta_head = aquifer_model.variables.head[i] - aquifer_model.variables.head[j]
+            cond = conductance(aquifer_model, i, j, nzi, conductivity_profile, connectivity)
             flow = cond * delta_head
-            aquifer.variables.q_net[i] -= flow
+            aquifer_model.variables.q_net[i] -= flow
             if flow > 0.0
-                aquifer.variables.q_out_av[i] += flow * dt
+                aquifer_model.variables.q_out_av[i] += flow * dt
             else
-                aquifer.variables.q_in_av[i] -= flow * dt
+                aquifer_model.variables.q_in_av[i] -= flow * dt
             end
         end
     end
@@ -445,7 +446,7 @@ function ConstantHead(
 end
 
 """
-    stable_timestep(aquifer::AbstractAquiferModel, conductivity_profile::GwfConductivityProfileType.T)
+    stable_timestep(aquifer_model::AbstractAquiferModel, conductivity_profile::GwfConductivityProfileType.T)
 
 Compute a stable timestep size given the forward-in-time, central in space scheme.
 The following criterion can be found in Chu & Willis (1984):
@@ -454,38 +455,38 @@ The following criterion can be found in Chu & Willis (1984):
 where cfl = 1/4.
 """
 function stable_timestep(
-    aquifer::AbstractAquiferModel,
+    aquifer_model::AbstractAquiferModel,
     conductivity_profile::GwfConductivityProfileType.T,
     cfl::Float64,
 )
     dt_min = Inf
-    for i in eachindex(aquifer.variables.head)
+    for i in eachindex(aquifer_model.variables.head)
         if conductivity_profile == GwfConductivityProfileType.exponential
-            zi = aquifer.parameters.top[i] - aquifer.variables.head[i]
-            thickness = aquifer.parameters.top[i] - aquifer.parameters.bottom[i]
+            zi = aquifer_model.parameters.top[i] - aquifer_model.variables.head[i]
+            thickness = aquifer_model.parameters.top[i] - aquifer_model.parameters.bottom[i]
             value =
-                (aquifer.parameters.k[i] / aquifer.parameters.f[i]) * (
-                    exp(-aquifer.parameters.f[i] * zi) -
-                    exp(-aquifer.parameters.f[i] * thickness)
+                (aquifer_model.parameters.k[i] / aquifer_model.parameters.f[i]) * (
+                    exp(-aquifer_model.parameters.f[i] * zi) -
+                    exp(-aquifer_model.parameters.f[i] * thickness)
                 )
         elseif conductivity_profile == GwfConductivityProfileType.uniform
-            value = aquifer.parameters.k[i] * saturated_thickness(aquifer, i)
+            value = aquifer_model.parameters.k[i] * saturated_thickness(aquifer_model, i)
         end
 
-        dt = aquifer.parameters.area[i] * storativity(aquifer)[i] / value
+        dt = aquifer_model.parameters.area[i] * storativity(aquifer_model)[i] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
     dt_min = cfl * dt_min
     return dt_min
 end
 
-minimum_head(aquifer::ConfinedAquiferModel) = aquifer.variables.head
-minimum_head(aquifer::UnconfinedAquiferModel) =
-    max.(aquifer.variables.head, aquifer.parameters.bottom)
+minimum_head(aquifer_model::ConfinedAquiferModel) = aquifer_model.variables.head
+minimum_head(aquifer_model::UnconfinedAquiferModel) =
+    max.(aquifer_model.variables.head, aquifer_model.parameters.bottom)
 
-maximum_head(aquifer::ConfinedAquiferModel) = aquifer.variables.head
-maximum_head(aquifer::UnconfinedAquiferModel) =
-    min.(aquifer.variables.head, aquifer.parameters.top)
+maximum_head(aquifer_model::ConfinedAquiferModel) = aquifer_model.variables.head
+maximum_head(aquifer_model::UnconfinedAquiferModel) =
+    min.(aquifer_model.variables.head, aquifer_model.parameters.top)
 
 @kwdef struct AquiferBoundaries{
     Re <: Union{Nothing, AbstractAquiferBoundaryCondition},
@@ -511,13 +512,13 @@ get_boundaries(boundaries::AquiferBoundaries) =
     boundaries::B = AquiferBoundaries()
     function GroundwaterFlowModel(
         timestepping::TimeStepping,
-        aquifer::A,
+        aquifer_model::A,
         connectivity::Connectivity,
         constanthead::ConstantHead,
         boundaries::B,
     ) where {A <: AbstractAquiferModel, B <: AquiferBoundaries}
-        initialize_conductance!(aquifer, connectivity)
-        new{A, B}(timestepping, aquifer, connectivity, constanthead, boundaries)
+        initialize_conductance!(aquifer_model, connectivity)
+        new{A, B}(timestepping, aquifer_model, connectivity, constanthead, boundaries)
     end
 end
 

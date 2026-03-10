@@ -61,7 +61,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         allocation = AllocationLandModel(dataset, config, indices)
         demand = Demand(dataset, config, indices, dt)
     else
-        allocation = NoAllocationLand(n)
+        allocation = NoAllocationLandModel(n)
         demand = NoDemand(; n)
     end
 
