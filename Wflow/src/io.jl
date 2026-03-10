@@ -27,11 +27,8 @@ function get_at(
 end
 
 function get_at(ds::CFDataset, var::InputEntry, i)
-    (; scale, offset) = var
     data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
-    if scale != 1.0 || offset != 0.0
-        data .= data .* scale .+ offset
-    end
+    apply_affine_transform!(data, var)
     return data
 end
 

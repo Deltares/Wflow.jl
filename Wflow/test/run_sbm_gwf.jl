@@ -47,6 +47,8 @@
         @test soil.variables.runoff[1] == 0.0
         @test soil.variables.soilevap[1] == 0.0
         @test soil.variables.transpiration[1] ≈ 0.30587632831650247
+        @test soil.variables.total_storage[1] ≈ 594.859200902034
+        @test soil.variables.total_storage[6] ≈ 665.0260781409222 # river cell
     end
 
     # run the second timestep
@@ -58,6 +60,8 @@
         @test soil.variables.runoff[1] == 0.0
         @test soil.variables.soilevap[1] == 0.0
         @test soil.variables.transpiration[4] ≈ 0.9545461724219301
+        @test soil.variables.total_storage[1] ≈ 594.6412481941371
+        @test soil.variables.total_storage[6] ≈ 646.8344274025224 # river cell
     end
 
     @testset "overland flow (kinematic wave)" begin

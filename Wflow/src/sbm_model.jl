@@ -1,5 +1,5 @@
 """
-    Model(config::Config, type::SbmModel)
+	Model(config::Config, type::SbmModel)
 
 Initial part of the SBM model concept. Reads the input settings and data as defined in the
 Config object. Will return a Model that is ready to run.
@@ -60,9 +60,9 @@ end
 function update_model!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
-    dt = tosecond(clock.dt)
     (; kv_profile) = land.soil.parameters
     (; boundary_conditions) = routing.subsurface_flow
+    dt = tosecond(clock.dt)
 
     update_land_hydrology_model!(land, routing, domain, config, dt)
 
@@ -97,7 +97,7 @@ end
 """
 Update of the total water storage at the end of each timestep per model cell.
 """
-function update_total_water_storage!(model::AbstractModel{<:SbmModel})
+function update_total_water_storage!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
     (; routing, land, domain) = model
 
     update_total_water_storage!(land, domain, routing)
