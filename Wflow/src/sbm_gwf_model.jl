@@ -106,5 +106,6 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
 
     surface_routing!(model)
 
+    update_total_water_storage!(model)
     return nothing
 end
