@@ -76,7 +76,7 @@ function add_metadata(project_dir, license_file, output_dir, git_repo, sbom_file
 
     cp(sbom_file, normpath(output_dir, "Wflow.spdx.json"); force = true)
 
-    # collect lisences of all dependencies
+    # collect licences of all dependencies
     ctx = PackageCompiler.create_pkg_context(project_dir)
     license_dir = joinpath(output_dir, "dep_licenses")
     mkpath(license_dir)

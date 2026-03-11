@@ -27,11 +27,8 @@ function get_at(
 end
 
 function get_at(ds::CFDataset, var::InputEntry, i)
-    (; scale, offset) = var
     data = read_standardized(ds, variable_name(var), (x = :, y = :, time = i))
-    if scale != 1.0 || offset != 0.0
-        data .= data .* scale .+ offset
-    end
+    apply_affine_transform!(data, var)
     return data
 end
 
@@ -530,8 +527,8 @@ function NCReader(config)
         @warn "Time dimension contains `_FillValue` attribute, this is not in line with CF conventions."
         nctimes = dataset["time"][:]
         times_dropped = collect(skipmissing(nctimes))
-        # check if lenght has changed (missings in time dimension are not allowed), and throw
-        # an error if the lenghts are different
+        # check if length has changed (missing in time dimension are not allowed), and throw
+        # an error if the lengths are different
         if length(times_dropped) != length(nctimes)
             error("Time dimension in `$abspath_forcing` contains missing values")
         else

@@ -39,7 +39,7 @@
     @test_throws ErrorException Wflow.get_var(config, "not_set_in_TOML"; optional = false)
 end
 
-@testitem "Clock constructor" begin
+@testitem "unit: Clock constructor" begin
     using NCDatasets: NCDataset
     using CFTime: DateTimeProlepticGregorian, DateTimeStandard
     using Dates: Second, Hour, Day, DateTime
@@ -78,7 +78,7 @@ end
     @test clock.dt == Second(Hour(1))
 end
 
-@testitem "Clock{DateTimeStandard}" begin
+@testitem "unit: Clock{DateTimeStandard}" begin
     using CFTime: DateTimeStandard
     using Dates: Dates, Second, Day
 
@@ -110,7 +110,7 @@ end
     @test clock.dt == dt
 end
 
-@testitem "Clock{DateTime360Day}" begin
+@testitem "unit: Clock{DateTime360Day}" begin
     using CFTime: DateTime360Day
     using Dates: Dates, Second, Day
 
@@ -177,7 +177,7 @@ end
     @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end
 
-@testitem "CFTime" begin
+@testitem "unit: CFTime" begin
     using CFTime: DateTimeStandard, DateTimeProlepticGregorian, DateTime360Day
     using Dates: DateTime, Date
     @test Wflow.cftime("2006-01-02T15:04:05", "standard") ==
@@ -191,7 +191,7 @@ end
     @test Wflow.cftime(Date("2006-01-02"), "360_day") == DateTime360Day(2006, 1, 2)
 end
 
-@testitem "timecycles" begin
+@testitem "unit: timecycles" begin
     using Dates: Date, Day, monthday
     @test Wflow.timecycles([Date(2020, 4, 21), Date(2020, 10, 21)]) == [(4, 21), (10, 21)]
     @test_throws ErrorException Wflow.timecycles([Date(2020, 4, 21), Date(2021, 10, 21)])
@@ -209,7 +209,7 @@ end
     @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before
 end
 
-@testitem "reducer" begin
+@testitem "unit: reducer" begin
     V = [6, 5, 4, 1]
     @test Wflow.function_map[Wflow.ReducerType.maximum](V) == 6
     @test Wflow.function_map[Wflow.ReducerType.minimum](V) == 1

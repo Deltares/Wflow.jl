@@ -389,7 +389,7 @@ function transport_capacity_bagnold(
 end
 
 """
-    function trasnport_capacity_engelund(
+    function transport_capacity_engelund(
         q,
         waterlevel,
         density,
@@ -462,7 +462,7 @@ function transport_capacity_engelund(
 end
 
 """
-    function trasnport_capacity_kodatie(
+    function transport_capacity_kodatie(
         q,
         waterlevel,
         a_kodatie,
@@ -531,7 +531,7 @@ function transport_capacity_kodatie(
 end
 
 """
-    function trasnport_capacity_yang(
+    function transport_capacity_yang(
         q,
         waterlevel,
         density,
@@ -623,7 +623,7 @@ function transport_capacity_yang(
 end
 
 """
-    function trasnport_capacity_molinas(
+    function transport_capacity_molinas(
         q,
         waterlevel,
         density,

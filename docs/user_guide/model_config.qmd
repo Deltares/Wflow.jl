@@ -52,7 +52,7 @@ reservoir_water__target_full_volume_fraction = "ResTargetFullFrac"
 reservoir_water__target_min_volume_fraction = "ResTargetMinFrac"
 reservoir_water__rating_curve_type_count = "outflowfunc" # rating curve type
 reservoir_water__storage_curve_type_count  = "storfunc"
-reservoir_water_surface__initial_elevation = "resevoir_waterlevel"
+reservoir_water_surface__initial_elevation = "reservoir_waterlevel"
 
 [state.variables]
 reservoir_water_surface__elevation = "waterlevel_reservoir"
