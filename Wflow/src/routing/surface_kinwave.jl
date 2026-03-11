@@ -53,12 +53,15 @@ end
 "Struct for storing river flow model parameters"
 @with_kw struct RiverFlowParameters
     flow::ManningFlowParameters
-    bankfull_depth::Vector{Float64} # Bankfull water level [m]
+    bankfull_depth::Vector{Float64}     # Bankfull water level [m]
+    bankfull_storage::Vector{Float64}   # Bankfull storage [m³]
 end
 
 "Overload `getproperty` for river flow model parameters"
 function Base.getproperty(v::RiverFlowParameters, s::Symbol)
     if s === :bankfull_depth
+        getfield(v, s)
+    elseif s === :bankfull_storage
         getfield(v, s)
     elseif s === :flow
         getfield(v, :flow)
@@ -70,7 +73,7 @@ end
 "Initialize river flow model parameters"
 function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
-    (; slope) = domain.parameters
+    (; slope, flow_length, flow_width) = domain.parameters
     mannings_n = ncread(
         dataset,
         config,
@@ -89,7 +92,8 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
     )
 
     flow_params = ManningFlowParameters(mannings_n, slope)
-    parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth)
+    bankfull_storage = bankfull_depth .* flow_length .* flow_width
+    parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth, bankfull_storage)
     return parameters
 end
 
