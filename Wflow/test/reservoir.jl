@@ -29,7 +29,7 @@
         waterlevel = [10.208598234556407],
     )
 
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,
@@ -62,7 +62,7 @@ end
 
 @testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
-    # Reservoir Modified Puls approach (outflowfunc = 3)
+    # ReservoirModel Modified Puls approach (outflowfunc = 3)
     n = 1
     res_bc = Wflow.ReservoirBC(;
         n,
@@ -93,7 +93,7 @@ end
         waterlevel = [18.5],
     )
 
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,
@@ -171,7 +171,7 @@ end
         evaporation = [2.0, 2.0],
     )
 
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,
@@ -230,7 +230,7 @@ end
     )
     @reset res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
     res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,

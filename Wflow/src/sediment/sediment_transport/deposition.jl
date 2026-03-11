@@ -7,8 +7,8 @@ const STOKES_FACTOR = 411 / 3600
         input,
         q,
         waterlevel,
-        wb_area,
-        wb_trapping_efficiency,
+        res_area,
+        res_trapping_efficiency,
         dm,
         slope,
     )

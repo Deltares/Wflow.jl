@@ -71,7 +71,7 @@ end
     @test bank == 0.0
 end
 
-@testitem "unit: Reservoir deposition (Camp)" begin
+@testitem "unit: ReservoirModel deposition (Camp)" begin
     input = 0.002
     q = 3.0
     waterlevel = 0.57

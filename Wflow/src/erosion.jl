@@ -1,5 +1,5 @@
 "Soil loss model"
-@with_kw struct SoilLoss{
+@with_kw struct SoilLossModel{
     RE <: AbstractRainfallErosionModel,
     OFE <: AbstractOverlandFlowErosionModel,
     SE <: AbstractSoilErosionModel,
@@ -12,7 +12,11 @@
 end
 
 "Initialize soil loss model"
-function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
+function SoilLossModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     (; rainfall_erosion, overland_flow_erosion) = config.model
     n = length(indices)
 
@@ -32,7 +36,7 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     # Total soil erosion and particle differentiation
     soil_erosion = SoilErosionModel(dataset, config, indices)
 
-    soil_loss = SoilLoss(;
+    soil_loss = SoilLossModel(;
         atmospheric_forcing,
         hydrological_forcing,
         rainfall_erosion,
@@ -44,7 +48,7 @@ end
 
 "Update soil loss model for a single timestep"
 function update_soil_loss_model!(
-    soil_loss_model::SoilLoss,
+    soil_loss_model::SoilLossModel,
     parameters::LandParameters,
     dt::Float64,
 )

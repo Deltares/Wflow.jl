@@ -220,7 +220,7 @@ end
             flux = [0.0, 0.0],
             flux_av = [0.0, 0.0],
         )
-        river = Wflow.GwfRiver(; parameters, variables, index = [1, 3])
+        river = Wflow.GwfRiverModel(; parameters, variables, index = [1, 3])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(river, conf_aqf, dt)
         # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
@@ -236,7 +236,7 @@ end
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
         variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
-        drainage = Wflow.Drainage(; parameters, variables, index = [1, 2])
+        drainage = Wflow.DrainageModel(; parameters, variables, index = [1, 2])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(drainage, conf_aqf, dt)
         @test conf_aqf.variables.q_net[1] == 0.0
@@ -268,7 +268,7 @@ end
             flux = [0.0, 0.0, 0.0],
             flux_av = [0.0, 0.0, 0.0],
         )
-        recharge = Wflow.Recharge(; n, variables, index = [1, 2, 3])
+        recharge = Wflow.RechargeModel(; n, variables, index = [1, 2, 3])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(recharge, conf_aqf, dt)
         @test all(conf_aqf.variables.q_net .== 1.0e-3 * 100.0)
@@ -281,7 +281,7 @@ end
             flux = [0.0],
             flux_av = [0.0],
         )
-        well = Wflow.Well(; variables, index = [1])
+        well = Wflow.WellModel(; variables, index = [1])
         conf_aqf.variables.q_net .= 0.0
         Wflow.flux!(well, conf_aqf, dt)
         @test conf_aqf.variables.q_net[1] == -1000.0
@@ -295,7 +295,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1, 3])
     conductivity_profile = Wflow.GwfConductivityProfileType.uniform
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
+    gwf = Wflow.GroundwaterFlowModel(;
         timestepping,
         aquifer,
         connectivity,
@@ -355,12 +355,12 @@ end
         f = fill(gwf_f, ncell),
     )
 
-    aquifer = Wflow.UnconfinedAquifer(; parameters, variables)
+    aquifer = Wflow.UnconfinedAquiferModel(; parameters, variables)
     # constant head on left boundary, 0 at 0
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
+    gwf = Wflow.GroundwaterFlowModel(;
         timestepping,
         aquifer,
         connectivity,
@@ -453,12 +453,12 @@ end
         f = fill(gwf_f, ncell),
     )
 
-    aquifer = Wflow.UnconfinedAquifer(; parameters, variables)
+    aquifer = Wflow.UnconfinedAquiferModel(; parameters, variables)
     # constant head on left boundary, 0 at 0
     variables = Wflow.ConstantHeadVariables(; head = [0.0])
     constanthead = Wflow.ConstantHead(; variables, index = [1])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
+    gwf = Wflow.GroundwaterFlowModel(;
         timestepping,
         aquifer,
         connectivity,
@@ -551,7 +551,7 @@ end
         q_out_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
     )
-    aquifer = Wflow.ConfinedAquifer(; parameters, variables)
+    aquifer = Wflow.ConfinedAquiferModel(; parameters, variables)
 
     cell_index = reshape(collect(range(1, ncell; step = 1)), shape)
     indices = vcat(cell_index[1, :], cell_index[end, :])# , cell_index[:, 1], cell_index[:, end],)
@@ -560,9 +560,9 @@ end
     # Place a well in the middle of the domain
     variables =
         Wflow.WellVariables(; volumetric_rate = [discharge], flux = [0.0], flux_av = [0.0])
-    well = Wflow.Well(; variables, index = [reverse_indices[wellrow, wellrow]])
+    well = Wflow.WellModel(; variables, index = [reverse_indices[wellrow, wellrow]])
     timestepping = Wflow.TimeStepping(; cfl = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
+    gwf = Wflow.GroundwaterFlowModel(;
         timestepping,
         aquifer,
         connectivity,

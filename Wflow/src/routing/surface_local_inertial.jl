@@ -1,4 +1,4 @@
-abstract type AbstractFloodPlain end
+abstract type AbstractFloodPlainModel end
 
 "Struct for storing local inertial river flow model parameters"
 @with_kw struct LocalInertialRiverFlowParameters
@@ -175,9 +175,9 @@ function LocalInertialRiverFlowVariables(
 end
 
 "Shallow water river flow model using the local inertial method"
-@with_kw struct LocalInertialRiverFlow{
+@with_kw struct LocalInertialRiverFlowModel{
     R <: RiverFlowBC,
-    F <: Union{AbstractFloodPlain, Nothing},
+    F <: Union{AbstractFloodPlainModel, Nothing},
     A <: AbstractAllocationModel,
 } <: AbstractRiverFlowModel
     timestepping::TimeStepping
@@ -189,11 +189,11 @@ end
 end
 
 "Initialize shallow water river flow model `LocalInertialRiverFlow`"
-function LocalInertialRiverFlow(
+function LocalInertialRiverFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir::Union{Reservoir, Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing},
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and edges. This information is extracted from the directed graph of the
@@ -212,30 +212,31 @@ function LocalInertialRiverFlow(
 
     parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
     variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
-    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
+    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
 
     if config.model.floodplain_1d__flag
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
-        floodplain = FloodPlain(dataset, config, domain, zb_floodplain)
+        floodplain = FloodPlainModel(dataset, config, domain, zb_floodplain)
     else
         floodplain = nothing
     end
 
     n = length(domain.network.indices)
-    river_flow = LocalInertialRiverFlow(;
+    river_flow = LocalInertialRiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiver(n) : NoAllocationRiver(n),
+        allocation = do_water_demand(config) ? AllocationRiver(n) :
+                     NoAllocationRiverModel(n),
     )
     return river_flow
 end
 
-"Return the upstream inflow for a reservoir in `LocalInertialRiverFlow`"
+"Return the upstream inflow for a reservoir in `LocalInertialRiverFlowModel`"
 function get_inflow_reservoir(
-    river_flow_model::LocalInertialRiverFlow,
+    river_flow_model::LocalInertialRiverFlowModel,
     src_edge::Vector{Int},
 )
     q_in = sum_at(river_flow_model.variables.q, src_edge)
@@ -248,14 +249,14 @@ end
 # For local inertial river routing, `to_river` is included, as reservoir cells are excluded
 # (boundary condition).
 get_inflow_reservoir(
-    ::LocalInertialRiverFlow,
-    overland_flow_model::KinWaveOverlandFlow,
+    ::LocalInertialRiverFlowModel,
+    overland_flow_model::KinWaveOverlandFlowModel,
     inds::Vector{Int},
 ) = overland_flow_model.variables.q_av[inds] .+ overland_flow_model.variables.to_river[inds]
 
 get_inflow_reservoir(
-    ::LocalInertialRiverFlow,
-    subsurface_flow_model::LateralSSF,
+    ::LocalInertialRiverFlowModel,
+    subsurface_flow_model::LateralSSFModel,
     inds::Vector{Int},
 ) =
     (
@@ -265,7 +266,7 @@ get_inflow_reservoir(
 
 "Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
-    river_flow_model::LocalInertialRiverFlow,
+    river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
     dt::Float64,
     dt_forcing::Float64,
@@ -502,11 +503,11 @@ function local_inertial_river_update!(
 end
 
 """
-Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep `dt`. An adaptive
+Update local inertial river flow model `LocalInertialRiverFlowModel` for a single timestep `dt`. An adaptive
 timestepping method is used (computing a sub timestep `dt_s`).
 """
 function update_river_flow_model!(
-    river_flow_model::LocalInertialRiverFlow,
+    river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
     clock::Clock;
     update_h = true,
@@ -657,7 +658,7 @@ end
 end
 
 "Local inertial overland flow model using the local inertial method"
-@with_kw struct LocalInertialOverlandFlow <: AbstractOverlandFlowModel
+@with_kw struct LocalInertialOverlandFlowModel <: AbstractOverlandFlowModel
     timestepping::TimeStepping
     boundary_conditions::LocalInertialOverlandFlowBC
     parameters::LocalInertialOverlandFlowParameters
@@ -665,7 +666,7 @@ end
 end
 
 "Initialize local inertial overland flow model"
-function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::Domain)
+function LocalInertialOverlandFlowModel(dataset::NCDataset, config::Config, domain::Domain)
     cfl = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
@@ -674,7 +675,7 @@ function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::D
     parameters = LocalInertialOverlandFlowParameters(dataset, config, domain)
     variables = LocalInertialOverlandFlowVariables(; n)
 
-    overland_flow = LocalInertialOverlandFlow(;
+    overland_flow = LocalInertialOverlandFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
@@ -685,15 +686,15 @@ function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::D
 end
 
 """
-    stable_timestep(river_flow_model::LocalInertialRiverFlow, flow_length::Vector{Float64})
-    stable_timestep(overland_flow_model::LocalInertialOverlandFlow, parameters::LandParameters)
+    stable_timestep(river_flow_model::LocalInertialRiverFlowModel, flow_length::Vector{Float64})
+    stable_timestep(overland_flow_model::LocalInertialOverlandFlowModel, parameters::LandParameters)
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
 dt = cfl * (Δx / sqrt(g max(h))
 """
 function stable_timestep(
-    river_flow_model::LocalInertialRiverFlow,
+    river_flow_model::LocalInertialRiverFlowModel,
     flow_length::Vector{Float64},
 )
     dt_min = Inf
@@ -710,7 +711,7 @@ function stable_timestep(
 end
 
 function stable_timestep(
-    overland_flow_model::LocalInertialOverlandFlow,
+    overland_flow_model::LocalInertialOverlandFlowModel,
     parameters::LandParameters,
 )
     dt_min = Inf
@@ -731,11 +732,11 @@ function stable_timestep(
 end
 
 """
-Update boundary condition `runoff` overland flow model `LocalInertialOverlandFlow` for a
+Update boundary condition `runoff` overland flow model `LocalInertialOverlandFlowModel` for a
 single timestep.
 """
 function update_bc_overland_flow_model!(
-    overland_flow_model::LocalInertialOverlandFlow,
+    overland_flow_model::LocalInertialOverlandFlowModel,
     external_models::NamedTuple,
     domain::Domain,
     dt::Float64,
@@ -755,11 +756,11 @@ end
 
 """
 Update subsurface flow contribution to inflow of a reservoir model for a river flow model
-`LocalInertialRiverFlow` for a single timestep.
+`LocalInertialRiverFlowModel` for a single timestep.
 """
 function update_inflow!(
-    reservoir_model::Reservoir,
-    river_flow_model::LocalInertialRiverFlow,
+    reservoir_model::ReservoirModel,
+    river_flow_model::LocalInertialRiverFlowModel,
     subsurface_flow::AbstractSubsurfaceFlowModel,
     network::NetworkReservoir,
 )
@@ -771,17 +772,17 @@ function update_inflow!(
 end
 update_inflow!(
     ::Nothing,
-    ::LocalInertialRiverFlow,
+    ::LocalInertialRiverFlowModel,
     ::AbstractSubsurfaceFlowModel,
     ::NetworkReservoir,
 ) = nothing
 
 """
-Helper function to set flow variables of the `LocalInertialOverlandFlow` model to zero. This
+Helper function to set flow variables of the `LocalInertialOverlandFlowModel` model to zero. This
 is done at the start of each simulation timestep, during the timestep the total (weighted)
 sum is computed from values at each sub timestep.
 """
-function set_flow_vars!(overland_flow_model::LocalInertialOverlandFlow)
+function set_flow_vars!(overland_flow_model::LocalInertialOverlandFlowModel)
     (; qx_av, qy_av) = overland_flow_model.variables
     qx_av .= 0.0
     qy_av .= 0.0
@@ -789,10 +790,13 @@ function set_flow_vars!(overland_flow_model::LocalInertialOverlandFlow)
 end
 
 """
-Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
+Helper function to compute average flow variables of the `LocalInertialOverlandFlowModel` model.
 This is done at the end of each simulation timestep.
 """
-function average_flow_vars!(overland_flow_model::LocalInertialOverlandFlow, dt::Float64)
+function average_flow_vars!(
+    overland_flow_model::LocalInertialOverlandFlowModel,
+    dt::Float64,
+)
     (; qx_av, qy_av) = overland_flow_model.variables
     qx_av ./= dt
     qy_av ./= dt
@@ -800,13 +804,13 @@ function average_flow_vars!(overland_flow_model::LocalInertialOverlandFlow, dt::
 end
 
 """
-Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow`
+Update combined river `LocalInertialRiverFlowModel` and overland flow `LocalInertialOverlandFlowModel`
 models for a single timestep `dt`. An adaptive timestepping method is used (computing a sub
 timestep `dt_s`).
 """
 function update_overland_flow_model!(
-    overland_flow_model::LocalInertialOverlandFlow,
-    river_flow_model::LocalInertialRiverFlow,
+    overland_flow_model::LocalInertialOverlandFlowModel,
+    river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
     clock::Clock;
     update_h = false,
@@ -848,18 +852,18 @@ function update_overland_flow_model!(
 end
 
 """
-Update fluxes for overland flow `LocalInertialOverlandFlow` model for a single timestep
+Update fluxes for overland flow `LocalInertialOverlandFlowModel` model for a single timestep
 `dt`.
 """
 function local_inertial_update_fluxes!(
-    land::LocalInertialOverlandFlow,
+    overland_flow_model::LocalInertialOverlandFlowModel,
     domain::Domain,
     dt::Float64,
 )
     indices = domain.land.network.edge_indices
     (; x_length, y_length) = domain.land.parameters
-    land_v = land.variables
-    land_p = land.parameters
+    land_v = overland_flow_model.variables
+    land_p = overland_flow_model.parameters
 
     land_v.qx0 .= land_v.qx
     land_v.qy0 .= land_v.qy
@@ -952,23 +956,23 @@ end
 
 """
 Update boundary condition inflow to a reservoir from land `inflow_reservoir` of combined
-river `LocalInertialRiverFlow`and overland flow `LocalInertialOverlandFlow` models for a
+river `LocalInertialRiverFlowModel`and overland flow `LocalInertialOverlandFlowModel` models for a
 single timestep.
 """
 function update_inflow_reservoir!(
-    land::LocalInertialOverlandFlow,
-    reservoir::Union{Reservoir, Nothing},
+    overland_flow_model::LocalInertialOverlandFlowModel,
+    reservoir_model::Union{ReservoirModel, Nothing},
     domain::Domain,
 )
     indices = domain.land.network.edge_indices
     reservoir_indices = domain.reservoir.network.land_indices
-    land_bc = land.boundary_conditions
-    land_v = land.variables
+    land_bc = overland_flow_model.boundary_conditions
+    land_v = overland_flow_model.variables
 
     for (i, j) in enumerate(reservoir_indices)
         yd = indices.yd[j]
         xd = indices.xd[j]
-        reservoir.boundary_conditions.inflow_overland[i] =
+        reservoir_model.boundary_conditions.inflow_overland[i] =
             land_bc.runoff[j] +
             (land_v.qx[xd] - land_v.qx[j] + land_v.qy[yd] - land_v.qy[j])
     end
@@ -976,12 +980,12 @@ function update_inflow_reservoir!(
 end
 
 """
-Update storage and water depth for combined river `LocalInertialRiverFlow`and overland flow
-`LocalInertialOverlandFlow` models for a single timestep `dt`.
+Update storage and water depth for combined river `LocalInertialRiverFlowModel`and overland flow
+`LocalInertialOverlandFlowModel` models for a single timestep `dt`.
 """
 function local_inertial_update_water_depth!(
-    land::LocalInertialOverlandFlow,
-    river::LocalInertialRiverFlow,
+    overland_flow_model::LocalInertialOverlandFlowModel,
+    river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
     dt::Float64,
 )
@@ -991,12 +995,12 @@ function local_inertial_update_water_depth!(
     (; river_location, reservoir_outlet, x_length, y_length) = domain.land.parameters
     (; flow_width, flow_length) = domain.river.parameters
 
-    river_bc = river.boundary_conditions
-    river_v = river.variables
-    river_p = river.parameters
-    land_bc = land.boundary_conditions
-    land_v = land.variables
-    land_p = land.parameters
+    river_bc = river_flow_model.boundary_conditions
+    river_v = river_flow_model.variables
+    river_p = river_flow_model.parameters
+    land_bc = overland_flow_model.boundary_conditions
+    land_v = overland_flow_model.variables
+    land_p = overland_flow_model.parameters
 
     # change in storage and water depth based on horizontal fluxes for river and land cells
     @batch per = thread minbatch = 6000 for i in 1:(land_p.n)
@@ -1120,7 +1124,7 @@ function FloodPlainProfile(
     width = zeros(n_depths, n)
     width[1, :] = flow_width[1:n]
 
-    # determine flow area (a), width and wetted perimeter (p) FloodPlain
+    # determine flow area (a), width and wetted perimeter (p) FloodPlainModel
     h = diff(flood_depths)
     incorrect_vol = 0
     riv_cells = 0
@@ -1253,7 +1257,7 @@ function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
 end
 
 "Floodplain flow model"
-@with_kw struct FloodPlain{P} <: AbstractFloodPlain
+@with_kw struct FloodPlainModel{P} <: AbstractFloodPlainModel
     parameters::FloodPlainParameters{P}
     variables::FloodPlainVariables
 end
@@ -1331,8 +1335,8 @@ function flood_depth(
     return flood_depth
 end
 
-"Initialize floodplain geometry and `FloodPlain` variables and parameters"
-function FloodPlain(
+"Initialize floodplain geometry and `FloodPlainModel` variables and parameters"
+function FloodPlainModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
@@ -1345,6 +1349,6 @@ function FloodPlain(
     n_edges = ne(graph)
     variables = FloodPlainVariables(n, n_edges, index_pit)
 
-    floodplain = FloodPlain(; parameters, variables)
+    floodplain = FloodPlainModel(; parameters, variables)
     return floodplain
 end
