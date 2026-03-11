@@ -125,12 +125,16 @@ function RiverFlowBC(
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlow{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
-                AbstractRiverFlowModel
+@with_kw struct KinWaveRiverFlow{
+    R <: RiverFlowBC,
+    F <: Union{AbstractFloodPlain, Nothing},
+    A <: AbstractAllocationModel,
+} <: AbstractRiverFlowModel
     timestepping::TimeStepping
     boundary_conditions::R
     parameters::RiverFlowParameters
     variables::FlowVariables
+    floodplain::F   # Floodplain (1D) schematization
     allocation::A   # Water allocation
 end
 
@@ -151,12 +155,14 @@ function KinWaveRiverFlow(
     variables = FlowVariables(; n)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
+    floodplain = nothing
 
     river_flow = KinWaveRiverFlow(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
+        floodplain,
         allocation,
     )
 
