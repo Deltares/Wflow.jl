@@ -188,7 +188,7 @@ end
     allocation::A                                       # Water allocation
 end
 
-"Initialize shallow water river flow model `LocalIntertialRiverFlow`"
+"Initialize shallow water river flow model `LocalInertialRiverFlow`"
 function LocalInertialRiverFlow(
     dataset::NCDataset,
     config::Config,
@@ -572,7 +572,7 @@ function update_water_depth_and_storage!(
     return nothing
 end
 
-"Update local inertial river flow model `LocalIntertialRiverFlow` for a single timestep"
+"Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep"
 function local_inertial_river_update!(
     model::LocalInertialRiverFlow,
     domain::Domain,
@@ -934,7 +934,6 @@ function update_overland_flow_model!(
         local_inertial_update_fluxes!(overland_flow_model, domain, dt_s)
         update_inflow_reservoir!(overland_flow_model, reservoir, domain)
         local_inertial_river_update!(river_flow_model, domain, dt_s, dt, update_h)
-        @infiltrate
         local_inertial_update_water_depth!(
             overland_flow_model,
             river_flow_model,
@@ -1448,7 +1447,7 @@ end
     storage::Vector{Float64} = zeros(n)    # storage [m³]
     h::Vector{Float64}                     # water depth [m]
     error::Vector{Float64} = zeros(n)      # error storage [m³]
-    a::Vector{Float64} = zeros(n_edges)    # flow area at egde [m²]
+    a::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
     r::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
     hf::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
     q0::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step

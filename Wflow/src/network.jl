@@ -1,5 +1,5 @@
 # maps the fields of struct `EdgeConnectivity` to the defined Wflow cartesian indices of
-# const `neigbors`.
+# const `neighbors`.
 const DIRS = (:yd, :xd, :xu, :yu)
 
 """
@@ -11,7 +11,7 @@ See also: de Almeida, G. A. M., P. D.Bates, J. Freer, and M. Souvignet (2012), I
 stability of a simple formulation of the shallow water equations for 2D flood modelling,
 Water Resour. Res., 48, doi:10.1029/2011WR011570.
 
-Edges without neigbors are handled by an extra index (at `n + 1`, with `n` edges). The
+Edges without neighbors are handled by an extra index (at `n + 1`, with `n` edges). The
 linear index `i` of the `EdgeConnectivity` fields represents the edge between node index `i`
 and the neighboring nodes in the CartesianIndex(-1,0) and CartesianIndex(0,-1) directions.
 The edges are defined as follows:
@@ -292,7 +292,7 @@ function EdgesAtNode(network::NetworkRiver)
     return edges_at_node
 end
 
-"Struct for storing network information reservoir."
+"Struct for storing network information for the reservoirs."
 @kwdef struct NetworkReservoir
     # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]

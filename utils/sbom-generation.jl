@@ -4,12 +4,12 @@ using Pkg
 
 Pkg.activate("Wflow")
 
-wflowLisence = SpdxLicenseExpressionV2("MIT")
+wflowLicence = SpdxLicenseExpressionV2("MIT")
 organization = SpdxCreatorV2("Organization", "Deltares", "software@deltares.nl")
 packageInstructions = spdxPackageInstructions(;
     spdxfile_toexclude = ["Wflow.spdx.json"],
     originator = organization,
-    declaredLicense = wflowLisence,
+    declaredLicense = wflowLicence,
     copyright = "Copyright (c) 2025 Deltares <software@deltares.nl>",
     name = "Wflow",
 )

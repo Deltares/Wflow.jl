@@ -32,6 +32,22 @@ resulting in higher peak flow, lower baseflow and higher actual evapotranspirati
 
 ### Added
 
+## v1.0.2 - 2026-03-05
+
+### Fixed
+- Water mass balance computation for `LateralSSF` at a sub-daily model timestep. A unit
+  conversion (to sub-daily timestep) of the `recharge` variable was missing and has been
+  added.
+- Fixed issue with where the reservoir outflow could become negative for very low reservoir
+  storage values, due to floating point precision errors. The `storage_input` variable is
+  now limited to a minimum of zero.
+- Limiting kinematic wave subsurface flow that flows partly below the soil bottom while
+  solving the kinematic wave has been fixed. The computation to limit subsurface flow was
+  not correct resulting in an subsurface flow overestimation.
+- A bug was fixed that caused Wflow to error when parameters in the TOML didn't have a
+  specified `scale` and/or `offset` value.
+- Add missing update of `total_storage` of `SbmSoilModel` for model type `sbm_gwf`.
+
 ## v1.0.1 - 2026-01-07
 
 ### Fixed
@@ -222,7 +238,7 @@ resulting in higher peak flow, lower baseflow and higher actual evapotranspirati
  - Fixed internal and external broken links in docs.
  - The internal time step of the local inertial model (`stable_timestep` function) can get
   zero when `LoopVectorization` is applied (`@tturbo`) to the for loop of these functions.
-  This issue occured on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
+  This issue occurred on a virtual machine, Windows 10 Enterprise, with Intel(R) Xeon(R) Gold
   6144 CPU (2 processors). This has been fixed by replacing `@tturbo` with `reduction` of
   `Polyester.jl`.
 - Fixed required states of the model type `sbm_gwf`: added `h_av` for the river and land

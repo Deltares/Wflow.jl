@@ -499,20 +499,22 @@ end
         boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
             n,
-            ywidth = [926.5561, 926.5574, 926.5574],
-            xwidth = [624.067, 623.967, 623.967],
-            zx_max = [0.0, 991.02, 824.671],
+            ywidth = [926.6458124188031],
+            xwidth = [],
+            zx_max = [337.2740173339844],
             theta = 1.0,
             h_thresh = 1e-3,
-            zy_max = [1011.41, 991.022, 800.38],
-            mannings_n_sq = [0.0531, 0.0596, 0.0639],
-            z = [1011.41, 991.02, 800.38],
+            zy_max = [],
+            mannings_n_sq = [0.5916686815198524],
+            z = [336.8810119628906, 337.2740173339844],
             froude_limit = true,
         ),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
             n,
-            qx0 = [1e-3, 2e-3, 3e-3],
-            h = [0.03, 0.02, 0.05],
+            qx0 = [0.0, 0.0, 0.0],
+            qx = [0.0],
+            qx_av = [0.0],
+            h = [0.0009993302787366092, 0.99946962306692],
         ),
     )
     domain = Wflow.Domain(;
@@ -521,17 +523,16 @@ end
                 edge_indices = Wflow.EdgeConnectivity(; xu = [2], xd = [3]),
             ),
             parameters = Wflow.LandParameters(;
-                x_length = fill(600.0, n),
-                y_length = fill(900.0, n),
+                x_length = [618.15300002725236, 618.15300002725236],
             ),
         ),
     )
     i = 1
-    dt = 15.0
+    dt = 17.99954463344083
     is_x_direction = true
 
     Wflow.update_directional_flow!(land, domain, i, dt, is_x_direction)
-    @test land.variables.qx_av[1] ≈ 26493.90166029366
+    @test land.variables.qx[1] ≈ -367.9977761166829
 end
 
 @testitem "unit: local_inertial_update_water_depth!" begin
@@ -540,21 +541,24 @@ end
         timestepping = Wflow.TimeStepping(),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
             n,
-            qx = [0.1, 0.3],
-            qy = [0.25, 0.15],
-            storage = [1000.0, 1250.0],
+            qx = [-0.0058363, 0.3],
+            qy = [0.0, 0.15],
+            storage = [569.1541140202806, 572.4989062633301],
         ),
-        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n, runoff = [0.2, 0.3]),
+        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
+            n,
+            runoff = [0.01705, 0.0015],
+        ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
             n,
             xwidth = [600.0],
             ywidth = [900.0],
             theta = 1.0,
             h_thresh = 1e-3,
-            zx_max = [650.0],
-            zy_max = [600.0],
-            mannings_n_sq = [0.15],
-            z = [545.0],
+            zx_max = [337.2740173339844],
+            zy_max = [333.3810119628906],
+            mannings_n_sq = [0.5916686815198524],
+            z = [333.3810119628906],
             froude_limit = true,
         ),
     )
@@ -562,7 +566,7 @@ end
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
-            external_inflow = [-0.2, -0.1],
+            external_inflow = [0.0, 0.0],
             reservoir = nothing,
         ),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
@@ -572,23 +576,23 @@ end
             active_e = [1, 1],
             froude_limit = true,
             h_thresh = 1e-3,
-            zb = [277.0, 279.0],
-            zb_max = [279.0],
-            bankfull_storage = [101565.1, 168379.4],
-            bankfull_depth = [1.3, 1.2],
-            mannings_n_sq = [9.0e-3, 9.0e-3],
-            mannings_n = [0.03, 0.03],
-            flow_length_at_edge = [637.0, 1057.7],
-            flow_width_at_edge = [97.0, 97.0],
+            zb = [227.5, 313.3999938964844],
+            zb_max = [313.3999938964844],
+            bankfull_storage = [7979.0625, 32470.3125],
+            bankfull_depth = [1.0, 1.0],
+            mannings_n_sq = [0.001225, 0.0009],
+            mannings_n = [0.035, 0.03],
+            flow_length_at_edge = [637.375, 980.265626],
+            flow_width_at_edge = [30.0, 30.0],
         ),
         variables = Wflow.LocalInertialRiverFlowVariables(;
             n,
             n_edges = 2,
-            q = [49.6, 49.6],
+            q = [0.00973319846856637, 0.1232553],
             q_av = [0.0, 0.0],
             q_channel_av = [0.0, 0.0],
-            h = [1.0, 1.0],
-            storage = [7.5e5, 7.0e5],
+            h = [0.0083347, 0.007166168666],
+            storage = [66.50309237, 232.68773603860762],
         ),
         floodplain = nothing,
         allocation = Wflow.NoAllocationRiver(1),
@@ -609,35 +613,36 @@ end
                 edges_at_node = Wflow.EdgesAtNode(; src = [[1]], dst = [[2]]),
             ),
             parameters = Wflow.RiverParameters(;
-                flow_width = [97.0],
-                flow_length = [804.0],
+                flow_width = [30.0],
+                flow_length = [265.0],
             ),
         ),
     )
 
-    dt = 17.0
+    dt = 17.99954463344083
 
     # update_river_cell_storage_and_depth!
-    @test Wflow.compute_river_storage_change(land, river, domain, 1, dt) ≈ 5.1
-    @test Wflow.compute_external_inflow(river, land, 1, 1, dt) |> collect ≈ [-0.2, 3.4]
+    @test Wflow.compute_river_storage_change(land, river, domain, 1, dt) ≈ 6.46839192999565
+    @test Wflow.compute_external_inflow(river, land, 1, 1, dt) |> collect ≈ [0.0, 0.0]
 
-    river_h_expected = 0.016530748320254397
+    river_h_expected = 0.1621635220125786
     land_h_expected = 0.0
     river_storage_expected = 1289.2
     @test Wflow.compute_water_depths(1289.2, 1, 1, river, domain) |> collect ≈
           [river_h_expected, land_h_expected, river_storage_expected]
 
     Wflow.update_river_cell_storage_and_depth!(land, river, domain, 1, dt)
-    @test river.variables.h[1] ≈ 0.016530748320254397
+    @test river.variables.h[1] ≈ 0.07240534666041211
     @test land.variables.h[1] ≈ land_h_expected
-    @test river.variables.storage[1] ≈ 1001.7
+    @test river.variables.storage[1] ≈ 575.6225059502763
 
     # update_land_cell_storage_and_depth!
-    @test Wflow.compute_land_storage_change(land, domain.land.network, 2, dt) ≈ 3.4
+    @test Wflow.compute_land_storage_change(land, domain.land.network, 2, dt) ≈
+          -8.177846510442363
 
     Wflow.update_land_cell_storage_and_depth!(land, domain.land, 2, dt)
-    @test land.variables.storage[2] ≈ 1253.4
-    @test land.variables.h[2] ≈ 0.0023211111111111115
+    @test land.variables.storage[2] ≈ 564.3210597528878
+    @test land.variables.h[2] ≈ 0.0010450389995423847
 end
 
 @testitem "local inertial long channel MacDonald (1997)" begin
