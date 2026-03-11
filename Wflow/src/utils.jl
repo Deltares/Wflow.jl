@@ -12,8 +12,6 @@ const PCR_DIR = [
     CartesianIndex(1, 1),  # 9
 ]
 
-const MISSING_VALUE = Float64(NaN)
-
 # timestep that the parameter units are defined in
 const BASETIMESTEP = Second(Day(1))
 
@@ -202,8 +200,7 @@ function set_states!(
                     end
                 end
                 # set state in model object
-                lens = get_lens(state, land)
-                lens(model) .= svectorscopy(A, Val{size(A)[1]}())
+                get_field_in_model(model, state) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
@@ -216,7 +213,7 @@ function set_states!(
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = get_lens(state, land)
+                lens = get_metadata(state, typeof(land), Routing; model).lens
                 lens(model)[1:n] .= A
             else
                 error(
@@ -273,7 +270,7 @@ function apply_affine_transform!(A::AbstractArray, var::InputEntry)
 end
 
 """
-    ncread(nc, config::Config, parameter::AbstractString; <keyword arguments>)
+    ncread(nc, config::Config, parameter::AbstractString, model_type; sel = nothing)
 
 Read a netCDF variable `var` from file `nc`, based on `config` (parsed TOML file) and the
 model `parameter` (standard name) specified in the TOML configuration file. Supports various
@@ -281,47 +278,32 @@ keyword arguments to get selections of data in desired types, with or without mi
 values.
 
 # Arguments
-- `optional=true`: By default specifying a model `parameter` in the TOML file is optional.
-        Set to false if the model `parameter` is required.
+- `model_type`: The model type (e.g., LandHydrologySBM, SoilLoss, Domain, Routing) used to
+        determine the appropriate standard name mapping.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
-- `defaults=nothing`: A default value if `var` is not in `nc`. By default it gives an error
-    in this case.
-- `type=nothing`: Type to convert data to after reading. By default no conversion is done.
-- `allow_missing=false`: Missing values within `sel` is not allowed by default. Set to
-        `true` to allow missing values.
-- `fill=nothing`: Missing values are replaced by this fill value if `allow_missing` is
-  `false`.
-- `dimname`: Name of third dimension of parameter `var`. By default no third dimension is
-  expected.
-- `logging`: Generate a logging message when reading a netCDF variable. By default `true`.
+- `logging=true`: Generate a logging message when reading a netCDF variable.
 """
 function ncread(
     nc,
     config::Config,
-    parameter::AbstractString;
-    optional = true,
+    parameter::AbstractString,
+    model_type;
     sel = nothing,
-    defaults = nothing,
-    type = nothing,
-    allow_missing = false,
-    fill = nothing,
-    dimname = nothing,
     logging = true,
+    metadata = get_metadata(parameter, model_type),
 )
-    var = get_var(config, parameter; optional)
+    (; default, fill, type, allow_missing, dimname) = metadata
+    var = get_var(config, parameter; optional = !isnothing(default))
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set `$parameter` using default value `$defaults`."
-        @assert !isnothing(defaults) parameter
-        if !isnothing(type)
-            defaults = convert(type, defaults)
-        end
+        @info "Set `$parameter` using default value `$default`."
+        @assert !isnothing(default) "Default value required but not available for $parameter (if you see this as a user please open an issue)."
         if isnothing(dimname)
-            return Base.fill(defaults, length(sel))
+            return Base.fill(default, length(sel))
         else
-            return Base.fill(defaults, (nc.dim[String(dimname)], length(sel)))
+            return Base.fill(default, (nc.dim[String(dimname)], length(sel)))
         end
     end
 
@@ -380,7 +362,10 @@ function ncread(
         end
     end
 
-    if !allow_missing
+    if allow_missing
+        # Convert to desired type if needed
+        A = map(x -> ismissing(x) ? x : type(x), A)
+    else
         if isnothing(fill)
             # errors if missing are found
             A = nomissing(A)
@@ -393,10 +378,8 @@ function ncread(
             # replace also NaN values with the fill value
             replace!(x -> isnan(x) ? fill : x, A)
         end
-    end
 
-    # Convert to desired type if needed
-    if !isnothing(type)
+        # Convert to desired type if needed
         if eltype(A) != type
             A = convert(Array{type}, A)
         end

@@ -46,13 +46,6 @@ const mover_params = (
     "land_surface_water__potential_evaporation_volume_flux",
 )
 
-function get_param(model, parameter::AbstractString)
-    (; land) = model
-    lens = get_lens(parameter, land)
-    param = lens(model)
-    return param
-end
-
 function routing_with_reservoirs(model)
     (; config) = model
     return config.model.reservoir__flag
@@ -81,7 +74,7 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if variable_name(ncvar) === nothing
             val = only(ncvar.value) * only(ncvar.scale) + only(ncvar.offset)
-            param = get_param(model, par)
+            param = get_field_in_model(model, par)
             param .= val
             # set fixed precipitation and evaporation over the reservoirs and put these into
             # the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -148,7 +141,7 @@ function update_forcing!(model)
             msg = "Forcing data at $time has missing values on active model cells for $(variable_name(ncvar))"
             throw(ArgumentError(msg))
         end
-        param = get_param(model, par)
+        param = get_field_in_model(model, par; check_allow_dynamic_input = true)
         param .= data_sel
     end
     return nothing
@@ -208,7 +201,7 @@ function update_cyclic!(model)
                 msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(variable_name(ncvar))"
                 throw(ArgumentError(msg))
             end
-            param = get_param(model, par)
+            param = get_field_in_model(model, par; check_allow_dynamic_input = true)
             param .= data_sel
         end
     end
@@ -280,12 +273,7 @@ function setup_scalar_netcdf(
                 attrib = ["cf_role" => "timeseries_id"],
             )
         end
-        v = if haskey(standard_name_map(land), parameter)
-            lens = get_lens(parameter, land)
-            lens(modelmap)
-        else
-            param(modelmap, parameter)
-        end
+        v = get_field_in_model(modelmap, parameter)
         if eltype(v) <: AbstractFloat
             defVar(
                 ds,
@@ -594,10 +582,9 @@ function locations_map(ds, mapname, config)
     map_2d = ncread(
         ds,
         config,
-        mapname;
-        optional = false,
-        type = Union{Int, Missing},
-        allow_missing = true,
+        mapname,
+        Writer;
+        metadata = ParameterMetadata(; type = Int, allow_missing = true),
     )
     ids = unique(skipmissing(map_2d))
     return ids
@@ -692,15 +679,9 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
-    (; land) = modelmap
     for (par, ncname) in ncnames_dict
-        A = if haskey(standard_name_map(land), par)
-            lens = get_lens(par, land)
-            lens(modelmap)
-        else
-            param(modelmap, par)
-        end
-        output_map[ncname] = (par = par, vector = A)
+        vector = get_field_in_model(modelmap, par)
+        output_map[ncname] = (; par, vector)
     end
     return output_map
 end
@@ -849,12 +830,7 @@ function write_netcdf_timestep(model, dataset)
     for var in writer.nc_scalar
         (; name, parameter) = var
         reducer = writer.reducer[var]
-        A = if haskey(standard_name_map(land), parameter)
-            lens = get_lens(parameter, land)
-            lens(model)
-        else
-            param(model, parameter)
-        end
+        A = get_field_in_model(model, parameter)
         elemtype = eltype(A)
         # could be a value, or a vector in case of map
         if elemtype <: AbstractFloat
@@ -1030,10 +1006,10 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         map_2d = ncread(
             dataset,
             config,
-            map;
-            type = Union{Int, Missing},
-            allow_missing = true,
+            map,
+            Writer;
             logging = false,
+            metadata = ParameterMetadata(; allow_missing = true, type = Int),
         )
         @info "Adding scalar output for a map with a reducer function." fileformat param =
             parameter mapname = map reducer_name = String(nameof(f))
@@ -1097,12 +1073,7 @@ function write_csv_row(model)
     for col in csv_cols
         (; parameter) = col
         reducer = writer.reducer[col]
-        A = if haskey(standard_name_map(land), parameter)
-            lens = get_lens(parameter, land)
-            lens(model)
-        else
-            param(model, parameter)
-        end
+        A = get_field_in_model(model, parameter)
         # v could be a value, or a vector in case of map
         if eltype(A) <: SVector
             # indexing is required in case of a SVector and CSV output
