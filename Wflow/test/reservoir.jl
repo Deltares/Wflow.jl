@@ -1,4 +1,4 @@
-@testitem "Update reservoir simple" begin
+@testitem "unit: update reservoir simple" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Simple reservoir (outflowfunc = 4)
     n = 1
@@ -60,7 +60,7 @@
     end
 end
 
-@testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
+@testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Reservoir Modified Puls approach (outflowfunc = 3)
     n = 1
@@ -117,6 +117,55 @@ end
     @test res_bc.precipitation[1] ≈ 20.0
     @test res_bc.evaporation[1] ≈ 3.2
     @test res_v.actevap[1] ≈ 3.2
+end
+
+@testitem "update_reservoir_model!" begin
+    using Graphs: DiGraph, add_edge!
+
+    n = 1
+    reservoir = Wflow.Reservoir(;
+        boundary_conditions = Wflow.ReservoirBC(;
+            n,
+            external_inflow = [-1.0],
+            inflow_overland = [0.24],
+            inflow_subsurface = [0.23],
+            inflow = [8400.0],
+            precipitation = [5.45],
+            evaporation = [4.3],
+        ),
+        parameters = Wflow.ReservoirParameters(;
+            id = [1],
+            storfunc = [Wflow.ReservoirProfileType.linear],
+            outflowfunc = [Wflow.ReservoirOutflowType.simple],
+            area = [6.0e4],
+            threshold = [0.0],
+            b = [0.0],
+            e = [0.0],
+            maxrelease = [63.0],
+            demand = [7.9],
+            targetminfrac = [0.003],
+            targetfullfrac = [1.0],
+            maxstorage = [7.16e7],
+        ),
+        variables = Wflow.ReservoirVariables(; waterlevel = zeros(n), storage = [7.1e7]),
+    )
+
+    river_flow_vars = Wflow.FlowVariables(; n = 2, q = [0.04, 0.04])
+
+    graph = DiGraph(2)
+    add_edge!(graph, 1, 2)
+    network = Wflow.NetworkRiver(; graph, reservoir_indices = [1])
+
+    v = 1
+    dt = 1000.0
+    dt_forcing = 86400.0
+
+    Wflow.update_reservoir_model!(reservoir, river_flow_vars, network, v, dt, dt_forcing)
+    @test river_flow_vars.qin[2] ≈ 7.9
+    @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 1e3
+    @test reservoir.variables.storage[1] ≈ 7.099161079861112e7
+    @test reservoir.variables.waterlevel[1] ≈ -0.13982002314801018
+    @test reservoir.variables.outflow[1] ≈ 7.9
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin

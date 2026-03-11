@@ -292,7 +292,7 @@ function EdgesAtNode(network::NetworkRiver)
     return edges_at_node
 end
 
-"Struct for storing network information reservoir."
+"Struct for storing network information for the reservoirs."
 @kwdef struct NetworkReservoir
     # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
