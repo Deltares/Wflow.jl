@@ -2,7 +2,7 @@ abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+@with_kw struct LandHydrologySBM{D<:AbstractDemandModel,A<:AbstractAllocationModel} <:
                 AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
@@ -40,7 +40,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         snow = NoSnowModel(n)
     end
     if do_snow && do_glacier
-        glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
+        glacier_bc = SnowStateBC(; snow_storage=snow.variables.snow_storage)
         glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
     elseif !do_snow && do_glacier
         @warn string(
@@ -79,8 +79,8 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
 end
 
 "Update land hydrology model with SBM soil model for a single timestep"
-function update!(
-    model::LandHydrologySBM,
+function update_land_hydrology_model!(
+    land_hydrology_model::LandHydrologySBM,
     routing::Routing,
     domain::Domain,
     config::Config,
@@ -88,25 +88,26 @@ function update!(
 )
     (; parameters) = domain.land
     (; glacier, snow, interception, runoff, soil, demand, allocation, atmospheric_forcing) =
-        model
+        land_hydrology_model
 
-    update!(interception, atmospheric_forcing, dt)
+    update_interception_model!(interception, atmospheric_forcing, dt)
 
-    update_boundary_conditions!(snow, (; interception))
-    update!(snow, atmospheric_forcing, dt)
+    update_bc_snow_model!(snow, (; interception))
+    update_snow_model!(snow, atmospheric_forcing, dt)
+
     if config.model.snow_gravitational_transport__flag
         lateral_snow_transport!(snow, domain.land, dt)
     end
 
-    update!(glacier, atmospheric_forcing, dt)
+    update_glacier_model!(glacier, atmospheric_forcing, dt)
 
-    update_boundary_conditions!(
+    update_bc_open_water_runoff_model!(
         runoff,
         (; glacier, snow, interception),
         routing,
         domain.river.network,
     )
-    update!(runoff, atmospheric_forcing, parameters, dt)
+    update_open_water_runoff_model!(runoff, atmospheric_forcing, parameters, dt)
 
     if do_water_demand(config)
         (; potential_transpiration) = soil.boundary_conditions
@@ -114,18 +115,18 @@ function update!(
         potential_transpiration .= get_potential_transpiration(interception)
         @. soil.variables.h3 = feddes_h3(h3_high, h3_low, potential_transpiration)
     end
-    update_water_demand!(demand, soil, dt)
-    update_water_allocation!(allocation, demand, routing, domain, dt)
+    update_water_demand_model!(demand, soil, dt)
+    update_water_allocation_model!(allocation, demand, routing, domain, dt)
 
     soil_fraction!(soil, glacier, parameters)
-    update_boundary_conditions!(
+    update_bc_soil_model!(
         soil,
         atmospheric_forcing,
         (; interception, runoff, demand, allocation),
         dt,
     )
 
-    update!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
+    update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
     # [m s⁻¹] += [m s⁻¹]
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
@@ -141,12 +142,12 @@ Update the total water storage per cell at the end of a timestep.
 - `routing`: Containing routing models.
 """
 function update_total_water_storage!(
-    model::LandHydrologySBM,
+    land_hydrology_model::LandHydrologySBM,
     domain::Domain,
     routing::Routing,
 )
     (; overland_flow, river_flow) = routing
-    (; interception, snow, glacier, soil, demand) = model
+    (; interception, snow, glacier, soil, demand) = land_hydrology_model
     (; total_storage, ustoredepth, satwaterdepth) = soil.variables
 
     (; river_fraction, area) = domain.land.parameters
@@ -172,7 +173,7 @@ function update_total_water_storage!(
 
     # Chunk the data for parallel computing
     n = length(ustoredepth)
-    threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n; basesize=1000) do i
         # [m] = [m] + [m]
         sub_surface = ustoredepth[i] + satwaterdepth[i]
         # [m] = [m] * [-]

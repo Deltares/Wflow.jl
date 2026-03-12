@@ -10,41 +10,41 @@
     (; domain) = model
 
     @testset "initial default states" begin
-        river = model.routing.river_flow
-        @test mean(river.sediment_flux.variables.store_clay) == 0.0
-        @test mean(river.sediment_flux.variables.leftover_clay) == 0.0
-        @test mean(river.sediment_flux.variables.clay_rate) == 0.0
+        (; river_flow) = model.routing
+        @test mean(river_flow.sediment_flux.variables.store_clay) == 0.0
+        @test mean(river_flow.sediment_flux.variables.leftover_clay) == 0.0
+        @test mean(river_flow.sediment_flux.variables.clay_rate) == 0.0
 
-        @test mean(river.sediment_flux.variables.store_silt) == 0.0
-        @test mean(river.sediment_flux.variables.leftover_silt) == 0.0
-        @test mean(river.sediment_flux.variables.silt_rate) == 0.0
+        @test mean(river_flow.sediment_flux.variables.store_silt) == 0.0
+        @test mean(river_flow.sediment_flux.variables.leftover_silt) == 0.0
+        @test mean(river_flow.sediment_flux.variables.silt_rate) == 0.0
 
-        @test mean(river.sediment_flux.variables.store_sand) == 0.0
-        @test mean(river.sediment_flux.variables.leftover_sand) == 0.0
-        @test mean(river.sediment_flux.variables.sand_rate) == 0.0
+        @test mean(river_flow.sediment_flux.variables.store_sand) == 0.0
+        @test mean(river_flow.sediment_flux.variables.leftover_sand) == 0.0
+        @test mean(river_flow.sediment_flux.variables.sand_rate) == 0.0
     end
 
     Wflow.run_timestep!(model)
 
     @testset "first timestep sediment model (land part)" begin
-        eros = model.land
+        (; land) = model
 
-        @test eros.atmospheric_forcing.precipitation[1] ≈
+        @test land.atmospheric_forcing.precipitation[1] ≈
               to_SI(4.086122035980225, MM_PER_DT; dt_val = dt)
-        @test eros.hydrological_forcing.q_land[1] ≈ 0.0
-        @test eros.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934
-        @test eros.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
-        @test eros.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈
+        @test land.hydrological_forcing.q_land[1] ≈ 0.0
+        @test land.overland_flow_erosion.parameters.usle_k[1] ≈ 0.026510488241910934
+        @test land.overland_flow_erosion.parameters.usle_c[1] ≈ 0.014194443821907043
+        @test land.overland_flow_erosion.parameters.answers_overland_flow_factor[1] ≈
               0.8999999761581421
-        @test eros.overland_flow_erosion.variables.soil_erosion_rate[1] ≈ 0.0
-        @test eros.rainfall_erosion.variables.soil_erosion_rate[1] ≈
+        @test land.overland_flow_erosion.variables.soil_erosion_rate[1] ≈ 0.0
+        @test land.rainfall_erosion.variables.soil_erosion_rate[1] ≈
               to_SI(0.00027245577922893746, TON_PER_DT; dt_val = dt)
         @test model.clock.iteration == 1
-        @test mean(eros.overland_flow_erosion.variables.soil_erosion_rate) ≈
+        @test mean(land.overland_flow_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.00861079076689589, TON_PER_DT; dt_val = dt)
-        @test mean(eros.rainfall_erosion.variables.soil_erosion_rate) ≈
+        @test mean(land.rainfall_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.00016326203201620437, TON_PER_DT; dt_val = dt)
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+        @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.008774052798912092, TON_PER_DT; dt_val = dt)
     end
 
@@ -52,73 +52,75 @@
     Wflow.run_timestep!(model)
 
     @testset "second timestep sediment model (land part)" begin
-        eros = model.land
+        (; variables) = model.land.soil_erosion
 
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+        @test mean(variables.soil_erosion_rate) ≈
               to_SI(0.07765800489746684, TON_PER_DT; dt_val = dt)
-        @test mean(eros.soil_erosion.variables.clay_erosion_rate) ≈
+        @test mean(variables.clay_erosion_rate) ≈
               to_SI(0.002287480354866626, TON_PER_DT; dt_val = dt)
-        @test mean(eros.soil_erosion.variables.silt_erosion_rate) ≈
+        @test mean(variables.silt_erosion_rate) ≈
               to_SI(0.003616477352118489, TON_PER_DT; dt_val = dt)
-        @test mean(eros.soil_erosion.variables.sand_erosion_rate) ≈
+        @test mean(variables.sand_erosion_rate) ≈
               to_SI(0.026301393837924607, TON_PER_DT; dt_val = dt)
-        @test mean(eros.soil_erosion.variables.lagg_erosion_rate) ≈
+        @test mean(variables.lagg_erosion_rate) ≈
               to_SI(0.022577957752547836, TON_PER_DT; dt_val = dt)
-        @test mean(eros.soil_erosion.variables.sagg_erosion_rate) ≈
+        @test mean(variables.sagg_erosion_rate) ≈
               to_SI(0.022874695590802723, TON_PER_DT; dt_val = dt)
     end
 
     @testset "second timestep sediment model (routing)" begin
-        land = model.routing.overland_flow
-        river = model.routing.river_flow
+        (; overland_flow, river_flow) = model.routing
 
-        @test land.transport_capacity.parameters.dm_sand[1] == to_SI(200.0, Unit(; μm = 1))
-        @test land.transport_capacity.parameters.dm_lagg[1] == to_SI(500.0, Unit(; μm = 1))
+        @test overland_flow.transport_capacity.parameters.dm_sand[1] ==
+              to_SI(200.0, Unit(; μm = 1))
+        @test overland_flow.transport_capacity.parameters.dm_lagg[1] ==
+              to_SI(500.0, Unit(; μm = 1))
 
-        @test mean(land.transport_capacity.boundary_conditions.q) ≈ 0.006879398771052133
-        @test mean(land.transport_capacity.variables.silt) ≈
+        @test mean(overland_flow.transport_capacity.boundary_conditions.q) ≈
+              0.006879398771052133
+        @test mean(overland_flow.transport_capacity.variables.silt) ≈
               Float32(to_SI(1.0988158364353527e6, TON_PER_DT; dt_val = dt))
-        @test mean(land.transport_capacity.variables.sand) ≈
+        @test mean(overland_flow.transport_capacity.variables.sand) ≈
               Float32(to_SI(1.0987090622888755e6, TON_PER_DT; dt_val = dt))
-        @test mean(land.transport_capacity.variables.clay) ≈
+        @test mean(overland_flow.transport_capacity.variables.clay) ≈
               Float32(to_SI(1.0992655197016734e6, TON_PER_DT; dt_val = dt))
 
-        @test mean(land.to_river.variables.sediment_rate) ≈
+        @test mean(overland_flow.to_river.variables.sediment_rate) ≈
               to_SI(0.0762386279230294, TON_PER_DT; dt_val = dt)
-        @test sum(land.to_river.variables.clay_rate) ≈
+        @test sum(overland_flow.to_river.variables.clay_rate) ≈
               to_SI(114.42704329506047, TON_PER_DT; dt_val = dt)
-        @test sum(land.to_river.variables.sand_rate) ≈
+        @test sum(overland_flow.to_river.variables.sand_rate) ≈
               to_SI(1289.4173249850346, TON_PER_DT; dt_val = dt)
-        @test mean(land.sediment_flux.variables.clay) ≈
+        @test mean(overland_flow.sediment_flux.variables.clay) ≈
               to_SI(0.006578791733506439, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.hydrological_forcing.q_river) ≈ 0.6975180562953642
-        @test river.hydrological_forcing.waterlevel_river[domain.river.network.order[end]] ≈
+        @test mean(river_flow.hydrological_forcing.q_river) ≈ 0.6975180562953642
+        @test river_flow.hydrological_forcing.waterlevel_river[domain.river.network.order[end]] ≈
               0.006103649735450745
         @test mean(domain.river.parameters.flow_width) ≈ 22.628250814095523
 
-        @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
-        @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
+        @test mean(river_flow.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
+        @test mean(river_flow.transport_capacity.variables.sediment_transport_capacity) ≈
               to_SI(0.4458019733090582, TON_PER_DT; dt_val = dt)
-        @test mean(river.potential_erosion.variables.bed) ≈
+        @test mean(river_flow.potential_erosion.variables.bed) ≈
               to_SI(307.3559271135137, TON_PER_DT; dt_val = dt)
 
-        @test sum(river.sediment_flux.boundary_conditions.erosion_land_clay) ≈
+        @test sum(river_flow.sediment_flux.boundary_conditions.erosion_land_clay) ≈
               to_SI(114.42704329506047, TON_PER_DT; dt_val = dt)
-        @test sum(river.sediment_flux.boundary_conditions.erosion_land_sand) ≈
+        @test sum(river_flow.sediment_flux.boundary_conditions.erosion_land_sand) ≈
               to_SI(1289.417324985034, TON_PER_DT; dt_val = dt)
-        @test mean(river.sediment_flux.boundary_conditions.transport_capacity) ≈
+        @test mean(river_flow.sediment_flux.boundary_conditions.transport_capacity) ≈
               to_SI(0.4458019733090582, TON_PER_DT; dt_val = dt)
-        @test mean(river.sediment_flux.variables.sediment_rate) ≈
+        @test mean(river_flow.sediment_flux.variables.sediment_rate) ≈
               to_SI(0.43330815120929567, TON_PER_DT; dt_val = dt)
-        @test mean(river.sediment_flux.variables.erosion) ≈
+        @test mean(river_flow.sediment_flux.variables.erosion) ≈
               to_SI(0.018944871787785745, TON_PER_DT; dt_val = dt)
-        @test mean(river.sediment_flux.variables.deposition) ≈
+        @test mean(river_flow.sediment_flux.variables.deposition) ≈
               to_SI(0.6939704797633529, TON_PER_DT; dt_val = dt)
-        @test river.sediment_flux.variables.clay_rate[5649] ≈
+        @test river_flow.sediment_flux.variables.clay_rate[5649] ≈
               to_SI(2.840979764480952e-9, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.concentrations.variables.suspended) ≈
+        @test mean(river_flow.concentrations.variables.suspended) ≈
               to_SI(0.8261173586131326, Unit(; g = 1, m = -3))
     end
 
@@ -562,15 +564,15 @@ end
     Wflow.run_timestep!(model)
 
     @testset "second timestep sediment model engelund (routing)" begin
-        land = model.routing.overland_flow
-        river = model.routing.river_flow
+        (; river_flow) = model.routing
 
-        @test river.transport_capacity.parameters.d50[1] == to_SI(0.05000000074505806, MM)
-        @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
-        @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
+        @test river_flow.transport_capacity.parameters.d50[1] ==
+              to_SI(0.05000000074505806, MM)
+        @test mean(river_flow.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
+        @test mean(river_flow.transport_capacity.variables.sediment_transport_capacity) ≈
               to_SI(0.1418728167951134, TON_PER_DT; dt_val = dt)
 
-        @test mean(river.concentrations.variables.suspended) ≈
+        @test mean(river_flow.concentrations.variables.suspended) ≈
               to_SI(0.24791810261189964, GRAM_PER_M3)
     end
 
@@ -596,15 +598,16 @@ end
     Wflow.run_timestep!(model)
 
     @testset "second timestep sediment model govers" begin
-        eros = model.land
-        land = model.routing.overland_flow
+        (; land, routing) = model
+        (; overland_flow) = routing
 
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+        @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.0776983847440198, TON_PER_DT; dt_val = dt)
-        @test mean(land.transport_capacity.parameters.c_govers) ≈ 0.16393911236592437
-        @test mean(land.transport_capacity.variables.sediment_transport_capacity) ≈
+        @test mean(overland_flow.transport_capacity.parameters.c_govers) ≈
+              0.16393911236592437
+        @test mean(overland_flow.transport_capacity.variables.sediment_transport_capacity) ≈
               to_SI(1.0990864706347766e6, TON_PER_DT; dt_val = dt)
-        @test mean(land.to_river.variables.sediment_rate) ≈
+        @test mean(overland_flow.to_river.variables.sediment_rate) ≈
               to_SI(0.07708434959918917, TON_PER_DT; dt_val = dt)
     end
 
@@ -630,15 +633,18 @@ end
     Wflow.run_timestep!(model)
 
     @testset "second timestep sediment model yalin" begin
-        eros = model.land
-        land = model.routing.overland_flow
+        # eros = model.land
+        # land = model.routing.overland_flow
+        (; land, routing) = model
+        (; overland_flow) = routing
 
-        @test mean(eros.soil_erosion.variables.soil_erosion_rate) ≈
+        @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈
               to_SI(0.0776983847440198, TON_PER_DT; dt_val = dt)
-        @test mean(land.transport_capacity.parameters.d50) ≈ to_SI(0.001534350291334408, MM)
-        @test mean(land.transport_capacity.variables.sediment_transport_capacity) ≈
+        @test mean(overland_flow.transport_capacity.parameters.d50) ≈
+              to_SI(0.001534350291334408, MM)
+        @test mean(overland_flow.transport_capacity.variables.sediment_transport_capacity) ≈
               Float32(to_SI(1.0988158364353527e6, TON_PER_DT; dt_val = dt))
-        @test mean(land.to_river.variables.sediment_rate) ≈
+        @test mean(overland_flow.to_river.variables.sediment_rate) ≈
               to_SI(0.07759383356462951, TON_PER_DT; dt_val = dt)
     end
 

@@ -60,13 +60,14 @@ function get_water_flux_surface!(
 end
 
 "Update boundary conditions of the open water runoff model for a single timestep"
-function update_boundary_conditions!(
-    model::OpenWaterRunoff,
+function update_bc_open_water_runoff_model!(
+    open_water_runoff_model::OpenWaterRunoff,
     external_models::NamedTuple,
     routing::Routing,
     network::NetworkRiver,
 )
-    (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
+    (; water_flux_surface, waterdepth_river, waterdepth_land) =
+        open_water_runoff_model.boundary_conditions
     (; land_indices) = network
     (; snow, glacier, interception) = external_models
 
@@ -83,17 +84,17 @@ function update_boundary_conditions!(
 end
 
 "Update the open water runoff model for a single timestep"
-function update!(
-    model::OpenWaterRunoff,
+function update_open_water_runoff_model!(
+    open_water_runoff_model::OpenWaterRunoff,
     atmospheric_forcing::AtmosphericForcing,
     parameters::LandParameters,
-    dt::Number,
+    dt::Float64,
 )
+    (; boundary_conditions, variables) = open_water_runoff_model
+    (; water_flux_surface, waterdepth_river, waterdepth_land) = boundary_conditions
+    (; runoff_river, net_runoff_river, runoff_land, ae_openw_r, ae_openw_l) = variables
     (; potential_evaporation) = atmospheric_forcing
-    (; runoff_river, net_runoff_river, runoff_land, ae_openw_r, ae_openw_l) =
-        model.variables
     (; river_fraction, water_fraction) = parameters
-    (; water_flux_surface, waterdepth_river, waterdepth_land) = model.boundary_conditions
 
     # [m s⁻¹] = [-] * [m s⁻¹]
     @. runoff_river = min(1.0, river_fraction) * water_flux_surface

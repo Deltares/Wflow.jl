@@ -136,8 +136,9 @@ get_lens(name::AbstractString, model::T) where {T} = get_lens(name, T)
 get_lens(name::AbstractString, model::AbstractLandModel) = get_metadata(name, model).lens
 get_lens(name::AbstractString, ::Type{T}) where {T} = get_metadata(name, T).lens
 
-to_proper_number_type(x::Union{Missing, Bool}, ::Type) = x
-to_proper_number_type(x::Number, ::Type{T}) where {T <: Number} = T(x)
+to_proper_number_type(x::Missing, ::Type) = x
+to_proper_number_type(x::Bool, ::Type) = x
+to_proper_number_type(x::AbstractFloat, ::Type{T}) where {T <: Number} = T(x)
 
 function transform(
     A::AbstractArray,

@@ -143,7 +143,7 @@ over time.
     fresh_average::Bool = true
 end
 
-function add_to_cumulative!(v::AverageVector, i::Int, flux::Number, dt::Number)
+function add_to_cumulative!(v::AverageVector, i::Int, flux::Number, dt::Float64)
     v.fresh_average = false
     v.cumulative_material[i] += flux * dt
 end
@@ -171,6 +171,7 @@ function get_average(v::AverageVector)
     end
     return v.average
 end
+get_average(v::AbstractArray) = v
 
 zero!(v::AverageVector) = (v.cumulative_material .= 0.0)
 Base.eltype(::AverageVector) = Float64
@@ -351,7 +352,7 @@ function run(config::Config)
     return model
 end
 
-function run_timestep!(model::Model; update_func = update!, write_model_output = true)
+function run_timestep!(model::Model; update_func = update_model!, write_model_output = true)
     (; mass_balance) = model
     advance!(model.clock)
     load_dynamic_input!(model)

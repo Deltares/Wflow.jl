@@ -183,7 +183,7 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
                 end
                 A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
-                # note that this array is allowed to have missings, since not every land
+                # note that this array is allowed to have missing, since not every land
                 # column is `maxlayers` layers deep
                 if dimname == :layer
                     A = replace!(A, missing => NaN)
@@ -227,6 +227,30 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
         )
     end
     return var
+end
+
+"""
+Apply the affine transform in `var` to the incoming array `A` in place element-wise.
+The affine transform consists of a scaling by `scale` and a translation by `offset`.
+These operations are only applied when non-trivial.
+"""
+function apply_affine_transform!(A::AbstractArray, var::InputEntry)
+    (; do_scaling, scale_scalar, scale, do_offsetting, offset_scalar, offset) = var
+    if do_scaling
+        if scale_scalar
+            A .*= only(scale)
+        else
+            A .*= scale
+        end
+    end
+    if do_offsetting
+        if offset_scalar
+            A .+= only(offset)
+        else
+            A .+= offset
+        end
+    end
+    return A
 end
 
 """
@@ -319,8 +343,8 @@ function ncread(
             for i in eachindex(layer)
                 A[:, :, layer[i]] = A[:, :, layer[i]] .* scale[i] .+ offset[i]
             end
-        elseif scale != 1.0 || offset != 0.0
-            A = A .* scale .+ offset
+        else
+            apply_affine_transform!(A, var)
         end
     end
 
@@ -338,13 +362,13 @@ function ncread(
         A = map(x -> ismissing(x) ? x : type(x), A)
     else
         if isnothing(fill)
-            # errors if missings are found
+            # errors if missing are found
             A = nomissing(A)
             if any(isnan, A)
                 error("NaN not allowed in $var")
             end
         else
-            # replaces missings with a fill value
+            # replaces missing with a fill value
             A = nomissing(A, fill)
             # replace also NaN values with the fill value
             replace!(x -> isnan(x) ? fill : x, A)
@@ -692,7 +716,7 @@ end
     hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
     hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
 
-Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using muliplication
+Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using multiplication
 factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
 """
 function hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)

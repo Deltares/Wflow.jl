@@ -158,7 +158,7 @@ function overland_flow_erosion_answers(
     sinslope = sin_slope(slope)
 
     # Overland flow erosion [kg min⁻¹]
-    # For a wide range of slope, it is better to use the sine of slope rather than tangeant
+    # For a wide range of slope, it is better to use the sine of slope rather than tangent
     erosion = answers_overland_flow_factor * usle_c * usle_k * area * sinslope * qr_land
     return to_SI(erosion, KG_PER_MIN)
 end

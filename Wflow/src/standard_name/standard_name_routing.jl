@@ -289,7 +289,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio" =>
         ParameterMetadata(;
             lens = @optic(_.routing.subsurface_flow.parameters.khfrac),
-            description = "A muliplication factor applied to vertical hydraulic conductivity",
+            description = "A multiplication factor applied to vertical hydraulic conductivity",
             tags = [:kinematic_lateral_subsurface_input],
         ),
     #### States

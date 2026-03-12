@@ -68,6 +68,8 @@
         @test soil.variables.exfiltsatwater[17] == 0.0
         @test mean(Wflow.get_average(river_flow.variables.q_av)) ≈ 30.121490886621505
         @test maximum(Wflow.get_average(river_flow.variables.q_av)) ≈ 117.02953499886921
+        @test soil.variables.total_storage[7503] ≈ to_SI(472.88008994367334, MM)
+        @test soil.variables.total_storage[17] ≈ to_SI(817.679670011310, MM) # river cell
     end
 
     Wflow.run_timestep!(model)
@@ -108,6 +110,8 @@
         @test soil.variables.exfiltsatwater[17] == 0.0
         @test mean(Wflow.get_average(river_flow.variables.q_av)) ≈ 36.15061722750282
         @test maximum(Wflow.get_average(river_flow.variables.q_av)) ≈ 140.42694443194858
+        @test soil.variables.total_storage[7503] ≈ to_SI(463.1373992927126, MM)
+        @test soil.variables.total_storage[17] ≈ to_SI(838.5447308776984, MM) # river cell
     end
 
     Wflow.close_files(model; delete_output = false)

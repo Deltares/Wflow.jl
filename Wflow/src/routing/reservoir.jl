@@ -359,13 +359,14 @@ update_index_hq!(reservoir, clock::Clock) = nothing
 
 "Update reservoir with rating curve type (`ouflowfunc`) 4 for a single timestep"
 function update_reservoir_simple(
-    model::Reservoir,
+    reservoir_model::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; maxstorage, targetminfrac, targetfullfrac, demand, maxrelease) = model.parameters
-    res_v = model.variables
+    (; maxstorage, targetminfrac, targetfullfrac, demand, maxrelease) =
+        reservoir_model.parameters
+    res_v = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
     # [m³] = [m³] + ([m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]) * [s]
@@ -400,13 +401,13 @@ Update reservoir with rating curve type (`ouflowfunc`) 3 (Modified Puls approach
 single timestep.
 """
 function update_reservoir_modified_puls(
-    model::Reservoir,
+    reservoir_model::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; area, threshold, b) = model.parameters
-    (; storage) = model.variables
+    (; area, threshold, b) = reservoir_model.parameters
+    (; storage) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
     # [m³ᐟ² s⁻¹ᐟ²] = [m²] / ([s] * sqrt([m s⁻¹]))
@@ -438,13 +439,13 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 1 (HQ data) for a single timestep."
 function update_reservoir_hq(
-    model::Reservoir,
+    reservoir_model::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; hq, col_index_hq, maxstorage) = model.parameters
-    (; storage, waterlevel) = model.variables
+    (; hq, col_index_hq, maxstorage) = reservoir_model.parameters
+    (; storage, waterlevel) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
     # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
@@ -466,13 +467,14 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 2 (free weir) for a single timestep."
 function update_reservoir_free_weir(
-    model::Reservoir,
+    reservoir_model::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; threshold, b, e, area, storfunc, sh, lower_reservoir_ind) = model.parameters
-    res_v = model.variables
+    (; threshold, b, e, area, storfunc, sh, lower_reservoir_ind) =
+        reservoir_model.parameters
+    res_v = reservoir_model.variables
     (; waterlevel) = res_v
     (; precipitation, evaporation, inflow) = boundary_vars
 
@@ -483,7 +485,7 @@ function update_reservoir_free_weir(
     diff_wl = has_lower_res ? waterlevel[i] - waterlevel[lo] : 0.0
 
     # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
-    storage_input = res_v.storage[i] / dt + precipitation - evaporation + inflow
+    storage_input = max(res_v.storage[i] / dt + precipitation - evaporation + inflow, 0.0)
 
     if diff_wl >= 0.0
         if res_v.waterlevel[i] > threshold[i]
@@ -538,15 +540,15 @@ end
 
 "Update reservoir using observed outflow for a single timestep."
 function update_reservoir_outflow_obs(
-    model::Reservoir,
+    reservoir_model::Reservoir,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
 )
-    (; storage, outflow_obs) = model.variables
+    (; storage, outflow_obs) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
     # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
-    storage_input = storage[i] / dt + precipitation - evaporation + inflow
+    storage_input = max(storage[i] / dt + precipitation - evaporation + inflow, 0.0)
     # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
     outflow = min(outflow_obs[i], storage_input)
     # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
@@ -560,10 +562,15 @@ Update a single reservoir at position `i`.
 This is called from within the river routing scheme, therefore updating only for a single
 element rather than all at once.
 """
-function update!(model::Reservoir, i::Int, inflow::Float64, dt::Float64)
-    res_bc = model.boundary_conditions
-    res_p = model.parameters
-    res_v = model.variables
+function update_reservoir_model!(
+    reservoir_model::Reservoir,
+    i::Int,
+    inflow::Float64,
+    dt::Float64,
+)
+    res_bc = reservoir_model.boundary_conditions
+    res_p = reservoir_model.parameters
+    res_v = reservoir_model.variables
 
     # limit reservoir evaporation based on total available volume [m³]
     # [m³ s⁻¹] = [m s⁻¹] * [m²]
@@ -576,7 +583,7 @@ function update!(model::Reservoir, i::Int, inflow::Float64, dt::Float64)
     evaporation = min(available_storage / dt, potential_evaporation)
 
     boundary_vars = (; precipitation, evaporation, inflow)
-    update_reservoir_args = (model, i, boundary_vars, dt)
+    update_reservoir_args = (reservoir_model, i, boundary_vars, dt)
     if !isnan(res_v.outflow_obs[i])
         outflow, storage = update_reservoir_outflow_obs(update_reservoir_args...)
     elseif res_p.outflowfunc[i] == ReservoirOutflowType.rating_curve

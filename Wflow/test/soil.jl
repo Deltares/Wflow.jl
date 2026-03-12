@@ -1,10 +1,10 @@
-@testitem "unit: update_boundary_conditions!" begin
+@testitem "unit: update_bc_soil_model!" begin
     using Wflow: to_SI
     using StaticArrays: SVector
     include("testing_utils.jl")
     n = 1
     dt = 86400.0
-    model = init_sbm_soil_model(1, 1; soil_fraction = [0.3])
+    soil_model = init_sbm_soil_model(1, 1; soil_fraction = [0.3])
     atmospheric_forcing = Wflow.AtmosphericForcing(;
         n,
         potential_evaporation = [
@@ -111,16 +111,16 @@
 
     external_models = (; interception, runoff, demand, allocation)
 
-    Wflow.update_boundary_conditions!(model, atmospheric_forcing, external_models, dt)
+    Wflow.update_bc_soil_model!(soil_model, atmospheric_forcing, external_models, dt)
 
-    @test model.boundary_conditions.potential_transpiration[1] ≈
+    @test soil_model.boundary_conditions.potential_transpiration[1] ≈
           to_SI(2e-3, "soil_water__transpiration_volume_flux"; dt_val = dt)
-    @test model.boundary_conditions.potential_soilevaporation[1] ≈ to_SI(
+    @test soil_model.boundary_conditions.potential_soilevaporation[1] ≈ to_SI(
         2.9e-4,
         "land_surface_water__potential_evaporation_volume_flux";
         dt_val = dt,
     )
-    @test model.boundary_conditions.water_flux_surface[1] ≈
+    @test soil_model.boundary_conditions.water_flux_surface[1] ≈
           to_SI(1.99e-2, "soil_surface_water__runoff_volume_flux"; dt_val = dt)
 end
 
@@ -357,7 +357,7 @@ end
     )
 end
 
-@testitem "unit: update! SbmSoilModel" begin
+@testitem "unit: update_soil_water_storage!" begin
     using StaticArrays: SVector
     using Wflow: to_SI, Unit, MM_PER_DT, MM
     M_PER_DT = Unit(; m = 1, dt = -1)
@@ -450,7 +450,7 @@ end
 
     external_models = (; runoff, demand, subsurface_flow)
 
-    Wflow.update!(model, external_models, dt)
+    Wflow.update_soil_water_storage!(model, external_models, dt)
 
     @test demand.paddy.variables.h[1] ≈ to_SI(2.0, "paddy_surface_water__depth")
     @test model.variables.runoff[1] ≈

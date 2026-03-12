@@ -1,5 +1,5 @@
 """
-    glacier_hbv(glacierfrac, glacierstore, snow_storage, temperature, tt, cfmax, g_sifrac, max_snow_to_glacier)
+    glacier_hbv(glacier_frac, glacier_store, snow_storage, temperature, ttm, cfmax, g_sifrac, max_snow_to_glacier)
 
 HBV-light type of glacier modelling.
 First, a fraction of the snowpack is converted into ice using the HBV-light

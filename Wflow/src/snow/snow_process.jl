@@ -1,13 +1,13 @@
 
 """
-    snowpack_hbv(snow, snowwater, snow_precip, liquid_precip, temperature, ttm, cfmax, whc, dt; cfr = 0.05)
+    snowpack_hbv(snow_storage, snow_water, snow_precip, liquid_precip, temperature, ttm, cfmax, whc, dt; cfr = 0.05)
 
 HBV type snowpack modeling using a temperature degree factor.
 The refreezing efficiency factor `cfr` is set to 0.05.
 
 # Arguments
-- `snow` (snow storage)
-- `snowwater` (liquid water content in the snow pack)
+- `snow_storage` (snow storage)
+- `snow_water` (liquid water content in the snow pack)
 - `snow_precip` (snow precipitation)
 - `liquid_precip` (liquid precipitation)
 - `ttm` (melting threshold)

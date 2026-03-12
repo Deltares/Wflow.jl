@@ -21,7 +21,7 @@ end
 @with_kw struct LateralSsfParameters{Kh}
     # Horizontal hydraulic conductivity profile type [-]
     kh_profile::Kh
-    # A muliplication factor applied to vertical hydraulic conductivity `kv` [-]
+    # A multiplication factor applied to vertical hydraulic conductivity `kv` [-]
     khfrac::Vector{Float64}
     # Soil thickness [m]
     soilthickness::Vector{Float64}
@@ -144,14 +144,21 @@ function LateralSSF(
 end
 
 "Update lateral subsurface model for a single timestep"
-function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::Float64)
+function update_subsurface_flow_model!(
+    subsurface_flow_model::LateralSSF,
+    soil_model::SbmSoilModel,
+    domain::DomainLand,
+    dt::Float64,
+)
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
     (; flow_length, flow_width, area, flow_fraction_to_river, slope) = domain.parameters
 
-    (; recharge_area) = model.boundary_conditions
-    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) = model.variables
-    (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) = model.parameters
+    (; recharge_area) = subsurface_flow_model.boundary_conditions
+    (; ssfin, ssf, ssfmax, to_river, zi, exfiltwater, storage) =
+        subsurface_flow_model.variables
+    (; specific_yield, specific_yield_dyn, soilthickness, kh_profile) =
+        subsurface_flow_model.parameters
 
     ns = length(order_of_subdomains)
     for k in 1:ns
@@ -183,7 +190,7 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
                     flow_width[v],
                     ssfmax[v],
                     kh_profile,
-                    soil,
+                    soil_model,
                     v,
                 )
                 # [m] = [-] * ([m] - [m]) * [m²]
@@ -195,11 +202,12 @@ function update!(model::LateralSSF, soil::SbmSoilModel, domain::DomainLand, dt::
 end
 
 # wrapper methods
-get_water_depth(model::LateralSSF) = model.variables.zi
-get_exfiltwater(model::LateralSSF) = model.variables.exfiltwater
+get_water_depth(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.zi
+get_exfiltwater(subsurface_flow_model::LateralSSF) =
+    subsurface_flow_model.variables.exfiltwater
 
 get_flux_to_river(model::LateralSSF, inds::Vector{Int}) = model.variables.to_river[inds]
 
-get_inflow(model::LateralSSF) = model.variables.ssfin
-get_outflow(model::LateralSSF) = model.variables.ssf
-get_storage(model::LateralSSF) = model.variables.storage
+get_inflow(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.ssfin
+get_outflow(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.ssf
+get_storage(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.storage

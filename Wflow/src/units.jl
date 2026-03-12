@@ -20,7 +20,7 @@ struct Unit
     # Temperature
     absolute_temperature::Bool # Expected to be first field!
     K::PowersType # Kelvin, SI standard
-    degC::PowersType # degree Celcius
+    degC::PowersType # degree Celsius
     # Time
     s::PowersType # second, SI standard
     ms::PowersType # millisecond

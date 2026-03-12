@@ -433,7 +433,7 @@ const tan80 = 5.67
 Lateral snow transport. Transports snow downhill. Mutates `snow_storage` and `snow_water` of
 a `snow` model.
 """
-function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt::Number)
+function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt::Float64)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
     # [m]
@@ -449,7 +449,7 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt
     flux_in!(snow_in, snow_out, domain.network)
 end
 
-lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Number) = nothing
+lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Float64) = nothing
 
 """
     local_inertial_flow(q0, zs0, zs1, hf, A, R, length, mannings_n, g, froude_limit, dt)
@@ -491,7 +491,7 @@ function local_inertial_flow(
 end
 
 """
-    local_inertial_flow(theta, q0, qd, qu, zs0, zs1, hf, width, length, mannings_n, g, froude_limit, dt)
+    local_inertial_flow(theta, q0, qd, qu, zs0, zs1, hf, width, length, mannings_n_sq, froude_limit, dt)
 
 Local inertial approach for flow through a rectangular area. Returns the flow `q` between
 two adjacent cells (nodes) for a single timestep. Algorithm is based on de Almeida et al.

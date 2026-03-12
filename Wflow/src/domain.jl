@@ -8,7 +8,7 @@
     area::Vector{Float64} = Float64[]
     # flow width [m]
     flow_width::Vector{Float64} = Float64[]
-    # suface flow width [m]
+    # surface flow width [m]
     surface_flow_width::Vector{Float64} = Float64[]
     # flow length [m]
     flow_length::Vector{Float64} = Float64[]

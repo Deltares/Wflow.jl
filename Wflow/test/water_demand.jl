@@ -76,10 +76,10 @@ end
         h_opt = [to_SI(50.0, MM)],
         h_max = [to_SI(80.0, MM)],
     )
-    model = Wflow.Paddy(; n, parameters, variables)
-    @test Wflow.compute_irrigation_depth(model, 1) ≈ to_SI(35.0, MM)
+    paddy_model = Wflow.Paddy(; n, parameters, variables)
+    @test Wflow.compute_irrigation_depth(paddy_model, 1) ≈ to_SI(35.0, MM)
 
-    Wflow.update_demand_gross!(model, dt)
+    Wflow.update_demand_gross!(paddy_model, dt)
     @test only(variables.demand_gross) ≈ to_SI(25.0, MM_PER_DT; dt_val = dt)
 end
 

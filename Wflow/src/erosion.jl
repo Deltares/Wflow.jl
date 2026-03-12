@@ -31,25 +31,33 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
 end
 
 "Update soil loss model for a single timestep"
-function update!(model::SoilLoss, parameters::LandParameters, dt::Float64)
+function update_soil_loss_model!(
+    soil_loss_model::SoilLoss,
+    parameters::LandParameters,
+    dt::Float64,
+)
     (;
         atmospheric_forcing,
         hydrological_forcing,
         rainfall_erosion,
         overland_flow_erosion,
         soil_erosion,
-    ) = model
+    ) = soil_loss_model
 
     #TODO add interception/canopygapfraction calculation here for eurosem
     #need SBM refactor
 
     # Rainfall erosion
-    update_boundary_conditions!(rainfall_erosion, atmospheric_forcing, hydrological_forcing)
-    update!(rainfall_erosion, parameters, dt)
+    update_bc_rainfall_erosion_model!(
+        rainfall_erosion,
+        atmospheric_forcing,
+        hydrological_forcing,
+    )
+    update_rainfall_erosion_model!(rainfall_erosion, parameters, dt)
     # Overland flow erosion
-    update_boundary_conditions!(overland_flow_erosion, hydrological_forcing)
-    update!(overland_flow_erosion, parameters, dt)
+    update_bc_overland_flow_erosion_model!(overland_flow_erosion, hydrological_forcing)
+    update_overland_flow_erosion_model!(overland_flow_erosion, parameters, dt)
     # Total soil erosion and particle differentiation
-    update_boundary_conditions!(soil_erosion, rainfall_erosion, overland_flow_erosion)
-    update!(soil_erosion)
+    update_bc_soil_erosion_model!(soil_erosion, rainfall_erosion, overland_flow_erosion)
+    update_soil_erosion_model!(soil_erosion)
 end

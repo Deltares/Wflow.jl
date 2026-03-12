@@ -104,7 +104,7 @@ end
     end
 end
 
-@testitem "unit: lenses" begin
+@testitem "integration: lenses" begin
     using Accessors: @optic
     configs = Wflow.Config[]
 
@@ -213,4 +213,21 @@ end
     dh, exfilt = Wflow.water_table_change(soil, net_flux, specific_yield, i, dt)
     @test dh ≈ 0.4243119266055048
     @test iszero(exfilt)
+end
+
+@testitem "unit: Affine transform" begin
+    using Wflow: apply_affine_transform!, InputEntry
+
+    v = [3.5, 4.7, 2.4]
+
+    @test apply_affine_transform!(copy(v), InputEntry(; scale = [2.0])) == 2 * v
+    @test apply_affine_transform!(copy(v), InputEntry(; scale = fill(3.0, 3))) == 3 * v
+
+    @test apply_affine_transform!(copy(v), InputEntry(; offset = [4.0])) == v .+ 4.0
+    @test apply_affine_transform!(copy(v), InputEntry(; offset = fill(5.0, 3))) == v .+ 5.0
+
+    @test apply_affine_transform!(
+        copy(v),
+        InputEntry(; scale = [6.0], offset = fill(7.0, 3)),
+    ) == 6.0 * v .+ 7.0
 end
