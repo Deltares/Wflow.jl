@@ -3,7 +3,7 @@
 
 # Mapping of grid identifier to a key, to get the active indices of the model domain.
 # See also function active_indices(network, key::AbstractString).
-const GRIDS = Dict{Int, String}(
+const GRIDS = Dict{Int,String}(
     0 => "reservoir",
     1 => "drain",
     2 => "river",
@@ -75,7 +75,7 @@ function BMI.finalize(model::Model)
         write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
     end
     reset_clock!(model.clock, config)
-    close_files(model; delete_output = false)
+    close_files(model; delete_output=false)
     return nothing
 end
 
@@ -108,7 +108,7 @@ function BMI.get_input_var_names(model::Model)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
-            if !haskey(standard_name_map(land), var)
+            if isnothing(get_metadata(var, land))
                 push!(idx, i)
                 @warn(
                     "$var is not listed as variable for BMI exchange and removed from list"
@@ -152,8 +152,8 @@ end
 
 function BMI.get_var_units(model::Model, name::String)
     (; land) = model
-    nt = standard_name_map(land)[name]
-    return nt.unit
+    metadata = get_metadata(name, land)
+    return to_string(to_SI(metadata.unit); BMI_standard=true)
 end
 
 function BMI.get_var_itemsize(model::Model, name::String)
@@ -166,8 +166,7 @@ function BMI.get_var_nbytes(model::Model, name::String)
 end
 
 function BMI.get_var_location(model::Model, name::String)
-    (; land) = model
-    lens = standard_name_map(land)[name].lens
+    (; lens) = get_metadata(name)
     element_type = grid_element_type(model, lens)
     return element_type
 end
@@ -176,7 +175,8 @@ function BMI.get_current_time(model::Model)
     (; config, clock) = model
     (; starttime, calendar) = config.time
     starttime = cftime(starttime, calendar)
-    return 0.001 * Dates.value(clock.time - starttime)
+    # ms => s
+    return to_SI(Float64(Dates.value(clock.time - starttime)), MS)
 end
 
 function BMI.get_start_time(::Model)
@@ -187,7 +187,8 @@ function BMI.get_end_time(model::Model)
     (; starttime, endtime, calendar) = model.config.time
     starttime_ = cftime(starttime, calendar)
     endtime_ = cftime(endtime, calendar)
-    return 0.001 * Dates.value(endtime_ - starttime_)
+    # ms => s
+    return to_SI(Float64(Dates.value(endtime_ - starttime_)), MS)
 end
 
 function BMI.get_time_units(model::Model)
@@ -204,20 +205,24 @@ function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
 end
 
 function BMI.get_value_ptr(model::Model, name::String)
-    (; land, domain) = model
+    (; domain, land) = model
     n = length(active_indices(domain, name))
 
     if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         name_2d, ind = soil_layer_standard_name(name)
-        lens = standard_name_map(land)[name_2d].lens
+        (; lens) = get_metadata(name_2d)
         model_vals = lens(model)
         el_type = eltype(first(model_vals))
         dim = length(first(model_vals))
         value = reshape(reinterpret(el_type, model_vals), dim, :)
         return @view value[ind, 1:n]
     else
-        lens = standard_name_map(land)[name].lens
-        return @view(lens(model)[1:n])
+        (; lens) = get_metadata(name)
+        vec = lens(model)
+        if vec isa AverageVector
+            vec = get_average(vec)
+        end
+        return @view(vec[1:n])
     end
 end
 
@@ -323,21 +328,21 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
     # inactive nodes (boundary/ghost points) are set at -999
     if grid == 3
         nodes_at_edge = adjacent_nodes_at_edge(domain.river.network.graph)
-        nodes_at_edge.dst[nodes_at_edge.dst .== m + 1] .= -999
-        edge_nodes[range(1, n; step = 2)] = nodes_at_edge.src
-        edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
+        nodes_at_edge.dst[nodes_at_edge.dst.==m+1] .= -999
+        edge_nodes[range(1, n; step=2)] = nodes_at_edge.src
+        edge_nodes[range(2, n; step=2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
         xu = domain.land.network.edge_indices.xu
-        edge_nodes[range(1, n; step = 2)] = 1:m
-        xu[xu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = xu
+        edge_nodes[range(1, n; step=2)] = 1:m
+        xu[xu.==m+1] .= -999
+        edge_nodes[range(2, n; step=2)] = xu
         return edge_nodes
     elseif grid == 5
         yu = domain.land.network.edge_indices.yu
-        edge_nodes[range(1, n; step = 2)] = 1:m
-        yu[yu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = yu
+        edge_nodes[range(1, n; step=2)] = 1:m
+        yu[yu.==m+1] .= -999
+        edge_nodes[range(2, n; step=2)] = yu
         return edge_nodes
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
@@ -401,7 +406,7 @@ Return the grid element type of a model variable (PropertyLens `var`) based on a
 function grid_element_type(
     ::T,
     var::PropertyLens,
-) where {T <: Union{LocalInertialRiverFlow, LocalInertialOverlandFlow}}
+) where {T<:Union{LocalInertialRiverFlow,LocalInertialOverlandFlow}}
     vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
     element_type = if var in vars
         "edge"

@@ -1,7 +1,7 @@
-
 @testitem "BMI functions" begin
     import BasicModelInterface as BMI
     using Statistics: mean
+    using Wflow: to_SI, to_SI!, Unit, get_unit
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     model = BMI.initialize(Wflow.Model, tomlpath)
 
@@ -49,9 +49,10 @@
 
     @testset "update and get and set functions" begin
         @test BMI.get_current_time(model) == 86400.0
-        dest = zeros(size(model.land.soil.variables.zi))
-        BMI.get_value(model, "soil_water_saturated_zone_top__depth", dest)
-        @test mean(dest) ≈ 278.737829100285
+        dest = zeros(Float64, size(model.land.soil.variables.zi))
+        var_name = "soil_water_saturated_zone_top__depth"
+        BMI.get_value(model, var_name, dest)
+        @test mean(dest) ≈ to_SI(278.737829100285, get_unit(var_name))
         @test BMI.get_value_at_indices(
             model,
             "soil_layer_1_water__volume_fraction",
@@ -64,36 +65,26 @@
             [1, 2, 3],
             [0.10, 0.15, 0.20],
         ) ≈ getindex.(model.land.soil.variables.vwc, 2)[1:3]
-        @test BMI.get_value_at_indices(
-            model,
-            "river_water__instantaneous_volume_flow_rate",
-            zeros(3),
-            [1, 100, 5617],
-        ) ≈ [0.6061460608597447, 7.474882551045692, 0.02313783328532491]
+        var_name = "river_water__instantaneous_volume_flow_rate"
+        @test BMI.get_value_at_indices(model, var_name, zeros(3), [1, 100, 5617]) ≈
+              to_SI([0.6061460608597447, 7.474882551045692, 0.02313783328532491], var_name)
         BMI.set_value(
             model,
             "soil_water_saturated_zone_top__depth",
             fill(300.0, length(model.land.soil.variables.zi)),
         )
+        var_name = "soil_water_saturated_zone_top__depth"
+        BMI.set_value(model, var_name, fill(300.0, length(model.land.soil.variables.zi)))
         @test mean(
             BMI.get_value(
                 model,
-                "soil_water_saturated_zone_top__depth",
-                zeros(size(model.land.soil.variables.zi)),
+                var_name,
+                zeros(Float64, size(model.land.soil.variables.zi)),
             ),
         ) == 300.0
-        BMI.set_value_at_indices(
-            model,
-            "soil_water_saturated_zone_top__depth",
-            [1],
-            [250.0],
-        )
-        @test BMI.get_value_at_indices(
-            model,
-            "soil_water_saturated_zone_top__depth",
-            zeros(2),
-            [1, 2],
-        ) == [250.0, 300.0]
+        BMI.set_value_at_indices(model, var_name, [1], [250.0])
+        @test BMI.get_value_at_indices(model, var_name, zeros(Float64, 2), [1, 2]) ==
+              [250.0, 300.0]
     end
 
     @testset "model grid functions" begin

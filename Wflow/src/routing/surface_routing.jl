@@ -41,7 +41,7 @@ function surface_routing!(model)
         @debug log_message_observed_outflow(reservoir)
     end
     # update river flow
-    update_river_flow_model!(river_flow, domain, clock)
+    update_river_flow_model!(river_flow, domain, clock, dt)
     return nothing
 end
 
@@ -75,7 +75,7 @@ function surface_routing!(
         @debug log_message_observed_outflow(reservoir)
     end
     # update overland and river flow
-    update_overland_flow_model!(overland_flow, river_flow, domain, clock)
+    update_overland_flow_model!(overland_flow, river_flow, domain, clock, dt)
 
     return nothing
 end
