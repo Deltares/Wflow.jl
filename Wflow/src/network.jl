@@ -55,6 +55,8 @@ end
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    # land indices
+    land_indices::Vector{Int} = 1:length(indices)
     # traversion order of land domain
     order::Vector{Int} = Int[]
     # execution order of sub-domains for kinematic wave routing (land domain)

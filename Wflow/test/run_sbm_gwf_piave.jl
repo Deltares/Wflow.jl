@@ -38,23 +38,23 @@
         @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
         @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
         @test reservoir.variables.waterlevel ≈
-              [23.968537463000757, 32.68607771649563, 39.97018425222191]
-        @test reservoir.variables.storage ≈ [1.5531612276024494e8, 4.28e7, 7.16e7]
+              [23.970590790933628, 32.68607771649563, 39.97018425222192]
+        @test reservoir.variables.storage ≈ [1.5532942832524955e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
-              [3.248673046140208, 8.352196766583088, 29.02990124474297]
+              [3.2489121397532985, 8.556416216129914, 28.17032166161074]
         @test soil.variables.exfiltsatwater[27:31] ≈ [
-            25.189525467679577,
-            0.505190607750432,
-            10.146835651996657,
-            6.953613376684237,
-            19.43824331070573,
+            25.18951221336381,
+            0.5051906077504189,
+            10.146835651996671,
+            6.953613376684251,
+            19.4382101688517,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 221.55275282631922
+        @test maximum(soil.variables.exfiltsatwater) ≈ 221.53945489105732
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(river_flow.variables.q_av) ≈ 30.121490886621505
-        @test maximum(river_flow.variables.q_av) ≈ 117.02953499886921
-        @test soil.variables.total_storage[7503] ≈ 472.88008994367334
-        @test soil.variables.total_storage[17] ≈ 817.679670011310 # river cell
+        @test mean(river_flow.variables.q_av) ≈ 30.071991490895094
+        @test maximum(river_flow.variables.q_av) ≈ 117.48258852034441
+        @test soil.variables.total_storage[7503] ≈ 472.9217078886107
+        @test soil.variables.total_storage[17] ≈ 817.4107029296706 # river cell
     end
 
     Wflow.run_timestep!(model)
@@ -62,34 +62,34 @@
     @testset "piave water demand and allocation second timestep" begin
         sum_total_alloc = sum(total_alloc)
         @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1646.0546466090132
-        @test sum(act_groundwater_abst) ≈ 350.07246029268623
-        @test paddy.variables.h[[25, 42, 45]] ≈ [38.99648725170036, 0.0, 27.60970255170497]
+        @test sum(surfacewater_alloc) ≈ 1646.0718643945509
+        @test sum(act_groundwater_abst) ≈ 350.0797526292415
+        @test paddy.variables.h[[25, 42, 45]] ≈ [38.996467765915135, 0.0, 27.60963170377481]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 25.0, 0.0]
         @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
         @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
               [0.0, 4.264347104462701, 5.022735931644931]
         @test reservoir.variables.waterlevel ≈
-              [23.963488224416217, 32.68607771649562, 39.970184252221905]
-        @test reservoir.variables.storage ≈ [1.552834064233491e8, 4.28e7, 7.16e7]
+              [23.964702651630343, 32.686077716495625, 39.97018425222192]
+        @test reservoir.variables.storage ≈ [1.5529127318256468e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
-              [3.248477758506481, 9.78606013238214, 36.7768455543205]
+              [3.2489840968665207, 9.467087432483991, 38.61905891069846]
         @test soil.variables.exfiltsatwater[27:33] ≈ [
-            38.691415562179856,
-            1.8640906989562667,
-            16.644987033260467,
-            11.455445650770203,
-            28.858197787867883,
-            18.29079365491743,
-            19.70311503858384,
+            38.453465491093255,
+            1.8429603097441243,
+            16.540511062605493,
+            11.381863905570254,
+            28.73860377214116,
+            18.206070056605835,
+            19.592872450180813,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 341.59378295314747
+        @test maximum(soil.variables.exfiltsatwater) ≈ 334.9786549671658
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(river_flow.variables.q_av) ≈ 36.15061722750282
-        @test maximum(river_flow.variables.q_av) ≈ 140.42694443194858
-        @test soil.variables.total_storage[7503] ≈ 463.1373992927126
-        @test soil.variables.total_storage[17] ≈ 838.5447308776984 # river cell
+        @test mean(river_flow.variables.q_av) ≈ 36.80765857144827
+        @test maximum(river_flow.variables.q_av) ≈ 141.84332548772514
+        @test soil.variables.total_storage[7503] ≈ 463.4074094243159
+        @test soil.variables.total_storage[17] ≈ 839.5331546043192 # river cell
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -109,9 +109,9 @@ end
         @test all(re -> abs(re) < 0.06, land_water_balance.relative_error)
         inds = findall(
             x -> !iszero(x),
-            Wflow.saturated_thickness(model.routing.subsurface_flow.aquifer),
+            Wflow.saturated_thickness(model.routing.subsurface_flow),
         )
-        @test length(inds) == 7499
+        @test length(inds) == 7502
         @test all(e -> abs(e) < 1e-9, land_water_balance.error[inds])
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
@@ -129,9 +129,9 @@ end
         @test all(re -> abs(re) < 0.04, land_water_balance.relative_error)
         inds = findall(
             x -> !iszero(x),
-            Wflow.saturated_thickness(model.routing.subsurface_flow.aquifer),
+            Wflow.saturated_thickness(model.routing.subsurface_flow),
         )
-        @test length(inds) == 7499
+        @test length(inds) == 7501
         @test all(e -> abs(e) < 1e-9, land_water_balance.error[inds])
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)

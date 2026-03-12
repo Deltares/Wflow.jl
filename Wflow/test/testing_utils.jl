@@ -50,16 +50,6 @@ function transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_len
            (specific_yield * aquifer_length * aquifer_length)
 end
 
-"""
-    drawdown_theis(distance, time, discharge, transmissivity, storativity)
-
-Non-steady flow in a confined aquifer, using the well function of Theis.
-"""
-function drawdown_theis(distance, time, discharge, transmissivity, storativity)
-    u = (storativity * distance^2) / (4 * transmissivity * time)
-    return discharge / (4 * pi * transmissivity) * expint(u)
-end
-
 function homogenous_aquifer(nrow, ncol)
     shape = (nrow, ncol)
     # Domain, geometry
@@ -70,47 +60,38 @@ function homogenous_aquifer(nrow, ncol)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
     ncell = connectivity.ncell
 
-    parameters = Wflow.ConfinedAquiferParameters(;
-        k = fill(10.0, ncell),
-        top = fill(10.0, ncell),
-        bottom = fill(0.0, ncell),
-        area = fill(100.0, ncell),
-        specific_storage = fill(0.1, ncell),
-        storativity = fill(1.0, ncell),
-    )
-    variables = Wflow.AquiferVariables(;
-        n = ncell,
-        head = [0.0, 7.5, 20.0],
-        conductance = fill(0.0, connectivity.nconnection),
-        storage = fill(0.0, ncell),
-        q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
-    )
-    conf_aqf = Wflow.ConfinedAquifer(; parameters, variables)
+    variables = Wflow.ConstantHeadVariables(; head = Float64[])
+    constanthead = Wflow.ConstantHead(; variables, index = Int64[])
 
-    parameters = Wflow.UnconfinedAquiferParameters(;
+    timestepping = Wflow.TimeStepping()
+
+    parameters = Wflow.GroundwaterFlowParameters(;
         k = fill(10.0, ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
         specific_yield = fill(0.15, ncell),
-        specific_yield_dyn = fill(Wflow.MISSING_VALUE, ncell),
         f = fill(3.0, ncell),
     )
-    variables = Wflow.AquiferVariables(;
+    variables = Wflow.GroundwaterFlowVariables(;
         n = ncell,
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
         q_in_av = fill(0.0, ncell),
-        q_out_av = fill(0.0, ncell),
+        q_av = fill(0.0, ncell),
         exfiltwater = fill(0.0, ncell),
     )
-    unconf_aqf = Wflow.UnconfinedAquifer(; parameters, variables)
-    return (connectivity, conf_aqf, unconf_aqf)
+
+    gwf = Wflow.GroundwaterFlow(;
+        timestepping,
+        parameters,
+        variables,
+        connectivity,
+        constanthead,
+    )
+    return gwf
 end
 
 function init_sbm_soil_model(n, N; kwargs...)

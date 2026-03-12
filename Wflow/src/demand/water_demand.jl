@@ -878,11 +878,6 @@ return_flow(
     nonirri_alloc::Vector{Float64},
 ) = 0.0
 
-# wrapper methods
-groundwater_storage(subsurface_flow::LateralSSF) = subsurface_flow.variables.storage
-groundwater_storage(subsurface_flow::GroundwaterFlow) =
-    subsurface_flow.aquifer.variables.storage
-
 """
     update_water_allocation_model!(
     allocation::AllocationLand,
@@ -968,7 +963,7 @@ function update_water_allocation_model!(
     groundwater_allocation_local!(
         allocation_model,
         demand.variables,
-        groundwater_storage(routing.subsurface_flow),
+        routing.subsurface_flow.variables.storage,
         domain.land.parameters,
     )
     # groundwater demand and allocation for areas
