@@ -63,8 +63,8 @@ end
 Kinematic wave for lateral subsurface flow for a single cell and timestep. The hydraulic
 conductivity profile `kh_profile` is either `KhExponential` or `KhExponentialConstant`.
 
-Returns lateral subsurface flow `q`, water table depth `zi`, exfiltration rate `exfilt`
-and dynamic specific yield `sy_d`.
+Returns lateral subsurface flow `q`, water table depth `zi`, exfiltration rate `exfilt` and
+net flux `net_flux`.
 """
 function kinematic_wave_ssf(
     q_in,
@@ -89,7 +89,8 @@ function kinematic_wave_ssf(
         q = (q_prev + q_in) / 2.0
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
-        constant_term = (dt / dx) * q_in + (1.0 / celerity) * q_prev + q_net_bnds * (dt / dx)
+        constant_term =
+            (dt / dx) * q_in + (1.0 / celerity) * q_prev + q_net_bnds * (dt / dx)
         q = kw_ssf_newton_raphson(q, constant_term, celerity, dt, dx)
 
         # constrain maximum lateral subsurface flow rate q
@@ -116,7 +117,8 @@ function kinematic_wave_ssf(
             zi_start = zi_prev
             for _ in 1:its
                 celerity = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
-                constant_term = (dt_s / dx) * q_in + q_prev / celerity + q_net_bnds * (dt_s / dx)
+                constant_term =
+                    (dt_s / dx) * q_in + q_prev / celerity + q_net_bnds * (dt_s / dx)
                 q = kw_ssf_newton_raphson(q_prev, constant_term, celerity, dt_s, dx)
                 # constrain maximum lateral subsurface flow rate q
                 q = min(q, (q_max * dw))
@@ -160,7 +162,7 @@ Kinematic wave for lateral subsurface flow for a single cell and timestep with a
 conductivity profile, using (average) hydraulic conductivity `kh`.
 
 Return lateral subsurface flow `q`, water table depth `zi`, exfiltration rate `exfilt` and
-dynamic specific yield `sy_d`.
+net flux `net_flux`.
 """
 function kinematic_wave_ssf(
     q_in,
