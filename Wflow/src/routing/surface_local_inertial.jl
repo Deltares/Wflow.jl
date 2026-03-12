@@ -214,7 +214,7 @@ function LocalInertialRiverFlow(
 
     if config.model.floodplain_1d__flag
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
-        floodplain = FloodPlain(dataset, config, domain, zb_floodplain)
+        floodplain = LocalInertialFloodPlain(dataset, config, domain, zb_floodplain)
     else
         floodplain = nothing
     end
