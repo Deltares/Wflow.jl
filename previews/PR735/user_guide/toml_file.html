@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-152a7eaa3a473860f82b096fdec11055.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-fe24da35c974098c6bc59cecaf5e788a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -609,7 +609,7 @@ window.Quarto = {
 </section>
 <section id="input-section" class="level2">
 <h2 class="anchored" data-anchor-id="input-section">Input section</h2>
-<p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (in netCDF format). <code>input.forcing</code> lists the mapping of forcing parameter standard names to the external netCDF variable names. <code>input.static</code> lists the mapping of static parameter standard names to the external netCDF variable names. In <code>input.cyclic</code>, it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In the example below, the model parameter standard name <code>vegetation__leaf_area_index</code> is mapped to the external netCDF variable “LAI”. Cyclic time inputs of parameters can be different (e.g., daily or monthly). The <code>time</code> dimension name of these cylic input parameters in the model parameter netCDF file should start with “time”. If a model parameter is not mapped, a default value will be used, if available.</p>
+<p>The <code>input</code> section of the TOML file contains information about the input forcing and model parameters files (in netCDF format). <code>input.forcing</code> lists the mapping of forcing parameter standard names to the external netCDF variable names. <code>input.static</code> lists the mapping of static parameter standard names to the external netCDF variable names. In <code>input.cyclic</code>, it is possible to provide cyclic parameters to the model (minimum time step of 1 day). In the example below, the model parameter standard name <code>vegetation__leaf_area_index</code> is mapped to the external netCDF variable “LAI”. Cyclic time inputs of parameters can be different (e.g., daily or monthly). The <code>time</code> dimension name of these cyclic input parameters in the model parameter netCDF file should start with “time”. If a model parameter is not mapped, a default value will be used, if available.</p>
 <p>Forcing parameters should be available in <code>input.path_forcing</code> file and both static and cyclic parameters in <code>input.path_static</code> netcdf file. The main <code>input</code> section also lists variables describing the different modelling domains or masks (for example subbasin, river or reservoir) as well as the flow directions. Additional locations to save outputs for should also be listed here (e.g.&nbsp;gauges).</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Use "forcing-year-*.nc" if forcing files are split in time</span></span>
@@ -623,7 +623,7 @@ window.Quarto = {
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="dt">reservoir_location__count</span> <span class="op">=</span> <span class="st">"wflow_reservoirlocs"</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="dt">subbasin_location__count</span> <span class="op">=</span> <span class="st">"wflow_subcatch"</span></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Ouput locations: these are not directly part of the model</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Output locations: these are not directly part of the model</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="dt">river_gauge__count</span> <span class="op">=</span> <span class="st">"wflow_gauges_grdc"</span></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Map forcing parameter standard names that vary over time to variable names in the forcing netCDF file</span></span>
@@ -771,7 +771,7 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input]</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Modelling domains</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">subbasin_location__count</span> <span class="op">=</span> <span class="st">"wflow_subcatch"</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Ouput locations: these are not directly part of the model</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Output locations: these are not directly part of the model</span></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="dt">river_gauge__count</span> <span class="op">=</span> <span class="st">"wflow_gauges_grdc"</span></span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.csv]</span></span>
