@@ -348,12 +348,6 @@ end
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.variables.head) .> 0.0)
     end
-
-    head_analytical = [
-        transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
-    ]
-    difference = gwf.variables.head .- head_analytical
-    # @test all(difference .< ?)  #TODO
 end
 
 @testitem "integration: unconfined transient 1D, exponential conductivity" begin
@@ -446,10 +440,4 @@ end
         # Gradient dh/dx is positive, all flow to the left
         @test all(diff(gwf.variables.head) .> 0.0)
     end
-
-    head_analytical = [
-        transient_aquifer_1d(x, time, conductivity, specific_yield, aquifer_length, beta) for x in xc
-    ]
-    difference = gwf.variables.head .- head_analytical
-    # @test all(difference .< ?)  #TODO
 end
