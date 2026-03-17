@@ -228,7 +228,7 @@ function LocalInertialRiverFlowModel(
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiver(n) :
+        allocation = do_water_demand(config) ? AllocationRiverModel(n) :
                      NoAllocationRiverModel(n),
     )
     return river_flow
@@ -761,13 +761,13 @@ Update subsurface flow contribution to inflow of a reservoir model for a river f
 function update_inflow!(
     reservoir_model::ReservoirModel,
     river_flow_model::LocalInertialRiverFlowModel,
-    subsurface_flow::AbstractSubsurfaceFlowModel,
+    subsurface_flow_model::AbstractSubsurfaceFlowModel,
     network::NetworkReservoir,
 )
     (; land_indices) = network
     (; inflow_subsurface) = reservoir_model.boundary_conditions
     inflow_subsurface .=
-        get_inflow_reservoir(river_flow_model, subsurface_flow, land_indices)
+        get_inflow_reservoir(river_flow_model, subsurface_flow_model, land_indices)
     return nothing
 end
 update_inflow!(

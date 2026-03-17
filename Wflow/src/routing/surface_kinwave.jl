@@ -146,7 +146,8 @@ function KinWaveRiverFlowModel(
 
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
-    allocation = do_water_demand(config) ? AllocationRiver(; n) : NoAllocationRiverModel(n)
+    allocation =
+        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
     variables = FlowVariables(; n)
     parameters = RiverFlowParameters(dataset, config, domain)
@@ -627,15 +628,15 @@ Update overland and subsurface flow contribution to inflow of a reservoir model 
 flow model `AbstractRiverFlowModel` for a single timestep.
 """
 function update_inflow!(
-    model::Union{ReservoirModel, Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing},
     river_flow_model::AbstractRiverFlowModel,
     external_models::NamedTuple,
     network::NetworkReservoir,
 )
     (; overland_flow, subsurface_flow) = external_models
     (; land_indices) = network
-    if !isnothing(model)
-        (; inflow_overland, inflow_subsurface) = model.boundary_conditions
+    if !isnothing(reservoir_model)
+        (; inflow_overland, inflow_subsurface) = reservoir_model.boundary_conditions
         inflow_overland .=
             get_inflow_reservoir(river_flow_model, overland_flow, land_indices)
         inflow_subsurface .=

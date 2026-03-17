@@ -147,14 +147,20 @@ function DrainageModel(
     return drains
 end
 
-function flux!(drainage::DrainageModel, aquifer_model::AbstractAquiferModel, dt::Float64)
-    for (i, index) in enumerate(drainage.index)
-        cond = drainage.parameters.conductance[i]
-        delta_head =
-            min(0, drainage.parameters.elevation[i] - aquifer_model.variables.head[index])
+function flux!(
+    drainage_model::DrainageModel,
+    aquifer_model::AbstractAquiferModel,
+    dt::Float64,
+)
+    for (i, index) in enumerate(drainage_model.index)
+        cond = drainage_model.parameters.conductance[i]
+        delta_head = min(
+            0,
+            drainage_model.parameters.elevation[i] - aquifer_model.variables.head[index],
+        )
         flux = check_flux(cond * delta_head, aquifer_model, index)
-        drainage.variables.flux[i] = flux
-        drainage.variables.flux_av[i] += dt * flux
+        drainage_model.variables.flux[i] = flux
+        drainage_model.variables.flux_av[i] += dt * flux
         aquifer_model.variables.q_net[index] += flux
     end
     return nothing
@@ -201,15 +207,19 @@ end
     index::Vector{Int} = collect(1:n)  # [-]
 end
 
-function flux!(recharge::RechargeModel, aquifer_model::AbstractAquiferModel, dt::Float64)
-    for (i, index) in enumerate(recharge.index)
+function flux!(
+    recharge_model::RechargeModel,
+    aquifer_model::AbstractAquiferModel,
+    dt::Float64,
+)
+    for (i, index) in enumerate(recharge_model.index)
         flux = check_flux(
-            recharge.variables.rate[i] * aquifer_model.parameters.area[index],
+            recharge_model.variables.rate[i] * aquifer_model.parameters.area[index],
             aquifer_model,
             index,
         )
-        recharge.variables.flux[i] = flux
-        recharge.variables.flux_av[i] += dt * flux
+        recharge_model.variables.flux[i] = flux
+        recharge_model.variables.flux_av[i] += dt * flux
         aquifer_model.variables.q_net[index] += flux
     end
     return nothing
@@ -226,11 +236,11 @@ end
     index::Vector{Int} # [-]
 end
 
-function flux!(well::WellModel, aquifer_model::AbstractAquiferModel, dt::Float64)
-    for (i, index) in enumerate(well.index)
-        flux = check_flux(well.variables.volumetric_rate[i], aquifer_model, index)
-        well.variables.flux[i] = flux
-        well.variables.flux_av[i] += dt * flux
+function flux!(well_model::WellModel, aquifer_model::AbstractAquiferModel, dt::Float64)
+    for (i, index) in enumerate(well_model.index)
+        flux = check_flux(well_model.variables.volumetric_rate[i], aquifer_model, index)
+        well_model.variables.flux[i] = flux
+        well_model.variables.flux_av[i] += dt * flux
         aquifer_model.variables.q_net[index] += flux
     end
     return nothing

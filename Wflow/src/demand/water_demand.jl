@@ -528,12 +528,12 @@ end
 end
 
 "River allocation model"
-@with_kw struct AllocationRiver <: AbstractAllocationModel
+@with_kw struct AllocationRiverModel <: AbstractAllocationModel
     n::Int
     variables::AllocationRiverVariables = AllocationRiverVariables(; n)
 end
 
-get_nonirrigation_returnflow(allocation_model::AllocationRiver) =
+get_nonirrigation_returnflow(allocation_model::AllocationRiverModel) =
     allocation_model.variables.nonirri_returnflow
 get_nonirrigation_returnflow(allocation_model::NoAllocationRiverModel) =
     Zeros(allocation_model.n)
@@ -880,7 +880,7 @@ end
 
 # return zero (return flow) if non-irrigation sector is not defined
 return_flow(
-    demand::NoNonIrrigationDemandModel,
+    demand_model::NoNonIrrigationDemandModel,
     nonirri_demand_gross::Vector{Float64},
     nonirri_alloc::Vector{Float64},
 ) = 0.0
@@ -892,8 +892,8 @@ groundwater_storage(subsurface_flow::GroundwaterFlowModel) =
 
 """
     update_water_allocation_model!(
-    allocation::AllocationLandModel,
-    demand::Demand,
+    allocation_model::AllocationLandModel,
+    demand_model::Demand,
     routing::Routing,
     domain::Domain,
     dt::Float64,
@@ -909,7 +909,7 @@ allocation areas. Finally, non-irrigation return flows are updated.
 """
 function update_water_allocation_model!(
     allocation_model::AllocationLandModel,
-    demand::DemandModel,
+    demand_model::DemandModel,
     routing::Routing,
     domain::Domain,
     dt::Float64,
@@ -929,7 +929,7 @@ function update_water_allocation_model!(
     ) = allocation_model.variables
 
     (; surfacewater_demand, nonirri_demand_gross, irri_demand_gross, total_gross_demand) =
-        demand.variables
+        demand_model.variables
 
     (; frac_sw_used) = allocation_model.parameters
     (; act_surfacewater_abst, act_surfacewater_abst_vol) = river.allocation.variables
@@ -945,13 +945,19 @@ function update_water_allocation_model!(
     # local surface water demand and allocation (river, excluding reservoirs)
     surface_water_allocation_local!(
         allocation_model,
-        demand.variables,
+        demand_model.variables,
         river,
         domain.land,
         dt,
     )
     # surface water demand and allocation for areas
-    surface_water_allocation_area!(allocation_model, demand.variables, river, domain, dt)
+    surface_water_allocation_area!(
+        allocation_model,
+        demand_model.variables,
+        river,
+        domain,
+        dt,
+    )
 
     @. abstraction = act_surfacewater_abst_vol / dt
 
@@ -974,12 +980,12 @@ function update_water_allocation_model!(
     # local groundwater demand and allocation
     groundwater_allocation_local!(
         allocation_model,
-        demand.variables,
+        demand_model.variables,
         groundwater_storage(routing.subsurface_flow),
         domain.land.parameters,
     )
     # groundwater demand and allocation for areas
-    groundwater_allocation_area!(allocation_model, demand.variables, domain)
+    groundwater_allocation_area!(allocation_model, demand_model.variables, domain)
 
     # irrigation allocation
     for i in eachindex(total_alloc)
@@ -991,9 +997,11 @@ function update_water_allocation_model!(
 
     # non-irrigation return flows
     returnflow_livestock =
-        return_flow(demand.livestock, nonirri_demand_gross, nonirri_alloc)
-    returnflow_domestic = return_flow(demand.domestic, nonirri_demand_gross, nonirri_alloc)
-    returnflow_industry = return_flow(demand.industry, nonirri_demand_gross, nonirri_alloc)
+        return_flow(demand_model.livestock, nonirri_demand_gross, nonirri_alloc)
+    returnflow_domestic =
+        return_flow(demand_model.domestic, nonirri_demand_gross, nonirri_alloc)
+    returnflow_industry =
+        return_flow(demand_model.industry, nonirri_demand_gross, nonirri_alloc)
 
     @. nonirri_returnflow = returnflow_livestock + returnflow_domestic + returnflow_industry
 
@@ -1010,7 +1018,7 @@ end
 
 update_water_allocation_model!(
     allocation_model::NoAllocationLandModel,
-    demand::NoDemandModel,
+    demand_model::NoDemandModel,
     routing::Routing,
     domain::Domain,
     dt::Float64,
