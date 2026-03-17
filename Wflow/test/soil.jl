@@ -137,52 +137,50 @@ end
 @testitem "unit: transpiration!" begin
     include("testing_utils.jl")
     n = 1
-    N = 6
+    N = 4
     soil_model = init_sbm_soil_model(
         n,
         N;
         h3_high = [-400.0],
-        h3_low = [-100.0],
-        potential_transpiration = [0.0],
-        n_unsatlayers = [5],
-        zi = [586.4715307142369],
-        ustorelayerthickness = [
-            SVector((50.0, 100.0, 50.0, 200.0, 186.4715307142369, NaN)),
+        h3_low = [-1000.0],
+        potential_transpiration = [0.05153840858869719],
+        n_unsatlayers = [2],
+        zi = [106.89587841733061],
+        ustorelayerthickness = [SVector((100.0, 6.895878417330607, NaN, NaN))],
+        ustorelayerdepth = [SVector(10.9327977152876, 0.8620432154993639, 0.0, 0.0)],
+        rootingdepth = [453.0],
+        rootfraction = [
+            SVector(0.22075055187637968, 0.6622516556291391, 0.11699779249448124, 0.0),
         ],
-        ustorelayerdepth = [
-            SVector(
-                10.095952041768657,
-                21.371723437347292,
-                9.834201105799886,
-                8.50563731464462,
-                34.84891547900849,
-                0.0,
-            ),
+        act_thickl = [SVector(100.0, 300.0, 200.0, NaN)],
+        sumlayers = [SVector(0.0, 100.0, 400.0, 600.0, NaN)],
+        c = [
+            SVector((
+                9.53970437651816,
+                10.007558316712927,
+                10.603868189606647,
+                10.662998826419395,
+            )),
         ],
-        rootingdepth = [403.322998046875],
-        rootfraction = [SVector(0.124, 0.25, 0.125, 0.495, 0.008, 0.0)],
-        act_thickl = [SVector(50.0, 100.0, 50.0, 200.0, 200.0, NaN)],
-        sumlayers = [SVector(0.0, 50.0, 150.0, 200.0, 400.0, 600.0, NaN)],
-        c = [SVector((8.91, 8.24, 8.67, 8.62, 8.49, 8.43))],
-        theta_s = [0.5405],
-        theta_r = [0.06145],
+        theta_s = [0.4790319800376892],
+        theta_r = [0.17089612782001495],
         hb = [-10.0],
         h1 = [0.0],
         h2 = [-100.0],
-        h3 = [-755.506],
-        h4 = [-15849.0],
+        h3 = [1000.0],
+        h4 = [-16000.0],
         alpha_h1 = [1.0],
         rootdistpar = [-500.0],
-        drainable_waterdepth = [3.6183247],
+        drainable_waterdepth = [72.40310797113221],
     )
     dt = 86400.0
 
     Wflow.transpiration!(soil_model, dt)
 
-    @test soil_model.variables.ae_ustore[1] ≈ 0.0
+    @test soil_model.variables.ae_ustore[1] ≈ 0.05153840858869719
     @test soil_model.variables.actevapsat[1] ≈ 0.0
-    @test soil_model.variables.drainable_waterdepth[1] ≈ 3.6183247
-    @test soil_model.variables.transpiration[1] ≈ 0.0
+    @test soil_model.variables.drainable_waterdepth[1] ≈ 72.40310797113221
+    @test soil_model.variables.transpiration[1] ≈ 0.05153840858869719
 end
 
 @testitem "unit: capillary_flux!" begin
