@@ -1,4 +1,8 @@
 # NOTE: The order of the entries determines the order in the docs tables
+"""
+Mapping of (CSDMS) standard names to the metadata associated with the corresponding
+domain parameter. For more details and default values see `ParameterMetadata`.
+"""
 const domain_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "subbasin_location__count" => ParameterMetadata(;
         type = Int,

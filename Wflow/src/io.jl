@@ -16,7 +16,7 @@ end
 function get_at(
     ds::CFDataset,
     var::InputEntry,
-    parameter_metadata,
+    metadata,
     times::AbstractVector{<:TimeType},
     t::TimeType,
     dt::Float64,
@@ -25,13 +25,14 @@ function get_at(
     i = findfirst(>=(t), times)
     t < first(times) && throw(DomainError("time $t before dataset begin $(first(times))"))
     i === nothing && throw(DomainError("time $t after dataset end $(last(times))"))
-    return get_at(ds, var, parameter_metadata, i, dt)
+    return get_at(ds, var, metadata, i, dt)
 end
 
-function get_at(ds::CFDataset, var::InputEntry, parameter_metadata, i::Int, dt::Float64)
+function get_at(ds::CFDataset, var::InputEntry, metadata, i::Int, dt::Float64)
     data = read_standardized(ds, variable_name(var), (x=:, y=:, time=i))
     apply_affine_transform!(data, var)
-    return transform(data, parameter_metadata; dt_val=dt)
+    data_transformed = apply_unit_and_type_transform!(data, metadata; dt_val=dt)
+    return data_transformed
 end
 
 function get_param_res(model)
@@ -47,13 +48,6 @@ const mover_params = (
     "atmosphere_water__precipitation_volume_flux",
     "land_surface_water__potential_evaporation_volume_flux",
 )
-
-function get_field_in_model(model, parameter::AbstractString)
-    (; land) = model
-    lens = get_lens(parameter, land)
-    param = lens(model)
-    return param
-end
 
 function routing_with_reservoirs(model)
     (; config) = model
@@ -84,8 +78,9 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if variable_name(ncvar) === nothing
             val = only(ncvar.value) * only(ncvar.scale) + only(ncvar.offset)
-            val = transform(val, get_metadata(par); dt_val=dt)
-            param = get_field_in_model(model, par)
+
+            param, metadata = get_field_in_model(model, par)
+            val = apply_unit_and_type_transform!(val, metadata; dt_val=dt)
             param .= val
             # set fixed precipitation and evaporation over the reservoirs and put these into
             # the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -111,7 +106,7 @@ time interval, e.g. daily precipitation at 01-02-2000 00:00:00 is the accumulate
 precipitation between 01-01-2000 00:00:00 and 01-02-2000 00:00:00.
 """
 function update_forcing!(model)
-    (; clock, reader, domain) = model
+    (; clock, reader, domain, land) = model
     (; dataset, dataset_times, forcing_parameters) = reader
 
     dt = tosecond(clock.dt)
@@ -129,8 +124,11 @@ function update_forcing!(model)
         variable_name(ncvar) === nothing && continue
 
         time = convert(eltype(dataset_times), clock.time)
-        parameter_metadata = get_metadata(par)
-        data = get_at(dataset, ncvar, parameter_metadata, dataset_times, time, dt)
+        metadata = get_metadata(par, land)
+        if !metadata.allow_dynamic_input
+            error("Tried to update '$par' forcing from input, which is not allowed.")
+        end
+        data = get_at(dataset, ncvar, metadata, dataset_times, time, dt)
 
         # calculate the mean precipitation and evaporation over reservoirs and put these
         # into the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -155,7 +153,7 @@ function update_forcing!(model)
             msg = "Forcing data at $time has missing values on active model cells for $(variable_name(ncvar))"
             throw(ArgumentError(msg))
         end
-        param = get_field_in_model(model, par)
+        param = metadata.lens(model)
         param .= data_sel
     end
     return nothing
@@ -187,7 +185,7 @@ end
 
 "Get cyclic netCDF input for the given time"
 function update_cyclic!(model)
-    (; clock, reader, domain) = model
+    (; clock, reader, domain, land) = model
     (; cyclic_dataset, cyclic_times, cyclic_parameters) = reader
 
     dt = tosecond(clock.dt)
@@ -198,14 +196,17 @@ function update_cyclic!(model)
     is_first_timestep = clock.iteration == 1
 
     for (par, ncvar) in cyclic_parameters
-        parameter_metadata = get_metadata(par)
+        metadata = get_metadata(par, land)
+        if !metadata.allow_dynamic_input
+            error("Tried to update '$name' from cyclic input, which is not allowed.")
+        end
         if is_first_timestep || (month_day in cyclic_times[par])
             # time for an update of the cyclic forcing
             i = findlast(t -> monthday_passed(month_day, t), cyclic_times[par])
             isnothing(i) &&
                 error("Could not find applicable cyclic timestep for $month_day")
             # load from netCDF into the model according to the mapping
-            data = get_at(cyclic_dataset, ncvar, parameter_metadata, i, dt)
+            data = get_at(cyclic_dataset, ncvar, metadata, i, dt)
             sel = active_indices(domain, par)
             # missing data for observed reservoir outflow is allowed at reservoir
             # location(s)
@@ -218,7 +219,7 @@ function update_cyclic!(model)
                 msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(variable_name(ncvar))"
                 throw(ArgumentError(msg))
             end
-            param = get_field_in_model(model, par)
+            param = metadata.lens(model)
             param .= data_sel
         end
     end
@@ -290,8 +291,7 @@ function setup_scalar_netcdf(
                 attrib=["cf_role" => "timeseries_id"],
             )
         end
-        (; lens) = get_metadata(parameter)
-        v = lens(modelmap)
+        v, _ = get_field_in_model(modelmap, parameter)
         if eltype(v) <: AbstractFloat
             defVar(
                 ds,
@@ -344,7 +344,7 @@ function set_extradim_netcdf(
     return nothing
 end
 
-set_extradim_netcdf(ds, extra_dim::Nothing) = nothing
+set_extradim_netcdf(ds, extra_dim::@NamedTuple{}) = nothing
 
 "prepare an output dataset for grid data"
 function setup_grid_netcdf(
@@ -497,21 +497,48 @@ struct NCReader{T}
     cyclic_parameters::InputEntries
 end
 
-struct Writer
-    dataset::Union{NCDataset,Nothing}           # dataset (netCDF) for grid data
-    parameters::Dict{String,Any}                # mapping of netCDF variable names to model parameters (arrays)
-    nc_path::Union{String,Nothing}              # path netCDF file (grid data)
-    csv_path::Union{String,Nothing}             # path of CSV file
-    csv_cols::Vector{CSVColumn}                  # model parameter (arrays) for CSV output
-    csv_io::IO                                   # file handle to CSV file
-    state_dataset::Union{NCDataset,Nothing}     # dataset with model states (netCDF)
-    state_parameters::Dict{String,Any}          # mapping of netCDF variable names to model states (arrays)
-    state_nc_path::Union{String,Nothing}        # path netCDF file with states
-    dataset_scalar::Union{NCDataset,Nothing}    # dataset (netCDF) for scalar data
-    nc_scalar::Vector{NetCDFScalarVariable}      # model parameter (arrays) and for netCDF scalar output                        # model parameter (String) and associated netCDF variable, location dimension and location name for scalar data
-    nc_scalar_path::Union{String,Nothing}       # path netCDF file (scalar data)
-    extra_dim::Union{NamedTuple,Nothing}        # name and values for extra dimension (to store SVectors)
-    reducer::Dict{Union{CSVColumn,NetCDFScalarVariable},Function} # The reducer associated with output variables
+@with_kw struct OutputData{T}
+    par::String
+    vector::AbstractVector{T}
+    unit::Unit
+end
+
+@with_kw struct NCWriter{
+    D<:Union{NCDataset,Nothing},
+    R<:Union{Nothing,Dict{NetCDFScalarVariable,Function}},
+}
+    # Path to the NetCDF file
+    output_path::Union{String,Nothing} = nothing
+    # NetCDF dataset
+    output_dataset::D = nothing
+    # mapping of netCDF variable names to model parameters
+    output_map::Dict{String,OutputData} = Dict()
+    # The reducer associated with the output variables
+    reducer::R = nothing
+end
+
+@with_kw struct CSVWriter
+    # Path to the CSV file
+    output_path::Union{String,Nothing} = nothing
+    # File handle to CSV file
+    output_io::IO = IOBuffer()
+    # Mapping of CSV variable names to model parameters
+    output_map::Dict{String,OutputData} = Dict()
+    # The reducer associated with the output variables
+    reducer::OrderedDict{CSVColumn,Function} = Dict()
+end
+
+@with_kw struct Writer{DG,DS,DE}
+    # Writer for transient grid output (no reducer)
+    grid_writer::NCWriter{DG,Nothing}
+    # Writer for transient scalar output (with reducer)
+    scalar_writer::NCWriter{DS,Dict{NetCDFScalarVariable,Function}}
+    # Writer for for simulation end state output (no reducer)
+    endstate_writer::NCWriter{DE,Nothing}
+    # Writer for CSV output
+    csv_writer::CSVWriter
+    # Name and values for extra dimension (to store SVectors)
+    extra_dim::Union{NamedTuple}
 end
 
 function NCReader(config)
@@ -558,10 +585,13 @@ function NCReader(config)
         nctimes_type = eltype(nctimes)
     end
 
+    land_type = config.model.type == ModelType.sediment ? SoilLoss : LandHydrologySBM
     for (par, var) in config.input.forcing
         ncname = variable_name(var)
         variable_info(var)
-        @info "Set `$par` [$(get_unit(par))] using netCDF variable `$ncname` as forcing parameter."
+        metadata = get_metadata(par, land_type)
+        unit_str = isnothing(metadata) ? "<unit not found>" : string(metadata.unit)
+        @info "Set `$par` [$unit_str] using netCDF variable `$ncname` as forcing parameter."
     end
 
     # create map from internal location to netCDF variable name for cyclic parameters and
@@ -578,7 +608,7 @@ function NCReader(config)
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[par] = timecycles(cyclic_nc_times)
             variable_info(var)
-            @info "Set `$par` [$(get_unit(par))] using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
+            @info "Set `$par` [$(get_metadata(par).unit)] using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
         cyclic_dataset = nothing
@@ -602,7 +632,7 @@ function locations_map(ds, mapname, config)
         config,
         mapname,
         Writer;
-        parameter_metadata=ParameterMetadata(; type=Int, allow_missing=true),
+        metadata=ParameterMetadata(; type=Int, allow_missing=true),
     )
     ids = unique(skipmissing(map_2d))
     return ids
@@ -693,19 +723,17 @@ end
 """
     out_map(ncnames_dict, modelmap)
 
-Create a Dict that maps parameter netCDF names to arrays in the Model.
+Create a Dict that maps parameter output names to arrays in the Model.
 """
-function out_map(ncnames_dict, modelmap)
-    output_map = Dict{String,Any}()
-    for (par, ncname) in ncnames_dict
-        metadata = get_metadata(par; allow_not_found=true)
-        A, unit = if isnothing(metadata)
+function out_map(output_names_dict, modelmap)
+    output_map = Dict{String,OutputData}()
+    for (par, output_name) in output_names_dict
+        A, metadata = get_field_in_model(modelmap, par)
+        if isnothing(metadata)
             @warn "No unit was found for $par, so the output will be expressed in standard SI units ($(join(Wflow.STANDARD_UNITS, ", ")))."
-            param(modelmap, par), Unit()
-        else
-            metadata.lens(modelmap), metadata.unit
+            metadata = ParameterMetadata()
         end
-        output_map[ncname] = (; par, vector=A, unit)
+        output_map[output_name] = OutputData(; par, vector=A, metadata.unit)
     end
     return output_map
 end
@@ -723,24 +751,27 @@ function get_reducer_func(col, domain, args...)
     end
 end
 
-function Writer(config, modelmap, domain, nc_static; extra_dim=nothing)
+function Writer(
+    config::Config,
+    modelmap::NamedTuple,
+    domain,
+    nc_static;
+    extra_dim::NamedTuple=NamedTuple(),
+)
     x_coords = read_x_axis(nc_static)
     y_coords = read_y_axis(nc_static)
 
-    reducer = Dict{Union{CSVColumn,NetCDFScalarVariable},Function}()
-
     # create an output netCDF that will hold all timesteps of selected parameters for grid
     # data
-    if do_netcdf_grid(config)
-        nc_path = output_path(config, config.output.netcdf_grid.path)
-        deflatelevel = config.output.netcdf_grid.compressionlevel
-        @info "Create an output netCDF file `$nc_path` for grid data, using compression level `$deflatelevel`."
+    grid_writer = if do_netcdf_grid(config)
+        output_path_grid = output_path(config, config.output.netcdf_grid.path)
         # create a flat mapping from internal parameter locations to netCDF variable names
         output_ncnames = ncnames(config.output.netcdf_grid.variables)
         # fill the output_map by mapping parameter netCDF names to arrays
         output_map = out_map(output_ncnames, modelmap)
-        ds = setup_grid_netcdf(
-            nc_path,
+        deflatelevel = config.output.netcdf_grid.compressionlevel
+        output_dataset = setup_grid_netcdf(
+            output_path_grid,
             x_coords,
             y_coords,
             output_map,
@@ -750,45 +781,44 @@ function Writer(config, modelmap, domain, nc_static; extra_dim=nothing)
             config.model.cell_length_in_meter__flag;
             deflatelevel,
         )
+        @info "Created an output netCDF file `$output_path_grid` for grid data, using compression level `$deflatelevel`."
+        NCWriter(; output_path=output_path_grid, output_dataset, output_map)
     else
-        nc_path = nothing
-        output_map = Dict{String,Any}()
-        ds = nothing
+        NCWriter()
     end
 
     # create a separate state output netCDF that will hold the last timestep of all states
     # but only if config.state.path_output has been set
-    if !isnothing(config.state.path_output)
-        state_ncnames = check_states(config)
-        state_map = out_map(state_ncnames, modelmap)
-        nc_state_path = output_path(config, config.state.path_output)
-        @info "Create a state output netCDF file `$nc_state_path`."
-        ds_outstate = setup_grid_netcdf(
-            nc_state_path,
+    endstate_writer = if !isnothing(config.state.path_output)
+        output_path_endstate = output_path(config, config.state.path_output)
+        output_ncnames = check_states(config)
+        output_map = out_map(output_ncnames, modelmap)
+        output_dataset = setup_grid_netcdf(
+            output_path_endstate,
             x_coords,
             y_coords,
-            state_map,
+            output_map,
             config.time.calendar,
             config.time.time_units,
             extra_dim,
             config.model.cell_length_in_meter__flag;
             float_type=Float64,
         )
+        @info "Created a state output netCDF file `$output_path_endstate`."
+        NCWriter(; output_path=output_path_endstate, output_dataset, output_map)
+
     else
-        ds_outstate = nothing
-        state_map = Dict{String,Any}()
-        nc_state_path = nothing
+        NCWriter()
     end
 
     # create an output netCDF that will hold all timesteps of selected parameters for scalar
     # data, but only if config.netcdf.path and config.netcdf.variable have been set.
-    if do_netcdf_scalar(config)
-        nc_scalar_path = output_path(config, config.output.netcdf_scalar.path)
-        @info "Create an output netCDF file `$nc_scalar_path` for scalar data."
+    scalar_writer = if do_netcdf_scalar(config)
+        output_path_scalar = output_path(config, config.output.netcdf_scalar.path)
         # get netCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
-        ds_scalar = setup_scalar_netcdf(
-            nc_scalar_path,
+        output_dataset = setup_scalar_netcdf(
+            output_path_scalar,
             nc_static,
             modelmap,
             config.time.calendar,
@@ -796,100 +826,88 @@ function Writer(config, modelmap, domain, nc_static; extra_dim=nothing)
             extra_dim,
             config,
         )
-
-        for var in config.output.netcdf_scalar.variable
-            reducer[var] =
-                get_reducer_func(var, domain, x_coords, y_coords, config, nc_static)
-        end
+        output_ncnames =
+            (var.parameter => var.name for var in config.output.netcdf_scalar.variable)
+        output_map = out_map(output_ncnames, modelmap)
+        reducer = Dict(
+            var => get_reducer_func(var, domain, x_coords, y_coords, config, nc_static) for var in config.output.netcdf_scalar.variable
+        )
+        @info "Created an output netCDF file `$output_path_scalar` for scalar data."
+        NCWriter(; output_path=output_path_scalar, output_dataset, output_map, reducer)
     else
-        ds_scalar = nothing
-        nc_scalar_path = nothing
+        NCWriter(; reducer=Dict{NetCDFScalarVariable,Function}())
     end
 
-    if do_csv(config)
+    csv_writer = if do_csv(config)
         # open CSV file and write header
-        csv_path = output_path(config, config.output.csv.path)
-        @info "Create an output CSV file `$csv_path` for scalar data."
+        output_path_csv = output_path(config, config.output.csv.path)
         # create directory if needed
-        mkpath(dirname(csv_path))
-        csv_io = open(csv_path, "w")
-        print(csv_io, "time,")
+        mkpath(dirname(output_path_csv))
+        output_io = open(output_path_csv, "w")
+        # Add header
+        print(output_io, "time,")
         header = csv_header(config.output.csv.column, nc_static, config)
-        println(csv_io, join(header, ','))
-        flush(csv_io)
-
-        for col in config.output.csv.column
-            reducer[col] =
-                get_reducer_func(col, domain, x_coords, y_coords, config, nc_static)
-        end
+        println(output_io, join(header, ','))
+        flush(output_io)
+        output_csvnames =
+            (col.parameter => col.header for col in config.output.csv.column)
+        output_map = out_map(output_csvnames, modelmap)
+        reducer = OrderedDict(
+            col => get_reducer_func(col, domain, x_coords, y_coords, config, nc_static) for col in config.output.csv.column
+        )
+        @info "Created an output CSV file `$output_path_csv` for scalar data."
+        CSVWriter(; output_path=output_path_csv, output_io, output_map, reducer)
     else
-        # no CSV file is checked by isnothing(csv_path)
-        csv_path = nothing
-        csv_io = IOBuffer()
+        CSVWriter()
     end
 
-    return Writer(
-        ds,
-        output_map,
-        nc_path,
-        csv_path,
-        config.output.csv.column,
-        csv_io,
-        ds_outstate,
-        state_map,
-        nc_state_path,
-        ds_scalar,
-        config.output.netcdf_scalar.variable,
-        nc_scalar_path,
-        extra_dim,
-        reducer,
-    )
+    return Writer(; grid_writer, scalar_writer, endstate_writer, csv_writer, extra_dim)
 end
 
 "Write a new timestep with scalar data to a netCDF file"
-function write_netcdf_timestep(model, dataset)
-    (; writer, land, clock) = model
-
-    time_index = add_time(dataset, clock.time)
-    for var in writer.nc_scalar
-        (; name, parameter) = var
-        reducer = writer.reducer[var]
-        (; lens, unit) = get_metadata(parameter)
-        A = from_SI(lens(model), unit)
-        elemtype = eltype(A)
+function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDataset,<:Dict})
+    (; clock) = model
+    (; output_dataset, output_map, reducer) = writer
+    (; extra_dim) = model.writer
+    dt_val = tosecond(clock.dt)
+    time_index = add_time(output_dataset, clock.time)
+    for (var, reducer_) in reducer
+        (; name, layer) = var
+        (; vector, unit) = output_map[name]
+        elemtype = eltype(vector)
         # could be a value, or a vector in case of map
         if elemtype <: AbstractFloat
-            v = reducer(A)
-            dataset[name][:, time_index] .= v
+            v = from_SI(reducer_(vector), unit; dt_val)
+            output_dataset[name][:, time_index] .= v
         elseif elemtype <: SVector
             # check if an extra dimension and index is specified in the TOML file
-            if haskey(nc, writer.extra_dim.name)
-                i = only(nc.layer)
-                v = nt.reducer(getindex.(A, i))
-                dataset[name][:, time_index] .= v
+            if haskey(output_dataset, extra_dim.name)
+                v = to_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                output_dataset[name][:, time_index] .= v
             else
                 nlayer = length(first(A))
                 for i in 1:nlayer
-                    v = nt.reducer(getindex.(A, i))
-                    dataset[name][:, i, time_index] .= v
+                    v = to_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                    output_dataset[name][:, i, time_index] .= v
                 end
             end
         else
             error("Unsupported output type: ", elemtype)
         end
     end
-    return model
+    return nothing
 end
 
 "Write a new timestep with grid data to a netCDF file"
-function write_netcdf_timestep(model, dataset, parameters)
+function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDataset,Nothing})
+    (; output_dataset, output_map) = writer
     (; clock, domain) = model
 
-    time_index = add_time(dataset, clock.time)
+    time_index = add_time(output_dataset, clock.time)
     dt = tosecond(clock.dt)
 
     buffer = zeros(Union{Float64,Missing}, domain.land.network.modelsize)
-    for (key, val) in parameters
+    for (key, val) in output_map
         (; par, vector, unit) = val
         sel = active_indices(domain, par)
         # write the active cells vector to the 2d buffer matrix
@@ -900,7 +918,7 @@ function write_netcdf_timestep(model, dataset, parameters)
             # cut off possible boundary conditions/ ghost points with [1:length(sel)]
             buffer[sel] .= collect(vector)[1:length(sel)]
             from_SI!(buffer, unit; dt_val=dt)
-            dataset[key][:, :, time_index] = buffer
+            output_dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
             for i in 1:nlayer
@@ -908,7 +926,7 @@ function write_netcdf_timestep(model, dataset, parameters)
                 fill!(buffer, missing)
                 buffer[sel] .= getindex.(vector, i)
                 from_SI!(buffer, unit)
-                dataset[key][:, :, i, time_index] = buffer
+                output_dataset[key][:, :, i, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
@@ -919,17 +937,16 @@ function write_netcdf_timestep(model, dataset, parameters)
 end
 
 # don't do anything for no dataset, used if no output netCDF is needed
-write_netcdf_timestep(model, dataset::Nothing, parameters) = model
-write_netcdf_timestep(model, dataset::Nothing) = model
+write_netcdf_timestep(model::AbstractModel, writer::NCWriter{Nothing}) = nothing
 
 "Write model output"
 function write_output(model)
     (; writer) = model
-    (; dataset, dataset_scalar, parameters) = writer
+    (; grid_writer, scalar_writer, csv_writer) = writer
 
-    write_csv_row(model)
-    write_netcdf_timestep(model, dataset, parameters)
-    write_netcdf_timestep(model, dataset_scalar)
+    write_csv_row(model, csv_writer)
+    write_netcdf_timestep(model, grid_writer)
+    write_netcdf_timestep(model, scalar_writer)
 
     return model
 end
@@ -980,30 +997,26 @@ end
 "Close input and output datasets that are opened on model initialization"
 function close_files(model; delete_output::Bool=false)
     (; reader, writer, config) = model
+    (; grid_writer, scalar_writer, endstate_writer, csv_writer) = writer
 
+    # Input files
     close(reader.dataset)
     if do_cyclic(config)
         close(reader.cyclic_dataset)
     end
-    writer.dataset === nothing || close(writer.dataset)
-    writer.dataset_scalar === nothing || close(writer.dataset_scalar)
-    close(writer.csv_io)  # can be an IOBuffer
-    writer.state_dataset === nothing || close(writer.state_dataset)
 
-    if delete_output
-        if writer.nc_path !== nothing
-            isfile(writer.nc_path) && rm(writer.nc_path)
-        end
-        if writer.csv_path !== nothing
-            isfile(writer.csv_path) && rm(writer.csv_path)
-        end
-        if writer.state_nc_path !== nothing
-            isfile(writer.state_nc_path) && rm(writer.state_nc_path)
-        end
-        if writer.nc_scalar_path !== nothing
-            isfile(writer.nc_scalar_path) && rm(writer.nc_scalar_path)
-        end
+    # Output NetCDF files
+    for writer_ in (grid_writer, scalar_writer, endstate_writer)
+        (; output_dataset, output_path) = writer_
+        isnothing(output_dataset) && continue
+
+        close(output_dataset)
+        delete_output && rm(output_path)
     end
+
+    # Output CSV file
+    close(csv_writer.output_io)  # can be an IOBuffer
+    delete_output && rm(csv_writer.output_path)
     return nothing
 end
 
@@ -1037,7 +1050,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             map,
             Writer;
             logging=false,
-            parameter_metadata=ParameterMetadata(; allow_missing=true, type=Int),
+            metadata=ParameterMetadata(; allow_missing=true, type=Int),
         )
         @info "Adding scalar output for a map with a reducer function." fileformat param =
             parameter mapname = map reducer_name = String(nameof(f))
@@ -1093,25 +1106,22 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
     end
 end
 
-function write_csv_row(model)
-    (; writer, land, clock) = model
-    (; csv_path, csv_io, csv_cols) = writer
-    isnothing(csv_path) && return nothing
-    print(csv_io, string(clock.time))
+function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)
+    (; land, clock) = model
+    (; output_path, output_io, output_map, reducer) = csv_writer
+    isnothing(output_path) && return nothing
+    print(output_io, string(clock.time))
     dt_val = tosecond(clock.dt)
-    for col in csv_cols
-        (; parameter) = col
-        reducer = writer.reducer[col]
-        metadata = get_metadata(parameter, typeof(land), Routing)
-        (; lens, unit) = get_metadata(parameter)
-        A = lens(model)
+    for (col, reducer_) in reducer
+        (; header) = col
+        (; vector, unit) = output_map[header]
         # v could be a value, or a vector in case of map
-        if eltype(A) <: SVector
+        if eltype(vector) <: SVector
             # indexing is required in case of a SVector and CSV output
             i = only(col.layer)
-            v = reducer(getindex.(A, i))
+            v = reducer_(getindex.(vector, i))
         else
-            v = reducer(collect(A))
+            v = reducer_(collect(vector))
         end
         # Convert to proper unit
         v = if v isa Number
@@ -1121,10 +1131,10 @@ function write_csv_row(model)
         end
         # numbers are also iterable
         for el in v
-            print(csv_io, ',', el)
+            print(output_io, ',', el)
         end
     end
-    return println(csv_io)
+    return println(output_io)
 end
 
 "From a time and a calendar, create the right CFTime DateTimeX type"

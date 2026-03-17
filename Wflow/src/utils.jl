@@ -158,7 +158,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
 function set_states!(instate_path::AbstractString, model; dimname = nothing)::Nothing
-    (; domain, config, clock) = model
+    (; domain, config, clock, land) = model
     dt_val = tosecond(clock.dt)
 
     # Check if required states are covered
@@ -167,8 +167,8 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
     # states in netCDF include dim time (one value) at index 3 or 4, 3 or 4 dims are allowed
     NCDataset(instate_path) do ds
         for (state, ncname) in state_ncnames
-            parameter_metadata = get_metadata(state)
-            (; unit) = parameter_metadata
+            metadata = get_metadata(state; model)
+            (; unit) = metadata
             @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
                 ncname state unit
             sel = active_indices(domain, state)
@@ -188,17 +188,18 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
                 if dimname == :layer
                     A = replace!(A, missing => NaN)
                 end
-                A = transform(A, parameter_metadata; dt_val)
+                A = apply_unit_and_type_transform!(A, metadata; dt_val)
                 # set state in model object
-                parameter_metadata.lens(model) .= svectorscopy(A, Val{size(A)[1]}())
+                metadata.lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
                 A = A[sel]
                 A = nomissing(A)
-                A = transform(A, parameter_metadata; dt_val)
+                A = apply_unit_and_type_transform!(A, metadata; dt_val)
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                parameter_metadata.lens(model)[1:n] .= A
+                lens = get_metadata(state, typeof(land), Routing; model).lens
+                lens(model)[1:n] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -267,6 +268,7 @@ values.
 - `sel=nothing`: A selection of indices, such as a `Vector{CartesianIndex}` of active cells,
         to return from the netCDF. By default all cells are returned.
 - `logging=true`: Generate a logging message when reading a netCDF variable.
+- `metadata`: The metadata of the read parameter or state, obtained from the parameter name by default.
 """
 function ncread(
     nc,
@@ -275,18 +277,18 @@ function ncread(
     model_type;
     sel = nothing,
     logging = true,
-    parameter_metadata = get_metadata(parameter, model_type),
+    metadata = get_metadata(parameter, model_type),
 )
-    (; default, fill, type, allow_missing, dimname) = parameter_metadata
+    (; default, fill, type, allow_missing, dimname) = metadata
     var = get_var(config, parameter; optional = !isnothing(default))
-    (; default, unit) = parameter_metadata
     dt_val = config.time.timestepsecs
+    (; unit) = metadata
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set parameter." parameter unit
+        @info "Set parameter." parameter unit = unit
         @assert !isnothing(default) parameter
-        default = transform(default, parameter_metadata; dt_val)
+        default = unit_and_type_transform(default, metadata; dt_val)
         if isnothing(dimname)
             return Base.fill(default, length(sel))
         else
@@ -330,7 +332,7 @@ function ncread(
             @assert length(value) == nc.dim[String(dimname)]
             repeat(value, 1, length(sel))
         end
-        return transform(A, parameter_metadata; dt_val)
+        return apply_unit_and_type_transform!(A, metadata; dt_val)
     else
         if logging
             @info "Set parameter using netCDF variable." parameter var unit
@@ -374,7 +376,7 @@ function ncread(
             replace!(x -> isnan(x) ? fill : x, A)
         end
     end
-    return transform(A, parameter_metadata; dt_val)
+    return apply_unit_and_type_transform!(A, metadata; dt_val)
 end
 
 """

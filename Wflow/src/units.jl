@@ -283,7 +283,7 @@ end
 to_SI(x, unit::Unit; kwargs...) = x
 
 """
-Convert an array of values to the values in the corresponding SI unit in-place
+In-place conversion of an array of values to the corresponding SI unit
 """
 function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
@@ -300,7 +300,7 @@ function to_SI(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = no
 end
 
 """
-Convert the given value of the SI equivalent of the given unit to the value in the given unit
+Convert a value in SI unit to the given unit
 """
 function from_SI(x::AbstractFloat, unit::Unit; kwargs...)
     return if unit == ABSOLUTE_DEGREES
@@ -315,52 +315,9 @@ end
 from_SI(x, unit::Unit; kwargs...) = x
 
 """
-Convert the given values of the SI equivalent of the given unit to the values in the given unit in-place
+In-place conversion of values in SI unit to the given unit
 """
-function from_SI!(
-    x::Union{AbstractArray},
-    unit::Unit;
-    dt_val::Union{Nothing, Number} = nothing,
-)
+function from_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     unit_ref = Ref(unit)
     @. x = from_SI(x, unit_ref; dt_val)
-end
-
-function from_SI(x::AbstractArray, unit::Unit; kwargs...)
-    out = copy(x)
-    return from_SI!(out, unit; kwargs...)
-end
-
-"""
-Get the unit by checking all `*_standard_name_map` dictionaries
-and make sure that there is no ambiguity.
-"""
-function get_unit(variable_name::AbstractString; allow_not_found = true)::Unit
-    unit = nothing
-
-    for standard_name_map in (
-        sbm_standard_name_map,
-        sediment_standard_name_map,
-        domain_standard_name_map,
-        routing_standard_name_map,
-    )
-        nt = get(standard_name_map, variable_name, nothing)
-        if !isnothing(nt)
-            if isnothing(unit)
-                unit = nt.unit
-            else
-                @assert nt.unit == unit "Unit ambiguity found for variable name `$variable_name`: $unit, $(nt.unit)."
-            end
-        end
-    end
-
-    return if isnothing(unit)
-        if allow_not_found
-            Unit()
-        else
-            error("Unit not found for $variable_name.")
-        end
-    else
-        unit
-    end
 end

@@ -224,7 +224,7 @@ function ReservoirVariables(
         dataset,
         config,
         "reservoir_water__outgoing_observed_volume_flow_rate",
-        LandHydrologySBM;
+        Routing;
         sel = indices_outlet,
     )
     variables = ReservoirVariables(;
@@ -261,7 +261,7 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         dataset,
         config,
         "reservoir_water__external_inflow_volume_flow_rate",
-        LandHydrologySBM;
+        Routing;
         sel = indices_outlet,
     )
     n = length(indices_outlet)

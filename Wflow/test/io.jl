@@ -39,7 +39,7 @@
     @test_throws ErrorException Wflow.get_var(config, "not_set_in_TOML"; optional = false)
 end
 
-@testitem "Clock constructor" begin
+@testitem "unit: Clock constructor" begin
     using NCDatasets: NCDataset
     using CFTime: DateTimeProlepticGregorian, DateTimeStandard
     using Dates: Second, Hour, Day, DateTime
@@ -78,7 +78,7 @@ end
     @test clock.dt == Second(Hour(1))
 end
 
-@testitem "Clock{DateTimeStandard}" begin
+@testitem "unit: Clock{DateTimeStandard}" begin
     using CFTime: DateTimeStandard
     using Dates: Dates, Second, Day
 
@@ -110,7 +110,7 @@ end
     @test clock.dt == dt
 end
 
-@testitem "Clock{DateTime360Day}" begin
+@testitem "unit: Clock{DateTime360Day}" begin
     using CFTime: DateTime360Day
     using Dates: Dates, Second, Day
 
@@ -177,7 +177,7 @@ end
     @test clock.time == DateTimeNoLeap(2000, 3, 1)
 end
 
-@testitem "CFTime" begin
+@testitem "unit: CFTime" begin
     using CFTime: DateTimeStandard, DateTimeProlepticGregorian, DateTime360Day
     using Dates: DateTime, Date
     @test Wflow.cftime("2006-01-02T15:04:05", "standard") ==
@@ -191,7 +191,7 @@ end
     @test Wflow.cftime(Date("2006-01-02"), "360_day") == DateTime360Day(2006, 1, 2)
 end
 
-@testitem "timecycles" begin
+@testitem "unit: timecycles" begin
     using Dates: Date, Day, monthday
     @test Wflow.timecycles([Date(2020, 4, 21), Date(2020, 10, 21)]) == [(4, 21), (10, 21)]
     @test_throws ErrorException Wflow.timecycles([Date(2020, 4, 21), Date(2021, 10, 21)])
@@ -209,7 +209,7 @@ end
     @test !Wflow.monthday_passed((1, 1), (2, 2))  # day and month before
 end
 
-@testitem "reducer" begin
+@testitem "unit: reducer" begin
     V = [6, 5, 4, 1]
     @test Wflow.function_map[Wflow.ReducerType.maximum](V) == 6
     @test Wflow.function_map[Wflow.ReducerType.minimum](V) == 1
@@ -265,8 +265,7 @@ end
 
 @testitem "Model initialization" begin
     using NCDatasets: dimnames
-    using Wflow: get_unit, to_SI, to_SI!
-    using Dates
+    using Wflow: get_field_in_model, to_SI, to_SI!, get_metadata
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
@@ -289,22 +288,24 @@ end
     (; clock, reader, writer) = model
 
     @testset "output and state names" begin
+        (; output_dataset) = writer.grid_writer
+        (; output_map) = writer.endstate_writer
         ncdims = ("lon", "lat", "layer", "time")
-        @test dimnames(writer.dataset["ustorelayerdepth"]) == ncdims
-        ncvars = [k for k in keys(writer.dataset) if !in(k, ncdims)]
+        @test dimnames(output_dataset["ustorelayerdepth"]) == ncdims
+        ncvars = [k for k in keys(output_dataset) if !in(k, ncdims)]
         @test "snow" in ncvars
         @test "q_av_river" in ncvars
         @test "q_av_land" in ncvars
-        @test length(writer.state_parameters) == 12
+        @test length(output_map) == 12
     end
 
     @testset "warm states" begin
         (; land) = model
-        nt = Wflow.standard_name_map(model.land)
+        nt = Wflow.get_standard_name_map(model.land)
 
         function test_warm_state(var_name, i, val)
-            lens = Wflow.get_lens(var_name, land)
-            @test lens(model)[i] ≈ to_SI(val, get_unit(var_name))
+            A, metadata = get_field_in_model(model, var_name)
+            @test A[i] ≈ to_SI(val, metadata.unit)
         end
 
         test_warm_state("reservoir_water_surface__elevation", 1, 3.6172022486284856)
@@ -312,8 +313,8 @@ end
         test_warm_state("snowpack_dry_snow__leq_depth", 5, 11.019233179897599)
         test_warm_state("soil_surface__temperature", 5, 0.21814478119608938)
         var_name = "soil_layer_water_unsaturated_zone__depth"
-        lens = Wflow.get_lens(var_name, land)
-        @test lens(model)[50063][1] ≈ to_SI(9.969116007201725, get_unit(var_name))
+        (; lens, unit) = Wflow.get_metadata(var_name, land)
+        @test lens(model)[50063][1] ≈ to_SI(9.969116007201725, unit)
         test_warm_state("snowpack_liquid_water__depth", 5, 0.0)
         test_warm_state("vegetation_canopy_water__depth", 50063, 0.0)
         test_warm_state("soil_water_saturated_zone__depth", 50063, 558.8578304603327)
@@ -355,16 +356,16 @@ end
 
     @testset "initial parameter values" begin
         (; land, clock) = model
+        dt_val = Wflow.tosecond(clock.dt)
 
         function test_initial_parameter_value(var_name, i, val; rtol = nothing)
-            lens = Wflow.get_lens(var_name, land)
-            unit = get_unit(var_name)
-            dt_val = Dates.value(clock.dt)
+            A, metadata = Wflow.get_field_in_model(model, var_name)
+            (; unit) = metadata
             val_SI = val isa Vector ? to_SI!(val, unit; dt_val) : to_SI(val, unit; dt_val)
             if isnothing(rtol)
-                @test isapprox(lens(model)[i], val_SI)
+                @test isapprox(A[i], val_SI)
             else
-                @test isapprox(lens(model)[i], val_SI; rtol)
+                @test isapprox(A[i], val_SI; rtol)
             end
         end
 
@@ -412,14 +413,14 @@ end
 
         (; land) = model
         @test land.snow.parameters.cfmax[1] ==
-              to_SI(2.0, get_unit("snowpack__degree_day_coefficient"))
+              to_SI(2.0, get_metadata("snowpack__degree_day_coefficient").unit)
         @test land.soil.parameters.soilthickness[1] ≈
-              to_SI(2000.0 * 3.0 + 100.0, get_unit("soil__thickness"))
+              to_SI(2000.0 * 3.0 + 100.0, get_metadata("soil__thickness").unit)
         @test isapprox(
             land.atmospheric_forcing.precipitation[49951],
             to_SI(
                 1.5 * 2.2100000381469727,
-                get_unit("atmosphere_water__precipitation_volume_flux");
+                get_metadata("atmosphere_water__precipitation_volume_flux").unit;
                 dt_val = model.config.time.timestepsecs,
             ),
             rtol = 1e-7,
@@ -438,8 +439,6 @@ end
     using NCDatasets: NCDataset
     using LoggingExtras
     using TOML
-    using Wflow: get_unit
-
     @testset "NetCDF creation" begin
         path = Base.Filesystem.tempname()
         _ = Wflow.create_tracked_netcdf(path)
@@ -520,7 +519,7 @@ end
         @test isfile(toml_archive)
         @test isfile(path_log)
         lines = readlines(path_log)
-        @test count(startswith(line, "[ Info: ") for line in lines) == 16
+        @test count(startswith(line, "[ Info: ") for line in lines) == 15
         @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
         # Another run with debug log level and a non-default path_log.

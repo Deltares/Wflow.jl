@@ -1,6 +1,7 @@
 @testitem "unit: update reservoir simple" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     using Wflow: to_SI
+    include("testing_utils.jl")
     dt = 86400.0
     # Simple reservoir (outflowfunc = 4)
     n = 1
@@ -71,6 +72,7 @@ end
 
 @testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType, to_SI
+    include("testing_utils.jl")
     # Reservoir Modified Puls approach (outflowfunc = 3)
     n = 1
     dt = 86400.0
@@ -135,6 +137,7 @@ end
 @testitem "update_reservoir!" begin
     using Wflow: to_SI
     using Graphs: DiGraph, add_edge!
+    include("testing_utils.jl")
 
     dt = 86400.0
 
@@ -205,6 +208,7 @@ end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
     using Wflow: to_SI, ReservoirProfileType, ReservoirOutflowType
+    include("testing_utils.jl")
     dt = 86400.0
     # Linked reservoirs with free weir (outflowfunc = 1)
     datadir = joinpath(@__DIR__, "data")
@@ -288,6 +292,7 @@ end
 
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
 @testitem "Overflowing reservoir with SH and HQ" begin
+    include("testing_utils.jl")
     using Wflow: to_SI, ReservoirProfileType, ReservoirOutflowType
     datadir = joinpath(@__DIR__, "data")
     n = 1

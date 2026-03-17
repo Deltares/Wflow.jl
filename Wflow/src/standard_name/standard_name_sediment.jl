@@ -8,6 +8,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.land.atmospheric_forcing.precipitation),
         unit = Unit(; mm = 1, dt = -1),
         description = "Precipitation",
+        allow_dynamic_input = true,
         tags = [:atmospheric_forcing],
     ),
     "soil_clay__mass_fraction" => ParameterMetadata(;
@@ -83,13 +84,13 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.land.overland_flow_erosion.parameters.usle_k),
         default = 0.1,
         description = "USLE soil erodibility factor",
-        tags = [:overland_flow_erosion_input],
+        tags = [:overland_flow_erosion_input, :rainfall_erosion_input],
     ),
     "soil_erosion__usle_c_factor" => ParameterMetadata(;
         lens = @optic(_.land.overland_flow_erosion.parameters.usle_c),
         default = 0.01,
         description = "USLE crop management factor",
-        tags = [:overland_flow_erosion_input],
+        tags = [:overland_flow_erosion_input, :rainfall_erosion_input],
     ),
     "soil_erosion__answers_rainfall_factor" => ParameterMetadata(;
         lens = @optic(_.land.rainfall_erosion.parameters.answers_rainfall_factor),
@@ -107,30 +108,35 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(_.routing.river_flow.hydrological_forcing.q_river),
         unit = Unit(; m = 3, s = -1),
         description = "River discharge",
+        allow_dynamic_input = true,
         tags = [:hydrological_forcing],
     ),
     "river_water__depth" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.hydrological_forcing.waterlevel_river),
         unit = Unit(; m = 1),
         description = "River water depth",
+        allow_dynamic_input = true,
         tags = [:hydrological_forcing],
     ),
     "land_surface_water__volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.land.hydrological_forcing.q_land),
         unit = Unit(; m = 3, s = -1),
         description = "Overland flow discharge",
+        allow_dynamic_input = true,
         tags = [:hydrological_forcing],
     ),
     "land_surface_water__depth" => ParameterMetadata(;
         lens = @optic(_.land.hydrological_forcing.waterlevel_land),
         unit = Unit(; m = 1),
         description = "Overland flow water depth",
+        allow_dynamic_input = true,
         tags = [:hydrological_forcing],
     ),
     "vegetation_canopy_water__interception_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.hydrological_forcing.interception),
         unit = Unit(; mm = 1, dt = -1),
         description = "Rainfall interception by the vegetation",
+        allow_dynamic_input = true,
         tags = [:hydrological_forcing],
     ),
     "rainfall_soil_erosion__mass_flow_rate" => ParameterMetadata(;
@@ -237,14 +243,14 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "land_surface_water_sediment__govers_transport_capacity_coefficient" =>
         ParameterMetadata(;
             lens = @optic(_.routing.overland_flow.transport_capacity.parameters.c_govers),
-            default = 5.0e-7,
+            default = 0.000505,
             description = "Govers transport capacity coefficient",
             tags = [:sediment_transport_cap_overland_input],
         ),
     "land_surface_water_sediment__govers_transport_capacity_exponent" =>
         ParameterMetadata(;
             lens = @optic(_.routing.overland_flow.transport_capacity.parameters.n_govers),
-            default = 1.5,
+            default = 4.27,
             description = "Govers transport capacity exponent",
             tags = [:sediment_transport_cap_overland_input],
         ),
@@ -253,48 +259,42 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "river_sediment__median_diameter" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.transport_capacity.parameters.d50),
         unit = Unit(; mm = 1),
-        default = 1.0,
+        default = 0.1,
         description = "Particle mean diameter",
         tags = [:sediment_transport_cap_river_input],
     ),
     "river_water_sediment__bagnold_transport_capacity_coefficient" =>
         ParameterMetadata(;
             lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_bagnold),
-            default = 0.0017,
             description = "Bagnold transport capacity coefficient",
             tags = [:sediment_transport_cap_river_input],
         ),
     "river_water_sediment__bagnold_transport_capacity_exponent" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.transport_capacity.parameters.e_bagnold),
-        default = 1.8,
         description = "Bagnold transport capacity exponent",
         tags = [:sediment_transport_cap_river_input],
     ),
     "river_water_sediment__kodatie_transport_capacity_a_coefficient" =>
         ParameterMetadata(;
             lens = @optic(_.routing.river_flow.transport_capacity.parameters.a_kodatie),
-            default = 5.0,
             description = "Kodatie transport capacity coefficient a",
             tags = [:sediment_transport_cap_river_input],
         ),
     "river_water_sediment__kodatie_transport_capacity_b_coefficient" =>
         ParameterMetadata(;
             lens = @optic(_.routing.river_flow.transport_capacity.parameters.b_kodatie),
-            default = 0.6,
             description = "Kodatie transport capacity coefficient b",
             tags = [:sediment_transport_cap_river_input],
         ),
     "river_water_sediment__kodatie_transport_capacity_c_coefficient" =>
         ParameterMetadata(;
             lens = @optic(_.routing.river_flow.transport_capacity.parameters.c_kodatie),
-            default = 0.05,
             description = "Kodatie transport capacity coefficient c",
             tags = [:sediment_transport_cap_river_input],
         ),
     "river_water_sediment__kodatie_transport_capacity_d_coefficient" =>
         ParameterMetadata(;
             lens = @optic(_.routing.river_flow.transport_capacity.parameters.d_kodatie),
-            default = 2.0,
             description = "Kodatie transport capacity coefficient d",
             tags = [:sediment_transport_cap_river_input],
         ),

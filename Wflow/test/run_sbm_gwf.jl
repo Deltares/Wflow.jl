@@ -31,9 +31,9 @@
     Wflow.run_timestep!(model)
 
     # test if the first timestep was written to the CSV file
-    flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
+    flush(model.writer.csv_writer.output_io)  # ensure the buffer is written fully to disk
     @testset "CSV output" begin
-        row = csv_first_row(model.writer.csv_path)
+        row = csv_first_row(model.writer.csv_writer.output_path)
 
         @test row.time == DateTime("2000-06-01T00:00:00")
         @test row.Q_av ≈ 0.01619703129434486

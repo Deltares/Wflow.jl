@@ -1,6 +1,6 @@
 using Statistics: mean
 using SpecialFunctions: expint
-using Wflow: to_SI, Unit, AverageVector
+using Wflow: to_SI, Unit, AverageVector, get_average
 using StaticArrays: SVector
 
 "Return the first row of a Wflow output CSV file as a NamedTuple"
@@ -31,7 +31,7 @@ function run_piave(model, steps)
         Wflow.run_timestep!(model)
         ssf_storage[i] = mean(model.routing.subsurface_flow.variables.storage)
         riv_storage[i] = mean(model.routing.river_flow.variables.storage)
-        q[i] = model.routing.river_flow.variables.q_av.average[1]
+        q[i] = get_average(model.routing.river_flow.variables.q_av)[1]
     end
     return q, riv_storage, ssf_storage
 end
@@ -219,7 +219,7 @@ data required in certain functions has to be supplied (e.g. in the form of Named
 end
 
 Wflow.to_SI(x::Union{Float64, Vector{Float64}}, name::AbstractString; kwargs...) =
-    to_SI(x, Wflow.get_unit(name; allow_not_found = false); kwargs...)
+    to_SI(x, Wflow.get_metadata(name).unit; kwargs...)
 
 no_nan(x::Float64) = isnan(x) ? 0.0 : x
 get_mean(f::Vector{Float64}) = mean(filter(!isnan, f)) |> no_nan

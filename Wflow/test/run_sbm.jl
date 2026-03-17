@@ -19,9 +19,9 @@
     Wflow.run_timestep!(model)
 
     # test if the first timestep was written to the CSV file
-    flush(model.writer.csv_io)  # ensure the buffer is written fully to disk
+    flush(model.writer.csv_writer.output_io)  # ensure the buffer is written fully to disk
     @testset "CSV output" begin
-        row = csv_first_row(model.writer.csv_path)
+        row = csv_first_row(model.writer.csv_writer.output_path)
 
         @test row.time == DateTime("2000-01-02T00:00:00")
         @test row.Q ≈ 6.850474762647178
@@ -48,7 +48,7 @@
     end
 
     @testset "NetCDF scalar output" begin
-        ds = model.writer.dataset_scalar
+        ds = model.writer.scalar_writer.output_dataset
         @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
         @test ds["Q"][:][1:20] ≈ [
             0.7411495,
@@ -653,7 +653,7 @@ end
     end
 
     @testset "river flow at basin outlets and downstream of one pit" begin
-        q = model.routing.river_flow.variables.q_av.average
+        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
         @test q[4009] ≈ 8.426694842173548 # pit/ outlet, CartesianIndex(141, 228)
         @test q[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
         @test q[2508] ≈ 131.40631419288573 # pit/ outlet
@@ -708,6 +708,7 @@ end
 end
 
 @testitem "Cyclic river and reservoir external inflow (kinematic wave routing)" begin
+    using Wflow: get_average
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -722,18 +723,21 @@ end
     @testset "kinematic wave routing: river and reservoir external inflow (cyclic)" begin
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
-        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av.average[44] ==
-              0.0
-        @test Wflow.get_average(model.routing.river_flow.variables.q_av)[44] ≈
-              10.156053077341845
+        @test get_average(
+            model.routing.river_flow.boundary_conditions.actual_external_abstraction_av,
+        )[44] == 0.0
+        @test get_average(model.routing.river_flow.variables.q_av)[44] ≈ 10.156053077341845
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
-        @test reservoir.boundary_conditions.actual_external_abstraction_av.average[2] == 1.0
-        @test reservoir.boundary_conditions.inflow.average[2] ≈ -0.9054049318713108
-        @test reservoir.variables.outflow_av.average[2] ≈ 3.000999922024245
+        @test get_average(reservoir.boundary_conditions.actual_external_abstraction_av)[2] ==
+              1.0
+        @test get_average(reservoir.boundary_conditions.inflow)[2] ≈ -0.9054049318713108
+        @test get_average(reservoir.variables.outflow_av)[2] ≈ 3.000999922024245
     end
 end
 
 @testitem "Cyclic river and reservoir external inflow (local inertial routing)" begin
+    using Wflow: get_average
+
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -748,17 +752,21 @@ end
     @testset "local inertial routing: river and reservoir external inflow (cyclic)" begin
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
-        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_av.average[44] ==
-              0.0
-        @test model.routing.river_flow.variables.q_av.average[44] ≈ 10.119602100591411
+        @test get_average(
+            model.routing.river_flow.boundary_conditions.actual_external_abstraction_av,
+        )[44] == 0.0
+        @test get_average(model.routing.river_flow.variables.q_av)[44] ≈ 10.119602100591411
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
-        @test reservoir.boundary_conditions.actual_external_abstraction_av.average[2] == 1.0
-        @test reservoir.boundary_conditions.inflow.average[2] ≈ -0.9090882985601229
-        @test reservoir.variables.outflow_av.average[2] ≈ 3.000999922022744
+        @test get_average(reservoir.boundary_conditions.actual_external_abstraction_av)[2] ==
+              1.0
+        @test get_average(reservoir.boundary_conditions.inflow)[2] ≈ -0.9090882985601229
+        @test get_average(reservoir.variables.outflow_av)[2] ≈ 3.000999922022744
     end
 end
 
 @testitem "External negative inflow" begin
+    using Wflow: get_average
+
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -770,15 +778,15 @@ end
     (; q_av) = model.routing.river_flow.variables
     @testset "river external negative inflow" begin
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av.average[44] ≈ 1.5965227273142157
-        @test q_av.average[44] ≈ 1.4328200140906533
+        @test get_average(actual_external_abstraction_av)[44] ≈ 1.5965227273142157
+        @test get_average(q_av)[44] ≈ 1.4328200140906533
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av.average[44] ≈ 5.416747895349456
-        @test q_av.average[44] ≈ 4.000700150630984
+        @test get_average(actual_external_abstraction_av)[44] ≈ 5.416747895349456
+        @test get_average(q_av)[44] ≈ 4.000700150630984
         Wflow.run_timestep!(model)
-        @test actual_external_abstraction_av.average[44] ≈ 9.756847289612736
+        @test get_average(actual_external_abstraction_av)[44] ≈ 9.756847289612736
         @test external_inflow[44] == -10.0
-        @test q_av.average[44] ≈ 7.275452569433593
+        @test get_average(q_av)[44] ≈ 7.275452569433593
     end
 end
 

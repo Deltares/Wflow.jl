@@ -1,5 +1,5 @@
 @testitem "unit: update_bc_soil_model!" begin
-    using Wflow: to_SI
+    using Wflow: to_SI, MM_PER_DT
     using StaticArrays: SVector
     include("testing_utils.jl")
     n = 1
@@ -40,13 +40,7 @@
                     dt_val = dt,
                 ),
             ],
-            interception_rate = [
-                to_SI(
-                    2e-3,
-                    "vegetation_canopy_water__interception_volume_flux";
-                    dt_val = dt,
-                ),
-            ],
+            interception_rate = [to_SI(2e-3, MM_PER_DT; dt_val = dt)],
         ),
     )
     runoff = Wflow.OpenWaterRunoff(;

@@ -1,9 +1,9 @@
 # wrapper methods for standard name mapping
-standard_name_map(model::T) where {T} = standard_name_map(T)
-standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
-standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
-standard_name_map(::Type{<:Domain}) = domain_standard_name_map
-standard_name_map(::Type{<:Routing}) = routing_standard_name_map
+get_standard_name_map(model::T) where {T} = get_standard_name_map(T)
+get_standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
+get_standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
+get_standard_name_map(::Type{<:Domain}) = domain_standard_name_map
+get_standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
 const PARAMETER_TYPES = Union{Float64, Int, Bool, Nothing}
 
@@ -20,6 +20,7 @@ Metadata associated with parameters and variables.
     from `default` or `fill`
 - `description`: The description of the parameter/variable provided in the Wflow docs
 - `allow_missing`: Whether the parameter/variable is allowed to have missing entries
+- `allow_dynamic_input`: Allow updating this parameter from input via cyclic/forcing
 - `dimname`: The name of the third dimension of the parameter/variable if it exists
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
@@ -37,6 +38,7 @@ Metadata associated with parameters and variables.
     type::Type{T} = nothing
     description::String = ""
     allow_missing::Bool = false
+    allow_dynamic_input::Bool = false
     dimname::N = nothing
     tags::Vector{Symbol} = []
     function ParameterMetadata(
@@ -47,6 +49,7 @@ Metadata associated with parameters and variables.
         type,
         description,
         allow_missing,
+        allow_dynamic_input,
         dimname::N,
         flags,
     ) where {L, D, F, N}
@@ -69,88 +72,143 @@ Metadata associated with parameters and variables.
             type,
             description,
             allow_missing,
+            allow_dynamic_input,
             dimname,
             flags,
         )
     end
 end
 
-get_metadata(name::AbstractString, ::Type{<:Writer}) = ParameterMetadata()
-get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model))
-get_metadata(name::AbstractString, L::Type) = standard_name_map(L)[name]
+function Base.:(==)(a::ParameterMetadata, b::ParameterMetadata)
+    all(getfield(a, f) == getfield(b, f) for f in fieldnames(ParameterMetadata))
+end
 
-function get_metadata(name::AbstractString, types::Vararg{Type})
-    for type in types
-        metadata = get(standard_name_map(type), name, nothing)
-        !isnothing(metadata) && return metadata
+function metadata_from_lens_string(
+    lens_string::AbstractString,
+    standard_name_map::OrderedDict{String, ParameterMetadata},
+)::Union{ParameterMetadata, Nothing}
+    for metadata_candidate in values(standard_name_map)
+        if string(metadata_candidate.lens)[7:(end - 1)] == lens_string
+            return metadata_candidate
+        end
     end
     return nothing
 end
 
-function get_metadata(name::AbstractString, land::AbstractLandModel)
+function get_metadata(
+    name::AbstractString,
+    types::Vararg{Type};
+    model = nothing,
+)::Union{ParameterMetadata, Nothing}
+    metadata = nothing
+    for type in types
+        standard_name_map = get_standard_name_map(type)
+        # First see whether 'name' is a standard name within the standard name map
+        # corresponding to 'type'
+        metadata_candidate = get(standard_name_map, name, nothing)
+        # If not, see whether 'name' is a path in the model object which matches
+        # a lens in the standard name map
+        if isnothing(metadata_candidate)
+            metadata_candidate = metadata_from_lens_string(name, standard_name_map)
+        end
+
+        if !isnothing(metadata_candidate) && (metadata != metadata_candidate)
+            # Metadata was found; if a model was provided check whether
+            # the lens matches
+            if !isnothing(model) && !isnothing(metadata_candidate.lens)
+                found_matching_lens = false
+                try
+                    metadata_candidate.lens(model)
+                    found_matching_lens = true
+                catch
+                end
+                if found_matching_lens
+                    !isnothing(metadata) && error(
+                        "Ambiguity found for obtaining metadata for '$name'; this key is in the standard nampe map for at least 2 of $types with a fitting lens.",
+                    )
+                    metadata = metadata_candidate
+                end
+            else
+                # If model or lens was not provided assume that the metadata matches
+                !isnothing(metadata) && error(
+                    "Ambiguity found for obtaining metadata for '$name'; this key is in the standard name map for at least 2 of $types and there was no model provided to disambiguate.",
+                )
+                metadata = metadata_candidate
+            end
+        end
+    end
+    return metadata
+end
+
+get_metadata(name::AbstractString, land::L; kwargs...) where {L <: AbstractLandModel} =
+    get_metadata(name, L; kwargs...)
+
+function get_metadata(
+    name::AbstractString,
+    land_type::Type{<:AbstractLandModel};
+    kwargs...,
+)::Union{ParameterMetadata, Nothing}
     # Check whether it is a land variable first
-    metadata = get(standard_name_map(land), name, nothing)
+    metadata = get(get_standard_name_map(land_type), name, nothing)
 
     if isnothing(metadata)
         # Then check other variable types
-        for (name_map, _standard_name_map) in standard_name_maps
+        for (name_map, standard_name_map) in STANDARD_NAME_MAPS
             (name_map ∈ ("sbm", "sediment")) && continue
-            metadata = get(_standard_name_map, name, nothing)
+            metadata = get(standard_name_map, name, nothing)
             !isnothing(metadata) && break
         end
     end
     return metadata
 end
 
-function metadata_from_lens_string(
-    lens_string::AbstractString;
-    allow_not_found::Bool,
-)::Union{ParameterMetadata, Nothing}
-    for (_, _standard_name_map) in standard_name_maps
-        for metadata in values(_standard_name_map)
-            if string(metadata.lens)[7:(end - 1)] == lens_string
-                return metadata
-            end
+get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model); model)
+get_metadata(name::AbstractString, L::Type) = get_standard_name_map(L)[name]
+
+# When no model or model type is specified, search all standard name maps
+get_metadata(name::AbstractString; kwargs...) =
+    get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...; kwargs...)
+
+function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
+    metadata = get_metadata(name; model)
+
+    field = if !isnothing(metadata)
+        metadata.lens(model)
+    else
+        # If no metadata was found, `str` is either a path in the model object that doesn't match a lens or is invalid
+        try
+            param(model, name)
+        catch
+            error("Couldn't obtain a field from this model specified by '$name'.")
         end
     end
-    if allow_not_found
-        return nothing
-    else
-        error(
-            "`$lens_string` is not a known lens string. It might be valid but is not yet included in the standard name maps.",
-        )
-    end
+    return field, metadata
 end
-
-function get_metadata(name::AbstractString; allow_not_found::Bool = false)
-    # Try as standard name map key
-    metadata = get_metadata(name, LandHydrologySBM, Routing, SoilLoss, Domain)
-    # Try as lens
-    if isnothing(metadata)
-        metadata = metadata_from_lens_string(name; allow_not_found = true)
-    end
-    return metadata
-end
-
-get_lens(name::AbstractString, model::T) where {T} = get_lens(name, T)
-get_lens(name::AbstractString, model::AbstractLandModel) = get_metadata(name, model).lens
-get_lens(name::AbstractString, ::Type{T}) where {T} = get_metadata(name, T).lens
 
 to_proper_number_type(x::Missing, ::Type) = x
 to_proper_number_type(x::Bool, ::Type) = x
-to_proper_number_type(x::AbstractFloat, ::Type{T}) where {T <: Number} = T(x)
+to_proper_number_type(x::T, ::Type{T}) where {T} = x
+to_proper_number_type(x::Number, ::Type{T}) where {T <: Number} = T(x)
+# This method is only to avoid ambiguities
+to_proper_number_type(::Bool, ::Type{T}) where {T <: Number} = nothing
 
-function transform(
+"""
+NOTE: This function is only in-place if A already has the correct type
+"""
+function apply_unit_and_type_transform!(
     A::AbstractArray,
-    parameter_metadata::ParameterMetadata;
+    metadata::ParameterMetadata;
     dt_val = nothing,
 )
-    (; type, unit) = parameter_metadata
+    (; type, unit) = metadata
     if eltype(A) != type
         A = to_proper_number_type.(A, type)
     end
     return to_SI!(A, unit; dt_val)
 end
 
-transform(x, parameter_metadata::ParameterMetadata; dt_val = nothing) =
-    to_SI(parameter_metadata.type(x), parameter_metadata.unit; dt_val)
+unit_and_type_transform(x::Number, metadata::ParameterMetadata; dt_val = nothing) =
+    to_SI(metadata.type(x), metadata.unit; dt_val)
+
+apply_unit_and_type_transform!(x::Number, metadata::ParameterMetadata; kwargs...) =
+    unit_and_type_transform(x, metadata; kwargs...)

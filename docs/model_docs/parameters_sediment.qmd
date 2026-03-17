@@ -9,8 +9,6 @@ execute:
 ```{julia}
 # | code-fold: true
 include("../docs_utils.jl")
-using Pkg
-Pkg.status()
 generate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])
 
 ```

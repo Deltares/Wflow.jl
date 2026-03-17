@@ -1,5 +1,5 @@
 @testitem "unit: rainfall_intercepiton_gash" begin
-    using Wflow: to_SI
+    using Wflow: to_SI, MM_PER_DT
     include("testing_utils.jl")
     dt = 86400.0
 
@@ -40,8 +40,7 @@
         )
     @test throughfall ≈
           to_SI(13.568, "vegetation_canopy_water__throughfall_volume_flux"; dt_val = dt)
-    @test interception ≈
-          to_SI(4.0, "vegetation_canopy_water__interception_volume_flux"; dt_val = dt)
+    @test interception ≈ to_SI(4.0, MM_PER_DT; dt_val = dt)
     @test stem_flow ≈
           to_SI(0.432, "vegetation_canopy_water__stemflow_volume_flux"; dt_val = dt)
     @test canopy_storage_in == canopy_storage_out
@@ -60,15 +59,14 @@
         )
     @test throughfall ≈
           to_SI(0.24, "vegetation_canopy_water__throughfall_volume_flux"; dt_val = dt)
-    @test interception ≈
-          to_SI(0.736, "vegetation_canopy_water__interception_volume_flux"; dt_val = dt)
+    @test interception ≈ to_SI(0.736, MM_PER_DT; dt_val = dt)
     @test stem_flow ≈
           to_SI(0.024, "vegetation_canopy_water__stemflow_volume_flux"; dt_val = dt)
     @test canopy_storage_in == canopy_storage_out
 end
 
 @testitem "unit: rainfall_interception_modrut (modified Rutter)" begin
-    using Wflow: to_SI
+    using Wflow: to_SI, MM_PER_DT
     dt = 86400.0
 
     # Case canopy_gap_fraction < inv(1.1), potential_evaporation < canopy_storage (after precipitation)
@@ -88,8 +86,7 @@ end
     )
     @test throughfall ≈
           to_SI(3.87, "vegetation_canopy_water__throughfall_volume_flux"; dt_val = dt)
-    @test canopy_evap ≈
-          to_SI(3.8, "vegetation_canopy_water__interception_volume_flux"; dt_val = dt)
+    @test canopy_evap ≈ to_SI(3.8, MM_PER_DT; dt_val = dt)
     @test stemflow ≈
           to_SI(0.387, "vegetation_canopy_water__stemflow_volume_flux"; dt_val = dt)
     @test canopy_storage ≈ to_SI(2.043, "vegetation_canopy_water__depth")
@@ -107,8 +104,7 @@ end
     )
     @test throughfall ≈
           to_SI(0.95, "vegetation_canopy_water__throughfall_volume_flux"; dt_val = dt)
-    @test canopy_evap ≈
-          to_SI(2.043, "vegetation_canopy_water__interception_volume_flux"; dt_val = dt)
+    @test canopy_evap ≈ to_SI(2.043, MM_PER_DT; dt_val = dt)
     @test stemflow ≈
           to_SI(0.05, "vegetation_canopy_water__stemflow_volume_flux"; dt_val = dt)
     @test canopy_storage ≈ 0.0
