@@ -341,7 +341,7 @@ end
     push!(h_init, h_a[n])
 
     timestepping = Wflow.TimeStepping(; cfl = 0.7)
-    parameters = Wflow.LocalInertialRiverFlowParameters(;
+    parameters = Wflow.RiverFlowStaggeredParameters(;
         n,
         ne = _ne,
         active_n = collect(1:(n - 1)),
@@ -358,7 +358,7 @@ end
         froude_limit,
     )
 
-    variables = Wflow.LocalInertialRiverFlowVariables(;
+    variables = Wflow.RiverFlowStaggeredVariables(;
         n,
         n_edges = _ne,
         q0 = zeros(_ne),
@@ -378,13 +378,14 @@ end
 
     boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
 
-    sw_river = Wflow.LocalInertialRiverFlow(;
+    sw_river = Wflow.RiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
         floodplain = nothing,
         allocation = Wflow.NoAllocationRiver(n),
+        routing_method = Wflow.LocalInertial(),
     )
 
     # run until steady state is reached

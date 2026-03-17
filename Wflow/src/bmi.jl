@@ -401,7 +401,12 @@ Return the grid element type of a model variable (PropertyLens `var`) based on a
 function grid_element_type(
     ::T,
     var::PropertyLens,
-) where {T <: Union{LocalInertialRiverFlow, LocalInertialOverlandFlow}}
+) where {
+    T <: Union{
+        AbstractRiverFlowModel{<:LocalInertial},
+        AbstractOverlandFlowModel{<:LocalInertial},
+    },
+}
     vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
     element_type = if var in vars
         "edge"
