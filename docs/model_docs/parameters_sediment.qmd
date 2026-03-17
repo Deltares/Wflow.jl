@@ -14,6 +14,7 @@ execute:
 ## Hydrological forcing
 ```{julia}
 # | code-fold: true
+include("../docs_utils.jl")
 generate_table(Wflow.SoilLoss, :hydrological_forcing; relative_widths = [6, 4, 2])
 ```
 
