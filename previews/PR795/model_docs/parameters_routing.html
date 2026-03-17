@@ -975,12 +975,6 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="dataRow odd">
-<td style="text-align: left;"><code>reservoir_water_surface__elevation</code></td>
-<td style="text-align: left;">Reservoir water level</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__external_inflow_volume_flow_rate</code></td>
 <td style="text-align: left;">External inflow into the river (negative for abstractions)</td>
 <td style="text-align: left;">m³ s⁻¹</td>
@@ -1062,7 +1056,7 @@ window.Quarto = {
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
-<td style="text-align: left;">River (+ floodplain) discharge</td>
+<td style="text-align: left;">River (+ floodplain for local inertial routing) discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
@@ -1245,7 +1239,7 @@ window.Quarto = {
 <tbody>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio</code></td>
-<td style="text-align: left;">A muliplication factor applied to vertical hydraulic conductivity</td>
+<td style="text-align: left;">A multiplication factor applied to vertical hydraulic conductivity</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
@@ -1491,7 +1485,7 @@ window.Quarto = {
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
-<td style="text-align: left;">River (+ floodplain) discharge</td>
+<td style="text-align: left;">River (+ floodplain for local inertial routing) discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
@@ -2187,13 +2181,13 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water_sediment__govers_transport_capacity_coefficient</code></td>
 <td style="text-align: left;">Govers transport capacity coefficient</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">5.0e-7</td>
+<td style="text-align: left;">0.000505</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water_sediment__govers_transport_capacity_exponent</code></td>
 <td style="text-align: left;">Govers transport capacity exponent</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">1.5</td>
+<td style="text-align: left;">4.27</td>
 </tr>
 </tbody>
 </table>
@@ -2231,43 +2225,43 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_sediment__median_diameter</code></td>
 <td style="text-align: left;">Particle mean diameter</td>
 <td style="text-align: left;">mm</td>
-<td style="text-align: left;">1.0</td>
+<td style="text-align: left;">0.1</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment__bagnold_transport_capacity_coefficient</code></td>
 <td style="text-align: left;">Bagnold transport capacity coefficient</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">0.0017</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__bagnold_transport_capacity_exponent</code></td>
 <td style="text-align: left;">Bagnold transport capacity exponent</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">1.8</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_a_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient a</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">5.0</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_b_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient b</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">0.6</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_c_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient c</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_d_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient d</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">2.0</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>

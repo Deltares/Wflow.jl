@@ -598,7 +598,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="4" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_river_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>water_mass_balance_river_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -635,7 +635,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="6" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_reservoir; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>water_mass_balance_reservoir; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -673,7 +673,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="8" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_overland_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>water_mass_balance_overland_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -691,16 +691,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="dataRow odd">
-<td style="text-align: left;"><code>land_water_mass_balance_error__volume_flux</code></td>
-<td style="text-align: left;">Land water mass balance error</td>
-<td style="text-align: left;">mm Δt⁻¹</td>
-</tr>
-<tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_mass_balance_error__volume_flow_rate</code></td>
 <td style="text-align: left;">Overland flow mass balance error</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_mass_balance_relative_error__number</code></td>
 <td style="text-align: left;">Overland flow mass balance relative error</td>
 <td style="text-align: left;">-</td>
@@ -715,7 +710,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="10" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>water_mass_balance_subsurface_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>water_mass_balance_subsurface_flow; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
