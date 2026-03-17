@@ -278,6 +278,8 @@ function setup_scalar_netcdf(
     set_extradim_netcdf(ds, extra_dim)
     for scalar_variable in config.output.netcdf_scalar.variable
         (; map, _location_dim, location, parameter, name) = scalar_variable
+        v, metadata = get_field_in_model(modelmap, parameter)
+        unit_str = to_string(metadata.unit; BMI_standard=true)
         # Delft-FEWS requires the attribute :cf_role = "timeseries_id" when a netCDF file
         # contains more than one location list
         if _location_dim ∉ keys(ds.dim)
@@ -288,40 +290,30 @@ function setup_scalar_netcdf(
                 _location_dim,
                 locations,
                 (_location_dim,);
-                attrib=["cf_role" => "timeseries_id"],
+                attrib=["cf_role" => "timeseries_id", "units" => unit_str],
             )
         end
-        v, _ = get_field_in_model(modelmap, parameter)
-        if eltype(v) <: AbstractFloat
-            defVar(
-                ds,
-                name,
-                float_type,
-                (_location_dim, "time");
-                attrib=["_FillValue" => float_type(NaN)],
-            )
-        elseif eltype(v) <: SVector
+
+        base_dims = (_location_dim, "time")
+        type = eltype(v)
+        dims = if type <: AbstractFloat
+            base_dims
+        elseif type <: SVector
             if haskey(netcdfvars, extra_dim.name)
-                # `extra_dim.name` as specified in the TOML file is used to index
-                defVar(
-                    ds,
-                    name,
-                    float_type,
-                    (_location_dim, "time");
-                    attrib=["_FillValue" => float_type(NaN)],
-                )
+                base_dims
             else
-                defVar(
-                    ds,
-                    name,
-                    float_type,
-                    (_location_dim, extra_dim.name, "time");
-                    attrib=["_FillValue" => float_type(NaN)],
-                )
+                (base_dims[1], extra_dim.name, base_dims[2])
             end
         else
-            error("Unsupported output type: ", typeof(v))
+            error("Unsupported output type: ", type)
         end
+        defVar(
+            ds,
+            name,
+            float_type,
+            dims;
+            attrib=["_FillValue" => float_type(NaN), "units" => unit_str],
+        )
     end
     return ds
 end
@@ -329,9 +321,9 @@ end
 "set extra dimension in output netCDF file"
 function set_extradim_netcdf(
     ds,
-    extra_dim::NamedTuple{
-        (:name, :value),
-        Tuple{String,Vector{T}},
+    extra_dim::@NamedTuple{
+        name::String,
+        value::Vector{T},
     } where {T<:Union{String,Float64}},
 )
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
@@ -359,63 +351,43 @@ function setup_grid_netcdf(
     float_type=Float32,
     deflatelevel=0,
 )
+    base_dims, attrib_x, attrib_y = if cell_length_in_meter
+        ("x", "y", "time"),
+        ("x coordinate of projection", "projection_x_coordinate", "m"),
+        ("y coordinate of projection", "projection_y_coordinate", "m")
+    else
+        ("lon", "lat", "time"),
+        ("longitude", "longitude", "degrees_east"),
+        ("latitude", "latitude", "degrees_north")
+    end
     ds = create_tracked_netcdf(path)
     defDim(ds, "time", Inf)  # unlimited
-    if cell_length_in_meter
-        defVar(
-            ds,
-            "x",
-            ncx,
-            ("x",);
-            attrib=[
-                "long_name" => "x coordinate of projection",
-                "standard_name" => "projection_x_coordinate",
-                "axis" => "X",
-                "units" => "m",
-            ],
-            deflatelevel,
-        )
-        defVar(
-            ds,
-            "y",
-            ncy,
-            ("y",);
-            attrib=[
-                "long_name" => "y coordinate of projection",
-                "standard_name" => "projection_y_coordinate",
-                "axis" => "Y",
-                "units" => "m",
-            ],
-            deflatelevel,
-        )
 
-    else
-        defVar(
-            ds,
-            "lon",
-            ncx,
-            ("lon",);
-            attrib=[
-                "long_name" => "longitude",
-                "standard_name" => "longitude",
-                "axis" => "X",
-                "units" => "degrees_east",
-            ],
-        )
-        defVar(
-            ds,
-            "lat",
-            ncy,
-            ("lat",);
-            attrib=[
-                "long_name" => "latitude",
-                "standard_name" => "latitude",
-                "axis" => "Y",
-                "units" => "degrees_north",
-            ],
-            deflatelevel,
-        )
-    end
+    defVar(
+        ds,
+        base_dims[1],
+        ncx,
+        (base_dims[1],);
+        attrib=[
+            "long_name" => attrib_x[1],
+            "standard_name" => attrib_x[2],
+            "axis" => "X",
+            "units" => attrib_x[3],
+        ],
+    )
+    defVar(
+        ds,
+        base_dims[2],
+        ncx,
+        (base_dims[2],);
+        attrib=[
+            "long_name" => attrib_y[1],
+            "standard_name" => attrib_y[2],
+            "axis" => "X",
+            "units" => attrib_y[3],
+        ],
+    )
+
     set_extradim_netcdf(ds, extra_dim)
     defVar(
         ds,
@@ -425,58 +397,25 @@ function setup_grid_netcdf(
         attrib=["units" => time_units, "calendar" => convert(String, calendar)],
         deflatelevel,
     )
-    if cell_length_in_meter
-        for (key, val) in pairs(parameters)
-            if eltype(val.vector) <: AbstractFloat
-                # all floats are saved as Float32
-                defVar(
-                    ds,
-                    key,
-                    float_type,
-                    ("x", "y", "time");
-                    attrib=["_FillValue" => float_type(NaN)],
-                    deflatelevel,
-                )
-            elseif eltype(val.vector) <: SVector
-                # for SVectors an additional dimension (`extra_dim`) is required
-                defVar(
-                    ds,
-                    key,
-                    float_type,
-                    ("x", "y", extra_dim.name, "time");
-                    attrib=["_FillValue" => float_type(NaN)],
-                    deflatelevel,
-                )
-            else
-                error("Unsupported output type: ", typeof(val.vector))
-            end
+    for (name, output_data) in parameters
+        (; vector, unit) = output_data
+        unit_str = to_string(unit; BMI_standard=true)
+        type = eltype(vector)
+        dims = if type <: AbstractFloat
+            base_dims
+        elseif type <: SVector
+            # for SVectors an additional dimension (`extra_dim`) is required
+            (base_dims[1], base_dims[2], extra_dim.name, base_dims[3])
+        else
+            error("Unsupported output type: ", type)
         end
-    else
-        for (key, val) in pairs(parameters)
-            if eltype(val.vector) <: AbstractFloat
-                # all floats are saved as Float32
-                defVar(
-                    ds,
-                    key,
-                    float_type,
-                    ("lon", "lat", "time");
-                    attrib=["_FillValue" => float_type(NaN)],
-                    deflatelevel,
-                )
-            elseif eltype(val.vector) <: SVector
-                # for SVectors an additional dimension (`extra_dim`) is required
-                defVar(
-                    ds,
-                    key,
-                    float_type,
-                    ("lon", "lat", extra_dim.name, "time");
-                    attrib=["_FillValue" => float_type(NaN)],
-                    deflatelevel,
-                )
-            else
-                error("Unsupported output type: ", typeof(val.vector))
-            end
-        end
+        defVar(
+            ds,
+            name,
+            float_type,
+            dims;
+            attrib=["_FillValue" => float_type(NaN), "units" => unit_str],
+        )
     end
     return ds
 end
