@@ -6,12 +6,10 @@ execute:
 ---
 
 ## Atmospheric forcing
-```{julia}
-# | code-fold: true
-include("../docs_utils.jl")
-generate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])
-
-```
+| Standard Name | Description | Unit | Default |
+| ------ | ---- | -- | -- |
+| `atmosphere_water__precipitation_volume_flux` | Precipitation | mm Δt⁻¹ | - |
+: {.striped .hover}
 
 ## Hydrological forcing
 ```{julia}
