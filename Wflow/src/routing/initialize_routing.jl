@@ -1,39 +1,45 @@
 
 "Initialize subsurface flow routing for model type `sbm`"
-function initialize_subsurface_flow(
+function initialize_subsurface_flow_model(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     ::SbmModel,
 )
     (; parameters) = domain.land
-    subsurface_flow = LateralSSF(dataset, config, domain.land, soil)
+    subsurface_flow = LateralSSFModel(dataset, config, domain.land, soil_model)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
     if kh_profile_type == VerticalConductivityProfile.exponential ||
        kh_profile_type == VerticalConductivityProfile.exponential_constant
-        initialize_lateral_ssf!(
+        initialize_lateral_ssf_model!(
             subsurface_flow,
             parameters,
             subsurface_flow.parameters.kh_profile,
         )
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
-        (; kv_profile) = soil.parameters
+        (; kv_profile) = soil_model.parameters
         dt = Second(config.time.timestepsecs)
-        initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))
+        initialize_lateral_ssf_model!(
+            subsurface_flow,
+            soil_model,
+            parameters,
+            kv_profile,
+            tosecond(dt),
+        )
     end
     return subsurface_flow
 end
 
 "Initialize subsurface flow routing for model type `sbm_gwf`"
-function initialize_subsurface_flow(
+function initialize_subsurface_flow_model(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     ::SbmGwfModel,
 )
     (; land, river, drain) = domain
@@ -63,7 +69,7 @@ function initialize_subsurface_flow(
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
 
     # cold state for groundwater head based on water table depth zi
-    initial_head = elevation .- soil.variables.zi / 1000.0
+    initial_head = elevation .- soil_model.variables.zi / 1000.0
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if config.model.constanthead__flag
         initial_head[constant_head.index] = constant_head.variables.head
@@ -77,9 +83,9 @@ function initialize_subsurface_flow(
             ustorelayerthickness,
             n_unsatlayers,
             total_soilwater_storage,
-        ) = soil.variables
+        ) = soil_model.variables
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
-            soil.parameters
+            soil_model.parameters
 
         @. zi = (elevation - min(elevation, initial_head)) * 1000.0
         @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
@@ -89,11 +95,13 @@ function initialize_subsurface_flow(
         @. total_soilwater_storage = satwaterdepth
     end
 
-    bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
-    specific_yield =
-        @. lower_bound_drainable_porosity(soil.parameters.theta_s, soil.parameters.theta_fc)
+    bottom = elevation .- soil_model.parameters.soilthickness ./ 1000.0
+    specific_yield = @. lower_bound_drainable_porosity(
+        soil_model.parameters.theta_s,
+        soil_model.parameters.theta_fc,
+    )
     conductance = zeros(connectivity.nconnection)
-    aquifer = UnconfinedAquifer(
+    aquifer = UnconfinedAquiferModel(
         dataset,
         config,
         indices,
@@ -106,14 +114,15 @@ function initialize_subsurface_flow(
     )
 
     # river boundary of unconfined aquifer
-    gwf_river = GwfRiver(dataset, config, river.network.indices, river.network.land_indices)
+    gwf_river =
+        GwfRiverModel(dataset, config, river.network.indices, river.network.land_indices)
 
     # recharge boundary of unconfined aquifer
-    gwf_recharge = Recharge(; n = n_cells)
+    gwf_recharge = RechargeModel(; n = n_cells)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
-        gwf_drain = Drainage(dataset, config, indices, drain.network.land_indices)
+        gwf_drain = DrainageModel(dataset, config, indices, drain.network.land_indices)
         aquifer_boundaries = AquiferBoundaries(;
             recharge = gwf_recharge,
             river = gwf_river,
@@ -127,7 +136,7 @@ function initialize_subsurface_flow(
     @info "Numerical stability coefficient for groundwater flow `alpha`: `$cfl`."
     timestepping = TimeStepping(; cfl)
 
-    subsurface_flow = GroundwaterFlow(;
+    subsurface_flow = GroundwaterFlowModel(;
         timestepping,
         aquifer,
         connectivity,
@@ -142,9 +151,9 @@ function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Do
     (; land_routing) = config.model
 
     if land_routing == RoutingType.kinematic_wave
-        overland_flow = KinWaveOverlandFlow(dataset, config, domain.land)
+        overland_flow = KinWaveOverlandFlowModel(dataset, config, domain.land)
     elseif land_routing == RoutingType.local_inertial
-        overland_flow = LocalInertialOverlandFlow(dataset, config, domain)
+        overland_flow = LocalInertialOverlandFlowModel(dataset, config, domain)
     end
     return overland_flow
 end
@@ -158,12 +167,12 @@ function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domai
 
     reservoir =
         config.model.reservoir__flag ?
-        Reservoir(dataset, config, domain.reservoir.network) : nothing
+        ReservoirModel(dataset, config, domain.reservoir.network) : nothing
 
     if river_routing == RoutingType.kinematic_wave
-        river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)
+        river_flow = KinWaveRiverFlowModel(dataset, config, domain.river, reservoir)
     elseif river_routing == RoutingType.local_inertial
-        river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir)
+        river_flow = LocalInertialRiverFlowModel(dataset, config, domain.river, reservoir)
     end
 end
 
@@ -172,10 +181,11 @@ function Routing(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     type,
 )
-    subsurface_flow = initialize_subsurface_flow(dataset, config, domain, soil, type)
+    subsurface_flow =
+        initialize_subsurface_flow_model(dataset, config, domain, soil_model, type)
     overland_flow = initialize_overland_flow(dataset, config, domain)
     river_flow = initialize_river_flow(dataset, config, domain)
 
@@ -184,9 +194,14 @@ function Routing(
 end
 
 "Initialize `Routing` for model type `sediment`"
-function Routing(dataset::NCDataset, config::Config, domain::Domain, soil::SoilLoss)
-    overland_flow = OverlandFlowSediment(dataset, config, domain.land, soil)
-    river_flow = RiverSediment(dataset, config, domain.river)
+function Routing(
+    dataset::NCDataset,
+    config::Config,
+    domain::Domain,
+    soil_loss_model::SoilLossModel,
+)
+    overland_flow = OverlandFlowSedimentModel(dataset, config, domain.land, soil_loss_model)
+    river_flow = RiverSedimentModel(dataset, config, domain.river)
 
     routing = Routing(; overland_flow, river_flow)
     return routing
