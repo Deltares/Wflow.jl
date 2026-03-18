@@ -195,9 +195,8 @@ end
 River Flow Model without any restrictions on the fields, so that only the
 data required in certain functions has to be supplied (e.g. in the form of NamedTuple).
 """
-@kwdef struct DummyRiver{A, B, V, T} <: Wflow.AbstractRiverFlowModel{T}
+@kwdef struct DummyRiver{A, B, V} <: Wflow.AbstractRiverFlowModel
     allocation::A = nothing
     boundary_conditions::B = nothing
     variables::V = nothing
-    routing_method::T = nothing
 end

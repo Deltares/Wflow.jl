@@ -27,30 +27,30 @@ end
 end
 
 @with_kw struct RiverFlowModel{
+    T <: AbstractRoutingMethod,
     P <: AbstractRiverFlowParameters,
     V <: AbstractRiverFlowVariables,
     F <: Union{AbstractFloodPlain, Nothing},
     A <: AbstractAllocationModel,
-    T <: AbstractRoutingMethod,
-} <: AbstractRiverFlowModel{T}
+} <: AbstractRiverFlowModel
+    routing_method::T
     timestepping::TimeStepping
     boundary_conditions::RiverFlowBC
     parameters::P
     variables::V
     floodplain::F
     allocation::A
-    routing_method::T
 end
 
 @with_kw struct OverlandFlowModel{
+    T <: AbstractRoutingMethod,
     B <: AbstractOverlandFlowBC,
     P <: Union{ManningFlowParameters, AbstractOverlandFlowParameters},
     V <: AbstractOverlandFlowVariables,
-    T <: AbstractRoutingMethod,
-} <: AbstractOverlandFlowModel{T}
+} <: AbstractOverlandFlowModel
+    routing_method::T
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::P
     variables::V
-    routing_method::T
 end

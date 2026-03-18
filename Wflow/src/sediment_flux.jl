@@ -3,7 +3,7 @@
     TT <: AbstractTransportCapacityModel,
     SF <: AbstractSedimentLandTransportModel,
     TR <: AbstractSedimentToRiverModel,
-} <: AbstractOverlandFlowModel{AccucapacityFlux}
+} <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TT
     sediment_flux::SF
@@ -121,7 +121,7 @@ end
     ER <: AbstractRiverErosionModel,
     SFR <: AbstractSedimentRiverTransportModel,
     CR <: AbstractSedimentConcentrationsRiverModel,
-} <: AbstractRiverFlowModel{AccucapacityFlux}
+} <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TTR
     potential_erosion::ER

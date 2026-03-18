@@ -256,7 +256,7 @@ end
 
 "Update overland flow model `KinWaveOverlandFlow` for a single timestep"
 function kinwave_land_update!(
-    overland_flow_model::AbstractOverlandFlowModel{<:KinematicWave},
+    overland_flow_model::OverlandFlowModel{<:KinematicWave},
     domain::DomainLand,
     dt::Float64,
 )
@@ -316,7 +316,7 @@ Update overland flow model `KinWaveOverlandFlow` for a single timestep `dt`. Tim
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update_overland_flow_model!(
-    overland_flow_model::AbstractOverlandFlowModel{<:KinematicWave},
+    overland_flow_model::OverlandFlowModel{<:KinematicWave},
     domain::DomainLand,
     dt::Float64,
 )
@@ -352,7 +352,7 @@ end
 
 "Update river flow model `KinWaveRiverFlow` for a single timestep"
 function kinwave_river_update!(
-    river_flow_model::AbstractRiverFlowModel{<:KinematicWave},
+    river_flow_model::RiverFlowModel{<:KinematicWave},
     domain::DomainRiver,
     dt::Float64,
     dt_forcing::Float64,
@@ -463,7 +463,7 @@ Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepp
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update_river_flow_model!(
-    river_flow_model::AbstractRiverFlowModel{<:KinematicWave},
+    river_flow_model::RiverFlowModel{<:KinematicWave},
     domain::Domain,
     clock::Clock,
 )
@@ -516,8 +516,8 @@ function stable_timestep(
     p::Float64,
 ) where {
     S <: Union{
-        AbstractRiverFlowModel{<:KinematicWave},
-        AbstractOverlandFlowModel{<:KinematicWave},
+        RiverFlowModel{<:KinematicWave},
+        OverlandFlowModel{<:KinematicWave},
     },
 }
     (; q) = flow_model.variables
@@ -551,7 +551,7 @@ Update boundary condition lateral inflow `inwater` of a river flow model for a s
 timestep.
 """
 function update_lateral_inflow!(
-    river_flow_model::AbstractRiverFlowModel{<:AbstractRoutingMethod},
+    river_flow_model::AbstractRiverFlowModel,
     external_models::NamedTuple,
     domain::Domain,
     dt::Float64,
@@ -578,7 +578,7 @@ Update boundary condition lateral inflow `inwater` of a kinematic wave overland 
 `KinWaveOverlandFlow` for a single timestep.
 """
 function update_lateral_inflow!(
-    overland_flow_model::AbstractOverlandFlowModel{<:KinematicWave},
+    overland_flow_model::OverlandFlowModel{<:KinematicWave},
     external_models::NamedTuple,
     area::Vector{Float64},
     config::Config,
@@ -608,7 +608,7 @@ flow model `AbstractRiverFlowModel` for a single timestep.
 """
 function update_inflow!(
     model::Union{Reservoir, Nothing},
-    river_flow::AbstractRiverFlowModel{<:AbstractRoutingMethod},
+    river_flow::AbstractRiverFlowModel,
     external_models::NamedTuple,
     network::NetworkReservoir,
 )
@@ -625,16 +625,16 @@ end
 # For the river kinematic wave, the variable `to_river` can be excluded, because this part
 # is added to the river kinematic wave.
 get_inflow_reservoir(
-    ::AbstractRiverFlowModel{<:KinematicWave},
-    overland_flow_model::AbstractOverlandFlowModel{<:KinematicWave},
+    ::RiverFlowModel{<:KinematicWave},
+    overland_flow_model::OverlandFlowModel{<:KinematicWave},
     inds::Vector{Int},
 ) = overland_flow_model.variables.q_av[inds]
 get_inflow_reservoir(
-    ::AbstractRiverFlowModel{<:KinematicWave},
+    ::RiverFlowModel{<:KinematicWave},
     subsurface_flow_model::LateralSSF,
     inds::Vector{Int},
 ) = subsurface_flow_model.variables.ssf[inds] ./ tosecond(BASETIMESTEP)
 
 # Exclude subsurface flow from `GroundwaterFlow`.
-get_inflow_reservoir(::AbstractRiverFlowModel{T}, ::GroundwaterFlow, inds::Vector{Int}) where {T<:AbstractRoutingMethod} =
+get_inflow_reservoir(::AbstractRiverFlowModel, ::GroundwaterFlow, inds::Vector{Int}) =
     zeros(length(inds))

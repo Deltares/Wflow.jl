@@ -138,7 +138,7 @@ end
 Return storage of a river flow model at index `i`. For `LocalInertialRiverFlow` floodplain
 storage is added to river storage if an optional floodplain is included.
 """
-function get_storage(river_flow_model::AbstractRiverFlowModel{<:LocalInertial}, i)
+function get_storage(river_flow_model::RiverFlowModel{<:LocalInertial}, i)
     (; storage) = river_flow_model.variables
     if isnothing(river_flow_model.floodplain)
         return storage[i]
@@ -147,7 +147,7 @@ function get_storage(river_flow_model::AbstractRiverFlowModel{<:LocalInertial}, 
         return total_storage
     end
 end
-get_storage(river_flow_model::AbstractRiverFlowModel{<:KinematicWave}, i) =
+get_storage(river_flow_model::RiverFlowModel{<:KinematicWave}, i) =
     river_flow_model.variables.storage[i]
 
 """
@@ -333,7 +333,7 @@ compute_flow_balance!(reservoir::Nothing, water_balance::NoMassBalance, dt::Floa
 
 "Compute water mass balance error and relative error for river kinematic wave routing."
 function compute_flow_balance!(
-    river_flow::AbstractRiverFlowModel{<:KinematicWave},
+    river_flow::RiverFlowModel{<:KinematicWave},
     water_balance::MassBalance,
     network::NetworkRiver,
     dt::Float64,
@@ -358,7 +358,7 @@ Compute water mass balance error and relative error for river (and floodplain) l
 inertial routing.
 """
 function compute_flow_balance!(
-    river_flow::AbstractRiverFlowModel{<:LocalInertial},
+    river_flow::RiverFlowModel{<:LocalInertial},
     water_balance::MassBalance,
     network::NetworkRiver,
     dt::Float64,
@@ -417,7 +417,7 @@ Compute water mass balance error and relative error for overland flow kinematic 
 routing.
 """
 function compute_flow_balance!(
-    overland_flow::AbstractOverlandFlowModel{<:KinematicWave},
+    overland_flow::OverlandFlowModel{<:KinematicWave},
     water_balance::MassBalance,
     dt::Float64,
 )
@@ -441,8 +441,8 @@ Compute water mass balance error and relative error for 1D river local inertial 
 computed for each land cell (total storage) considering both river and overland flow.
 """
 function compute_flow_balance!(
-    river_flow::AbstractRiverFlowModel{<:LocalInertial},
-    overland_flow::AbstractOverlandFlowModel{<:LocalInertial},
+    river_flow::RiverFlowModel{<:LocalInertial},
+    overland_flow::OverlandFlowModel{<:LocalInertial},
     water_balance::MassBalance,
     domain::Domain,
     dt::Float64,
@@ -579,8 +579,8 @@ function compute_flow_routing_balance!(
     model::Model{R},
 ) where {
     R <: Routing{
-        <:AbstractOverlandFlowModel{<:LocalInertial},
-        <:AbstractRiverFlowModel{<:LocalInertial},
+        <:OverlandFlowModel{<:LocalInertial},
+        <:RiverFlowModel{<:LocalInertial},
     },
 }
     (; river_flow, overland_flow, subsurface_flow) = model.routing

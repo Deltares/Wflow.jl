@@ -403,8 +403,8 @@ function grid_element_type(
     var::PropertyLens,
 ) where {
     T <: Union{
-        AbstractRiverFlowModel{<:LocalInertial},
-        AbstractOverlandFlowModel{<:LocalInertial},
+        RiverFlowModel{<:LocalInertial},
+        OverlandFlowModel{<:LocalInertial},
     },
 }
     vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))

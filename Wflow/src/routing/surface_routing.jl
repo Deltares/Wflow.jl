@@ -57,8 +57,8 @@ function surface_routing!(
     model::Model{R},
 ) where {
     R <: Routing{
-        <:AbstractOverlandFlowModel{<:LocalInertial},
-        <:AbstractRiverFlowModel{<:LocalInertial},
+        <:OverlandFlowModel{<:LocalInertial},
+        <:RiverFlowModel{<:LocalInertial},
     },
 }
     (; routing, land, domain, clock, config) = model
