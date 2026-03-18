@@ -86,10 +86,10 @@
         ]
         @test maximum(soil.variables.exfiltsatwater) ≈ 341.59378295314747
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(river_flow.variables.q_av) ≈ 36.15061722750282
-        @test maximum(river_flow.variables.q_av) ≈ 140.42694443194858
+        @test mean(river_flow.variables.q_av) ≈ 36.15049555711852
+        @test maximum(river_flow.variables.q_av) ≈ 140.42694141620848
         @test soil.variables.total_storage[7503] ≈ 463.1373992927126
-        @test soil.variables.total_storage[17] ≈ 838.5447308776984 # river cell
+        @test soil.variables.total_storage[17] ≈ 838.5253912382442 # river cell
     end
 
     Wflow.close_files(model; delete_output = false)

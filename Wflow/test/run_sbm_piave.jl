@@ -16,16 +16,16 @@
 
     idx = 1:3:28
     @test q_demand[idx] ≈ [
-        227.38218568613567,
-        196.220713550487,
-        266.2784079848521,
-        153.5051183892938,
-        154.598637931946,
-        142.31265268058914,
-        114.33928850413683,
-        100.09726246541317,
-        166.08839096744245,
-        101.52437435257262,
+        227.3821845650453,
+        196.21852132844947,
+        266.26741556052224,
+        153.48536609179035,
+        154.56432924087798,
+        142.2957401248977,
+        114.331864922173,
+        100.0979073337698,
+        166.09405559834633,
+        101.53170187229264,
     ]
     @test q_[idx] ≈ [
         230.50784825603955,
@@ -40,16 +40,16 @@
         106.49205508983894,
     ]
     @test riv_storage_demand[idx] ≈ [
-        61148.42170988218,
-        55778.08269456783,
-        61131.61783495702,
-        47773.27434561747,
-        50441.89590248922,
-        42513.44415410469,
-        40567.7249949687,
-        38265.22811554416,
-        43213.65808294502,
-        38270.55030290261,
+        61148.40795394009,
+        55777.476564822544,
+        61134.58380566407,
+        47768.534950120214,
+        50437.54537344723,
+        42511.32555555859,
+        40567.160958823326,
+        38265.779048382785,
+        43214.5847867279,
+        38271.91933584351,
     ]
     @test riv_storage[idx] ≈ [
         61788.66644482257,
@@ -64,16 +64,16 @@
         38225.77195699696,
     ]
     @test ssf_storage_demand[idx] ≈ [
-        148938.29702301082,
-        145107.94430214056,
-        144092.12233997748,
-        140719.03933506232,
-        138560.79678164725,
-        135493.39015584698,
-        132658.08462455773,
-        129864.38624381418,
-        129912.32766884862,
-        127942.9754127067,
+        148937.49740929142,
+        145106.11155223523,
+        144077.2785412767,
+        140704.08256891958,
+        138549.82402649766,
+        135485.75748203215,
+        132651.2802539943,
+        129857.75856012055,
+        129905.44946292485,
+        127935.15719753859,
     ]
     @test ssf_storage[idx] ≈ [
         148925.32266807015,
@@ -144,8 +144,8 @@ end
             14.167786752295916,
         ]
         @test maximum(soil.variables.exfiltsatwater) ≈ 229.46901533940505
-        @test mean(river_flow.variables.q_av) ≈ 60.21239922599793
-        @test maximum(river_flow.variables.q_av) ≈ 235.41539206977956
+        @test mean(river_flow.variables.q_av) ≈ 60.212384319002915
+        @test maximum(river_flow.variables.q_av) ≈ 235.41535904216408
     end
 
     Wflow.run_timestep!(model)
@@ -175,8 +175,8 @@ end
             14.56882001468644,
         ]
         @test maximum(soil.variables.exfiltsatwater) ≈ 211.03629198471612
-        @test mean(river_flow.variables.q_av) ≈ 55.86021516749127
-        @test maximum(river_flow.variables.q_av) ≈ 226.83155691164956
+        @test mean(river_flow.variables.q_av) ≈ 55.86012601648361
+        @test maximum(river_flow.variables.q_av) ≈ 226.8314538699039
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -219,7 +219,7 @@ end
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] == 0.0
-    @test reservoir.boundary_conditions.inflow[1] ≈ 5.703462157844596
+    @test reservoir.boundary_conditions.inflow[1] ≈ 5.703462260045596
     @test reservoir.variables.storage[1] ≈ 1.8954552753484565e8
     @test reservoir.variables.outflow_av[1] ≈ 4.841273542147598
 end
@@ -235,7 +235,7 @@ end
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == -3.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 3.0
-    @test reservoir.boundary_conditions.inflow[1] ≈ 2.703461678124124
+    @test reservoir.boundary_conditions.inflow[1] ≈ 2.7034617803234147
     @test reservoir.variables.storage[1] ≈ 1.8902961055113176e8
     @test reservoir.variables.outflow_av[1] ≈ 4.821498194233926
 end
