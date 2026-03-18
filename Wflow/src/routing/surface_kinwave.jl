@@ -107,8 +107,8 @@ function RiverFlowBC(
     return bc
 end
 
-"Initialize river flow model `KinWaveRiverFlow`"
-function KinWaveRiverFlow(
+"Initialize kinematic wave river flow model"
+function init_kinematic_wave_river_flow(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
@@ -164,8 +164,8 @@ end
     inwater::Vector{Float64} = zeros(n) # Lateral inflow [m³ s⁻¹]
 end
 
-"Initialize Overland flow model `KinWaveOverlandFlow`"
-function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainLand)
+"Initialize kinematic wave overland flow model"
+function init_kinematic_wave_overland_flow(dataset::NCDataset, config::Config, domain::DomainLand)
     (; indices) = domain.network
     (; slope) = domain.parameters
     mannings_n = ncread(

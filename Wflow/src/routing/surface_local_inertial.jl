@@ -12,6 +12,7 @@
     bankfull_depth::Vector{Float64} = Float64[]         # bankfull depth [m]
     mannings_n_sq::Vector{Float64} = Float64[]          # Manning's roughness squared at edge [(s m-1/3)2]
     mannings_n::Vector{Float64} = Float64[]             # Manning's roughness [s m-1/3] at node
+    slope::Vector{Float64} = Float64[]                  # slope at edge [-]
     flow_length_at_edge::Vector{Float64} = Float64[]    # flow (river) length at edge [m]
     flow_width_at_edge::Vector{Float64} = Float64[]     # flow (river) width at edge [m]
 end
@@ -181,8 +182,8 @@ function RiverFlowStaggeredVariables(
     return variables
 end
 
-"Initialize shallow water river flow model `RiverFlowModel{<:LocalInertial}`"
-function LocalInertialRiverFlow(
+"Initialize local inertial river flow model"
+function init_local_inertial_river_flow(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
@@ -652,7 +653,7 @@ end
 end
 
 "Initialize local inertial overland flow model"
-function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::Domain)
+function init_local_inertial_overland_flow(dataset::NCDataset, config::Config, domain::Domain)
     cfl = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
