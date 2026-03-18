@@ -254,7 +254,7 @@ function average_flow_vars!(river_flow_model::AbstractRiverFlowModel, dt::Float6
     return nothing
 end
 
-"Update overland flow model `KinWaveOverlandFlow` for a single timestep"
+"Update overland flow model `OverlandFlowModel{<:KinematicWave}` for a single timestep"
 function kinwave_land_update!(
     overland_flow_model::OverlandFlowModel{<:KinematicWave},
     domain::DomainLand,
@@ -312,8 +312,8 @@ function kinwave_land_update!(
 end
 
 """
-Update overland flow model `KinWaveOverlandFlow` for a single timestep `dt`. Timestepping within
-`dt` is either with a fixed timestep `dt_fixed` or adaptive.
+Update overland flow model `OverlandFlowModel{<:KinematicWave}` for a single timestep `dt`.
+Timestepping within `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update_overland_flow_model!(
     overland_flow_model::OverlandFlowModel{<:KinematicWave},
@@ -350,7 +350,7 @@ function update_overland_flow_model!(
     return nothing
 end
 
-"Update river flow model `KinWaveRiverFlow` for a single timestep"
+"Update river flow model `RiverFlowModel{<:KinematicWave}` for a single timestep"
 function kinwave_river_update!(
     river_flow_model::RiverFlowModel{<:KinematicWave},
     domain::DomainRiver,
@@ -459,8 +459,8 @@ function kinwave_river_update!(
 end
 
 """
-Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepping within
-`dt` is either with a fixed timestep `dt_fixed` or adaptive.
+Update river flow model `RiverFlowModel{<:KinematicWave}` for a single timestep `dt`.
+Timestepping within `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update_river_flow_model!(
     river_flow_model::RiverFlowModel{<:KinematicWave},
@@ -575,7 +575,7 @@ end
 
 """
 Update boundary condition lateral inflow `inwater` of a kinematic wave overland flow model
-`KinWaveOverlandFlow` for a single timestep.
+`OverlandFlowModel{<:KinematicWave}` for a single timestep.
 """
 function update_lateral_inflow!(
     overland_flow_model::OverlandFlowModel{<:KinematicWave},

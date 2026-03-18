@@ -181,7 +181,7 @@ function RiverFlowStaggeredVariables(
     return variables
 end
 
-"Initialize shallow water river flow model `LocalInertialRiverFlow`"
+"Initialize shallow water river flow model `RiverFlowModel{<:LocalInertial}`"
 function LocalInertialRiverFlow(
     dataset::NCDataset,
     config::Config,
@@ -228,7 +228,7 @@ function LocalInertialRiverFlow(
     return river_flow
 end
 
-"Return the upstream inflow for a reservoir in `LocalInertialRiverFlow`"
+"Return the upstream inflow for a reservoir in `RiverFlowModel{<:LocalInertial}`"
 function get_inflow_reservoir(
     river_flow_model::RiverFlowModel{<:LocalInertial},
     src_edge::Vector{Int},
@@ -258,7 +258,7 @@ get_inflow_reservoir(
         subsurface_flow_model.variables.to_river[inds]
     ) ./ tosecond(BASETIMESTEP)
 
-"Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep"
+"Update local inertial river flow model `RiverFlowModel{<:LocalInertial}` for a single timestep"
 function local_inertial_river_update!(
     river_flow_model::RiverFlowModel{<:LocalInertial},
     domain::Domain,
@@ -497,8 +497,8 @@ function local_inertial_river_update!(
 end
 
 """
-Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep `dt`. An adaptive
-timestepping method is used (computing a sub timestep `dt_s`).
+Update local inertial river flow model `RiverFlowModel{<:LocalInertial}` for a single
+timestep `dt`. An adaptive timestepping method is used (computing a sub timestep `dt_s`).
 """
 function update_river_flow_model!(
     river_flow_model::RiverFlowModel{<:LocalInertial},
@@ -674,8 +674,8 @@ function LocalInertialOverlandFlow(dataset::NCDataset, config::Config, domain::D
 end
 
 """
-    stable_timestep(river_flow_model::LocalInertialRiverFlow, flow_length::Vector{Float64})
-    stable_timestep(overland_flow_model::LocalInertialOverlandFlow, parameters::LandParameters)
+    stable_timestep(river_flow_model::RiverFlowModel{<:LocalInertial}, flow_length::Vector{Float64})
+    stable_timestep(overland_flow_model::OverlandFlowModel{<:LocalInertial}, parameters::LandParameters)
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
@@ -720,8 +720,8 @@ function stable_timestep(
 end
 
 """
-Update boundary condition `runoff` overland flow model `LocalInertialOverlandFlow` for a
-single timestep.
+Update boundary condition `runoff` overland flow model `OverlandFlowModel{<:LocalInertial}`
+for a single timestep.
 """
 function update_bc_overland_flow_model!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -744,7 +744,7 @@ end
 
 """
 Update subsurface flow contribution to inflow of a reservoir model for a river flow model
-`LocalInertialRiverFlow` for a single timestep.
+`RiverFlowModel{<:LocalInertial}` for a single timestep.
 """
 function update_inflow!(
     reservoir_model::Reservoir,
@@ -766,9 +766,9 @@ update_inflow!(
 ) = nothing
 
 """
-Helper function to set flow variables of the `LocalInertialOverlandFlow` model to zero. This
-is done at the start of each simulation timestep, during the timestep the total (weighted)
-sum is computed from values at each sub timestep.
+Helper function to set flow variables of the `OverlandFlowModel{<:LocalInertial}` model to
+zero. This is done at the start of each simulation timestep, during the timestep the total
+(weighted) sum is computed from values at each sub timestep.
 """
 function set_flow_vars!(overland_flow_model::OverlandFlowModel{<:LocalInertial})
     (; qx_av, qy_av) = overland_flow_model.variables
@@ -778,8 +778,9 @@ function set_flow_vars!(overland_flow_model::OverlandFlowModel{<:LocalInertial})
 end
 
 """
-Helper function to compute average flow variables of the `LocalInertialOverlandFlow` model.
-This is done at the end of each simulation timestep.
+Helper function to compute average flow variables of the
+`OverlandFlowModel{<:LocalInertial}` model. This is done at the end of each simulation
+timestep.
 """
 function average_flow_vars!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -792,9 +793,9 @@ function average_flow_vars!(
 end
 
 """
-Update combined river `LocalInertialRiverFlow` and overland flow `LocalInertialOverlandFlow`
-models for a single timestep `dt`. An adaptive timestepping method is used (computing a sub
-timestep `dt_s`).
+Update combined river `RiverFlowModel{<:LocalInertial}` and overland flow
+`OverlandFlowModel{<:LocalInertial}` models for a single timestep `dt`. An adaptive
+timestepping method is used (computing a sub timestep `dt_s`).
 """
 function update_overland_flow_model!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -840,8 +841,8 @@ function update_overland_flow_model!(
 end
 
 """
-Update fluxes for overland flow `LocalInertialOverlandFlow` model for a single timestep
-`dt`.
+Update fluxes for overland flow `OverlandFlowModel{<:LocalInertial}` model for a single
+timestep `dt`.
 """
 function local_inertial_update_fluxes!(
     land::OverlandFlowModel{<:LocalInertial},
@@ -943,9 +944,8 @@ function local_inertial_update_fluxes!(
 end
 
 """
-Update boundary condition inflow to a reservoir from land `inflow_reservoir` of combined
-river `LocalInertialRiverFlow`and overland flow `LocalInertialOverlandFlow` models for a
-single timestep.
+Update boundary condition inflow to a reservoir from land of combined local inertial river
+and overland flow models for a single timestep.
 """
 function update_inflow_reservoir!(
     land::OverlandFlowModel{<:LocalInertial},
@@ -968,8 +968,8 @@ function update_inflow_reservoir!(
 end
 
 """
-Update storage and water depth for combined river `LocalInertialRiverFlow`and overland flow
-`LocalInertialOverlandFlow` models for a single timestep `dt`.
+Update storage and water depth for combined river `RiverFlowModel{<:LocalInertial}`and
+overland flow `OverlandFlowModel{<:LocalInertial}` models for a single timestep `dt`.
 """
 function local_inertial_update_water_depth!(
     land::OverlandFlowModel{<:LocalInertial},
