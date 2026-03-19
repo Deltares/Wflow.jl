@@ -1,14 +1,14 @@
 "Struct for storing river flow model (numerical staggered scheme) parameters"
 @with_kw struct RiverFlowStaggeredParameters <: AbstractRiverFlowParameters
     n::Int                                              # number of cells [-]
-    ne::Int                                             # number of edges [-]
+    n_edges::Int                                        # number of edges [-]
     active_n::Vector{Int}                               # active nodes [-]
     active_e::Vector{Int}                               # active edges [-]
     froude_limit::Bool = false                          # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     h_thresh::Float64 = 0.0                             # depth threshold for calculating flow [m]
     zb::Vector{Float64} = Float64[]                     # river bed elevation [m]
     zb_max::Vector{Float64} = Float64[]                 # maximum channel bed elevation [m]
-    bankfull_storage::Vector{Float64}                   # bankfull storage [m³]
+    bankfull_storage::Vector{Float64} = Float64[]       # bankfull storage [m³]
     bankfull_depth::Vector{Float64} = Float64[]         # bankfull depth [m]
     mannings_n_sq::Vector{Float64} = Float64[]          # Manning's roughness squared at edge [(s m-1/3)2]
     mannings_n::Vector{Float64} = Float64[]             # Manning's roughness [s m-1/3] at node
@@ -17,30 +17,15 @@
     flow_width_at_edge::Vector{Float64} = Float64[]     # flow (river) width at edge [m]
 end
 
-"Initialize local inertial river flow model parameters"
-function RiverFlowStaggeredParameters(
+function get_river_parameters(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
+    index_pit::Vector{Int},
 )
-    alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
-    waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
-    froude_limit = config.model.river_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
-    floodplain_1d = config.model.floodplain_1d__flag
+    (; pit_indices, indices) = domain.network
+    (; flow_length, flow_width) = domain.parameters
 
-    @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
-
-    (; pit_indices, indices, graph, local_drain_direction, nodes_at_edge) = domain.network
-    (; flow_width, flow_length, reservoir_outlet) = domain.parameters
-
-    riverlength_bc = ncread(
-        dataset,
-        config,
-        "model_boundary_condition_river__length";
-        sel = pit_indices,
-        defaults = 1.0e04,
-        type = Float64,
-    )
     bankfull_elevation_2d = ncread(
         dataset,
         config,
@@ -57,10 +42,6 @@ function RiverFlowStaggeredParameters(
         type = Float64,
         fill = 0,
     )
-    bankfull_depth = bankfull_depth_2d[indices]
-    zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
-
-    bankfull_storage = bankfull_depth .* flow_width .* flow_length
     mannings_n = ncread(
         dataset,
         config,
@@ -69,19 +50,56 @@ function RiverFlowStaggeredParameters(
         defaults = 0.036,
         type = Float64,
     )
-
-    n = length(indices)
-    index_pit = findall(x -> x == 5, local_drain_direction)
-    # set ghost points for boundary condition (downstream river outlet): river width, bed
-    # elevation, manning n is copied from the upstream cell.
+    riverlength_bc = ncread(
+        dataset,
+        config,
+        "model_boundary_condition_river__length";
+        sel = pit_indices,
+        defaults = 1.0e04,
+        type = Float64,
+    )
     append!(flow_length, riverlength_bc)
-    append!(zb, zb[index_pit])
+
+    bankfull_depth = bankfull_depth_2d[indices]
+    bankfull_elevation = bankfull_elevation_2d[indices]
+
+    # set ghost points for boundary condition (downstream river outlet): flow width,
+    # mannings n, bankfull depth and elevation is copied from the upstream cell.
     append!(flow_width, flow_width[index_pit])
     append!(mannings_n, mannings_n[index_pit])
     append!(bankfull_depth, bankfull_depth[index_pit])
+    append!(bankfull_elevation, bankfull_elevation[index_pit])
+
+    return mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width
+end
+
+"Initialize local inertial river flow model parameters"
+function init_local_inertial_river_flow_parameters(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainRiver,
+)
+    alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
+    froude_limit = config.model.river_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
+    floodplain_1d = config.model.floodplain_1d__flag
+
+    @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
+
+    (; graph, indices, local_drain_direction, nodes_at_edge) = domain.network
+    (; reservoir_outlet, flow_width) = domain.parameters
+
+    n = length(indices)
+    n_edges = ne(graph)
+    active_index = findall(x -> x == 0, reservoir_outlet)
+    index_pit = findall(x -> x == 5, local_drain_direction)
+
+    mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width =
+        get_river_parameters(dataset, config, domain, index_pit)
+    zb = bankfull_elevation - bankfull_depth # river bed elevation
+    bankfull_storage = bankfull_depth .* flow_width .* flow_length
 
     # determine z, width, length and manning's n at edges
-    n_edges = ne(graph)
     zb_max = fill(Float64(0), n_edges)
     width_at_edge = fill(Float64(0), n_edges)
     length_at_edge = fill(Float64(0), n_edges)
@@ -99,11 +117,10 @@ function RiverFlowStaggeredParameters(
             ) / (flow_length[dst_node] + flow_length[src_node])
         mannings_n_sq[i] = mannings_n_i * mannings_n_i
     end
-    active_index = findall(x -> x == 0, reservoir_outlet)
 
     parameters = RiverFlowStaggeredParameters(;
         n,
-        ne = n_edges,
+        n_edges,
         active_n = active_index,
         active_e = active_index,
         froude_limit,
@@ -118,6 +135,17 @@ function RiverFlowStaggeredParameters(
         flow_width_at_edge = width_at_edge,
     )
     return parameters
+end
+
+function init_kinwave_staggered_river_flow_parameters(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainRiver,
+)
+    alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    floodplain_1d = config.model.floodplain_1d__flag
+
+    @info "Local inertial approach is used for river flow." alpha floodplain_1d
 end
 
 "Struct for storing local inertial river flow model variables"
@@ -204,7 +232,7 @@ function init_local_inertial_river_flow(
     cfl = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 
-    parameters = RiverFlowStaggeredParameters(dataset, config, domain)
+    parameters = init_local_inertial_river_flow_parameters(dataset, config, domain)
     variables = RiverFlowStaggeredVariables(dataset, config, domain.network)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
@@ -653,7 +681,11 @@ end
 end
 
 "Initialize local inertial overland flow model"
-function init_local_inertial_overland_flow(dataset::NCDataset, config::Config, domain::Domain)
+function init_local_inertial_overland_flow(
+    dataset::NCDataset,
+    config::Config,
+    domain::Domain,
+)
     cfl = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; cfl)
 

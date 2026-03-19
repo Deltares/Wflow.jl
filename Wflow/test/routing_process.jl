@@ -301,14 +301,14 @@ end
 
     # for each edge the src and dst node is required
     nodes_at_edge = Wflow.adjacent_nodes_at_edge(graph)
-    _ne = ne(graph)
+    n_edges = ne(graph)
 
     # determine z, width, length and manning's n at edges
-    zb_max = fill(0.0, _ne)
-    width_at_edge = fill(0.0, _ne)
-    length_at_edge = fill(0.0, _ne)
-    mannings_n_sq = fill(0.0, _ne)
-    for i in 1:_ne
+    zb_max = fill(0.0, n_edges)
+    width_at_edge = fill(0.0, n_edges)
+    length_at_edge = fill(0.0, n_edges)
+    mannings_n_sq = fill(0.0, n_edges)
+    for i in 1:n_edges
         zb_max[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
         width_at_edge[i] = min(width[nodes_at_edge.dst[i]], width[nodes_at_edge.src[i]])
         length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
@@ -343,9 +343,9 @@ end
     timestepping = Wflow.TimeStepping(; cfl = 0.7)
     parameters = Wflow.RiverFlowStaggeredParameters(;
         n,
-        ne = _ne,
+        n_edges,
         active_n = collect(1:(n - 1)),
-        active_e = collect(1:_ne),
+        active_e = collect(1:n_edges),
         h_thresh,
         zb_max,
         mannings_n_sq,
@@ -360,18 +360,18 @@ end
 
     variables = Wflow.RiverFlowStaggeredVariables(;
         n,
-        n_edges = _ne,
-        q0 = zeros(_ne),
-        q = zeros(_ne),
-        q_av = zeros(_ne),
-        q_channel_av = zeros(_ne),
+        n_edges,
+        q0 = zeros(n_edges),
+        q = zeros(n_edges),
+        q_av = zeros(n_edges),
+        q_channel_av = zeros(n_edges),
         h = h_init,
-        zs_max = zeros(_ne),
-        zs_src = zeros(_ne),
-        zs_dst = zeros(_ne),
-        hf = zeros(_ne),
-        a = zeros(_ne),
-        r = zeros(_ne),
+        zs_max = zeros(n_edges),
+        zs_src = zeros(n_edges),
+        zs_dst = zeros(n_edges),
+        hf = zeros(n_edges),
+        a = zeros(n_edges),
+        r = zeros(n_edges),
         storage = fill(0.0, n),
         error = zeros(n),
     )
