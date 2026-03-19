@@ -28,8 +28,8 @@ end
 "Initialize total sediment flux in overland flow model"
 function SedimentLandTransportModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
-    model = SedimentLandTransportModel(; n)
-    return model
+    sediment_flux_model = SedimentLandTransportModel(; n)
+    return sediment_flux_model
 end
 
 "Update total sediment flux in overland flow model boundary conditions"
@@ -125,8 +125,8 @@ end
 "Initialize differentiated sediment flux in overland flow model"
 function SedimentLandTransportDifferentiationModel(indices::Vector{CartesianIndex{2}})
     n = length(indices)
-    model = SedimentLandTransportDifferentiationModel(; n)
-    return model
+    sediment_flux_model = SedimentLandTransportDifferentiationModel(; n)
+    return sediment_flux_model
 end
 
 "Update differentiated sediment flux in overland flow model boundary conditions"

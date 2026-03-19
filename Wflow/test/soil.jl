@@ -35,11 +35,11 @@
         ),
         boundary_conditions = Wflow.OpenWaterRunoffBC(; n, water_flux_surface = [7.5e-3]),
     )
-    demand = Wflow.Demand(;
-        domestic = Wflow.NoDemand(; n),
-        industry = Wflow.NoDemand(; n),
-        livestock = Wflow.NoDemand(; n),
-        paddy = Wflow.Paddy(;
+    demand = Wflow.DemandModel(;
+        domestic = Wflow.NoDemandModel(; n),
+        industry = Wflow.NoDemandModel(; n),
+        livestock = Wflow.NoDemandModel(; n),
+        paddy = Wflow.PaddyModel(;
             parameters = Wflow.PaddyParameters(;
                 irrigation_efficiency = [],
                 maximum_irrigation_rate = [],
@@ -51,11 +51,11 @@
             ),
             variables = Wflow.PaddyVariables(; n, h = [1e-5], evaporation = [4e-3]),
         ),
-        nonpaddy = Wflow.NoIrrigationNonPaddy(n),
+        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
         variables = Wflow.DemandVariables(; n),
     )
 
-    allocation = Wflow.AllocationLand(;
+    allocation = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
         variables = Wflow.AllocationLandVariables(; n, irri_alloc = [2e-2]),
@@ -110,7 +110,7 @@ end
     include("testing_utils.jl")
     n = 1
     N = 6
-    model = init_sbm_soil_model(
+    soil_model = init_sbm_soil_model(
         n,
         N;
         potential_soilevaporation = [2.8],
@@ -127,11 +127,11 @@ end
         drainable_waterdepth = [321.13323174500624],
     )
 
-    Wflow.soil_evaporation!(model)
+    Wflow.soil_evaporation!(soil_model)
 
-    @test model.variables.soilevapsat[1] == 0.0
-    @test model.variables.soilevap[1] ≈ 0.2459598877386006
-    @test model.variables.drainable_waterdepth[1] ≈ 321.13323174500624
+    @test soil_model.variables.soilevapsat[1] == 0.0
+    @test soil_model.variables.soilevap[1] ≈ 0.2459598877386006
+    @test soil_model.variables.drainable_waterdepth[1] ≈ 321.13323174500624
 end
 
 @testitem "unit: transpiration!" begin
@@ -253,11 +253,11 @@ end
     )
 
     runoff = (; variables = (; runoff_land = [0.0], ae_openw_l = [0.0]))
-    demand = Wflow.Demand(;
-        domestic = Wflow.NoDemand(; n),
-        industry = Wflow.NoDemand(; n),
-        livestock = Wflow.NoDemand(; n),
-        paddy = Wflow.Paddy(;
+    demand = Wflow.DemandModel(;
+        domestic = Wflow.NoDemandModel(; n),
+        industry = Wflow.NoDemandModel(; n),
+        livestock = Wflow.NoDemandModel(; n),
+        paddy = Wflow.PaddyModel(;
             parameters = Wflow.PaddyParameters(;
                 irrigation_efficiency = [],
                 maximum_irrigation_rate = [],
@@ -269,7 +269,7 @@ end
             ),
             variables = Wflow.PaddyVariables(; n, h = [1e-5], evaporation = [4e-3]),
         ),
-        nonpaddy = Wflow.NoIrrigationNonPaddy(n),
+        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
         variables = Wflow.DemandVariables(; n),
     )
 

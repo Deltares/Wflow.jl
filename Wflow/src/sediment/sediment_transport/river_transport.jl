@@ -244,8 +244,8 @@ function SedimentRiverTransportModel(
     n = length(indices)
 
     parameters = SedimentRiverTransportParameters(dataset, config, indices)
-    model = SedimentRiverTransportModel(; n, parameters)
-    return model
+    sediment_flux_model = SedimentRiverTransportModel(; n, parameters)
+    return sediment_flux_model
 end
 
 "Update boundary conditions for river sediment transport model"
@@ -253,7 +253,7 @@ function update_bc_river_sediment_transport_model!(
     sediment_flux_model::SedimentRiverTransportModel,
     hydrological_forcing::HydrologicalForcing,
     transport_capacity_model::AbstractTransportCapacityModel,
-    to_river_model::SedimentToRiverDifferentiationModel,
+    sediment_to_river_model::SedimentToRiverDifferentiationModel,
     potential_erosion_model::AbstractRiverErosionModel,
     indices_riv::Vector{Int},
 )
@@ -277,7 +277,8 @@ function update_bc_river_sediment_transport_model!(
     # Transport capacity
     @. transport_capacity = transport_capacity_model.variables.sediment_transport_capacity
     # Input from soil erosion
-    (; clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) = to_river_model.variables
+    (; clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) =
+        sediment_to_river_model.variables
     map!(i -> clay_rate[i], erosion_land_clay, indices_riv)
     map!(i -> silt_rate[i], erosion_land_silt, indices_riv)
     map!(i -> sand_rate[i], erosion_land_sand, indices_riv)
@@ -909,8 +910,8 @@ function SedimentConcentrationsRiverModel(
 )
     n = length(indices)
     parameters = SedimentConcentrationsRiverParameters(dataset, config, indices)
-    model = SedimentConcentrationsRiverModel(; n, parameters)
-    return model
+    concentrations_model = SedimentConcentrationsRiverModel(; n, parameters)
+    return concentrations_model
 end
 
 "Update boundary conditions for river sediment concentrations model"
