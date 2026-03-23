@@ -207,8 +207,8 @@ function LocalInertialRiverFlowModel(
 
     # The following boundary conditions can be set at ghost nodes, downstream of river
     # outlets (pits): river length and river depth
-    cfl = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
-    timestepping = TimeStepping(; cfl)
+    alpha_coefficient = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    timestepping = TimeStepping(; alpha_coefficient)
 
     parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
     variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
@@ -260,7 +260,7 @@ get_inflow_reservoir(
     inds::Vector{Int},
 ) =
     (
-        subsurface_flow_model.variables.ssf[inds] .+
+        subsurface_flow_model.variables.q_av[inds] .+
         subsurface_flow_model.variables.to_river[inds]
     ) ./ tosecond(BASETIMESTEP)
 
@@ -667,22 +667,22 @@ end
 
 "Initialize local inertial overland flow model"
 function LocalInertialOverlandFlowModel(dataset::NCDataset, config::Config, domain::Domain)
-    cfl = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
-    timestepping = TimeStepping(; cfl)
+    alpha_coefficient = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    timestepping = TimeStepping(; alpha_coefficient)
 
     n = length(domain.land.network.indices)
     boundary_conditions = LocalInertialOverlandFlowBC(; n)
     parameters = LocalInertialOverlandFlowParameters(dataset, config, domain)
     variables = LocalInertialOverlandFlowVariables(; n)
 
-    overland_flow = LocalInertialOverlandFlowModel(;
+    overland_flow_model = LocalInertialOverlandFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
     )
 
-    return overland_flow
+    return overland_flow_model
 end
 
 """
@@ -691,19 +691,19 @@ end
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
-dt = cfl * (Δx / sqrt(g max(h))
+dt = α * (Δx / sqrt(g max(h))
 """
 function stable_timestep(
     river_flow_model::LocalInertialRiverFlowModel,
     flow_length::Vector{Float64},
 )
     dt_min = Inf
-    (; cfl) = river_flow_model.timestepping
+    (; alpha_coefficient) = river_flow_model.timestepping
     (; n) = river_flow_model.parameters
     (; h) = river_flow_model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt =
-            cfl * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
+            alpha_coefficient * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
@@ -715,13 +715,14 @@ function stable_timestep(
     parameters::LandParameters,
 )
     dt_min = Inf
-    (; cfl) = overland_flow_model.timestepping
+    (; alpha_coefficient) = overland_flow_model.timestepping
     (; n) = overland_flow_model.parameters
     (; x_length, y_length, river_location) = parameters
     (; h) = overland_flow_model.variables
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt = if river_location[i] == 0
-            cfl * min(x_length[i], y_length[i]) / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
+            alpha_coefficient * min(x_length[i], y_length[i]) /
+            sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         else
             Inf
         end
