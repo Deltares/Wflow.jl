@@ -123,34 +123,39 @@ end
 
     nrow = 1
     ncol = 3
-    gwf = homogenous_aquifer(nrow, ncol)
-    Wflow.initialize_conductance!(gwf.parameters, gwf.variables, gwf.connectivity)
-    ncell = gwf.connectivity.ncell
+    gwf_model = homogenous_aquifer(nrow, ncol)
+    Wflow.initialize_conductance!(
+        gwf_model.parameters,
+        gwf_model.variables,
+        gwf_model.connectivity,
+    )
+    ncell = gwf_model.connectivity.ncell
 
     @testset "saturated_thickness-unconfined" begin
-        @test Wflow.saturated_thickness(gwf, 1) == 0.0
-        @test Wflow.saturated_thickness(gwf, 2) == 7.5
-        @test Wflow.saturated_thickness(gwf, 3) == 10.0
+        @test Wflow.saturated_thickness(gwf_model, 1) == 0.0
+        @test Wflow.saturated_thickness(gwf_model, 2) == 7.5
+        @test Wflow.saturated_thickness(gwf_model, 3) == 10.0
     end
 
     @testset "conductance" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
-        @test Wflow.conductance(gwf, 2, 3, 3, conductivity_profile) == 100.0  # upstream sat. thickness
-        @test Wflow.conductance(gwf, 1, 2, 1, conductivity_profile) == 75.0  # upstream sat. thickness
+        @test Wflow.conductance(gwf_model, 2, 3, 3, conductivity_profile) == 100.0  # upstream sat. thickness
+        @test Wflow.conductance(gwf_model, 1, 2, 1, conductivity_profile) == 75.0  # upstream sat. thickness
     end
 
     @testset "minimum_head-unconfined" begin
-        original_head = copy(gwf.variables.head)
-        gwf.variables.head[1] = -10.0
-        @test Wflow.check_flux(-1.0, gwf, 1) == 0.0
-        @test Wflow.minimum_head(gwf)[1] == 0.0
-        gwf.variables.head .= original_head
+        original_head = copy(gwf_model.variables.head)
+        gwf_model.variables.head[1] = -10.0
+        @test Wflow.check_flux(-1.0, gwf_model, 1) == 0.0
+        @test Wflow.minimum_head(gwf_model)[1] == 0.0
+        gwf_model.variables.head .= original_head
     end
 
     @testset "stable_timestep" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         alpha_coefficient = 0.25
-        @test Wflow.stable_timestep(gwf, conductivity_profile, alpha_coefficient) == 0.0375
+        @test Wflow.stable_timestep(gwf_model, conductivity_profile, alpha_coefficient) ==
+              0.0375
     end
 
     # Parametrization in setup is as follows:
@@ -161,11 +166,11 @@ end
 
     @testset "flux-unconfined" begin
         dt = 1.0
-        gwf.variables.q_net .= 0.0
+        gwf_model.variables.q_net .= 0.0
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
-        Wflow.flux!(gwf, conductivity_profile, dt)
+        Wflow.flux!(gwf_model, conductivity_profile, dt)
         # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
-        @test gwf.variables.q_net == [562.5, 687.5, -1250.0]
+        @test gwf_model.variables.q_net == [562.5, 687.5, -1250.0]
     end
 
     @testset "river" begin
@@ -183,15 +188,15 @@ end
             flux = [0.0, 0.0],
             flux_av = [0.0, 0.0],
         )
-        river = Wflow.GwfRiver(; parameters, variables)
-        gwf.variables.q_net_bnds .= 0.0
+        gwf_river_model = Wflow.GwfRiverModel(; parameters, variables)
+        gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 3]
-        Wflow.flux!(river, gwf, index, dt)
+        Wflow.flux!(gwf_river_model, gwf_model, index, dt)
         # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
         # river storage (20.0)
-        @test gwf.variables.q_net_bnds[1] == 20.0
+        @test gwf_model.variables.q_net_bnds[1] == 20.0
         # drainage, flux is (stage - head) * exf_cond
-        @test gwf.variables.q_net_bnds[3] == (2.0 - 20.0) * 200.0
+        @test gwf_model.variables.q_net_bnds[3] == (2.0 - 20.0) * 200.0
     end
 
     @testset "drainage" begin
@@ -200,12 +205,12 @@ end
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
         variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
-        drainage = Wflow.Drainage(; parameters, variables)
-        gwf.variables.q_net_bnds .= 0.0
+        drainage_model = Wflow.DrainageModel(; parameters, variables)
+        gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2]
-        Wflow.flux!(drainage, gwf, index, dt)
-        @test gwf.variables.q_net_bnds[1] == 0.0
-        @test gwf.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
+        Wflow.flux!(drainage_model, gwf_model, index, dt)
+        @test gwf_model.variables.q_net_bnds[1] == 0.0
+        @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
     end
 
     @testset "headboundary" begin
@@ -218,11 +223,11 @@ end
         )
 
         headboundary = Wflow.HeadBoundary(; parameters, variables)
-        gwf.variables.q_net_bnds .= 0.0
+        gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2]
-        Wflow.flux!(headboundary, gwf, index, dt)
-        @test gwf.variables.q_net_bnds[1] == 100.0 * (2.0 - 0.0)
-        @test gwf.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
+        Wflow.flux!(headboundary, gwf_model, index, dt)
+        @test gwf_model.variables.q_net_bnds[1] == 100.0 * (2.0 - 0.0)
+        @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
     end
 
     @testset "recharge" begin
@@ -234,11 +239,11 @@ end
             flux = [0.0, 0.0, 0.0],
             flux_av = [0.0, 0.0, 0.0],
         )
-        recharge = Wflow.Recharge(; n, variables)
-        gwf.variables.q_net_bnds .= 0.0
+        recharge_model = Wflow.RechargeModel(; n, variables)
+        gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2, 3]
-        Wflow.flux!(recharge, gwf, index, dt)
-        @test all(gwf.variables.q_net_bnds .== 1.0e-3 * 100.0)
+        Wflow.flux!(recharge_model, gwf_model, index, dt)
+        @test all(gwf_model.variables.q_net_bnds .== 1.0e-3 * 100.0)
     end
 
     @testset "well" begin
@@ -248,11 +253,11 @@ end
             flux = [0.0],
             flux_av = [0.0],
         )
-        well = Wflow.Well(; variables)
-        gwf.variables.q_net_bnds .= 0.0
+        well_model = Wflow.WellModel(; variables)
+        gwf_model.variables.q_net_bnds .= 0.0
         index = [2]
-        Wflow.flux!(well, gwf, index, dt)
-        @test gwf.variables.q_net_bnds[2] == -1000.0
+        Wflow.flux!(well_model, gwf_model, index, dt)
+        @test gwf_model.variables.q_net_bnds[2] == -1000.0
     end
 end
 
@@ -306,7 +311,7 @@ end
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
+    gwf_model = Wflow.GroundwaterFlowModel(;
         timestepping,
         parameters,
         variables,
@@ -317,8 +322,8 @@ end
 
     N = 1
     n = ncell
-    zi = @. 1000.0 * (gwf.parameters.top - gwf.variables.head)
-    soil = init_sbm_soil_model(
+    zi = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
+    soil_model = init_sbm_soil_model(
         n,
         N;
         # Variables
@@ -335,18 +340,18 @@ end
 
     time = 20.0
     t = 0.0
-    (; alpha_coefficient) = gwf.timestepping
+    (; alpha_coefficient) = gwf_model.timestepping
     while t < time
         global t
-        gwf.variables.q_net .= 0.0
-        dt_s = Wflow.stable_timestep(gwf, conductivity_profile, alpha_coefficient)
+        gwf_model.variables.q_net .= 0.0
+        dt_s = Wflow.stable_timestep(gwf_model, conductivity_profile, alpha_coefficient)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
-        Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, soil, dt_s)
+        Wflow.update_fluxes!(gwf_model, domain, conductivity_profile, dt_s)
+        Wflow.update_head!(gwf_model, soil_model, dt_s)
         t = t + dt_s
         t += dt_s
         # Gradient dh/dx is positive, all flow to the left
-        @test all(diff(gwf.variables.head) .> 0.0)
+        @test all(diff(gwf_model.variables.head) .> 0.0)
     end
 end
 
@@ -399,7 +404,7 @@ end
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
-    gwf = Wflow.GroundwaterFlow(;
+    gwf_model = Wflow.GroundwaterFlowModel(;
         timestepping,
         parameters,
         variables,
@@ -410,8 +415,8 @@ end
 
     N = 1
     n = ncell
-    zi = @. 1000.0 * (gwf.parameters.top - gwf.variables.head)
-    soil = init_sbm_soil_model(
+    zi = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
+    soil_model = init_sbm_soil_model(
         n,
         N;
         # Variables
@@ -428,16 +433,16 @@ end
 
     time = 20.0
     t = 0.0
-    (; alpha_coefficient) = gwf.timestepping
+    (; alpha_coefficient) = gwf_model.timestepping
     while t < time
         global t
-        gwf.variables.q_net .= 0.0
-        dt_s = Wflow.stable_timestep(gwf, conductivity_profile, alpha_coefficient)
+        gwf_model.variables.q_net .= 0.0
+        dt_s = Wflow.stable_timestep(gwf_model, conductivity_profile, alpha_coefficient)
         dt_s = Wflow.check_timestepsize(dt_s, t, time)
-        Wflow.update_fluxes!(gwf, domain, conductivity_profile, dt_s)
-        Wflow.update_head!(gwf, soil, dt_s)
+        Wflow.update_fluxes!(gwf_model, domain, conductivity_profile, dt_s)
+        Wflow.update_head!(gwf_model, soil_model, dt_s)
         t += dt_s
         # Gradient dh/dx is positive, all flow to the left
-        @test all(diff(gwf.variables.head) .> 0.0)
+        @test all(diff(gwf_model.variables.head) .> 0.0)
     end
 end

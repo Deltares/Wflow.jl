@@ -1,5 +1,6 @@
 using Statistics: mean
 using SpecialFunctions: expint
+using StaticArrays: SVector
 
 "Return the first row of a Wflow output CSV file as a NamedTuple"
 function csv_first_row(path)
@@ -84,14 +85,14 @@ function homogenous_aquifer(nrow, ncol)
         exfiltwater = fill(0.0, ncell),
     )
 
-    gwf = Wflow.GroundwaterFlow(;
+    gwf_model = Wflow.GroundwaterFlowModel(;
         timestepping,
         parameters,
         variables,
         connectivity,
         constanthead,
     )
-    return gwf
+    return gwf_model
 end
 
 function init_sbm_soil_model(n, N; kwargs...)
@@ -104,7 +105,7 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     if !haskey(kwargs, :vegetation_parameter_set)
         kwargs[:vegetation_parameter_set] = Wflow.VegetationParameters(;
-            rootingdepth = [],
+            rootingdepth = get(kwargs, :rootingdepth, []),
             leaf_area_index = nothing,
             storage_wood = nothing,
             kext = nothing,
@@ -115,8 +116,22 @@ function init_sbm_soil_model(n, N; kwargs...)
         )
     end
 
+    if !haskey(kwargs, :maxlayers)
+        kwargs[:maxlayers] = 0
+    end
+
     # Vectors of SVectors
-    for field_name in [:vwc, :vwc_perc, :act_thickl, :rootfraction, :kvfrac, :c, :sumlayers]
+    for field_name in [
+        :ustorelayerdepth,
+        :ustorelayerthickness,
+        :vwc,
+        :vwc_perc,
+        :act_thickl,
+        :rootfraction,
+        :kvfrac,
+        :c,
+        :sumlayers,
+    ]
         if !haskey(kwargs, field_name)
             kwargs[field_name] = SVector{N, Float64}[]
         end
@@ -169,7 +184,10 @@ function init_sbm_soil_model(n, N; kwargs...)
         filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilParameters), kwargs)
     parameters = Wflow.SbmSoilParameters(; kwargs_parameters...)
 
-    return Wflow.SbmSoilModel(; n, variables, parameters)
+    kwargs_bc = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilBC), kwargs)
+    boundary_conditions = Wflow.SbmSoilBC(; kwargs_bc...)
+
+    return Wflow.SbmSoilModel(; n, variables, parameters, boundary_conditions)
 end
 
 """

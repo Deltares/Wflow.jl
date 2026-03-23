@@ -191,9 +191,9 @@ end
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
     (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
         model.land.allocation.variables
-    @test typeof(paddy) == Wflow.NoIrrigationPaddy
-    @test typeof(nonpaddy) == Wflow.NoIrrigationNonPaddy
-    @test typeof(livestock) == Wflow.NoNonIrrigationDemand
+    @test typeof(paddy) == Wflow.NoIrrigationPaddyModel
+    @test typeof(nonpaddy) == Wflow.NoIrrigationNonPaddyModel
+    @test typeof(livestock) == Wflow.NoNonIrrigationDemandModel
     sum_total_alloc = sum(total_alloc)
     @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
     @test sum(surfacewater_alloc) ≈ 824.8974139426691

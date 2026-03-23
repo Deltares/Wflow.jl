@@ -26,7 +26,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSF{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@with_kw struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
@@ -122,7 +122,7 @@ function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
 end
 
 "Initialize lateral subsurface flow model"
-function LateralSSF(dataset::NCDataset, config::Config, domain::Domain, soil::SbmSoilModel)
+function LateralSSFModel(dataset::NCDataset, config::Config, domain::Domain, soil::SbmSoilModel)
     (; land, river, drain) = domain
     (; indices) = land.network
     (; area) = domain.land.parameters
@@ -131,23 +131,23 @@ function LateralSSF(dataset::NCDataset, config::Config, domain::Domain, soil::Sb
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
     zi = 0.001 * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi)
-    recharge = Recharge(; n)
+    recharge = RechargeModel(; n)
     if config.model.river_subsurface_exchange_head_based__flag
-        river = GwfRiver(dataset, config, river.network.indices)
+        river = GwfRiverModel(dataset, config, river.network.indices)
     else
         river = nothing
     end
     if config.model.drain__flag
-        drain = Drainage(dataset, config, drain.network.indices)
+        drain = DrainageModel(dataset, config, drain.network.indices)
     else
         drain = nothing
     end
     boundary_conditions = SubsurfaceFlowBC(; recharge, river, drain)
-    ssf = LateralSSF(; timestepping, boundary_conditions, parameters, variables)
-    return ssf
+    ssf_model = LateralSSFModel(; timestepping, boundary_conditions, parameters, variables)
+    return ssf_model
 end
 
-function update_fluxes!(subsurface_flow_model::LateralSSF, domain::Domain, dt::Float64)
+function update_fluxes!(subsurface_flow_model::LateralSSFModel, domain::Domain, dt::Float64)
     for bc in get_boundaries(subsurface_flow_model.boundary_conditions)
         indices = get_boundary_index(bc, domain)
         flux!(bc, subsurface_flow_model, indices, dt)
@@ -156,7 +156,7 @@ function update_fluxes!(subsurface_flow_model::LateralSSF, domain::Domain, dt::F
 end
 
 function flux_to_river!(
-    subsurface_flow_model::LateralSSF,
+    subsurface_flow_model::LateralSSFModel,
     domain::NetworkRiver,
     dt::Float64,
 )
@@ -172,7 +172,7 @@ function flux_to_river!(
 end
 
 function kinwave_subsurface_update!(
-    subsurface_flow_model::LateralSSF,
+    subsurface_flow_model::LateralSSFModel,
     soil_model::SbmSoilModel,
     domain::Domain,
     dt::Float64,
@@ -252,7 +252,7 @@ Update lateral subsurface model for a single timestep `dt`. Timestepping within 
 either with a fixed timestep `dt_fixed` or adaptive.
 """
 function update_subsurface_flow_model!(
-    subsurface_flow_model::LateralSSF,
+    subsurface_flow_model::LateralSSFModel,
     soil_model::SbmSoilModel,
     domain::Domain,
     dt::Float64,
@@ -286,7 +286,7 @@ A stable time step is computed for each vector element based on the Courant time
 criterion. Li et al. (1975) found that the nonlinear scheme is unconditionally stable and
 that a wide range of dt/dx values can be used without loss of accuracy.
 """
-function stable_timestep(subsurface_flow_model::LateralSSF, domain::DomainLand)
+function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainLand)
     (; zi) = subsurface_flow_model.variables
     (; specific_yield, kh_profile) = subsurface_flow_model.parameters
     (; flow_length, slope) = domain.parameters
@@ -314,11 +314,11 @@ function stable_timestep(subsurface_flow_model::LateralSSF, domain::DomainLand)
     return dt_min
 end
 
-function get_flux_to_river(subsurface_flow_model::LateralSSF, inds::Vector{Int})
+function get_flux_to_river(subsurface_flow_model::LateralSSFModel, inds::Vector{Int})
     dt = tosecond(BASETIMESTEP) # conversion to [m³ s⁻¹]
     flux = subsurface_flow_model.variables.to_river[inds] ./ dt
     return flux
 end
 
 # wrapper method
-get_water_depth(subsurface_flow_model::LateralSSF) = subsurface_flow_model.variables.zi
+get_water_depth(subsurface_flow_model::LateralSSFModel) = subsurface_flow_model.variables.zi

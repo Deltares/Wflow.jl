@@ -1,7 +1,7 @@
 abstract type AbstractSubsurfaceFlowBC end
 
 """
-    GroundwaterFlow
+    GroundwaterFlowModel
 
 The upper boundary of an unconfined aquifer is the water table (the phreatic
 surface).
@@ -178,14 +178,14 @@ get_boundaries(boundary_conditions::SubsurfaceFlowBC) = (
     boundary_conditions.well,
 )
 
-@kwdef struct GroundwaterFlow{B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@kwdef struct GroundwaterFlowModel{B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     parameters::GroundwaterFlowParameters
     variables::GroundwaterFlowVariables
     connectivity::Connectivity
     constanthead::ConstantHead
     boundary_conditions::B = SubsurfaceFlowBC()
-    function GroundwaterFlow(
+    function GroundwaterFlowModel(
         timestepping::TimeStepping,
         parameters::GroundwaterFlowParameters,
         variables::GroundwaterFlowVariables,
@@ -205,10 +205,10 @@ get_boundaries(boundary_conditions::SubsurfaceFlowBC) = (
     end
 end
 
-storativity(A::GroundwaterFlow) = A.parameters.specific_yield
+storativity(A::GroundwaterFlowModel) = A.parameters.specific_yield
 
 "Initialize groundwater flow model"
-function GroundwaterFlow(
+function GroundwaterFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
@@ -285,28 +285,28 @@ function GroundwaterFlow(
     variables = GroundwaterFlowVariables(; n, head = initial_head, conductance, storage)
 
     # river boundary of unconfined aquifer
-    gwf_river = GwfRiver(dataset, config, river.network.indices)
+    gwf_river_model = GwfRiverModel(dataset, config, river.network.indices)
 
     # recharge boundary of unconfined aquifer
-    gwf_recharge = Recharge(; n = n_cells)
+    recharge_model = RechargeModel(; n = n_cells)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
-        gwf_drain = Drainage(dataset, config, drain.network.indices)
+        drainage_model = DrainageModel(dataset, config, drain.network.indices)
         boundary_conditions = SubsurfaceFlowBC(;
-            recharge = gwf_recharge,
-            river = gwf_river,
-            drain = gwf_drain,
+            recharge = recharge_model,
+            river = gwf_river_model,
+            drain = drainage_model,
         )
     else
-        boundary_conditions = SubsurfaceFlowBC(; recharge = gwf_recharge, river = gwf_river)
+        boundary_conditions = SubsurfaceFlowBC(; recharge = recharge_model, river = gwf_river_model)
     end
 
     alpha_coefficient = config.model.subsurface_water_flow__alpha_coefficient
     @info "Numerical stability coefficient for groundwater flow `alpha`: `$alpha_coefficient`."
     timestepping = TimeStepping(; alpha_coefficient)
 
-    groundwater_flow = GroundwaterFlow(;
+    groundwaterflow_model = GroundwaterFlowModel(;
         timestepping,
         parameters,
         variables,
@@ -314,7 +314,7 @@ function GroundwaterFlow(
         constanthead,
         boundary_conditions,
     )
-    return groundwater_flow
+    return groundwaterflow_model
 end
 
 """
@@ -339,12 +339,12 @@ function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     end
 end
 
-function saturated_thickness(gwf::GroundwaterFlow, index::Int)
+function saturated_thickness(gwf::GroundwaterFlowModel, index::Int)
     return min(gwf.parameters.top[index], gwf.variables.head[index]) -
            gwf.parameters.bottom[index]
 end
 
-function saturated_thickness(gwf::GroundwaterFlow)
+function saturated_thickness(gwf::GroundwaterFlowModel)
     @. min(gwf.parameters.top, gwf.variables.head) - gwf.parameters.bottom
 end
 
@@ -395,7 +395,7 @@ function initialize_conductance!(
 end
 
 """
-    conductance(gwf::GroundwaterFlow, i, j, nzi, conductivity_profile::GwfConductivityProfileType.T, connectivity::Connectivity)
+    conductance(gwf::GroundwaterFlowModel, i, j, nzi, conductivity_profile::GwfConductivityProfileType.T, connectivity::Connectivity)
 
 This computes the conductance for an unconfined aquifer using the "upstream
 saturated fraction" as the MODFLOW documentation calls it. In this approach, the
@@ -421,7 +421,7 @@ modular finite-difference groundwater flow model: U.S. Geological Survey
 Open-File Report 91-536, 99 p
 """
 function conductance(
-    gwf::GroundwaterFlow,
+    gwf::GroundwaterFlowModel,
     i,
     j,
     nzi,
@@ -464,7 +464,7 @@ function conductance(
 end
 
 function flux!(
-    gwf::GroundwaterFlow,
+    gwf::GroundwaterFlowModel,
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
 )
@@ -488,7 +488,7 @@ function flux!(
 end
 
 """
-    stable_timestep(gwf::GroundwaterFlow, conductivity_profile::GwfConductivityProfileType.T, alpha_coefficient::Float64)
+    stable_timestep(gwf::GroundwaterFlowModel, conductivity_profile::GwfConductivityProfileType.T, alpha_coefficient::Float64)
 
 Compute a stable timestep size given the forward-in-time, central in space scheme.
 The following criterion can be found in Chu & Willis (1984):
@@ -496,7 +496,7 @@ The following criterion can be found in Chu & Willis (1984):
 Δt * k * H / (Δx * Δy * S) <= α.
 """
 function stable_timestep(
-    gwf::GroundwaterFlow,
+    gwf::GroundwaterFlowModel,
     conductivity_profile::GwfConductivityProfileType.T,
     alpha_coefficient::Float64,
 )
@@ -519,11 +519,11 @@ function stable_timestep(
     return dt_min
 end
 
-minimum_head(gwf::GroundwaterFlow) = max.(gwf.variables.head, gwf.parameters.bottom)
-maximum_head(gwf::GroundwaterFlow) = min.(gwf.variables.head, gwf.parameters.top)
+minimum_head(gwf::GroundwaterFlowModel) = max.(gwf.variables.head, gwf.parameters.bottom)
+maximum_head(gwf::GroundwaterFlowModel) = min.(gwf.variables.head, gwf.parameters.top)
 
 function update_fluxes!(
-    gwf::GroundwaterFlow,
+    gwf::GroundwaterFlowModel,
     domain::Domain,
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
@@ -538,7 +538,7 @@ function update_fluxes!(
     return nothing
 end
 
-function update_head!(gwf::GroundwaterFlow, soil::SbmSoilModel, dt::Float64)
+function update_head!(gwf::GroundwaterFlowModel, soil::SbmSoilModel, dt::Float64)
     (; head, exfiltwater, q_net) = gwf.variables
     (; area, specific_yield) = gwf.parameters
 
@@ -590,7 +590,7 @@ function average_flux_vars!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
 end
 
 function update_subsurface_flow_model!(
-    gwf_model::GroundwaterFlow,
+    gwf_model::GroundwaterFlowModel,
     soil_model::SbmSoilModel,
     domain::Domain,
     dt::Float64,
@@ -614,10 +614,10 @@ function update_subsurface_flow_model!(
     return nothing
 end
 
-get_water_depth(gwf_model::GroundwaterFlow) =
+get_water_depth(gwf_model::GroundwaterFlowModel) =
     gwf_model.parameters.top .- gwf_model.variables.head
 
-function get_flux_to_river(subsurface_flow_model::GroundwaterFlow, inds::Vector{Int})
+function get_flux_to_river(subsurface_flow_model::GroundwaterFlowModel, inds::Vector{Int})
     (; river) = subsurface_flow_model.boundary_conditions
     flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
     return flux

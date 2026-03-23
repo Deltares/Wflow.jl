@@ -1,43 +1,49 @@
 
 "Initialize subsurface flow routing for model type `sbm`"
-function initialize_subsurface_flow(
+function initialize_subsurface_flow_model(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     ::SbmModel,
 )
     (; parameters) = domain.land
-    subsurface_flow = LateralSSF(dataset, config, domain, soil)
+    subsurface_flow_model = LateralSSFModel(dataset, config, domain, soil_model)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
     if kh_profile_type == VerticalConductivityProfile.exponential ||
        kh_profile_type == VerticalConductivityProfile.exponential_constant
-        initialize_lateral_ssf!(
-            subsurface_flow,
+        initialize_lateral_ssf_model!(
+            subsurface_flow_model,
             parameters,
-            subsurface_flow.parameters.kh_profile,
+            subsurface_flow_model.parameters.kh_profile,
         )
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
-        (; kv_profile) = soil.parameters
+        (; kv_profile) = soil_model.parameters
         dt = Second(config.time.timestepsecs)
-        initialize_lateral_ssf!(subsurface_flow, soil, parameters, kv_profile, tosecond(dt))
+        initialize_lateral_ssf_model!(
+            subsurface_flow_model,
+            soil_model,
+            parameters,
+            kv_profile,
+            tosecond(dt),
+        )
     end
-    return subsurface_flow
+    return subsurface_flow_model
 end
 
 "Initialize subsurface flow routing for model type `sbm_gwf`"
-function initialize_subsurface_flow(
+function initialize_subsurface_flow_model(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     ::SbmGwfModel,
 )
-    subsurface_flow = GroundwaterFlow(dataset, config, domain, soil)
-    return subsurface_flow
+    subsurface_flow_model = GroundwaterFlowModel(dataset, config, domain, soil_model)
+    return subsurface_flow_model
 end
 
 "Initialize kinematic wave or local inertial overland flow routing"
@@ -45,9 +51,9 @@ function initialize_overland_flow(dataset::NCDataset, config::Config, domain::Do
     (; land_routing) = config.model
 
     if land_routing == RoutingType.kinematic_wave
-        overland_flow = KinWaveOverlandFlow(dataset, config, domain.land)
+        overland_flow = KinWaveOverlandFlowModel(dataset, config, domain.land)
     elseif land_routing == RoutingType.local_inertial
-        overland_flow = LocalInertialOverlandFlow(dataset, config, domain)
+        overland_flow = LocalInertialOverlandFlowModel(dataset, config, domain)
     end
     return overland_flow
 end
@@ -61,12 +67,12 @@ function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domai
 
     reservoir =
         config.model.reservoir__flag ?
-        Reservoir(dataset, config, domain.reservoir.network) : nothing
+        ReservoirModel(dataset, config, domain.reservoir.network) : nothing
 
     if river_routing == RoutingType.kinematic_wave
-        river_flow = KinWaveRiverFlow(dataset, config, domain.river, reservoir)
+        river_flow = KinWaveRiverFlowModel(dataset, config, domain.river, reservoir)
     elseif river_routing == RoutingType.local_inertial
-        river_flow = LocalInertialRiverFlow(dataset, config, domain.river, reservoir)
+        river_flow = LocalInertialRiverFlowModel(dataset, config, domain.river, reservoir)
     end
 end
 
@@ -75,10 +81,11 @@ function Routing(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     type,
 )
-    subsurface_flow = initialize_subsurface_flow(dataset, config, domain, soil, type)
+    subsurface_flow =
+        initialize_subsurface_flow_model(dataset, config, domain, soil_model, type)
     overland_flow = initialize_overland_flow(dataset, config, domain)
     river_flow = initialize_river_flow(dataset, config, domain)
 
@@ -87,9 +94,14 @@ function Routing(
 end
 
 "Initialize `Routing` for model type `sediment`"
-function Routing(dataset::NCDataset, config::Config, domain::Domain, soil::SoilLoss)
-    overland_flow = OverlandFlowSediment(dataset, config, domain.land, soil)
-    river_flow = RiverSediment(dataset, config, domain.river)
+function Routing(
+    dataset::NCDataset,
+    config::Config,
+    domain::Domain,
+    soil_loss_model::SoilLossModel,
+)
+    overland_flow = OverlandFlowSedimentModel(dataset, config, domain.land, soil_loss_model)
+    river_flow = RiverSedimentModel(dataset, config, domain.river)
 
     routing = Routing(; overland_flow, river_flow)
     return routing

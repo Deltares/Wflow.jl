@@ -378,13 +378,13 @@ end
 
     boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
 
-    sw_river = Wflow.LocalInertialRiverFlow(;
+    sw_river = Wflow.LocalInertialRiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
         floodplain = nothing,
-        allocation = Wflow.NoAllocationRiver(n),
+        allocation = Wflow.NoAllocationRiverModel(n),
     )
 
     # run until steady state is reached
