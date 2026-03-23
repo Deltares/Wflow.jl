@@ -55,6 +55,8 @@ end
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
     indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    # land indices
+    land_indices::Vector{Int} = 1:length(indices)
     # traversion order of land domain
     order::Vector{Int} = Int[]
     # execution order of sub-domains for kinematic wave routing (land domain)
@@ -370,7 +372,7 @@ end
 
 """
 Struct for storing forward `indices` and reverse indices `reverse_indices` in the 2D
-external model domain, and 1D land domain indices `land_indices` of `Drainage` cells
+external model domain, and 1D land domain indices `land_indices` of `DrainageModel` cells
 (boundary condition groundwater flow).
 """
 @kwdef struct NetworkDrain

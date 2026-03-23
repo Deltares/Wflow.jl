@@ -30,7 +30,7 @@ end
     T <: AbstractRoutingMethod,
     P <: AbstractRiverFlowParameters,
     V <: AbstractRiverFlowVariables,
-    F <: Union{AbstractFloodPlain, Nothing},
+    F <: Union{AbstractFloodPlainModel, Nothing},
     A <: AbstractAllocationModel,
 } <: AbstractRiverFlowModel
     routing_method::T

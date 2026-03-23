@@ -1,4 +1,4 @@
-abstract type AbstractFloodPlain end
+abstract type AbstractFloodPlainModel end
 
 """
     FloodPlainProfile
@@ -196,13 +196,13 @@ end
 end
 
 "Local inertial floodplain flow model"
-@with_kw struct LocalInertialFloodPlain{P} <: AbstractFloodPlain
+@with_kw struct LocalInertialFloodPlainModel{P} <: AbstractFloodPlainModel
     parameters::LocalInertialFloodPlainParameters{P}
     variables::LocalInertialFloodPlainVariables
 end
 
 "Kinematic wave floodplain flow model"
-@with_kw struct KinWaveFloodPlain{P} <: AbstractFloodPlain
+@with_kw struct KinWaveFloodPlainModel{P} <: AbstractFloodPlainModel
     parameters::KinWaveFloodPlainParameters{P}
     variables::KinWaveFloodPlainVariables
 end
@@ -281,7 +281,7 @@ function flood_depth(
 end
 
 "Initialize floodplain geometry and `LocalInerialFloodPlain` variables and parameters"
-function LocalInertialFloodPlain(
+function LocalInertialFloodPlainModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
@@ -296,17 +296,17 @@ function LocalInertialFloodPlain(
     variables =
         LocalInertialFloodPlainVariables(; n, n_edges, h = zeros(n + length(index_pit)))
 
-    floodplain = LocalInertialFloodPlain(; parameters, variables)
-    return floodplain
+    floodplain_model = LocalInertialFloodPlainModel(; parameters, variables)
+    return floodplain_model
 end
 
-function KinWaveFloodPlain(dataset::NCDataset, config::Config, domain::DomainRiver)
+function KinWaveFloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     profile = FloodPlainProfile(dataset, config, domain)
     mannings_n = get_floodplain_mannings_n(dataset, config, indices)
     profile = FloodPlainProfile(dataset, config, domain)
     parameters = KinWaveFloodPlainParameters(profile, mannings_n)
     variables = KinWaveFloodPlainVariables()
-    floodplain = KinWaveFloodPlain(; parameters, variables)
-    return floodplain
+    floodplain_model = KinWaveFloodPlainModel(; parameters, variables)
+    return floodplain_model
 end

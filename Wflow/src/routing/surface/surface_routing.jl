@@ -15,7 +15,7 @@ function surface_routing!(model)
     update_lateral_inflow!(
         overland_flow,
         (; soil, allocation, subsurface_flow),
-        domain.land.parameters.area,
+        domain,
         config,
         dt,
     )
@@ -62,10 +62,7 @@ timestep.
 function surface_routing!(
     model::Model{R},
 ) where {
-    R <: Routing{
-        <:OverlandFlowModel{<:LocalInertial},
-        <:RiverFlowModel{<:LocalInertial},
-    },
+    R <: Routing{<:OverlandFlowModel{<:LocalInertial}, <:RiverFlowModel{<:LocalInertial}},
 }
     (; routing, land, domain, clock, config) = model
     (; soil, runoff) = land
