@@ -107,7 +107,8 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     if river_routing == RoutingType.kinematic_wave
         @reset network_river.upstream_nodes =
             filter_upstream_nodes(network_river.graph, pits[network_river.indices])
-    elseif river_routing == RoutingType.local_inertial
+    elseif river_routing == RoutingType.local_inertial ||
+           river_routing == RoutingType.kinematic_wave_staggered
         nodes_at_edge, index_pit = NodesAtEdge(network_river)
         @reset network_river.nodes_at_edge = nodes_at_edge
         @reset network_river.pit_indices = network_river.indices[index_pit]

@@ -1,4 +1,4 @@
-"Struct for storing river flow model (numerical staggered scheme) parameters"
+"Struct for storing river flow model parameters on a staggered grid"
 @with_kw struct RiverFlowStaggeredParameters <: AbstractRiverFlowParameters
     n::Int                                              # number of cells [-]
     n_edges::Int                                        # number of edges [-]
@@ -87,7 +87,7 @@ function init_local_inertial_river_flow_parameters(
     @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
 
     (; graph, indices, local_drain_direction, nodes_at_edge) = domain.network
-    (; reservoir_outlet, flow_width) = domain.parameters
+    (; reservoir_outlet) = domain.parameters
 
     n = length(indices)
     n_edges = ne(graph)
@@ -146,6 +146,46 @@ function init_kinwave_staggered_river_flow_parameters(
     floodplain_1d = config.model.floodplain_1d__flag
 
     @info "Kinematic wave on a staggered grid is used for river flow." alpha floodplain_1d
+
+    (; graph, indices, local_drain_direction, nodes_at_edge) = domain.network
+    (; reservoir_outlet) = domain.parameters
+
+    n = length(indices)
+    n_edges = ne(graph)
+    active_index = findall(x -> x == 0, reservoir_outlet)
+    index_pit = findall(x -> x == 5, local_drain_direction)
+
+    mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width =
+        get_river_parameters(dataset, config, domain, index_pit)
+    zb = bankfull_elevation - bankfull_depth # river bed elevation
+    bankfull_storage = bankfull_depth .* flow_width .* flow_length
+
+    # determine width, length and slope at edges
+    width_at_edge = fill(Float64(0), n_edges)
+    length_at_edge = fill(Float64(0), n_edges)
+    slope = fill(Float64(0), n_edges)
+    for i in 1:n_edges
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
+        width_at_edge[i] = min(flow_width[src_node], flow_width[dst_node])
+        length_at_edge[i] = 0.5 * (flow_length[dst_node] + flow_length[src_node])
+        slope[i] = min((zb[src_node] - zb[dst_node]) / length_at_edge[i], 0.00001)
+    end
+
+    parameters = RiverFlowStaggeredParameters(;
+        n,
+        n_edges,
+        active_n = active_index,
+        active_e = active_index,
+        zb,
+        bankfull_storage,
+        bankfull_depth,
+        mannings_n,
+        slope,
+        flow_length_at_edge = length_at_edge,
+        flow_width_at_edge = width_at_edge,
+    )
+    return parameters
 end
 
 "Struct for storing local inertial river flow model variables"
@@ -167,8 +207,31 @@ end
     error::Vector{Float64} = zeros(n)           # error storage [m³]
 end
 
-"Initialize shallow water river flow model variables"
-function RiverFlowStaggeredVariables(
+function init_kinwave_staggered_river_flow_variables(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkRiver,
+)
+    (; indices, graph) = network
+
+    n = length(indices)
+    n_edges = ne(graph)
+    # set river depth h to zero (including reservoir locations)
+    h = zeros(n)
+    q_av = zeros(n_edges)
+
+    variables = RiverFlowStaggeredVariables(;
+        n,
+        n_edges,
+        q_av,
+        q_channel_av = config.model.floodplain_1d__flag ? zeros(n_edges) : q_av,
+        h,
+    )
+    return variables
+end
+
+"Initialize local inertial river flow model variables"
+function init_local_inertial_river_flow_variables(
     dataset::NCDataset,
     config::Config,
     network::NetworkRiver,
@@ -233,7 +296,7 @@ function init_local_inertial_river_flow(
     timestepping = TimeStepping(; alpha_coefficient)
 
     parameters = init_local_inertial_river_flow_parameters(dataset, config, domain)
-    variables = RiverFlowStaggeredVariables(dataset, config, domain.network)
+    variables = init_local_inertial_river_flow_variables(dataset, config, domain.network)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
 
     if config.model.floodplain_1d__flag
@@ -243,6 +306,36 @@ function init_local_inertial_river_flow(
         floodplain = nothing
     end
     routing_method = LocalInertial()
+
+    n = length(domain.network.indices)
+    river_flow = RiverFlowModel(;
+        timestepping,
+        boundary_conditions,
+        parameters,
+        variables,
+        floodplain,
+        allocation = do_water_demand(config) ? AllocationRiverModel(n) :
+                     NoAllocationRiverModel(n),
+        routing_method,
+    )
+    return river_flow
+end
+
+"Initialize kinematic wave river flow model on a staggered grid"
+function init_kinwave_staggered_river_flow(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainRiver,
+    reservoir_model::Union{ReservoirModel, Nothing},
+)
+    alpha_coefficient = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+
+    timestepping = TimeStepping(; alpha_coefficient)
+    parameters = init_kinwave_staggered_river_flow_parameters(dataset, config, domain)
+    variables = init_kinwave_staggered_river_flow_variables(dataset, config, domain.network)
+    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
+    floodplain = nothing
+    routing_method = KinematicWaveStaggered()
 
     n = length(domain.network.indices)
     river_flow = RiverFlowModel(;
