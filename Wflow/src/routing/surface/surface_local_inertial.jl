@@ -145,7 +145,7 @@ function init_kinwave_staggered_river_flow_parameters(
     alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     floodplain_1d = config.model.floodplain_1d__flag
 
-    @info "Local inertial approach is used for river flow." alpha floodplain_1d
+    @info "Kinematic wave on a staggered grid is used for river flow." alpha floodplain_1d
 end
 
 "Struct for storing local inertial river flow model variables"
