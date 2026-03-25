@@ -11,7 +11,7 @@
     bankfull_storage::Vector{Float64} = Float64[]       # bankfull storage [m³]
     bankfull_depth::Vector{Float64} = Float64[]         # bankfull depth [m]
     mannings_n_sq::Vector{Float64} = Float64[]          # Manning's roughness squared at edge [(s m-1/3)2]
-    mannings_n::Vector{Float64} = Float64[]             # Manning's roughness [s m-1/3] at node
+    mannings_n::Vector{Float64} = Float64[]             # Manning's roughness [s m-1/3] at edge
     slope::Vector{Float64} = Float64[]                  # slope at edge [-]
     flow_length_at_edge::Vector{Float64} = Float64[]    # flow (river) length at edge [m]
     flow_width_at_edge::Vector{Float64} = Float64[]     # flow (river) width at edge [m]
@@ -73,6 +73,40 @@ function get_river_parameters(
     return mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width
 end
 
+function compute_value_at_edge(v, nodes_at_edge, n_edges, func::Function)
+    x = fill(Float64(0), n_edges)
+    for i in 1:n_edges
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
+        x[i] = func((v[src_node], v[dst_node]))
+    end
+    return x
+end
+
+function compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
+    mannings_n_at_edge = fill(Float64(0), n_edges)
+    for i in 1:n_edges
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
+        mannings_n_at_edge[i] =
+            (
+                mannings_n[dst_node] * flow_length[dst_node] +
+                mannings_n[src_node] * flow_length[src_node]
+            ) / (flow_length[dst_node] + flow_length[src_node])
+    end
+    return mannings_n_at_edge
+end
+
+function compute_slope_at_edge(elev, length_at_edge, nodes_at_edge, n_edges)
+    slope = fill(Float64(0), n_edges)
+    for i in 1:n_edges
+        src_node = nodes_at_edge.src[i]
+        dst_node = nodes_at_edge.dst[i]
+        slope[i] = min((elev[src_node] - elev[dst_node]) / length_at_edge[i], 0.00001)
+    end
+    return slope
+end
+
 "Initialize local inertial river flow model parameters"
 function init_local_inertial_river_flow_parameters(
     dataset::NCDataset,
@@ -100,23 +134,12 @@ function init_local_inertial_river_flow_parameters(
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
 
     # determine z, width, length and manning's n at edges
-    zb_max = fill(Float64(0), n_edges)
-    width_at_edge = fill(Float64(0), n_edges)
-    length_at_edge = fill(Float64(0), n_edges)
-    mannings_n_sq = fill(Float64(0), n_edges)
-    for i in 1:n_edges
-        src_node = nodes_at_edge.src[i]
-        dst_node = nodes_at_edge.dst[i]
-        zb_max[i] = max(zb[src_node], zb[dst_node])
-        width_at_edge[i] = min(flow_width[src_node], flow_width[dst_node])
-        length_at_edge[i] = 0.5 * (flow_length[dst_node] + flow_length[src_node])
-        mannings_n_i =
-            (
-                mannings_n[dst_node] * flow_length[dst_node] +
-                mannings_n[src_node] * flow_length[src_node]
-            ) / (flow_length[dst_node] + flow_length[src_node])
-        mannings_n_sq[i] = mannings_n_i * mannings_n_i
-    end
+    zb_max = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
+    flow_width_at_edge = compute_value_at_edge(flow_width, nodes_at_edge, n_edges, minimum)
+    flow_length_at_edge = compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
+    mannings_n_at_edge =
+        compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
+    mannings_n_sq = mannings_n_at_edge .* mannings_n_at_edge
 
     parameters = RiverFlowStaggeredParameters(;
         n,
@@ -129,10 +152,9 @@ function init_local_inertial_river_flow_parameters(
         zb_max,
         bankfull_storage,
         bankfull_depth,
-        mannings_n,
         mannings_n_sq,
-        flow_length_at_edge = length_at_edge,
-        flow_width_at_edge = width_at_edge,
+        flow_length_at_edge,
+        flow_width_at_edge,
     )
     return parameters
 end
@@ -160,17 +182,13 @@ function init_kinwave_staggered_river_flow_parameters(
     zb = bankfull_elevation - bankfull_depth # river bed elevation
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
 
-    # determine width, length and slope at edges
-    width_at_edge = fill(Float64(0), n_edges)
-    length_at_edge = fill(Float64(0), n_edges)
-    slope = fill(Float64(0), n_edges)
-    for i in 1:n_edges
-        src_node = nodes_at_edge.src[i]
-        dst_node = nodes_at_edge.dst[i]
-        width_at_edge[i] = min(flow_width[src_node], flow_width[dst_node])
-        length_at_edge[i] = 0.5 * (flow_length[dst_node] + flow_length[src_node])
-        slope[i] = min((zb[src_node] - zb[dst_node]) / length_at_edge[i], 0.00001)
-    end
+    # determine z, width, length and manning's n and slope at edges
+    zb_max = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
+    flow_width_at_edge = compute_value_at_edge(flow_width, nodes_at_edge, n_edges, minimum)
+    flow_length_at_edge = compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
+    mannings_n_at_edge =
+        compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
+    slope_at_edge = compute_slope_at_edge(zb, length_at_edge, nodes_at_edge, n_edges)
 
     parameters = RiverFlowStaggeredParameters(;
         n,
@@ -178,12 +196,13 @@ function init_kinwave_staggered_river_flow_parameters(
         active_n = active_index,
         active_e = active_index,
         zb,
+        zb_max,
         bankfull_storage,
         bankfull_depth,
-        mannings_n,
-        slope,
-        flow_length_at_edge = length_at_edge,
-        flow_width_at_edge = width_at_edge,
+        mannings_n = mannings_n_at_edge,
+        slope = slope_at_edge,
+        flow_length_at_edge,
+        flow_width_at_edge,
     )
     return parameters
 end
@@ -197,9 +216,9 @@ end
     q_av::Vector{Float64}                       # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
     q_channel_av::Vector{Float64}               # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
     h::Vector{Float64}                          # water depth [m]
-    zs_max::Vector{Float64} = Float64[]         # maximum water elevation at edge [m]
-    zs_src::Vector{Float64} = Float64[]         # water elevation of source node of edge [m]
-    zs_dst::Vector{Float64} = Float64[]         # water elevation of downstream node of edge [m]
+    zs_max::Vector{Float64} = zeros(n_edges)    # maximum water elevation at edge [m]
+    zs_src::Vector{Float64} = zeros(n_edges)    # water elevation of source node of edge [m]
+    zs_dst::Vector{Float64} = zeros(n_edges)    # water elevation of downstream node of edge [m]
     hf::Vector{Float64} = zeros(n_edges)        # water depth at edge [m]
     a::Vector{Float64} = zeros(n_edges)         # flow area at edge [m²]
     r::Vector{Float64} = zeros(n_edges)         # wetted perimeter at edge [m]
@@ -253,9 +272,6 @@ function init_local_inertial_river_flow_variables(
     h = zeros(n)
     q_av = zeros(n_edges)
     q0 = zeros(n_edges)
-    zs_max = zeros(n_edges)
-    zs_src = zeros(n_edges)
-    zs_dst = zeros(n_edges)
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
     append!(h, riverdepth_bc)
 
@@ -266,9 +282,6 @@ function init_local_inertial_river_flow_variables(
         q0,
         q_channel_av = config.model.floodplain_1d__flag ? zeros(n_edges) : q_av,
         h,
-        zs_max,
-        zs_src,
-        zs_dst,
     )
     return variables
 end
