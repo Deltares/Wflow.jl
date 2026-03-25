@@ -165,6 +165,7 @@ function init_kinwave_staggered_river_flow_parameters(
     domain::DomainRiver,
 )
     alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+    waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
     floodplain_1d = config.model.floodplain_1d__flag
 
     @info "Kinematic wave on a staggered grid is used for river flow." alpha floodplain_1d
@@ -195,6 +196,7 @@ function init_kinwave_staggered_river_flow_parameters(
         n_edges,
         active_n = active_index,
         active_e = active_index,
+        h_thresh = waterdepth_threshold,
         zb,
         zb_max,
         bankfull_storage,
