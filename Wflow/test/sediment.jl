@@ -258,7 +258,7 @@ end
 
 @testitem "unit: update SedimentConcentrationsRiverModel" begin
     n = 1
-    concentrations_model = Wflow.SedimentConcentrationsRiverModel(;
+    sediment_concentrations_model = Wflow.SedimentConcentrationsRiverModel(;
         n,
         boundary_conditions = Wflow.SedimentConcentrationsRiverBC(;
             n,
@@ -283,10 +283,14 @@ end
     parameters = Wflow.RiverParameters(; slope = [1e-3])
     dt = 86400.0
 
-    Wflow.update_river_sediment_concentration_model!(concentrations_model, parameters, dt)
-    @test concentrations_model.variables.suspended[1] ≈ 4.675925925925926e-10
-    @test concentrations_model.variables.bed[1] ≈ 4.768518518518557e-12
-    @test concentrations_model.variables.total[1] ≈ 4.723611111111112e-10
+    Wflow.update_river_sediment_concentration_model!(
+        sediment_concentrations_model,
+        parameters,
+        dt,
+    )
+    @test sediment_concentrations_model.variables.suspended[1] ≈ 4.675925925925926e-10
+    @test sediment_concentrations_model.variables.bed[1] ≈ 4.768518518518557e-12
+    @test sediment_concentrations_model.variables.total[1] ≈ 4.723611111111112e-10
 end
 
 @testitem "unit: update SedimentRiverTransportModel" begin

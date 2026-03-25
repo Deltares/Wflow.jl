@@ -147,9 +147,9 @@ function NonPaddyModel(
     n = length(indices)
     variables = NonPaddyVariables(; n)
 
-    nonpaddy = NonPaddyModel(; variables, parameters)
+    nonpaddy_model = NonPaddyModel(; variables, parameters)
 
-    return nonpaddy
+    return nonpaddy_model
 end
 
 # wrapper methods

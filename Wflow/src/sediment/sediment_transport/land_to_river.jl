@@ -31,10 +31,10 @@ end
 "Update total sediment reaching the river model boundary conditions"
 function update_bc_sediment_to_river_model!(
     sediment_to_river_model::SedimentToRiverModel,
-    sediment_flux_model::SedimentLandTransportModel,
+    sediment_transport_model::SedimentLandTransportModel,
 )
     (; deposition) = sediment_to_river_model.boundary_conditions
-    @. deposition = sediment_flux_model.variables.deposition
+    @. deposition = sediment_transport_model.variables.deposition
 end
 
 "Update total sediment reaching the river model for a single timestep"
@@ -100,7 +100,7 @@ end
 "Update differentiated sediment reaching the river model boundary conditions"
 function update_bc_sediment_to_river_model!(
     sediment_to_river_model::SedimentToRiverDifferentiationModel,
-    sediment_flux_model::SedimentLandTransportDifferentiationModel,
+    sediment_transport_model::SedimentLandTransportDifferentiationModel,
 )
     (;
         deposition_clay,
@@ -109,11 +109,11 @@ function update_bc_sediment_to_river_model!(
         deposition_sagg,
         deposition_lagg,
     ) = sediment_to_river_model.boundary_conditions
-    @. deposition_clay = sediment_flux_model.variables.deposition_clay
-    @. deposition_silt = sediment_flux_model.variables.deposition_silt
-    @. deposition_sand = sediment_flux_model.variables.deposition_sand
-    @. deposition_sagg = sediment_flux_model.variables.deposition_sagg
-    @. deposition_lagg = sediment_flux_model.variables.deposition_lagg
+    @. deposition_clay = sediment_transport_model.variables.deposition_clay
+    @. deposition_silt = sediment_transport_model.variables.deposition_silt
+    @. deposition_sand = sediment_transport_model.variables.deposition_sand
+    @. deposition_sagg = sediment_transport_model.variables.deposition_sagg
+    @. deposition_lagg = sediment_transport_model.variables.deposition_lagg
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
