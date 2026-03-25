@@ -8,30 +8,30 @@ function initialize_subsurface_flow_model(
     ::SbmModel,
 )
     (; parameters) = domain.land
-    subsurface_flow = LateralSSFModel(dataset, config, domain.land, soil_model)
+    subsurface_flow_model = LateralSSFModel(dataset, config, domain, soil_model)
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
 
     if kh_profile_type == VerticalConductivityProfile.exponential ||
        kh_profile_type == VerticalConductivityProfile.exponential_constant
         initialize_lateral_ssf_model!(
-            subsurface_flow,
+            subsurface_flow_model,
             parameters,
-            subsurface_flow.parameters.kh_profile,
+            subsurface_flow_model.parameters.kh_profile,
         )
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
         (; kv_profile) = soil_model.parameters
         dt = Second(config.time.timestepsecs)
         initialize_lateral_ssf_model!(
-            subsurface_flow,
+            subsurface_flow_model,
             soil_model,
             parameters,
             kv_profile,
             tosecond(dt),
         )
     end
-    return subsurface_flow
+    return subsurface_flow_model
 end
 
 "Initialize subsurface flow routing for model type `sbm_gwf`"
@@ -42,108 +42,8 @@ function initialize_subsurface_flow_model(
     soil_model::SbmSoilModel,
     ::SbmGwfModel,
 )
-    (; land, river, drain) = domain
-
-    (; indices, reverse_indices) = land.network
-    (; x_length, y_length, area) = land.parameters
-
-    n_cells = length(indices)
-
-    elevation = ncread(
-        dataset,
-        config,
-        "land_surface__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
-    )
-
-    # unconfined aquifer
-    if config.model.constanthead__flag
-        constant_head = ConstantHead(dataset, config, indices)
-    else
-        variables = ConstantHeadVariables(; head = Float64[])
-        constant_head = ConstantHead(; variables, index = Int64[])
-    end
-
-    connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
-
-    # cold state for groundwater head based on water table depth zi
-    initial_head = elevation .- soil_model.variables.zi / 1000.0
-    initial_head[river.network.land_indices] = elevation[river.network.land_indices]
-    if config.model.constanthead__flag
-        initial_head[constant_head.index] = constant_head.variables.head
-    end
-    # reset soil (cold) state and related variables based on initial_head (river cells and constanthead)
-    if config.model.cold_start__flag
-        (;
-            zi,
-            satwaterdepth,
-            ustorecapacity,
-            ustorelayerthickness,
-            n_unsatlayers,
-            total_soilwater_storage,
-        ) = soil_model.variables
-        (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
-            soil_model.parameters
-
-        @. zi = (elevation - min(elevation, initial_head)) * 1000.0
-        @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
-        @. ustorecapacity = soilwatercapacity - satwaterdepth
-        @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
-        @. n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
-        @. total_soilwater_storage = satwaterdepth
-    end
-
-    bottom = elevation .- soil_model.parameters.soilthickness ./ 1000.0
-    specific_yield = @. lower_bound_drainable_porosity(
-        soil_model.parameters.theta_s,
-        soil_model.parameters.theta_fc,
-    )
-    conductance = zeros(connectivity.nconnection)
-    aquifer = UnconfinedAquiferModel(
-        dataset,
-        config,
-        indices,
-        elevation,
-        bottom,
-        area,
-        conductance,
-        initial_head,
-        specific_yield,
-    )
-
-    # river boundary of unconfined aquifer
-    gwf_river =
-        GwfRiverModel(dataset, config, river.network.indices, river.network.land_indices)
-
-    # recharge boundary of unconfined aquifer
-    gwf_recharge = RechargeModel(; n = n_cells)
-
-    # drain boundary of unconfined aquifer (optional)
-    if config.model.drain__flag
-        gwf_drain = DrainageModel(dataset, config, indices, drain.network.land_indices)
-        aquifer_boundaries = AquiferBoundaries(;
-            recharge = gwf_recharge,
-            river = gwf_river,
-            drain = gwf_drain,
-        )
-    else
-        aquifer_boundaries = AquiferBoundaries(; recharge = gwf_recharge, river = gwf_river)
-    end
-
-    cfl = config.model.subsurface_water_flow__alpha_coefficient
-    @info "Numerical stability coefficient for groundwater flow `alpha`: `$cfl`."
-    timestepping = TimeStepping(; cfl)
-
-    subsurface_flow = GroundwaterFlowModel(;
-        timestepping,
-        aquifer,
-        connectivity,
-        constanthead = constant_head,
-        boundaries = aquifer_boundaries,
-    )
-    return subsurface_flow
+    subsurface_flow_model = GroundwaterFlowModel(dataset, config, domain, soil_model)
+    return subsurface_flow_model
 end
 
 "Initialize kinematic wave or local inertial overland flow routing"

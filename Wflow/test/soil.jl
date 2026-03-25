@@ -273,9 +273,7 @@ end
         variables = Wflow.DemandVariables(; n),
     )
 
-    subsurface_flow = (; exfiltwater = [0.0])
-    Wflow.get_exfiltwater(nt::NamedTuple) = nt.exfiltwater
-
+    subsurface_flow = (; variables = (; exfiltwater = [0.0]))
     external_models = (; runoff, demand, subsurface_flow)
 
     Wflow.update_soil_water_storage!(soil_model, external_models)

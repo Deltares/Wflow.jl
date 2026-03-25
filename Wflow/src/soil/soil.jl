@@ -687,13 +687,12 @@ function update_bc_soil_model!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .=
-        max.(
-            runoff.boundary_conditions.water_flux_surface .+
-            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-            0.0,
-        )
+    water_flux_surface .= max.(
+        runoff.boundary_conditions.water_flux_surface .+
+        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+        0.0,
+    )
     return nothing
 end
 
@@ -1245,7 +1244,7 @@ function update_soil_water_storage!(soil_model::SbmSoilModel, external_models::N
     p = soil_model.parameters
     v = soil_model.variables
 
-    exfiltsatwater = get_exfiltwater(subsurface_flow) * 1000.0 # convert from [m] to [mm]
+    exfiltsatwater = subsurface_flow.variables.exfiltwater * 1000.0 # convert from [m] to [mm]
     rootingdepth = get_rootingdepth(soil_model)
 
     n = length(v.zi)
