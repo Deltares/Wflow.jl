@@ -61,6 +61,7 @@ function update_model!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; kv_profile) = land.soil.parameters
+    (; subsurface_flow, overland_flow) = routing
     (; boundary_conditions) = routing.subsurface_flow
     dt = tosecond(clock.dt)
 
@@ -85,36 +86,6 @@ function update_model!(model::AbstractModel{<:SbmModel})
         domain,
         clock.dt / BASETIMESTEP,
     )
-
-    update_after_subsurface_flow!(model)
-    update_total_water_storage!(model)
-    return nothing
-end
-
-"""
-    update_until_recharge!model::AbstractModel{<:SbmModel})
-
-Update SBM model until recharge for a single timestep. This function is also accessible
-through BMI, to couple the SBM model to an external groundwater model.
-"""
-function update_until_recharge!(model::AbstractModel{<:SbmModel})
-    (; routing, land, domain, clock, config) = model
-    dt = tosecond(clock.dt)
-    update_land_hydrology_model!(land, routing, domain, config, dt)
-    return nothing
-end
-
-"""
-    update_after_subsurfaceflow!(model::AbstractModel{<:SbmModel})
-
-Update SBM model after subsurface flow for a single timestep. This function is also
-accessible through BMI, to couple the SBM model to an external groundwater model.
-"""
-function update_after_subsurface_flow!(model::AbstractModel{<:SbmModel})
-    (; routing, land, domain, config) = model
-
-    (; soil, runoff, demand) = land
-    (; subsurface_flow, overland_flow) = routing
 
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update_soil_water_storage!(
