@@ -189,7 +189,7 @@ function init_kinwave_staggered_river_flow_parameters(
     flow_length_at_edge = compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
     mannings_n_at_edge =
         compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
-    slope_at_edge = compute_slope_at_edge(zb, length_at_edge, nodes_at_edge, n_edges)
+    slope_at_edge = compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
 
     parameters = RiverFlowStaggeredParameters(;
         n,
