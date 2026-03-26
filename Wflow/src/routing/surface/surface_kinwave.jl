@@ -656,7 +656,7 @@ surface water infiltration.
 """
 function correct_overland_flow_level!(
     model::SbmSoilModel,
-    overland_flow::KinWaveOverlandFlow,
+    overland_flow::KinWaveOverlandFlowModel,
     domain::Domain,
     config::Config,
 )
