@@ -102,7 +102,7 @@ function compute_slope_at_edge(elev, length_at_edge, nodes_at_edge, n_edges)
     for i in 1:n_edges
         src_node = nodes_at_edge.src[i]
         dst_node = nodes_at_edge.dst[i]
-        slope[i] = min((elev[src_node] - elev[dst_node]) / length_at_edge[i], 0.00001)
+        slope[i] = max((elev[src_node] - elev[dst_node]) / length_at_edge[i], 0.00001)
     end
     return slope
 end
