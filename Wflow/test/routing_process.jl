@@ -265,7 +265,7 @@ end
     # with a reservoir at 1
     using Graphs: DiGraph, add_edge!
     n = 2
-    model = Wflow.KinWaveRiverFlowModel(;
+    river_flow_model = Wflow.KinWaveRiverFlowModel(;
         timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n)),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
@@ -326,18 +326,18 @@ end
         ),
         parameters = Wflow.RiverParameters(; flow_width = [30.0], flow_length = [800.0]),
     )
-    dt = Wflow.stable_timestep(model, domain.parameters.flow_length, 0.05)
+    dt = Wflow.stable_timestep(river_flow_model, domain.parameters.flow_length, 0.05)
     dt_forcing = 86400.0
 
-    Wflow.kinwave_river_update!(model, domain, dt, dt_forcing)
+    Wflow.kinwave_river_update!(river_flow_model, domain, dt, dt_forcing)
 
     @test dt ≈ 153.6838444576967
-    @test model.variables.q ≈ [30.846893511897502]
-    @test model.variables.h[1] ≈ 0.42467823758280265
-    @test model.variables.storage[1] ≈ 10192.277701987263
-    @test model.variables.q_av[1] ≈ 4740.669184485589
+    @test river_flow_model.variables.q ≈ [30.846893511897502]
+    @test river_flow_model.variables.h[1] ≈ 0.42467823758280265
+    @test river_flow_model.variables.storage[1] ≈ 10192.277701987263
+    @test river_flow_model.variables.q_av[1] ≈ 4740.669184485589
 
-    (; reservoir) = model.boundary_conditions
+    (; reservoir) = river_flow_model.boundary_conditions
     @test reservoir.variables.waterlevel[1] ≈ 40.002655729492034
     @test reservoir.variables.storage[1] ≈ 7.150475375579074e7
     @test reservoir.variables.outflow[1] == 0.0
@@ -347,7 +347,7 @@ end
 @testitem "unit: local_inertial_river_update!" begin
     # The model is 1 -- 2 where 1 is a river cell and 2 is a reservoir
     n = 2
-    model = Wflow.LocalInertialRiverFlowModel(;
+    river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
@@ -438,63 +438,73 @@ end
             network = Wflow.NetworkReservoir(; river_indices = [2]),
         ),
     )
-    dt = Wflow.stable_timestep(model, domain.river.parameters.flow_length)
+    dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters.flow_length)
     dt_forcing = 86400.0
 
-    Wflow.update_river_channel_flow!(model, domain.river, dt)
+    Wflow.update_river_channel_flow!(river_flow_model, domain.river, dt)
 
     @test dt ≈ 15.806026451312565
-    @test model.variables.zs_src[1] ≈ 501.0
-    @test model.variables.zs_dst[1] ≈ 492.0
-    @test model.variables.zs_max[1] ≈ 501.0
-    @test model.variables.hf[1] ≈ 1.0
-    @test model.variables.a[1] ≈ 100.0
-    @test model.variables.r[1] ≈ 0.9803921568627451
-    @test model.variables.q[1] ≈ 139.50383016666763
-    @test model.variables.q_av[1] ≈ 2205.001229673764
+    @test river_flow_model.variables.zs_src[1] ≈ 501.0
+    @test river_flow_model.variables.zs_dst[1] ≈ 492.0
+    @test river_flow_model.variables.zs_max[1] ≈ 501.0
+    @test river_flow_model.variables.hf[1] ≈ 1.0
+    @test river_flow_model.variables.a[1] ≈ 100.0
+    @test river_flow_model.variables.r[1] ≈ 0.9803921568627451
+    @test river_flow_model.variables.q[1] ≈ 139.50383016666763
+    @test river_flow_model.variables.q_av[1] ≈ 2205.001229673764
 
-    Wflow.update_floodplain_flow!(model, domain.river, dt)
+    Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
-    @test model.floodplain.variables.hf[1] ≈ 500.0
-    @test model.floodplain.variables.hf_index[1] == 1
-    @test model.floodplain.variables.a[1] ≈ 25.0
-    @test model.floodplain.variables.r[1] ≈ 0.023809523809523808
-    @test model.floodplain.variables.q[1] ≈ 34.87593809222198
-    @test model.floodplain.variables.q_av[1] ≈ 551.25
+    @test river_flow_model.floodplain.variables.hf[1] ≈ 500.0
+    @test river_flow_model.floodplain.variables.hf_index[1] == 1
+    @test river_flow_model.floodplain.variables.a[1] ≈ 25.0
+    @test river_flow_model.floodplain.variables.r[1] ≈ 0.023809523809523808
+    @test river_flow_model.floodplain.variables.q[1] ≈ 34.87593809222198
+    @test river_flow_model.floodplain.variables.q_av[1] ≈ 551.25
 
     Wflow.update_bc_reservoir_model!(
-        model.boundary_conditions.reservoir,
-        model,
+        river_flow_model.boundary_conditions.reservoir,
+        river_flow_model,
         domain,
         dt,
         dt_forcing,
     )
 
-    @test model.boundary_conditions.reservoir.variables.storage[1] ≈ 2.723034884231016e7
-    @test model.boundary_conditions.reservoir.variables.waterlevel[1] ≈ 3.002316680002231
-    @test model.boundary_conditions.reservoir.variables.outflow[1] ≈ 0.2099998646651818
-    @test model.boundary_conditions.reservoir.boundary_conditions.inflow[1] ≈
+    @test river_flow_model.boundary_conditions.reservoir.variables.storage[1] ≈
+          2.723034884231016e7
+    @test river_flow_model.boundary_conditions.reservoir.variables.waterlevel[1] ≈
+          3.002316680002231
+    @test river_flow_model.boundary_conditions.reservoir.variables.outflow[1] ≈
+          0.2099998646651818
+    @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow[1] ≈
           2740.4566093807034
-    @test model.boundary_conditions.reservoir.variables.outflow_av[1] ≈ 3.3192634156699246
-    @test model.boundary_conditions.reservoir.variables.actevap[1] ≈ 0.00011159347378820211
-    @test model.variables.q[1] ≈ 139.50383016666763
-    @test model.variables.q_av[1] ≈ 2205.001229673764
+    @test river_flow_model.boundary_conditions.reservoir.variables.outflow_av[1] ≈
+          3.3192634156699246
+    @test river_flow_model.boundary_conditions.reservoir.variables.actevap[1] ≈
+          0.00011159347378820211
+    @test river_flow_model.variables.q[1] ≈ 139.50383016666763
+    @test river_flow_model.variables.q_av[1] ≈ 2205.001229673764
 
-    Wflow.update_water_depth_and_storage!(model, domain.river, dt)
+    Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
-    @test model.variables.storage[2] ≈ 3.1612052902625116
-    @test model.variables.h[2] ≈ 0.0010537350967541705
+    @test river_flow_model.variables.storage[2] ≈ 3.1612052902625116
+    @test river_flow_model.variables.h[2] ≈ 0.0010537350967541705
 
-    Wflow.update_water_depth_and_storage!(model.floodplain, model, domain.river, dt)
+    Wflow.update_water_depth_and_storage!(
+        river_flow_model.floodplain,
+        river_flow_model,
+        domain.river,
+        dt,
+    )
 
-    @test model.variables.h ≈ [1.0, 0.0010537350967541705]
-    @test model.variables.storage ≈ [0.0, 3.1612052902625116]
-    @test model.floodplain.variables.storage ≈ [0.0, 0.0]
+    @test river_flow_model.variables.h ≈ [1.0, 0.0010537350967541705]
+    @test river_flow_model.variables.storage ≈ [0.0, 3.1612052902625116]
+    @test river_flow_model.floodplain.variables.storage ≈ [0.0, 0.0]
 end
 
 @testitem "unit: update_directional_flow!" begin
     n = 3
-    land = Wflow.LocalInertialOverlandFlowModel(;
+    overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
@@ -531,13 +541,13 @@ end
     dt = 17.99954463344083
     is_x_direction = true
 
-    Wflow.update_directional_flow!(land, domain, i, dt, is_x_direction)
-    @test land.variables.qx[1] ≈ -367.9977761166829
+    Wflow.update_directional_flow!(overland_flow_model, domain, i, dt, is_x_direction)
+    @test overland_flow_model.variables.qx[1] ≈ -367.9977761166829
 end
 
 @testitem "unit: local_inertial_update_water_depth!" begin
     n = 2
-    land = Wflow.LocalInertialOverlandFlowModel(;
+    overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
             n,
@@ -562,7 +572,7 @@ end
             froude_limit = true,
         ),
     )
-    river = Wflow.LocalInertialRiverFlowModel(;
+    river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
@@ -622,27 +632,44 @@ end
     dt = 17.99954463344083
 
     # update_river_cell_storage_and_depth!
-    @test Wflow.compute_river_storage_change(land, river, domain, 1, dt) ≈ 6.46839192999565
-    @test Wflow.compute_external_inflow(river, land, 1, 1, dt) |> collect ≈ [0.0, 0.0]
+    @test Wflow.compute_river_storage_change(
+        overland_flow_model,
+        river_flow_model,
+        domain,
+        1,
+        dt,
+    ) ≈ 6.46839192999565
+    @test Wflow.compute_external_inflow(river_flow_model, overland_flow_model, 1, 1, dt) |>
+          collect ≈ [0.0, 0.0]
 
     river_h_expected = 0.1621635220125786
     land_h_expected = 0.0
     river_storage_expected = 1289.2
-    @test Wflow.compute_water_depths(1289.2, 1, 1, river, domain) |> collect ≈
+    @test Wflow.compute_water_depths(1289.2, 1, 1, river_flow_model, domain) |> collect ≈
           [river_h_expected, land_h_expected, river_storage_expected]
 
-    Wflow.update_river_cell_storage_and_depth!(land, river, domain, 1, dt)
-    @test river.variables.h[1] ≈ 0.07240534666041211
-    @test land.variables.h[1] ≈ land_h_expected
-    @test river.variables.storage[1] ≈ 575.6225059502763
+    Wflow.update_river_cell_storage_and_depth!(
+        overland_flow_model,
+        river_flow_model,
+        domain,
+        1,
+        dt,
+    )
+    @test river_flow_model.variables.h[1] ≈ 0.07240534666041211
+    @test overland_flow_model.variables.h[1] ≈ land_h_expected
+    @test river_flow_model.variables.storage[1] ≈ 575.6225059502763
 
     # update_land_cell_storage_and_depth!
-    @test Wflow.compute_land_storage_change(land, domain.land.network, 2, dt) ≈
-          -8.177846510442363
+    @test Wflow.compute_land_storage_change(
+        overland_flow_model,
+        domain.land.network,
+        2,
+        dt,
+    ) ≈ -8.177846510442363
 
-    Wflow.update_land_cell_storage_and_depth!(land, domain.land, 2, dt)
-    @test land.variables.storage[2] ≈ 564.3210597528878
-    @test land.variables.h[2] ≈ 0.0010450389995423847
+    Wflow.update_land_cell_storage_and_depth!(overland_flow_model, domain.land, 2, dt)
+    @test overland_flow_model.variables.storage[2] ≈ 564.3210597528878
+    @test overland_flow_model.variables.h[2] ≈ 0.0010450389995423847
 end
 
 @testitem "local inertial long channel MacDonald (1997)" begin

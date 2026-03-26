@@ -119,11 +119,11 @@ end
     @test res_v.actevap[1] ≈ 3.2
 end
 
-@testitem "update_reservoir_model!" begin
+@testitem "unit: update_reservoir_model!" begin
     using Graphs: DiGraph, add_edge!
 
     n = 1
-    reservoir = Wflow.ReservoirModel(;
+    reservoir_model = Wflow.ReservoirModel(;
         boundary_conditions = Wflow.ReservoirBC(;
             n,
             external_inflow = [-1.0],
@@ -160,12 +160,19 @@ end
     dt = 1000.0
     dt_forcing = 86400.0
 
-    Wflow.update_reservoir_model!(reservoir, river_flow_vars, network, v, dt, dt_forcing)
+    Wflow.update_reservoir_model!(
+        reservoir_model,
+        river_flow_vars,
+        network,
+        v,
+        dt,
+        dt_forcing,
+    )
     @test river_flow_vars.qin[2] ≈ 7.9
-    @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 1e3
-    @test reservoir.variables.storage[1] ≈ 7.099161079861112e7
-    @test reservoir.variables.waterlevel[1] ≈ -0.13982002314801018
-    @test reservoir.variables.outflow[1] ≈ 7.9
+    @test reservoir_model.boundary_conditions.actual_external_abstraction_av[1] ≈ 1e3
+    @test reservoir_model.variables.storage[1] ≈ 7.099161079861112e7
+    @test reservoir_model.variables.waterlevel[1] ≈ -0.13982002314801018
+    @test reservoir_model.variables.outflow[1] ≈ 7.9
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
