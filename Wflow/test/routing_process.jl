@@ -95,68 +95,121 @@ end
 end
 
 @testitem "unit: kinematic_wave_ssf" begin
-    ssfin = 151.93545317754274
-    ssf_prev = 66.13838493935127
-    zi_prev = 0.037300947928732966
-    r = -0.4682469020507169
-    slope = 0.0058632562868297
-    theta_e = 0.1703555408323154
+    using StaticArrays: SVector
+    include("testing_utils.jl")
+    n = 1
+    N = 4
+
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 119.83408703759733, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [519.8340870375973],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+    )
+
+    ssfin = 0.0
+    ssf_prev = 25953.147860945584
+    zi_prev = 0.5198340870375974
+    q_net = 485.4666924404467
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
     d = 2.0
     dt = 1.0
-    dx = 651.0959333549443
-    dw = 926.1824194767788
-    ssfmax = 0.07651841216556145
-    kh_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 79.62016166711079
+    kh_profile = Wflow.KhExponential([205.5965576171875], [1.0141291422769427])
     i = 1
 
-    ssf, zi, exfilt = Wflow.kinematic_wave_ssf(
+    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
-        r,
+        q_net,
         slope,
-        theta_e,
+        sy,
         d,
         dt,
         dx,
         dw,
         ssfmax,
         kh_profile,
+        soil,
         i,
     )
-    @test ssf ≈ 65.87716383769195
-    @test zi ≈ 0.039430950039165864
+    @test ssf ≈ 22100.628024231868
+    @test zi ≈ 0.7029236021516849
     @test exfilt ≈ 0.0
+    @test net_flux ≈ -0.037393206532277116
 
-    ssfin = 726.5698548296821
-    ssf_prev = 540.095599334873
+    soil = init_sbm_soil_model(
+        n,
+        N;
+        # Variables
+        ustorelayerthickness = [SVector(100.0, 300.0, 348.31246153148595, NaN)],
+        ustorelayerdepth = [
+            SVector(0.1909439890049523, 16.27933934181815, 58.42501219303608, 0.0),
+        ],
+        n_unsatlayers = [3],
+        zi = [758.8905603985703],
+        # Parameters
+        maxlayers = 4,
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
+        nlayers = [4],
+        theta_s = [0.48642662167549133],
+        theta_r = [0.11939866840839386],
+        theta_fc = [0.28219206182657536],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+    )
+
+    ssfin = 0.0
+    ssf_prev = 54175.65003911068
+    zi_prev = 0.7588905603985703
+    q_net = 773.9150244657355
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
+    d = 2.0
+    dt = 1.0
+    dx = 1117.0150713112287
+    dw = 517.495693771673
+    ssfmax = 153.46698446681825
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
-    zi_prev = 0.2989648788074234
-    r = 0.6
-    slope = 0.08617263287305832
-    theta_e = 0.3281228095293045
-    dx = 1100.0330152617341
-    dw = 499.09766763570804
-    ssfmax = 2.223399526492016
+    i = 1
 
-    ssf, zi, exfilt = Wflow.kinematic_wave_ssf(
+    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
-        r,
+        q_net,
         slope,
-        theta_e,
+        sy,
         d,
         dt,
         dx,
         dw,
         ssfmax,
         kh_profile,
-        i,
+        soil,
+        1,
     )
-    @test ssf ≈ 543.4872124727707
-    @test zi ≈ 0.2942848053422706
+
+    @test ssf ≈ 44680.57723298823
+    @test zi ≈ 1.130798471269119
     @test exfilt ≈ 0.0
+    @test net_flux ≈ -0.07595644848097641
 end
 
 @testitem "unit: accucapacity" begin
@@ -208,7 +261,7 @@ end
 end
 
 @testitem "unit: kinwave_river_update!" begin
-    # Test river kinematic wave with graph 1 -- 2 
+    # Test river kinematic wave with graph 1 -- 2
     # with a reservoir at 1
     using Graphs: DiGraph, add_edge!
     n = 2
@@ -217,7 +270,7 @@ end
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
             external_inflow = [-0.1],
-            reservoir = Wflow.Reservoir(;
+            reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
                     n,
                     external_inflow = [0.02],
@@ -258,7 +311,7 @@ end
             bankfull_depth = [10.0],
         ),
         variables = Wflow.FlowVariables(; n, q = [58.3]),
-        allocation = Wflow.NoAllocationRiver(n),
+        allocation = Wflow.NoAllocationRiverModel(n),
     )
     graph = DiGraph(2)
     add_edge!(graph, 1, 2)
@@ -300,7 +353,7 @@ end
             n,
             external_inflow = [-1.0, -1.0],
             inwater = [1.0, 1.0],
-            reservoir = Wflow.Reservoir(;
+            reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
                     n = 1,
                     external_inflow = [-1.0],
@@ -353,7 +406,7 @@ end
             h = [1.0, 2.0],
             q = [1e-4, 0.0],
         ),
-        floodplain = Wflow.FloodPlain(;
+        floodplain = Wflow.FloodPlainModel(;
             parameters = Wflow.FloodPlainParameters(;
                 profile = Wflow.FloodPlainProfile(;
                     depth = [0.0, 0.5],
@@ -368,7 +421,7 @@ end
             ),
             variables = Wflow.FloodPlainVariables(; n, n_edges = 1, h = [0.1, 0.2]),
         ),
-        allocation = Wflow.AllocationRiver(; n),
+        allocation = Wflow.AllocationRiverModel(; n),
     )
     domain = Wflow.Domain(;
         river = Wflow.DomainRiver(;
@@ -456,20 +509,22 @@ end
         boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
             n,
-            ywidth = [926.5561, 926.5574, 926.5574],
-            xwidth = [624.067, 623.967, 623.967],
-            zx_max = [0.0, 991.02, 824.671],
+            ywidth = [926.6458124188031],
+            xwidth = [],
+            zx_max = [337.2740173339844],
             theta = 1.0,
             h_thresh = 1e-3,
-            zy_max = [1011.41, 991.022, 800.38],
-            mannings_n_sq = [0.0531, 0.0596, 0.0639],
-            z = [1011.41, 991.02, 800.38],
+            zy_max = [],
+            mannings_n_sq = [0.5916686815198524],
+            z = [336.8810119628906, 337.2740173339844],
             froude_limit = true,
         ),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
             n,
-            qx0 = [1e-3, 2e-3, 3e-3],
-            h = [0.03, 0.02, 0.05],
+            qx0 = [0.0, 0.0, 0.0],
+            qx = [0.0],
+            qx_av = [0.0],
+            h = [0.0009993302787366092, 0.99946962306692],
         ),
     )
     domain = Wflow.Domain(;
@@ -478,13 +533,12 @@ end
                 edge_indices = Wflow.EdgeConnectivity(; xu = [2], xd = [3]),
             ),
             parameters = Wflow.LandParameters(;
-                x_length = fill(600.0, n),
-                y_length = fill(900.0, n),
+                x_length = [618.15300002725236, 618.15300002725236],
             ),
         ),
     )
     i = 1
-    dt = 15.0
+    dt = 17.99954463344083
     is_x_direction = true
 
     Wflow.update_directional_flow!(overland_flow_model, domain, i, dt, is_x_direction)
@@ -497,21 +551,24 @@ end
         timestepping = Wflow.TimeStepping(),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
             n,
-            qx = [0.1, 0.3],
-            qy = [0.25, 0.15],
-            storage = [1000.0, 1250.0],
+            qx = [-0.0058363, 0.3],
+            qy = [0.0, 0.15],
+            storage = [569.1541140202806, 572.4989062633301],
         ),
-        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n, runoff = [0.2, 0.3]),
+        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
+            n,
+            runoff = [0.01705, 0.0015],
+        ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
             n,
             xwidth = [600.0],
             ywidth = [900.0],
             theta = 1.0,
             h_thresh = 1e-3,
-            zx_max = [650.0],
-            zy_max = [600.0],
-            mannings_n_sq = [0.15],
-            z = [545.0],
+            zx_max = [337.2740173339844],
+            zy_max = [333.3810119628906],
+            mannings_n_sq = [0.5916686815198524],
+            z = [333.3810119628906],
             froude_limit = true,
         ),
     )
@@ -519,7 +576,7 @@ end
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
-            external_inflow = [-0.2, -0.1],
+            external_inflow = [0.0, 0.0],
             reservoir = nothing,
         ),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
@@ -529,26 +586,26 @@ end
             active_e = [1, 1],
             froude_limit = true,
             h_thresh = 1e-3,
-            zb = [277.0, 279.0],
-            zb_max = [279.0],
-            bankfull_storage = [101565.1, 168379.4],
-            bankfull_depth = [1.3, 1.2],
-            mannings_n_sq = [9.0e-3, 9.0e-3],
-            mannings_n = [0.03, 0.03],
-            flow_length_at_edge = [637.0, 1057.7],
-            flow_width_at_edge = [97.0, 97.0],
+            zb = [227.5, 313.3999938964844],
+            zb_max = [313.3999938964844],
+            bankfull_storage = [7979.0625, 32470.3125],
+            bankfull_depth = [1.0, 1.0],
+            mannings_n_sq = [0.001225, 0.0009],
+            mannings_n = [0.035, 0.03],
+            flow_length_at_edge = [637.375, 980.265626],
+            flow_width_at_edge = [30.0, 30.0],
         ),
         variables = Wflow.LocalInertialRiverFlowVariables(;
             n,
             n_edges = 2,
-            q = [49.6, 49.6],
+            q = [0.00973319846856637, 0.1232553],
             q_av = [0.0, 0.0],
             q_channel_av = [0.0, 0.0],
-            h = [1.0, 1.0],
-            storage = [7.5e5, 7.0e5],
+            h = [0.0083347, 0.007166168666],
+            storage = [66.50309237, 232.68773603860762],
         ),
         floodplain = nothing,
-        allocation = Wflow.NoAllocationRiver(1),
+        allocation = Wflow.NoAllocationRiverModel(1),
     )
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
@@ -566,13 +623,13 @@ end
                 edges_at_node = Wflow.EdgesAtNode(; src = [[1]], dst = [[2]]),
             ),
             parameters = Wflow.RiverParameters(;
-                flow_width = [97.0],
-                flow_length = [804.0],
+                flow_width = [30.0],
+                flow_length = [265.0],
             ),
         ),
     )
 
-    dt = 17.0
+    dt = 17.99954463344083
 
     # update_river_cell_storage_and_depth!
     @test Wflow.compute_river_storage_change(
@@ -585,7 +642,7 @@ end
     @test Wflow.compute_external_inflow(river_flow_model, overland_flow_model, 1, 1, dt) |>
           collect ≈ [0.0, 0.0]
 
-    river_h_expected = 0.016530748320254397
+    river_h_expected = 0.1621635220125786
     land_h_expected = 0.0
     river_storage_expected = 1289.2
     @test Wflow.compute_water_depths(1289.2, 1, 1, river_flow_model, domain) |> collect ≈
@@ -695,7 +752,7 @@ end
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
 
-    timestepping = Wflow.TimeStepping(; cfl = 0.7)
+    timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7)
     parameters = Wflow.LocalInertialRiverFlowParameters(;
         n,
         ne = _ne,
@@ -733,13 +790,13 @@ end
 
     boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
 
-    sw_river = Wflow.LocalInertialRiverFlow(;
+    sw_river = Wflow.LocalInertialRiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
         floodplain = nothing,
-        allocation = Wflow.NoAllocationRiver(n),
+        allocation = Wflow.NoAllocationRiverModel(n),
     )
 
     # run until steady state is reached

@@ -10,22 +10,6 @@
     h::Vector{Float64} = zeros(n)            # Water depth [m]
 end
 
-"Initialize timestepping for kinematic wave (river and overland flow models)"
-function init_kinematic_wave_timestepping(config::Config, n::Int; domain::String)
-    adaptive = config.model.kinematic_wave__adaptive_time_step_flag
-    @info "Kinematic wave approach is used for $domain flow, adaptive timestepping = $adaptive."
-
-    if adaptive
-        stable_timesteps = zeros(n)
-        timestepping = TimeStepping(; stable_timesteps, adaptive)
-    else
-        dt_fixed = getfield(config.model, Symbol("$(domain)_kinematic_wave__time_step"))
-        @info "Using a fixed internal timestep (seconds) $dt_fixed for kinematic wave $domain flow."
-        timestepping = TimeStepping(; dt_fixed, adaptive)
-    end
-    return timestepping
-end
-
 "Struct for storing Manning flow parameters"
 @with_kw struct ManningFlowParameters
     n::Int
@@ -94,13 +78,13 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
 end
 
 "Struct for storing river flow model boundary conditions"
-@with_kw struct RiverFlowBC{R <: Union{Reservoir, Nothing}}
+@with_kw struct RiverFlowBC{R <: Union{ReservoirModel, Nothing}}
     n::Int
     inwater::Vector{Float64} = zeros(n)                         # Lateral inflow [m³ s⁻¹]
     external_inflow::Vector{Float64} = zeros(n)                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64} = zeros(n)  # Actual abstraction from external negative inflow [m³ s⁻¹]
     abstraction::Vector{Float64} = zeros(n)                     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    reservoir::R                                                # Reservoir model struct of arrays
+    reservoir::R                                                # ReservoirModel model struct of arrays
 end
 
 "Initialize river flow model boundary conditions"
@@ -108,7 +92,7 @@ function RiverFlowBC(
     dataset::NCDataset,
     config::Config,
     network::NetworkRiver,
-    reservoir::Union{Reservoir, Nothing},
+    reservoir::Union{ReservoirModel, Nothing},
 )
     (; indices) = network
     external_inflow = ncread(
@@ -125,7 +109,7 @@ function RiverFlowBC(
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlow{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
+@with_kw struct KinWaveRiverFlowModel{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
                 AbstractRiverFlowModel
     timestepping::TimeStepping
     boundary_conditions::R
@@ -134,25 +118,26 @@ end
     allocation::A   # Water allocation
 end
 
-"Initialize river flow model `KinWaveRiverFlow`"
-function KinWaveRiverFlow(
+"Initialize river flow model `KinWaveRiverFlowModel`"
+function KinWaveRiverFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir::Union{Reservoir, Nothing},
+    reservoir::Union{ReservoirModel, Nothing},
 )
     (; indices) = domain.network
     n = length(indices)
 
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
 
-    allocation = do_water_demand(config) ? AllocationRiver(; n) : NoAllocationRiver(n)
+    allocation =
+        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
     variables = FlowVariables(; n)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
-    river_flow = KinWaveRiverFlow(;
+    river_flow = KinWaveRiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
@@ -188,15 +173,15 @@ end
 end
 
 "Overland flow model using the kinematic wave method and the Manning flow{ equation"
-@with_kw struct KinWaveOverlandFlow <: AbstractOverlandFlowModel
+@with_kw struct KinWaveOverlandFlowModel <: AbstractOverlandFlowModel
     timestepping::TimeStepping
     boundary_conditions::LandFlowBC
     parameters::ManningFlowParameters
     variables::OverLandFlowVariables
 end
 
-"Initialize Overland flow model `KinWaveOverlandFlow`"
-function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainLand)
+"Initialize Overland flow model `KinWaveOverlandFlowModel`"
+function KinWaveOverlandFlowModel(dataset::NCDataset, config::Config, domain::DomainLand)
     (; indices) = domain.network
     (; slope) = domain.parameters
     mannings_n = ncread(
@@ -216,7 +201,7 @@ function KinWaveOverlandFlow(dataset::NCDataset, config::Config, domain::DomainL
     boundary_conditions = LandFlowBC(; n)
 
     overland_flow =
-        KinWaveOverlandFlow(; timestepping, boundary_conditions, variables, parameters)
+        KinWaveOverlandFlowModel(; timestepping, boundary_conditions, variables, parameters)
 
     return overland_flow
 end
@@ -226,66 +211,70 @@ Helper function to set reservoir variables to zero. This is done at the start of
 simulation timestep, during the timestep the total (weighted) sum is computed from values at
 each internal timestep.
 """
-function set_reservoir_vars!(reservoir::Reservoir)
-    reservoir.boundary_conditions.inflow .= 0.0
-    reservoir.boundary_conditions.actual_external_abstraction_av .= 0.0
-    reservoir.variables.outflow_av .= 0.0
-    reservoir.variables.actevap .= 0.0
+function set_reservoir_vars!(reservoir_model::ReservoirModel)
+    reservoir_model.boundary_conditions.inflow .= 0.0
+    reservoir_model.boundary_conditions.actual_external_abstraction_av .= 0.0
+    reservoir_model.variables.outflow_av .= 0.0
+    reservoir_model.variables.actevap .= 0.0
 
     return nothing
 end
-set_reservoir_vars!(reservoir) = nothing
+set_reservoir_vars!(reservoir_model) = nothing
 
 """
 Helper function to compute the average of reservoir variables. This is done at the end of
 each simulation timestep.
 """
-function average_reservoir_vars!(reservoir::Reservoir, dt::Float64)
-    reservoir.variables.outflow_av ./= dt
-    reservoir.boundary_conditions.inflow ./= dt
-    reservoir.boundary_conditions.actual_external_abstraction_av ./= dt
+function average_reservoir_vars!(reservoir_model::ReservoirModel, dt::Float64)
+    reservoir_model.variables.outflow_av ./= dt
+    reservoir_model.boundary_conditions.inflow ./= dt
+    reservoir_model.boundary_conditions.actual_external_abstraction_av ./= dt
 
     return nothing
 end
-average_reservoir_vars!(reservoir, dt) = nothing
+average_reservoir_vars!(reservoir_model, dt) = nothing
 
 """
-    set_flow_vars!(model::AbstractRiverFlowModel)
+    set_flow_vars!(river_flow_model::AbstractRiverFlowModel)
 
 Helper functions to set river flow routing variables discharge and actual abstraction (based
 on external negative inflow) from river to zero. This is done at the start of each
 simulation timestep, during the timestep the total (weighted) sum is computed from values at
 each sub timestep.
 """
-function set_flow_vars!(model::AbstractRiverFlowModel)
-    (; q_av) = model.variables
-    (; actual_external_abstraction_av) = model.boundary_conditions
+function set_flow_vars!(river_flow_model::AbstractRiverFlowModel)
+    (; q_av) = river_flow_model.variables
+    (; actual_external_abstraction_av) = river_flow_model.boundary_conditions
     q_av .= 0.0
     actual_external_abstraction_av .= 0.0
     return nothing
 end
 
 """
-    average_flow_vars!(model::AbstractRiverFlowModel, dt::Float64)
+    average_flow_vars!(river_flow::AbstractRiverFlowModel, dt::Float64)
 
 Helper functions to compute average river flow routing variables. This is done at the end of
 each simulation timestep.
 """
-function average_flow_vars!(model::AbstractRiverFlowModel, dt::Float64)
-    (; q_av) = model.variables
-    (; actual_external_abstraction_av) = model.boundary_conditions
+function average_flow_vars!(river_flow_model::AbstractRiverFlowModel, dt::Float64)
+    (; q_av) = river_flow_model.variables
+    (; actual_external_abstraction_av) = river_flow_model.boundary_conditions
     q_av ./= dt
     actual_external_abstraction_av ./= dt
     return nothing
 end
 
-"Update overland flow model `KinWaveOverlandFlow` for a single timestep"
-function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
+"Update overland flow model `KinWaveOverlandFlowModel` for a single timestep"
+function kinwave_land_update!(
+    overland_flow_model::KinWaveOverlandFlowModel,
+    domain::DomainLand,
+    dt::Float64,
+)
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
 
-    (; beta, alpha) = model.parameters
-    (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = model.variables
+    (; beta, alpha) = overland_flow_model.parameters
+    (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
     ns = length(order_of_subdomains)
@@ -333,15 +322,19 @@ function kinwave_land_update!(model::KinWaveOverlandFlow, domain::DomainLand, dt
 end
 
 """
-Update overland flow model `KinWaveOverlandFlow` for a single timestep `dt`. Timestepping within
+Update overland flow model `KinWaveOverlandFlowModel` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
-    (; inwater) = model.boundary_conditions
-    (; alpha_term, mannings_n, beta, alpha_pow, alpha) = model.parameters
+function update_overland_flow_model!(
+    overland_flow_model::KinWaveOverlandFlowModel,
+    domain::DomainLand,
+    dt::Float64,
+)
+    (; inwater) = overland_flow_model.boundary_conditions
+    (; alpha_term, mannings_n, beta, alpha_pow, alpha) = overland_flow_model.parameters
     (; surface_flow_width, flow_length, slope) = domain.parameters
-    (; q_av, qlat, qin_av, to_river) = model.variables
-    (; adaptive) = model.timestepping
+    (; q_av, qlat, qin_av, to_river) = overland_flow_model.variables
+    (; adaptive) = overland_flow_model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
     # use fixed alpha value based flow width
@@ -355,10 +348,10 @@ function update!(model::KinWaveOverlandFlow, domain::DomainLand, dt::Float64)
     t = 0.0
     while t < dt
         dt_s =
-            adaptive ? stable_timestep(model, flow_length, 0.02) :
-            model.timestepping.dt_fixed
+            adaptive ? stable_timestep(overland_flow_model, flow_length, 0.02) :
+            overland_flow_model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        kinwave_land_update!(model, domain, dt_s)
+        kinwave_land_update!(overland_flow_model, domain, dt_s)
         t += dt_s
     end
     q_av ./= dt
@@ -369,14 +362,14 @@ end
 
 "Run reservoir model and copy reservoir outflow to inflow (qin) of downstream river cell"
 function update_reservoir_model!(
-    reservoir::Reservoir,
+    reservoir_model::ReservoirModel,
     river_flow_vars::FlowVariables,
     network::NetworkRiver,
     v::Int,
     dt::Float64,
     dt_forcing::Float64,
 )
-    (; boundary_conditions, variables) = reservoir
+    (; boundary_conditions, variables) = reservoir_model
     (; storage, outflow) = variables
     (;
         external_inflow,
@@ -401,7 +394,7 @@ function update_reservoir_model!(
     end
 
     net_inflow = q[v] + inflow_overland[i] + inflow_subsurface[i] + inflow
-    update!(reservoir, i, net_inflow, dt, dt_forcing)
+    update_reservoir_model!(reservoir_model, i, net_inflow, dt, dt_forcing)
 
     downstream_nodes = outneighbors(graph, v)
     n_downstream = length(downstream_nodes)
@@ -420,9 +413,9 @@ function update_reservoir_model!(
     return nothing
 end
 
-"Update river flow model `KinWaveRiverFlow` for a single timestep"
+"Update river flow model `KinWaveRiverFlowModel` for a single timestep"
 function kinwave_river_update!(
-    model::KinWaveRiverFlow,
+    river_flow_model::KinWaveRiverFlowModel,
     domain::DomainRiver,
     dt::Float64,
     dt_forcing::Float64,
@@ -431,11 +424,11 @@ function kinwave_river_update!(
         domain.network
 
     (; reservoir, external_inflow, actual_external_abstraction_av, abstraction) =
-        model.boundary_conditions
+        river_flow_model.boundary_conditions
 
-    (; beta, alpha) = model.parameters
+    (; beta, alpha) = river_flow_model.parameters
     (; flow_width, flow_length) = domain.parameters
-    (; h, q, q_av, storage, qin, qin_av, qlat) = model.variables
+    (; h, q, q_av, storage, qin, qin_av, qlat) = river_flow_model.variables
 
     ns = length(order_of_subdomains)
     qin .= 0.0
@@ -471,7 +464,7 @@ function kinwave_river_update!(
                 if !isnothing(reservoir)
                     update_reservoir_model!(
                         reservoir,
-                        model.variables,
+                        river_flow_model.variables,
                         domain.network,
                         v,
                         dt,
@@ -492,22 +485,27 @@ function kinwave_river_update!(
 end
 
 """
-Update river flow model `KinWaveRiverFlow` for a single timestep `dt`. Timestepping within
+Update river flow model `KinWaveRiverFlowModel` for a single timestep `dt`. Timestepping within
 `dt` is either with a fixed timestep `dt_fixed` or adaptive.
 """
-function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
-    (; reservoir, inwater) = model.boundary_conditions
-    (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) = model.parameters
+function update_river_flow_model!(
+    river_flow_model::KinWaveRiverFlowModel,
+    domain::Domain,
+    clock::Clock,
+)
+    (; reservoir, inwater) = river_flow_model.boundary_conditions
+    (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) =
+        river_flow_model.parameters
     (; slope, flow_width, flow_length) = domain.river.parameters
-    (; qlat, qin_av) = model.variables
-    (; adaptive) = model.timestepping
+    (; qlat, qin_av) = river_flow_model.variables
+    (; adaptive) = river_flow_model.timestepping
 
     @. alpha_term = pow(mannings_n / sqrt(slope), beta)
     # use fixed alpha value based on 0.5 * bankfull_depth
     @. alpha = alpha_term * pow(flow_width + bankfull_depth, alpha_pow)
     @. qlat = inwater / flow_length
 
-    set_flow_vars!(model)
+    set_flow_vars!(river_flow_model)
     qin_av .= 0.0
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
@@ -516,15 +514,15 @@ function update!(model::KinWaveRiverFlow, domain::Domain, clock::Clock)
     t = 0.0
     while t < dt
         dt_s =
-            adaptive ? stable_timestep(model, flow_length, 0.05) :
-            model.timestepping.dt_fixed
+            adaptive ? stable_timestep(river_flow_model, flow_length, 0.05) :
+            river_flow_model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
-        kinwave_river_update!(model, domain.river, dt_s, dt)
+        kinwave_river_update!(river_flow_model, domain.river, dt_s, dt)
         t += dt_s
     end
 
     average_reservoir_vars!(reservoir, dt)
-    average_flow_vars!(model, dt)
+    average_flow_vars!(river_flow_model, dt)
     qin_av ./= dt
     return nothing
 end
@@ -535,17 +533,18 @@ model using a nonlinear scheme (Chow et al., 1988).
 
 A stable time step is computed for each vector element based on the Courant timestep size
 criterion. A quantile of the vector is computed based on probability `p` to remove potential
-very low timestep sizes. Li et al. (1975) found that the nonlinear scheme is unconditonally
-stable and that a wide range of dt/dx values can be used without loss of accuracy.
+very small timestep sizes. Li et al. (1975) found that the nonlinear scheme is
+unconditionally stable and that a wide range of dt/dx values can be used without loss of
+accuracy.
 """
 function stable_timestep(
-    model::S,
+    flow_model::S,
     flow_length::Vector{Float64},
     p::Float64,
-) where {S <: Union{KinWaveOverlandFlow, KinWaveRiverFlow}}
-    (; q) = model.variables
-    (; alpha, beta) = model.parameters
-    (; stable_timesteps) = model.timestepping
+) where {S <: Union{KinWaveOverlandFlowModel, KinWaveRiverFlowModel}}
+    (; q) = flow_model.variables
+    (; alpha, beta) = flow_model.parameters
+    (; stable_timesteps) = flow_model.timestepping
 
     n = length(q)
     stable_timesteps .= Inf
@@ -574,13 +573,13 @@ Update boundary condition lateral inflow `inwater` of a river flow model for a s
 timestep.
 """
 function update_lateral_inflow!(
-    model::AbstractRiverFlowModel,
+    river_flow_model::AbstractRiverFlowModel,
     external_models::NamedTuple,
     domain::Domain,
     dt::Float64,
 )
     (; allocation, runoff, overland_flow, subsurface_flow) = external_models
-    (; inwater) = model.boundary_conditions
+    (; inwater) = river_flow_model.boundary_conditions
     (; net_runoff_river) = runoff.variables
 
     (; land_indices) = domain.river.network
@@ -598,23 +597,26 @@ end
 
 """
 Update boundary condition lateral inflow `inwater` of a kinematic wave overland flow model
-`KinWaveOverlandFlow` for a single timestep.
+`KinWaveOverlandFlowModel` for a single timestep.
 """
 function update_lateral_inflow!(
-    model::KinWaveOverlandFlow,
+    overland_flow_model::KinWaveOverlandFlowModel,
     external_models::NamedTuple,
-    area::Vector{Float64},
+    domain::Domain,
     config::Config,
     dt::Float64,
 )
     (; soil, subsurface_flow, allocation) = external_models
     (; net_runoff) = soil.variables
-    (; inwater) = model.boundary_conditions
+    (; inwater) = overland_flow_model.boundary_conditions
+
+    (; area) = domain.land.parameters
+    (; land_indices) = domain.drain.network
 
     if config.model.drain__flag
-        drain = subsurface_flow.boundaries.drain
+        drain = subsurface_flow.boundary_conditions.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[drain.index] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
+        drainflux[land_indices] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
     else
         drainflux = 0.0
     end
@@ -630,28 +632,36 @@ Update overland and subsurface flow contribution to inflow of a reservoir model 
 flow model `AbstractRiverFlowModel` for a single timestep.
 """
 function update_inflow!(
-    model::Union{Reservoir, Nothing},
-    river_flow::AbstractRiverFlowModel,
+    reservoir_model::Union{ReservoirModel, Nothing},
+    river_flow_model::AbstractRiverFlowModel,
     external_models::NamedTuple,
     network::NetworkReservoir,
 )
     (; overland_flow, subsurface_flow) = external_models
     (; land_indices) = network
-    if !isnothing(model)
-        (; inflow_overland, inflow_subsurface) = model.boundary_conditions
-        inflow_overland .= get_inflow_reservoir(river_flow, overland_flow, land_indices)
-        inflow_subsurface .= get_inflow_reservoir(river_flow, subsurface_flow, land_indices)
+    if !isnothing(reservoir_model)
+        (; inflow_overland, inflow_subsurface) = reservoir_model.boundary_conditions
+        inflow_overland .=
+            get_inflow_reservoir(river_flow_model, overland_flow, land_indices)
+        inflow_subsurface .=
+            get_inflow_reservoir(river_flow_model, subsurface_flow, land_indices)
     end
     return nothing
 end
 
 # For the river kinematic wave, the variable `to_river` can be excluded, because this part
 # is added to the river kinematic wave.
-get_inflow_reservoir(::KinWaveRiverFlow, model::KinWaveOverlandFlow, inds::Vector{Int}) =
-    model.variables.q_av[inds]
-get_inflow_reservoir(::KinWaveRiverFlow, model::LateralSSF, inds::Vector{Int}) =
-    model.variables.ssf[inds] ./ tosecond(BASETIMESTEP)
+get_inflow_reservoir(
+    ::KinWaveRiverFlowModel,
+    overland_flow_model::KinWaveOverlandFlowModel,
+    inds::Vector{Int},
+) = overland_flow_model.variables.q_av[inds]
+get_inflow_reservoir(
+    ::KinWaveRiverFlowModel,
+    subsurface_flow_model::LateralSSFModel,
+    inds::Vector{Int},
+) = subsurface_flow_model.variables.q_av[inds] ./ tosecond(BASETIMESTEP)
 
-# Exclude subsurface flow from `GroundwaterFlow`.
-get_inflow_reservoir(::AbstractRiverFlowModel, model::GroundwaterFlow, inds::Vector{Int}) =
+# Exclude subsurface flow from `GroundwaterFlowModel`.
+get_inflow_reservoir(::AbstractRiverFlowModel, ::GroundwaterFlowModel, inds::Vector{Int}) =
     zeros(length(inds))

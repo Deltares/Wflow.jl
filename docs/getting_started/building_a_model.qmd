@@ -31,7 +31,7 @@ map stack.
 The actual data requirements depend on the application of the Model and the Model type. Both
 forcing and static data should be provided in netCDF format, with the same grid definition
 for forcing and static data. The only exception is storage and rating curves for reservoir
-nodes, that should be provided in CSV format, see also [Storage and rating cuves from
+nodes, that should be provided in CSV format, see also [Storage and rating curves from
 data](../model_docs/routing/reservoirs.qmdsStorage-and-rating-cuves-from-data).
 
 * Forcing data:

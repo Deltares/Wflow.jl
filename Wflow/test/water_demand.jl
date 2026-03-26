@@ -1,10 +1,10 @@
-@testitem "unit: update_demand_gross! (NonPaddy)" begin
+@testitem "unit: update_demand_gross! (NonPaddyModel)" begin
     include("testing_utils.jl")
     using StaticArrays: SVector
     n = 1
     N = 3
 
-    model = Wflow.NonPaddy(;
+    model = Wflow.NonPaddyModel(;
         parameters = Wflow.NonPaddyParameters(;
             irrigation_efficiency = [1.0],
             maximum_irrigation_rate = [25.0],
@@ -29,6 +29,7 @@
         c = [SVector(9.195682525634766, 9.297739028930664, 9.597416877746582)],
         nlayers = [3],
         theta_s = [0.4417283535003662],
+        theta_fc = [0.26063963369395],
         theta_r = [0.09082602709531784],
         hb = [-10.0],
         infiltcapsoil = [334.45526123046875],
@@ -49,14 +50,14 @@
     k = 1
 
     depletion, readily_available_water = Wflow.water_demand_root_zone(soil, i, k)
-    @test depletion ≈ 8.343548901322073
-    @test readily_available_water ≈ 4.288641862240691
+    @test depletion ≈ 8.490680329931607
+    @test readily_available_water ≈ 4.435773290850226
     irri_dem_gross = depletion
     demand_gross = Wflow.compute_demand_gross(model, soil, irri_dem_gross, i)
-    @test demand_gross ≈ 8.343548901322073
+    @test demand_gross ≈ 8.490680329931607
 end
 
-@testitem "unit: update_demand_gross! (Paddy)" begin
+@testitem "unit: update_demand_gross! (PaddyModel)" begin
     variables = Wflow.PaddyVariables(; n = 1, h = [15.0])
     parameters = Wflow.PaddyParameters(;
         irrigation_efficiency = [1.0],
@@ -67,7 +68,7 @@ end
         h_opt = [50.0],
         h_max = [80.0],
     )
-    model = Wflow.Paddy(; parameters, variables)
+    model = Wflow.PaddyModel(; parameters, variables)
     @test Wflow.compute_irrigation_depth(model, 1) ≈ 35.0
 
     Wflow.update_demand_gross!(model)
@@ -78,7 +79,7 @@ end
     include("testing_utils.jl")
     n = 1
 
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -120,7 +121,7 @@ end
     include("testing_utils.jl")
 
     n = 3
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -186,7 +187,7 @@ end
 @testitem "unit: groundwater_allocation_local!" begin
     n = 1
 
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
     )
@@ -214,7 +215,7 @@ end
 @testitem "unit: groundwater_allocation_area!" begin
     n = 3
 
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
         variables = Wflow.AllocationLandVariables(;

@@ -169,8 +169,6 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         (lens = @optic(_.land.soil.variables.runoff), unit = "mm dt-1"),
     "soil_surface_water__net_runoff_volume_flux" =>
         (lens = @optic(_.land.soil.variables.net_runoff), unit = "mm dt-1"),
-    "soil_surface_water_unsaturated_zone__exfiltration_volume_flux" =>
-        (lens = @optic(_.land.soil.variables.exfiltustore), unit = "mm dt-1"),
     "soil_surface_water_saturated_zone__exfiltration_volume_flux" =>
         (lens = @optic(_.land.soil.variables.exfiltsatwater), unit = "mm dt-1"),
     "compacted_soil_surface_water__excess_volume_flux" =>
@@ -211,8 +209,10 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         lens = @optic(_.routing.subsurface_flow.variables.exfiltwater),
         unit = "m dt-1",
     ),
+    "subsurface_water__instantaneous_volume_flow_rate" =>
+        (lens = @optic(_.routing.subsurface_flow.variables.q), unit = "m3 d-1"),
     "subsurface_water__volume_flow_rate" =>
-        (lens = @optic(_.routing.subsurface_flow.variables.ssf), unit = "m3 d-1"),
+        (lens = @optic(_.routing.subsurface_flow.variables.q_av), unit = "m3 d-1"),
     "subsurface_water__to_river_volume_flow_rate" =>
         (lens = @optic(_.routing.subsurface_flow.variables.to_river), unit = "m3 d-1"),
     "subsurface_water_mass_balance_error__volume_flow_rate" => (
@@ -294,24 +294,30 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
         unit = "mm dt-1",
     ),
     "subsurface_water__hydraulic_head" =>
-        (lens = @optic(_.routing.subsurface_flow.aquifer.variables.head), unit = "m"),
+        (lens = @optic(_.routing.subsurface_flow.variables.head), unit = "m"),
     "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate" => (
-        lens = @optic(_.routing.subsurface_flow.boundaries.recharge.variables.flux_av),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.recharge.variables.flux_av
+        ),
         unit = "m3 d-1",
     ),
     "land_drain_water__to_subsurface_volume_flow_rate" => (
-        lens = @optic(_.routing.subsurface_flow.boundaries.drain.variables.flux_av),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.drain.variables.flux_av
+        ),
         unit = "m3 d-1",
     ),
     "river_water__to_subsurface_volume_flow_rate" => (
-        lens = @optic(_.routing.subsurface_flow.boundaries.river.variables.flux_av),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.river.variables.flux_av
+        ),
         unit = "m3 d-1",
     ),
 )
 
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
-of type `SoilLoss`. The `lens` of the NamedTuple allows access to a nested model variable.
+of type `SoilLossModel`. The `lens` of the NamedTuple allows access to a nested model variable.
 """
 const sediment_standard_name_map = Dict{String, NamedTuple}(
     "atmosphere_water__precipitation_volume_flux" =>
@@ -492,5 +498,5 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
 
 # wrapper methods for standard name mapping
 standard_name_map(::LandHydrologySBM) = sbm_standard_name_map
-standard_name_map(::SoilLoss) = sediment_standard_name_map
+standard_name_map(::SoilLossModel) = sediment_standard_name_map
 get_lens(name::AbstractString, T::AbstractLandModel) = standard_name_map(T)[name].lens

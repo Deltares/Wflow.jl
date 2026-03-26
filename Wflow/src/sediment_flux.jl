@@ -1,5 +1,5 @@
 "Sediment transport in overland flow model"
-@with_kw struct OverlandFlowSediment{
+@with_kw struct OverlandFlowSedimentModel{
     TT <: AbstractTransportCapacityModel,
     SF <: AbstractSedimentLandTransportModel,
     TR <: AbstractSedimentToRiverModel,
@@ -30,11 +30,11 @@ const land_transport_method =
     )
 
 "Initialize the overland flow sediment transport model"
-function OverlandFlowSediment(
+function OverlandFlowSedimentModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainLand,
-    soilloss::SoilLoss,
+    soilloss::SoilLossModel,
 )
     (; indices) = domain.network
     (; hydrological_forcing) = soilloss
@@ -61,7 +61,7 @@ function OverlandFlowSediment(
         to_river = SedimentToRiverModel(indices)
     end
 
-    overland_flow_sediment = OverlandFlowSediment{
+    overland_flow_sediment = OverlandFlowSedimentModel{
         typeof(transport_capacity),
         typeof(sediment_flux),
         typeof(to_river),
@@ -75,34 +75,48 @@ function OverlandFlowSediment(
 end
 
 "Update the overland flow sediment transport model for a single timestep"
-function update!(
-    model::OverlandFlowSediment,
+function update_overland_flow_model!(
+    overland_flow_model::OverlandFlowSedimentModel,
     erosion_model::SoilErosionModel,
     domain::DomainLand,
     dt::Float64,
 )
     # Transport capacity
-    update_boundary_conditions!(model.transport_capacity, model.hydrological_forcing, :land)
-    update!(model.transport_capacity, domain.parameters, dt)
+    update_bc_transport_capacity_model!(
+        overland_flow_model.transport_capacity,
+        overland_flow_model.hydrological_forcing,
+        :land,
+    )
+    update_transport_capacity_model!(
+        overland_flow_model.transport_capacity,
+        domain.parameters,
+        dt,
+    )
 
     # Update boundary conditions before transport
-    update_boundary_conditions!(
-        model.sediment_flux,
+    update_bc_sediment_land_transport_model!(
+        overland_flow_model.sediment_flux,
         erosion_model,
-        model.transport_capacity,
+        overland_flow_model.transport_capacity,
     )
     # Compute transport
-    update!(model.sediment_flux, domain.network)
+    update_sediment_overland_model!(overland_flow_model.sediment_flux, domain.network)
 
     # Update boundary conditions before computing sediment reaching the river
-    update_boundary_conditions!(model.to_river, model.sediment_flux)
+    update_bc_sediment_to_river_model!(
+        overland_flow_model.to_river,
+        overland_flow_model.sediment_flux,
+    )
     # Compute sediment reaching the river
-    update!(model.to_river, domain.parameters.river_location)
+    update_sediment_to_river_model!(
+        overland_flow_model.to_river,
+        domain.parameters.river_location,
+    )
 end
 
 ### River ###
 "Sediment transport in river model"
-@with_kw struct RiverSediment{
+@with_kw struct RiverSedimentModel{
     TTR <: AbstractTransportCapacityModel,
     ER <: AbstractRiverErosionModel,
     SFR <: AbstractSedimentRiverTransportModel,
@@ -125,7 +139,7 @@ const river_transport_method =
     )
 
 "Initialize the river sediment transport model"
-function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
+function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(; n)
@@ -150,7 +164,7 @@ function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
     # Concentrations
     concentrations = SedimentConcentrationsRiverModel(dataset, config, indices)
 
-    river_sediment = RiverSediment(;
+    river_sediment = RiverSedimentModel(;
         hydrological_forcing,
         transport_capacity,
         potential_erosion,
@@ -161,40 +175,51 @@ function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
 end
 
 "Update the river sediment transport model for a single timestep"
-function update!(
-    model::RiverSediment,
+function update_river_sediment_model!(
+    river_flow_model::RiverSedimentModel,
     to_river_model::SedimentToRiverDifferentiationModel,
     domain::DomainRiver,
     dt::Float64,
 )
     # Transport capacity
-    update_boundary_conditions!(
-        model.transport_capacity,
-        model.hydrological_forcing,
+    update_bc_transport_capacity_model!(
+        river_flow_model.transport_capacity,
+        river_flow_model.hydrological_forcing,
         :river,
     )
-    update!(model.transport_capacity, domain.parameters, dt)
+    update_transport_capacity_model!(
+        river_flow_model.transport_capacity,
+        domain.parameters,
+        dt,
+    )
 
     # Potential maximum river erosion
-    update_boundary_conditions!(model.potential_erosion, model.hydrological_forcing)
-    update!(model.potential_erosion, domain.parameters, dt)
+    update_bc_river_erosion_model!(
+        river_flow_model.potential_erosion,
+        river_flow_model.hydrological_forcing,
+    )
+    update_river_erosion_model!(river_flow_model.potential_erosion, domain.parameters, dt)
 
     # River transport
-    update_boundary_conditions!(
-        model.sediment_flux,
-        model.hydrological_forcing,
-        model.transport_capacity,
+    update_bc_river_sediment_transport_model!(
+        river_flow_model.sediment_flux,
+        river_flow_model.hydrological_forcing,
+        river_flow_model.transport_capacity,
         to_river_model,
-        model.potential_erosion,
+        river_flow_model.potential_erosion,
         domain.network.land_indices,
     )
-    update!(model.sediment_flux, domain, dt)
+    update_sediment_river_transport_model!(river_flow_model.sediment_flux, domain, dt)
 
     # Concentrations
-    update_boundary_conditions!(
-        model.concentrations,
-        model.hydrological_forcing,
-        model.sediment_flux,
+    update_bc_river_sediment_concentration_model!(
+        river_flow_model.concentrations,
+        river_flow_model.hydrological_forcing,
+        river_flow_model.sediment_flux,
     )
-    update!(model.concentrations, domain.parameters, dt)
+    update_river_sediment_concentration_model!(
+        river_flow_model.concentrations,
+        domain.parameters,
+        dt,
+    )
 end

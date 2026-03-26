@@ -19,6 +19,7 @@ jobs:
         run: |
           pixi run install-julia
           pixi run update-registry-julia
+          pixi run update-manifest-julia
           pixi run generate-sbom
         env:
           JULIA_PKG_PRECOMPILE_AUTO: "0"

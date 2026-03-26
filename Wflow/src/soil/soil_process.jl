@@ -102,6 +102,22 @@ function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
 end
 
 """
+    field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
+
+Return water content at field capacity based on the Brooks-Corey soil hydraulic model.
+"""
+function field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
+    theta_fc = 0.0
+    total_depth = 0.0
+    for i in 1:n_layers
+        theta_fc +=
+            vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
+        total_depth += layer_thickness[i]
+    end
+    return theta_fc / total_depth
+end
+
+"""
     feddes_h3(h3_high, h3_low, tpot, Δt)
 
 Return soil water pressure head `h3` of Feddes root water uptake reduction function.
@@ -143,7 +159,7 @@ function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
 end
 
 """
-    soil_temperature(tsoil, w_soil, temperature))
+    soil_temperature(tsoil_prev, w_soil, temperature))
 
 Return the near surface soil temperature `tsoil` based on the near surface soil temperature
 `tsoil_prev` at the previous timestep, and the difference between air `temperature` and near
@@ -214,12 +230,12 @@ function soil_evaporation_satured_store(
     n_unsatlayers,
     layerthickness,
     zi,
-    theta_effective,
+    theta_drainable,
 )
     if n_unsatlayers in (0, 1)
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
-        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_effective)
+        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable)
     else
         soilevapsat = 0.0
     end

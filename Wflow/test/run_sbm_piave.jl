@@ -16,76 +16,76 @@
 
     idx = 1:3:28
     @test q_demand[idx] ≈ [
-        227.48035999493885,
-        201.66655380222255,
-        277.3585133618376,
-        167.06113313065387,
-        172.85132307882748,
-        158.4868851162215,
-        133.42316714652813,
-        118.79239436626797,
-        189.3066342899249,
-        115.74440489724931,
+        227.38262076140597,
+        197.77826932854217,
+        267.02912980712193,
+        155.28759918931823,
+        155.82292184228206,
+        143.33475478513975,
+        115.38260642480303,
+        100.99725841800637,
+        166.27201893591504,
+        103.1045884698738,
     ]
     @test q_[idx] ≈ [
-        230.50891783820745,
-        208.70476972858077,
-        284.38432448798,
-        175.24143075182934,
-        185.6574635583777,
-        165.81546406628178,
-        144.3529395342142,
-        126.62715698373853,
-        191.90325467397034,
-        122.22507259114501,
+        230.50830652411622,
+        204.71391716296807,
+        274.93940253146957,
+        162.9967927126573,
+        167.73617405644782,
+        150.31152775549913,
+        125.55699317343567,
+        108.6868994407236,
+        169.1977308700292,
+        108.08518587596184,
     ]
     @test riv_storage_demand[idx] ≈ [
-        61395.09279571792,
-        57160.65692276638,
-        63092.379798845825,
-        51024.87776219157,
-        53982.12212292085,
-        46201.9194344024,
-        44610.78797109941,
-        42552.63008891031,
-        46560.29697212866,
-        41849.31928155387,
+        61262.15586688514,
+        56031.22324367828,
+        61373.56490076488,
+        48073.00601232394,
+        50574.8858099468,
+        42730.438661308515,
+        40760.706597408636,
+        38426.54099045719,
+        43466.61231827235,
+        38558.90224961908,
     ]
     @test riv_storage[idx] ≈ [
-        62013.48243896582,
-        57826.70054420379,
-        63310.699787656515,
-        51620.810255230586,
-        54634.346978697016,
-        46652.37923131112,
-        45015.6453650631,
-        42995.04542365768,
-        46455.15009283594,
-        41789.82947520561,
+        61902.31987942963,
+        56612.07374434918,
+        61588.27339754675,
+        48604.22242542106,
+        51199.60577284767,
+        43244.11730927491,
+        41097.23262856786,
+        38768.294030445264,
+        43354.39861956778,
+        38512.97533866192,
     ]
     @test ssf_storage_demand[idx] ≈ [
-        293460.22026866337,
-        288923.6353138966,
-        287378.90184287925,
-        283024.21156711585,
-        279450.68877513084,
-        274962.15361320204,
-        270498.72127685224,
-        266025.07960873423,
-        264560.66050100315,
-        260999.95670112918,
+        148920.45317987585,
+        145035.32705296585,
+        143981.91015223257,
+        140540.61889193894,
+        138341.04974891624,
+        135225.98687730395,
+        132350.44182452557,
+        129525.55864517286,
+        129529.58758586958,
+        127504.02426822705,
     ]
     @test ssf_storage[idx] ≈ [
-        293448.2011923609,
-        288845.5752515868,
-        287251.56581749313,
-        282864.8960769829,
-        279288.3918930026,
-        274785.59093307354,
-        270351.9248607254,
-        265899.86716567166,
-        264349.145295683,
-        260749.3454407325,
+        148907.47777948846,
+        145003.35842325471,
+        143918.60784373066,
+        140474.26677411146,
+        138293.5185650071,
+        135189.54430373877,
+        132355.50247198046,
+        129566.85803370144,
+        129569.2396631266,
+        127534.96295815968,
     ]
 end
 
@@ -108,15 +108,15 @@ end
     @testset "First timestep" begin
         sum_total_alloc = sum(total_alloc)
         @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1662.1429336566434
-        @test sum(act_groundwater_abst) ≈ 373.02432487790287
+        @test sum(surfacewater_alloc) ≈ 1706.10764866567
+        @test sum(act_groundwater_abst) ≈ 388.08837400239827
         @test paddy.variables.h[[25, 42, 45]] ≈
               [43.181590971577364, 51.20409409088053, 34.473513683211834]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 0.0, 0.0]
         @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
         @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
-              [4.0442025332978435, 0.7127330271840676, 4.491063429489396]
+              [4.235245721225455, 0.7341536180838294, 4.691319396612657]
         @test industry.demand.demand_gross[[1, end]] ≈
               [0.2105557769536972, 0.0485190823674202]
         @test industry.demand.demand_net[[1, end]] ≈
@@ -132,20 +132,20 @@ end
         @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
         @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
         @test reservoir.variables.waterlevel ≈
-              [29.259245814466148, 32.686077716495625, 39.970184252221905]
-        @test reservoir.variables.storage ≈ [1.8959991287774065e8, 4.28e7, 7.16e7]
+              [29.259144530899885, 32.68607771649562, 39.970184252221905]
+        @test reservoir.variables.storage ≈ [1.8959925656023118e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
-              [4.839261880167545, 9.717572497025145, 58.105643206370274]
+              [4.839249448770597, 9.70890592273304, 57.64196655435958]
         @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
-            3.0858603777229376,
-            5.577976128972852,
-            3.7860523390663428,
-            5.881271624508977,
-            13.887309622273573,
+            2.9401361588857626,
+            5.54461271947943,
+            3.76716736049869,
+            5.766529601726355,
+            14.050058868842683,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 238.20636973621725
-        @test mean(river_flow.variables.q_av) ≈ 60.513939494438844
-        @test maximum(river_flow.variables.q_av) ≈ 235.61007781125195
+        @test maximum(soil.variables.exfiltsatwater) ≈ 234.1526270577704
+        @test mean(river_flow.variables.q_av) ≈ 60.35958015226597
+        @test maximum(river_flow.variables.q_av) ≈ 235.44682290212157
     end
 
     Wflow.run_timestep!(model)
@@ -153,30 +153,30 @@ end
     @testset "Second timestep" begin
         sum_total_alloc = sum(total_alloc)
         @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1776.237543072083
-        @test sum(act_groundwater_abst) ≈ 403.9136569139513
+        @test sum(surfacewater_alloc) ≈ 1591.415961657279
+        @test sum(act_groundwater_abst) ≈ 337.68291766185564
         @test paddy.variables.h[[25, 42, 45]] ≈
-              [39.227496928297654, 48.04243573106785, 28.97022876577813]
+              [39.22741049173483, 48.04241913069636, 28.96957318918968]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 0.0, 0.0]
         @test nonpaddy.parameters.irrigation_trigger[[32, 38, 41]] == [1, 1, 1]
         @test nonpaddy.variables.demand_gross[[32, 38, 41]] ≈
-              [4.722084029669344, 0.7260733256347136, 5.452294821220649]
+              [4.442695372669294, 0.7341536180838293, 5.022845160752851]
         @test reservoir.variables.waterlevel ≈
-              [29.251492025015416, 32.68607771649562, 39.97018425222191]
-        @test reservoir.variables.storage ≈ [1.895496683220998e8, 4.28e7, 7.16e7]
+              [29.25110298462435, 32.686077716495625, 39.970184252221905]
+        @test reservoir.variables.storage ≈ [1.8954714734036595e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
-              [4.84140054568368, 9.325285002501143, 54.827349895897754]
+              [4.841325917420907, 9.278008188175482, 53.34402066559018]
         @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
-            3.462567528286398,
-            6.141947091961624,
-            4.332401346606494,
-            6.305582623275848,
-            14.316493120446802,
+            3.1186475152972895,
+            6.073982628186992,
+            4.288301138492518,
+            6.054701391567255,
+            14.57870735626147,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 227.75222991987133
-        @test mean(river_flow.variables.q_av) ≈ 56.77305056192323
-        @test maximum(river_flow.variables.q_av) ≈ 227.42442386186528
+        @test maximum(soil.variables.exfiltsatwater) ≈ 215.88061474014935
+        @test mean(river_flow.variables.q_av) ≈ 56.22490708883267
+        @test maximum(river_flow.variables.q_av) ≈ 227.21143082238987
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -191,9 +191,9 @@ end
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
     (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
         model.land.allocation.variables
-    @test typeof(paddy) == Wflow.NoIrrigationPaddy
-    @test typeof(nonpaddy) == Wflow.NoIrrigationNonPaddy
-    @test typeof(livestock) == Wflow.NoNonIrrigationDemand
+    @test typeof(paddy) == Wflow.NoIrrigationPaddyModel
+    @test typeof(nonpaddy) == Wflow.NoIrrigationNonPaddyModel
+    @test typeof(livestock) == Wflow.NoNonIrrigationDemandModel
     sum_total_alloc = sum(total_alloc)
     @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
     @test sum(surfacewater_alloc) ≈ 824.8974139426691
@@ -205,6 +205,56 @@ end
     @test domestic.demand.demand_gross[[1, end]] ≈ [0.6012673377990723, 0.0]
     @test domestic.demand.demand_net[[1, end]] ≈ [0.3802947998046875, 0.0]
     @test domestic.variables.returnflow[[1, end]] ≈ [0.2209725379943848, 0.0]
+end
+
+@testitem "Piave activate river boundary (river subsurface exchange)" begin
+    using Statistics: mean
+
+    tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.river_subsurface_exchange_head_based__flag = true
+    config.input.static["river_bottom__elevation"] = "zb_river"
+    config.input.static["river_water__infiltration_conductance"] = "riverbed_cond"
+    config.input.static["river_water__exfiltration_conductance"] = "riverbed_cond"
+    model = Wflow.Model(config)
+    (; subsurface_flow) = model.routing
+    (; river, recharge) = subsurface_flow.boundary_conditions
+    (; land_indices) = model.domain.river.network
+    idx = land_indices[1]
+
+    Wflow.run_timestep!(model)
+
+    @testset "First timestep" begin
+        @test subsurface_flow.variables.head[1] ≈ 1.5649019759969596
+        @test mean(subsurface_flow.variables.head) ≈ 1106.4948788348809
+        @test subsurface_flow.variables.zi[1] ≈ 0.05409810125066005
+        @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
+              subsurface_flow.variables.head[1]
+        @test river.variables.flux_av[1] ≈ 37872.287583718644
+        @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
+        @test mean(river.variables.flux_av) ≈ -39618.370151473195
+        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ 39618.3701514732
+        @test recharge.variables.rate[1] ≈ -0.0002922905062717429
+        @test mean(recharge.variables.rate) ≈ 0.0009271689030318317
+    end
+
+    Wflow.run_timestep!(model)
+
+    @testset "Second timestep" begin
+        @test subsurface_flow.variables.head[1] ≈ 1.563147470676254
+        @test mean(subsurface_flow.variables.head) ≈ 1106.4867249666993
+        @test subsurface_flow.variables.zi[1] ≈ 0.05585260657136559
+        @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
+              subsurface_flow.variables.head[1]
+        @test river.variables.flux_av[1] ≈ 45231.725584511034
+        @test river.variables.flux[1] == river.variables.flux_av[1]
+        @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
+        @test mean(river.variables.flux_av) ≈ 129.0006905680265
+        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ -129.0006905680318
+        @test recharge.variables.rate[1] ≈ -0.00021663702639498745
+        @test mean(recharge.variables.rate) ≈ 0.0010751049777759111
+    end
 end
 
 @testitem "Piave: reservoir without external negative inflow (sbm model)" begin
@@ -219,9 +269,9 @@ end
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] == 0.0
-    @test reservoir.boundary_conditions.inflow[1] ≈ 5.7375179314371225
-    @test reservoir.variables.storage[1] ≈ 1.895496683220998e8
-    @test reservoir.variables.outflow_av[1] ≈ 4.84140054568368
+    @test reservoir.boundary_conditions.inflow[1] ≈ 5.716044819323686
+    @test reservoir.variables.storage[1] ≈ 1.8954714734036595e8
+    @test reservoir.variables.outflow_av[1] ≈ 4.841325917420907
 end
 
 @testitem "Piave: reservoir with cyclic external negative inflow (sbm model)" begin
@@ -236,9 +286,9 @@ end
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == -3.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 3.0
-    @test reservoir.boundary_conditions.inflow[1] ≈ 2.737517449273689
-    @test reservoir.variables.storage[1] ≈ 1.8903375136457917e8
-    @test reservoir.variables.outflow_av[1] ≈ 4.821625016952349
+    @test reservoir.boundary_conditions.inflow[1] ≈ 2.7160443378899912
+    @test reservoir.variables.storage[1] ≈ 1.8903123036901748e8
+    @test reservoir.variables.outflow_av[1] ≈ 4.8215504874860775
 end
 
 @testitem "Piave: reservoir with observed (cyclic) outflow (sbm model)" begin
@@ -257,8 +307,8 @@ end
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
     @test reservoir.boundary_conditions.actual_external_abstraction_av[1] ≈ 0.0
-    @test reservoir.boundary_conditions.inflow[1] ≈ 5.71697857643707
-    @test reservoir.variables.storage[1] ≈ 1.9011126436313578e8
+    @test reservoir.boundary_conditions.inflow[1] ≈ 5.6955612967900695
+    @test reservoir.variables.storage[1] ≈ 1.901087558591953e8
     @test reservoir.variables.outflow_av[1] ≈ 3.0
     @test reservoir.variables.outflow[1] ≈ 3.0
 end
@@ -300,22 +350,22 @@ end
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
         @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
         @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
-        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 1.1e-9, subsurface_water_balance.error)
-        @test all(re -> abs(re) < 1.e-9, subsurface_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
         @test all(e -> abs(e) < 1e-9, land_water_balance.error)
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
-        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
-        @test all(re -> abs(re) < 1.e-9, routing.overland_water_balance.relative_error)
+        @test all(e -> abs(e) < 1e-9, routing.overland_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error)
         @test all(e -> abs(e) < 1e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 1.2e-9, subsurface_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
         @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)

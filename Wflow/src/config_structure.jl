@@ -84,6 +84,9 @@ end
     kinematic_wave__adaptive_time_step_flag::Bool = false
     river_kinematic_wave__time_step::Float64 = 900.0
     land_kinematic_wave__time_step::Float64 = 3600.0
+    subsurface_kinematic_wave__time_step::Float64 = 1.0
+    subsurface_kinematic_wave__alpha_coefficient::Float64 = 1.0
+    river_subsurface_exchange_head_based__flag::Bool = false
     # Local inertial routing
     river_local_inertial_flow__alpha_coefficient::Float64 = 0.7
     land_local_inertial_flow__alpha_coefficient::Float64 = 0.7
@@ -128,7 +131,11 @@ end
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
+    do_scaling::Bool = !all(isone, scale)
+    scale_scalar = isone(length(scale))
     offset::Vector{Float64} = [0.0]
+    do_offsetting::Bool = !all(iszero, offset)
+    offset_scalar = isone(length(offset))
     layer::Union{Nothing, Vector{Int}} = nothing
     # Option 2
     value::Any = nothing

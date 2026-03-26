@@ -100,7 +100,6 @@ subsurface_surface_water__horizontal_saturated_hydraulic_conductivity = "kh_surf
 river_bottom__elevation = "zb_river"
 river_water__infiltration_conductance = "riverbed_cond"
 river_water__exfiltration_conductance = "riverbed_cond"
-subsurface_water__specific_yield = "specific_yield"
 subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter = "gwf_f"
 
 [input.cyclic]
@@ -126,6 +125,7 @@ kinematic_wave__adaptive_time_step_flag = true
 soil_layer__thickness = [50, 100, 50, 200, 800]
 river_routing = "kinematic_wave"
 conductivity_profile = "exponential"
+subsurface_water_flow__alpha_coefficient = 0.001
 
 [model.water_demand]
 domestic__flag = true

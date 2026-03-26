@@ -45,7 +45,7 @@ function rainfall_erosion_eurosem(
     rintnsty = precip / (dt / 3600)
     # Kinetic energy of direct throughfall [J/m2/mm]
     # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
-    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed mdoels
+    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed models
     # Kinetic energy of leaf drainage [J/m2/mm]
     pheff = 0.5 * canopyheight
     keleaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
@@ -109,12 +109,10 @@ end
 """
     overland_flow_erosion_answers(
         overland_flow,
-        waterlevel,
         usle_k,
         usle_c,
         answers_overland_flow_factor,
         slope,
-        soilcover_fraction,
         area,
         dt,
     )
@@ -123,7 +121,6 @@ Overland flow erosion model based on ANSWERS.
 
 # Arguments
 - `overland_flow` (overland flow [m3 s-1])
-- `waterlevel` (water level [m])
 - `usle_k` (USLE soil erodibility [t ha-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
 - `answers_overland_flow_factor` (ANSWERS overland flow factor [-])
@@ -149,7 +146,7 @@ function overland_flow_erosion_answers(
     sinslope = sin_slope(slope)
 
     # Overland flow erosion [kg/min]
-    # For a wide range of slope, it is better to use the sine of slope rather than tangeant
+    # For a wide range of slope, it is better to use the sine of slope rather than tangent
     erosion = answers_overland_flow_factor * usle_c * usle_k * area * sinslope * qr_land
     # [ton/timestep]
     erosion = erosion * (dt / 60) * 1e-3
@@ -295,27 +292,33 @@ function river_erosion_julian_torres(
 end
 
 """
-    function river_erosion_store(
-        excess_sediment,
-        store,
+    function river_erosion_store!(
+        store_vec::Vector{Float64}
+        excess_sediment::Float64,
+        v::Int,
     )
 
 River erosion of the previously deposited sediment.
 
 # Arguments
+- `store_vec` (sediment_store [t])
 - `excess_sediment` (excess sediment [t Δt⁻¹])
-- `store` (sediment store [t])
+- `v` (index [-])
 
 # Output
 - `erosion` (river erosion [t Δt⁻¹])
 - `excess_sediment` (updated excess sediment [t Δt⁻¹])
-- `store` (updated sediment store [t])
 """
-function river_erosion_store(excess_sediment, store)
-    # River erosion of the previously deposited sediment
-    erosion = min(store, excess_sediment)
-    # Update the excess sediment and the sediment store
-    excess_sediment -= erosion
-    store -= erosion
-    return erosion, excess_sediment, store
+function river_erosion_store!(store_vec::Vector{Float64}, excess_sediment::Float64, v::Int)
+    store = store_vec[v]
+    if store > 0
+        # River erosion of the previously deposited sediment
+        erosion = min(store, excess_sediment)
+        # Update the excess sediment and the sediment store
+        excess_sediment -= erosion
+        store_vec[v] = store - erosion
+    else
+        erosion = 0.0
+    end
+    return erosion, excess_sediment
 end

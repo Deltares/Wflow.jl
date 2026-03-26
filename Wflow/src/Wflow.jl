@@ -69,8 +69,8 @@ using Statistics: mean, median, quantile!, quantile
 using TerminalLoggers
 using TOML: TOML
 
-const CFDataset = Union{NCDataset,NCDatasets.MFDataset}
-const CFVariable_MF = Union{NCDatasets.CFVariable,NCDatasets.MFCFVariable}
+const CFDataset = Union{NCDataset, NCDatasets.MFDataset}
+const CFVariable_MF = Union{NCDatasets.CFVariable, NCDatasets.MFCFVariable}
 const VERSION =
     VersionNumber(TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))["version"])
 
@@ -144,10 +144,10 @@ Composite type that represents all different aspects of a Wflow Model, such as t
 parameters, clock, configuration and input and output.
 """
 struct Model{
-    R<:Routing,
-    L<:AbstractLandModel,
-    M<:AbstractMassBalance,
-    T<:AbstractModelType,
+    R <: Routing,
+    L <: AbstractLandModel,
+    M <: AbstractMassBalance,
+    T <: AbstractModelType,
 } <: AbstractModel{T}
     config::Config                  # all configuration options
     domain::Domain                  # domain connectivity (network) and shared parameters
@@ -197,16 +197,18 @@ include("surfacewater/runoff.jl")
 include("soil/soil.jl")
 include("soil/soil_process.jl")
 include("sbm.jl")
+include("routing/utils.jl")
 include("routing/timestepping.jl")
-include("groundwater/connectivity.jl")
-include("groundwater/aquifer.jl")
-include("groundwater/boundary_conditions.jl")
-include("routing/subsurface.jl")
-include("routing/reservoir.jl")
-include("routing/surface_kinwave.jl")
-include("routing/surface_local_inertial.jl")
-include("routing/surface_routing.jl")
-include("routing/routing_process.jl")
+include("routing/subsurface/connectivity.jl")
+include("routing/subsurface/groundwater.jl")
+include("routing/subsurface/lateral_subsurface_flow.jl")
+include("routing/subsurface/subsurface_process.jl")
+include("routing/subsurface/boundary_conditions.jl")
+include("routing/surface/reservoir.jl")
+include("routing/surface/surface_kinwave.jl")
+include("routing/surface/surface_local_inertial.jl")
+include("routing/surface/surface_routing.jl")
+include("routing/surface/surface_process.jl")
 include("demand/water_demand.jl")
 include("sbm_model.jl")
 include("sediment/erosion/erosion_process.jl")
@@ -250,7 +252,7 @@ This makes it easier to start a run from the command line without having to esca
 
     julia -e "using Wflow; Wflow.run()" "path/to/config.toml"
 """
-function run(tomlpath::AbstractString; silent=nothing)
+function run(tomlpath::AbstractString; silent = nothing)
     config = Config(tomlpath)
     # if the silent kwarg is not set, check if it is set in the TOML
     if isnothing(silent)
@@ -286,7 +288,7 @@ function run(config::Config)
     return model
 end
 
-function run_timestep!(model::Model; update_func=update!, write_model_output=true)
+function run_timestep!(model::Model; update_func = update_model!, write_model_output = true)
     (; mass_balance) = model
     advance!(model.clock)
     load_dynamic_input!(model)
@@ -299,7 +301,7 @@ function run_timestep!(model::Model; update_func=update!, write_model_output=tru
     return nothing
 end
 
-function run!(model::Model; close_files=true)
+function run!(model::Model; close_files = true)
     (; config, writer, clock) = model
 
     model_type = config.model.type
@@ -308,7 +310,7 @@ function run!(model::Model; close_files=true)
     starttime = clock.time
     dt = clock.dt
     endtime = cftime(config.time.endtime, config.time.calendar)
-    times = range(starttime + dt, endtime; step=dt)
+    times = range(starttime + dt, endtime; step = dt)
 
     @info "Run information" model_type = String(Symbol(model_type)) starttime dt endtime nthreads()
     runstart_time = now()
@@ -329,7 +331,7 @@ function run!(model::Model; close_files=true)
     # option to support running function twice without re-initializing
     # and thus opening the netCDF files
     if close_files
-        Wflow.close_files(model; delete_output=false)
+        Wflow.close_files(model; delete_output = false)
     end
 
     # copy TOML to dir_output, to archive what settings were used
@@ -338,7 +340,7 @@ function run!(model::Model; close_files=true)
         dst = output_path(config, basename(src))
         if src != dst
             @debug "Copying TOML file." src dst
-            cp(src, dst; force=true)
+            cp(src, dst; force = true)
         end
     end
     return nothing
