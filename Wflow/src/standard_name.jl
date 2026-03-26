@@ -309,7 +309,7 @@ const sbm_standard_name_map = Dict{String, NamedTuple}(
 
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
-of type `SoilLoss`. The `lens` of the NamedTuple allows access to a nested model variable.
+of type `SoilLossModel`. The `lens` of the NamedTuple allows access to a nested model variable.
 """
 const sediment_standard_name_map = Dict{String, NamedTuple}(
     "atmosphere_water__precipitation_volume_flux" =>
@@ -490,5 +490,5 @@ const sediment_standard_name_map = Dict{String, NamedTuple}(
 
 # wrapper methods for standard name mapping
 standard_name_map(::LandHydrologySBM) = sbm_standard_name_map
-standard_name_map(::SoilLoss) = sediment_standard_name_map
+standard_name_map(::SoilLossModel) = sediment_standard_name_map
 get_lens(name::AbstractString, T::AbstractLandModel) = standard_name_map(T)[name].lens

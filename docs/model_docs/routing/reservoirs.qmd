@@ -118,7 +118,7 @@ reservoir_water__storage_curve_type_count = "storfunc"
 ```
 
 Including reservoir rating and storage curves from data (rating curve type 1 and storage
-curve type 2) is described [here](#storage-and-rating-cuves-from-data).
+curve type 2) is described [here](#storage-and-rating-curves-from-data).
 
 For reservoir rating curve types 2 and 3 the following rating curve parameters need to be
 included in the TOML file, with below an example:
@@ -157,7 +157,7 @@ reservoir type. For example, `reservoir_water__rating_curve_exponent` (for ratin
 types 2 and 3) should also have a value (e.g. -1) for other input reservoir types.
 :::
 
-### Storage and rating cuves from data
+### Storage and rating curves from data
 Storage and rating curves from field measurement can be supplied to wflow via CSV files
 supplied in the same folder of the TOML file. Naming of the files uses the ID of the
 reservoirs where data are available and is of the form `reservoir_sh_1.csv` and
@@ -215,7 +215,7 @@ reservoir storage is available for internal abstractions as part of water demand
 allocation computations.
 
 ## Using observed outflow
-When reservoir observed outflow data is available, it is possble to use this data directly
+When reservoir observed outflow data is available, it is possible to use this data directly
 for computing the reservoir water balance rather than using a rating curve. This data can be
 provided as a static or cyclic parameter or as part of forcing. For example, cyclic observed
 outflow can be provided in the TOML file as follows:

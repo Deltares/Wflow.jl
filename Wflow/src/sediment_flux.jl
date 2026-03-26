@@ -1,5 +1,5 @@
 "Sediment transport in overland flow model"
-@with_kw struct OverlandFlowSediment{
+@with_kw struct OverlandFlowSedimentModel{
     TT <: AbstractTransportCapacityModel,
     SF <: AbstractSedimentLandTransportModel,
     TR <: AbstractSedimentToRiverModel,
@@ -30,11 +30,11 @@ const land_transport_method =
     )
 
 "Initialize the overland flow sediment transport model"
-function OverlandFlowSediment(
+function OverlandFlowSedimentModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainLand,
-    soilloss::SoilLoss,
+    soilloss::SoilLossModel,
 )
     (; indices) = domain.network
     (; hydrological_forcing) = soilloss
@@ -61,7 +61,7 @@ function OverlandFlowSediment(
         to_river = SedimentToRiverModel(indices)
     end
 
-    overland_flow_sediment = OverlandFlowSediment{
+    overland_flow_sediment = OverlandFlowSedimentModel{
         typeof(transport_capacity),
         typeof(sediment_flux),
         typeof(to_river),
@@ -76,7 +76,7 @@ end
 
 "Update the overland flow sediment transport model for a single timestep"
 function update_overland_flow_model!(
-    overland_flow_model::OverlandFlowSediment,
+    overland_flow_model::OverlandFlowSedimentModel,
     erosion_model::SoilErosionModel,
     domain::DomainLand,
     dt::Float64,
@@ -116,7 +116,7 @@ end
 
 ### River ###
 "Sediment transport in river model"
-@with_kw struct RiverSediment{
+@with_kw struct RiverSedimentModel{
     TTR <: AbstractTransportCapacityModel,
     ER <: AbstractRiverErosionModel,
     SFR <: AbstractSedimentRiverTransportModel,
@@ -139,7 +139,7 @@ const river_transport_method =
     )
 
 "Initialize the river sediment transport model"
-function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
+function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     n = length(indices)
     hydrological_forcing = HydrologicalForcing(; n)
@@ -164,7 +164,7 @@ function RiverSediment(dataset::NCDataset, config::Config, domain::DomainRiver)
     # Concentrations
     concentrations = SedimentConcentrationsRiverModel(dataset, config, indices)
 
-    river_sediment = RiverSediment(;
+    river_sediment = RiverSedimentModel(;
         hydrological_forcing,
         transport_capacity,
         potential_erosion,
@@ -176,7 +176,7 @@ end
 
 "Update the river sediment transport model for a single timestep"
 function update_river_sediment_model!(
-    river_flow_model::RiverSediment,
+    river_flow_model::RiverSedimentModel,
     to_river_model::SedimentToRiverDifferentiationModel,
     domain::DomainRiver,
     dt::Float64,

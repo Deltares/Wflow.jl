@@ -292,18 +292,18 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
 end
 
 "Reservoir model"
-@with_kw struct Reservoir
+@with_kw struct ReservoirModel
     boundary_conditions::ReservoirBC
     parameters::ReservoirParameters
     variables::ReservoirVariables
 end
 
 "Initialize reservoir model `SimpleReservoir`"
-function Reservoir(dataset::NCDataset, config::Config, network::NetworkReservoir)
+function ReservoirModel(dataset::NCDataset, config::Config, network::NetworkReservoir)
     parameters, waterlevel = ReservoirParameters(dataset, config, network)
     variables = ReservoirVariables(dataset, config, network, parameters, waterlevel)
     boundary_conditions = ReservoirBC(dataset, config, network)
-    reservoir = Reservoir(; boundary_conditions, parameters, variables)
+    reservoir = ReservoirModel(; boundary_conditions, parameters, variables)
 
     return reservoir
 end
@@ -370,18 +370,18 @@ function interpolate_linear(x, xp, fp)
 end
 
 "Update the column index of reservoir rating curve HQ data"
-function update_index_hq!(reservoir::Reservoir, clock::Clock)
-    (; outflowfunc, col_index_hq) = reservoir.parameters
+function update_index_hq!(reservoir_model::ReservoirModel, clock::Clock)
+    (; outflowfunc, col_index_hq) = reservoir_model.parameters
     if ReservoirOutflowType.rating_curve in outflowfunc
         col_index_hq[1] = julian_day(clock.time - clock.dt)
     end
     return nothing
 end
-update_index_hq!(reservoir, clock::Clock) = nothing
+update_index_hq!(reservoir_model::Any, clock::Clock) = nothing
 
 "Update reservoir with rating curve type (`ouflowfunc`) 4 for a single timestep"
 function update_reservoir_simple(
-    reservoir_model::Reservoir,
+    reservoir_model::ReservoirModel,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
@@ -415,7 +415,7 @@ Update reservoir with rating curve type (`ouflowfunc`) 3 (Modified Puls approach
 single timestep.
 """
 function update_reservoir_modified_puls(
-    reservoir_model::Reservoir,
+    reservoir_model::ReservoirModel,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
@@ -425,7 +425,7 @@ function update_reservoir_modified_puls(
     (; precipitation, actevap, inflow) = boundary_vars
 
     res_factor = res_p.area[i] / (dt * pow(res_p.b[i], 0.5))
-    si_factor = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    si_factor = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
     # Adjust si_factor for reservoir threshold != 0
     si_factor_adj = si_factor - res_p.area[i] * res_p.threshold[i] / dt
     # Calculate the new reservoir outflow/waterlevel/storage
@@ -447,7 +447,7 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 1 (HQ data) for a single timestep."
 function update_reservoir_hq(
-    reservoir_model::Reservoir,
+    reservoir_model::ReservoirModel,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
@@ -456,7 +456,8 @@ function update_reservoir_hq(
     res_v = reservoir_model.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    storage_input = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
+
     outflow = interpolate_linear(
         res_v.waterlevel[i],
         res_p.hq[i].H,
@@ -475,7 +476,7 @@ end
 
 "Update reservoir with rating curve type (`ouflowfunc`) 2 (free weir) for a single timestep."
 function update_reservoir_free_weir(
-    reservoir_model::Reservoir,
+    reservoir_model::ReservoirModel,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
@@ -488,7 +489,7 @@ function update_reservoir_free_weir(
     has_lower_res = lo != 0
     diff_wl = has_lower_res ? res_v.waterlevel[i] - res_v.waterlevel[lo] : 0.0
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    storage_input = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
 
     if diff_wl >= 0.0
         if res_v.waterlevel[i] > res_p.threshold[i]
@@ -532,7 +533,7 @@ end
 
 "Update reservoir using observed outflow for a single timestep."
 function update_reservoir_outflow_obs(
-    reservoir_model::Reservoir,
+    reservoir_model::ReservoirModel,
     i::Int,
     boundary_vars::NamedTuple,
     dt::Float64,
@@ -540,7 +541,7 @@ function update_reservoir_outflow_obs(
     res_v = reservoir_model.variables
     (; precipitation, actevap, inflow) = boundary_vars
 
-    storage_input = (res_v.storage[i] + precipitation - actevap) / dt + inflow
+    storage_input = max((res_v.storage[i] + precipitation - actevap) / dt + inflow, 0.0) # prevent negative values
     outflow = min(res_v.outflow_obs[i], storage_input)
     storage = (storage_input - outflow) * dt
     return outflow, storage
@@ -553,7 +554,7 @@ This is called from within the river routing scheme, therefore updating only for
 element rather than all at once.
 """
 function update_reservoir_model!(
-    reservoir_model::Reservoir,
+    reservoir_model::ReservoirModel,
     i::Int,
     inflow::Float64,
     dt::Float64,
@@ -605,22 +606,25 @@ function update_reservoir_model!(
 end
 
 "Generate log message for using observed outflow at reservoir locations"
-function log_message_observed_outflow(reservoir::Reservoir)
-    not_nan = findall(x -> !isnan(x), reservoir.variables.outflow_obs)
+function log_message_observed_outflow(reservoir_model::ReservoirModel)
+    not_nan = findall(x -> !isnan(x), reservoir_model.variables.outflow_obs)
     if isempty(not_nan)
         msg = "Observed outflow is not used for any reservoir location"
     else
-        ids = reservoir.parameters.id[not_nan]
+        ids = reservoir_model.parameters.id[not_nan]
         msg = "Observed outflow is used for reservoir location ids $ids"
     end
     return msg
 end
 
 "Check if observed outflow is used for reservoirs"
-function using_observed_outflow(reservoir::Union{Reservoir, Nothing}, config::Config)
+function using_observed_outflow(
+    reservoir_model::Union{ReservoirModel, Nothing},
+    config::Config,
+)
     par = "reservoir_water__outgoing_observed_volume_flow_rate"
     check =
-        !isnothing(reservoir) &&
+        !isnothing(reservoir_model) &&
         (haskey(config.input.forcing, par) || haskey(config.input.cyclic, par))
     return check
 end

@@ -389,7 +389,7 @@ It is assumed that the potential evaporation rate of intercepted water by vegeta
 equal to the potential evapotranspiration rate of vegetation (fully covering the soil)
 multiplied by the canopy fraction. The potential evapotranspiration rate left over after
 interception is available for transpiration. For potential open water evaporation (river and
-water bodies) the potential reference evapotranspiration rate is used (multipled by the
+water bodies) the potential reference evapotranspiration rate is used (multiplied by the
 river fraction, and open water fraction). Also for potential soil evaporation the potential
 reference evapotranspiration rate is used, multiplied by the canopy gap fraction corrected
 by the sum of total water fraction (river fraction and open water fraction) and the fraction
@@ -1151,11 +1151,11 @@ land_water_allocation_area__count = "allocation_areas"
 ```
 
 For allocation areas the water demand $\SIb{\subtext{V}{sw, demand}}{m^3}$ and availability
-$\SIb{\subtext{V}{sw, availabilty}}{m^3}$ are summed (including reservoir locations limited
+$\SIb{\subtext{V}{sw, availability}}{m^3}$ are summed (including reservoir locations limited
 by a fixed scaling factor of $0.98$), and the total surface water abstraction is then:
 
 $$
-    \subtext{V}{sw, abstraction} = \min (\subtext{V}{sw, demand}, \subtext{V}{sw, availabilty}).
+    \subtext{V}{sw, abstraction} = \min (\subtext{V}{sw, demand}, \subtext{V}{sw, availability}).
 $$
 The fraction of available surface water that can be abstracted
 $\SIb{\subtext{f}{sw,abstraction}}{-}$ at the allocation area level is then:
@@ -1179,11 +1179,11 @@ allocated surface water to each land cell.
 Then groundwater abstraction is computed to satisfy the remaining local water demand, where
 groundwater abstraction is limited by a fixed scaling factor of $0.75$ applied to the
 groundwater volume. Finally, for allocation areas the water demand
-$\SIb{\subtext{V}{gw,demand}}{m^3}$ and availability $\SIb{\subtext{V}{gw, availabilty}}{m^3}$
+$\SIb{\subtext{V}{gw,demand}}{m^3}$ and availability $\SIb{\subtext{V}{gw, availability}}{m^3}$
 are summed, and the total groundwater abstraction is then:
 
 $$
-    \subtext{V}{gw, abstraction} = \min(\subtext{V}{gw, demand}, \subtext{V}{gw, availabilty}).
+    \subtext{V}{gw, abstraction} = \min(\subtext{V}{gw, demand}, \subtext{V}{gw, availability}).
 $$
 The fraction of available groundwater that can be abstracted at allocation area level
 $\SIb{\subtext{f}{gw, abstraction}}{-}$ at the allocation area level is then:

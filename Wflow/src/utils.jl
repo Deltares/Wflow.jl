@@ -63,7 +63,7 @@ function set_pit_ldd(
 end
 
 "Filter upstream neighbors of graph based on logical vector"
-function filter_upsteam_nodes(
+function filter_upstream_nodes(
     graph::SimpleDiGraph{Int},
     vec_logical::Vector{Bool},
 )::Vector{Vector{Int}}
@@ -190,7 +190,7 @@ function set_states!(
                 end
                 A = read_standardized(ds, ncname, dimensions)
                 A = permutedims(A[sel, :])
-                # note that this array is allowed to have missings, since not every land
+                # note that this array is allowed to have missing, since not every land
                 # column is `maxlayers` layers deep
                 if dimname == :layer
                     A = replace!(A, missing => NaN)
@@ -246,6 +246,30 @@ function get_var(config::Config, parameter::AbstractString; optional = true)
         )
     end
     return var
+end
+
+"""
+Apply the affine transform in `var` to the incoming array `A` in place element-wise.
+The affine transform consists of a scaling by `scale` and a translation by `offset`.
+These operations are only applied when non-trivial.
+"""
+function apply_affine_transform!(A::AbstractArray, var::InputEntry)
+    (; do_scaling, scale_scalar, scale, do_offsetting, offset_scalar, offset) = var
+    if do_scaling
+        if scale_scalar
+            A .*= only(scale)
+        else
+            A .*= scale
+        end
+    end
+    if do_offsetting
+        if offset_scalar
+            A .+= only(offset)
+        else
+            A .+= offset
+        end
+    end
+    return A
 end
 
 """
@@ -342,8 +366,8 @@ function ncread(
             for i in eachindex(layer)
                 A[:, :, layer[i]] = A[:, :, layer[i]] .* scale[i] .+ offset[i]
             end
-        elseif scale != 1.0 || offset != 0.0
-            A = A .* scale .+ offset
+        else
+            apply_affine_transform!(A, var)
         end
     end
 
@@ -358,13 +382,13 @@ function ncread(
 
     if !allow_missing
         if isnothing(fill)
-            # errors if missings are found
+            # errors if missing are found
             A = nomissing(A)
             if any(isnan, A)
                 error("NaN not allowed in $var")
             end
         else
-            # replaces missings with a fill value
+            # replaces missing with a fill value
             A = nomissing(A, fill)
             # replace also NaN values with the fill value
             replace!(x -> isnan(x) ? fill : x, A)
@@ -720,7 +744,7 @@ end
     hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
     hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
 
-Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using muliplication
+Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using multiplication
 factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
 """
 function hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)
@@ -753,22 +777,22 @@ function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, 
 end
 
 """
-    kh_layered_profile!(soil::SbmSoilModel, subsurface::LateralSSF, kv_profile::KvLayered, dt)
-    kh_layered_profile!(soil::SbmSoilModel, subsurface::LateralSSF, kv_profile::KvLayeredExponential, dt)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_flow_model::LateralSSFModel, kv_profile::KvLayered, dt)
+    kh_layered_profile!(soil_model::SbmSoilModel, subsurface_flow_model::LateralSSFModel, kv_profile::KvLayeredExponential, dt)
 
 Compute equivalent horizontal hydraulic conductivity `kh` [m d⁻¹] using vertical hydraulic
 conductivity profile `kv_profile`.
 """
 function kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
+    soil_model::SbmSoilModel,
+    subsurface_flow_model::LateralSSFModel,
     kv_profile::KvLayered,
     dt,
 )
-    (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
-    (; n_unsatlayers, zi) = soil.variables
-    (; kh) = subsurface.parameters.kh_profile
-    (; khfrac) = subsurface.parameters
+    (; nlayers, sumlayers, act_thickl, soilthickness) = soil_model.parameters
+    (; n_unsatlayers, zi) = soil_model.variables
+    (; kh) = subsurface_flow_model.parameters.kh_profile
+    (; khfrac) = subsurface_flow_model.parameters
 
     t_factor = (tosecond(BASETIMESTEP) / dt)
     for i in eachindex(kh)
@@ -796,16 +820,16 @@ function kh_layered_profile!(
 end
 
 function kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
+    soil_model::SbmSoilModel,
+    subsurface_flow_model::LateralSSFModel,
     kv_profile::KvLayeredExponential,
     dt,
 )
-    (; nlayers, sumlayers, act_thickl, soilthickness) = soil.parameters
+    (; nlayers, sumlayers, act_thickl, soilthickness) = soil_model.parameters
     (; nlayers_kv, z_layered, kv, f) = kv_profile
-    (; n_unsatlayers, zi) = soil.variables
-    (; kh) = subsurface.parameters.kh_profile
-    (; khfrac) = subsurface.parameters
+    (; n_unsatlayers, zi) = soil_model.variables
+    (; kh) = subsurface_flow_model.parameters.kh_profile
+    (; khfrac) = subsurface_flow_model.parameters
     t_factor = (tosecond(BASETIMESTEP) / dt)
 
     for i in eachindex(kh)
@@ -859,27 +883,27 @@ function kh_layered_profile!(
 end
 
 kh_layered_profile!(
-    soil::SbmSoilModel,
-    subsurface::LateralSSF,
+    soil_model::SbmSoilModel,
+    subsurface_flow_model::LateralSSFModel,
     kv_profile::Union{KvExponential, KvExponentialConstant},
     dt,
 ) = nothing
 
 """
-    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponential)
-    initialize_lateral_ssf!(subsurface::LateralSSF, parameters::LandParameters, kh_profile::KhExponentialConstant)
+    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, parameters::LandParameters, kh_profile::KhExponential)
+    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, parameters::LandParameters, kh_profile::KhExponentialConstant)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using horizontal hydraulic
 conductivity profile `kh_profile`.
 """
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
+function initialize_lateral_ssf_model!(
+    subsurface_flow_model::LateralSSFModel,
     parameters::LandParameters,
     kh_profile::KhExponential,
 )
     (; kh_0, f) = kh_profile
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; soilthickness) = subsurface.parameters
+    (; ssf, ssfmax, zi) = subsurface_flow_model.variables
+    (; soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
     @. ssfmax = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
@@ -887,15 +911,15 @@ function initialize_lateral_ssf!(
     return nothing
 end
 
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
+function initialize_lateral_ssf_model!(
+    subsurface_flow_model::LateralSSFModel,
     parameters::LandParameters,
     kh_profile::KhExponentialConstant,
 )
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; soilthickness) = subsurface.parameters
+    (; ssf, ssfmax, zi) = subsurface_flow_model.variables
+    (; soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
     ssf_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
@@ -921,26 +945,26 @@ function initialize_lateral_ssf!(
 end
 
 """
-    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
-    initialize_lateral_ssf!(subsurface::LateralSSF, soil::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
+    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayered, dt)
+    initialize_lateral_ssf_model!(subsurface_flow_model::LateralSSFModel, soil_model::SbmSoilModel, parameters::LandParameters, kv_profile::KvLayeredExponential, dt)
 
 Initialize lateral subsurface variables `ssf` and `ssfmax` using  vertical hydraulic
 conductivity profile `kv_profile`.
 """
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    soil::SbmSoilModel,
+function initialize_lateral_ssf_model!(
+    subsurface_flow_model::LateralSSFModel,
+    soil_model::SbmSoilModel,
     parameters::LandParameters,
     kv_profile::KvLayered,
     dt,
 )
-    (; kh) = subsurface.parameters.kh_profile
-    (; nlayers, act_thickl) = soil.parameters
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness) = subsurface.parameters
+    (; kh) = subsurface_flow_model.parameters.kh_profile
+    (; nlayers, act_thickl) = soil_model.parameters
+    (; ssf, ssfmax, zi) = subsurface_flow_model.variables
+    (; khfrac, soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
-    kh_layered_profile!(soil, subsurface, kv_profile, dt)
+    kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
     for i in eachindex(ssf)
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         kh_max = 0.0
@@ -953,21 +977,21 @@ function initialize_lateral_ssf!(
     return nothing
 end
 
-function initialize_lateral_ssf!(
-    subsurface::LateralSSF,
-    soil::SbmSoilModel,
+function initialize_lateral_ssf_model!(
+    subsurface_flow_model::LateralSSFModel,
+    soil_model::SbmSoilModel,
     parameters::LandParameters,
     kv_profile::KvLayeredExponential,
     dt,
 )
-    (; ssf, ssfmax, zi) = subsurface.variables
-    (; khfrac, soilthickness) = subsurface.parameters
+    (; ssf, ssfmax, zi) = subsurface_flow_model.variables
+    (; khfrac, soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
-    (; nlayers, act_thickl) = soil.parameters
-    (; kh) = subsurface.parameters.kh_profile
+    (; nlayers, act_thickl) = soil_model.parameters
+    (; kh) = subsurface_flow_model.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile
 
-    kh_layered_profile!(soil, subsurface, kv_profile, dt)
+    kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
     for i in eachindex(ssf)
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         kh_max = 0.0
@@ -975,7 +999,7 @@ function initialize_lateral_ssf!(
             if j <= nlayers_kv[i]
                 kh_max += kv[i][j] * act_thickl[i][j]
             else
-                zt = soil.parameters.soilthickness[i] - z_layered[i]
+                zt = soil_model.parameters.soilthickness[i] - z_layered[i]
                 k = max(j - 1, 1)
                 kh_max += kv[i][k] / f[i] * (1.0 - exp(-f[i] * zt))
                 break
@@ -1011,13 +1035,13 @@ rising water table `dh` is based on `net_flux` and the unsaturated store capacit
 layer). For a rising water table a dynamic specific yield is computed.
 """
 function water_table_change(
-    soil::SbmSoilModel,
+    soil_model::SbmSoilModel,
     net_flux::Float64,
     specific_yield::Float64,
     i::Int,
 )
-    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil.variables
-    (; theta_s, theta_r) = soil.parameters
+    (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil_model.variables
+    (; theta_s, theta_r) = soil_model.parameters
 
     # effective porosity (difference between saturated and residual water content)
     theta_e = theta_s[i] - theta_r[i]

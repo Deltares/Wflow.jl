@@ -103,7 +103,7 @@ end
     theta_fc::Vector{Float64}
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{Float64}
-    # Muliplication factor [-] applied to kv_z (vertical flow)
+    # Multiplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N, Float64}}
     # Air entry pressure [cm] of soil (Brooks-Corey)
     hb::Vector{Float64}
@@ -906,7 +906,7 @@ function soil_evaporation!(soil_model::SbmSoilModel)
 end
 
 """
-    transpiration!(soil::SbmSoilModel, dt)
+    transpiration!(soil_model::SbmSoilModel, dt)
 
 Update total `transpiration`, transpiration from the unsaturated store `ae_ustore` and
 saturated store `actevapsat` of the SBM soil model for a single timestep. Also unsaturated
@@ -1301,7 +1301,7 @@ model, resulting in a change in water table depth and an exfiltration rate `exfi
 The available water in unsaturated zone `ustoredepth`, unsaturated store capacity
 `ustorecapacity`, `total_soilwater_storage`, land `runoff` and `net_runoff`, the saturated
 store `satwaterdepth` and the water exfiltrating during saturation excess conditions
-`exfiltsatwater` are updated. Addionally, volumetric water content per soil layer and for
+`exfiltsatwater` are updated. Additionally, volumetric water content per soil layer and for
 the root zone are updated.
 """
 function update_soil_water_storage!(
