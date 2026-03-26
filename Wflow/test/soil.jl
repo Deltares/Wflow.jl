@@ -35,11 +35,11 @@
         ),
         boundary_conditions = Wflow.OpenWaterRunoffBC(; n, water_flux_surface = [7.5e-3]),
     )
-    demand = Wflow.Demand(;
-        domestic = Wflow.NoDemand(; n),
-        industry = Wflow.NoDemand(; n),
-        livestock = Wflow.NoDemand(; n),
-        paddy = Wflow.Paddy(;
+    demand = Wflow.DemandModel(;
+        domestic = Wflow.NoDemandModel(; n),
+        industry = Wflow.NoDemandModel(; n),
+        livestock = Wflow.NoDemandModel(; n),
+        paddy = Wflow.PaddyModel(;
             parameters = Wflow.PaddyParameters(;
                 irrigation_efficiency = [],
                 maximum_irrigation_rate = [],
@@ -51,11 +51,11 @@
             ),
             variables = Wflow.PaddyVariables(; n, h = [1e-5], evaporation = [4e-3]),
         ),
-        nonpaddy = Wflow.NoIrrigationNonPaddy(n),
+        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
         variables = Wflow.DemandVariables(; n),
     )
 
-    allocation = Wflow.AllocationLand(;
+    allocation = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
         variables = Wflow.AllocationLandVariables(; n, irri_alloc = [2e-2]),
@@ -253,11 +253,11 @@ end
     )
 
     runoff = (; variables = (; runoff_land = [0.0], ae_openw_l = [0.0]))
-    demand = Wflow.Demand(;
-        domestic = Wflow.NoDemand(; n),
-        industry = Wflow.NoDemand(; n),
-        livestock = Wflow.NoDemand(; n),
-        paddy = Wflow.Paddy(;
+    demand = Wflow.DemandModel(;
+        domestic = Wflow.NoDemandModel(; n),
+        industry = Wflow.NoDemandModel(; n),
+        livestock = Wflow.NoDemandModel(; n),
+        paddy = Wflow.PaddyModel(;
             parameters = Wflow.PaddyParameters(;
                 irrigation_efficiency = [],
                 maximum_irrigation_rate = [],
@@ -269,13 +269,11 @@ end
             ),
             variables = Wflow.PaddyVariables(; n, h = [1e-5], evaporation = [4e-3]),
         ),
-        nonpaddy = Wflow.NoIrrigationNonPaddy(n),
+        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
         variables = Wflow.DemandVariables(; n),
     )
 
-    subsurface_flow = (; exfiltwater = [0.0])
-    Wflow.get_exfiltwater(nt::NamedTuple) = nt.exfiltwater
-
+    subsurface_flow = (; variables = (; exfiltwater = [0.0]))
     external_models = (; runoff, demand, subsurface_flow)
 
     Wflow.update_soil_water_storage!(soil_model, external_models)
