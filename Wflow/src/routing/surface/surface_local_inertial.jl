@@ -1372,7 +1372,7 @@ the boundary conditions which are then used in the water depth update function.
 """
 function correct_overland_flow_level!(
     model::SbmSoilModel,
-    overland_flow::LocalInertialOverlandFlow,
+    overland_flow::LocalInertialOverlandFlowModel,
     domain::Domain,
     config::Config,
 )
