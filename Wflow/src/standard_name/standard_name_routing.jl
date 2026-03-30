@@ -330,7 +330,14 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     #### States
     "subsurface_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.ssf),
+        lens = @optic(_.routing.subsurface_flow.variables.q_av),
+        unit = Unit(; m = 3, d = -1),
+        description = "Subsurface flow",
+        tags = [:kinematic_lateral_subsurface_state, :kinematic_lateral_subsurface_output],
+    ),
+    #### States
+    "subsurface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.variables.q),
         unit = Unit(; m = 3, d = -1),
         description = "Subsurface flow",
         tags = [:kinematic_lateral_subsurface_state, :kinematic_lateral_subsurface_output],
@@ -460,26 +467,26 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.aquifer.parameters.k),
+            lens = @optic(_.routing.subsurface_flow.parameters.k),
             unit = Unit(; m = 1, d = -1),
             description = "Horizontal conductivity",
             tags = [:groundwater_unconfined_aquifer_input],
         ),
     "subsurface_water__specific_yield" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.aquifer.parameters.specific_yield),
+        lens = @optic(_.routing.subsurface_flow.parameters.specific_yield),
         description = "Specific yield",
         tags = [:groundwater_unconfined_aquifer_input],
     ),
     "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.aquifer.parameters.f),
+            lens = @optic(_.routing.subsurface_flow.parameters.f),
             unit = Unit(; m = -1),
             description = "Factor controlling the reduction of horizontal conductivity with depth",
             tags = [:groundwater_unconfined_aquifer_input],
         ),
     #### States
     "subsurface_water__hydraulic_head" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.aquifer.variables.head),
+        lens = @optic(_.routing.subsurface_flow.variables.head),
         unit = Unit(; m = 1),
         description = "Groundwater head",
         tags = [
@@ -491,7 +498,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Input
     "river_water__infiltration_conductance" => ParameterMetadata(;
         lens = @optic(
-            _.routing.subsurface_flow.boundaries.river.parameters.infiltration_conductance
+            _.routing.subsurface_flow.boundary_conditions.river.parameters.infiltration_conductance
         ),
         unit = Unit(; m = 2, d = -1),
         description = "River bed infiltration conductance",
@@ -499,21 +506,25 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "river_water__exfiltration_conductance" => ParameterMetadata(;
         lens = @optic(
-            _.routing.subsurface_flow.boundaries.river.parameters.exfiltration_conductance
+            _.routing.subsurface_flow.boundary_conditions.river.parameters.exfiltration_conductance
         ),
         unit = Unit(; m = 2, d = -1),
         description = "River bed exfiltration conductance",
         tags = [:groundwater_river_boundary_input],
     ),
     "river_bottom__elevation" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.boundaries.river.parameters.bottom),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.river.parameters.bottom
+        ),
         unit = Unit(; m = 1),
         description = "River bottom elevation",
         tags = [:groundwater_river_boundary_input],
     ),
     #### Output
     "river_water__to_subsurface_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.boundaries.river.variables.flux_av),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.river.variables.flux_av
+        ),
         unit = Unit(; m = 3, d = -1),
         description = "Exchange flux (river to aquifer)",
         tags = [:groundwater_river_boundary_output],
@@ -521,14 +532,18 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ### Drainage boundary
     #### Input
     "land_drain__elevation" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.boundaries.drain.parameters.elevation),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.drain.parameters.elevation
+        ),
         unit = Unit(; m = 1),
         fill = MISSING_VALUE,
         description = "Drain elevation",
         tags = [:groundwater_drainage_boundary_input],
     ),
     "land_drain__conductance" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.boundaries.drain.parameters.conductance),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.drain.parameters.conductance
+        ),
         unit = Unit(; m = 2, d = -1),
         fill = MISSING_VALUE,
         description = "Drain conductance",
@@ -541,7 +556,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     #### Output
     "land_drain_water__to_subsurface_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.boundaries.drain.variables.flux_av),
+        lens = @optic(
+            _.routing.subsurface_flow.boundary_conditions.drain.variables.flux_av
+        ),
         unit = Unit(; m = 3, d = -1),
         description = "Exchange flux (drain to aquifer)",
         tags = [:groundwater_drainage_boundary_output],
@@ -550,7 +567,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Output
     "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.boundaries.recharge.variables.flux_av),
+            lens = @optic(
+                _.routing.subsurface_flow.boundary_conditions.recharge.variables.flux_av
+            ),
             unit = Unit(; m = 3, d = -1),
             description = "Net recharge flux",
             tags = [:groundwater_recharge_boundary_output],

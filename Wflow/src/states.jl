@@ -49,7 +49,7 @@ end
 Extract required soil model states, given a certain `model_type` and whether `snow` is
 modelled. Returns a tuple with the required states (internal names as symbols).
 """
-function get_soil_states(model_type::ModelType.T; snow::Bool=false)
+function get_soil_states(model_type::ModelType.T; snow::Bool = false)
     return if model_type == ModelType.sbm || model_type == ModelType.sbm_gwf
         states = get_states_by_tag(LandHydrologySBM, :soil_state)
         snow ? states : filter(!=("soil_surface__temperature"), states)
@@ -59,7 +59,7 @@ function get_soil_states(model_type::ModelType.T; snow::Bool=false)
 end
 
 function get_sediment_states()
-    return get_states_by_tag(SoilLoss, :sediment_river_transport_state)
+    return get_states_by_tag(SoilLossModel, :sediment_river_transport_state)
 end
 
 """
@@ -93,13 +93,13 @@ function extract_required_states(config::Config)
         glacier_states = String[]
     end
     interception_states = get_interception_states(model_type)
-    soil_states = get_soil_states(model_type; snow=do_snow)
+    soil_states = get_soil_states(model_type; snow = do_snow)
 
     # Subsurface states
     ssf_states = if model_type == ModelType.sbm_gwf
         ["subsurface_water__hydraulic_head"]
     elseif model_type == ModelType.sbm
-        ["subsurface_water__volume_flow_rate"]
+        ["subsurface_water__instantaneous_volume_flow_rate"]
     else # model_type == ModelType.sediment
         String[]
     end

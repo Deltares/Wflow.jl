@@ -229,7 +229,7 @@ end
     @test "soil_water_saturated_zone__depth" in required_states
     @test "soil_layer_water_unsaturated_zone__depth" in required_states
     @test "vegetation_canopy_water__depth" in required_states
-    @test "subsurface_water__volume_flow_rate" in required_states
+    @test "subsurface_water__instantaneous_volume_flow_rate" in required_states
     @test "river_water__instantaneous_volume_flow_rate" in required_states
     @test "reservoir_water_surface__elevation" in required_states
     @test "snowpack_liquid_water__depth" in required_states
@@ -312,8 +312,10 @@ end
         @test get_field_in_model(model, "vegetation_canopy_water__depth")[50063] ≈ 0.0
         @test get_field_in_model(model, "soil_water_saturated_zone__depth")[50063] ≈
               558.8578304603327
-        @test get_field_in_model(model, "subsurface_water__volume_flow_rate")[10606] ≈
-              39.972334552895816
+        @test get_field_in_model(
+            model,
+            "subsurface_water__instantaneous_volume_flow_rate",
+        )[10606] ≈ 39.972334552895816
         @test get_field_in_model(model, "river_water__instantaneous_volume_flow_rate")[149] ≈
               53.48673634956338
         @test get_field_in_model(model, "river_water__depth")[149] ≈ 1.167635369628945

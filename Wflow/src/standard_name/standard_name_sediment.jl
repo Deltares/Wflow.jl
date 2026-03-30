@@ -1,7 +1,7 @@
 # NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
-of type `SoilLoss`. The `lens` allows access to a nested model variable.
+of type `SoilLossModel`. The `lens` allows access to a nested model variable.
 """
 const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "soil_clay__mass_fraction" => ParameterMetadata(;

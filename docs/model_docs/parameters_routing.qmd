@@ -186,6 +186,10 @@ generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_state; relative_wi
 generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_output; relative_widths = [3, 3, 1])
 ```
 
+## Subsurface flow boundaries
+Boundary conditions for both the groundwater flow and lateral subsurface flow concepts. The
+constant head boundary can only be applied as part of the groundwater flow concept.
+
 ### River boundary
 #### Input {#input-gwf-river}
 ```{julia}
@@ -231,45 +235,45 @@ generate_table(Wflow.Routing, :groundwater_constant_head_boundary_input; relativ
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :sediment_transport_cap_overland_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_transport_cap_overland_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### Transport capacity river
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :sediment_transport_cap_river_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_transport_cap_river_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### Overland flow transport
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :sediment_transport_overland_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.SoilLossModel, :sediment_transport_overland_output; relative_widths = [3, 3, 1])
 ```
 
 ### River erosion
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :sediment_river_erosion_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_river_erosion_input; relative_widths = [6, 4, 2, 2])
 ```
 
 ### River transport
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :sediment_river_transport_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_river_transport_input; relative_widths = [6, 4, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :sediment_river_transport_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.SoilLossModel, :sediment_river_transport_state; relative_widths = [3, 3, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLoss, :sediment_river_transport_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.SoilLossModel, :sediment_river_transport_output; relative_widths = [3, 3, 1])
 ```

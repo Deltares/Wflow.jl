@@ -52,19 +52,20 @@ function TransportCapacityGoversParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
+    density =
+        ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
     c_govers = ncread(
         dataset,
         config,
         "land_surface_water_sediment__govers_transport_capacity_coefficient",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     n_govers = ncread(
         dataset,
         config,
         "land_surface_water_sediment__govers_transport_capacity_exponent",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     tc_parameters = TransportCapacityGoversParameters(; density, c_govers, n_govers)
@@ -135,12 +136,13 @@ function TransportCapacityYalinParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
+    density =
+        ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
     d50 = ncread(
         dataset,
         config,
         "land_surface_sediment__median_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
 
@@ -236,22 +238,23 @@ function TransportCapacityYalinDifferentiationParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
-    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel = indices)
-    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel = indices)
-    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel = indices)
+    density =
+        ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
+    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
+    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
+    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     dm_lagg = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
 
@@ -392,9 +395,15 @@ function TransportCapacityRiverParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    density = ncread(dataset, config, "sediment__particle_density", SoilLoss; sel = indices)
-    d50 =
-        ncread(dataset, config, "river_sediment__median_diameter", SoilLoss; sel = indices)
+    density =
+        ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
+    d50 = ncread(
+        dataset,
+        config,
+        "river_sediment__median_diameter",
+        SoilLossModel;
+        sel = indices,
+    )
 
     tc_parameters = TransportCapacityRiverParameters(; density, d50)
 
@@ -419,14 +428,14 @@ function TransportCapacityBagnoldParameters(
         dataset,
         config,
         "river_water_sediment__bagnold_transport_capacity_coefficient",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     e_bagnold = ncread(
         dataset,
         config,
         "river_water_sediment__bagnold_transport_capacity_exponent",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
 
@@ -548,28 +557,28 @@ function TransportCapacityKodatieParameters(
         dataset,
         config,
         "river_water_sediment__kodatie_transport_capacity_a_coefficient",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     b_kodatie = ncread(
         dataset,
         config,
         "river_water_sediment__kodatie_transport_capacity_b_coefficient",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     c_kodatie = ncread(
         dataset,
         config,
         "river_water_sediment__kodatie_transport_capacity_c_coefficient",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     d_kodatie = ncread(
         dataset,
         config,
         "river_water_sediment__kodatie_transport_capacity_d_coefficient",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
 

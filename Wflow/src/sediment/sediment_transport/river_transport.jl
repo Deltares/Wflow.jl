@@ -92,28 +92,28 @@ function SedimentRiverTransportParameters(
         dataset,
         config,
         "river_bottom_and_bank_clay__mass_fraction",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     silt_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_silt__mass_fraction",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     sand_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_sand__mass_fraction",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     gravel_fraction = ncread(
         dataset,
         config,
         "river_bottom_and_bank_gravel__mass_fraction",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     # Check that river fractions sum to 1
@@ -121,36 +121,42 @@ function SedimentRiverTransportParameters(
     if any(abs.(river_fractions .- 1.0) .> 1e-3)
         error("Particle fractions in the river bed must sum to 1")
     end
-    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel = indices)
-    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel = indices)
-    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel = indices)
+    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
+    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
+    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     dm_lagg = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
-    dm_gravel = ncread(dataset, config, "gravel__mean_diameter", SoilLoss; sel = indices)
+    dm_gravel =
+        ncread(dataset, config, "gravel__mean_diameter", SoilLossModel; sel = indices)
 
     # Reservoirs
     if config.model.reservoir__flag
-        reservoir_outlet =
-            ncread(dataset, config, "reservoir_location__count", SoilLoss; sel = indices)
+        reservoir_outlet = ncread(
+            dataset,
+            config,
+            "reservoir_location__count",
+            SoilLossModel;
+            sel = indices,
+        )
         reservoir_area =
-            ncread(dataset, config, "reservoir_surface__area", SoilLoss; sel = indices)
+            ncread(dataset, config, "reservoir_surface__area", SoilLossModel; sel = indices)
         reservoir_trapping_efficiency = ncread(
             dataset,
             config,
             "reservoir_water_sediment__bedload_trapping_efficiency",
-            SoilLoss;
+            SoilLossModel;
             sel = indices,
         )
     else
@@ -783,24 +789,25 @@ function SedimentConcentrationsRiverParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLoss; sel = indices)
-    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLoss; sel = indices)
-    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLoss; sel = indices)
+    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
+    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
+    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
     dm_sagg = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     dm_lagg = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
-    dm_gravel = ncread(dataset, config, "gravel__mean_diameter", SoilLoss; sel = indices)
+    dm_gravel =
+        ncread(dataset, config, "gravel__mean_diameter", SoilLossModel; sel = indices)
     conc_parameters = SedimentConcentrationsRiverParameters(;
         dm_clay,
         dm_silt,

@@ -14,6 +14,24 @@ changes (#730) instead of using the effective porosity (difference between satur
 residual water content) can have a relatively large impact on model results, generally
 resulting in higher peak flow, lower baseflow and higher actual evapotranspiration.
 
+By default hydraulic heads are computed for the kinematic wave lateral subsurface flow
+concept (#827). Land surface elevation data is required for this computation and can be set
+as follows in the TOML configuration file:
+
+```toml
+[input.static]
+land_surface__elevation = "wflow_dem"
+```
+
+Supporting internal timestepping for the kinematic wave lateral subsurface flow concept
+(#827) requires that the flow state variable contains `instantaneous` in the `quantity` part
+of the standard name:
+
+```toml
+[state.variables]
+subsurface_water__instantaneous_volume_flow_rate = "ssf"
+```
+
 ### Fixed
 
 ### Changed
@@ -31,6 +49,10 @@ resulting in higher peak flow, lower baseflow and higher actual evapotranspirati
   the Brooks and Corey water retention model.
 
 ### Added
+- Support internal timestepping for kinematic wave lateral subsurface flow concept
+  `LateralSSF`.
+- Support including river and drainage head-dependent flux boundary conditions for kinematic
+  wave lateral subsurface flow concept `LateralSSF`.
 
 ## v1.0.2 - 2026-03-05
 

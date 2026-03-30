@@ -1,7 +1,7 @@
 # wrapper methods for standard name mapping
 get_standard_name_map(model::T) where {T} = get_standard_name_map(T)
 get_standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
-get_standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
+get_standard_name_map(::Type{<:SoilLossModel}) = sediment_standard_name_map
 get_standard_name_map(::Type{<:Domain}) = domain_standard_name_map
 get_standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
