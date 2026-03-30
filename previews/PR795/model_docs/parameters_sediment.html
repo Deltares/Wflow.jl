@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-4b57e26ac0b23ea2419e5cf576c0fc07.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-31b70197fe259bb336f8336f1069e1a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-4b57e26ac0b23ea2419e5cf576c0fc07.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -595,7 +595,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>hydrological_forcing; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>hydrological_forcing; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -649,7 +649,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="4" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>rainfall_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>rainfall_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -726,7 +726,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="6" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>rainfall_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>rainfall_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -761,7 +761,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="8" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>overland_flow_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>overland_flow_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -808,7 +808,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="10" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>overland_flow_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>overland_flow_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -843,7 +843,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="12" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>soil_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>soil_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -902,7 +902,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="14" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>soil_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>soil_erosion_output; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">

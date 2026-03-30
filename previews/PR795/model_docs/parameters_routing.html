@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-4b57e26ac0b23ea2419e5cf576c0fc07.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-31b70197fe259bb336f8336f1069e1a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-4b57e26ac0b23ea2419e5cf576c0fc07.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -564,6 +564,9 @@ window.Quarto = {
   <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a>
   <ul class="collapse">
   <li><a href="#unconfined-aquifer" id="toc-unconfined-aquifer" class="nav-link" data-scroll-target="#unconfined-aquifer">Unconfined aquifer</a></li>
+  </ul></li>
+  <li><a href="#subsurface-flow-boundaries" id="toc-subsurface-flow-boundaries" class="nav-link" data-scroll-target="#subsurface-flow-boundaries">Subsurface flow boundaries</a>
+  <ul class="collapse">
   <li><a href="#river-boundary" id="toc-river-boundary" class="nav-link" data-scroll-target="#river-boundary">River boundary</a></li>
   <li><a href="#drainage-boundary" id="toc-drainage-boundary" class="nav-link" data-scroll-target="#drainage-boundary">Drainage boundary</a></li>
   <li><a href="#recharge-boundary" id="toc-recharge-boundary" class="nav-link" data-scroll-target="#recharge-boundary">Recharge boundary</a></li>
@@ -1279,6 +1282,11 @@ window.Quarto = {
 <td style="text-align: left;">Subsurface flow</td>
 <td style="text-align: left;">m³ day⁻¹</td>
 </tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Subsurface flow</td>
+<td style="text-align: left;">m³ day⁻¹</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1312,16 +1320,21 @@ window.Quarto = {
 <td style="text-align: left;">m³ day⁻¹</td>
 </tr>
 <tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_water__instantaneous_volume_flow_rate</code></td>
+<td style="text-align: left;">Subsurface flow</td>
+<td style="text-align: left;">m³ day⁻¹</td>
+</tr>
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water_saturated_zone_top__depth</code></td>
 <td style="text-align: left;">Pseudo-water table depth (top of the saturated zone)</td>
 <td style="text-align: left;">m</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>subsurface_water__exfiltration_volume_flux</code></td>
 <td style="text-align: left;">Exfiltration (groundwater above surface level, saturated excess conditions)</td>
 <td style="text-align: left;">m Δt⁻¹</td>
 </tr>
-<tr class="dataRow even">
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water__to_river_volume_flow_rate</code></td>
 <td style="text-align: left;">Part of subsurface flow that flows to the river</td>
 <td style="text-align: left;">m³ day⁻¹</td>
@@ -1882,6 +1895,10 @@ window.Quarto = {
 </div>
 </section>
 </section>
+</section>
+<section id="subsurface-flow-boundaries" class="level2">
+<h2 class="anchored" data-anchor-id="subsurface-flow-boundaries">Subsurface flow boundaries</h2>
+<p>Boundary conditions for both the groundwater flow and lateral subsurface flow concepts. The constant head boundary can only be applied as part of the groundwater flow concept.</p>
 <section id="river-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="river-boundary">River boundary</h3>
 <section id="input-gwf-river" class="level4">
@@ -2116,7 +2133,7 @@ window.Quarto = {
 <div id="68" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_cap_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_transport_cap_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2202,7 +2219,7 @@ window.Quarto = {
 <div id="70" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_cap_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_transport_cap_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2276,7 +2293,7 @@ window.Quarto = {
 <div id="72" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_transport_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2346,7 +2363,7 @@ window.Quarto = {
 <div id="74" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2384,7 +2401,7 @@ window.Quarto = {
 <div id="76" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_transport_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2491,7 +2508,7 @@ window.Quarto = {
 <div id="78" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_transport_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -2608,7 +2625,7 @@ window.Quarto = {
 <div id="80" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_transport_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
