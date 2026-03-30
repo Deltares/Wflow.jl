@@ -390,11 +390,11 @@ end
 
     # run until steady state is reached
     epsilon = 1.0e-12
-    (; flow_length) = domain_river.parameters
+    river_params = domain_river.parameters
     while true
         sw_river.boundary_conditions.inwater[1] = 20.0
         h0 = mean(sw_river.variables.h)
-        dt = Wflow.stable_timestep(sw_river, flow_length)
+        dt = Wflow.stable_timestep(sw_river, river_params)
         Wflow.staggered_scheme_river_update!(sw_river, domain, dt, 86400.0, true)
         d = abs(h0 - mean(sw_river.variables.h))
         if d <= epsilon

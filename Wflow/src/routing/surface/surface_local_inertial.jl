@@ -11,8 +11,9 @@
     bankfull_storage::Vector{Float64} = Float64[]       # bankfull storage [m³]
     bankfull_depth::Vector{Float64} = Float64[]         # bankfull depth [m]
     mannings_n_sq::Vector{Float64} = Float64[]          # Manning's roughness squared at edge [(s m-1/3)2]
-    mannings_n::Vector{Float64} = Float64[]             # Manning's roughness [s m-1/3] at edge
-    slope::Vector{Float64} = Float64[]                  # slope at edge [-]
+    mannings_n::Vector{Float64} = Float64[]             # Manning's roughness [s m-1/3]
+    mannings_n_at_edge::Vector{Float64} = Float64[]     # Manning's roughness [s m-1/3] at edge
+    slope_at_edge::Vector{Float64} = Float64[]          # slope at edge [-]
     flow_length_at_edge::Vector{Float64} = Float64[]    # flow (river) length at edge [m]
     flow_width_at_edge::Vector{Float64} = Float64[]     # flow (river) width at edge [m]
 end
@@ -137,9 +138,10 @@ function RiverFlowStaggeredParameters(
         zb_max,
         bankfull_storage,
         bankfull_depth,
-        mannings_n = mannings_n_at_edge,
+        mannings_n,
+        mannings_n_at_edge,
         mannings_n_sq,
-        slope = slope_at_edge,
+        slope_at_edge,
         flow_length_at_edge,
         flow_width_at_edge,
     )
@@ -370,9 +372,9 @@ function update_river_channel_flow!(
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
             manning_flow(
-                river_p.mannings_n[i],
+                river_p.mannings_n_at_edge[i],
                 river_v.r[i],
-                river_p.slope[i],
+                river_p.slope_at_edge[i],
                 river_v.a[i],
             ),
             0.0,
@@ -562,9 +564,9 @@ function update_floodplain_flow!(
 
         floodplain_v.q[i] = if floodplain_v.a[i] > 1.0e-05
             mannings_flow(
-                floodplain_p.mannings_n[i],
+                floodplain_p.mannings_n_at_edge[i],
                 floodplain_v.r[i],
-                floodplain_p.slope[i],
+                floodplain_p.slope_at_edge[i],
                 floodplain_v.a[i],
             )
         else
@@ -771,7 +773,7 @@ function update_river_flow_model!(
     update_h = true,
 )
     (; reservoir) = river_flow_model.boundary_conditions
-    (; flow_length) = domain.river.parameters
+    (; parameters) = domain.river
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
@@ -784,7 +786,7 @@ function update_river_flow_model!(
     dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
-        dt_s = stable_timestep(river_flow_model, flow_length)
+        dt_s = stable_timestep(river_flow_model, parameters)
         dt_s = check_timestepsize(dt_s, t, dt)
         staggered_scheme_river_update!(river_flow_model, domain, dt_s, dt, update_h)
         t += dt_s
@@ -942,7 +944,7 @@ function init_local_inertial_overland_flow(
 end
 
 """
-    stable_timestep(river_flow_model::RiverFlowModel{<:LocalInertial}, flow_length::Vector{Float64})
+    stable_timestep(river_flow_model::RiverFlowModel{<:LocalInertial}, parameters::RiverParameters)
     stable_timestep(overland_flow_model::OverlandFlowModel{<:LocalInertial}, parameters::LandParameters)
 
 Compute a stable timestep size for the local inertial approach, based on Bates et al. (2010).
@@ -950,13 +952,14 @@ Compute a stable timestep size for the local inertial approach, based on Bates e
 dt = α * (Δx / sqrt(g max(h))
 """
 function stable_timestep(
-    river_flow_model::RiverFlowModel{<:AbstractStaggeredRoutingMethod},
-    flow_length::Vector{Float64},
+    river_flow_model::RiverFlowModel{<:LocalInertial},
+    parameters::RiverParameters,
 )
     dt_min = Inf
     (; alpha_coefficient) = river_flow_model.timestepping
     (; n) = river_flow_model.parameters
     (; h) = river_flow_model.variables
+    (; flow_length) = parameters
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds dt =
             alpha_coefficient * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
@@ -985,6 +988,27 @@ function stable_timestep(
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
+    return dt_min
+end
+
+function stable_timestep(
+    river_flow_model::RiverFlowModel{<:ManningStaggered},
+    parameters::RiverParameters,
+)
+    dt_min = Inf
+    (; alpha_coefficient) = river_flow_model.timestepping
+    (; n, mannings_n) = river_flow_model.parameters
+    (; h) = river_flow_model.variables
+    (; flow_length, flow_width, slope) = parameters
+
+    beta = 5.0/3.0
+    @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
+        @fastmath @inbounds h_r = (flow_width[i] * h[i]) / (flow_width[i] + 2.0 * h[i])
+        celerity = beta * 1.0/mannings_n[i] * pow(h_r, 2.0/3.0) * sqrt(slope[i])
+        dt = alpha_coefficient * flow_length[i] / celerity
+        dt_min = min(dt, dt_min)
+    end
+    dt_min = isinf(dt_min) ? 600.0 : dt_min
     return dt_min
 end
 
@@ -1072,7 +1096,8 @@ function update_overland_flow_model!(
 )
     (; reservoir) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
-    (; parameters) = domain.land
+    land_params = domain.land.parameters
+    river_params = domain.river.parameters
 
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
@@ -1082,8 +1107,8 @@ function update_overland_flow_model!(
     dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
-        dt_river = stable_timestep(river_flow_model, flow_length)
-        dt_land = stable_timestep(overland_flow_model, parameters)
+        dt_river = stable_timestep(river_flow_model, river_params)
+        dt_land = stable_timestep(overland_flow_model, land_params)
         dt_s = min(dt_river, dt_land)
         dt_s = check_timestepsize(dt_s, t, dt)
 
