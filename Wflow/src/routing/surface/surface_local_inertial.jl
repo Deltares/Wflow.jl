@@ -240,7 +240,13 @@ function init_staggered_river_flow(
     else
         floodplain = nothing
     end
-    routing_method = LocalInertial()
+
+    (; river_routing) = config.model
+    routing_method = if river_routing == RoutingType.local_inertial
+        LocalInertial()
+    elseif river_routing == RoutingType.manning_staggered
+        ManningStaggered()
+    end
 
     n = length(domain.network.indices)
     river_flow = RiverFlowModel(;
@@ -563,7 +569,7 @@ function update_floodplain_flow!(
         end
 
         floodplain_v.q[i] = if floodplain_v.a[i] > 1.0e-05
-            mannings_flow(
+            manning_flow(
                 floodplain_p.mannings_n_at_edge[i],
                 floodplain_v.r[i],
                 floodplain_p.slope_at_edge[i],

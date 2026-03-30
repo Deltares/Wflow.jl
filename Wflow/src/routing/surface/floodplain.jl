@@ -113,11 +113,11 @@ end
 
 "Struct to store local inertial floodplain flow model parameters"
 @with_kw struct FloodPlainParameters{P}
-    profile::P                                  # floodplain profile
-    mannings_n::Vector{Float64} = Float64[]     # manning's roughness at edge [s m-1/3]
-    mannings_n_sq::Vector{Float64} = Float64[]  # manning's roughness squared at edge [(s m-1/3)2]
-    zb_max::Vector{Float64} = Float64[]         # maximum bankfull elevation at edge [m]
-    slope::Vector{Float64} = Float64[]          # slope at edge [-]
+    profile::P                                      # floodplain profile
+    mannings_n_at_edge::Vector{Float64} = Float64[] # manning's roughness at edge [s m-1/3]
+    mannings_n_sq::Vector{Float64} = Float64[]      # manning's roughness squared at edge [(s m-1/3)2]
+    zb_max::Vector{Float64} = Float64[]             # maximum bankfull elevation at edge [m]
+    slope_at_edge::Vector{Float64} = Float64[]      # slope at edge [-]
 end
 
 "Initialize floodplain flow model parameters"
@@ -152,16 +152,22 @@ function FloodPlainParameters(
         slope_at_edge = []
     elseif river_routing == RoutingType.manning_staggered
         mannings_n_sq = []
-        slope_at_edge =
-            compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
+        flow_length_at_edge =
+            compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
+        slope_at_edge = compute_slope_at_edge(
+            zb_floodplain,
+            flow_length_at_edge,
+            nodes_at_edge,
+            n_edges,
+        )
     end
 
     parameters = FloodPlainParameters(;
         profile,
-        mannings_n = mannings_n_at_edge,
+        mannings_n_at_edge,
         mannings_n_sq,
         zb_max,
-        slope = slope_at_edge,
+        slope_at_edge,
     )
     return parameters
 end
