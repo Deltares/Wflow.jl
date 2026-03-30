@@ -33,6 +33,10 @@ A. H., and Hazenberg, P., 2022. Large-sample assessment of varying spatial resol
 streamflow estimates of the wflow_sbm hydrological model. Hydrol. Earth Syst. Sci., 26,
 4407–4430. <https://doi.org/10.5194/hess-26-4407-2022>.
 
+Ali, A. M., Imhoff, R. O., & Weerts, A. H., 2025. Machine learning for predicting spatially 
+variable lateral hydraulic conductivity: A step toward efficient hydrological model calibration and global
+applicability. Water Resources Research, 61, e2025WR040108. <https://doi.org/10.1029/2025WR040108>.
+
 de Boer-Euser, T., Bouaziz, L., De Niel, J., Brauer, C., Dewals, B., Drogue, G., Fenicia,
 F., Grelier, B., Nossent, J., Pereira, F., Savenije, H., Thirel, G., Willems, P., 2017.
 Looking beyond general metrics for model comparison – lessons from an international model
@@ -323,3 +327,6 @@ WMO-No. 1333, <https://library.wmo.int/idurl/4/68473>.
 
 World Meteorological Organization (WMO), 2024. State of Global Water Resources report 2023,
 WMO-No. 1362, <https://library.wmo.int/idurl/4/69033>.
+
+World Meteorological Organization (WMO), 2025. State of Global Water Resources report 2024,
+WMO-No. 1380, <https://library.wmo.int/idurl/4/69629>.
