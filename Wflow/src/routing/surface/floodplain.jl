@@ -112,33 +112,16 @@ function FloodPlainProfile(
 end
 
 "Struct to store local inertial floodplain flow model parameters"
-@with_kw struct LocalInertialFloodPlainParameters{P}
-    profile::P                          # floodplain profile
-    mannings_n::Vector{Float64}         # manning's roughness [s m-1/3]
-    mannings_n_sq::Vector{Float64}      # manning's roughness squared at edge [(s m-1/3)2]
-    zb_max::Vector{Float64}             # maximum bankfull elevation at edge [m]
+@with_kw struct FloodPlainParameters{P}
+    profile::P                                  # floodplain profile
+    mannings_n::Vector{Float64} = Float64[]     # manning's roughness at edge [s m-1/3]
+    mannings_n_sq::Vector{Float64} = Float64[]  # manning's roughness squared at edge [(s m-1/3)2]
+    zb_max::Vector{Float64} = Float64[]         # maximum bankfull elevation at edge [m]
+    slope::Vector{Float64} = Float64[]          # slope at edge [-]
 end
 
-"Struct to store kinematic wave floodplain flow model parameters"
-@with_kw struct KinWaveFloodPlainParameters{P}
-    profile::P                          # floodplain profile
-    mannings_n::Vector{Float64}         # manning's roughness [s m-1/3]
-end
-
-function get_floodplain_mannings_n(dataset, config, indices)
-    mannings_n = ncread(
-        dataset,
-        config,
-        "floodplain_water_flow__manning_n_parameter";
-        sel = indices,
-        defaults = 0.072,
-        type = Float64,
-    )
-    return mannings_n
-end
-
-"Initialize local inertial floodplain flow model parameters"
-function LocalInertialFloodPlainParameters(
+"Initialize floodplain flow model parameters"
+function FloodPlainParameters(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
@@ -147,31 +130,44 @@ function LocalInertialFloodPlainParameters(
 )
     (; indices, nodes_at_edge, graph) = domain.network
     (; flow_length) = domain.parameters
+    (; river_routing) = config.model
     n_edges = ne(graph)
     profile = FloodPlainProfile(dataset, config, domain; index_pit)
-    mannings_n = get_floodplain_mannings_n(dataset, config, indices)
+    mannings_n = ncread(
+        dataset,
+        config,
+        "floodplain_water_flow__manning_n_parameter";
+        sel = indices,
+        defaults = 0.072,
+        type = Float64,
+    )
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes
-    mannings_n_sq = fill(Float64(0), n_edges)
-    zb_max = fill(Float64(0), n_edges)
-    for i in 1:n_edges
-        src_node = nodes_at_edge.src[i]
-        dst_node = nodes_at_edge.dst[i]
-        mannings_n_i =
-            (
-                mannings_n[dst_node] * flow_length[dst_node] +
-                mannings_n[src_node] * flow_length[src_node]
-            ) / (flow_length[dst_node] + flow_length[src_node])
-        mannings_n_sq[i] = mannings_n_i * mannings_n_i
-        zb_max[i] = max(zb_floodplain[src_node], zb_floodplain[dst_node])
+    mannings_n_at_edge =
+        compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
+    zb_max = compute_value_at_edge(zb_floodplain, nodes_at_edge, n_edges, maximum)
+
+    if river_routing == RoutingType.local_inertial
+        mannings_n_sq = mannings_n_at_edge .* mannings_n_at_edge
+        slope_at_edge = []
+    elseif river_routing == RoutingType.manning_staggered
+        mannings_n_sq = []
+        slope_at_edge =
+            compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
     end
-    parameters =
-        LocalInertialFloodPlainParameters(profile, mannings_n, mannings_n_sq, zb_max)
+
+    parameters = FloodPlainParameters(;
+        profile,
+        mannings_n = mannings_n_at_edge,
+        mannings_n_sq,
+        zb_max,
+        slope = slope_at_edge,
+    )
     return parameters
 end
 
-"Struct to store local inertial floodplain flow model variables"
-@with_kw struct LocalInertialFloodPlainVariables
+"Struct to store floodplain flow model variables"
+@with_kw struct FloodPlainVariables
     n::Int
     n_edges::Int
     storage::Vector{Float64} = zeros(n)    # storage [m³]
@@ -180,31 +176,17 @@ end
     a::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
     r::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
     hf::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
-    q0::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step
+    q0::Vector{Float64} = Float64[]        # discharge at edge at previous time step
     q::Vector{Float64} = zeros(n_edges)    # discharge at edge  [m³ s⁻¹]
     q_av::Vector{Float64} = zeros(n_edges) # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
     hf_index::Vector{Int} = zeros(Int, n_edges) # edge index with `hf` [-] above depth threshold
 end
 
-"Struct to store kinematic wave floodplain flow model variables"
-@with_kw struct KinWaveFloodPlainVariables
-    n::Int
-    storage::Vector{Float64} = zeros(n) # storage [m³]
-    h::Vector{Float64} = zeros(n)       # water depth [m]
-    q::Vector{Float64} = zeros(n)       # discharge [m³ s⁻¹]
-    q_av::Vector{Float64} = zeros(n)    # average river discharge [m³ s⁻¹] for model timestep Δt
-end
-
-"Local inertial floodplain flow model"
-@with_kw struct LocalInertialFloodPlainModel{P} <: AbstractFloodPlainModel
-    parameters::LocalInertialFloodPlainParameters{P}
-    variables::LocalInertialFloodPlainVariables
-end
-
-"Kinematic wave floodplain flow model"
-@with_kw struct KinWaveFloodPlainModel{P} <: AbstractFloodPlainModel
-    parameters::KinWaveFloodPlainParameters{P}
-    variables::KinWaveFloodPlainVariables
+"Floodplain flow model"
+@with_kw struct FloodPlainModel{T, P} <: AbstractFloodPlainModel
+    routing_method::T
+    parameters::FloodPlainParameters{P}
+    variables::FloodPlainVariables
 end
 
 "Determine the initial floodplain storage"
@@ -280,33 +262,28 @@ function flood_depth(
     return flood_depth
 end
 
-"Initialize floodplain geometry and `LocalInerialFloodPlain` variables and parameters"
-function LocalInertialFloodPlainModel(
+"Initialize floodplain geometry and model variables and parameters"
+function FloodPlainModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
     zb_floodplain::Vector{Float64},
 )
     (; indices, local_drain_direction, graph) = domain.network
+    (; river_routing) = config.model
     n = length(indices)
     index_pit = findall(x -> x == 5, local_drain_direction)
     n_edges = ne(graph)
-    parameters =
-        LocalInertialFloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit)
-    variables =
-        LocalInertialFloodPlainVariables(; n, n_edges, h = zeros(n + length(index_pit)))
+    parameters = FloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit)
+    if river_routing == RoutingType.local_inertial
+        q0 = zeros(n_edges)
+        routing_method = LocalInertial()
+    elseif river_routing == RoutingType.manning_staggered
+        q0 = []
+        routing_method = ManningStaggered()
+    end
+    variables = FloodPlainVariables(; n, n_edges, q0, h = zeros(n + length(index_pit)))
 
-    floodplain_model = LocalInertialFloodPlainModel(; parameters, variables)
-    return floodplain_model
-end
-
-function KinWaveFloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver)
-    (; indices) = domain.network
-    profile = FloodPlainProfile(dataset, config, domain)
-    mannings_n = get_floodplain_mannings_n(dataset, config, indices)
-    profile = FloodPlainProfile(dataset, config, domain)
-    parameters = KinWaveFloodPlainParameters(profile, mannings_n)
-    variables = KinWaveFloodPlainVariables()
-    floodplain_model = KinWaveFloodPlainModel(; parameters, variables)
+    floodplain_model = FloodPlainModel(; routing_method, parameters, variables)
     return floodplain_model
 end

@@ -6,7 +6,7 @@ For configuration files we use TOML.
 =#
 
 # Option enumerators
-@enumx RoutingType kinematic_wave kinematic_wave_staggered local_inertial
+@enumx RoutingType kinematic_wave manning_staggered local_inertial
 @enumx ModelType sbm sbm_gwf sediment
 @enumx CalendarType standard gregorian proleptic_gregorian julian noleap _365_day all_leap _366_day _360_day
 @enumx GwfConductivityProfileType uniform exponential

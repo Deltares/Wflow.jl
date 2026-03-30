@@ -73,55 +73,33 @@ function get_river_parameters(
     return mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width
 end
 
-function compute_value_at_edge(v, nodes_at_edge, n_edges, func::Function)
-    x = fill(Float64(0), n_edges)
-    for i in 1:n_edges
-        src_node = nodes_at_edge.src[i]
-        dst_node = nodes_at_edge.dst[i]
-        x[i] = func((v[src_node], v[dst_node]))
-    end
-    return x
-end
-
-function compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
-    mannings_n_at_edge = fill(Float64(0), n_edges)
-    for i in 1:n_edges
-        src_node = nodes_at_edge.src[i]
-        dst_node = nodes_at_edge.dst[i]
-        mannings_n_at_edge[i] =
-            (
-                mannings_n[dst_node] * flow_length[dst_node] +
-                mannings_n[src_node] * flow_length[src_node]
-            ) / (flow_length[dst_node] + flow_length[src_node])
-    end
-    return mannings_n_at_edge
-end
-
-function compute_slope_at_edge(elev, length_at_edge, nodes_at_edge, n_edges)
-    slope = fill(Float64(0), n_edges)
-    for i in 1:n_edges
-        src_node = nodes_at_edge.src[i]
-        dst_node = nodes_at_edge.dst[i]
-        slope[i] = max((elev[src_node] - elev[dst_node]) / length_at_edge[i], 0.00001)
-    end
-    return slope
-end
-
-"Initialize local inertial river flow model parameters"
-function init_local_inertial_river_flow_parameters(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainRiver,
-)
+function log_message_staggered_flow(config::Config)
+    (; river_routing) = config.model
     alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
     froude_limit = config.model.river_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
     floodplain_1d = config.model.floodplain_1d__flag
 
-    @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
+    if river_routing == RoutingType.local_inertial
+        @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
+    elseif river_routing == RoutingType.manning_staggered
+        @info "Manning's equation on a staggered grid is used for river flow." alpha floodplain_1d
+        froude_limit = false
+    end
+    return waterdepth_threshold, froude_limit
+end
 
+"Initialize river flow model parameters on a staggered grid"
+function RiverFlowStaggeredParameters(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainRiver,
+)
+    (; river_routing) = config.model
     (; graph, indices, local_drain_direction, nodes_at_edge) = domain.network
     (; reservoir_outlet) = domain.parameters
+
+    waterdepth_threshold, froude_limit = log_message_staggered_flow(config)
 
     n = length(indices)
     n_edges = ne(graph)
@@ -133,13 +111,20 @@ function init_local_inertial_river_flow_parameters(
     zb = bankfull_elevation - bankfull_depth # river bed elevation
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
 
-    # determine z, width, length and manning's n at edges
+    # determine parameters at edges
     zb_max = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
     flow_width_at_edge = compute_value_at_edge(flow_width, nodes_at_edge, n_edges, minimum)
     flow_length_at_edge = compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
     mannings_n_at_edge =
         compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
-    mannings_n_sq = mannings_n_at_edge .* mannings_n_at_edge
+    if river_routing == RoutingType.local_inertial
+        mannings_n_sq = mannings_n_at_edge .* mannings_n_at_edge
+        slope_at_edge = []
+    elseif river_routing == RoutingType.manning_staggered
+        mannings_n_sq = []
+        slope_at_edge =
+            compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
+    end
 
     parameters = RiverFlowStaggeredParameters(;
         n,
@@ -152,56 +137,8 @@ function init_local_inertial_river_flow_parameters(
         zb_max,
         bankfull_storage,
         bankfull_depth,
-        mannings_n_sq,
-        flow_length_at_edge,
-        flow_width_at_edge,
-    )
-    return parameters
-end
-
-function init_manning_staggered_river_flow_parameters(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainRiver,
-)
-    alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
-    waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
-    floodplain_1d = config.model.floodplain_1d__flag
-
-    @info "Manning's equation on a staggered grid is used for river flow." alpha floodplain_1d
-
-    (; graph, indices, local_drain_direction, nodes_at_edge) = domain.network
-    (; reservoir_outlet) = domain.parameters
-
-    n = length(indices)
-    n_edges = ne(graph)
-    active_index = findall(x -> x == 0, reservoir_outlet)
-    index_pit = findall(x -> x == 5, local_drain_direction)
-
-    mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width =
-        get_river_parameters(dataset, config, domain, index_pit)
-    zb = bankfull_elevation - bankfull_depth # river bed elevation
-    bankfull_storage = bankfull_depth .* flow_width .* flow_length
-
-    # determine z, width, length and manning's n and slope at edges
-    zb_max = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
-    flow_width_at_edge = compute_value_at_edge(flow_width, nodes_at_edge, n_edges, minimum)
-    flow_length_at_edge = compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
-    mannings_n_at_edge =
-        compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
-    slope_at_edge = compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
-
-    parameters = RiverFlowStaggeredParameters(;
-        n,
-        n_edges,
-        active_n = active_index,
-        active_e = active_index,
-        h_thresh = waterdepth_threshold,
-        zb,
-        zb_max,
-        bankfull_storage,
-        bankfull_depth,
         mannings_n = mannings_n_at_edge,
+        mannings_n_sq,
         slope = slope_at_edge,
         flow_length_at_edge,
         flow_width_at_edge,
@@ -228,84 +165,58 @@ end
     error::Vector{Float64} = zeros(n)           # error storage [m³]
 end
 
-function get_river_depth_bc(dataset, config, indices)
+function RiverFlowStaggeredVariables(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkRiver,
+)
+    (; pit_indices, indices, graph) = network
+    (; river_routing) = config.model
+
     riverdepth_bc = ncread(
         dataset,
         config,
         "model_boundary_condition_river_bank_water__depth";
-        sel = indices,
+        sel = pit_indices,
         defaults = 0.0,
         type = Float64,
     )
-    return riverdepth_bc
-end
 
-function init_manning_staggered_river_flow_variables(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkRiver,
-)
-    (; pit_indices, indices, graph) = network
-
-    riverdepth_bc = get_river_depth_bc(dataset, config, pit_indices)
     n = length(indices)
     n_edges = ne(graph)
     # set river depth h to zero (including reservoir locations)
     h = zeros(n)
     q_av = zeros(n_edges)
+    if river_routing == RoutingType.local_inertial
+        q0 = zeros(n_edges)
+    elseif river_routing == RoutingType.manning_staggered
+        q0 = []
+    end
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
     append!(h, riverdepth_bc)
 
     variables = RiverFlowStaggeredVariables(;
         n,
         n_edges,
-        q_av,
-        q_channel_av = config.model.floodplain_1d__flag ? zeros(n_edges) : q_av,
-        h,
-    )
-    return variables
-end
-
-"Initialize local inertial river flow model variables"
-function init_local_inertial_river_flow_variables(
-    dataset::NCDataset,
-    config::Config,
-    network::NetworkRiver,
-)
-    (; pit_indices, indices, graph) = network
-
-    riverdepth_bc = get_river_depth_bc(dataset, config, pit_indices)
-    n = length(indices)
-    n_edges = ne(graph)
-    # set river depth h to zero (including reservoir locations)
-    h = zeros(n)
-    q_av = zeros(n_edges)
-    q0 = zeros(n_edges)
-    # set ghost points for boundary condition (downstream river outlet): river depth `h`
-    append!(h, riverdepth_bc)
-
-    variables = RiverFlowStaggeredVariables(;
-        n,
-        n_edges,
-        q_av,
         q0,
+        q_av,
         q_channel_av = config.model.floodplain_1d__flag ? zeros(n_edges) : q_av,
         h,
     )
     return variables
 end
 
-"Initialize local inertial river flow model"
-function init_local_inertial_river_flow(
+"Initialize river flow model on a staggered grid"
+function init_staggered_river_flow(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
     reservoir_model::Union{ReservoirModel, Nothing},
 )
-    # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
-    # with nodes and edges. This information is extracted from the directed graph of the
-    # river. Discharge q is calculated at edges between nodes and mapped to the source
-    # nodes for gridded output (index of edge is equal to source node index, e.g.:
+    # This river flow model makes use of a staggered grid (Bates et al. (2010)), with nodes
+    # and edges. This information is extracted from the directed graph of the river.
+    # Discharge q is calculated at edges between nodes and mapped to the source nodes for
+    # gridded output (index of edge is equal to source node index, e.g.:
     # Edge 1 => 5
     # Edge 2 => 1
     # Edge 3 => 2
@@ -317,47 +228,17 @@ function init_local_inertial_river_flow(
     alpha_coefficient = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; alpha_coefficient)
 
-    parameters = init_local_inertial_river_flow_parameters(dataset, config, domain)
-    variables = init_local_inertial_river_flow_variables(dataset, config, domain.network)
+    parameters = RiverFlowStaggeredParameters(dataset, config, domain)
+    variables = RiverFlowStaggeredVariables(dataset, config, domain.network)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
 
     if config.model.floodplain_1d__flag
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
-        floodplain = LocalInertialFloodPlainModel(dataset, config, domain, zb_floodplain)
+        floodplain = FloodPlainModel(dataset, config, domain, zb_floodplain)
     else
         floodplain = nothing
     end
     routing_method = LocalInertial()
-
-    n = length(domain.network.indices)
-    river_flow = RiverFlowModel(;
-        timestepping,
-        boundary_conditions,
-        parameters,
-        variables,
-        floodplain,
-        allocation = do_water_demand(config) ? AllocationRiverModel(n) :
-                     NoAllocationRiverModel(n),
-        routing_method,
-    )
-    return river_flow
-end
-
-"Initialize river manning's flow model on a staggered grid"
-function init_manning_staggered_river_flow(
-    dataset::NCDataset,
-    config::Config,
-    domain::DomainRiver,
-    reservoir_model::Union{ReservoirModel, Nothing},
-)
-    alpha_coefficient = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
-
-    timestepping = TimeStepping(; alpha_coefficient)
-    parameters = init_manning_staggered_river_flow_parameters(dataset, config, domain)
-    variables = init_manning_staggered_river_flow_variables(dataset, config, domain.network)
-    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
-    floodplain = nothing
-    routing_method = ManningStaggered()
 
     n = length(domain.network.indices)
     river_flow = RiverFlowModel(;
@@ -512,7 +393,7 @@ function update_floodplain_flow!(
     river_flow_model::RiverFlowModel{T, P, V, F},
     domain::DomainRiver,
     dt::Float64,
-) where {T <: LocalInertial, P, V, F <: AbstractFloodPlainModel}
+) where {T <: LocalInertial, P, V, F <: FloodPlainModel{<:LocalInertial}}
     (; nodes_at_edge) = domain.network
     (; flow_width) = domain.parameters
 
@@ -617,7 +498,7 @@ function update_floodplain_flow!(
     river_flow_model::RiverFlowModel{T, P, V, F},
     domain::DomainRiver,
     dt::Float64,
-) where {T <: ManningStaggered, P, V, F <: AbstractFloodPlainModel}
+) where {T <: ManningStaggered, P, V, F <: FloodPlainModel{<:ManningStaggered}}
     (; nodes_at_edge) = domain.network
     (; flow_width) = domain.parameters
 

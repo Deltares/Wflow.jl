@@ -72,12 +72,9 @@ function initialize_river_flow(dataset::NCDataset, config::Config, domain::Domai
     if river_routing == RoutingType.kinematic_wave
         river_flow =
             init_kinematic_wave_river_flow(dataset, config, domain.river, reservoir)
-    elseif river_routing == RoutingType.local_inertial
-        river_flow =
-            init_local_inertial_river_flow(dataset, config, domain.river, reservoir)
-    elseif river_routing == RoutingType.kinematic_wave_staggered
-        river_flow =
-            init_kinwave_staggered_river_flow(dataset, config, domain.river, reservoir)
+    elseif river_routing == RoutingType.local_inertial ||
+           river_routing == RoutingType.kinematic_wave_staggered
+        river_flow = init_staggered_river_flow(dataset, config, domain.river, reservoir)
     end
 end
 
