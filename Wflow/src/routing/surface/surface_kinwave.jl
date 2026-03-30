@@ -430,6 +430,8 @@ function kinwave_river_update!(
     (; flow_width, flow_length) = domain.parameters
     (; h, q, q_av, storage, qin, qin_av, qlat) = river_flow_model.variables
 
+    # @infiltrate
+
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns

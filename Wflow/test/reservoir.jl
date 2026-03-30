@@ -137,17 +137,17 @@ end
             id = [1],
             storfunc = [Wflow.ReservoirProfileType.linear],
             outflowfunc = [Wflow.ReservoirOutflowType.simple],
-            area = [6.0e4],
-            threshold = [0.0],
-            b = [0.0],
-            e = [0.0],
-            maxrelease = [63.0],
-            demand = [7.9],
-            targetminfrac = [0.003],
-            targetfullfrac = [1.0],
-            maxstorage = [7.16e7],
+            area = [9.069779e4],
+            maxrelease = [1.74],
+            demand = [0.2175],
+            targetminfrac = [0.358469158],
+            targetfullfrac = [0.83492106199],
+            maxstorage = [3.3e7],
         ),
-        variables = Wflow.ReservoirVariables(; waterlevel = zeros(n), storage = [7.1e7]),
+        variables = Wflow.ReservoirVariables(;
+            waterlevel = [3.0266425035195113],
+            storage = [2.7450978618928656e7],
+        ),
     )
 
     river_flow_vars = Wflow.FlowVariables(; n = 2, q = [0.04, 0.04])
@@ -168,11 +168,11 @@ end
         dt,
         dt_forcing,
     )
-    @test river_flow_vars.qin[2] ≈ 7.9
+    @test river_flow_vars.qin[2] ≈ 0.21749985206208133
     @test reservoir_model.boundary_conditions.actual_external_abstraction_av[1] ≈ 1e3
-    @test reservoir_model.variables.storage[1] ≈ 7.099161079861112e7
-    @test reservoir_model.variables.waterlevel[1] ≈ -0.13982002314801018
-    @test reservoir_model.variables.outflow[1] ≈ 7.9
+    @test reservoir_model.variables.storage[1] ≈ 2.7450272326280978e7
+    @test reservoir_model.variables.waterlevel[1] ≈ 3.0188551842509996
+    @test reservoir_model.variables.outflow[1] ≈ 0.21749985206208133
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
