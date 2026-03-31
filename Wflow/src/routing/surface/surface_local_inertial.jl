@@ -76,16 +76,17 @@ end
 
 function log_message_staggered_flow(config::Config)
     (; river_routing) = config.model
-    alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
-    froude_limit = config.model.river_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
     floodplain_1d = config.model.floodplain_1d__flag
 
     if river_routing == RoutingType.local_inertial
+        alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
+        froude_limit = config.model.river_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
         @info "Local inertial approach is used for river flow." alpha waterdepth_threshold froude_limit floodplain_1d
     elseif river_routing == RoutingType.manning_staggered
-        @info "Manning's equation on a staggered grid is used for river flow." alpha floodplain_1d
+        alpha = config.model.river_staggered_manning_flow__alpha_coefficient
         froude_limit = false
+        @info "Manning's equation on a staggered grid is used for river flow." alpha floodplain_1d
     end
     return waterdepth_threshold, froude_limit
 end
