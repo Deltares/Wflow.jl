@@ -304,20 +304,20 @@ end
     n_edges = ne(graph)
 
     # determine z, width, length and manning's n at edges
-    zb_max = fill(0.0, n_edges)
+    zb_max_at_edge = fill(0.0, n_edges)
     width_at_edge = fill(0.0, n_edges)
     length_at_edge = fill(0.0, n_edges)
-    mannings_n_sq = fill(0.0, n_edges)
+    mannings_n_sq_at_edge = fill(0.0, n_edges)
     for i in 1:n_edges
-        zb_max[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
+        zb_max_at_edge[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
         width_at_edge[i] = min(width[nodes_at_edge.dst[i]], width[nodes_at_edge.src[i]])
         length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
-        mannings_n =
+        mannings_n_at_edge =
             (
                 n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
                 n_river[nodes_at_edge.src[i]] * dl[nodes_at_edge.src[i]]
             ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
-        mannings_n_sq[i] = mannings_n * mannings_n
+        mannings_n_sq_at_edge[i] = mannings_n_at_edge * mannings_n_at_edge
     end
 
     river_network = Wflow.NetworkRiver(;
@@ -347,11 +347,10 @@ end
         active_n = collect(1:(n - 1)),
         active_e = collect(1:n_edges),
         h_thresh,
-        zb_max,
-        mannings_n_sq,
-        mannings_n = n_river,
-        flow_width_at_edge = width_at_edge,
-        flow_length_at_edge = length_at_edge,
+        zb_max = zb_max_at_edge,
+        mannings_n_sq = mannings_n_sq_at_edge,
+        flow_width = width_at_edge,
+        flow_length = length_at_edge,
         bankfull_storage = fill(Wflow.MISSING_VALUE, n),
         bankfull_depth = fill(Wflow.MISSING_VALUE, n),
         zb,

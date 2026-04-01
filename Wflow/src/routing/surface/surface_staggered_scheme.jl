@@ -6,16 +6,17 @@
     active_e::Vector{Int}                               # active edges [-]
     froude_limit::Bool = false                          # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
     h_thresh::Float64 = 0.0                             # depth threshold for calculating flow [m]
+    # node parameters
     zb::Vector{Float64} = Float64[]                     # river bed elevation [m]
-    zb_max::Vector{Float64} = Float64[]                 # maximum channel bed elevation [m]
     bankfull_storage::Vector{Float64} = Float64[]       # bankfull storage [m³]
     bankfull_depth::Vector{Float64} = Float64[]         # bankfull depth [m]
+    # edge parameters
+    zb_max::Vector{Float64} = Float64[]                 # maximum channel bed elevation at edge [m]
+    mannings_n::Vector{Float64} = Float64[]             # Manning's roughness at edge [s m-1/3]
     mannings_n_sq::Vector{Float64} = Float64[]          # Manning's roughness squared at edge [(s m-1/3)2]
-    mannings_n::Vector{Float64} = Float64[]             # Manning's roughness [s m-1/3]
-    mannings_n_at_edge::Vector{Float64} = Float64[]     # Manning's roughness [s m-1/3] at edge
-    slope_at_edge::Vector{Float64} = Float64[]          # slope at edge [-]
-    flow_length_at_edge::Vector{Float64} = Float64[]    # flow (river) length at edge [m]
-    flow_width_at_edge::Vector{Float64} = Float64[]     # flow (river) width at edge [m]
+    slope::Vector{Float64} = Float64[]                  # slope at edge [-]
+    flow_length::Vector{Float64} = Float64[]            # flow (river) length at edge [m]
+    flow_width::Vector{Float64} = Float64[]             # flow (river) width at edge [m]
 end
 
 function get_river_parameters(
@@ -114,16 +115,16 @@ function RiverFlowStaggeredParameters(
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
 
     # determine parameters at edges
-    zb_max = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
+    zb_max_at_edge = compute_value_at_edge(zb, nodes_at_edge, n_edges, maximum)
     flow_width_at_edge = compute_value_at_edge(flow_width, nodes_at_edge, n_edges, minimum)
     flow_length_at_edge = compute_value_at_edge(flow_length, nodes_at_edge, n_edges, mean)
     mannings_n_at_edge =
         compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
     if river_routing == RoutingType.local_inertial
-        mannings_n_sq = mannings_n_at_edge .* mannings_n_at_edge
+        mannings_n_sq_at_edge = mannings_n_at_edge .* mannings_n_at_edge
         slope_at_edge = []
     elseif river_routing == RoutingType.manning_staggered
-        mannings_n_sq = []
+        mannings_n_sq_at_edge = []
         slope_at_edge =
             compute_slope_at_edge(zb, flow_length_at_edge, nodes_at_edge, n_edges)
     end
@@ -136,15 +137,14 @@ function RiverFlowStaggeredParameters(
         froude_limit,
         h_thresh = waterdepth_threshold,
         zb,
-        zb_max,
         bankfull_storage,
         bankfull_depth,
-        mannings_n,
-        mannings_n_at_edge,
-        mannings_n_sq,
-        slope_at_edge,
-        flow_length_at_edge,
-        flow_width_at_edge,
+        zb_max = zb_max_at_edge,
+        mannings_n = mannings_n_at_edge,
+        mannings_n_sq = mannings_n_sq_at_edge,
+        slope = slope_at_edge,
+        flow_length = flow_length_at_edge,
+        flow_width = flow_width_at_edge,
     )
     return parameters
 end
@@ -153,17 +153,19 @@ end
 @with_kw struct RiverFlowStaggeredVariables <: AbstractRiverFlowVariables
     n::Int
     n_edges::Int
+    # edge variables
     q::Vector{Float64} = zeros(n_edges)         # river discharge at edge (subgrid channel) [m³ s⁻¹]
     q0::Vector{Float64} = Float64[]             # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
     q_av::Vector{Float64}                       # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
     q_channel_av::Vector{Float64}               # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
-    h::Vector{Float64}                          # water depth [m]
     zs_max::Vector{Float64} = zeros(n_edges)    # maximum water elevation at edge [m]
     zs_src::Vector{Float64} = zeros(n_edges)    # water elevation of source node of edge [m]
     zs_dst::Vector{Float64} = zeros(n_edges)    # water elevation of downstream node of edge [m]
     hf::Vector{Float64} = zeros(n_edges)        # water depth at edge [m]
     a::Vector{Float64} = zeros(n_edges)         # flow area at edge [m²]
     r::Vector{Float64} = zeros(n_edges)         # wetted perimeter at edge [m]
+    # node variables
+    h::Vector{Float64}                          # water depth [m]
     storage::Vector{Float64} = zeros(n)         # river storage [m³]
     error::Vector{Float64} = zeros(n)           # error storage [m³]
 end
@@ -322,8 +324,8 @@ function update_river_channel_flow!(
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-        river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.a[i] = river_p.flow_width[i] * river_v.hf[i] # flow area (rectangular channel)
+        river_v.r[i] = river_v.a[i] / (river_p.flow_width[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
@@ -334,7 +336,7 @@ function update_river_channel_flow!(
                 river_v.hf[i],
                 river_v.a[i],
                 river_v.r[i],
-                river_p.flow_length_at_edge[i],
+                river_p.flow_length[i],
                 river_p.mannings_n_sq[i],
                 river_p.froude_limit,
                 dt,
@@ -373,15 +375,15 @@ function update_river_channel_flow!(
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-        river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.a[i] = river_p.flow_width[i] * river_v.hf[i] # flow area (rectangular channel)
+        river_v.r[i] = river_v.a[i] / (river_p.flow_width[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
             manning_flow(
-                river_p.mannings_n_at_edge[i],
+                river_p.mannings_n[i],
                 river_v.r[i],
-                river_p.slope_at_edge[i],
+                river_p.slope[i],
                 river_v.a[i],
             ),
             0.0,
@@ -472,7 +474,7 @@ function update_floodplain_flow!(
                 floodplain_v.hf[i],
                 floodplain_v.a[i],
                 floodplain_v.r[i],
-                river_p.flow_length_at_edge[i],
+                river_p.flow_length[i],
                 floodplain_p.mannings_n_sq[i],
                 river_p.froude_limit,
                 dt,
@@ -571,9 +573,9 @@ function update_floodplain_flow!(
 
         floodplain_v.q[i] = if floodplain_v.a[i] > 1.0e-05
             manning_flow(
-                floodplain_p.mannings_n_at_edge[i],
+                floodplain_p.mannings_n[i],
                 floodplain_v.r[i],
-                floodplain_p.slope_at_edge[i],
+                floodplain_p.slope[i],
                 floodplain_v.a[i],
             )
         else
