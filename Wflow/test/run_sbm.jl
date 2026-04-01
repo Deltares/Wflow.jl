@@ -442,7 +442,7 @@ end
 end
 
 @testitem "Local-inertial option for river flow including 1D floodplain schematization" begin
-    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     model = Wflow.Model(config)
@@ -717,6 +717,32 @@ end
     end
 end
 
+@testitem "River flow including 1D floodplain schematization using Manning's equation on a staggered grid" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.river_routing = "manning_staggered"
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_flow) = model.routing
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    (; q_av, h) = river_flow.variables
+    @test sum(q_av) ≈ 2198.5455132587495
+    @test q_av[1622] ≈ 0.0002189225364991537
+    @test q_av[43] ≈ 10.2692066407329
+    @test q_av[501] ≈ 0.021410239377431573
+    @test q_av[5808] ≈ 0.004923137077613924
+    @test h[1622] ≈ 0.0017960475101775342
+    @test h[43] ≈ 1.3029109034019006
+    @test h[501] ≈ 0.005400545537332966
+    @test h[5808] ≈ 0.00589431731806414
+    (; q_av, h) = river_flow.floodplain.variables
+    @test maximum(q_av) ≈ 1.1824324225913527
+    @test maximum(h) ≈ 1.1422278106700228
+end
+
 @testitem "run wflow sbm" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
@@ -785,7 +811,7 @@ end
 end
 
 @testitem "water balance river local inertial routing with floodplain" begin
-    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     config.model.water_mass_balance__flag = true
