@@ -971,7 +971,7 @@ reinfiltration_surfacewater__flag = true
 ```
 
 This can be done with both `kinematic_wave` and `local_inertial` land routing settings. When
-enabling this proces, the amount of overland flow is added as water that can potentially
+enabling this process, the amount of overland flow is added as water that can potentially
 infiltrate. During infiltration, the amount of infiltrated water originating from overland
 flow is tracked using a simple ratio
 (`available_from_overland_flow/total_potential_infiltration`). After the infiltration
