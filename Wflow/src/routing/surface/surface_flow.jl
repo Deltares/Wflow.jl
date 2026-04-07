@@ -28,9 +28,9 @@ end
 
 @with_kw struct RiverFlowModel{
     T <: AbstractRoutingMethod,
+    F <: Union{AbstractFloodPlainModel, Nothing},
     P <: AbstractRiverFlowParameters,
     V <: AbstractRiverFlowVariables,
-    F <: Union{AbstractFloodPlainModel, Nothing},
     A <: AbstractAllocationModel,
 } <: AbstractRiverFlowModel
     routing_method::T

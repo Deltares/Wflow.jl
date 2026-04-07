@@ -401,10 +401,10 @@ end
 Update floodplain flow for the local inertial river flow model.
 """
 function update_floodplain_flow!(
-    river_flow_model::RiverFlowModel{T, P, V, F},
+    river_flow_model::RiverFlowModel{T, F},
     domain::DomainRiver,
     dt::Float64,
-) where {T <: LocalInertial, P, V, F <: FloodPlainModel{<:LocalInertial}}
+) where {T <: LocalInertial, F <: FloodPlainModel{<:LocalInertial}}
     (; nodes_at_edge) = domain.network
     (; flow_width) = domain.parameters
 
@@ -506,10 +506,10 @@ end
 Update floodplain flow for the manning river flow model on a staggered grid.
 """
 function update_floodplain_flow!(
-    river_flow_model::RiverFlowModel{T, P, V, F},
+    river_flow_model::RiverFlowModel{T, F},
     domain::DomainRiver,
     dt::Float64,
-) where {T <: ManningStaggered, P, V, F <: FloodPlainModel{<:ManningStaggered}}
+) where {T <: ManningStaggered, F <: FloodPlainModel{<:ManningStaggered}}
     (; nodes_at_edge) = domain.network
     (; flow_width) = domain.parameters
 
@@ -592,10 +592,10 @@ function update_floodplain_flow!(
 end
 
 update_floodplain_flow!(
-    model::RiverFlowModel{T, P, V, F},
+    model::RiverFlowModel{T, F},
     domain::DomainRiver,
     dt::Float64,
-) where {T <: AbstractStaggeredRoutingMethod, P, V, F <: Nothing} = nothing
+) where {T <: AbstractStaggeredRoutingMethod, F <: Nothing} = nothing
 
 """
 Update reservoir boundary conditions for a river flow model on a staggered grid.
