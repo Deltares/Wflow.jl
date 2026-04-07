@@ -17,31 +17,31 @@ as a model output variable.
 ```{julia}
 # | code-fold: true
 include("../docs_utils.jl")
-generate_table(Wflow.Routing, :reservoir_generic_input; relative_widths = [6, 5, 2, 2])
+generate_table(Wflow.Routing, :reservoir_generic_input; relative_widths = [6, 5, 2, 2, 2])
 ```
 
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :reservoir_input; relative_widths = [6, 5, 2, 2])
+generate_table(Wflow.Routing, :reservoir_input; relative_widths = [6, 5, 2, 2, 2])
 ```
 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table([Wflow.Routing, Wflow.LandHydrologySBM], :reservoir_static_cyclic_forcing_input; relative_widths = [6, 5, 2, 2])
+generate_table([Wflow.Routing, Wflow.LandHydrologySBM], :reservoir_static_cyclic_forcing_input; relative_widths = [6, 5, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :reservoir_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :reservoir_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :reservoir_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :reservoir_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ## Kinematic wave
@@ -49,63 +49,63 @@ generate_table(Wflow.Routing, :reservoir_output; relative_widths = [3, 3, 1])
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_river_flow_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :kinematic_wave_river_flow_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### Static or cyclic/forcing input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :kinematic_wave_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_river_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_wave_river_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_river_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_wave_river_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### Overland flow
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_overland_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :kinematic_wave_overland_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_overland_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_wave_overland_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_wave_overland_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_wave_overland_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### Lateral subsurface flow
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_lateral_subsurface_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :kinematic_lateral_subsurface_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_lateral_subsurface_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_lateral_subsurface_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :kinematic_lateral_subsurface_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :kinematic_lateral_subsurface_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ## Local inertial
@@ -113,57 +113,63 @@ generate_table(Wflow.Routing, :kinematic_lateral_subsurface_output; relative_wid
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_river_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :local_inertial_river_input; relative_widths = [6, 4, 2, 2, 2])
+```
+
+#### Static or cyclic/forcing input
+```{julia}
+# | code-fold: true
+generate_table(Wflow.Routing, :local_inertial_river_static_cyclic_forcing_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_river_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :local_inertial_river_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_river_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :local_inertial_river_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### 1D floodplain flow
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :local_inertial_floodplain_1D_flow_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### Overland flow
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_overland_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :local_inertial_overland_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_overland_state; relative_widths = [3, 4, 1])
+generate_table(Wflow.Routing, :local_inertial_overland_state; relative_widths = [3, 4, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :local_inertial_overland_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :local_inertial_overland_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ## Groundwater flow
@@ -171,19 +177,19 @@ generate_table(Wflow.Routing, :local_inertial_overland_output; relative_widths =
 #### Input {#input-gwf-unconfined}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States{#state-gwf-unconfined}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :groundwater_unconfined_aquifer_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ## Subsurface flow boundaries
@@ -194,40 +200,40 @@ constant head boundary can only be applied as part of the groundwater flow conce
 #### Input {#input-gwf-river}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_river_boundary_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :groundwater_river_boundary_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### Output {#output-gwf-river}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_river_boundary_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :groundwater_river_boundary_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### Drainage boundary
 #### Input {#input-gwf-drainage}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_drainage_boundary_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :groundwater_drainage_boundary_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### Output {#output-gwf-drainage}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_drainage_boundary_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :groundwater_drainage_boundary_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### Recharge boundary
 #### Output {#output-gwf-recharge}
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_recharge_boundary_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.Routing, :groundwater_recharge_boundary_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### Constant head boundary
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :groundwater_constant_head_boundary_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.Routing, :groundwater_constant_head_boundary_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 ## Sediment
@@ -235,45 +241,45 @@ generate_table(Wflow.Routing, :groundwater_constant_head_boundary_input; relativ
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLossModel, :sediment_transport_cap_overland_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_transport_cap_overland_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 ### Transport capacity river
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLossModel, :sediment_transport_cap_river_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_transport_cap_river_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 ### Overland flow transport
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLossModel, :sediment_transport_overland_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.SoilLossModel, :sediment_transport_overland_output; relative_widths = [3, 3, 1, 1])
 ```
 
 ### River erosion
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLossModel, :sediment_river_erosion_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_river_erosion_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 ### River transport
 #### Input
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLossModel, :sediment_river_transport_input; relative_widths = [6, 4, 2, 2])
+generate_table(Wflow.SoilLossModel, :sediment_river_transport_input; relative_widths = [6, 4, 2, 2, 2])
 ```
 
 #### States
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLossModel, :sediment_river_transport_state; relative_widths = [3, 3, 1])
+generate_table(Wflow.SoilLossModel, :sediment_river_transport_state; relative_widths = [3, 3, 1, 1])
 ```
 
 #### Output
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.SoilLossModel, :sediment_river_transport_output; relative_widths = [3, 3, 1])
+generate_table(Wflow.SoilLossModel, :sediment_river_transport_output; relative_widths = [3, 3, 1, 1])
 ```
