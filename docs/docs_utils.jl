@@ -38,7 +38,7 @@ function generate_table(
             data_pretty,
             [
                 "<code>$standard_name</code>", # standard name
-                replace(description, r"`([^`]+)`" => s"<code>\1</code>"), # description 
+                replace(description, r"`([^`]+)`" => s"<code>\1</code>"), # description
                 string(unit), # unit input/output
                 string(Wflow.to_SI(unit)), # unit internal
                 isnothing(default) ? "-" : string(default), # default
