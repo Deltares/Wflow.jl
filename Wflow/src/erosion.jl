@@ -7,8 +7,8 @@
     atmospheric_forcing::AtmosphericForcing
     hydrological_forcing::HydrologicalForcing
     rainfall_erosion::RE
-    overland_flow_erosion::OverlandFlowErosionAnswersModel
-    soil_erosion::SoilErosionModel
+    overland_flow_erosion::OFE
+    soil_erosion::SE
 end
 
 "Initialize soil loss model"

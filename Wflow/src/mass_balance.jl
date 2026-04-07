@@ -237,6 +237,7 @@ function compute_land_hydrology_balance!(
     (; snow) = model.land
     (; area) = model.domain.land.parameters
     (; subsurface_flow) = model.routing
+    dt = tosecond(model.clock.dt)
 
     # exclude recharge from computing total incoming and outgoing boundary fluxes for
     # groundwaterflow, other boundaries are required for the total soil water balance.
@@ -248,7 +249,7 @@ function compute_land_hydrology_balance!(
         # [m²]
         area_i = area[i]
         # [m s⁻¹] = [m³ s⁻¹] / [m²]
-        subsurface_flux_in = subsurface_flow.variables.q_in_av[i] / area_i
+        subsurface_flux_in = get_average(subsurface_flow.variables.q_in_av)[i] / area_i
         # [m s⁻¹] = [m s⁻¹] + [m s⁻¹] + [m s⁻¹] + [m³ s⁻¹] / [m²]
         total_in =
             subsurface_flux_in +
@@ -257,7 +258,7 @@ function compute_land_hydrology_balance!(
             boundaries_flow_in[i] / area[i]
 
         # [m s⁻¹] = [m³ s⁻¹] / [m²]
-        subsurface_flux_out = subsurface_flow.variables.q_av[i] / area_i
+        subsurface_flux_out = get_average(subsurface_flow.variables.q_av)[i] / area_i
         # [m s⁻¹]
         vertical_flux_out = vertical_out(model.land, i)
         # [m s⁻¹] = [m s⁻¹] + [m s⁻¹] + [m s⁻¹] + [m³ s⁻¹] / [m²]
@@ -265,7 +266,7 @@ function compute_land_hydrology_balance!(
             subsurface_flux_out +
             vertical_flux_out +
             get_snow_out(snow)[i] +
-            boundaries_flow_out[i] / area
+            boundaries_flow_out[i] / area[i]
         # [m]
         storage = compute_total_storage(model.land, i)
         # [m s⁻¹] = ([m] - [m]) / [s]
@@ -496,7 +497,6 @@ function compute_flow_balance!(
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
 end
-
 function constant_head_boundary_error!(
     model::GroundwaterFlowModel,
     water_balance::MassBalance,
@@ -521,13 +521,19 @@ function compute_flow_balance!(
     (; error, relative_error) = water_balance
     (; q_in_av, q_av, q_net_av) = subsurface_flow_model.variables
 
+    q_in_average = get_average(q_in_av)
+    q_net_average = get_average(q_net_av)
+    q_average = get_average(q_av)
+
     flux_in, flux_out = sum_boundary_fluxes(subsurface_flow_model, domain)
 
-    f_conv = dt / tosecond(BASETIMESTEP)
     for i in eachindex(q_net_av)
-        total_in = (q_in_av[i] + flux_in[i]) * f_conv
-        total_out = f_conv * (q_av[i] + flux_out[i])
-        storage_rate = q_net_av[i] * f_conv
+        # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹]
+        total_in = q_in_average[i] + flux_in[i]
+        # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹]
+        total_out = q_average[i] + flux_out[i]
+        # [m³ s⁻¹]
+        storage_rate = q_net_average[i]
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
@@ -556,12 +562,6 @@ function compute_flow_routing_balance!(model)
     compute_flow_balance!(subsurface_flow, subsurface_water_balance, model.domain, dt)
 end
 
-"""
-Compute water mass balance error and relative error for combined river and overland,
-reservoir and subsurface flow routing. Combined river and overland flow consists of local
-inertial 1D river flow routing (subgrid channel) and local inertial 2D overland flow
-routing.
-"""
 function compute_flow_routing_balance!(
     model::Model{R},
 ) where {R <: Routing{<:LocalInertialOverlandFlowModel, <:LocalInertialRiverFlowModel}}
@@ -569,7 +569,6 @@ function compute_flow_routing_balance!(
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =
         model.mass_balance.routing
-    dt = tosecond(model.clock.dt)
 
     compute_flow_balance!(
         river_flow,
@@ -588,7 +587,7 @@ end
 Compute water mass balance error and relative error if `model` contains a mass balance
 `HydrologicalMassBalance`, skip computations with mass balance `NoMassBalance`.
 """
-function compute_mass_balance!(model, ::HydrologicalMassBalance)
+function compute_mass_balance!(model::AbstractModel, ::HydrologicalMassBalance)
     compute_land_hydrology_balance!(model)
     compute_flow_routing_balance!(model)
     return nothing

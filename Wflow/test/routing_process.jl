@@ -105,16 +105,14 @@ end
 @testitem "unit: kinematic_wave_ssf" begin
     using Wflow: to_SI, MM, M3_PER_DAY, Unit
     using StaticArrays: SVector
+    include("testing_utils.jl")
     DAY = Unit(; d = 1)
     M_PER_DAY = Unit(; m = 1, d = -1)
     M2_PER_DAY = Unit(; m = 2, d = -1)
-    include("testing_utils.jl")
-    using StaticArrays: SVector
-    include("testing_utils.jl")
-    n = 1
-    N = 4
 
     ### Shared values
+    n = 1
+    N = 4
     act_thickl = [to_SI.(SVector(100.0, 300.0, 800.0, 800.0), Ref(MM))]
     sumlayers = [to_SI.(SVector(0.0, 100.0, 400.0, 1200.0, 2000.0), Ref(MM))]
     maxlayers = 4
@@ -123,38 +121,23 @@ end
     theta_s = [0.48642662167549133]
     theta_r = [0.11939866840839386]
     theta_fc = [0.28219206182657536]
-
     ssfin = 0.0
-    ssf_prev = 25953.147860945584
-    zi_prev = 0.5198340870375974
-    q_net = 485.4666924404467
+
+    ssf_prev = to_SI(25953.147860945584, M3_PER_DAY)
+    zi_prev = to_SI(0.5198340870375974, MM)
+    q_net = to_SI(485.4666924404467, M3_PER_DAY)
     slope = 0.4522336721420288
     sy = 0.20423455984891598
     d = 2.0
     dt = to_SI(1.0, DAY)
     dx = 1117.0150713112287
     dw = 517.495693771673
+    ssfmax = to_SI(79.62016166711079, M2_PER_DAY)
+    kh_profile =
+        Wflow.KhExponential([to_SI(205.5965576171875, M_PER_DAY)], [1.0141291422769427])
     i = 1
 
-    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
-        ssfin,
-        ssf_prev,
-        zi_prev,
-        q_net,
-        slope,
-        sy,
-        d,
-        dt,
-        dx,
-        dw,
-        ssfmax,
-        kh_profile,
-        soil,
-        i,
-    )
-    ###
-
-    soil = init_sbm_soil_model(
+    soil_model = init_sbm_soil_model(
         n,
         N;
         # Variables
@@ -178,6 +161,27 @@ end
         theta_fc,
         act_thickl,
     )
+
+    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        q_net,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil_model,
+        i,
+    )
+    @test ssf ≈ to_SI(22100.628024231868, M3_PER_DAY)
+    @test zi ≈ 0.7029236021516849
+    @test exfilt ≈ 0.0
+    @test net_flux ≈ to_SI(-0.037393206532277116, M3_PER_DAY)
 
     # Case: ssfin + ssf_prev ≈ 0.0 && r <= 0
     ssf_prev = 0.0

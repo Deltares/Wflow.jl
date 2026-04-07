@@ -13,12 +13,12 @@ function Model(config::Config, type::SbmModel)
     clock = Clock(config, reader)
 
     @info "General model settings." (;
-        snow = config.model.snow__flag,
-        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
-        glacier = config.model.glacier__flag,
-        reservoirs = config.model.reservoir__flag,
-        pits = config.model.pit__flag,
-        water_demand = do_water_demand(config),
+        snow=config.model.snow__flag,
+        gravitational_snow_transport=config.model.snow_gravitational_transport__flag,
+        glacier=config.model.glacier__flag,
+        reservoirs=config.model.reservoir__flag,
+        pits=config.model.pit__flag,
+        water_demand=do_water_demand(config),
     )...
 
     domain = Domain(dataset, config, type)
@@ -28,13 +28,13 @@ function Model(config::Config, type::SbmModel)
     mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
 
     (; maxlayers) = land_hydrology.soil.parameters
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land=land_hydrology, routing, mass_balance)
     writer = Writer(
         config,
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim=(name="layer", value=Float64.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -82,7 +82,7 @@ function update_model!(model::AbstractModel{<:SbmModel})
 
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile)
-    update_subsurface_flow_model!(routing.subsurface_flow, land.soil, domain.land, dt)
+    update_subsurface_flow_model!(routing.subsurface_flow, land.soil, domain, dt)
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update_soil_water_storage!(soil, (; runoff, demand, routing.subsurface_flow), dt)
 
@@ -94,14 +94,14 @@ end
 """
 Update of the total water storage at the end of each timestep per model cell.
 """
-function update_total_water_storage!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+function update_total_water_storage!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
     (; routing, land, domain) = model
 
     update_total_water_storage!(land, domain, routing)
     return nothing
 end
 
-function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
+function set_states!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
     (; routing, land, domain, config) = model
     land_v = routing.overland_flow.variables
     river_v = routing.river_flow.variables
@@ -113,7 +113,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; dimname = :layer)
+        set_states!(instate_path, model; dimname=:layer)
 
         update_diagnostic_vars!(land.soil)
 

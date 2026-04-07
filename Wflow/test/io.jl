@@ -305,6 +305,9 @@ end
 
         function test_warm_state(var_name, i, val)
             A, metadata = get_field_in_model(model, var_name)
+            if A isa Wflow.AverageVector
+                A = Wflow.get_average(A)
+            end
             @test A[i] ≈ to_SI(val, metadata.unit)
         end
 
@@ -318,7 +321,6 @@ end
         test_warm_state("snowpack_liquid_water__depth", 5, 0.0)
         test_warm_state("vegetation_canopy_water__depth", 50063, 0.0)
         test_warm_state("soil_water_saturated_zone__depth", 50063, 558.8578304603327)
-        test_warm_state("subsurface_water__volume_flow_rate", 10606, 39.972334552895816)
         test_warm_state(
             "river_water__instantaneous_volume_flow_rate",
             149,

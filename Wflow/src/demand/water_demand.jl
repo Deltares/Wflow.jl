@@ -54,24 +54,24 @@ function NonIrrigationDemandModel(
         config,
         "$(sector)__gross_water_demand_volume_flux",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     demand_net = ncread(
         dataset,
         config,
         "$(sector)__net_water_demand_volume_flux",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     n = length(indices)
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
     demand = PrescribedDemand(; demand_gross, demand_net)
     vars = NonIrrigationDemandVariables(;
-        returnflow_fraction = returnflow_f,
-        returnflow = zeros(n),
+        returnflow_fraction=returnflow_f,
+        returnflow=zeros(n),
     )
-    non_irrigation_demand = NonIrrigationDemandModel(; demand, variables = vars)
+    non_irrigation_demand = NonIrrigationDemandModel(; demand, variables=vars)
 
     return non_irrigation_demand
 end
@@ -108,34 +108,34 @@ function NonPaddyModel(
         config,
         "irrigated_non_paddy__irrigation_efficiency",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     areas = ncread(
         dataset,
         config,
         "irrigated_non_paddy_area__count",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
         "irrigated_non_paddy__irrigation_trigger_flag",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     max_irri_rate = ncread(
         dataset,
         config,
         "irrigated_non_paddy__max_irrigation_rate",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
 
     parameters = NonPaddyParameters(;
-        maximum_irrigation_rate = max_irri_rate,
-        irrigation_efficiency = efficiency,
-        irrigation_areas = areas,
+        maximum_irrigation_rate=max_irri_rate,
+        irrigation_efficiency=efficiency,
+        irrigation_areas=areas,
         irrigation_trigger,
     )
     n = length(indices)
@@ -161,7 +161,7 @@ by the infiltration capacity, taking into account limited irrigation efficiency 
 by a maximum irrigation rate.
 """
 function update_demand_gross!(
-    nonpaddy_model::NonPaddy,
+    nonpaddy_model::NonPaddyModel,
     soil_model::SbmSoilModel,
     dt::Float64,
 )
@@ -203,7 +203,7 @@ function update_demand_gross!(
 end
 
 update_demand_gross!(
-    nonpaddy_model::NoIrrigationNonPaddy,
+    nonpaddy_model::NoIrrigationNonPaddyModel,
     soil_model::SbmSoilModel,
     dt::Float64,
 ) = nothing
@@ -291,59 +291,59 @@ function PaddyModel(dataset::NCDataset, config::Config, indices::Vector{Cartesia
         config,
         "irrigated_paddy__min_depth",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     h_opt = ncread(
         dataset,
         config,
         "irrigated_paddy__optimal_depth",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     h_max = ncread(
         dataset,
         config,
         "irrigated_paddy__max_depth",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     efficiency = ncread(
         dataset,
         config,
         "irrigated_paddy__irrigation_efficiency",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     areas = ncread(
         dataset,
         config,
         "irrigated_paddy_area__count",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     irrigation_trigger = ncread(
         dataset,
         config,
         "irrigated_paddy__irrigation_trigger_flag",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     max_irri_rate = ncread(
         dataset,
         config,
         "irrigated_paddy__max_irrigation_rate",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     n = length(indices)
     parameters = PaddyParameters(;
-        irrigation_efficiency = efficiency,
-        maximum_irrigation_rate = max_irri_rate,
+        irrigation_efficiency=efficiency,
+        maximum_irrigation_rate=max_irri_rate,
         irrigation_trigger,
         h_min,
         h_max,
         h_opt,
-        irrigation_areas = areas,
+        irrigation_areas=areas,
     )
     paddy = PaddyModel(; n, parameters)
     return paddy
@@ -373,7 +373,8 @@ function evaporation!(paddy_model::PaddyModel, potential_evaporation, dt::Float6
     end
     return nothing
 end
-evaporation!(paddy_model::NoIrrigationPaddy, potential_evaporation, dt::Float64) = nothing
+evaporation!(paddy_model::NoIrrigationPaddyModel, potential_evaporation, dt::Float64) =
+    nothing
 
 # wrapper methods
 get_evaporation(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n)
@@ -390,15 +391,15 @@ function update_runoff!(paddy_model::PaddyModel, runoff, dt::Float64)
     for (i, b) in enumerate(parameters.irrigation_areas)
         !b && continue
         # [m s⁻¹] = max([m s⁻¹] - [m] / [s], [m s⁻¹])
-        paddy_runoff = maxi(runoff[i] - parameters.h_max[i] / dt, 0.0)
+        paddy_runoff = max(runoff[i] - parameters.h_max[i] / dt, 0.0)
         # [m] = [m s⁻¹] * [s]
-        paddy_model.variables[h] = (runoff[i] - paddy_runoff) * dt
+        paddy_model.variables.h[i] = (runoff[i] - paddy_runoff) * dt
         # [m s⁻¹] = [m s⁻¹]
         runoff[i] = paddy_runoff
     end
 end
 
-update_runoff!(paddy_model::NoIrrigationPaddy, runoff, dt::Float64) = nothing
+update_runoff!(paddy_model::NoIrrigationPaddyModel, runoff, dt::Float64) = nothing
 
 """
 update_demand_gross!(paddy_model::Paddy, dt::Float64)
@@ -469,11 +470,11 @@ end
 
 "Water demand model"
 @with_kw struct DemandModel{
-    D <: AbstractDemandModel,
-    I <: AbstractDemandModel,
-    L <: AbstractDemandModel,
-    P <: AbstractIrrigationModel,
-    NP <: AbstractIrrigationModel,
+    D<:AbstractDemandModel,
+    I<:AbstractDemandModel,
+    L<:AbstractDemandModel,
+    P<:AbstractIrrigationModel,
+    NP<:AbstractIrrigationModel,
 } <: AbstractDemandModel
     domestic::D
     industry::I
@@ -497,8 +498,8 @@ function DemandModel(dataset::NCDataset, config::Config, indices::Vector{Cartesi
     n = length(indices)
     demand(
         name;
-        constr = NonIrrigationDemandModel,
-        constr_triv = NoNonIrrigationDemandModel,
+        constr=NonIrrigationDemandModel,
+        constr_triv=NoNonIrrigationDemandModel,
     ) =
         if getfield(config.model.water_demand, Symbol("$(name)__flag"))::Bool
             if constr == NonIrrigationDemandModel
@@ -513,12 +514,12 @@ function DemandModel(dataset::NCDataset, config::Config, indices::Vector{Cartesi
     domestic = demand("domestic")
     industry = demand("industry")
     livestock = demand("livestock")
-    paddy = demand("paddy"; constr = PaddyModel, constr_triv = NoIrrigationPaddyModel)
+    paddy = demand("paddy"; constr=PaddyModel, constr_triv=NoIrrigationPaddyModel)
     nonpaddy =
-        demand("nonpaddy"; constr = NonPaddyModel, constr_triv = NoIrrigationNonPaddyModel)
+        demand("nonpaddy"; constr=NonPaddyModel, constr_triv=NoIrrigationNonPaddyModel)
 
     variables = DemandVariables(; n)
-    return Demand(; domestic, industry, livestock, paddy, nonpaddy, variables)
+    return DemandModel(; domestic, industry, livestock, paddy, nonpaddy, variables)
 end
 
 "Struct to store river allocation model variables"
@@ -588,14 +589,14 @@ function AllocationLandModel(
         config,
         "land_surface_water__withdrawal_fraction",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
     areas = ncread(
         dataset,
         config,
         "land_water_allocation_area__count",
         LandHydrologySBM;
-        sel = indices,
+        sel=indices,
     )
 
     n = length(indices)

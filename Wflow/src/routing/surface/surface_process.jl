@@ -1,20 +1,28 @@
+const tan80 = 5.67
+
 """
-    lateral_snow_transport!(snow, slope, network)
+    lateral_snow_transport!(snow, domain, dt)
 
 Lateral snow transport. Transports snow downhill. Mutates `snow_storage` and `snow_water` of
 a `snow` model.
 """
-function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
+function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt::Float64)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
-    snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow_storage ./ 10000.0)
-    maxflux = snowflux_frac .* snow_storage
-    snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
-    snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)
+    # [m]
+    snow_storage_max = 10.0
+    # [-] = min([-], [-]) * min([-], [m] / [m])
+    snowflux_frac = @. min(0.5, slope / tan80) * min(1.0, snow_storage / snow_storage_max)
+    # [m s⁻¹] = [-] * [m] / [s]
+    maxflux = snowflux_frac .* snow_storage / dt
+    # [m s⁻¹]
+    snow_out .= accucapacityflux(snow_storage, domain.network, maxflux, dt)
+    snow_out .+=
+        accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac / dt, dt)
     flux_in!(snow_in, snow_out, domain.network)
 end
 
-lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
+lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Float64) = nothing
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)

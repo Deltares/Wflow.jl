@@ -26,20 +26,20 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
 end
 
 """
-    accucapacitystate!(material, network, capacity)
+    accucapacitystate!(material, network, capacity, dt)
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Mutates the material input. The network is expected to hold a graph and order field, where
 the graph implements the Graphs interface, and the order is a valid topological ordering
 such as that returned by `Graphs.topological_sort_by_dfs`.
 """
-function accucapacitystate!(material, network, capacity)
+function accucapacitystate!(material, network, capacity, dt)
     (; graph, order) = network
     for v in order
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)
         flux_val = min(material[v], capacity[v])
-        material[v] -= flux_val
+        material[v] -= flux_val * dt
         if n == 0
             # pit: material is transported out of the map if a capacity is set,
             # cannot add the material anywhere
@@ -53,13 +53,13 @@ function accucapacitystate!(material, network, capacity)
 end
 
 """
-    accucapacitystate!(material, network, capacity) -> material
+    accucapacitystate!(material, network, capacity, dt) -> material
 
 Non mutating version of `accucapacitystate!`.
 """
-function accucapacitystate(material, network, capacity)
+function accucapacitystate(material, network, capacity, dt)
     material = copy(material)
-    accucapacitystate!(material, network, capacity)
+    accucapacitystate!(material, network, capacity, dt)
     return material
 end
 
@@ -72,34 +72,57 @@ network is expected to hold a graph and order field, where the graph implements 
 interface, and the order is a valid topological ordering such as that returned by
 `Graphs.topological_sort_by_dfs`.
 """
-function accucapacityflux!(flux, material, network, capacity)
+function accucapacityflux!(flux, material, network, capacity, dt; material_is_flux = false)
     (; graph, order) = network
     for v in order
         downstream_nodes = outneighbors(graph, v)
         n = length(downstream_nodes)
-        flux_val = min(material[v], capacity[v])
-        material[v] -= flux_val
-        flux[v] = flux_val
-        if n == 0
-            # pit: material is transported out of the map if a capacity is set,
-            # cannot add the material anywhere
-        elseif n == 1
-            material[only(downstream_nodes)] += flux_val
+
+        (n > 1) && error("bifurcations not supported")
+
+        # pit: material is transported out of the map if a capacity is set,
+        # cannot add the material anywhere
+        to_pit = iszero(n)
+
+        if material_is_flux
+            # Let [u s⁻¹] be the unit of the material
+            # [u s⁻¹] = min([u s⁻¹], [u s⁻¹])
+            flux_val = min(material[v], capacity[v])
+            # [u s⁻¹] -= [u s⁻¹]
+            material[v] -= flux_val
+            # [u s⁻¹]
+            flux[v] = flux_val
+            if !to_pit
+                # [u s⁻¹] += [u s⁻¹]
+                material[only(downstream_nodes)] += flux_val
+            end
         else
-            error("bifurcations not supported")
+            # Let [u] be the unit of material
+            # [u s⁻¹] = min([u] / [s], [u s⁻¹])
+            flux_val = min(material[v] / dt, capacity[v])
+            # [u] = [u s⁻¹] * [s]
+            material_update = flux_val * dt
+            # [u] -= [u]
+            material[v] -= material_update
+            # [u s⁻¹]
+            flux[v] = flux_val
+            if !to_pit
+                # [u] += [u]
+                material[only(downstream_nodes)] += material_update
+            end
         end
     end
     return nothing
 end
 
 """
-    accucapacityflux(material, network, capacity) -> flux
+    accucapacityflux(material, network, capacity, dt; kwargs...) -> flux
 
 Non mutating version of `accucapacityflux!`.
 """
-function accucapacityflux(material, network, capacity)
+function accucapacityflux(material, network, capacity, dt; kwargs...)
     flux = zero(material)
-    accucapacityflux!(flux, material, network, capacity)
+    accucapacityflux!(flux, material, network, capacity, dt; kwargs...)
     return flux
 end
 

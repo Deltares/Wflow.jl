@@ -179,7 +179,7 @@ function get_field_in_model(model, name::AbstractString; check_allow_dynamic_inp
                 "Tried to set '$name' dynamically via cyclic/forcing input, which is not allowed.",
             )
         end
-        metadata.lens(model)
+        metadata.lens(model), metadata
     else
         # If no metadata was found, `str` is either a path in the model object that doesn't match a lens or is invalid
         try

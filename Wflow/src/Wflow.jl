@@ -187,6 +187,12 @@ Base.collect(v::AverageVector) = v.average
 Base.size(v::AverageVector) = size(v.average)
 Base.summary(io::IO, v::AverageVector) = print(io, "$(length(v))-element AverageVector")
 Base.show(io::IO, v::AverageVector) = show(io, v.average)
+Base.getindex(v::AverageVector, args...) = error(
+    "Directly indexing an AverageVector is deliberately not supported, use `get_average`.",
+)
+Base.setindex(v::AverageVector, args...) = error(
+    "Directly indexing an AverageVector is deliberately not supported, use `get_average`.",
+)
 function Base.show(io::IO, ::MIME"text/plain", v::AverageVector)
     summary(io, v)
     isempty(v.average) && return

@@ -142,7 +142,7 @@ end
     dt = 86400.0
 
     n = 1
-    reservoir = Wflow.Reservoir(;
+    reservoir = Wflow.ReservoirModel(;
         boundary_conditions = Wflow.ReservoirBC(;
             n,
             external_inflow = [-1.0],

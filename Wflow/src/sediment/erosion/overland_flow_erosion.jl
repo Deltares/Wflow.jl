@@ -1,3 +1,5 @@
+abstract type AbstractOverlandFlowErosionModel end
+
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
     n::Int
@@ -46,7 +48,7 @@ function OverlandFlowErosionAnswersParameters(
 end
 
 "ANSWERS overland flow erosion model"
-@with_kw struct OverlandFlowErosionAnswersModel
+@with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
     n::Int
     boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n)
     parameters::OverlandFlowErosionAnswersParameters
@@ -67,7 +69,7 @@ end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"
 function update_bc_overland_flow_erosion_model!(
-    overland_flow_erosion_model::OverlandFlowErosionAnswersModel,
+    overland_flow_erosion_model::AbstractOverlandFlowErosionModel,
     hydrological_forcing::HydrologicalForcing,
 )
     # [m³ s⁻¹]
