@@ -20,6 +20,7 @@ Metadata associated with parameters and variables.
 - `description`: The description of the parameter/variable provided in the Wflow docs
 - `allow_missing`: Whether the parameter/variable is allowed to have missing entries
 - `allow_dynamic_input`: Allow updating this parameter from input via cyclic/forcing
+- `allow_as_output`: Allow writing this parameter/variable to output
 - `dimname`: The name of the third dimension of the parameter/variable if it exists
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
@@ -38,6 +39,7 @@ Metadata associated with parameters and variables.
     description::String = ""
     allow_missing::Bool = false
     allow_dynamic_input::Bool = false
+    allow_as_output::Bool = false
     dimname::N = nothing
     tags::Vector{Symbol} = []
     function ParameterMetadata(
@@ -49,6 +51,7 @@ Metadata associated with parameters and variables.
         description,
         allow_missing,
         allow_dynamic_input,
+        allow_as_input,
         dimname::N,
         flags,
     ) where {L, D, F, N}
@@ -72,6 +75,7 @@ Metadata associated with parameters and variables.
             description,
             allow_missing,
             allow_dynamic_input,
+            allow_as_input,
             dimname,
             flags,
         )
@@ -171,11 +175,11 @@ function get_field_in_model(model, name::AbstractString; check_allow_dynamic_inp
                 "Tried to set '$name' dynamically via cyclic/forcing input, which is not allowed.",
             )
         end
-        metadata.lens(model)
+        metadata.lens(model), metadata
     else
         # If no metadata was found, `str` is either a path in the model object that doesn't match a lens or is invalid
         try
-            param(model, name)
+            param(model, name), metadata
         catch
             error("Couldn't obtain a field from this model specified by '$name'.")
         end

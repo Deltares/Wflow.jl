@@ -102,6 +102,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "River discharge",
         allow_dynamic_input = true,
+        allow_as_output = true,
         tags = [:hydrological_forcing],
     ),
     "river_water__depth" => ParameterMetadata(;
@@ -109,6 +110,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 1),
         description = "River water depth",
         allow_dynamic_input = true,
+        allow_as_output = true,
         tags = [:hydrological_forcing],
     ),
     "land_surface_water__volume_flow_rate" => ParameterMetadata(;
@@ -116,6 +118,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "Overland flow discharge",
         allow_dynamic_input = true,
+        allow_as_output = true,
         tags = [:hydrological_forcing],
     ),
     "land_surface_water__depth" => ParameterMetadata(;
@@ -123,6 +126,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 1),
         description = "Overland flow water depth",
         allow_dynamic_input = true,
+        allow_as_output = true,
         tags = [:hydrological_forcing],
     ),
     "vegetation_canopy_water__interception_volume_flux" => ParameterMetadata(;
@@ -130,6 +134,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; mm = 1, dt = -1),
         description = "Rainfall interception by the vegetation",
         allow_dynamic_input = true,
+        allow_as_output = true,
         tags = [:hydrological_forcing],
     ),
     "rainfall_soil_erosion__mass_flow_rate" => ParameterMetadata(;

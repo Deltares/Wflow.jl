@@ -680,7 +680,10 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
     for (par, ncname) in ncnames_dict
-        vector = get_field_in_model(modelmap, par)
+        vector, metadata = get_field_in_model(modelmap, par)
+        if !metadata.allow_as_output
+            error("Writing $par to output is not supported.")
+        end
         output_map[ncname] = (; par, vector)
     end
     return output_map
