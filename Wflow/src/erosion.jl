@@ -1,8 +1,8 @@
 "Soil loss model"
 @with_kw struct SoilLossModel{
-    RE <: AbstractRainfallErosionModel,
-    OFE <: AbstractOverlandFlowErosionModel,
-    SE <: AbstractSoilErosionModel,
+    RE<:AbstractRainfallErosionModel,
+    OFE<:AbstractOverlandFlowErosionModel,
+    SE<:AbstractSoilErosionModel,
 } <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     hydrological_forcing::HydrologicalForcing
@@ -18,6 +18,10 @@ function SoilLossModel(
     indices::Vector{CartesianIndex{2}},
 )
     (; rainfall_erosion, overland_flow_erosion) = config.model
+    n = length(indices)
+
+    atmospheric_forcing = AtmosphericForcing(; n)
+    hydrological_forcing = HydrologicalForcing(; n)
 
     # Rainfall erosion
     if rainfall_erosion == RainfallErosionType.answers

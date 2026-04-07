@@ -86,12 +86,12 @@ function kinematic_wave_ssf(
     dx,
     dw,
     q_max,
-    kh_profile::Union{KhExponential, KhExponentialConstant},
+    kh_profile::Union{KhExponential,KhExponentialConstant},
     soil::SbmSoilModel,
     i,
 )
-    if q_in + q_prev ≈ 0.0 && r <= 0.0
-        return 0.0, d, 0.0
+    if q_in + q_prev ≈ 0.0
+        return 0.0, d, 0.0, 0.0
     else
         # initial estimate
         # [m³ s⁻¹] = ([m³ s⁻¹] + [m³ s⁻¹]) / [-]
@@ -127,7 +127,7 @@ function kinematic_wave_ssf(
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
         # computation
         max_delta_zi = 0.1
-        its = Int(ceil(round(abs(zi - zi_prev) / max_delta_zi; sigdigits = 12)))
+        its = Int(ceil(round(abs(zi - zi_prev) / max_delta_zi; sigdigits=12)))
         if its > 1
             dt_s = dt / its
             # [m³ s⁻¹]
@@ -141,7 +141,7 @@ function kinematic_wave_ssf(
             for _ in 1:its
                 # [m s⁻¹]
                 celerity = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
-                # [m²] = ([s] / [m]) * [m³ s⁻¹] + [m³ s⁻¹] / [m s⁻¹] + [m³ s⁻¹] ([s] / [m]) 
+                # [m²] = ([s] / [m]) * [m³ s⁻¹] + [m³ s⁻¹] / [m s⁻¹] + [m³ s⁻¹] ([s] / [m])
                 constant_term =
                     (dt_s / dx) * q_in + q_prev / celerity + q_net_bnds * (dt_s / dx)
                 # [m³ s⁻¹]

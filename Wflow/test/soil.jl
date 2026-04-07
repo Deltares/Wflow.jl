@@ -49,7 +49,7 @@
         n,
         variables = Wflow.OpenWaterRunoffVariables(;
             n,
-            unoff_land = [0.0],
+            runoff_land = [0.0],
             runoff_river = [
                 to_SI(
                     0.003384257254905341,

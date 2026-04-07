@@ -190,7 +190,22 @@ end
     ssfmax = to_SI(79.62016166711079, M3_PER_DAY)
     kh_profile =
         Wflow.KhExponential([to_SI(205.5965576171875, M3_PER_DAY)], [1.0141291422769427])
-    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        q_net,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil_model,
+        i,
+    )
     @test iszero(ssf)
     @test zi == d
     @test iszero(exfilt)
@@ -199,8 +214,22 @@ end
     # Case: !(ssfin + ssf_prev ≈ 0.0 && r <= 0)
     # Case: !(zi > d)
     ssf_prev = to_SI(25953.147860945584, M3_PER_DAY)
-    r = to_SI(0.4346106913943182, M2_PER_DAY)
-    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
+    ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        q_net,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil_model,
+        i,
+    )
     @test ssf ≈ to_SI(22100.628024231868, M3_PER_DAY)
     @test zi ≈ 0.7029236021516849
     @test exfilt ≈ 0.0

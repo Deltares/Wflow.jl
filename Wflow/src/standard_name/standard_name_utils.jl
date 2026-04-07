@@ -183,12 +183,11 @@ function get_field_in_model(model, name::AbstractString; check_allow_dynamic_inp
     else
         # If no metadata was found, `str` is either a path in the model object that doesn't match a lens or is invalid
         try
-            param(model, name)
+            param(model, name), metadata
         catch
             error("Couldn't obtain a field from this model specified by '$name'.")
         end
     end
-    return field, metadata
 end
 
 to_proper_number_type(x::Missing, ::Type) = x
