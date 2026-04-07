@@ -11,15 +11,18 @@
 end
 
 "Initialize Manning flow parameters"
-function ManningFlowParameters(mannings_n::Vector{Float64}, slope::Vector{Float64})
-    n = length(slope)
-    parameters = ManningFlowParameters(;
-        n,
-        beta = Float64(0.6),
-        slope,
-        mannings_n,
-        alpha_pow = Float64((2.0 / 3.0) * 0.6),
-    )
+function ManningFlowParameters(
+    mannings_n::Vector{Float64},
+    slope::Vector{Float64},
+    wetted_perimeter::Vector{Float64},
+)
+    beta = Float64(0.6)
+    hydraulic_radius_pow = Float64(2.0 / 3.0)
+    alpha_term = @. pow(mannings_n / sqrt(slope), beta)
+    alpha_pow = hydraulic_radius_pow * beta
+    alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
+
+    parameters = ManningFlowParameters(; beta, slope, mannings_n, alpha)
     return parameters
 end
 
@@ -64,7 +67,9 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
         type = Float64,
     )
 
-    flow_params = ManningFlowParameters(mannings_n, slope)
+    # use fixed wetted perimeter based on 0.5 * bankfull_depth
+    wetted_perimeter = flow_width + bankfull_depth
+    flow_params = ManningFlowParameters(mannings_n, slope, wetted_perimeter)
     bankfull_storage = bankfull_depth .* flow_length .* flow_width
     parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth, bankfull_storage)
     return parameters
@@ -160,7 +165,7 @@ function init_kinematic_wave_overland_flow(
     domain::DomainLand,
 )
     (; indices) = domain.network
-    (; slope) = domain.parameters
+    (; slope, surface_flow_width) = domain.parameters
     mannings_n = ncread(
         dataset,
         config,
@@ -174,7 +179,7 @@ function init_kinematic_wave_overland_flow(
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
 
     variables = OverLandFlowVariables(; n)
-    parameters = ManningFlowParameters(mannings_n, slope)
+    parameters = ManningFlowParameters(mannings_n, slope, surface_flow_width)
     boundary_conditions = LandFlowBC(; n)
     routing_method = KinematicWave()
 
@@ -314,14 +319,10 @@ function update_overland_flow_model!(
     dt::Float64,
 )
     (; inwater) = overland_flow_model.boundary_conditions
-    (; alpha_term, mannings_n, beta, alpha_pow, alpha) = overland_flow_model.parameters
-    (; surface_flow_width, flow_length, slope) = domain.parameters
+    (; flow_length) = domain.parameters
     (; q_av, qlat, qin_av, to_river) = overland_flow_model.variables
     (; adaptive) = overland_flow_model.timestepping
 
-    @. alpha_term = pow(mannings_n / sqrt(slope), beta)
-    # use fixed alpha value based flow width
-    @. alpha = alpha_term * pow(surface_flow_width, alpha_pow)
     @. qlat = inwater / flow_length
 
     q_av .= 0.0
@@ -461,17 +462,11 @@ function update_river_flow_model!(
     clock::Clock,
 )
     (; reservoir, inwater) = river_flow_model.boundary_conditions
-    (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) =
-        river_flow_model.parameters
-    (; slope, flow_width, flow_length) = domain.river.parameters
+    (; flow_length) = domain.river.parameters
     (; qlat, qin_av) = river_flow_model.variables
     (; adaptive) = river_flow_model.timestepping
 
-    @. alpha_term = pow(mannings_n / sqrt(slope), beta)
-    # use fixed alpha value based on 0.5 * bankfull_depth
-    @. alpha = alpha_term * pow(flow_width + bankfull_depth, alpha_pow)
     @. qlat = inwater / flow_length
-
     set_flow_vars!(river_flow_model)
     qin_av .= 0.0
     set_reservoir_vars!(reservoir)
