@@ -37,10 +37,11 @@ function generate_table(
         push!(
             data_pretty,
             [
-                "<code>$standard_name</code>",
-                replace(description, r"`([^`]+)`" => s"<code>\1</code>"),
-                string(unit),
-                isnothing(default) ? "-" : string(default),
+                "<code>$standard_name</code>", # standard name
+                replace(description, r"`([^`]+)`" => s"<code>\1</code>"), # description
+                string(unit), # unit input/output
+                string(Wflow.to_SI(unit)), # unit internal
+                isnothing(default) ? "-" : string(default), # default
             ],
         )
     end
@@ -49,11 +50,18 @@ function generate_table(
 
     # Check whether there are any defaults
     if any(!=("-"), view(data_pretty, :, 4))
-        column_labels = ["Standard name", "Description", "Unit", "Default"]
+        column_labels = [
+            "Standard name",
+            "Description",
+            "Unit input/output",
+            "Unit internal",
+            "Default (IO unit)",
+        ]
     else
-        column_labels = ["Standard name", "Description", "Unit"]
-        data_pretty = data_pretty[:, 1:3]
-        relative_widths = relative_widths[1:3]
+        column_labels =
+            ["Standard name", "Description", "Unit input/output", "Unit internal"]
+        data_pretty = data_pretty[:, 1:4]
+        relative_widths = relative_widths[1:4]
     end
 
     io = IOBuffer()

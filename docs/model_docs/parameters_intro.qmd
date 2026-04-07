@@ -49,7 +49,7 @@ required to run wflow.
 ```{julia}
 # | code-fold: true
 include("../docs_utils.jl")
-generate_table(Wflow.Domain, :generic_input_map; relative_widths = [4, 5, 1, 2])
+generate_table(Wflow.Domain, :generic_input_map; relative_widths = [4, 5, 1, 1, 2])
 ```
 
 For reservoir generic input see [reservoir-input](./parameters_routing.qmd#input-generic-reservoir).

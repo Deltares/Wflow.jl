@@ -35,7 +35,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "compacted_soil_surface_water__infiltration_capacity" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.infiltcappath),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 10.0,
         description = "Infiltration capacity of compacted areas",
         tags = [:soil_input],
@@ -53,7 +53,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "domestic__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.domestic.demand.demand_gross),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Gross domestic water demand",
         allow_dynamic_input = true,
@@ -61,7 +61,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "domestic__net_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.domestic.demand.demand_net),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Net domestic water demand",
         allow_dynamic_input = true,
@@ -70,7 +70,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction" =>
         ParameterMetadata(;
             lens = @optic(_.land.glacier.parameters.g_sifrac),
-            unit = Unit(; dt = -1),
+            unit = Unit(; d = -1),
             default = 0.001,
             fill = 0.0,
             description = "Fraction of the snowpack on top of the glacier converted into ice",
@@ -120,7 +120,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "industry__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.industry.demand.demand_gross),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Gross industry water demand",
         allow_dynamic_input = true,
@@ -128,7 +128,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "industry__net_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.industry.demand.demand_net),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Net industry water demand",
         allow_dynamic_input = true,
@@ -149,7 +149,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "irrigated_non_paddy__max_irrigation_rate" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.parameters.maximum_irrigation_rate),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 25.0,
         description = "Maximum irrigation rate",
         tags = [:demand_non_paddy_irrigation_input],
@@ -182,7 +182,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "irrigated_paddy__max_irrigation_rate" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.maximum_irrigation_rate),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 25.0,
         description = "Maximum irrigation rate",
         tags = [:demand_paddy_irrigation_input],
@@ -216,7 +216,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "irrigated_paddy__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.variables.demand_gross),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Irrigation (paddy) gross demand",
         tags = [:demand_paddy_irrigation_output],
@@ -242,7 +242,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "land_water_covered__area_fraction" => ParameterMetadata(;
         default = 0.0,
-        description = "Fraction of open water (excluding rivers)",
+        description = "Fraction of open water",
         tags = [:soil_input],
     ),
     "land__allocated_irrigation_water_volume_flux" => ParameterMetadata(;
@@ -296,7 +296,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "livestock__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.livestock.demand.demand_gross),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Gross livestock water demand",
         allow_dynamic_input = true,
@@ -304,7 +304,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "livestock__net_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.livestock.demand.demand_net),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Net livestock water demand",
         allow_dynamic_input = true,
@@ -388,7 +388,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "soil_layer_water__vertical_saturated_hydraulic_conductivity" =>
         ParameterMetadata(;
             lens = @optic(_.land.soil.parameters.kv_profile.kv),
-            unit = Unit(; mm = 1, dt = -1),
+            unit = Unit(; mm = 1, d = -1),
             dimname = :layer,
             description = "Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used",
             tags = [:soil_input],
@@ -434,7 +434,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "soil_surface_water__vertical_saturated_hydraulic_conductivity" =>
         ParameterMetadata(;
             lens = @optic(_.land.soil.parameters.kv_profile.kv_0),
-            unit = Unit(; mm = 1, dt = -1),
+            unit = Unit(; mm = 1, d = -1),
             description = "Vertical saturated hydraulic conductivity at soil surface",
             tags = [:soil_input],
         ),
@@ -464,7 +464,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "soil_water_saturated_zone_bottom__max_leakage_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.maxleakage),
-        unit = Unit(; mm = 1, dt = -1),
+        unit = Unit(; mm = 1, d = -1),
         default = 0.0,
         description = "Maximum leakage from saturated zone",
         tags = [:soil_input],

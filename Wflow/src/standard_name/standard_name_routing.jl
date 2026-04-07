@@ -215,6 +215,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         allow_dynamic_input = true,
         tags = [
             :kinematic_wave_river_static_cyclic_forcing_input,
+            :local_inertial_river_static_cyclic_forcing_input,
             :local_inertial_river_input,
         ],
     ),
