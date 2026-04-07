@@ -242,7 +242,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "land_water_covered__area_fraction" => ParameterMetadata(;
         default = 0.0,
-        description = "Fraction of open water (excluding rivers)",
+        description = "Fraction of open water",
         tags = [:soil_input],
     ),
     "land__allocated_irrigation_water_volume_flux" => ParameterMetadata(;
