@@ -1,4 +1,6 @@
 abstract type AbstractFloodPlainModel end
+abstract type AbstractFloodPlainParameters end
+abstract type AbstractFloodPlainVariables end
 
 """
     FloodPlainProfile
@@ -20,7 +22,7 @@ function FloodPlainProfile(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver;
-    index_pit::Vector{Int} = [],
+    index_pit::Vector{Int} = Int[],
 )
     (; indices) = domain.network
     (; flow_width, flow_length) = domain.parameters
@@ -111,8 +113,8 @@ function FloodPlainProfile(
     return profile
 end
 
-"Struct to store local inertial floodplain flow model parameters"
-@with_kw struct FloodPlainParameters{P}
+"Struct to store floodplain flow model parameters on a staggered grid"
+@with_kw struct FloodPlainStaggeredParameters{P} <: AbstractFloodPlainParameters
     profile::P  # floodplain profile
     # edge parameters
     mannings_n::Vector{Float64} = Float64[]     # manning's roughness at edge [s m-1/3]
@@ -121,8 +123,8 @@ end
     slope::Vector{Float64} = Float64[]          # slope at edge [-]
 end
 
-"Initialize floodplain flow model parameters"
-function FloodPlainParameters(
+"Initialize floodplain flow model parameters on a staggered grid"
+function FloodPlainStaggeredParameters(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
@@ -163,7 +165,7 @@ function FloodPlainParameters(
         )
     end
 
-    parameters = FloodPlainParameters(;
+    parameters = FloodPlainStaggeredParameters(;
         profile,
         mannings_n = mannings_n_at_edge,
         mannings_n_sq = mannings_n_sq_at_edge,
@@ -173,8 +175,8 @@ function FloodPlainParameters(
     return parameters
 end
 
-"Struct to store floodplain flow model variables"
-@with_kw struct FloodPlainVariables
+"Struct to store floodplain flow model variables on a staggered grid"
+@with_kw struct FloodPlainStaggeredVariables <: AbstractFloodPlainVariables
     n::Int
     n_edges::Int
     # edge variables
@@ -192,10 +194,29 @@ end
 end
 
 "Floodplain flow model"
-@with_kw struct FloodPlainModel{T, P} <: AbstractFloodPlainModel
+@with_kw struct FloodPlainModel{
+    T <: AbstractRoutingMethod,
+    P <: AbstractFloodPlainParameters,
+    V <: AbstractFloodPlainVariables,
+} <: AbstractFloodPlainModel
     routing_method::T
-    parameters::FloodPlainParameters{P}
-    variables::FloodPlainVariables
+    parameters::P
+    variables::V
+end
+
+"Struct to store floodplain parameters"
+@with_kw struct FloodPlainParameters{P} <: AbstractFloodPlainParameters
+    profile::P  # floodplain profile
+    mannings_n::Vector{Float64} = Float64[] # manning's roughness[s m-1/3]
+end
+
+"Struct to store floodplain variables"
+@with_kw struct FloodPlainVariables <: AbstractFloodPlainVariables
+    n::Int
+    q::Vector{Float64} = zeros(n)       # discharge [m³ s⁻¹]
+    q_av::Vector{Float64} = zeros(n)    # average river discharge [m³ s⁻¹] for model timestep Δt
+    storage::Vector{Float64} = zeros(n) # storage [m³]
+    h::Vector{Float64} = zeros(n)       # water depth [m]
 end
 
 "Determine the initial floodplain storage"
@@ -271,7 +292,7 @@ function flood_depth(
     return flood_depth
 end
 
-"Initialize floodplain geometry and model variables and parameters"
+"Initialize floodplain geometry, model variables and parameters on staggered grid"
 function FloodPlainModel(
     dataset::NCDataset,
     config::Config,
@@ -283,7 +304,8 @@ function FloodPlainModel(
     n = length(indices)
     index_pit = findall(x -> x == 5, local_drain_direction)
     n_edges = ne(graph)
-    parameters = FloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit)
+    parameters =
+        FloodPlainStaggeredParameters(dataset, config, domain, zb_floodplain, index_pit)
     if river_routing == RoutingType.local_inertial
         q0 = zeros(n_edges)
         routing_method = LocalInertial()
@@ -291,8 +313,28 @@ function FloodPlainModel(
         q0 = []
         routing_method = ManningStaggered()
     end
-    variables = FloodPlainVariables(; n, n_edges, q0, h = zeros(n + length(index_pit)))
+    variables =
+        FloodPlainStaggeredVariables(; n, n_edges, q0, h = zeros(n + length(index_pit)))
 
     floodplain_model = FloodPlainModel(; routing_method, parameters, variables)
+    return floodplain_model
+end
+
+function FloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver)
+    (; indices) = domain.network
+    n = length(indices)
+    profile = FloodPlainProfile(dataset, config, domain)
+    mannings_n = ncread(
+        dataset,
+        config,
+        "floodplain_water_flow__manning_n_parameter";
+        sel = indices,
+        defaults = 0.072,
+        type = Float64,
+    )
+    parameters = FloodPlainParameters(; profile, mannings_n)
+    variables = FloodPlainVariables(; n)
+    floodplain_model =
+        FloodPlainModel(; routing_method = KinematicWave(), parameters, variables)
     return floodplain_model
 end

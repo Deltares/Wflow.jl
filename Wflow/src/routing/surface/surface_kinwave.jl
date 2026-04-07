@@ -109,7 +109,11 @@ function init_kinematic_wave_river_flow(
     variables = FlowVariables(; n)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
-    floodplain = nothing
+    if config.model.floodplain_1d__flag
+        floodplain = FloodPlainModel(dataset, config, domain)
+    else
+        floodplain = nothing
+    end
     routing_method = KinematicWave()
 
     river_flow = RiverFlowModel(;
