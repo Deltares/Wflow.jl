@@ -28,13 +28,15 @@ function OverlandFlowErosionAnswersParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    usle_k = ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLoss; sel = indices)
-    usle_c = ncread(dataset, config, "soil_erosion__usle_c_factor", SoilLoss; sel = indices)
+    usle_k =
+        ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLossModel; sel = indices)
+    usle_c =
+        ncread(dataset, config, "soil_erosion__usle_c_factor", SoilLossModel; sel = indices)
     answers_overland_flow_factor = ncread(
         dataset,
         config,
         "soil_erosion__answers_overland_flow_factor",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
 

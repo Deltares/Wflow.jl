@@ -14,8 +14,8 @@ fall_velocity(d50) = STOKES_FACTOR * from_SI(d50, MM)^2
         input,
         q,
         waterlevel,
-        wb_area,
-        wb_trapping_efficiency,
+        res_area,
+        res_trapping_efficiency,
         dm,
         slope,
     )

@@ -42,17 +42,32 @@ function RainfallErosionEurosemParameters(
         dataset,
         config,
         "soil_erosion__rainfall_soil_detachability_factor",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
-    eurosem_exponent =
-        ncread(dataset, config, "soil_erosion__eurosem_exponent", SoilLoss; sel = indices)
+    eurosem_exponent = ncread(
+        dataset,
+        config,
+        "soil_erosion__eurosem_exponent",
+        SoilLossModel;
+        sel = indices,
+    )
     canopyheight =
-        ncread(dataset, config, "vegetation_canopy__height", SoilLoss; sel = indices)
-    canopygapfraction =
-        ncread(dataset, config, "vegetation_canopy__gap_fraction", SoilLoss; sel = indices)
-    soilcover_fraction =
-        ncread(dataset, config, "compacted_soil__area_fraction", SoilLoss; sel = indices)
+        ncread(dataset, config, "vegetation_canopy__height", SoilLossModel; sel = indices)
+    canopygapfraction = ncread(
+        dataset,
+        config,
+        "vegetation_canopy__gap_fraction",
+        SoilLossModel;
+        sel = indices,
+    )
+    soilcover_fraction = ncread(
+        dataset,
+        config,
+        "compacted_soil__area_fraction",
+        SoilLossModel;
+        sel = indices,
+    )
 
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability,
@@ -156,13 +171,15 @@ function RainfallErosionAnswersParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    usle_k = ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLoss; sel = indices)
-    usle_c = ncread(dataset, config, "soil_erosion__usle_c_factor", SoilLoss; sel = indices)
+    usle_k =
+        ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLossModel; sel = indices)
+    usle_c =
+        ncread(dataset, config, "soil_erosion__usle_c_factor", SoilLossModel; sel = indices)
     answers_rainfall_factor = ncread(
         dataset,
         config,
         "soil_erosion__answers_rainfall_factor",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
 

@@ -1,7 +1,7 @@
 # wrapper methods for standard name mapping
 get_standard_name_map(model::T) where {T} = get_standard_name_map(T)
 get_standard_name_map(::Type{<:LandHydrologySBM}) = sbm_standard_name_map
-get_standard_name_map(::Type{<:SoilLoss}) = sediment_standard_name_map
+get_standard_name_map(::Type{<:SoilLossModel}) = sediment_standard_name_map
 get_standard_name_map(::Type{<:Domain}) = domain_standard_name_map
 get_standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
@@ -172,7 +172,13 @@ get_metadata(name::AbstractString; kwargs...) =
 function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
     metadata = get_metadata(name; model)
 
-    field = if !isnothing(metadata)
+    return if !isnothing(metadata)
+        # If metadata was found, `str` is a standard name or a path in the model object which matches a lens
+        if check_allow_dynamic_input && !metadata.allow_dynamic_input
+            error(
+                "Tried to set '$name' dynamically via cyclic/forcing input, which is not allowed.",
+            )
+        end
         metadata.lens(model)
     else
         # If no metadata was found, `str` is either a path in the model object that doesn't match a lens or is invalid

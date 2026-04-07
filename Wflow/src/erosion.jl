@@ -1,17 +1,23 @@
 "Soil loss model"
-@with_kw struct SoilLoss{RE <: AbstractRainfallErosionModel} <: AbstractLandModel
-    n::Int
-    atmospheric_forcing::AtmosphericForcing = AtmosphericForcing(; n)
-    hydrological_forcing::HydrologicalForcing = HydrologicalForcing(; n)
+@with_kw struct SoilLossModel{
+    RE <: AbstractRainfallErosionModel,
+    OFE <: AbstractOverlandFlowErosionModel,
+    SE <: AbstractSoilErosionModel,
+} <: AbstractLandModel
+    atmospheric_forcing::AtmosphericForcing
+    hydrological_forcing::HydrologicalForcing
     rainfall_erosion::RE
     overland_flow_erosion::OverlandFlowErosionAnswersModel
     soil_erosion::SoilErosionModel
 end
 
 "Initialize soil loss model"
-function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
+function SoilLossModel(
+    dataset::NCDataset,
+    config::Config,
+    indices::Vector{CartesianIndex{2}},
+)
     (; rainfall_erosion, overland_flow_erosion) = config.model
-    n = length(indices)
 
     # Rainfall erosion
     if rainfall_erosion == RainfallErosionType.answers
@@ -26,13 +32,19 @@ function SoilLoss(dataset::NCDataset, config::Config, indices::Vector{CartesianI
     # Total soil erosion and particle differentiation
     soil_erosion = SoilErosionModel(dataset, config, indices)
 
-    soil_loss = SoilLoss(; n, rainfall_erosion, overland_flow_erosion, soil_erosion)
+    soil_loss = SoilLossModel(;
+        atmospheric_forcing,
+        hydrological_forcing,
+        rainfall_erosion,
+        overland_flow_erosion,
+        soil_erosion,
+    )
     return soil_loss
 end
 
 "Update soil loss model for a single timestep"
 function update_soil_loss_model!(
-    soil_loss_model::SoilLoss,
+    soil_loss_model::SoilLossModel,
     parameters::LandParameters,
     dt::Float64,
 )

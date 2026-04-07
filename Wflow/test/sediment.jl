@@ -74,7 +74,7 @@ end
     @test bank == 0.0
 end
 
-@testitem "unit: Reservoir deposition (Camp)" begin
+@testitem "unit: ReservoirModel deposition (Camp)" begin
     using Wflow: to_SI, Unit, TON_PER_DT
     M3_PER_DT = Unit(; m = 3, dt = -1)
     μM = Unit(; μm = 1)

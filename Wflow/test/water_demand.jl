@@ -1,4 +1,4 @@
-@testitem "unit: update_demand_gross! (NonPaddy)" begin
+@testitem "unit: update_demand_gross! (NonPaddyModel)" begin
     include("testing_utils.jl")
     using Wflow: to_SI, Unit, MM, MM_PER_DT
     using StaticArrays: SVector
@@ -8,7 +8,7 @@
     CM = Unit(; cm = 1)
     dt = 86400.0
 
-    model = Wflow.NonPaddy(;
+    model = Wflow.NonPaddyModel(;
         n,
         parameters = Wflow.NonPaddyParameters(;
             irrigation_efficiency = [1.0],
@@ -61,7 +61,7 @@
     @test demand_gross ≈ to_SI(8.490680329931607, MM_PER_DT; dt_val = dt)
 end
 
-@testitem "unit: update_demand_gross! (Paddy)" begin
+@testitem "unit: update_demand_gross! (PaddyModel)" begin
     using Wflow: to_SI, MM, Unit, MM_PER_DT
     dt = 86400.0
     n = 1
@@ -76,7 +76,7 @@ end
         h_opt = [to_SI(50.0, MM)],
         h_max = [to_SI(80.0, MM)],
     )
-    paddy_model = Wflow.Paddy(; n, parameters, variables)
+    paddy_model = Wflow.PaddyModel(; n, parameters, variables)
     @test Wflow.compute_irrigation_depth(paddy_model, 1) ≈ to_SI(35.0, MM)
 
     Wflow.update_demand_gross!(paddy_model, dt)
@@ -90,7 +90,7 @@ end
     include("testing_utils.jl")
     n = 1
 
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -140,7 +140,7 @@ end
     include("testing_utils.jl")
 
     n = 3
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -222,7 +222,7 @@ end
 
     n = 1
 
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
     )
@@ -260,7 +260,7 @@ end
 
     n = 3
 
-    model = Wflow.AllocationLand(;
+    model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
         variables = Wflow.AllocationLandVariables(;

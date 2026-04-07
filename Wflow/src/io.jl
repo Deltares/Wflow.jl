@@ -1046,7 +1046,7 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
 end
 
 function write_csv_row(model::AbstractModel, csv_writer::CSVWriter)
-    (; land, clock) = model
+    (; clock) = model
     (; output_path, output_io, output_map, reducer) = csv_writer
     isnothing(output_path) && return nothing
     print(output_io, string(clock.time))

@@ -51,6 +51,10 @@ The Tables in this subsection show the available models settings for the model t
 | `kinematic_wave__adaptive_time_step_flag` | Enable kinematic wave adaptive (internal) time stepping  | - | `false` |
 | `river_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for river domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | 900.0 |
 | `land_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for land domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | s | 3600.0 |
+| `subsurface_kinematic_wave__time_step` | Enable kinematic wave fixed internal time stepping for subsurface domain (`kinematic_wave__adaptive_time_step_flag` = `false`) | d | 1.0 |
+| `subsurface_kinematic_wave__alpha_coefficient` | Stability coefficient for internal model time step subsurface flow routing (CFL condition) | - | 1.0 |
+| `drain__flag` | Include drainage boundary condition  | - | `false` |
+| `river_subsurface_exchange_head_based__flag` | Include head-dependent river flux boundary | - | `false` |
 : {.striped .hover}
 
 ### Local inertial routing

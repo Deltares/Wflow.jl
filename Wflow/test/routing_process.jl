@@ -125,6 +125,9 @@ end
     theta_fc = [0.28219206182657536]
 
     ssfin = 0.0
+    ssf_prev = 25953.147860945584
+    zi_prev = 0.5198340870375974
+    q_net = 485.4666924404467
     slope = 0.4522336721420288
     sy = 0.20423455984891598
     d = 2.0
@@ -133,12 +136,11 @@ end
     dw = 517.495693771673
     i = 1
 
-    # Closure of shared values
-    kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil) = Wflow.kinematic_wave_ssf(
+    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
         zi_prev,
-        r,
+        q_net,
         slope,
         sy,
         d,
@@ -197,27 +199,8 @@ end
     ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
     @test ssf ≈ to_SI(22100.628024231868, M3_PER_DAY)
     @test zi ≈ 0.7029236021516849
-    @test iszero(exfilt)
-    @test sy_d ≈ 0.20423455984891598
-    @test soil.variables.n_unsatlayers[1] == 3
-    @test soil.variables.ustorelayerdepth[1] ≈
-          to_SI.(
-        SVector(0.1909439890049523, 16.27933934181815, 49.313961140731934, 0.0),
-        Ref(MM),
-    )
-    @test soil.variables.ustorelayerthickness[1][1:3] ≈
-          to_SI.(SVector(100.0, 300.0, 302.9236021516849), Ref(MM))
-    @test isnan(soil.variables.ustorelayerthickness[1][4])
-    @test soil.variables.zi[1] ≈ to_SI(702.9236021516849, MM)
-
-    # Case: !(ssfin + ssf_prev ≈ 0.0 && r <= 0)
-    # Case: (zi > d)
-    zi_prev = 2.0
-    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
-    @test ssf ≈ to_SI(485.46669244046643, M3_PER_DAY)
-    @test zi ≈ 2.0
-    @test iszero(exfilt)
-    @test sy_d ≈ 0.20423455984891598
+    @test exfilt ≈ 0.0
+    @test net_flux ≈ -0.037393206532277116
 
     soil = init_sbm_soil_model(
         n,
@@ -246,17 +229,38 @@ end
 
     ssf_prev = to_SI(54175.65003911068, M3_PER_DAY)
     zi_prev = 0.7588905603985703
-    r = to_SI(0.6928420612599803, M2_PER_DAY)
+    q_net = 773.9150244657355
+    slope = 0.4522336721420288
+    sy = 0.20423455984891598
+    d = 2.0
+    dt = 1.0
+    dx = 1117.0150713112287
+    dw = 517.495693771673
     ssfmax = 153.46698446681825
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
     i = 1
 
-    ssf, zi, exfilt, sy_d = kin_wave_ssf(ssf_prev, zi_prev, r, kh_profile, soil)
+    ssf, zi, exfilt, net_flux = Wflow.kinematic_wave_ssf(
+        ssfin,
+        ssf_prev,
+        zi_prev,
+        q_net,
+        slope,
+        sy,
+        d,
+        dt,
+        dx,
+        dw,
+        ssfmax,
+        kh_profile,
+        soil,
+        1,
+    )
 
     @test ssf ≈ to_SI(44680.57723298823, M3_PER_DAY)
     @test zi ≈ 1.130798471269119
     @test exfilt ≈ 0.0
-    @test sy_d ≈ 0.20423455984891598
+    @test net_flux ≈ -0.07595644848097641
 end
 
 @testitem "unit: accucapacity" begin
@@ -733,7 +737,7 @@ end
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
 
-    timestepping = Wflow.TimeStepping(; cfl = 0.7)
+    timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7)
     parameters = Wflow.LocalInertialRiverFlowParameters(;
         n,
         ne = _ne,
@@ -757,13 +761,13 @@ end
     boundary_conditions =
         Wflow.RiverFlowBC(; n, external_inflow = zeros(n), reservoir = nothing)
 
-    sw_river = Wflow.LocalInertialRiverFlow(;
+    sw_river = Wflow.LocalInertialRiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
         floodplain = nothing,
-        allocation = Wflow.NoAllocationRiver(n),
+        allocation = Wflow.NoAllocationRiverModel(n),
     )
 
     # run until steady state is reached

@@ -121,12 +121,10 @@ end
 """
     overland_flow_erosion_answers(
         overland_flow,
-        waterlevel,
         usle_k,
         usle_c,
         answers_overland_flow_factor,
         slope,
-        soilcover_fraction,
         area,
         dt,
     )

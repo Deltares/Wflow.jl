@@ -292,7 +292,7 @@ function to_SI!(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = n
 end
 
 """
-Convert an array of values to the values in the corresponding SI unit out of place
+Convert a value in SI unit to the given unit
 """
 function to_SI(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
     out = copy(x)

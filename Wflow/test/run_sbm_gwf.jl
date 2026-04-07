@@ -15,16 +15,18 @@
     @testset "initial states and depending variables" begin
         # test if states and depending variables are consistent between soil and groundwater
         # flow models
-        (; aquifer) = model.routing.subsurface_flow
+        (; subsurface_flow) = model.routing
         (; zi, ustorecapacity) = model.land.soil.variables
         (; land_indices) = model.domain.river.network
         @test all(
             zi .==
-            aquifer.parameters.top .- min.(aquifer.variables.head, aquifer.parameters.top),
+            subsurface_flow.parameters.top .-
+            min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
         )
         @test all(ustorecapacity[land_indices] .== 0.0)
         @test all(
-            aquifer.variables.head[land_indices] .== aquifer.parameters.top[land_indices],
+            subsurface_flow.variables.head[land_indices] .==
+            subsurface_flow.parameters.top[land_indices],
         )
     end
 
@@ -84,18 +86,19 @@
     end
 
     @testset "groundwater" begin
-        gw = model.routing.subsurface_flow
-        @test gw.boundaries.river.variables.stage[1] ≈ 1.212479774379469
-        @test gw.aquifer.variables.head[17:21] ≈ [
+        gwf = model.routing.subsurface_flow
+        @test gwf.boundary_conditions.river.variables.stage[1] ≈ 1.212479774379469
+        @test gwf.variables.head[17:21] ≈ [
             1.2499617962076572,
             1.3146958617176479,
             1.7999999523162842,
             1.6201330681295285,
             1.3726090475101977,
         ]
-        @test gw.boundaries.river.variables.flux[1] ≈ to_SI(-44.36320056565769, M3_PER_DAY)
-        @test gw.boundaries.drain.variables.flux[1] ≈ 0.0
-        @test gw.boundaries.recharge.variables.rate[19] ≈
+        @test gwf.boundary_conditions.river.variables.flux[1] ≈
+              to_SI(-44.36320056565769, M3_PER_DAY)
+        @test gwf.boundary_conditions.drain.variables.flux[1] ≈ 0.0
+        @test gwf.boundary_conditions.recharge.variables.rate[19] ≈
               to_SI(-0.0014241196552847502, M_PER_DAY)
     end
 
@@ -106,8 +109,9 @@
             "land_drain_water__to_subsurface_volume_flow_rate",
         )
         model = Wflow.Model(config)
-        @test typeof.(Wflow.get_boundaries(model.routing.subsurface_flow.boundaries)) ==
-              (Wflow.Recharge, Wflow.GwfRiver, Nothing, Nothing)
+        @test typeof.(
+            Wflow.get_boundaries(model.routing.subsurface_flow.boundary_conditions),
+        ) == (Wflow.RechargeModel, Wflow.GwfRiverModel, Nothing, Nothing)
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -216,18 +220,19 @@ end
 
     @testset "groundwater warm start" begin
         (; subsurface_flow) = model.routing
-        @test subsurface_flow.boundaries.river.variables.stage[1] ≈ 1.2030201719029363
-        @test subsurface_flow.aquifer.variables.head[17:21] ≈ [
+        @test subsurface_flow.boundary_conditions.river.variables.stage[1] ≈
+              1.2030201719029363
+        @test subsurface_flow.variables.head[17:21] ≈ [
             1.226363413451762,
             1.2844302137711752,
             1.7999999523162842,
             1.5860343731919113,
             1.2068931431179248,
         ]
-        @test subsurface_flow.boundaries.river.variables.flux[1] ≈
+        @test subsurface_flow.boundary_conditions.river.variables.flux[1] ≈
               to_SI(-6.472282449944586, M3_PER_DAY)
-        @test subsurface_flow.boundaries.drain.variables.flux[1] ≈ 0.0
-        @test subsurface_flow.boundaries.recharge.variables.rate[19] ≈
+        @test subsurface_flow.boundary_conditions.drain.variables.flux[1] ≈ 0.0
+        @test subsurface_flow.boundary_conditions.recharge.variables.rate[19] ≈
               to_SI(-0.0014241196552847502, M_PER_DAY)
     end
 

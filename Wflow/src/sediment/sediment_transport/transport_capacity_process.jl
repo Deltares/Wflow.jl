@@ -501,6 +501,7 @@ Total sediment transport capacity based on Kodatie.
 - `c_kodatie` (Kodatie transport capacity coefficient [-])
 - `d_kodatie` (Kodatie transport capacity coefficient [-])
 - `width` (drain width [m])
+- `length` (reach length [m])
 - `slope` (slope [-])
 - `dt` (time step [s])
 

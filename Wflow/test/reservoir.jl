@@ -31,7 +31,7 @@
         waterlevel = [10.208598234556407],
     )
 
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,
@@ -105,7 +105,7 @@ end
         waterlevel,
     )
 
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,
@@ -262,7 +262,7 @@ end
         ],
     )
 
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,
@@ -323,7 +323,7 @@ end
     )
     res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
     res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
-    res = Wflow.Reservoir(;
+    res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
         parameters = res_params,
         variables = res_vars,

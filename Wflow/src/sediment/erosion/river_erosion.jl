@@ -40,7 +40,7 @@ function RiverErosionParameters(
         dataset,
         config,
         "river_bottom_and_bank_sediment__median_diameter",
-        SoilLoss;
+        SoilLossModel;
         sel = indices,
     )
     river_parameters = RiverErosionParameters(; d50)

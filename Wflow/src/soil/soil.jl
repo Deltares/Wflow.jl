@@ -653,6 +653,7 @@ function update_bc_soil_model!(
     # [m s⁻¹] = [-] * [m s⁻¹]
     @. potential_soilevaporation =
         soil_model.parameters.soil_fraction * atmospheric_forcing.potential_evaporation
+
     evaporation!(demand.paddy, potential_soilevaporation, dt)
     # [m s⁻¹] -= [m s⁻¹]
     potential_soilevaporation .-= get_evaporation(demand.paddy)
@@ -1281,12 +1282,11 @@ function update_soil_water_storage!(
     dt::Float64,
 )
     (; runoff, demand, subsurface_flow) = external_models
+    (; exfiltsatwater) = subsurface_flow
     (; runoff_land, ae_openw_l) = runoff.variables
     p = soil_model.parameters
     v = soil_model.variables
 
-    # [m s⁻¹]
-    exfiltsatwater = get_exfiltwater(subsurface_flow)
     # [m]
     rootingdepth = get_rootingdepth(soil_model)
 

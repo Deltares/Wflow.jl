@@ -525,27 +525,12 @@
         )
     end
 
-    @testset "Second timestep: subsurface routing" begin
-        (; subsurface_flow) = model.routing
-        (; ssf) = subsurface_flow.variables
-
-        @test ssf[domain.land.network.order[1]] ≈ to_SI(699.3636285243076, M3_PER_DAY)
-        @test ssf[domain.land.network.order[end - 100]] ≈
-              to_SI(2395.6159482448143, M3_PER_DAY)
-        @test ssf[domain.land.network.order[end]] ≈ to_SI(287.61501877867994, M3_PER_DAY)
-
-        @test test_means(
-            subsurface_flow.variables,
-            Dict(
-                :zi => 0.2831713993535127,
-                :to_river => to_SI(83.4857164905592, M3_PER_DAY),
-                :ssfin => to_SI(1164.889898167789, M3_PER_DAY),
-                :storage => 117753.99735856777,
-                :ssfmax => to_SI(3.149179231329745, M2_PER_DAY),
-                :ssf => to_SI(1248.442951721258, M2_PER_DAY),
-                :exfiltwater => to_SI(0.00022096092792910484, M_PER_DT; dt_val = dt),
-            ),
-        )
+    @testset "subsurface flow" begin
+        q_av_average = get_average(model.routing.subsurface_flow.variables.q_av)
+        @test sum(q_av_average) ≈ 6.250079949202134e7
+        @test q_av_average[domain.land.network.order[1]] ≈ 699.3636285243076
+        @test q_av_average[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
+        @test q_av_average[domain.land.network.order[end]] ≈ 287.61501877867994
     end
 
     @testset "Second timestep: overland routing" begin
@@ -1144,8 +1129,8 @@ end
             )
             @test kv_400 ≈ kv_1000
             @test all(kv_profile.z_exp .== to_SI(400.0, MM))
-            @test subsurface_flow.variables.ssfmax[i] ≈ to_SI(49.38558575188426, M2_PER_DAY)
-            @test subsurface_flow.variables.ssf[i] ≈ to_SI(24810.460986497365, M3_PER_DAY)
+            @test subsurface_flow.variables.q_max[i] ≈ to_SI(49.38558575188426, M2_PER_DAY)
+            @test subsurface_flow.variables.q[i] ≈ to_SI(24810.460986497365, M3_PER_DAY)
         end
 
         @testset "layered profile" begin
@@ -1162,9 +1147,8 @@ end
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile)
             @test subsurface_flow.parameters.kh_profile.kh[i] ≈
                   to_SI(47.508932674632355, M_PER_DAY)
-            @test subsurface_flow.variables.ssfmax[i] ≈
-                  to_SI(30.237094380100316, M2_PER_DAY)
-            @test subsurface_flow.variables.ssf[i] ≈ to_SI(14546.518932613191, M3_PER_DAY)
+            @test subsurface_flow.variables.q_max[i] ≈ to_SI(30.237094380100316, M2_PER_DAY)
+            @test subsurface_flow.variables.q[i] ≈ to_SI(14546.518932613191, M3_PER_DAY)
         end
 
         config = get_config(Wflow.VerticalConductivityProfile.layered_exponential)
@@ -1184,8 +1168,8 @@ end
             @test subsurface_flow.parameters.kh_profile.kh[i] ≈
                   to_SI(33.76026208801769, M_PER_DAY)
             @test all(kv_profile.z_layered[1:10] .== to_SI(400.0, MM))
-            @test subsurface_flow.variables.ssfmax[i] ≈ to_SI(23.4840490395906, M2_PER_DAY)
-            @test subsurface_flow.variables.ssf[i] ≈ to_SI(10336.88327617503, M3_PER_DAY)
+            @test subsurface_flow.variables.q_max[i] ≈ to_SI(23.4840490395906, M2_PER_DAY)
+            @test subsurface_flow.variables.q[i] ≈ to_SI(10336.88327617503, M3_PER_DAY)
         end
 
         @testset "river flow layered exponential profile" begin

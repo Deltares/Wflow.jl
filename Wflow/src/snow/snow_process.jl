@@ -10,6 +10,7 @@ The refreezing efficiency factor `cfr` is set to 0.05.
 - `snow_water` (liquid water content in the snow pack)
 - `snow_precip` (snow precipitation)
 - `liquid_precip` (liquid precipitation)
+- `temperature` (temperature)
 - `ttm` (melting threshold)
 - `cfmax` (degree day factor, rate of snowmelt)
 - `whc` (water holding capacity of snow)
