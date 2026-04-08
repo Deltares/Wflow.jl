@@ -1,13 +1,14 @@
-"Struct for storing (shared) variables for river and overland flow models"
-@with_kw struct FlowVariables <: AbstractRiverFlowVariables
+"Struct for storing variables for river flow model"
+@with_kw struct RiverFlowVariables <: AbstractRiverFlowVariables
     n::Int
-    q::Vector{Float64} = zeros(n)            # Discharge [m³ s⁻¹]
+    q::Vector{Float64} = zeros(n)            # River discharge [m³ s⁻¹]
     qlat::Vector{Float64} = zeros(n)         # Lateral inflow per unit length [m² s⁻¹]
-    qin::Vector{Float64} = zeros(n)          # Inflow from upstream cells [m³ s⁻¹]
-    qin_av::Vector{Float64} = zeros(n)       # Average inflow from upstream cells  [m³ s⁻¹] for model timestep Δt
-    q_av::Vector{Float64} = zeros(n)         # Average discharge [m³ s⁻¹] for model timestep Δt
-    storage::Vector{Float64} = zeros(n)      # Kinematic wave storage [m³] (based on water depth h)
-    h::Vector{Float64} = zeros(n)            # Water depth [m]
+    qin::Vector{Float64} = zeros(n)          # River inflow from upstream cells [m³ s⁻¹]
+    qin_av::Vector{Float64} = zeros(n)       # Average river inflow from upstream cells [m³ s⁻¹] for model timestep Δt
+    q_av::Vector{Float64}                    # Average river channel (+ floodplain) discharge discharge [m³ s⁻¹] for model timestep Δt
+    q_channel_av::Vector{Float64}            # Average river channel discharge [m³ s⁻¹] (for model timestep Δt)
+    storage::Vector{Float64} = zeros(n)      # River kinematic wave storage [m³] (based on water depth h)
+    h::Vector{Float64} = zeros(n)            # River water depth [m]
 end
 
 "Initialize Manning flow parameters"
@@ -111,7 +112,12 @@ function init_kinematic_wave_river_flow(
     allocation =
         do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
-    variables = FlowVariables(; n)
+    q_av = zeros(n)
+    variables = RiverFlowVariables(;
+        n,
+        q_av,
+        q_channel_av = config.model.floodplain_1d__flag ? zeros(n) : q_av,
+    )
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
     if config.model.floodplain_1d__flag
@@ -137,19 +143,14 @@ end
 "Struct for storing overland flow model variables"
 @with_kw struct OverLandFlowVariables <: AbstractOverlandFlowVariables
     n::Int
-    flow::FlowVariables = FlowVariables(; n)
-    to_river::Vector{Float64} = zeros(n) # Part of overland flow [m³ s⁻¹] that flows to the river
-end
-
-"Overload `getproperty` for overland flow model variables"
-function Base.getproperty(v::OverLandFlowVariables, s::Symbol)
-    if s === :to_river
-        getfield(v, s)
-    elseif s === :flow
-        getfield(v, :flow)
-    else
-        getfield(getfield(v, :flow), s)
-    end
+    q::Vector{Float64} = zeros(n)            # Overland discharge [m³ s⁻¹]
+    qlat::Vector{Float64} = zeros(n)         # Lateral inflow per unit length [m² s⁻¹]
+    qin::Vector{Float64} = zeros(n)          # Overland inflow from upstream cells [m³ s⁻¹]
+    qin_av::Vector{Float64} = zeros(n)       # Average overland inflow from upstream cells [m³ s⁻¹] for model timestep Δt
+    q_av::Vector{Float64} = zeros(n)         # Average overland discharge [m³ s⁻¹] for model timestep Δt
+    storage::Vector{Float64} = zeros(n)      # Overland kinematic wave storage [m³] (based on water depth h)
+    h::Vector{Float64} = zeros(n)            # Overland water depth [m]
+    to_river::Vector{Float64} = zeros(n)     # Part of overland flow [m³ s⁻¹] that flows to the river
 end
 
 "Struct for storing overland flow model boundary conditions"
