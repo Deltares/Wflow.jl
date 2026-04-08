@@ -264,7 +264,7 @@ end
 end
 
 @testitem "Model initialization" begin
-    using NCDatasets: dimnames
+    using NCDatasets: NCDataset, dimnames
     using Wflow: get_field_in_model
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")

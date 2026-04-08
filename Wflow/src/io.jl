@@ -679,17 +679,13 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
-    not_allowed = String[]
     for (par, ncname) in ncnames_dict
+        # This throws an error if no field can be obtained
         vector, metadata = get_field_in_model(modelmap, par)
         if !isnothing(metadata) && isnothing(metadata.lens)
             push!(not_allowed, par)
         end
         output_map[ncname] = (; par, vector)
-    end
-    if !iszero(length(not_allowed))
-        @error "Writing the following parameters/variables to output is not supported" not_allowed
-        error("Invalid output configuration.")
     end
     return output_map
 end
@@ -832,7 +828,7 @@ end
 
 "Write a new timestep with scalar data to a netCDF file"
 function write_netcdf_timestep(model, dataset)
-    (; writer, land, clock) = model
+    (; writer, clock) = model
 
     time_index = add_time(dataset, clock.time)
     for var in writer.nc_scalar
