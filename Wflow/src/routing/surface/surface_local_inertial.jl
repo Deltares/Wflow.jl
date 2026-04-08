@@ -268,8 +268,8 @@ get_inflow_reservoir(
     subsurface_flow_model::LateralSSFModel,
     inds::Vector{Int},
 ) = (
-    subsurface_flow_model.variables.q_av[inds] .+
-    subsurface_flow_model.variables.to_river[inds]
+    get_average(subsurface_flow_model.variables.q_av)[inds] .+
+    get_average(subsurface_flow_model.variables.to_river)[inds]
 )
 
 "Update local inertial river flow model `LocalInertialRiverFlow` for a single timestep"
@@ -572,6 +572,12 @@ function update_water_depth_and_storage!(
     end
     return nothing
 end
+update_water_depth_and_storage!(
+    floodplain_model::Nothing,
+    river_flow_model::LocalInertialRiverFlowModel,
+    domain::DomainRiver,
+    dt::Float64,
+) = nothing
 
 """
 Update water depth and storage for river.

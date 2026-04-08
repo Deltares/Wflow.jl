@@ -1,4 +1,4 @@
-# NOTE: The order of the entries determines the order in the docs tables
+﻿# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
 of type `SoilLossModel`. The `lens` allows access to a nested model variable.

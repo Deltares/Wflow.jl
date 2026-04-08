@@ -217,12 +217,16 @@ function BMI.get_value_ptr(model::Model, name::String)
         value = reshape(reinterpret(el_type, model_vals), dim, :)
         return @view value[ind, 1:n]
     else
-        (; lens) = get_metadata(name)
-        vec = lens(model)
-        if vec isa AverageVector
-            vec = get_average(vec)
+        (; lens) = get_metadata(name; model)
+        if isnothing(lens)
+            error("Accessing '$name' is not supported.")
+        else
+            vec = lens(model)
+            if vec isa AverageVector
+                vec = get_average(vec)
+            end
+            return @view(vec[1:n])
         end
-        return @view(vec[1:n])
     end
 end
 

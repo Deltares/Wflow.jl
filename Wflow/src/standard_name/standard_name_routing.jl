@@ -1,4 +1,4 @@
-# NOTE: The order of the entries determines the order in the docs tables
+﻿# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to the metadata associated with the corresponding
 routing parameter. For more details and default values see `ParameterMetadata`.
@@ -330,13 +330,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             tags = [:kinematic_lateral_subsurface_input],
         ),
     #### States
-    "subsurface_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.q_av),
-        unit = Unit(; m = 3, d = -1),
-        description = "Subsurface flow",
-        tags = [:kinematic_lateral_subsurface_state, :kinematic_lateral_subsurface_output],
-    ),
-    #### States
     "subsurface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.variables.q),
         unit = Unit(; m = 3, d = -1),
@@ -344,6 +337,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:kinematic_lateral_subsurface_state, :kinematic_lateral_subsurface_output],
     ),
     #### Output
+    "subsurface_water__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.variables.q_av),
+        unit = Unit(; m = 3, d = -1),
+        description = "Average subsurface flow",
+        tags = [:kinematic_lateral_subsurface_output],
+    ),
     "subsurface_water_saturated_zone_top__depth" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.variables.zi),
         unit = Unit(; m = 1),

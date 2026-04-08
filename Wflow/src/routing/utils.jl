@@ -131,10 +131,10 @@ end
 
 Non mutating version of combined `accucapacityflux!` and `accucapacitystate!`.
 """
-function accucapacityflux_state(material, network, capacity)
+function accucapacityflux_state(material, network, capacity, dt)
     flux = zero(material)
     material = copy(material)
-    accucapacityflux!(flux, material, network, capacity)
+    accucapacityflux!(flux, material, network, capacity, dt)
     return flux, material
 end
 

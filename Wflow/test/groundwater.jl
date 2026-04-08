@@ -110,10 +110,6 @@
 end
 
 @testitem "unit: aquifer, boundary conditions" begin
-    using Wflow: to_SI, Unit
-    M_PER_DAY = Unit(; m = 1, d = -1)
-    M3_PER_DAY = Unit(; m = 3, d = -1)
-    DAY = Unit(; d = 1)
     include("testing_utils.jl")
     @testset "harmonicmean_conductance" begin
         # harmonicmean_conductance(kH1, kH2, l1, l2, width)
@@ -136,30 +132,15 @@ end
     ncell = gwf_model.connectivity.ncell
 
     @testset "saturated_thickness-unconfined" begin
-        @test Wflow.saturated_thickness(unconf_aqf, 1) == 0.0
-        @test Wflow.saturated_thickness(unconf_aqf, 2) == 7.5
-        @test Wflow.saturated_thickness(unconf_aqf, 3) == 10.0
-    end
-
-    @testset "horizontal_conductance" begin
-        @test (
-            Wflow.horizontal_conductance(1, 2, 1, conf_aqf, connectivity) ==
-            Wflow.harmonicmean_conductance(
-                to_SI(10.0, M_PER_DAY) * 10.0,
-                to_SI(10.0, M_PER_DAY) * 10.0,
-                5.0,
-                5.0,
-                10.0,
-            )
-        )
+        @test Wflow.saturated_thickness(gwf_model, 1) == 0.0
+        @test Wflow.saturated_thickness(gwf_model, 2) == 7.5
+        @test Wflow.saturated_thickness(gwf_model, 3) == 10.0
     end
 
     @testset "conductance" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
-        @test Wflow.conductance(gwf_model, 2, 3, 3, conductivity_profile) ==
-              to_SI(100.0, M_PER_DAY)  # upstream sat. thickness
-        @test Wflow.conductance(gwf_model, 1, 2, 1, conductivity_profile) ==
-              to_SI(75.0, M_PER_DAY)  # upstream sat. thickness
+        @test Wflow.conductance(gwf_model, 2, 3, 3, conductivity_profile) == 100.0  # upstream sat. thickness
+        @test Wflow.conductance(gwf_model, 1, 2, 1, conductivity_profile) == 75.0  # upstream sat. thickness
     end
 
     @testset "minimum_head-unconfined" begin
@@ -174,7 +155,7 @@ end
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         alpha_coefficient = 0.25
         @test Wflow.stable_timestep(gwf_model, conductivity_profile, alpha_coefficient) ==
-              to_SI(0.0375, DAY)
+              0.0375
     end
 
     # Parametrization in setup is as follows:
@@ -189,7 +170,7 @@ end
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         Wflow.flux!(gwf_model, conductivity_profile, dt)
         # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
-        @test gwf_model.variables.q_net ≈ to_SI([562.5, 687.5, -1250.0], M3_PER_DAY)
+        @test gwf_model.variables.q_net ≈ [562.5, 687.5, -1250.0]
     end
 
     @testset "river" begin
