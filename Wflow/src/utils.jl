@@ -200,7 +200,7 @@ function set_states!(
                     end
                 end
                 # set state in model object
-                get_field_in_model(model, state) .= svectorscopy(A, Val{size(A)[1]}())
+                get_field_in_model(model, state)[1] .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
                 A = read_standardized(ds, ncname, (x = :, y = :, time = 1))

@@ -74,7 +74,7 @@ function load_fixed_forcing!(model)
     for (par, ncvar) in forcing_parameters
         if variable_name(ncvar) === nothing
             val = only(ncvar.value) * only(ncvar.scale) + only(ncvar.offset)
-            param = get_field_in_model(model, par)
+            param, _ = get_field_in_model(model, par)
             param .= val
             # set fixed precipitation and evaporation over the reservoirs and put these into
             # the reservoir structs and set the precipitation and evaporation to 0 in the
@@ -141,7 +141,7 @@ function update_forcing!(model)
             msg = "Forcing data at $time has missing values on active model cells for $(variable_name(ncvar))"
             throw(ArgumentError(msg))
         end
-        param = get_field_in_model(model, par; check_allow_dynamic_input = true)
+        param, _ = get_field_in_model(model, par; check_allow_dynamic_input = true)
         param .= data_sel
     end
     return nothing
@@ -201,7 +201,7 @@ function update_cyclic!(model)
                 msg = "Cyclic data at month $(month_day[1]) and day $(month_day[2]) has missing values on active model cells for $(variable_name(ncvar))"
                 throw(ArgumentError(msg))
             end
-            param = get_field_in_model(model, par; check_allow_dynamic_input = true)
+            param, _ = get_field_in_model(model, par; check_allow_dynamic_input = true)
             param .= data_sel
         end
     end
@@ -273,7 +273,7 @@ function setup_scalar_netcdf(
                 attrib = ["cf_role" => "timeseries_id"],
             )
         end
-        v = get_field_in_model(modelmap, parameter)
+        v, _ = get_field_in_model(modelmap, parameter)
         if eltype(v) <: AbstractFloat
             defVar(
                 ds,
@@ -490,7 +490,7 @@ struct Writer
     state_parameters::Dict{String, Any}          # mapping of netCDF variable names to model states (arrays)
     state_nc_path::Union{String, Nothing}        # path netCDF file with states
     dataset_scalar::Union{NCDataset, Nothing}    # dataset (netCDF) for scalar data
-    nc_scalar::Vector{NetCDFScalarVariable}      # model parameter (arrays) and for netCDF scalar output                        # model parameter (String) and associated netCDF variable, location dimension and location name for scalar data
+    nc_scalar::Vector{NetCDFScalarVariable}      # model parameter (arrays) and for netCDF scalar output
     nc_scalar_path::Union{String, Nothing}       # path netCDF file (scalar data)
     extra_dim::Union{NamedTuple, Nothing}        # name and values for extra dimension (to store SVectors)
     reducer::Dict{Union{CSVColumn, NetCDFScalarVariable}, Function} # The reducer associated with output variables
@@ -679,12 +679,17 @@ Create a Dict that maps parameter netCDF names to arrays in the Model.
 """
 function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
+    not_allowed = String[]
     for (par, ncname) in ncnames_dict
         vector, metadata = get_field_in_model(modelmap, par)
-        if !metadata.allow_as_output
-            error("Writing $par to output is not supported.")
+        if !isnothing(metadata) && isnothing(metadata.lens)
+            push!(not_allowed, par)
         end
         output_map[ncname] = (; par, vector)
+    end
+    if !iszero(length(not_allowed))
+        @error "Writing the following parameters/variables to output is not supported" not_allowed
+        error("Invalid output configuration.")
     end
     return output_map
 end
@@ -833,7 +838,7 @@ function write_netcdf_timestep(model, dataset)
     for var in writer.nc_scalar
         (; name, parameter) = var
         reducer = writer.reducer[var]
-        A = get_field_in_model(model, parameter)
+        A, _ = get_field_in_model(model, parameter)
         elemtype = eltype(A)
         # could be a value, or a vector in case of map
         if elemtype <: AbstractFloat
@@ -1076,7 +1081,7 @@ function write_csv_row(model)
     for col in csv_cols
         (; parameter) = col
         reducer = writer.reducer[col]
-        A = get_field_in_model(model, parameter)
+        A, _ = get_field_in_model(model, parameter)
         # v could be a value, or a vector in case of map
         if eltype(A) <: SVector
             # indexing is required in case of a SVector and CSV output

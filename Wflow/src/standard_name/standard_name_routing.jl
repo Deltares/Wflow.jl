@@ -1,4 +1,4 @@
-# NOTE: The order of the entries determines the order in the docs tables
+﻿# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to the metadata associated with the corresponding
 routing parameter. For more details and default values see `ParameterMetadata`.
@@ -81,7 +81,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             unit = Unit(; m = 3, s = -1),
             description = "Minimum (environmental) flow released from reservoir",
             allow_dynamic_input = true,
-            allow_as_output = true,
             tags = [:reservoir_static_cyclic_forcing_input],
         ),
     "reservoir_water_release_below_spillway__max_volume_flow_rate" =>
@@ -89,19 +88,16 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             unit = Unit(; m = 3, s = -1),
             description = "Maximum amount that can be released if below spillway",
             allow_dynamic_input = true,
-            allow_as_output = true,
             tags = [:reservoir_static_cyclic_forcing_input],
         ),
     "reservoir_water__target_full_volume_fraction" => ParameterMetadata(;
         description = "Target fraction full (of max storage)",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:reservoir_static_cyclic_forcing_input],
     ),
     "reservoir_water__target_min_volume_fraction" => ParameterMetadata(;
         description = "Target minimum full fraction (of max storage)",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:reservoir_static_cyclic_forcing_input],
     ),
     "reservoir_water__outgoing_observed_volume_flow_rate" => ParameterMetadata(;
@@ -113,7 +109,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         fill = MISSING_VALUE,
         description = "Observed outflow reservoir",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:reservoir_static_cyclic_forcing_input],
     ),
     "reservoir_water__external_inflow_volume_flow_rate" => ParameterMetadata(;
@@ -124,7 +119,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "External inflow reservoir (negative for abstractions)",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:reservoir_static_cyclic_forcing_input],
     ),
     #### States and Output
@@ -219,7 +213,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "External inflow into the river (negative for abstractions)",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [
             :kinematic_wave_river_static_cyclic_forcing_input,
             :local_inertial_river_static_cyclic_forcing_input,
@@ -337,13 +330,6 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
             tags = [:kinematic_lateral_subsurface_input],
         ),
     #### States
-    "subsurface_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.q_av),
-        unit = Unit(; m = 3, d = -1),
-        description = "Subsurface flow",
-        tags = [:kinematic_lateral_subsurface_state, :kinematic_lateral_subsurface_output],
-    ),
-    #### States
     "subsurface_water__instantaneous_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.variables.q),
         unit = Unit(; m = 3, d = -1),
@@ -351,6 +337,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:kinematic_lateral_subsurface_state, :kinematic_lateral_subsurface_output],
     ),
     #### Output
+    "subsurface_water__volume_flow_rate" => ParameterMetadata(;
+        lens = @optic(_.routing.subsurface_flow.variables.q_av),
+        unit = Unit(; m = 3, d = -1),
+        description = "Average subsurface flow",
+        tags = [:kinematic_lateral_subsurface_output],
+    ),
     "subsurface_water_saturated_zone_top__depth" => ParameterMetadata(;
         lens = @optic(_.routing.subsurface_flow.variables.zi),
         unit = Unit(; m = 1),
@@ -597,14 +589,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "River water mass balance error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_river_flow],
     ),
     "river_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.river_water_balance.relative_error),
         description = "River water mass balance relative error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_river_flow],
     ),
     "reservoir_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
@@ -612,14 +602,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "Reservoir water mass balance error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_reservoir],
     ),
     "reservoir_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.reservoir_water_balance.relative_error),
         description = "Reservoir water mass balance relative error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_reservoir],
     ),
     "subsurface_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
@@ -627,14 +615,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, d = -1),
         description = "Subsurface water mass balance error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_subsurface_flow],
     ),
     "subsurface_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.subsurface_water_balance.relative_error),
         description = "Subsurface water mass balance relative error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_subsurface_flow],
     ),
     "land_surface_water_mass_balance_error__volume_flow_rate" => ParameterMetadata(;
@@ -642,14 +628,12 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 3, s = -1),
         description = "Overland flow mass balance error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_overland_flow],
     ),
     "land_surface_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.routing.overland_water_balance.relative_error),
         description = "Overland flow mass balance relative error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_overland_flow],
     ),
 )

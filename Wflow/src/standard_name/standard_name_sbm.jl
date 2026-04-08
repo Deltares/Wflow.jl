@@ -1,4 +1,4 @@
-# NOTE: The order of the entries determines the order in the docs tables
+﻿# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to the metadata associated with the corresponding
 variable or parameter, for models of type `LandHydrologySBM`. For more details and
@@ -24,7 +24,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; degC = 1, absolute_temperature = true),
         description = "Temperature",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:atmospheric_forcing],
     ),
     "atmosphere_water__precipitation_volume_flux" => ParameterMetadata(;
@@ -32,7 +31,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; mm = 1, dt = -1),
         description = "Precipitation",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:atmospheric_forcing],
     ),
     "compacted_soil_surface_water__infiltration_capacity" => ParameterMetadata(;
@@ -59,7 +57,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "Gross domestic water demand",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "domestic__net_water_demand_volume_flux" => ParameterMetadata(;
@@ -68,7 +65,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "Net domestic water demand",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction" =>
@@ -128,7 +124,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "Gross industry water demand",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "industry__net_water_demand_volume_flux" => ParameterMetadata(;
@@ -137,7 +132,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "Net industry water demand",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "irrigated_non_paddy__irrigation_efficiency" => ParameterMetadata(;
@@ -151,7 +145,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         type = Bool,
         description = "Non-paddy irrigation trigger flag",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_non_paddy_irrigation_static_cyclic_forcing_input],
     ),
     "irrigated_non_paddy__max_irrigation_rate" => ParameterMetadata(;
@@ -178,7 +171,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         type = Bool,
         description = "Paddy irrigation trigger flag",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_paddy_irrigation_static_cyclic_forcing_input],
     ),
     "irrigated_paddy__max_depth" => ParameterMetadata(;
@@ -234,7 +226,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; mm = 1, dt = -1),
         description = "Potential evaporation",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:atmospheric_forcing],
     ),
     "land_surface_water__withdrawal_fraction" => ParameterMetadata(;
@@ -289,14 +280,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; mm = 1, dt = -1),
         description = "Land water mass balance error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_land_hydrology],
     ),
     "land_water_mass_balance_relative_error__number" => ParameterMetadata(;
         lens = @optic(_.mass_balance.land_water_balance.relative_error),
         description = "Land water mass balance relative error",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:water_mass_balance_land_hydrology],
     ),
     "land_water_storage__total_depth" => ParameterMetadata(;
@@ -311,7 +300,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "Gross livestock water demand",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "livestock__net_water_demand_volume_flux" => ParameterMetadata(;
@@ -320,7 +308,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 0.0,
         description = "Net livestock water demand",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "non_compacted_soil_surface_water__excess_volume_flux" => ParameterMetadata(;
@@ -635,7 +622,6 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = (2, 2)),
         description = "Leaf area index",
         allow_dynamic_input = true,
-        allow_as_output = true,
         tags = [:vegetation_static_cyclic_forcing_input],
     ),
     "vegetation__specific_leaf_storage" => ParameterMetadata(;

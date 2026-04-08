@@ -298,33 +298,33 @@ end
     end
 
     @testset "warm states" begin
-        @test get_field_in_model(model, "reservoir_water_surface__elevation")[1] ≈
+        @test get_field_in_model(model, "reservoir_water_surface__elevation")[1][1] ≈
               3.6172022486284856
-        @test get_field_in_model(model, "soil_water_saturated_zone__depth")[9115] ≈
+        @test get_field_in_model(model, "soil_water_saturated_zone__depth")[1][9115] ≈
               477.13548089422125
-        @test get_field_in_model(model, "snowpack_dry_snow__leq_depth")[5] ≈
+        @test get_field_in_model(model, "snowpack_dry_snow__leq_depth")[1][5] ≈
               11.019233179897599
-        @test get_field_in_model(model, "soil_surface__temperature")[5] ≈
+        @test get_field_in_model(model, "soil_surface__temperature")[1][5] ≈
               0.21814478119608938
-        @test get_field_in_model(model, "soil_layer_water_unsaturated_zone__depth")[50063][1] ≈
+        @test get_field_in_model(model, "soil_layer_water_unsaturated_zone__depth")[1][50063][1] ≈
               9.969116007201725
-        @test get_field_in_model(model, "snowpack_liquid_water__depth")[5] ≈ 0.0
-        @test get_field_in_model(model, "vegetation_canopy_water__depth")[50063] ≈ 0.0
-        @test get_field_in_model(model, "soil_water_saturated_zone__depth")[50063] ≈
+        @test get_field_in_model(model, "snowpack_liquid_water__depth")[1][5] ≈ 0.0
+        @test get_field_in_model(model, "vegetation_canopy_water__depth")[1][50063] ≈ 0.0
+        @test get_field_in_model(model, "soil_water_saturated_zone__depth")[1][50063] ≈
               558.8578304603327
         @test get_field_in_model(
             model,
             "subsurface_water__instantaneous_volume_flow_rate",
-        )[10606] ≈ 39.972334552895816
-        @test get_field_in_model(model, "river_water__instantaneous_volume_flow_rate")[149] ≈
+        )[1][10606] ≈ 39.972334552895816
+        @test get_field_in_model(model, "river_water__instantaneous_volume_flow_rate")[1][149] ≈
               53.48673634956338
-        @test get_field_in_model(model, "river_water__depth")[149] ≈ 1.167635369628945
+        @test get_field_in_model(model, "river_water__depth")[1][149] ≈ 1.167635369628945
         @test model.routing.river_flow.variables.storage[149] ≈ 63854.60119358985
         @test get_field_in_model(
             model,
             "land_surface_water__instantaneous_volume_flow_rate",
-        )[2075] ≈ 3.285909284322251
-        @test get_field_in_model(model, "land_surface_water__depth")[2075] ≈
+        )[1][2075] ≈ 3.285909284322251
+        @test get_field_in_model(model, "land_surface_water__depth")[1][2075] ≈
               0.052076262033771775
         @test model.routing.overland_flow.variables.storage[2075] ≈ 29920.754983235012
     end
