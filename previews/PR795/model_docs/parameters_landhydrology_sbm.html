@@ -584,7 +584,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>atmospheric_forcing; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>atmospheric_forcing; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -633,16 +633,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="4" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 37%">
-<col style="width: 25%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -650,6 +651,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
@@ -659,6 +661,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Threshold temperature interval length</td>
 <td style="text-align: left;">°C</td>
 <td style="text-align: left;">K</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">1.0</td>
 </tr>
 <tr class="dataRow even">
@@ -666,6 +669,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Threshold temperature for snowfall</td>
 <td style="text-align: left;">°C</td>
 <td style="text-align: left;">K</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -673,6 +677,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Degree-day factor for snowmelt</td>
 <td style="text-align: left;">mm °C⁻¹ day⁻¹</td>
 <td style="text-align: left;">m K⁻¹ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">3.75</td>
 </tr>
 <tr class="dataRow even">
@@ -680,6 +685,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Water holding capacity as fraction of current snow pack</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.1</td>
 </tr>
 <tr class="dataRow odd">
@@ -687,6 +693,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Threshold temperature for snowmelt</td>
 <td style="text-align: left;">°C</td>
 <td style="text-align: left;">K</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
@@ -699,7 +706,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="6" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -740,7 +747,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="8" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>snow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -802,16 +809,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="10" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 26%">
-<col style="width: 13%">
-<col style="width: 13%">
-<col style="width: 13%">
+<col style="width: 28%">
+<col style="width: 23%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -819,6 +827,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
@@ -828,6 +837,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Fraction of the snowpack on top of the glacier converted into ice</td>
 <td style="text-align: left;">day⁻¹</td>
 <td style="text-align: left;">s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.001</td>
 </tr>
 <tr class="dataRow even">
@@ -835,6 +845,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Fraction covered by a glacier</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -842,6 +853,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Degree-day factor for melt from glacier</td>
 <td style="text-align: left;">mm °C⁻¹ day⁻¹</td>
 <td style="text-align: left;">m K⁻¹ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">3.0</td>
 </tr>
 <tr class="dataRow even">
@@ -849,6 +861,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Initial glacier liquid-water equivalent (cold state)</td>
 <td style="text-align: left;">mm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">5500.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -856,6 +869,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Threshold temperature for glacier melt</td>
 <td style="text-align: left;">°C</td>
 <td style="text-align: left;">K</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
@@ -868,7 +882,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="12" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -903,7 +917,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="14" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>glacier_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -947,7 +961,104 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="16" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 23%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation__crop_factor</code></td>
+<td style="text-align: left;">Crop coefficient</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">1.0</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation__specific_leaf_storage</code></td>
+<td style="text-align: left;">Specific leaf storage</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy__light_extinction_coefficient</code></td>
+<td style="text-align: left;">Extinction coefficient (to calculate canopy gap fraction)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio</code></td>
+<td style="text-align: left;">Gash interception model parameter</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">0.1</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_canopy__gap_fraction</code></td>
+<td style="text-align: left;">Canopy gap fraction</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_root__depth</code></td>
+<td style="text-align: left;">Rooting depth</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>vegetation_water__storage_capacity</code></td>
+<td style="text-align: left;">Maximum canopy storage</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">1.0</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>vegetation_wood_water__storage_capacity</code></td>
+<td style="text-align: left;">Storage woody part of vegetation</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="input-cyclic-lai" class="level3">
+<h3 class="anchored" data-anchor-id="input-cyclic-lai">Static or cyclic/forcing input</h3>
+<div id="18" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -964,92 +1075,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>vegetation__crop_factor</code></td>
-<td style="text-align: left;">Crop coefficient</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">1.0</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>vegetation__specific_leaf_storage</code></td>
-<td style="text-align: left;">Specific leaf storage</td>
-<td style="text-align: left;">mm</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>vegetation_canopy__light_extinction_coefficient</code></td>
-<td style="text-align: left;">Extinction coefficient (to calculate canopy gap fraction)</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio</code></td>
-<td style="text-align: left;">Gash interception model parameter</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">0.1</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>vegetation_canopy__gap_fraction</code></td>
-<td style="text-align: left;">Canopy gap fraction</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>vegetation_root__depth</code></td>
-<td style="text-align: left;">Rooting depth</td>
-<td style="text-align: left;">mm</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>vegetation_water__storage_capacity</code></td>
-<td style="text-align: left;">Maximum canopy storage</td>
-<td style="text-align: left;">mm</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">1.0</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>vegetation_wood_water__storage_capacity</code></td>
-<td style="text-align: left;">Storage woody part of vegetation</td>
-<td style="text-align: left;">mm</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section>
-<section id="input-cyclic-lai" class="level3">
-<h3 class="anchored" data-anchor-id="input-cyclic-lai">Static or cyclic/forcing input</h3>
-<div id="18" class="cell" data-execution_count="1">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<table class="table-striped table-hover caption-top table table-sm small">
-<colgroup>
-<col style="width: 38%">
-<col style="width: 30%">
-<col style="width: 15%">
-<col style="width: 15%">
-</colgroup>
-<thead>
-<tr class="columnLabelRow header">
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1058,6 +1084,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Leaf area index</td>
 <td style="text-align: left;">m² m⁻²</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1069,7 +1096,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="20" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1104,7 +1131,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="22" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_output; relative_widths <span class="op">=</span> [<span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>vegetation_output; relative_widths <span class="op">=</span> [<span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1161,16 +1188,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="24" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_input; relative_widths <span class="op">=</span> [<span class="fl">5</span>, <span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 38%">
-<col style="width: 38%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 6%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -1178,6 +1206,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
@@ -1187,6 +1216,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Infiltration capacity of compacted areas</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">10.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1194,6 +1224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Fraction of compacted soil area</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -1201,6 +1232,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Fraction of open water</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1208,6 +1240,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Soil thickness</td>
 <td style="text-align: left;">mm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -1215,6 +1248,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an <code>exponential_constant</code> saturated hydraulic conductivity profile is used</td>
 <td style="text-align: left;">mm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
@@ -1222,6 +1256,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Vertical saturated hydraulic conductivity per soil layer, when a <code>layered</code> or <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -1229,6 +1264,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Depth from soil surface for which <code>layered</code> profile is valid, when a <code>layered_exponential</code> saturated hydraulic conductivity profile is used</td>
 <td style="text-align: left;">mm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
@@ -1236,6 +1272,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Weighting coefficient for soil surface temperature</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.1125</td>
 </tr>
 <tr class="dataRow odd">
@@ -1243,6 +1280,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Brooks-Corey power coefficient per soil layer</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
@@ -1250,6 +1288,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">1.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1257,6 +1296,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Fraction of the root length density per soil layer</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
@@ -1264,6 +1304,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Controls soil infiltration reduction factor when soil is frozen</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.038</td>
 </tr>
 <tr class="dataRow odd">
@@ -1271,6 +1312,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Vertical saturated hydraulic conductivity at soil surface</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
@@ -1278,6 +1320,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth</td>
 <td style="text-align: left;">mm⁻¹</td>
 <td style="text-align: left;">m⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -1285,6 +1328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Air entry pressure head of soil</td>
 <td style="text-align: left;">cm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-10.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1292,6 +1336,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Residual water content</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -1299,6 +1344,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Saturated water content</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
@@ -1306,6 +1352,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Maximum leakage from saturated zone</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1313,6 +1360,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Maximum water table depth for capillary rise</td>
 <td style="text-align: left;">mm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">2000.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1320,6 +1368,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Averianov exponent controlling capillary rise</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">2.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1327,6 +1376,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Controls sharpness of transition between fully wet and fully dry roots</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-500.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1334,6 +1384,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Critical pressure head h1 of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1341,6 +1392,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">1.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1348,6 +1400,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Critical pressure head h2 of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-100.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1355,6 +1408,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Critical pressure head h3_high of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-400.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1362,6 +1416,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Critical pressure head h3_low of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-1000.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1369,6 +1424,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Critical pressure head h4 of the root water uptake reduction function (Feddes)</td>
 <td style="text-align: left;">cm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-16000.0</td>
 </tr>
 </tbody>
@@ -1381,7 +1437,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="26" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1428,7 +1484,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="28" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>soil_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1600,16 +1656,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="30" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 37%">
-<col style="width: 25%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -1617,6 +1674,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
@@ -1626,6 +1684,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Gross domestic water demand</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1633,6 +1692,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Net domestic water demand</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1640,6 +1700,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Gross industry water demand</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1647,6 +1708,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Net industry water demand</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow odd">
@@ -1654,6 +1716,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Gross livestock water demand</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow even">
@@ -1661,6 +1724,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Net livestock water demand</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
@@ -1676,7 +1740,64 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="32" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_non_paddy__irrigation_efficiency</code></td>
+<td style="text-align: left;">Irrigation efficiency</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">1.0</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_non_paddy__max_irrigation_rate</code></td>
+<td style="text-align: left;">Maximum irrigation rate</td>
+<td style="text-align: left;">mm day⁻¹</td>
+<td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">25.0</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_non_paddy_area__count</code></td>
+<td style="text-align: left;">Irrigation areas (non-paddy)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="static-or-cyclicforcing-input-1" class="level4">
+<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-1">Static or cyclic/forcing input</h4>
+<div id="34" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1693,57 +1814,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>irrigated_non_paddy__irrigation_efficiency</code></td>
-<td style="text-align: left;">Irrigation efficiency</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">1.0</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>irrigated_non_paddy__max_irrigation_rate</code></td>
-<td style="text-align: left;">Maximum irrigation rate</td>
-<td style="text-align: left;">mm day⁻¹</td>
-<td style="text-align: left;">m s⁻¹</td>
-<td style="text-align: left;">25.0</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>irrigated_non_paddy_area__count</code></td>
-<td style="text-align: left;">Irrigation areas (non-paddy)</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section>
-<section id="static-or-cyclicforcing-input-1" class="level4">
-<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-1">Static or cyclic/forcing input</h4>
-<div id="34" class="cell" data-execution_count="1">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<table class="table-striped table-hover caption-top table table-sm small">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="columnLabelRow header">
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1752,6 +1823,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Non-paddy irrigation trigger flag</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1763,15 +1835,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="36" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_non_paddy_irrigation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 37%">
-<col style="width: 37%">
-<col style="width: 12%">
-<col style="width: 12%">
+<col style="width: 30%">
+<col style="width: 30%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 20%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -1779,6 +1852,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1787,6 +1861,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Irrigation (non-paddy) gross demand</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1801,7 +1876,88 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="38" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_paddy__irrigation_efficiency</code></td>
+<td style="text-align: left;">Irrigation efficiency</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">1.0</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_paddy__max_depth</code></td>
+<td style="text-align: left;">Water depth when paddy field starts spilling water (overflow)</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">80.0</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_paddy__max_irrigation_rate</code></td>
+<td style="text-align: left;">Maximum irrigation rate</td>
+<td style="text-align: left;">mm day⁻¹</td>
+<td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">25.0</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_paddy__min_depth</code></td>
+<td style="text-align: left;">Minimum required water depth in the irrigated paddy fields</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">20.0</td>
+</tr>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>irrigated_paddy__optimal_depth</code></td>
+<td style="text-align: left;">Optimal water depth in the irrigated paddy fields</td>
+<td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">50.0</td>
+</tr>
+<tr class="dataRow even">
+<td style="text-align: left;"><code>irrigated_paddy_area__count</code></td>
+<td style="text-align: left;">Irrigation areas (paddy)</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="static-or-cyclicforcing-input-2" class="level4">
+<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-2">Static or cyclic/forcing input</h4>
+<div id="40" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1818,78 +1974,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>irrigated_paddy__irrigation_efficiency</code></td>
-<td style="text-align: left;">Irrigation efficiency</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">1.0</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>irrigated_paddy__max_depth</code></td>
-<td style="text-align: left;">Water depth when paddy field starts spilling water (overflow)</td>
-<td style="text-align: left;">mm</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">80.0</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>irrigated_paddy__max_irrigation_rate</code></td>
-<td style="text-align: left;">Maximum irrigation rate</td>
-<td style="text-align: left;">mm day⁻¹</td>
-<td style="text-align: left;">m s⁻¹</td>
-<td style="text-align: left;">25.0</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>irrigated_paddy__min_depth</code></td>
-<td style="text-align: left;">Minimum required water depth in the irrigated paddy fields</td>
-<td style="text-align: left;">mm</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">20.0</td>
-</tr>
-<tr class="dataRow odd">
-<td style="text-align: left;"><code>irrigated_paddy__optimal_depth</code></td>
-<td style="text-align: left;">Optimal water depth in the irrigated paddy fields</td>
-<td style="text-align: left;">mm</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">50.0</td>
-</tr>
-<tr class="dataRow even">
-<td style="text-align: left;"><code>irrigated_paddy_area__count</code></td>
-<td style="text-align: left;">Irrigation areas (paddy)</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section>
-<section id="static-or-cyclicforcing-input-2" class="level4">
-<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-2">Static or cyclic/forcing input</h4>
-<div id="40" class="cell" data-execution_count="1">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-display">
-<table class="table-striped table-hover caption-top table table-sm small">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
-</colgroup>
-<thead>
-<tr class="columnLabelRow header">
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1898,6 +1983,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Paddy irrigation trigger flag</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1909,7 +1995,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="42" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
@@ -1944,15 +2030,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="44" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_paddy_irrigation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 37%">
-<col style="width: 37%">
-<col style="width: 12%">
-<col style="width: 12%">
+<col style="width: 30%">
+<col style="width: 30%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 20%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -1960,6 +2047,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1968,12 +2056,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Irrigation (paddy) gross demand</td>
 <td style="text-align: left;">mm day⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>paddy_surface_water__depth</code></td>
 <td style="text-align: left;">Water depth in paddy field</td>
 <td style="text-align: left;">mm</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1988,15 +2078,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="46" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_allocation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_allocation_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -2004,6 +2096,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -2012,12 +2106,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Fraction surface water used</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">1.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_water_allocation_area__count</code></td>
 <td style="text-align: left;">Allocation areas</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">1</td>
 </tr>
 </tbody>
 </table>
@@ -2029,7 +2127,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="48" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_allocation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.LandHydrologySBM, <span class="op">:</span>demand_allocation_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
