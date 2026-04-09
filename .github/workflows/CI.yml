@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: julia-actions/cache@v3
-      - uses: prefix-dev/setup-pixi@v0.9.4
+      - uses: prefix-dev/setup-pixi@v0.9.5
         with:
           pixi-version: "latest"
       - name: Prepare pixi
@@ -43,7 +43,7 @@ jobs:
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: Wflow/src
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
