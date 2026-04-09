@@ -3,12 +3,12 @@
     "dataLicense": "CC0-1.0",
     "SPDXID": "SPDXRef-DOCUMENT",
     "name": "Wflow.jl",
-    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-3f46e827-1849-4dcb-b456-ac44234885f8",
+    "documentNamespace": "https://github.com/Deltares/Wflow.jl/Wflow.spdx.json-a9953113-2218-44e0-8bc3-e76403c18c89",
     "creationInfo": {
         "creators": [
             "Organization:  Deltares  (software@deltares.nl)"
         ],
-        "created": "2026-03-16T14:50:45Z",
+        "created": "2026-04-02T04:01:35Z",
         "comment": "Target Platform: Platform(\"x86_64\", \"linux\"; libgfortran_version = \"5.0.0\", julia_version = \"1.12.5\", libc = \"glibc\", libstdcxx_version = \"3.4.30\", cxxstring_abi = \"cxx11\")"
     },
     "comment": "Registries used for populating Package data:\nGeneral registry: https://github.com/JuliaRegistries/General.git\nOfficial general Julia package registry where people can\nregister any package they want without too much debate about\nnaming and without enforced standards on documentation or\ntesting. We nevertheless encourage documentation, testing and\nsome amount of consideration when choosing package names.\n",
@@ -613,13 +613,13 @@
         {
             "name": "DataStructures",
             "SPDXID": "SPDXRef-DataStructures-864edb3b-99cc-5e75-8d2d-829cb0a9cfe8",
-            "versionInfo": "0.19.3",
+            "versionInfo": "0.19.4",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaCollections/DataStructures.jl.git@e357641bb3e0638d353c4b29ea0e40ea644066a6",
+            "downloadLocation": "git+https://github.com/JuliaCollections/DataStructures.jl.git@e86f4a2805f7f19bec5129bc9150c38208e5dc23",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "405fad9a80e269d483e5a1a9719cce77bada4676"
+                "packageVerificationCodeValue": "57dff6ecaf0e8aba8493f4912db57ffe86cfe176"
             },
             "homepage": "https://github.com/JuliaCollections/DataStructures.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -634,7 +634,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/DataStructures@0.19.3?uuid=864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+                    "referenceLocator": "pkg:julia/DataStructures@0.19.4?uuid=864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
                 }
             ]
         },
@@ -3500,27 +3500,27 @@
         },
         {
             "name": "Hwloc_source",
-            "SPDXID": "SPDXRef-f4c9da62cf0eab7d6740f04a87d7cb4d2b751456",
+            "SPDXID": "SPDXRef-b184348af3817128ec50deb631b63ab2ce4b735b",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaPackaging/Yggdrasil.git@f4c9da62cf0eab7d6740f04a87d7cb4d2b751456#/H/Hwloc/",
+            "downloadLocation": "git+https://github.com/JuliaPackaging/Yggdrasil.git@b184348af3817128ec50deb631b63ab2ce4b735b#/H/Hwloc/",
             "filesAnalyzed": false,
-            "sourceInfo": "The location of this repository was extracted from the README.md file of SPDXRef-9fc60808aee37960fde390fa81aa2f3d261ce25b",
+            "sourceInfo": "The location of this repository was extracted from the README.md file of SPDXRef-55b3ef68fcb01cab93cbe76e7b48e5fb802a9ecf",
             "licenseConcluded": "NOASSERTION",
             "licenseDeclared": "NOASSERTION",
             "copyrightText": "NOASSERTION",
-            "summary": "The binary artifact SPDXRef-9fc60808aee37960fde390fa81aa2f3d261ce25b is built using the scripts and source files in this package.\nThe build system is called Yggdrasil, the Julia community build tree.",
+            "summary": "The binary artifact SPDXRef-55b3ef68fcb01cab93cbe76e7b48e5fb802a9ecf is built using the scripts and source files in this package.\nThe build system is called Yggdrasil, the Julia community build tree.",
             "comment": "The SPDX ID field is derived from the Git hash in the DownloadLocation"
         },
         {
             "name": "Hwloc",
-            "SPDXID": "SPDXRef-9fc60808aee37960fde390fa81aa2f3d261ce25b",
+            "SPDXID": "SPDXRef-55b3ef68fcb01cab93cbe76e7b48e5fb802a9ecf",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "https://github.com/JuliaBinaryWrappers/Hwloc_jll.jl/releases/download/Hwloc-v2.13.0+0/Hwloc.v2.13.0.x86_64-linux-gnu.tar.gz",
+            "downloadLocation": "https://github.com/JuliaBinaryWrappers/Hwloc_jll.jl/releases/download/Hwloc-v2.13.0+1/Hwloc.v2.13.0.x86_64-linux-gnu.tar.gz",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "53ce50e03160bd20d2f44b50928a322973907b75",
+                "packageVerificationCodeValue": "84d6e97fc4d80a8c73c3df1a011bc55cad580f30",
                 "packageVerificationCodeExcludedFiles": [
                     "bin/hwloc-ls",
                     "bin/lstopo",
@@ -3533,7 +3533,7 @@
             "checksums": [
                 {
                     "algorithm": "SHA256",
-                    "checksumValue": "8d7ff4c4bb1684b3f68739279eaa25c91cef059d4ddfb110e9a65c2ed13b7c4f"
+                    "checksumValue": "2d32df8482894585e143cb74ccca7dd6764699deeb51dbbad495b5b307f5528d"
                 }
             ],
             "homepage": "NOASSERTION",
@@ -3550,13 +3550,13 @@
         {
             "name": "Hwloc_jll",
             "SPDXID": "SPDXRef-Hwloc_jll-e33a78d0-f292-5ffc-b300-72abe9b543c8",
-            "versionInfo": "2.13.0+0",
+            "versionInfo": "2.13.0+1",
             "supplier": "NOASSERTION",
             "originator": "NOASSERTION",
-            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/Hwloc_jll.jl.git@157e2e5838984449e44af851a52fe374d56b9ada",
+            "downloadLocation": "git+https://github.com/JuliaBinaryWrappers/Hwloc_jll.jl.git@baaaebd42ed9ee1bd9173cfd56910e55a8622ee1",
             "filesAnalyzed": true,
             "packageVerificationCode": {
-                "packageVerificationCodeValue": "a058bfa4b18f9a3b74e21beea7492c75d426700e"
+                "packageVerificationCodeValue": "5074dd8bd30014a2ef3bbae198b837b767246784"
             },
             "homepage": "https://github.com/JuliaBinaryWrappers/Hwloc_jll.jl.git",
             "licenseConcluded": "NOASSERTION",
@@ -3571,7 +3571,7 @@
                 {
                     "referenceCategory": "PACKAGE-MANAGER",
                     "referenceType": "purl",
-                    "referenceLocator": "pkg:julia/Hwloc_jll@2.13.0+0?uuid=e33a78d0-f292-5ffc-b300-72abe9b543c8"
+                    "referenceLocator": "pkg:julia/Hwloc_jll@2.13.0+1?uuid=e33a78d0-f292-5ffc-b300-72abe9b543c8"
                 }
             ]
         },
@@ -5470,12 +5470,12 @@
             "relatedSpdxElement": "SPDXRef-Hwloc_jll-e33a78d0-f292-5ffc-b300-72abe9b543c8"
         },
         {
-            "spdxElementId": "SPDXRef-9fc60808aee37960fde390fa81aa2f3d261ce25b",
+            "spdxElementId": "SPDXRef-55b3ef68fcb01cab93cbe76e7b48e5fb802a9ecf",
             "relationshipType": "GENERATED_FROM",
-            "relatedSpdxElement": "SPDXRef-f4c9da62cf0eab7d6740f04a87d7cb4d2b751456"
+            "relatedSpdxElement": "SPDXRef-b184348af3817128ec50deb631b63ab2ce4b735b"
         },
         {
-            "spdxElementId": "SPDXRef-9fc60808aee37960fde390fa81aa2f3d261ce25b",
+            "spdxElementId": "SPDXRef-55b3ef68fcb01cab93cbe76e7b48e5fb802a9ecf",
             "relationshipType": "RUNTIME_DEPENDENCY_OF",
             "relatedSpdxElement": "SPDXRef-Hwloc_jll-e33a78d0-f292-5ffc-b300-72abe9b543c8"
         },
