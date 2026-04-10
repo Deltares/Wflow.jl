@@ -268,28 +268,38 @@ function actual_infiltration_soil_path(
     return actinfiltsoil, actinfiltpath
 end
 
+"""
+Correct infiltration fluxes by separating the surface water contribution from the total
+infiltration. The correction factor is based on the ratio of
+`potential_infiltration_surfacewater` to `potential_infiltration`, and is applied to
+`actinfilt` and `infiltexcess` to remove the surface water component. The surface water flux
+`water_flux_surface` is adjusted accordingly, and the remaining excess water is computed.
+
+Returns `infilt_surfacewater`, corrected `actinfilt`, corrected `infiltexcess`, `excesswater`,
+and corrected `water_flux_surface`.
+"""
 function correct_infiltration(
-    infilt_total_available,
-    infilt_available_surfacewater,
+    potential_infiltration,
+    potential_infiltration_surfacewater,
     water_flux_surface,
     actinfilt,
     infiltexcess,
 )
     # Determine ratio of water that has infiltrated
-    infilt_ratio = infilt_total_available == 0.0 ? 0.0 : actinfilt / infilt_total_available
+    infilt_ratio = potential_infiltration == 0.0 ? 0.0 : actinfilt / potential_infiltration
     # Use this ratio to determine the contribution from overland flow
-    infilt_surfacewater = max(0.0, infilt_available_surfacewater * infilt_ratio)
+    infilt_surfacewater = max(0.0, potential_infiltration_surfacewater * infilt_ratio)
     # Determine the correction factor to apply to the relevant fluxes
     correction_surfacewater =
-        infilt_total_available == 0.0 ? 1.0 :
-        1.0 - (infilt_available_surfacewater / infilt_total_available)
+        potential_infiltration == 0.0 ? 1.0 :
+        1.0 - (potential_infiltration_surfacewater / potential_infiltration)
 
     # Correct fluxes
     actinfilt *= correction_surfacewater
     infiltexcess *= correction_surfacewater
 
     # subtract contribution from overland flow to ensure correct fluxes
-    water_flux_surface -= infilt_available_surfacewater
+    water_flux_surface -= potential_infiltration_surfacewater
     excesswater = water_flux_surface - actinfilt - infiltexcess
 
     return infilt_surfacewater, actinfilt, infiltexcess, excesswater, water_flux_surface

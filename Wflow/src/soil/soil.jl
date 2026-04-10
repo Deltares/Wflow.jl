@@ -45,10 +45,10 @@ abstract type AbstractSoilModel end
     infiltexcess::Vector{Float64} = fill(MISSING_VALUE, n)
     # Infiltration from surface water [mm Δt⁻¹]
     infilt_surfacewater::Vector{Float64} = fill(0.0, n)
-    # Contribution from surface water [mm Δt⁻¹]
-    infilt_available_surfacewater::Vector{Float64} = fill(0.0, n)
+    # Potential infiltration originating from surface water [mm Δt⁻¹]
+    potential_infiltration_surfacewater::Vector{Float64} = fill(0.0, n)
     # Total water available for infiltration [mm Δt⁻¹]
-    infilt_total_available::Vector{Float64} = fill(0.0, n)
+    potential_infiltration::Vector{Float64} = fill(0.0, n)
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
     excesswater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
@@ -693,12 +693,13 @@ function update_bc_soil_model!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .= max.(
-        runoff.boundary_conditions.water_flux_surface .+
-        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-        0.0,
-    )
+    water_flux_surface .=
+        max.(
+            runoff.boundary_conditions.water_flux_surface .+
+            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+            0.0,
+        )
     return nothing
 end
 
@@ -758,15 +759,15 @@ function update_available_for_infiltration!(
     (; waterdepth_land) = runoff.boundary_conditions
     (; river_fraction) = domain.land.parameters
 
-    n = length(v.infilt_total_available)
+    n = length(v.potential_infiltration)
     threaded_foreach(1:n; basesize = 1000) do i
-        v.infilt_available_surfacewater[i] = 0.0
+        v.potential_infiltration_surfacewater[i] = 0.0
         if do_surface_water_infiltration
-            v.infilt_available_surfacewater[i] =
+            v.potential_infiltration_surfacewater[i] =
                 waterdepth_land[i] * (1.0 - river_fraction[i]) * 0.95
-            water_flux_surface[i] += v.infilt_available_surfacewater[i]
+            water_flux_surface[i] += v.potential_infiltration_surfacewater[i]
         end
-        v.infilt_total_available[i] = water_flux_surface[i]
+        v.potential_infiltration[i] = water_flux_surface[i]
     end
 
     return nothing
@@ -783,8 +784,8 @@ function correct_infiltration!(model::SbmSoilModel)
         v.infiltexcess[i],
         v.excesswater[i],
         water_flux_surface[i] = correct_infiltration(
-            v.infilt_total_available[i],
-            v.infilt_available_surfacewater[i],
+            v.potential_infiltration[i],
+            v.potential_infiltration_surfacewater[i],
             water_flux_surface[i],
             v.actinfilt[i],
             v.infiltexcess[i],
