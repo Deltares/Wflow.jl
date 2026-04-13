@@ -77,7 +77,7 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
     flow_params = ManningFlowParameters(mannings_n, slope, wetted_perimeter)
     bankfull_storage = bankfull_depth .* flow_length .* flow_width
     if config.model.floodplain_1d__flag
-        wetted_perimeter = @. flow_width + 2.0 * bankfull_depth
+        wetted_perimeter = @. wetted_perimeter_channel(bankfull_depth, flow_width)
         alpha = @. flow_params.alpha_term * pow(wetted_perimeter, flow_params.alpha_pow)
         bankfull_flow = @. pow(bankfull_depth * flow_width / alpha, 1.0 / flow_params.beta)
     else
@@ -509,7 +509,7 @@ function update_alpha_parameter!(
 
     for i in eachindex(h)
         if h[i] > bankfull_depth[i]
-            wp_channel = 2.0 * bankfull_depth[i] + flow_width[i]
+            wp_channel = wetted_perimeter_channel(bankfull_depth[i], flow_width[i])
             i0 = 0
             for k in eachindex(floodplain_p.profile.depth)
                 i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.h[i])
@@ -529,7 +529,7 @@ function update_alpha_parameter!(
             )
             alpha[i] = alpha_term[i] * pow(wp_combined, alpha_pow)
         else
-            wp_channel = 2.0 * h[i] + flow_width[i]
+            wp_channel = wetted_perimeter_channel(h[i], flow_width[i])
             alpha[i] = alpha_term[i] * pow(wp_channel, alpha_pow)
         end
     end

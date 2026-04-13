@@ -53,3 +53,8 @@ end
     parameters::P
     variables::V
 end
+
+function wetted_perimeter_channel(h::Float64, flow_width::Float64)
+    channel_perimeter = 2.0 * h + flow_width
+    return channel_perimeter
+end

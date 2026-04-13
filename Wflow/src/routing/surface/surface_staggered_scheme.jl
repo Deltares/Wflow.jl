@@ -325,7 +325,8 @@ function update_river_channel_flow!(
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
         river_v.a[i] = river_p.flow_width[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.r[i] =
+            river_v.a[i] / wetted_perimeter_channel(river_v.hf[i], river_p.flow_width[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
@@ -376,7 +377,8 @@ function update_river_channel_flow!(
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
         river_v.a[i] = river_p.flow_width[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.r[i] =
+            river_v.a[i] / wetted_perimeter_channel(river_v.hf[i], river_p.flow_width[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
             river_v.hf[i] > river_p.h_thresh,
@@ -1012,7 +1014,8 @@ function stable_timestep(
 
     beta = 5.0/3.0
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
-        @fastmath @inbounds h_r = (flow_width[i] * h[i]) / (flow_width[i] + 2.0 * h[i])
+        @fastmath @inbounds h_r =
+            (flow_width[i] * h[i]) / wetted_perimeter_channel(h[i], flow_width[i])
         celerity = beta * 1.0/mannings_n[i] * pow(h_r, 2.0/3.0) * sqrt(slope[i])
         dt = alpha_coefficient * flow_length[i] / celerity
         dt_min = min(dt, dt_min)
