@@ -23,7 +23,8 @@ function ManningFlowParameters(
     alpha_pow = hydraulic_radius_pow * beta
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters = ManningFlowParameters(; beta, slope, mannings_n, alpha)
+    parameters =
+        ManningFlowParameters(; beta, slope, mannings_n, alpha_pow, alpha_term, alpha)
     return parameters
 end
 
@@ -32,6 +33,7 @@ end
     flow::ManningFlowParameters
     bankfull_depth::Vector{Float64}     # Bankfull water level [m]
     bankfull_storage::Vector{Float64}   # Bankfull storage [m³]
+    bankfull_flow::Vector{Float64}      # Bankfull discharge [m³ s⁻¹]
 end
 
 "Overload `getproperty` for river flow model parameters"
@@ -39,6 +41,8 @@ function Base.getproperty(v::RiverFlowParameters, s::Symbol)
     if s === :bankfull_depth
         getfield(v, s)
     elseif s === :bankfull_storage
+        getfield(v, s)
+    elseif s === :bankfull_flow
         getfield(v, s)
     elseif s === :flow
         getfield(v, :flow)
@@ -72,7 +76,19 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
     wetted_perimeter = flow_width + bankfull_depth
     flow_params = ManningFlowParameters(mannings_n, slope, wetted_perimeter)
     bankfull_storage = bankfull_depth .* flow_length .* flow_width
-    parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth, bankfull_storage)
+    if config.model.floodplain_1d__flag
+        wetted_perimeter = @. flow_width + 2.0 * bankfull_depth
+        alpha = @. flow_params.alpha_term * pow(wetted_perimeter, flow_params.alpha_pow)
+        bankfull_flow = @. pow(bankfull_depth * flow_width / alpha, 1.0 / flow_params.beta)
+    else
+        bankfull_flow = Float64[]
+    end
+    parameters = RiverFlowParameters(;
+        flow = flow_params,
+        bankfull_depth,
+        bankfull_storage,
+        bankfull_flow,
+    )
     return parameters
 end
 
@@ -364,9 +380,10 @@ function kinwave_river_update!(
     (; reservoir, external_inflow, actual_external_abstraction_av, abstraction) =
         river_flow_model.boundary_conditions
 
-    (; beta, alpha) = river_flow_model.parameters
+    (; beta, alpha, bankfull_depth, bankfull_flow) = river_flow_model.parameters
     (; flow_width, flow_length) = domain.parameters
-    (; h, q, q_av, storage, qin, qin_av, qlat) = river_flow_model.variables
+    (; h, q, q_av, q_channel_av, storage, qin, qin_av, qlat) = river_flow_model.variables
+    (; floodplain) = river_flow_model
 
     if !isnothing(reservoir)
         res_bc = reservoir.boundary_conditions
@@ -442,9 +459,34 @@ function kinwave_river_update!(
                 end
                 # update h and storage
                 crossarea = alpha[v] * pow(q[v], beta)
-                h[v] = crossarea / flow_width[v]
-                storage[v] = flow_length[v] * flow_width[v] * h[v]
-
+                if isnothing(floodplain)
+                    h[v] = crossarea / flow_width[v]
+                    storage[v] = flow_length[v] * flow_width[v] * h[v]
+                else
+                    bankfull_area = flow_width[v] * bankfull_depth[v]
+                    if crossarea > bankfull_area
+                        floodarea = crossarea - bankfull_area
+                        flood_depth, flood_storage = flood_depth_storage(
+                            floodplain.parameters.profile,
+                            floodarea,
+                            flow_length[v],
+                            v,
+                        )
+                        h[v] = bankfull_depth[v] + flood_depth
+                        storage[v] = bankfull_area * flow_length[v] + flood_storage
+                        floodplain_flow = q[v] - bankfull_flow[v]
+                    else
+                        h[v] = crossarea / flow_width[v]
+                        storage[v] = flow_length[v] * flow_width[v] * h[v]
+                        flood_storage = 0.0
+                        flood_depth = 0.0
+                        floodplain_flow = 0.0
+                    end
+                    floodplain.variables.storage[v] = flood_storage
+                    floodplain.variables.h[v] = flood_depth
+                    floodplain.variables.q[v] = floodplain_flow
+                    floodplain.variables.q_av[v] += floodplain.variables.q[v] * dt
+                end
                 # average variables (here accumulated for model timestep Δt)
                 q_av[v] += q[v] * dt
                 qin_av[v] += qin[v] * dt
@@ -452,6 +494,51 @@ function kinwave_river_update!(
         end
     end
 end
+
+function update_alpha_parameter!(
+    river_flow_model::RiverFlowModel{T, F},
+    parameters::RiverParameters,
+) where {T <: KinematicWave, F <: FloodPlainModel}
+    (; h) = river_flow_model.variables
+    (; bankfull_depth, alpha, mannings_n, beta, alpha_term, alpha_pow) =
+        river_flow_model.parameters
+    (; flow_width, slope) = parameters
+
+    floodplain_p = river_flow_model.floodplain.parameters
+    floodplain_v = river_flow_model.floodplain.variables
+
+    for i in eachindex(h)
+        if h[i] > bankfull_depth[i]
+            wp_channel = 2.0 * bankfull_depth[i] + flow_width[i]
+            i0 = 0
+            for k in eachindex(floodplain_p.profile.depth)
+                i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.h[i])
+            end
+            i1 = max(i0, 1)
+            i2 = ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
+            wp_floodplain = wetted_perimeter(
+                floodplain_p.profile.p[i1, i],
+                floodplain_p.profile.depth[i1],
+                floodplain_v.h[i],
+            )
+            wp_combined = wp_channel + wp_floodplain
+            mannings_n_combined = pow(
+                wp_floodplain/wp_combined * pow(floodplain_p.mannings_n[i], 1.5) +
+                wp_channel/wp_combined * pow(mannings_n[i], 1.5),
+                2.0/3.0,
+            )
+            alpha[i] = alpha_term[i] * pow(wp_combined, alpha_pow)
+        else
+            wp_channel = 2.0 * h[i] + flow_width[i]
+            alpha[i] = alpha_term[i] * pow(wp_channel, alpha_pow)
+        end
+    end
+end
+
+update_alpha_parameter!(
+    river_flow_model::RiverFlowModel{T, F},
+    parameters::RiverParameters,
+) where {T <: KinematicWave, F <: Nothing} = nothing
 
 """
 Update river flow model `RiverFlowModel{<:KinematicWave}` for a single timestep `dt`.
@@ -462,6 +549,7 @@ function update_river_flow_model!(
     domain::Domain,
     clock::Clock,
 )
+    (; floodplain) = river_flow_model
     (; reservoir, inwater) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
     (; qlat, qin_av) = river_flow_model.variables
@@ -472,10 +560,14 @@ function update_river_flow_model!(
     qin_av .= 0.0
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
+    if !isnothing(floodplain)
+        floodplain.variables.q_av .= 0.0
+    end
 
     dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
+        update_alpha_parameter!(river_flow_model, domain.river.parameters)
         dt_s =
             adaptive ? stable_timestep(river_flow_model, flow_length, 0.05) :
             river_flow_model.timestepping.dt_fixed
@@ -487,6 +579,11 @@ function update_river_flow_model!(
     average_reservoir_vars!(reservoir, dt)
     average_flow_vars!(river_flow_model, dt)
     qin_av ./= dt
+    if !isnothing(floodplain)
+        floodplain.variables.q_av ./= dt
+        river_flow_model.variables.q_channel_av .=
+            river_flow_model.variables.q_av .- floodplain.variables.q_av
+    end
     return nothing
 end
 

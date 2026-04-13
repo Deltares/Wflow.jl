@@ -292,6 +292,20 @@ function flood_depth(
     return flood_depth
 end
 
+function flood_depth_storage(
+    profile::FloodPlainProfile,
+    flood_area::Float64,
+    flow_length::Float64,
+    i::Int,
+)
+    i1, i2 = interpolation_indices(flood_area, @view profile.a[:, i])
+    ΔA = (flood_area - profile.a[i1, i])
+    dh = ΔA / profile.width[i2, i]
+    flood_depth = profile.depth[i1] + dh
+    flood_storage = profile.storage[i1] + ΔA * flow_length
+    return flood_depth, flood_storage
+end
+
 "Initialize floodplain geometry, model variables and parameters on staggered grid"
 function FloodPlainModel(
     dataset::NCDataset,
