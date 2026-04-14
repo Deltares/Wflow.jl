@@ -466,7 +466,7 @@ function kinwave_river_update!(
                     bankfull_area = flow_width[v] * bankfull_depth[v]
                     if crossarea > bankfull_area
                         floodarea = crossarea - bankfull_area
-                        flood_depth, flood_storage = flood_depth_storage(
+                        flood_depth, flood_storage = compute_flood_depth_storage(
                             floodplain.parameters.profile,
                             floodarea,
                             flow_length[v],

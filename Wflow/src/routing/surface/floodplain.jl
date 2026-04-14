@@ -226,13 +226,7 @@ function initialize_storage!(river, domain::Domain, nriv::Int)
     (; profile) = floodplain.parameters
     for i in 1:nriv
         i1, i2 = interpolation_indices(floodplain.variables.h[i], profile.depth)
-        a = flow_area(
-            profile.width[i2, i],
-            profile.a[i1, i],
-            profile.depth[i1],
-            floodplain.variables.h[i],
-        )
-        a = max(a - (flow_width[i] * floodplain.variables.h[i]), 0.0)
+        a = compute_floodplain_flow_area(profile, floodplain.variables.h[i], i, i1, i2)
         floodplain.variables.storage[i] = flow_length[i] * a
     end
     return nothing
@@ -255,31 +249,35 @@ function interpolation_indices(x, v::AbstractVector)
 end
 
 """
-    flow_area(width, area, depth, h)
-
-Compute floodplain flow area based on flow depth `h` and floodplain `depth`, `area` and
-`width` of a floodplain profile.
+Compute flood flow area (including area above channel) based on flow depth `h` and
+floodplain `depth`, `area` and `width` of a floodplain profile.
 """
-function flow_area(width, area, depth, h)
-    dh = h - depth  # depth at i1
-    area = area + (width * dh) # area at i1, width at i2
+function compute_flood_flow_area(
+    profile::FloodPlainProfile,
+    h::Float64,
+    idx::Int,
+    i1::Int,
+    i2::Int,
+)
+    (; a, width, depth) = profile
+    dh = h - depth[i1]  # depth at i1
+    area = a[i1, idx] + (width[i2, idx] * dh) # area at i1, width at i2
     return area
 end
 
 """
-    function wetted_perimeter(p, depth, h)
-
 Compute floodplain wetted perimeter based on flow depth `h` and floodplain `depth` and
 wetted perimeter `p` of a floodplain profile.
 """
-function wetted_perimeter(p, depth, h)
-    dh = h - depth # depth at i1
-    p += 2.0 * dh # p at i1
+function compute_wetted_perimeter(profile::FloodPlainProfile, h::Float64, idx::Int, i1::Int)
+    (; p, depth) = profile
+    dh = h - depth[i1] # depth at i1
+    p = p[i1, idx] + 2.0 * dh # p at i1
     return p
 end
 
 "Compute flood depth by interpolating flood storage `flood_storage` using flood depth intervals."
-function flood_depth(
+function compute_flood_depth(
     profile::FloodPlainProfile,
     flood_storage::Float64,
     flow_length::Float64,
@@ -292,15 +290,28 @@ function flood_depth(
     return flood_depth
 end
 
-function flood_depth_storage(
+function compute_floodplain_flow_area(
+    profile::FloodPlainProfile,
+    h::Float64,
+    idx::Int,
+    i1::Int,
+    i2::Int,
+)
+    channel_area = profile.width[1, idx] * h
+    floodplain_flow_area = compute_flood_flow_area(profile, h, idx, i1, i2)
+    floodplain_flow_area = max(floodplain_flow_area - channel_area, 0.0)
+    return floodplain_flow_area
+end
+
+function compute_flood_depth_storage(
     profile::FloodPlainProfile,
     flood_area::Float64,
     flow_length::Float64,
-    i::Int,
+    idx::Int,
 )
-    i1, i2 = interpolation_indices(flood_area, @view profile.a[:, i])
-    ΔA = (flood_area - profile.a[i1, i])
-    dh = ΔA / profile.width[i2, i]
+    i1, i2 = interpolation_indices(flood_area, @view profile.a[:, idx])
+    ΔA = (flood_area - profile.a[i1, idx])
+    dh = ΔA / profile.width[i2, idx]
     flood_depth = profile.depth[i1] + dh
     flood_storage = profile.storage[i1] + ΔA * flow_length
     return flood_depth, flood_storage

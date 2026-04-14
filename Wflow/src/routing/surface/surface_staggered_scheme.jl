@@ -413,6 +413,7 @@ function update_floodplain_flow!(
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
     floodplain_p = river_flow_model.floodplain.parameters
+    (; profile) = floodplain_p
     floodplain_v = river_flow_model.floodplain.variables
 
     @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.hf)
@@ -429,43 +430,20 @@ function update_floodplain_flow!(
         end
     end
 
-    get_area(i, i1, i2, idx) = flow_area(
-        floodplain_p.profile.width[i2, idx],
-        floodplain_p.profile.a[i1, idx],
-        floodplain_p.profile.depth[i1],
-        floodplain_v.hf[i],
-    )
-
-    get_wetted_perimeter(i, i1, idx) = wetted_perimeter(
-        floodplain_p.profile.p[i1, idx],
-        floodplain_p.profile.depth[i1],
-        floodplain_v.hf[i],
-    )
-
     @batch per = thread minbatch = 1000 for j in 1:n
         i = floodplain_v.hf_index[j]
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
 
-        i0 = 0
-        for k in eachindex(floodplain_p.profile.depth)
-            i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.hf[i])
-        end
-        i1 = max(i0, 1)
-        i2 = ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
-
-        a_src = get_area(i, i1, i2, i_src)
-        a_src = max(a_src - (floodplain_v.hf[i] * flow_width[i_src]), 0.0)
-
-        a_dst = get_area(i, i1, i2, i_dst)
-        a_dst = max(a_dst - (floodplain_v.hf[i] * flow_width[i_dst]), 0.0)
-
+        i1, i2 = interpolation_indices(floodplain_v.hf[i], @view profile.depth[:])
+        a_src = compute_floodplain_flow_area(profile, floodplain_v.hf[i], i_src, i1, i2)
+        a_dst = compute_floodplain_flow_area(profile, floodplain_v.hf[i], i_dst, i1, i2)
         floodplain_v.a[i] = min(a_src, a_dst)
 
         floodplain_v.r[i] = if a_src < a_dst
-            a_src / get_wetted_perimeter(i, i1, i_src)
+            a_src / compute_wetted_perimeter(profile, floodplain_v.hf[i], i_src, i1)
         else
-            a_dst / get_wetted_perimeter(i, i1, i_dst)
+            a_dst / compute_wetted_perimeter(profile, floodplain_v.hf[i], i_dst, i1)
         end
 
         floodplain_v.q[i] = if floodplain_v.a[i] > 1.0e-05
@@ -518,6 +496,7 @@ function update_floodplain_flow!(
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
     floodplain_p = river_flow_model.floodplain.parameters
+    (; profile) = floodplain_p
     floodplain_v = river_flow_model.floodplain.variables
 
     @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.hf)
@@ -534,43 +513,20 @@ function update_floodplain_flow!(
         end
     end
 
-    get_area(i, i1, i2, idx) = flow_area(
-        floodplain_p.profile.width[i2, idx],
-        floodplain_p.profile.a[i1, idx],
-        floodplain_p.profile.depth[i1],
-        floodplain_v.hf[i],
-    )
-
-    get_wetted_perimeter(i, i1, idx) = wetted_perimeter(
-        floodplain_p.profile.p[i1, idx],
-        floodplain_p.profile.depth[i1],
-        floodplain_v.hf[i],
-    )
-
     @batch per = thread minbatch = 1000 for j in 1:n
         i = floodplain_v.hf_index[j]
         i_src = nodes_at_edge.src[i]
         i_dst = nodes_at_edge.dst[i]
 
-        i0 = 0
-        for k in eachindex(floodplain_p.profile.depth)
-            i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.hf[i])
-        end
-        i1 = max(i0, 1)
-        i2 = ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
-
-        a_src = get_area(i, i1, i2, i_src)
-        a_src = max(a_src - (floodplain_v.hf[i] * flow_width[i_src]), 0.0)
-
-        a_dst = get_area(i, i1, i2, i_dst)
-        a_dst = max(a_dst - (floodplain_v.hf[i] * flow_width[i_dst]), 0.0)
-
+        i1, i2 = interpolation_indices(floodplain_v.hf[i], @view profile.depth[:])
+        a_src = compute_floodplain_flow_area(profile, floodplain_v.hf[i], i_src, i1, i2)
+        a_dst = compute_floodplain_flow_area(profile, floodplain_v.hf[i], i_dst, i1, i2)
         floodplain_v.a[i] = min(a_src, a_dst)
 
         floodplain_v.r[i] = if a_src < a_dst
-            a_src / get_wetted_perimeter(i, i1, i_src)
+            a_src / compute_wetted_perimeter(profile, floodplain_v.hf[i], i_src, i1)
         else
-            a_dst / get_wetted_perimeter(i, i1, i_dst)
+            a_dst / compute_wetted_perimeter(profile, floodplain_v.hf[i], i_dst, i1)
         end
 
         floodplain_v.q[i] = if floodplain_v.a[i] > 1.0e-05
@@ -674,7 +630,7 @@ function update_water_depth_and_storage!(
         storage_total = river_v.storage[i] + floodplain_v.storage[i]
         if storage_total > river_p.bankfull_storage[i]
             flood_storage = storage_total - river_p.bankfull_storage[i]
-            h = flood_depth(floodplain_p.profile, flood_storage, flow_length[i], i)
+            h = compute_flood_depth(floodplain_p.profile, flood_storage, flow_length[i], i)
             river_v.h[i] = river_p.bankfull_depth[i] + h
             river_v.storage[i] = river_v.h[i] * flow_width[i] * flow_length[i]
             floodplain_v.storage[i] = max(storage_total - river_v.storage[i], 0.0)

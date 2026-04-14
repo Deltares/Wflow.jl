@@ -456,8 +456,9 @@ end
 
     @testset "river flow (local inertial) floodplain schematization" begin
         # floodplain geometry checks (index 3)
-        @test profile.storage[:, 3] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
-        @test profile.width[:, 3] ≈ [
+        idx = 3
+        @test profile.storage[:, idx] ≈ [0.0, 8641.0, 19011.0, 31685.0, 51848.0, 80653.0]
+        @test profile.width[:, idx] ≈ [
             30.0,
             99.28617594254938,
             119.15260323159785,
@@ -465,7 +466,7 @@ end
             231.6754039497307,
             330.9730700179533,
         ]
-        @test profile.p[:, 3] ≈ [
+        @test profile.p[:, idx] ≈ [
             69.28617594254938,
             70.28617594254938,
             91.15260323159785,
@@ -473,7 +474,7 @@ end
             205.6754039497307,
             305.9730700179533,
         ]
-        @test profile.a[:, 3] ≈ [
+        @test profile.a[:, idx] ≈ [
             0.0,
             49.64308797127469,
             109.21938958707361,
@@ -481,98 +482,63 @@ end
             297.8700179533214,
             463.35655296229805,
         ]
-        @test dh .* profile.width[2:end, 3] * flow_length[3] ≈ Δv
-        @test profile.a[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
+        @test dh .* profile.width[2:end, idx] * flow_length[idx] ≈ Δv
+        @test profile.a[:, 3] * flow_length[idx] ≈ profile.storage[:, idx]
         # flood depth from flood storage (8000.0)
         flood_vol = 8000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
         @test (i1, i2) == (1, 2)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.46290938548779076
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # flood depth from flood storage (12000.0)
         flood_vol = 12000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
-        @test (i1, i2) == (2, 3)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
+        @test (i1, i2) == (2, idx)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 0.6619575699132112
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
         # test extrapolation of segment
         flood_vol = 95000.0
-        river_flow.variables.storage[3] =
-            flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        river_flow.variables.storage[idx] =
+            flood_vol + river_flow.parameters.bankfull_storage[idx]
+        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, idx])
         @test (i1, i2) == (6, 6)
-        flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
+        flood_depth = Wflow.compute_flood_depth(profile, flood_vol, flow_length[idx], idx)
         @test flood_depth ≈ 2.749036625585836
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
-        river_flow.variables.storage[3] = 0.0 # reset storage
+        @test (flood_depth - profile.depth[i1]) *
+              profile.width[i2, idx] *
+              flow_length[idx] + profile.storage[i1, idx] ≈ flood_vol
+        river_flow.variables.storage[idx] = 0.0 # reset storage
         # flow area and wetted perimeter based on hf
         h = 0.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 49.64308797127469
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              70.28617594254938
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 49.64308797127469
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 70.28617594254938
         h = 1.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 182.032315978456
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              118.62585278276481
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 182.032315978456
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 118.62585278276481
         h = 1.7
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 228.36739676840216
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              119.02585278276482
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 228.36739676840216
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 119.02585278276482
         h = 3.2
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 695.0377019748654
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              307.3730700179533
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 695.0377019748654
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 307.3730700179533
         h = 4.0
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
-        @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
-            h,
-        ) ≈ 959.816157989228
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
-              308.9730700179533
-        @test Wflow.flow_area(
-            profile.width[i2, 4],
-            profile.a[i1, 4],
-            profile.depth[i1],
-            h,
-        ) ≈ 407.6395313908081
-        @test Wflow.wetted_perimeter(profile.p[i1, 4], profile.depth[i1], h) ≈
-              90.11775307900271
+        @test Wflow.compute_flood_flow_area(profile, h, idx, i1, i2) ≈ 959.816157989228
+        @test Wflow.compute_wetted_perimeter(profile, h, idx, i1) ≈ 308.9730700179533
     end
 
     Wflow.run_timestep!(model)
