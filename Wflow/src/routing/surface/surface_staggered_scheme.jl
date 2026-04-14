@@ -420,15 +420,7 @@ function update_floodplain_flow!(
         floodplain_v.hf[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
     end
 
-    n = 0
-    @inbounds for i in river_p.active_e
-        @inbounds if river_v.hf[i] > river_p.h_thresh
-            n += 1
-            floodplain_v.hf_index[n] = i
-        else
-            floodplain_v.q[i] = 0.0
-        end
-    end
+    n = active_floodplain_cells(river_flow_model)
 
     @batch per = thread minbatch = 1000 for j in 1:n
         i = floodplain_v.hf_index[j]
@@ -503,15 +495,7 @@ function update_floodplain_flow!(
         floodplain_v.hf[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
     end
 
-    n = 0
-    @inbounds for i in river_p.active_e
-        @inbounds if river_v.hf[i] > river_p.h_thresh
-            n += 1
-            floodplain_v.hf_index[n] = i
-        else
-            floodplain_v.q[i] = 0.0
-        end
-    end
+    n = active_floodplain_cells(river_flow_model)
 
     @batch per = thread minbatch = 1000 for j in 1:n
         i = floodplain_v.hf_index[j]

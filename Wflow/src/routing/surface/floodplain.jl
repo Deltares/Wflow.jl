@@ -317,6 +317,23 @@ function compute_flood_depth_storage(
     return flood_depth, flood_storage
 end
 
+function active_floodplain_cells(river_flow_model)
+    (; floodplain) = river_flow_model
+    (; hf) = river_flow_model.variables
+    (; active_e, h_thresh) = river_flow_model.parameters
+
+    n = 0
+    @inbounds for i in active_e
+        @inbounds if hf[i] > h_thresh
+            n += 1
+            floodplain.variables.hf_index[n] = i
+        else
+            floodplain.variables.q[i] = 0.0
+        end
+    end
+    return n
+end
+
 "Initialize floodplain geometry, model variables and parameters on staggered grid"
 function FloodPlainModel(
     dataset::NCDataset,
