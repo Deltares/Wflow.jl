@@ -1,5 +1,8 @@
 ---
 title: Introduction
+engine: julia
+execute:
+  cache: false
 ---
 
 This section provides an overview of all model parameters, states and variables in tables
@@ -20,13 +23,11 @@ the user-defined model time step size Δt.
 The standard names of model parameters, states and variables are based on [CSDMS Standard
 Names](https://csdms.colorado.edu/wiki/CSDMS_Standard_Names). These standard names are used
 in the TOML configuration file and mapped to internal model parameters, states and
-variables. Model output of model parameters (`[output]` section of TOML file) is not
-possible by providing standard names as these are only used for setting model parameters
-during model initialization, except for parameters that can also have cyclic input. These
-parameters are listed in tables below "Static or cyclic/forcing input" subsections (for
-[example](./parameters_landhydrology_sbm.qmd#input-cyclic-lai)). To output model parameters
-and variables without a standard name one to one mapping (dot notation) can be used in the
-TOML configuration file, but this is not considered as part of the public API, e.g.:
+variables. These parameters are listed in tables below (for
+[example](./parameters_landhydrology_sbm.qmd#input-cyclic-lai)). Model output of model parameters
+(`[output]` section of TOML file) is generally possible, see the parameter tables for any exceptions.
+To output model parameters and variables without a standard name one to one mapping (dot notation)
+can be used in the TOML configuration file, but this is not considered as part of the public API, e.g.:
 
 ```toml
 [output.netcdf_grid.variables]
@@ -43,11 +44,10 @@ model output variable.
 The table below lists static input maps that are not directly part of wflow models and are
 required to run wflow.
 
-| Standard Name | Description | Unit | Default value |
-| ---- | ----- | - | -- |
-| `basin__local_drain_direction` | Local drain direction (1-9) | - | - |
-| `subbasin_location__count` | Subbasin ids | - | - |
-| `river_location__mask` | River mask (0-1) | - | - |
-: {.striped .hover}
+```{julia}
+# | code-fold: true
+include("../docs_utils.jl")
+generate_table(Wflow.Domain, :generic_input_map; relative_widths = [4, 5, 1, 1, 2, 2])
+```
 
 For reservoir generic input see [reservoir-input](./parameters_routing.qmd#input-generic-reservoir).

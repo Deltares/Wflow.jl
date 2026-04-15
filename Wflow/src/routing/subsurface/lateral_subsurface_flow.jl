@@ -26,7 +26,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@with_kw struct LateralSSFModel{Kh,B<:SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
@@ -66,18 +66,16 @@ function LateralSsfParameters(
     elevation = ncread(
         dataset,
         config,
-        "land_surface__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
+        "land_surface__elevation",
+        Routing;
+        sel=indices,
     )
     khfrac = ncread(
         dataset,
         config,
-        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio";
-        optional = false,
-        sel = indices,
-        type = Float64,
+        "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
+        Routing;
+        sel=indices,
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
@@ -107,7 +105,7 @@ function LateralSsfParameters(
         soilthickness,
         specific_yield,
         area,
-        top = elevation,
+        top=elevation,
     )
     return ssf_parameters
 end
@@ -127,7 +125,7 @@ function LateralSSFModel(dataset::NCDataset, config::Config, domain::Domain, soi
     (; indices) = land.network
     (; area) = domain.land.parameters
     n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
+    timestepping = init_kinematic_wave_timestepping(config, n; domain="subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
     zi = 0.001 * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi)
@@ -201,7 +199,7 @@ function kinwave_subsurface_update!(
 
     ns = length(order_of_subdomains)
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 if isnothing(river)
