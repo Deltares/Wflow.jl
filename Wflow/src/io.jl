@@ -4,13 +4,6 @@ symbols(s::AbstractString) = Tuple(Symbol(x) for x in split(s, '.'))
 "Get a nested field using a tuple of Symbols"
 param(obj, fields::Tuple{Vararg{Symbol}}) = foldl(getproperty, fields; init = obj)
 param(obj, fields::AbstractString) = param(obj, symbols(fields))
-function param(obj, fields, default)
-    try
-        return param(obj, fields)
-    catch
-        return default
-    end
-end
 
 "Extract a netCDF variable at a given time"
 function get_at(
@@ -681,10 +674,7 @@ function out_map(ncnames_dict, modelmap)
     output_map = Dict{String, Any}()
     for (par, ncname) in ncnames_dict
         # This throws an error if no field can be obtained
-        vector, metadata = get_field_in_model(modelmap, par)
-        if !isnothing(metadata) && isnothing(metadata.lens)
-            push!(not_allowed, par)
-        end
+        vector, _ = get_field_in_model(modelmap, par)
         output_map[ncname] = (; par, vector)
     end
     return output_map
