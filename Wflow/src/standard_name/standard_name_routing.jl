@@ -444,6 +444,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ### Overland flow
     #### Input
     "land_surface_water_flow__ground_elevation" => ParameterMetadata(;
+        lens = @optic(_.routing.overland_flow.parameters.z),
         unit = Unit(; m = 1),
         fill = 0.0,
         description = "Elevation of each cell",
