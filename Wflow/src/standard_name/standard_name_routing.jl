@@ -78,6 +78,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Static or cyclic/forcing input
     "reservoir_water_demand__required_downstream_volume_flow_rate" =>
         ParameterMetadata(;
+            lens = @optic(
+                _.routing.river_flow.boundary_conditions.reservoir.parameters.demand
+            ),
             unit = Unit(; m = 3, s = -1),
             description = "Minimum (environmental) flow released from reservoir",
             allow_dynamic_input = true,
@@ -85,17 +88,26 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "reservoir_water_release_below_spillway__max_volume_flow_rate" =>
         ParameterMetadata(;
+            lens = @optic(
+                _.routing.river_flow.boundary_conditions.reservoir.parameters.maxrelease
+            ),
             unit = Unit(; m = 3, s = -1),
             description = "Maximum amount that can be released if below spillway",
             allow_dynamic_input = true,
             tags = [:reservoir_static_cyclic_forcing_input],
         ),
     "reservoir_water__target_full_volume_fraction" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetfullfrac
+        ),
         description = "Target fraction full (of max storage)",
         allow_dynamic_input = true,
         tags = [:reservoir_static_cyclic_forcing_input],
     ),
     "reservoir_water__target_min_volume_fraction" => ParameterMetadata(;
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetminfrac
+        ),
         description = "Target minimum full fraction (of max storage)",
         allow_dynamic_input = true,
         tags = [:reservoir_static_cyclic_forcing_input],
@@ -391,6 +403,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:local_inertial_floodplain_1D_flow_input],
     ),
     "floodplain_water_flow__manning_n_parameter" => ParameterMetadata(;
+        lens = @optic(_.routing.river_flow.floodplain.parameters.mannings_n),
         unit = Unit(; s = 1, m = -1 // 3),
         default = 0.072,
         description = "Manning's roughness",
