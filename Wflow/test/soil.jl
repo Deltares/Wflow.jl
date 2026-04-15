@@ -10,10 +10,10 @@
         parameters = Wflow.GashParameters(;
             e_r = [0.25],
             vegetation_parameter_set = Wflow.VegetationParameters(;
-                leaf_area_index = nothing,
-                storage_wood = nothing,
-                kext = nothing,
-                storage_specific_leaf = nothing,
+                leaf_area_index = [1.5],
+                storage_wood = [0.2],
+                kext = [0.67],
+                storage_specific_leaf = [0.09],
                 canopygapfraction = [0.2397957498236932],
                 cmax = [0.5687566481997495],
                 rootingdepth = [410.0],
