@@ -305,7 +305,7 @@
                 :soilthickness => 1.8378337136681173,
                 :specific_yield => 0.134215382295341,
                 :khfrac => 100.0,
-                :specific_yield_dyn => 0.18809013342973288,
+                :specific_yield => 0.18809013342973288,
             ),
         )
         @test test_means(
@@ -317,10 +317,10 @@
             Dict(
                 :zi => 0.2787378291002851,
                 :to_river => to_SI(83.98143291277904, M3_PER_DAY),
-                :ssfin => to_SI(1205.6076607372684, M3_PER_DAY),
+                :q_in => to_SI(1205.6076607372684, M3_PER_DAY),
                 :storage => 118195.04455118616,
-                :ssfmax => to_SI(3.149179231329745, M2_PER_DAY),
-                :ssf => to_SI(1289.6589215389067, M2_PER_DAY),
+                :q_max => to_SI(3.149179231329745, M2_PER_DAY),
+                :q => to_SI(1289.6589215389067, M2_PER_DAY),
                 :exfiltwater => to_SI(3.8825439445270756e-5, M_PER_DT; dt_val = dt),
             ),
         )
@@ -1095,8 +1095,8 @@ end
             kvfrac = soil.parameters.kvfrac
             kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
             @test kv_z ≈ kvfrac[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.f[i] * z)
-            @test subsurface_flow.variables.ssfmax[i] ≈ to_SI(28.32720603576582, M2_PER_DAY)
-            @test subsurface_flow.variables.ssf[i] ≈ to_SI(11683.330684556406, M3_PER_DAY)
+            @test subsurface_flow.variables.q_max[i] ≈ to_SI(28.32720603576582, M2_PER_DAY)
+            @test subsurface_flow.variables.q[i] ≈ to_SI(11683.330684556406, M3_PER_DAY)
         end
 
         @testset "exponential constant profile" begin

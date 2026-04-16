@@ -12,19 +12,19 @@ execute:
 ```{julia}
 # | code-fold: true
 include("../docs_utils.jl")
-generate_table(Wflow.LandHydrologySBM, :water_mass_balance_land_hydrology; relative_widths = [3, 2, 1, 1])
+generate_table(Wflow.LandHydrologySBM, :water_mass_balance_land_hydrology; relative_widths = [3, 2, 1, 1, 2])
 ```
 
 ### River flow (including floodplains)
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :water_mass_balance_river_flow; relative_widths = [3, 2, 1, 1])
+generate_table(Wflow.Routing, :water_mass_balance_river_flow; relative_widths = [3, 2, 1, 1, 2])
 ```
 
 ### Reservoirs
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :water_mass_balance_reservoir; relative_widths = [3, 2, 1, 1])
+generate_table(Wflow.Routing, :water_mass_balance_reservoir; relative_widths = [3, 2, 1, 1, 2])
 ```
 
 ### Overland flow
@@ -34,11 +34,11 @@ each land cell (total storage) considering both river and overland flow.
 
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :water_mass_balance_overland_flow; relative_widths = [3, 2, 1, 1])
+generate_table(Wflow.Routing, :water_mass_balance_overland_flow; relative_widths = [3, 2, 1, 1, 2])
 ```
 
 ### Subsurface flow
 ```{julia}
 # | code-fold: true
-generate_table(Wflow.Routing, :water_mass_balance_subsurface_flow; relative_widths = [3, 2, 1, 1])
+generate_table(Wflow.Routing, :water_mass_balance_subsurface_flow; relative_widths = [3, 2, 1, 1, 2])
 ```

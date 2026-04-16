@@ -569,6 +569,7 @@ function compute_flow_routing_balance!(
     (; reservoir) = river_flow.boundary_conditions
     (; overland_water_balance, reservoir_water_balance, subsurface_water_balance) =
         model.mass_balance.routing
+    dt = tosecond(model.clock.dt)
 
     compute_flow_balance!(
         river_flow,

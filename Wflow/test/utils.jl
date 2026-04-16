@@ -37,6 +37,32 @@ end
     @test Wflow.bounded_divide(1.0, 2.0) == 0.5
 end
 
+@testitem "unit: Units" begin
+    using Wflow: Unit, to_SI_factor, to_SI, to_string, ABSOLUTE_DEGREES
+
+    @test to_SI_factor(ABSOLUTE_DEGREES) == 1.0
+    @test to_SI(0.0, ABSOLUTE_DEGREES) == 273.15
+    @test string(ABSOLUTE_DEGREES) == "°C"
+
+    unit = Unit(; degC = 1) # relative degrees
+    @test to_SI_factor(unit) == 1.0
+    @test to_SI(0.0, unit) == 0.0
+
+    dt = 86400.0
+    unit = Unit(; m = 1, dt = -1)
+    @test_throws Exception to_SI(unit, 1.0)
+    @test to_SI_factor(unit; dt_val = dt) == inv(dt)
+    @test string(unit) == "m Δt⁻¹"
+    @test to_string(unit; BMI_standard = true) == "m Δt-1"
+
+    unit = Unit(; s = 1, m = -1 // 3)
+    @test to_SI_factor(unit) == 1.0
+    @test string(unit) == "s m⁻¹ᐟ³"
+    @test to_string(unit; BMI_standard = true) == "s m-1/3"
+
+    @test_throws Exception Unit(; foo = 42)
+end
+
 @testitem "unit: scurve" begin
     a = 0.0
     b = 3.0

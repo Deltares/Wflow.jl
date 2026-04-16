@@ -4,13 +4,6 @@ symbols(s::AbstractString) = Tuple(Symbol(x) for x in split(s, '.'))
 "Get a nested field using a tuple of Symbols"
 param(obj, fields::Tuple{Vararg{Symbol}}) = foldl(getproperty, fields; init = obj)
 param(obj, fields::AbstractString) = param(obj, symbols(fields))
-function param(obj, fields, default)
-    try
-        return param(obj, fields)
-    catch
-        return default
-    end
-end
 
 "Extract a netCDF variable at a given time"
 function get_at(
@@ -666,20 +659,13 @@ Create a Dict that maps parameter output names to arrays in the Model.
 """
 function out_map(output_names_dict, modelmap)
     output_map = Dict{String, Any}()
-    not_supported = String[]
     for (par, output_name) in output_names_dict
         vector, metadata = get_field_in_model(modelmap, par)
         if isnothing(metadata)
             @warn "No metadata was found for $par, so the output will be expressed in standard SI units ($(join(Wflow.STANDARD_UNITS, ", "))) and might fail."
             metadata = ParameterMetadata()
-        elseif isnothing(metadata.lens)
-            push!(not_supported, par)
         end
         output_map[output_name] = OutputData(; par, vector, metadata.unit)
-    end
-    if !iszero(length(not_supported))
-        @error "Writing the following parameters/variables to output is not supported" not_supported
-        error("Invalid output configuration.")
     end
     return output_map
 end

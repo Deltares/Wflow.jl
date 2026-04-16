@@ -112,6 +112,7 @@ end
 
 @testitem "unit: precipitation_hbv" begin
     using Wflow: Unit, to_SI
+    include("testing_utils.jl")
     dt = 86400.0
 
     ## Case tti > 0.0

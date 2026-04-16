@@ -89,6 +89,13 @@
               [250.0, 300.0]
     end
 
+    @testset "Request invalid variable" begin
+        @test_throws "Accessing 'glacier_ice__initial_leq_depth' is not supported" BMI.get_value_ptr(
+            model,
+            "glacier_ice__initial_leq_depth",
+        )
+    end
+
     @testset "model grid functions" begin
         @test BMI.get_grid_type(model, 0) == "points"
         @test BMI.get_grid_type(model, 2) == "points"

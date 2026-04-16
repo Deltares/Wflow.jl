@@ -90,7 +90,7 @@ end
     include("testing_utils.jl")
     n = 1
 
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -122,7 +122,13 @@ end
 
     dt = 86400.0
 
-    Wflow.surface_water_allocation_local!(model, demand_variables, river, domain, dt)
+    Wflow.surface_water_allocation_local!(
+        allocation_model,
+        demand_variables,
+        river,
+        domain,
+        dt,
+    )
 
     @test river.allocation.variables.act_surfacewater_abst_vol |> only ≈
           to_SI(12.0, M3_PER_DT; dt_val = dt)
@@ -130,7 +136,8 @@ end
     @test demand_variables.surfacewater_demand |> only ≈ 0.0
     @test river.allocation.variables.act_surfacewater_abst |> only ≈
           to_SI(0.02, MM_PER_DT; dt_val = dt)
-    @test model.variables.surfacewater_alloc |> only ≈ to_SI(0.02, MM_PER_DT; dt_val = dt)
+    @test allocation_model.variables.surfacewater_alloc |> only ≈
+          to_SI(0.02, MM_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
@@ -140,7 +147,7 @@ end
     include("testing_utils.jl")
 
     n = 3
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -153,7 +160,7 @@ end
         surfacewater_demand = to_SI.([0.65, 0.77, 0.331], Ref(MM_PER_DT); dt_val = dt),
     )
 
-    river = DummyRiver(;
+    river_flow_model = DummyRiver(;
         allocation = (;
             variables = (;
                 act_surfacewater_abst_vol = zeros(n),
@@ -188,30 +195,36 @@ end
     dt = 86400.0
 
     @test Wflow.available_surface_water!(
-        river.allocation.variables.available_surfacewater,
-        river.boundary_conditions.reservoir,
+        river_flow_model.allocation.variables.available_surfacewater,
+        river_flow_model.boundary_conditions.reservoir,
         domain.river.network.allocation_area_indices[1],
         domain.river.network.reservoir_indices,
         dt,
     ) ≈ 2.6432180030503854e8
 
-    Wflow.surface_water_allocation_area!(model, demand_variables, river, domain, dt)
+    Wflow.surface_water_allocation_area!(
+        allocation_model,
+        demand_variables,
+        river_flow_model,
+        domain,
+        dt,
+    )
 
-    @test river.allocation.variables.available_surfacewater ≈
+    @test river_flow_model.allocation.variables.available_surfacewater ≈
           [1.5220980030503854e8, 4.1944e7, 7.0168e7]
-    @test river.allocation.variables.act_surfacewater_abst_vol ≈
+    @test river_flow_model.allocation.variables.act_surfacewater_abst_vol ≈
           to_SI.(
         [608.1360277590558, 167.5822285897938, 280.34784035115035],
         Ref(M3_PER_DT);
         dt_val = dt,
     )
-    @test river.allocation.variables.act_surfacewater_abst ≈
+    @test river_flow_model.allocation.variables.act_surfacewater_abst ≈
           to_SI.(
         [1.008608685367754, 0.27797992757124085, 0.46503184145095416],
         Ref(MM_PER_DT);
         dt_val = dt,
     )
-    @test model.variables.surfacewater_alloc ≈
+    @test allocation_model.variables.surfacewater_alloc ≈
           to_SI.([0.65, 0.77, 0.331], Ref(MM_PER_DT); dt_val = dt)
 end
 
@@ -222,7 +235,7 @@ end
 
     n = 1
 
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
     )
@@ -237,20 +250,21 @@ end
     parameters = Wflow.LandParameters(; area = [591286.4], reservoir_coverage = [false])
 
     Wflow.groundwater_allocation_local!(
-        model,
+        allocation_model,
         demand_variables,
         groundwater_storage,
         parameters,
         dt,
     )
 
-    @test model.variables.act_groundwater_abst_vol |> only ≈
+    @test allocation_model.variables.act_groundwater_abst_vol |> only ≈
           to_SI(59128.64, M3_PER_DT; dt_val = dt)
-    @test model.variables.available_groundwater |> only ≈ 177832.06
+    @test allocation_model.variables.available_groundwater |> only ≈ 177832.06
     @test demand_variables.groundwater_demand |> only == 0.0
-    @test model.variables.act_groundwater_abst |> only ≈
+    @test allocation_model.variables.act_groundwater_abst |> only ≈
           to_SI(100.0, MM_PER_DT; dt_val = dt)
-    @test model.variables.groundwater_alloc |> only ≈ to_SI(100.0, MM_PER_DT; dt_val = dt)
+    @test allocation_model.variables.groundwater_alloc |> only ≈
+          to_SI(100.0, MM_PER_DT; dt_val = dt)
 end
 
 @testitem "unit: groundwater_allocation_area!" begin
@@ -260,7 +274,7 @@ end
 
     n = 3
 
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
         variables = Wflow.AllocationLandVariables(;
@@ -288,20 +302,20 @@ end
         ),
     )
 
-    Wflow.groundwater_allocation_area!(model, demand_variables, domain, dt)
+    Wflow.groundwater_allocation_area!(allocation_model, demand_variables, domain, dt)
 
-    @test model.variables.act_groundwater_abst_vol ≈
+    @test allocation_model.variables.act_groundwater_abst_vol ≈
           to_SI.(
         [141483.796500842, 143733.60374878853, 142887.23392586954],
         Ref(M3_PER_DT);
         dt_val = dt,
     )
-    @test model.variables.act_groundwater_abst ≈
+    @test allocation_model.variables.act_groundwater_abst ≈
           to_SI.(
         [234.58608886250354, 238.31636396144145, 236.91304717605513],
         Ref(MM_PER_DT);
         dt_val = dt,
     )
-    @test model.variables.groundwater_alloc ≈
+    @test allocation_model.variables.groundwater_alloc ≈
           to_SI.([23.2345, 12.261, 674.32], Ref(MM_PER_DT); dt_val = dt)
 end

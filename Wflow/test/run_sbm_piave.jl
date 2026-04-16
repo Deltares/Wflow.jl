@@ -237,6 +237,7 @@ end
 
 @testitem "Piave activate river boundary (river subsurface exchange)" begin
     using Statistics: mean
+    using Wflow: to_SI, M3_PER_DAY, get_average
 
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
@@ -259,29 +260,37 @@ end
         @test subsurface_flow.variables.zi[1] ≈ 0.05409810125066005
         @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
               subsurface_flow.variables.head[1]
-        @test river.variables.flux_av[1] ≈ 37872.287583718644
-        @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
-        @test mean(river.variables.flux_av) ≈ -39618.370151473195
-        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ 39618.3701514732
-        @test recharge.variables.rate[1] ≈ -0.0002922905062717429
-        @test mean(recharge.variables.rate) ≈ 0.0009271689030318317
+        @test get_average(river.variables.flux_av)[1] ≈
+              to_SI(37872.287583718644, M3_PER_DAY)
+        @test get_average(subsurface_flow.variables.to_river)[idx] ==
+              -get_average(river.variables.flux_av)[1]
+        @test mean(get_average(river.variables.flux_av)) ≈
+              to_SI(-39618.370151473195, M3_PER_DAY)
+        @test mean(get_average(subsurface_flow.variables.to_river)[land_indices]) ≈
+              to_SI(39618.3701514732, M3_PER_DAY)
+        @test recharge.variables.rate[1] ≈ to_SI(-0.0002922905062717429, M3_PER_DAY)
+        @test mean(recharge.variables.rate) ≈ to_SI(0.0009271689030318317, M3_PER_DAY)
     end
 
     Wflow.run_timestep!(model)
 
     @testset "Second timestep" begin
         @test subsurface_flow.variables.head[1] ≈ 1.563147470676254
-        @test mean(subsurface_flow.variables.head) ≈ 1106.4867249666993
+        @test mean(subsurface_flow.variables.head) ≈ 1106.4948788348809
         @test subsurface_flow.variables.zi[1] ≈ 0.05585260657136559
         @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
               subsurface_flow.variables.head[1]
-        @test river.variables.flux_av[1] ≈ 45231.725584511034
-        @test river.variables.flux[1] == river.variables.flux_av[1]
-        @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
-        @test mean(river.variables.flux_av) ≈ 129.0006905680265
-        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ -129.0006905680318
-        @test recharge.variables.rate[1] ≈ -0.00021663702639498745
-        @test mean(recharge.variables.rate) ≈ 0.0010751049777759111
+        @test get_average(river.variables.flux_av)[1] ≈
+              to_SI(45231.725584511034, M3_PER_DAY)
+        @test river.variables.flux[1] == get_average(river.variables.flux_av)[1]
+        @test get_average(subsurface_flow.variables.to_river)[idx] ==
+              -get_average(river.variables.flux_av)[1]
+        @test mean(get_average(river.variables.flux_av)) ≈
+              to_SI(129.0006905680265, M3_PER_DAY)
+        @test mean(get_average(subsurface_flow.variables.to_river)[land_indices]) ≈
+              to_SI(-129.0006905680318, M3_PER_DAY)
+        @test recharge.variables.rate[1] ≈ to_SI(-0.00021663702639498745, M3_PER_DAY)
+        @test mean(recharge.variables.rate) ≈ to_SI(0.0010751049777759111, M3_PER_DAY)
     end
 end
 

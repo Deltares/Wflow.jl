@@ -33,7 +33,7 @@ function generate_table(
     isempty(data) && error("No data for table.")
     data_pretty = Vector{String}[]
     for (standard_name, metadata) in data
-        (; description, unit, default) = metadata
+        (; description, unit, default, lens) = metadata
         push!(
             data_pretty,
             [
@@ -41,27 +41,27 @@ function generate_table(
                 replace(description, r"`([^`]+)`" => s"<code>\1</code>"), # description
                 string(unit), # unit input/output
                 string(Wflow.to_SI(unit)), # unit internal
+                isnothing(lens) ? "✗" : "✓", # possible output
                 isnothing(default) ? "-" : string(default), # default
             ],
         )
     end
 
     data_pretty = permutedims(hcat(data_pretty...))
+    column_labels = [
+        "Standard name",
+        "Description",
+        "Unit input/output",
+        "Unit internal",
+        "Possible output",
+        "Default (IO unit)",
+    ]
 
     # Check whether there are any defaults
-    if any(!=("-"), view(data_pretty, :, 4))
-        column_labels = [
-            "Standard name",
-            "Description",
-            "Unit input/output",
-            "Unit internal",
-            "Default (IO unit)",
-        ]
-    else
-        column_labels =
-            ["Standard name", "Description", "Unit input/output", "Unit internal"]
-        data_pretty = data_pretty[:, 1:4]
-        relative_widths = relative_widths[1:4]
+    if all(==("-"), view(data_pretty, :, 6))
+        pop!(column_labels)
+        pop!(relative_widths)
+        data_pretty = data_pretty[:, 1:5]
     end
 
     io = IOBuffer()

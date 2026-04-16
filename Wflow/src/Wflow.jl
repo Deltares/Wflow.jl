@@ -58,7 +58,7 @@ using LoggingExtras:
     TeeLogger,
     Warn,
     with_logger
-using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar
+using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar, path
 using OrderedCollections: OrderedDict
 using Parameters: @with_kw
 using Polyester: @batch

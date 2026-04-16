@@ -44,7 +44,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSFModel{Kh,B<:SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@with_kw struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
@@ -81,13 +81,13 @@ function LateralSsfParameters(
     soil::SbmSoilParameters,
     area::Vector{Float64},
 )
-    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel=indices)
+    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
     khfrac = ncread(
         dataset,
         config,
         "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
         Routing;
-        sel=indices,
+        sel = indices,
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
@@ -118,7 +118,7 @@ function LateralSsfParameters(
         soilthickness,
         specific_yield,
         area,
-        top=elevation,
+        top = elevation,
     )
     return ssf_parameters
 end
@@ -145,7 +145,7 @@ function LateralSSFModel(
     (; indices) = land.network
     (; area) = domain.land.parameters
     n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain="subsurface")
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
     zi = soil.variables.zi
     variables = LateralSsfVariables(parameters, zi)
@@ -184,7 +184,7 @@ function flux_to_river!(
         average!(to_river, dt)
     else
         inds = domain.land_indices
-        get_average(to_river)[inds] = get_average(river.variables.flux_av)
+        get_average(to_river)[inds] = -get_average(river.variables.flux_av)
     end
     return nothing
 end
@@ -219,7 +219,7 @@ function kinwave_subsurface_update!(
 
     ns = length(order_of_subdomains)
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 if isnothing(river)
@@ -327,7 +327,7 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
             k += 1
             # [m s⁻¹]
             c = ssf_celerity(zi[i], slope[i], specific_yield[i], kh_profile, i)
-            # [s] = [m] / [m s⁻¹] 
+            # [s] = [m] / [m s⁻¹]
             stable_timesteps[k] = (flow_length[i] / c)
         end
     end

@@ -49,7 +49,7 @@ function set_pit_ldd(
     pits_2d::AbstractMatrix{Bool},
     ldd::Vector{UInt8},
     indices::Vector{CartesianIndex{2}};
-    pit::Integer = 5,
+    pit::Integer=5,
 )::Vector{UInt8}
     pits = pits_2d[indices]
     index = filter(i -> isequal(pits[i], true), 1:length(indices))
@@ -85,7 +85,7 @@ represent inactive cells.
 function active_indices(
     subcatch_2d::AbstractMatrix,
     nodata,
-)::Tuple{Vector{CartesianIndex{2}}, Matrix{Int}}
+)::Tuple{Vector{CartesianIndex{2}},Matrix{Int}}
     A = subcatch_2d
     all_inds = CartesianIndices(size(A))
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
@@ -110,7 +110,7 @@ function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIn
     end
 end
 
-function lattometres(lat::Real)::Tuple{Float64, Float64}
+function lattometres(lat::Real)::Tuple{Float64,Float64}
     m1 = 111132.92     # latitude calculation term 1
     m2 = -559.82       # latitude calculation term 2
     m3 = 1.175         # latitude calculation term 3
@@ -130,7 +130,7 @@ function cell_lengths(
     y::AbstractVector{<:Real},
     celllength::Real,
     cell_length_in_meter::Bool,
-)::Tuple{Vector{Float64}, Vector{Float64}}
+)::Tuple{Vector{Float64},Vector{Float64}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -157,7 +157,7 @@ and set states in `model` object. Active cells are selected with the correspondi
 # Arguments
 - `type = nothing`: type to convert data to after reading. By default no conversion is done.
 """
-function set_states!(instate_path::AbstractString, model; dimname = nothing)::Nothing
+function set_states!(instate_path::AbstractString, model; dimname=nothing)::Nothing
     (; domain, config, clock, land) = model
     dt_val = tosecond(clock.dt)
 
@@ -177,7 +177,7 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
                 if dimname == :layer
-                    dimensions = (x = :, y = :, layer = :, time = 1)
+                    dimensions = (x=:, y=:, layer=:, time=1)
                 else
                     error("Unrecognized dimension name $dimname")
                 end
@@ -193,7 +193,7 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
                 metadata.lens(model) .= svectorscopy(A, Val{size(A)[1]}())
                 # 3 dims (x,y,time)
             elseif dims == 3
-                A = read_standardized(ds, ncname, (x = :, y = :, time = 1))
+                A = read_standardized(ds, ncname, (x=:, y=:, time=1))
                 A = A[sel]
                 A = nomissing(A)
                 A = apply_unit_and_type_transform!(A, metadata; dt_val)
@@ -211,7 +211,7 @@ function set_states!(instate_path::AbstractString, model; dimname = nothing)::No
     return nothing
 end
 
-function get_var(config::Config, parameter::AbstractString; optional = true)
+function get_var(config::Config, parameter::AbstractString; optional=true)
     if hasfield(InputSection, Symbol(parameter))
         var = getfield(config.input, Symbol(parameter))
     elseif haskey(config.input.location_maps, parameter)
@@ -275,19 +275,19 @@ function ncread(
     config::Config,
     parameter::AbstractString,
     model_type;
-    sel = nothing,
-    logging = true,
-    metadata = get_metadata(parameter, model_type),
+    sel=nothing,
+    logging=true,
+    metadata=get_metadata(parameter, model_type),
 )
     (; default, fill, type, allow_missing, dimname) = metadata
-    var = get_var(config, parameter; optional = !isnothing(default))
+    var = get_var(config, parameter; optional=!isnothing(default))
     dt_val = config.time.timestepsecs
     (; unit) = metadata
 
     # for optional parameters default values are used.
     if isnothing(var)
-        @info "Set parameter." parameter unit
-        @assert !isnothing(default) parameter
+        @info "Set `$parameter` using default value `$default`."
+        @assert !isnothing(default) "Default value required but not available for $parameter (if you see this as a user please open an issue)."
         default = unit_and_type_transform(default, metadata; dt_val)
         if isnothing(dimname)
             return Base.fill(default, length(sel))
@@ -299,19 +299,19 @@ function ncread(
     # dim `time` is also included in `dim_sel`: this allows for cyclic parameters (read
     # first timestep), that is later updated with the `update_cyclic!` function.
     if isnothing(dimname)
-        dim_sel = (x = :, y = :, time = 1)
+        dim_sel = (x=:, y=:, time=1)
     elseif dimname == :layer
-        dim_sel = (x = :, y = :, layer = :, time = 1)
+        dim_sel = (x=:, y=:, layer=:, time=1)
     elseif dimname == :flood_depth
-        dim_sel = (x = :, y = :, flood_depth = :, time = 1)
+        dim_sel = (x=:, y=:, flood_depth=:, time=1)
     else
         error("Unrecognized dimension name $dimname")
     end
 
     if var isa Number
-        var = InputEntry(; value = var)
+        var = InputEntry(; value=var)
     elseif var isa String
-        var = InputEntry(; external_name = var)
+        var = InputEntry(; external_name=var)
     else
         @assert var isa InputEntry
     end
@@ -389,11 +389,11 @@ at soil surface (0), and a SVector `thickness` with thickness per soil layer.
 function set_layerthickness(
     reference_depth::Real,
     cum_depth::SVector,
-    thickness::SVector{N, Float64},
-)::SVector{N, Float64} where {N}
+    thickness::SVector{N,Float64},
+)::SVector{N,Float64} where {N}
     thicknesslayers = thickness .* MISSING_VALUE
     for i in 1:length(thicknesslayers)
-        if reference_depth > cum_depth[i + 1]
+        if reference_depth > cum_depth[i+1]
             thicknesslayers = setindex(thicknesslayers, thickness[i], i)
         elseif reference_depth - cum_depth[i] > 0.0
             thicknesslayers = setindex(thicknesslayers, reference_depth - cum_depth[i], i)
@@ -469,17 +469,17 @@ end
 pow(x::Real, y::Real)::Real = exp(y * log(x))
 
 function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
-    mapreduce(i -> A[i], +, inds; init = zero(T))
+    mapreduce(i -> A[i], +, inds; init=zero(T))
 end
 
-sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
-    mapreduce(f, +, inds; init = zero(T))
+sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number}=Float64) =
+    mapreduce(f, +, inds; init=zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
-function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N, T}} where {T, N}
+function svectorscopy(x::Matrix{T}, ::Val{N})::Vector{SVector{N,T}} where {T,N}
     size(x, 1) == N || error("sizes mismatch")
     isbitstype(T) || error("use for bitstypes only")
-    return copy(reinterpret(SVector{N, T}, vec(x)))
+    return copy(reinterpret(SVector{N,T}, vec(x)))
 end
 
 """
@@ -545,8 +545,8 @@ julia> tosecond(Day(1))
 """
 tosecond(x::Hour) = Float64(Dates.value(Second(x)))
 tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
+tosecond(x::T) where {T<:DatePeriod} = Float64(Dates.value(Second(x)))
+tosecond(x::T) where {T<:TimePeriod} = x / convert(T, Second(1))
 
 """
     adjacent_nodes_at_edge(graph)
@@ -555,9 +555,9 @@ Return the source node `src` and destination node `dst` of each edge of a direct
 """
 function adjacent_nodes_at_edge(
     graph::SimpleDiGraph{Int},
-)::NamedTuple{(:src, :dst), Tuple{Vector{Int}, Vector{Int}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Int},Vector{Int}}}
     _edges = collect(edges(graph))
-    return (src = src.(_edges), dst = dst.(_edges))
+    return (src=src.(_edges), dst=dst.(_edges))
 end
 
 """
@@ -568,7 +568,7 @@ Return the source edge `src` and destination edge `dst` of each node of a direct
 function adjacent_edges_at_node(
     graph::SimpleDiGraph{Int},
     nodes_at_edge,
-)::NamedTuple{(:src, :dst), Tuple{Vector{Vector{Int}}, Vector{Vector{Int}}}}
+)::NamedTuple{(:src, :dst),Tuple{Vector{Vector{Int}},Vector{Vector{Int}}}}
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
@@ -576,7 +576,7 @@ function adjacent_edges_at_node(
         push!(src_edge, findall(isequal(nodes[i]), nodes_at_edge.dst))
         push!(dst_edge, findall(isequal(nodes[i]), nodes_at_edge.src))
     end
-    return (src = src_edge, dst = dst_edge)
+    return (src=src_edge, dst=dst_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
@@ -867,7 +867,7 @@ end
 kh_layered_profile!(
     soil_model::SbmSoilModel,
     subsurface_flow_model::LateralSSFModel,
-    kv_profile::Union{KvExponential, KvExponentialConstant},
+    kv_profile::Union{KvExponential,KvExponentialConstant},
 ) = nothing
 
 """
@@ -951,7 +951,7 @@ function initialize_lateral_ssf_model!(
     (; khfrac, soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
-    kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
+    kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
     for i in eachindex(q)
         # [m³ s⁻¹] = [m s⁻¹] * ([m] - [m]) * [-] * [m]
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
@@ -983,7 +983,7 @@ function initialize_lateral_ssf_model!(
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile
 
-    kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
+    kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
     for i in eachindex(q)
         # [m³ s⁻¹] = [m s⁻¹] * ([m] - [m]) * [-] * [m]
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
@@ -1016,7 +1016,7 @@ end
 Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
 Otherwise return a `default` value.
 """
-function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
+function bounded_divide(x::Real, y::Real; max::Real=1.0, default::Real=0.0)::Real
     z = y > 0.0 ? min(x / y, max) : default
     return z
 end
@@ -1094,6 +1094,6 @@ function water_table_change(
 end
 
 "Set lower bound for drainable porosity"
-function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
+function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound=0.02)
     return max(theta_s - theta_fc, lower_bound)
 end
