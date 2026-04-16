@@ -47,26 +47,23 @@ function GwfRiverModel(
     infiltration_conductance = ncread(
         dataset,
         config,
-        "river_water__infiltration_conductance";
-        optional = false,
-        sel = indices,
-        type = Float64,
+        "river_water__infiltration_conductance",
+        Routing;
+        sel=indices,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
-        "river_water__exfiltration_conductance";
-        optional = false,
-        sel = indices,
-        type = Float64,
+        "river_water__exfiltration_conductance",
+        Routing;
+        sel=indices,
     )
     bottom = ncread(
         dataset,
         config,
-        "river_bottom__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
+        "river_bottom__elevation",
+        Routing;
+        sel=indices,
     )
 
     parameters =
@@ -128,20 +125,16 @@ function DrainageModel(
     elevation = ncread(
         dataset,
         config,
-        "land_drain__elevation";
-        optional = false,
-        sel = indices,
-        type = Float64,
-        fill = MISSING_VALUE,
+        "land_drain__elevation",
+        Routing;
+        sel=indices,
     )
     conductance = ncread(
         dataset,
         config,
-        "land_drain__conductance";
-        optional = false,
-        sel = indices,
-        type = Float64,
-        fill = MISSING_VALUE,
+        "land_drain__conductance",
+        Routing;
+        sel=indices,
     )
     parameters = DrainageParameters(; elevation, conductance)
     n = length(indices)

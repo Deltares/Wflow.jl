@@ -2,28 +2,28 @@
     using StaticArrays: SVector
     include("testing_utils.jl")
     n = 1
-    soil_model = init_sbm_soil_model(1, 1; soil_fraction = [0.30670667824303055])
+    soil_model = init_sbm_soil_model(1, 1; soil_fraction = [0.2397957498236932])
     atmospheric_forcing =
-        Wflow.AtmosphericForcing(; n, potential_evaporation = [4.8000001907348635])
+        Wflow.AtmosphericForcing(; n, potential_evaporation = [0.5799999833106995])
 
     interception = Wflow.GashInterceptionModel(;
         parameters = Wflow.GashParameters(;
-            e_r = [0.1],
+            e_r = [0.25],
             vegetation_parameter_set = Wflow.VegetationParameters(;
-                leaf_area_index = nothing,
-                storage_wood = nothing,
-                kext = nothing,
-                storage_specific_leaf = nothing,
-                canopygapfraction = [0.3487189230509198],
-                cmax = [0.2235326728960274],
-                rootingdepth = [390.531982421875],
-                kc = [1.1469999551773071],
+                leaf_area_index = [1.5],
+                storage_wood = [0.2],
+                kext = [0.67],
+                storage_specific_leaf = [0.09],
+                canopygapfraction = [0.2397957498236932],
+                cmax = [0.5687566481997495],
+                rootingdepth = [410.0],
+                kc = [1.0],
             ),
         ),
         variables = Wflow.InterceptionVariables(;
             n = 1,
-            canopy_potevap = [3.585693099611687],
-            interception_rate = [0.12944592473374397],
+            canopy_potevap = [0.44091845241498073],
+            interception_rate = [0.029448986349521342],
         ),
     )
     runoff = Wflow.OpenWaterRunoff(;
@@ -31,43 +31,31 @@
         variables = Wflow.OpenWaterRunoffVariables(;
             n,
             runoff_land = [0.0],
-            runoff_river = [0.003384257254905341],
+            runoff_river = [0.0],
         ),
-        boundary_conditions = Wflow.OpenWaterRunoffBC(; n, water_flux_surface = [7.5e-3]),
+        boundary_conditions = Wflow.OpenWaterRunoffBC(;
+            n,
+            water_flux_surface = [0.24686226660437197],
+        ),
     )
     demand = Wflow.DemandModel(;
         domestic = Wflow.NoDemandModel(; n),
         industry = Wflow.NoDemandModel(; n),
         livestock = Wflow.NoDemandModel(; n),
-        paddy = Wflow.PaddyModel(;
-            parameters = Wflow.PaddyParameters(;
-                irrigation_efficiency = [],
-                maximum_irrigation_rate = [],
-                irrigation_areas = [true],
-                irrigation_trigger = [],
-                h_min = [],
-                h_opt = [],
-                h_max = [],
-            ),
-            variables = Wflow.PaddyVariables(; n, h = [1e-5], evaporation = [4e-3]),
-        ),
+        paddy = Wflow.NoIrrigationPaddyModel(n),
         nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
         variables = Wflow.DemandVariables(; n),
     )
 
-    allocation = Wflow.AllocationLandModel(;
-        n,
-        parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
-        variables = Wflow.AllocationLandVariables(; n, irri_alloc = [2e-2]),
-    )
+    allocation = Wflow.NoAllocationLandModel(n)
 
     external_models = (; interception, runoff, demand, allocation)
 
     Wflow.update_bc_soil_model!(soil_model, atmospheric_forcing, external_models)
 
-    @test soil_model.boundary_conditions.potential_transpiration[1] ≈ 3.456247174877943
-    @test soil_model.boundary_conditions.potential_soilevaporation[1] ≈ 1.472182114066203
-    @test soil_model.boundary_conditions.water_flux_surface[1] ≈ 0.02411574274509466
+    @test soil_model.boundary_conditions.potential_transpiration[1] ≈ 0.41146946606545937
+    @test soil_model.boundary_conditions.potential_soilevaporation[1] ≈ 0.13908153089571873
+    @test soil_model.boundary_conditions.water_flux_surface[1] ≈ 0.24686226660437197
 end
 
 @testitem "unit: unsaturated_zone_flow!" begin
@@ -110,7 +98,7 @@ end
     include("testing_utils.jl")
     n = 1
     N = 6
-    model = init_sbm_soil_model(
+    soil_model = init_sbm_soil_model(
         n,
         N;
         potential_soilevaporation = [2.8],
@@ -127,11 +115,11 @@ end
         drainable_waterdepth = [321.13323174500624],
     )
 
-    Wflow.soil_evaporation!(model)
+    Wflow.soil_evaporation!(soil_model)
 
-    @test model.variables.soilevapsat[1] == 0.0
-    @test model.variables.soilevap[1] ≈ 0.2459598877386006
-    @test model.variables.drainable_waterdepth[1] ≈ 321.13323174500624
+    @test soil_model.variables.soilevapsat[1] == 0.0
+    @test soil_model.variables.soilevap[1] ≈ 0.2459598877386006
+    @test soil_model.variables.drainable_waterdepth[1] ≈ 321.13323174500624
 end
 
 @testitem "unit: transpiration!" begin
@@ -224,31 +212,47 @@ end
     using StaticArrays: SVector
     include("testing_utils.jl")
     n = 1
-    N = 6
+    N = 4
     soil_model = init_sbm_soil_model(
         n,
         N;
-        runoff = [0.002036245],
-        zi = [0.000656547],
-        ustorelayerthickness = [SVector((0.000656547, NaN, NaN, NaN, NaN, NaN))],
-        ustorelayerdepth = [SVector(1.998965544e-5, 0.0, 0.0, 0.0, 0.0, 0.0)],
-        n_unsatlayers = [1],
-        vwc = [SVector((0.440136, 0.440140, 0.440140, 0.440140, 0.440140, 0.440140))],
-        vwc_perc = [SVector((99.99912, 100.0, 100.0, 100.0, 100.0, 100.0))],
-        nlayers = [6],
-        act_thickl = [SVector(50.0, 100.0, 50.0, 200.0, 800.0, 800.0)],
-        theta_s = [0.44014],
-        theta_r = [0.0880263],
-        theta_fc = [0.26583],
-        rootingdepth = [390.39999],
-        sumlayers = [SVector(0.0, 50.0, 150.0, 200.0, 400.0, 1200.0, 2000.0)],
+        runoff = [0.0],
+        zi = [1244.5135404970033],
+        ustorelayerthickness = [SVector((100.0, 300.0, 800.0, 44.513540497003305))],
+        ustorelayerdepth = [
+            SVector(
+                14.408928105784874,
+                19.461087500813772,
+                125.91094235311145,
+                7.223489814154271,
+            ),
+        ],
+        n_unsatlayers = [4],
+        vwc = [
+            SVector((
+                0.27533306202340196,
+                0.1874167718952191,
+                0.28208626066069253,
+                0.48316940665245056,
+            )),
+        ],
+        vwc_perc = [
+            SVector((56.98478799206181, 38.7890394786585, 58.38247554104776, 100.0)),
+        ],
+        nlayers = [4],
+        act_thickl = [SVector(100.0, 300.0, 800.0, 800.0)],
+        theta_s = [0.4831694066524056],
+        theta_r = [0.12372369319200516],
+        theta_fc = [0.28599992944511926],
+        rootingdepth = [380.0],
+        sumlayers = [SVector(0.0, 100.0, 400.0, 1200.0, 2000.0)],
         soilthickness = [2000.0],
-        soilwatercapacity = [704.2274028],
-        ustorecapacity = [0.0001915933],
-        satwaterdepth = [704.227211212],
-        drainable_waterdepth = [348.61417105],
-        total_soilwater_storage = [704.227211212],
-        excesswater = [0.047112555773],
+        soilwatercapacity = [718.8914269208908],
+        ustorecapacity = [271.02508737207194],
+        satwaterdepth = [288.62821979680706],
+        drainable_waterdepth = [158.32342151683937],
+        total_soilwater_storage = [448.5154852374101],
+        excesswater = [0.0],
         infiltexcess = [0.0],
     )
 
@@ -257,18 +261,7 @@ end
         domestic = Wflow.NoDemandModel(; n),
         industry = Wflow.NoDemandModel(; n),
         livestock = Wflow.NoDemandModel(; n),
-        paddy = Wflow.PaddyModel(;
-            parameters = Wflow.PaddyParameters(;
-                irrigation_efficiency = [],
-                maximum_irrigation_rate = [],
-                irrigation_areas = [true],
-                irrigation_trigger = [],
-                h_min = [],
-                h_opt = [],
-                h_max = [2.0],
-            ),
-            variables = Wflow.PaddyVariables(; n, h = [1e-5], evaporation = [4e-3]),
-        ),
+        paddy = Wflow.NoIrrigationPaddyModel(n),
         nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
         variables = Wflow.DemandVariables(; n),
     )
@@ -278,17 +271,16 @@ end
 
     Wflow.update_soil_water_storage!(soil_model, external_models)
 
-    @test demand.paddy.variables.h[1] ≈ 0.047112555773
     @test soil_model.variables.runoff[1] ≈ 0.0
-    @test soil_model.variables.ustorecapacity[1] ≈ 0.00021398953802734852
-    @test soil_model.variables.satwaterdepth[1] ≈ 704.2271688208066
-    @test soil_model.variables.drainable_waterdepth[1] ≈ 348.6198855572923
+    @test soil_model.variables.ustorecapacity[1] ≈ 280.33060970129986
+    @test soil_model.variables.satwaterdepth[1] ≈ 271.55636944572655
+    @test soil_model.variables.drainable_waterdepth[1] ≈ 148.95887025738955
     @test soil_model.variables.exfiltsatwater[1] ≈ 0.0
     @test soil_model.variables.vwc[1] ≈
-          [0.4401357762092409, 0.44014, 0.44014, 0.44014, 0.44014, 0.44014]
+          [0.2678129742498539, 0.1885939848613844, 0.2811123711333945, 0.4721985172668562]
     @test soil_model.variables.vwc_perc[1] ≈
-          [99.99904035289701, 100.0, 100.0, 100.0, 100.0, 100.0]
-    @test soil_model.variables.vwc_root[1] ≈ 0.44013945904317786
-    @test soil_model.variables.vwc_percroot[1] ≈ 99.99987709437403
-    @test soil_model.variables.total_soilwater_storage[1] ≈ 704.227188810462
+          [55.42837989378741, 39.03268341595556, 58.18091279434587, 97.72939072000436]
+    @test soil_model.variables.vwc_root[1] ≈ 0.20944108733203426
+    @test soil_model.variables.vwc_percroot[1] ≈ 43.34734038380604
+    @test soil_model.variables.total_soilwater_storage[1] ≈ 438.56081721959094
 end
