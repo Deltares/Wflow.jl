@@ -266,39 +266,35 @@ end
     # (i.e. abstraction). The test verifies discharge, water depth, storage and averaged
     # discharge for the river, as well as waterlevel, storage, outflow and actual
     # evaporation for the reservoir.
-    # Note: bankfull_depth is set to NaN because kinwave_river_update! uses the
-    # pre-computed alpha directly; bankfull_depth is only used in the higher-level
-    # update_river_flow_model! which recomputes alpha before calling this function.
     using Graphs: DiGraph, add_edge!
     n = 2
     river_flow_model = Wflow.KinWaveRiverFlowModel(;
         timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n)),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
-            external_inflow = [-0.1],
             reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
                     n,
-                    external_inflow = [0.02],
-                    precipitation = [4.0],
-                    evaporation = [1.0],
-                    inflow_overland = [1e-3],
-                    inflow_subsurface = [2e-3],
+                    external_inflow = [-0.1],
+                    precipitation = [0.01799999922513961],
+                    evaporation = [0.46000000834465027],
+                    inflow_overland = [0.0],
+                    inflow_subsurface = [0.02735223635554672],
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1],
                     storfunc = [Wflow.ReservoirProfileType.linear],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
-                    area = [9.069779e4],
-                    maxrelease = [1.74],
-                    demand = [0.2175],
-                    targetminfrac = [0.358469158],
-                    targetfullfrac = [0.83492106199],
-                    maxstorage = [3.3e7],
+                    area = [1.498462875e6],
+                    maxrelease = [24.007999420166016],
+                    demand = [3.000999927520752],
+                    targetminfrac = [0.07482631504535675],
+                    targetfullfrac = [0.7536525130271912],
+                    maxstorage = [6.2e7],
                 ),
                 variables = Wflow.ReservoirVariables(;
-                    waterlevel = [3.0266425035195113],
-                    storage = [2.7450978618928656e7],
+                    waterlevel = [29.656373296565086],
+                    storage = [4.443897439204416e7],
                     outflow_obs = [NaN],
                     actevap = [0.0],
                 ),
@@ -308,15 +304,15 @@ end
             flow = Wflow.ManningFlowParameters(;
                 n,
                 beta = 0.6,
-                slope = [0.007983425632119179],
-                mannings_n = [0.03],
+                slope = [0.017522206529974937, 0.01738094352185726],
+                mannings_n = [0.03, 0.03],
                 alpha_pow = 0.4,
-                alpha_term = [0.519536377373],
-                alpha = [2.051921014725877],
+                alpha_term = [0.41038937516728013, 0.4113871693777356],
+                alpha = [2.544585458995107, 2.5507721996678145],
             ),
-            bankfull_depth = [NaN],
+            bankfull_depth = [1.0, 1.0],
         ),
-        variables = Wflow.FlowVariables(; n, q = [5.047273570557614]),
+        variables = Wflow.FlowVariables(; n, q = [0.5499295110293246, 3.0005238507869465]),
         allocation = Wflow.NoAllocationRiverModel(n),
     )
     graph = DiGraph(2)
@@ -325,29 +321,32 @@ end
         network = Wflow.NetworkRiver(;
             graph,
             order_of_subdomains = [[1]],
-            order_subdomain = [[1]],
-            subdomain_indices = [[1]],
-            upstream_nodes = [[]],
-            reservoir_indices = [1],
+            order_subdomain = [[1, 2]],
+            subdomain_indices = [[1, 2]],
+            upstream_nodes = [[], [1]],
+            reservoir_indices = [1, 0],
         ),
-        parameters = Wflow.RiverParameters(; flow_width = [30.0], flow_length = [800.0]),
+        parameters = Wflow.RiverParameters(;
+            flow_width = [94.73094177246094, 94.73094177246094],
+            flow_length = [1059.8125, 951.96875],
+        ),
     )
     dt = Wflow.stable_timestep(river_flow_model, domain.parameters.flow_length, 0.05)
     dt_forcing = 86400.0
 
     Wflow.kinwave_river_update!(river_flow_model, domain, dt, dt_forcing)
 
-    @test dt ≈ 515.4412110788624
-    @test river_flow_model.variables.q ≈ [2.670543916919476]
-    @test river_flow_model.variables.h[1] ≈ 0.12331026162422165
-    @test river_flow_model.variables.storage[1] ≈ 2959.4462789813197
-    @test river_flow_model.variables.q_av[1] ≈ 1376.5083907762635
+    @test dt ≈ 994.6119029285007
+    @test river_flow_model.variables.q ≈ [0.37903337592185243, 3.1969698861305855]
+    @test river_flow_model.variables.h ≈ [0.01500830539624011, 0.05407828963124342]
+    @test river_flow_model.variables.storage ≈ [1506.7893805755937, 4876.828625285123]
+    @test river_flow_model.variables.q_av ≈ [376.9911072990474, 3179.744302049454]
 
     (; reservoir) = river_flow_model.boundary_conditions
-    @test reservoir.variables.waterlevel[1] ≈ 3.040731914007435
-    @test reservoir.variables.storage[1] ≈ 2.7452256497322313e7
-    @test reservoir.variables.outflow[1] ≈ 0.21749985231454072
-    @test reservoir.variables.actevap[1] ≈ 0.005965754757857204
+    @test reservoir.variables.waterlevel[1] ≈ 29.654579645252387
+    @test reservoir.variables.storage[1] ≈ 4.443628667214138e7
+    @test reservoir.variables.outflow[1] ≈ 3.0009999145314317
+    @test reservoir.variables.actevap[1] ≈ 0.005295387542208319
 end
 
 @testitem "unit: local_inertial_river_update!" begin
