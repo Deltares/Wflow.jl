@@ -127,11 +127,11 @@ end
         boundary_conditions = Wflow.ReservoirBC(;
             n,
             external_inflow = [-1.0],
-            inflow_overland = [0.24],
-            inflow_subsurface = [0.23],
-            inflow = [8400.0],
-            precipitation = [5.45],
-            evaporation = [4.3],
+            inflow_overland = [0.0],
+            inflow_subsurface = [0.00041241066945499203],
+            inflow = [0.0],
+            precipitation = [0.07000001519918442],
+            evaporation = [0.529999852180481],
         ),
         parameters = Wflow.ReservoirParameters(;
             id = [1],
@@ -150,7 +150,8 @@ end
         ),
     )
 
-    river_flow_vars = Wflow.FlowVariables(; n = 2, q = [0.04, 0.04])
+    river_flow_vars =
+        Wflow.FlowVariables(; n = 2, q = [0.00012002923701686638, 0.21747539140212965])
 
     graph = DiGraph(2)
     add_edge!(graph, 1, 2)
@@ -169,9 +170,9 @@ end
         dt_forcing,
     )
     @test river_flow_vars.qin[2] ≈ 0.21749985206208133
-    @test reservoir_model.boundary_conditions.actual_external_abstraction_av[1] ≈ 1e3
-    @test reservoir_model.variables.storage[1] ≈ 2.7450272326280978e7
-    @test reservoir_model.variables.waterlevel[1] ≈ 3.0188551842509996
+    @test reservoir_model.boundary_conditions.actual_external_abstraction_av[1] ≈ 1000.0
+    @test reservoir_model.variables.storage[1] ≈ 2.744976116863499e7
+    @test reservoir_model.variables.waterlevel[1] ≈ 3.013219350720886
     @test reservoir_model.variables.outflow[1] ≈ 0.21749985206208133
 end
 
