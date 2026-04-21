@@ -61,6 +61,7 @@ function update_model!(model::AbstractModel{<:SbmModel})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; kv_profile) = land.soil.parameters
+    (; subsurface_flow, overland_flow) = routing
     (; boundary_conditions) = routing.subsurface_flow
     dt = tosecond(clock.dt)
 
@@ -85,8 +86,14 @@ function update_model!(model::AbstractModel{<:SbmModel})
         domain,
         clock.dt / BASETIMESTEP,
     )
+
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
-    update_soil_water_storage!(soil, (; runoff, demand, routing.subsurface_flow))
+    update_soil_water_storage!(
+        soil,
+        (; runoff, demand, subsurface_flow, overland_flow),
+        domain,
+        config,
+    )
 
     surface_routing!(model)
 

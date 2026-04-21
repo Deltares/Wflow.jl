@@ -267,9 +267,47 @@ end
     )
 
     subsurface_flow = (; variables = (; exfiltwater = [0.0]))
-    external_models = (; runoff, demand, subsurface_flow)
+    overland_flow = Wflow.KinWaveOverlandFlowModel(;
+        timestepping = Wflow.TimeStepping(),
+        boundary_conditions = Wflow.LandFlowBC(; n),
+        parameters = Wflow.ManningFlowParameters(;
+            n,
+            beta = 0.6,
+            slope = [0.01],
+            mannings_n = [0.072],
+            alpha_pow = (2.0 / 3.0) * 0.6,
+        ),
+        variables = Wflow.OverLandFlowVariables(; n),
+    )
+    external_models = (; runoff, demand, subsurface_flow, overland_flow)
 
-    Wflow.update_soil_water_storage!(soil_model, external_models)
+    domain = Wflow.Domain(;
+        land = Wflow.DomainLand(;
+            parameters = Wflow.LandParameters(;
+                surface_flow_width = [700.0],
+                river_fraction = [0.1],
+            ),
+        ),
+    )
+    config = Wflow.Config(;
+        model = Wflow.ModelSection(;
+            type = Wflow.ModelType.sbm,
+            reinfiltration_surfacewater__flag = false,
+        ),
+        input = Wflow.InputSection(;
+            path_forcing = "",
+            path_static = "",
+            basin__local_drain_direction = "",
+            river_location__mask = "",
+            subbasin_location__count = "",
+            forcing = Wflow.InputEntries(),
+            static = Wflow.InputEntries(),
+            location_maps = Wflow.PropertyDict(Dict{String, Any}()),
+        ),
+        path = "",
+    )
+
+    Wflow.update_soil_water_storage!(soil_model, external_models, domain, config)
 
     @test soil_model.variables.runoff[1] ≈ 0.0
     @test soil_model.variables.ustorecapacity[1] ≈ 280.33060970129986

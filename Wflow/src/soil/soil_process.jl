@@ -267,3 +267,70 @@ function actual_infiltration_soil_path(
 
     return actinfiltsoil, actinfiltpath
 end
+
+"""
+Correct infiltration fluxes by separating the surface water contribution from the total
+infiltration. The correction factor is based on the ratio of
+`potential_infiltration_surfacewater` to `potential_infiltration`, and is applied to
+`actinfilt` and `infiltexcess` to remove the surface water component. The surface water flux
+`water_flux_surface` is adjusted accordingly, and the remaining excess water is computed.
+
+Returns `infilt_surfacewater`, corrected `actinfilt`, corrected `infiltexcess`, `excesswater`,
+and corrected `water_flux_surface`.
+"""
+function correct_infiltration(
+    potential_infiltration,
+    potential_infiltration_surfacewater,
+    water_flux_surface,
+    actinfilt,
+    infiltexcess,
+)
+    # Determine ratio of water that has infiltrated
+    infilt_ratio = potential_infiltration == 0.0 ? 0.0 : actinfilt / potential_infiltration
+    # Use this ratio to determine the contribution from overland flow
+    infilt_surfacewater = max(0.0, potential_infiltration_surfacewater * infilt_ratio)
+    # Determine the correction factor to apply to the relevant fluxes
+    correction_surfacewater =
+        potential_infiltration == 0.0 ? 1.0 :
+        1.0 - (potential_infiltration_surfacewater / potential_infiltration)
+
+    # Correct fluxes
+    actinfilt *= correction_surfacewater
+    infiltexcess *= correction_surfacewater
+
+    # subtract contribution from overland flow to ensure correct fluxes
+    water_flux_surface -= potential_infiltration_surfacewater
+    excesswater = water_flux_surface - actinfilt - infiltexcess
+
+    return infilt_surfacewater, actinfilt, infiltexcess, excesswater, water_flux_surface
+end
+
+function correct_overland_flow_level(
+    overlandflow_depth,
+    infilt_surfacewater,
+    river_fraction,
+    surface_flow_width,
+    alpha,
+    beta,
+)
+    if infilt_surfacewater > 0.0
+        # Get original h_land in mm
+        original_h_land = overlandflow_depth * 1000.0
+
+        # Correct values for river fraction to ensure correct water accounting
+        infiltrated_surfacewater = (infilt_surfacewater / (1.0 - river_fraction))
+        # Calculate new h_land in m
+        h = (original_h_land - infiltrated_surfacewater) / 1000.0
+
+        q = ifelse(
+            surface_flow_width > 0.0 && h > 0.0 && alpha > 0.0 && beta != 0.0,
+            # Compute cross-sectional area from h
+            pow.(max.((h * surface_flow_width) / alpha, 1e-10), 1.0 / beta),
+            0.0,  # Set q to 0.0 if conditions are not met
+        )
+    else
+        q = nothing
+        h = overlandflow_depth
+    end
+    return q, h
+end
