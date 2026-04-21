@@ -1059,3 +1059,10 @@ end
 function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
     return max(theta_s - theta_fc, lower_bound)
 end
+
+"Mask a 2D array, keeping only values at the given `indices` and setting the rest to zero."
+function mask_to_indices(array_2d::AbstractArray, indices::Vector{CartesianIndex{2}})
+    masked = zeros(eltype(array_2d), size(array_2d))
+    masked[indices] .= array_2d[indices]
+    return masked
+end

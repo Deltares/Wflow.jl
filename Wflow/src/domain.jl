@@ -369,7 +369,14 @@ function reservoir_mask(
             Routing;
             sel=network.indices,
         )
-        replace!(x -> ismissing(x) ? 0 : x, reservoirs)
+        # check if any reservoirs are found in the active model domain, if not disable reservoir model component
+        if !all(x -> ismissing(x) || x == 0, reservoirs)
+            replace!(x -> ismissing(x) ? 0 : x, reservoirs)
+        else
+            reservoirs = fill(0, length(network.indices))
+            config.model.reservoir__flag = false
+            @warn "No reservoirs found in active model domain, disabling reservoir model component."
+        end
     end
     reservoirs = Vector{Bool}(reservoirs .> 0)
     return reservoirs

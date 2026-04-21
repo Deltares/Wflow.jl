@@ -159,7 +159,7 @@ function get_drainage_network(
         pits_2d = ncread(dataset, config, "basin_pit_location__mask", Domain)
         ldd = set_pit_ldd(pits_2d, ldd, indices)
     end
-    graph = flowgraph(ldd, indices, PCR_DIR)
+    graph, ldd = flowgraph(ldd, indices, PCR_DIR)
     return graph, ldd
 end
 
@@ -209,8 +209,11 @@ function NetworkRiver(
     network::NetworkLand;
     do_pits = false,
 )
-    river_location_2d =
+    river_location_2d_full =
         ncread(dataset, config, "river_location__mask", Domain; logging = false)
+    # mask river location to land domain indices to ensure that the river network covers the
+    # required domain
+    river_location_2d = mask_to_indices(river_location_2d_full, network.indices)
     indices, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction =
         get_drainage_network(dataset, config, indices; do_pits, logging = false)

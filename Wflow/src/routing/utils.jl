@@ -14,6 +14,11 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
         to_index = from_index + PCR_DIR[ldd_val]
         # find the node id of the downstream cell
         to_node = searchsortedfirst(indices, to_index)
+        if to_node > length(indices) || indices[to_node] != to_index
+            @warn "Invalid drainage direction value at node `$from_node` (LDD=`$ldd_val`), assuming pit"
+            ldd[from_node] = 5
+            continue
+        end
         add_edge!(graph, from_node, to_node)
     end
     if is_cyclic(graph)
@@ -22,7 +27,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
             Verify that each active flow cell flows towards a pit.
             """)
     end
-    return graph
+    return graph, ldd
 end
 
 """
