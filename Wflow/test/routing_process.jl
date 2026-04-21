@@ -349,46 +349,43 @@ end
     @test reservoir.variables.actevap[1] ≈ 0.005295387542208319
 end
 
-@testitem "unit: local_inertial_river_update!" begin
-    # Test local inertial river routing on a 2-node graph (1 → 2) with a floodplain
-    # and a simple reservoir (outflowfunc = simple) at node 2. Both nodes have negative
-    # external inflow (abstractions). Each sub-step of the local inertial update is called
-    # and verified individually:
+@testitem "unit: local inertial river flow with one reservoir" begin
+    # Test local inertial river routing (no floodplain) on a 3-node graph (1 → 2 → 3) and a
+    # simple reservoir (outflowfunc = simple) at node 2. Each sub-step of the local inertial
+    # update is called and verified individually:
     #   1. update_river_channel_flow!  — edge discharge, water surface elevations
-    #   2. update_floodplain_flow!     — floodplain discharge and geometry
+    #   2. update_floodplain_flow!     — no floodplain
     #   3. update_bc_reservoir_model!  — reservoir storage, outflow, evaporation
-    #   4. update_water_depth_and_storage! (river + floodplain)
-    n = 2
+    #   4. update_water_depth_and_storage!
+    n = 3
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
-            external_inflow = [0.0, 0.0],
-            inwater = [0.0020884497337165045, 0.00023200069001695774],
             reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
                     n = 1,
                     external_inflow = [0.0],
                     inflow_overland = [0.0],
-                    inflow_subsurface = [0.00053274660040186],
-                    precipitation = [0.00999999998845160007],
-                    evaporation = [0.5100001692771912],
+                    inflow_subsurface = [0.04279912663469156],
+                    precipitation = [0.017999999225139618],
+                    evaporation = [0.46000000834465027],
                     inflow = [0.0],
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [2],
                     storfunc = [Wflow.ReservoirProfileType.linear],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
-                    area = [9.069779e6],
-                    maxrelease = [1.7400000095367432],
-                    demand = [0.21750000119920929],
-                    targetminfrac = [0.358469158411026],
-                    targetfullfrac = [0.8349210619926453],
-                    maxstorage = [3.3e7],
+                    area = [1.498462875e6],
+                    maxrelease = [24.007999420166016],
+                    demand = [3.000999927520752],
+                    targetminfrac = [0.07482631504535675],
+                    targetfullfrac = [0.7536525130271912],
+                    maxstorage = [6.2e7],
                 ),
                 variables = Wflow.ReservoirVariables(;
-                    waterlevel = [3.0266434535280715],
-                    storage = [2.7450987235296283],
+                    waterlevel = [29.6558203236325],
+                    storage = [4.443814578263413e7],
                     actevap = [0.0],
                     outflow_av = [0.0],
                 ),
@@ -397,65 +394,44 @@ end
         parameters = Wflow.LocalInertialRiverFlowParameters(;
             n,
             ne = 2,
-            active_n = [2],
+            active_n = [1, 3],
             active_e = [1],
             froude_limit = true,
             h_thresh = 0.001,
-            zb = [277.29842710494995, 277.29842710494995],
-            zb_max = [277.29842710494995],
-            bankfull_storage = [101565.19488995902, 59372.68855507555],
-            bankfull_depth = [1.3015789985656738, 1.3015789985656738],
+            zb = [315.1000061035156, 314.3999938964844, 278.8000183105469],
+            zb_max = [315.1000061035156, 314.3999938964844],
+            bankfull_storage = [57155.32165002823, 100397.03622722626, 90180.89622545242],
+            bankfull_depth = [1.0, 1.0, 1.0],
             mannings_n_sq = [0.0008999999597668652, 0.0008999999597668652],
-            mannings_n = [0.029999999329447746],
-            flow_length_at_edge = [637.0, 667.9375],
-            flow_width_at_edge = [97.05509185791016, 97.05509185791016],
+            mannings_n = [0.029999999329447746, 0.029999999329447746, 0.029999999329447746],
+            flow_length_at_edge = [831.578125, 1005.890625],
+            flow_width_at_edge = [94.73094177246094, 94.73094177246094],
         ),
         variables = Wflow.LocalInertialRiverFlowVariables(;
             n,
             n_edges = 2,
             q_av = [0.0, 0.0],
-            q_channel_av = [84.32895485226697, 84.35466359624881],
-            h = [1.2385928958171515, 1.038902190277091],
-            q = [80.46362673507352, 0.0],
+            q_channel_av = [0.0, 0.0],
+            h = [0.04484241735240722, 0.0, 0.07939389691400389],
+            storage = [2562.9827873416416, 0.0, 7159.812778536053],
+            # set q reservoir edge at zero, it is computed and not a reservoir state
+            q = [0.534560186001325, 0.0],
         ),
-        floodplain = Wflow.FloodPlainModel(;
-            parameters = Wflow.FloodPlainParameters(;
-                profile = Wflow.FloodPlainProfile(;
-                    depth = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5],
-                    storage = [
-                        0.0 39016.14692687988 78032.29385375977 117048.44078063865 159297.44078063865 216964.44078063865
-                        0.0 67380.0 143325.0 224408.0 315199.00 432690.0
-                    ]',
-                    width = [
-                        97.05509185791016 97.05509185791016 97.05509185791016 97.05509185791016 105.09701492537313 143.4502487562189
-                        98.91185760498047 102.75747033312682 115.81947290663871 123.65514940666253 138.46027736739265 165.45355764190057
-                    ]',
-                    a = [
-                        0.0 48.52754592895508 97.05509185791016 145.58263778686523 198.1311452495518 269.8562696276613
-                        0.0 51.37873516656341 109.28847161988276 171.11604632321402 240.34618500691033 323.07296382786063
-                    ]',
-                    p = [
-                        0.0 1.0 2.0 3.0 12.041923067462974 51.395156898308755
-                        3.8456127281463495 4.8456127281463495 18.90761530265824 27.743291801682062 43.54841976241218 71.5417000369201
-                    ]',
-                ),
-                mannings_n = [0.072],
-                mannings_n_sq = [0.005184],
-                zb_max = [278.6000061035156],
-            ),
-            variables = Wflow.FloodPlainVariables(; n, n_edges = 1, h = [0.0, 0.0]),
-        ),
+        floodplain = nothing,
         allocation = Wflow.AllocationRiverModel(; n),
     )
     domain = Wflow.Domain(;
         river = Wflow.DomainRiver(;
             network = Wflow.NetworkRiver(;
-                nodes_at_edge = Wflow.NodesAtEdge(; src = [1], dst = [2]),
-                edges_at_node = Wflow.EdgesAtNode(; src = [[], [1]], dst = [[1], []]),
+                nodes_at_edge = Wflow.NodesAtEdge(; src = [1, 2], dst = [2, 3]),
+                edges_at_node = Wflow.EdgesAtNode(;
+                    src = [[], [1], [2]],
+                    dst = [[1], [2], []],
+                ),
             ),
             parameters = Wflow.RiverParameters(;
-                flow_width = [97.05509185791016, 98.91185760498047],
-                flow_length = [804.0, 1311.4375],
+                flow_width = [94.73094177246094, 94.73094177246094, 94.73094177246094],
+                flow_length = [603.34375, 1059.8125, 951.96875],
             ),
         ),
         reservoir = Wflow.DomainReservoir(;
@@ -467,24 +443,17 @@ end
 
     Wflow.update_river_channel_flow!(river_flow_model, domain.river, dt)
 
-    @test dt ≈ 230.69140741196608
-    @test river_flow_model.variables.zs_src[1] ≈ 278.5370200007671
-    @test river_flow_model.variables.zs_dst[1] ≈ 278.33732929522705
-    @test river_flow_model.variables.zs_max[1] ≈ 278.5370200007671
-    @test river_flow_model.variables.hf[1] ≈ 1.2385928958171348
-    @test river_flow_model.variables.a[1] ≈ 120.21174727808696
-    @test river_flow_model.variables.r[1] ≈ 1.2077664664859318
-    @test river_flow_model.variables.q[1] ≈ 80.46183139787969
-    @test river_flow_model.variables.q_av[1] ≈ 18561.853128121187
+    @test dt ≈ 909.829412320351
+    @test river_flow_model.variables.zs_src ≈ [315.14484852086804, 0.0]
+    @test river_flow_model.variables.zs_dst ≈ [314.3999938964844, 0.0]
+    @test river_flow_model.variables.zs_max ≈ [315.14484852086804, 0.0]
+    @test river_flow_model.variables.hf ≈ [0.04484241735241312, 0.0]
+    @test river_flow_model.variables.a ≈ [4.247964427147839, 0.0]
+    @test river_flow_model.variables.r ≈ [0.04480000374545946, 0.0]
+    @test river_flow_model.variables.q ≈ [0.534558444239785, 0.0]
+    @test river_flow_model.variables.q_av ≈ [486.35699517356477, 0.0]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
-
-    @test river_flow_model.floodplain.variables.hf[1] ≈ 0.0
-    @test river_flow_model.floodplain.variables.hf_index[1] == 1
-    @test river_flow_model.floodplain.variables.a[1] ≈ 0.0
-    @test river_flow_model.floodplain.variables.r[1] ≈ 0.0
-    @test river_flow_model.floodplain.variables.q[1] ≈ 0.0
-    @test river_flow_model.floodplain.variables.q_av[1] ≈ 0.0
 
     Wflow.update_bc_reservoir_model!(
         river_flow_model.boundary_conditions.reservoir,
@@ -494,25 +463,26 @@ end
         dt_forcing,
     )
 
+    # check river q and q_av has been set by reservoir model
+    @test river_flow_model.variables.q[2] ≈ 3.0009999145276134
+    @test river_flow_model.variables.q[2] ==
+          river_flow_model.boundary_conditions.reservoir.variables.outflow[1]
+    @test river_flow_model.variables.q_av[2] ≈ 2730.397988608082
+    @test river_flow_model.variables.q_av[2] ==
+          river_flow_model.boundary_conditions.reservoir.variables.outflow_av[1]
+
     @test river_flow_model.boundary_conditions.reservoir.variables.storage[1] ≈
-          18552.611699137742
+          4.443593370702217e7
     @test river_flow_model.boundary_conditions.reservoir.variables.waterlevel[1] ≈
-          3.0286886926237995
+          29.654344093791327
     @test river_flow_model.boundary_conditions.reservoir.variables.outflow[1] ≈
-          4.724320178706758e-6
+          3.0009999145276134
     @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow[1] ≈
-          18561.97602818423
-    @test river_flow_model.boundary_conditions.reservoir.variables.outflow_av[1] ≈
-          0.0010898600710906132
+          525.2968994074305
     @test river_flow_model.boundary_conditions.reservoir.variables.actevap[1] ≈
-          0.0013617205651724094
-    @test river_flow_model.variables.q[1] ≈ 80.46183139787969
-    @test river_flow_model.variables.q_av[1] ≈ 18561.853128121187
+          0.004843999273837613
 
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
-
-    @test river_flow_model.variables.storage[2] ≈ 18561.90664868689
-    @test river_flow_model.variables.h[2] ≈ 0.14309571468418267
 
     Wflow.update_water_depth_and_storage!(
         river_flow_model.floodplain,
@@ -521,9 +491,8 @@ end
         dt,
     )
 
-    @test river_flow_model.variables.h ≈ [1.2385928958171515, 0.14309571468418267]
-    @test river_flow_model.variables.storage ≈ [0.0, 18561.90664868689]
-    @test river_flow_model.floodplain.variables.storage ≈ [0.0, 0.0]
+    @test river_flow_model.variables.storage ≈ [2076.6257921680767, 0.0, 9890.210767144135]
+    @test river_flow_model.variables.h ≈ [0.036333026080819036, 0.0, 0.10967079704351783]
 end
 
 @testitem "unit: update_directional_flow!" begin
