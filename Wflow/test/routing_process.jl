@@ -362,6 +362,7 @@ end
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
             n,
+            inwater = [0.012816561479797707, 0.01544689027914484, -0.0004760637654763434],
             reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
                     n = 1,
@@ -491,8 +492,8 @@ end
         dt,
     )
 
-    @test river_flow_model.variables.storage ≈ [2076.6257921680767, 0.0, 9890.210767144135]
-    @test river_flow_model.variables.h ≈ [0.036333026080819036, 0.0, 0.10967079704351783]
+    @test river_flow_model.variables.storage ≈ [2088.286676767209, 0.0, 9889.777630328164]
+    @test river_flow_model.variables.h ≈ [0.03653704705843743, 0.0, 0.10966599406601261]
 end
 
 @testitem "unit: update_directional_flow!" begin
