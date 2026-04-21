@@ -237,8 +237,9 @@ function setup_scalar_netcdf(
     calendar,
     time_units,
     extra_dim,
-    config,
+    config;
     float_type = Float32,
+    indices = nothing,
 )
     (; land) = modelmap
     ds = create_tracked_netcdf(path)
@@ -257,7 +258,8 @@ function setup_scalar_netcdf(
         # contains more than one location list
         if _location_dim ∉ keys(ds.dim)
             locations =
-                isnothing(map) ? [location] : string.(locations_map(dataset, map, config))
+                isnothing(map) ? [location] :
+                string.(locations_map(dataset, map, config, indices))
             defVar(
                 ds,
                 _location_dim,
@@ -571,7 +573,7 @@ function NCReader(config)
 end
 
 "Get a Vector of all unique location ids from a 2D map"
-function locations_map(ds, mapname, config)
+function locations_map(ds, mapname, config, indices = nothing)
     map_2d = ncread(
         ds,
         config,
@@ -579,17 +581,20 @@ function locations_map(ds, mapname, config)
         Writer;
         metadata = ParameterMetadata(; type = Int, allow_missing = true),
     )
+    if !isnothing(indices)
+        map_2d = mask_to_indices(map_2d, indices; fill_value = missing)
+    end
     ids = unique(skipmissing(map_2d))
     return ids
 end
 
 "Get a Vector{String} of all columns names for the CSV header, except the first, time"
-function csv_header(cols, dataset, config)
+function csv_header(cols, dataset, config, indices = nothing)
     out = String[]
     for col in cols
         (; header, map) = col
         if !isnothing(map)
-            ids = locations_map(dataset, map, config)
+            ids = locations_map(dataset, map, config, indices)
             hvec = [string(header, '_', id) for id in ids]
             append!(out, hvec)
         else
@@ -683,13 +688,33 @@ end
 function get_reducer_func(col, domain, args...)
     (; parameter) = col
     if occursin("reservoir", parameter)
-        reducer_func = reducer(col, domain.reservoir.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.reservoir.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     elseif occursin("river", parameter)
-        reducer_func = reducer(col, domain.river.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.river.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     elseif occursin("drain", parameter)
-        reducer_func = reducer(col, domain.drain.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.drain.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     else
-        reducer_func = reducer(col, domain.land.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.land.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     end
 end
 
@@ -757,6 +782,7 @@ function Writer(config, modelmap, domain, nc_static; extra_dim = nothing)
         @info "Create an output netCDF file `$nc_scalar_path` for scalar data."
         # get netCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
+        indices = domain.land.network.indices
         ds_scalar = setup_scalar_netcdf(
             nc_scalar_path,
             nc_static,
@@ -764,7 +790,8 @@ function Writer(config, modelmap, domain, nc_static; extra_dim = nothing)
             config.time.calendar,
             config.time.time_units,
             extra_dim,
-            config,
+            config;
+            indices = indices,
         )
 
         for var in config.output.netcdf_scalar.variable
@@ -784,7 +811,8 @@ function Writer(config, modelmap, domain, nc_static; extra_dim = nothing)
         mkpath(dirname(csv_path))
         csv_io = open(csv_path, "w")
         print(csv_io, "time,")
-        header = csv_header(config.output.csv.column, nc_static, config)
+        indices = domain.land.network.indices
+        header = csv_header(config.output.csv.column, nc_static, config, indices)
         println(csv_io, join(header, ','))
         flush(csv_io)
 
@@ -988,7 +1016,7 @@ reducer_func(::Nothing) = only
 reducer_func(reducer_type::ReducerType.T) = function_map[reducer_type]
 
 "Get a reducer function based on output settings for scalar data defined in a dictionary"
-function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
+function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
     (; parameter, map, reducer, index, coordinate) = col
     fileformat = col isa CSVColumn ? "CSV" : "NetCDF"
     f = reducer_func(reducer)
@@ -1005,6 +1033,8 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             logging = false,
             metadata = ParameterMetadata(; allow_missing = true, type = Int),
         )
+        # update 2d map to only include active cells, and convert to missing for inactive cells
+        map_2d = mask_to_indices(map_2d, indices; fill_value = missing)
         @info "Adding scalar output for a map with a reducer function." fileformat param =
             parameter mapname = map reducer_name = String(nameof(f))
         ids = unique(skipmissing(map_2d))

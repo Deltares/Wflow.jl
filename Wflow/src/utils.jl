@@ -619,7 +619,7 @@ function set_effective_flowwidth!(
     (; flow_width, reservoir_outlet) = domain.river.parameters
     reverse_indices = reverse_indices[indices]
 
-    graph = flowgraph(local_drain_direction, indices, PCR_DIR)
+    graph, local_drain_direction = flowgraph(local_drain_direction, indices, PCR_DIR)
     toposort = topological_sort_by_dfs(graph)
     n = length(we_x)
     for v in toposort
@@ -1060,9 +1060,15 @@ function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
     return max(theta_s - theta_fc, lower_bound)
 end
 
-"Mask a 2D array, keeping only values at the given `indices` and setting the rest to zero."
-function mask_to_indices(array_2d::AbstractArray, indices::Vector{CartesianIndex{2}})
-    masked = zeros(eltype(array_2d), size(array_2d))
+"Mask a 2D array, keeping only values at the given `indices` and setting the rest to `fill_value`."
+function mask_to_indices(
+    array_2d::AbstractArray,
+    indices::Vector{CartesianIndex{2}};
+    fill_value = 0.0,
+)
+    T = Union{typeof(fill_value), eltype(array_2d)}
+    masked = Array{T}(undef, size(array_2d))
+    fill!(masked, fill_value)
     masked[indices] .= array_2d[indices]
     return masked
 end
