@@ -373,7 +373,6 @@ function reservoir_mask(
         if !all(x -> ismissing(x) || x == 0, reservoirs)
             replace!(x -> ismissing(x) ? 0 : x, reservoirs)
         else
-            reservoirs = fill(0, length(network.indices))
             config.model.reservoir__flag = false
             @warn "No reservoirs found in active model domain, disabling reservoir model component."
         end
