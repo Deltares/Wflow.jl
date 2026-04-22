@@ -115,3 +115,36 @@ is using kinematic wave for land routing and either kinematic wave or local iner
 river routing. This can lead to unrealistically large water depths when the bankfull
 capacity is exceeded as there is no exchange of water between the river channel and (1D or
 2D) floodplains.
+
+### How do I run only a part of my model?
+You can easily run only a subsection of your model, by modifying the
+`subbasin_location__count` to a different layer in your staticmaps. By default, this layer
+represents your entire catchment, and all cells that have a value are interpreted as active
+cells. You can update this to another layer which contains a subset of the original data.
+
+Alternatively, you can also point this to a layer with subcatchment information (e.g. based
+on gauges with discharge observations), and use the `subbasin_active_area__count` setting to
+provide a list of IDs within that layer that indicate the basins that you want to simulate.
+See below for an example:
+
+```toml
+[input]
+subbasin_location__count = "subcatchment_gauges_obs"
+subbasin_active_area__count = [1016, 1013, 1011, 206, 203, 503]
+```
+
+::: {.callout-important}
+When using this functionality, please take the following points into account:
+- Ensure that all upstream regions are included (unless you make use of external inflows)
+- When using water demand and allocation: ensure that there are no allocations area's with
+  the same IDs outside your active domain (a warning is shown in the logging)
+- When using local_inertial for routing: a ghost node will be added at the end of each river
+  section (with a set distance and water level). This might cause some difference in the
+  results, as it no longer contains the "real" downstream boundary condition. If this is
+  important, ensure that the gauges for evaluation have sufficient downstream pixels in your
+  selected model domain.
+- When writing output at specific cells (`index`) and/or x-y positions (`coordinate`): this
+  can cause unreliable results and/or give errors. If you need output at specific locations,
+  use the `map` functionality instead, as this will still write output at the targeted
+  locations when running only a subsection of your model.
+:::
