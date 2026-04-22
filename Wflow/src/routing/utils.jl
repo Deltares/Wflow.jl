@@ -1,6 +1,7 @@
 const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
 
-"Convert a gridded drainage direction to a directed graph"
+"Convert a gridded drainage direction to a directed graph. Also returns the possibly modified
+drainage direction, where invalid values are set to 5 (pit)."
 function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)
     # prepare a directed graph to be filled
     n = length(indices)
