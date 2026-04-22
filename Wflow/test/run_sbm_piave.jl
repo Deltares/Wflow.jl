@@ -369,3 +369,30 @@ end
     end
     Wflow.close_files(model; delete_output = false)
 end
+
+@testitem "Piave masking (sbm model with demand)" begin
+    include("testing_utils.jl")
+    tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+
+    config.input.subbasin_location__count = "wflow_landuse"
+    config.input.subbasin_active_area__count = [10, 3]
+
+    # important to test this first, as the flag will be set to false after the first model
+    # initialization, and we want to verify that the warning is logged
+    @test_logs (
+        :warn,
+        "No reservoirs found in active model domain, disabling reservoir model component.",
+    ) match_mode = :any Wflow.Model(config)
+
+    @test_logs (
+        :warn,
+        "Invalid drainage direction value at node `1` (LDD=`7`), assuming pit",
+    ) match_mode = :any Wflow.Model(config)
+
+    @test_logs (
+        :warn,
+        "Allocation area ids `[18, 30, 31]` are present both inside and outside the active model domain. This may lead to incorrect water allocation.",
+    ) match_mode = :any Wflow.Model(config)
+end
