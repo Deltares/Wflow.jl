@@ -573,7 +573,13 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When using this functionality, please take the following points into account: - Ensure that all upstream regions are included (unless you make use of external inflows) - When using water demand and allocation: ensure that there are no allocations area’s with the same IDs outside your active domain (a warning is shown in the logging) - When using local_inertial for routing: a ghost node will be added at the end of each river section (with a set distance and water level). This might cause some difference in the results, as it no longer contains the “real” downstream boundary condition. If this is important, ensure that the gauges for evaluation have sufficient downstream pixels in your selected model domain. - When writing output at specific cells (<code>index</code>) and/or x-y positions (<code>coordinate</code>): this can cause unreliable results and/or give errors. If you need output at specific locations, use the <code>map</code> functionality instead, as this will still write output at the targeted locations when running only a subsection of your model.</p>
+<p>When using this functionality, please take the following points into account:</p>
+<ul>
+<li>Ensure that all upstream regions are included (unless you make use of external inflows)</li>
+<li>When using water demand and allocation: ensure that there are no allocations area’s with the same IDs outside your active domain (a warning is shown in the logging)</li>
+<li>When using local_inertial for routing: a ghost node will be added at the end of each river section (with a set distance and water level). This might cause some difference in the results, as it no longer contains the “real” downstream boundary condition. If this is important, ensure that the gauges for evaluation have sufficient downstream pixels in your selected model domain.</li>
+<li>When writing output at specific cells (<code>index</code>) and/or x-y positions (<code>coordinate</code>): this can cause unreliable results and/or give errors. If you need output at specific locations, use the <code>map</code> functionality instead, as this will still write output at the targeted locations when running only a subsection of your model.</li>
+</ul>
 </div>
 </div>
 
