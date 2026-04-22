@@ -86,6 +86,7 @@ function NetworkLand(dataset::NCDataset, config::Config)
     # check if specific IDs are requested, and only keep those if this is the case
     if !isnothing(config.input.subbasin_active_area__count)
         active_ids = Set(config.input.subbasin_active_area__count)
+        @info "Only subcatchments with IDs `$(sort!(collect(active_ids)))` are active."
         subcatch_2d = map(v -> v in active_ids ? v : missing, subcatch_2d)
     end
     indices, reverse_indices = active_indices(subcatch_2d, missing)

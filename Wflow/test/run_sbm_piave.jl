@@ -386,6 +386,9 @@ end
         "No reservoirs found in active model domain, disabling reservoir model component.",
     ) match_mode = :any Wflow.Model(config)
 
+    @test_logs (:info, "Only subcatchments with IDs `[3, 10]` are active.") match_mode =
+        :any Wflow.Model(config)
+
     @test_logs (
         :warn,
         "Invalid drainage direction value at node `1` (LDD=`7`), assuming pit",
