@@ -378,6 +378,8 @@ end
 
     config.input.subbasin_location__count = "wflow_landuse"
     config.input.subbasin_active_area__count = [10, 3]
+    # disable csv output to prevent errors
+    config.output.csv = Wflow.CSVSection(; _was_specified = false, path = "")
 
     # important to test this first, as the flag will be set to false after the first model
     # initialization, and we want to verify that the warning is logged
