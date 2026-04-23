@@ -109,10 +109,11 @@ Return water content at field capacity based on the Brooks-Corey soil hydraulic 
 function field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
     theta_fc = 0.0
     total_depth = 0.0
-    for i in 1:n_layers
+    for soil_layer_idx in 1:n_layers
         theta_fc +=
-            vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
-        total_depth += layer_thickness[i]
+            vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[soil_layer_idx]) *
+            layer_thickness[soil_layer_idx]
+        total_depth += layer_thickness[soil_layer_idx]
     end
     return theta_fc / total_depth
 end

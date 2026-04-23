@@ -220,8 +220,8 @@ end
     model = Wflow.Model(config)
     (; subsurface_flow) = model.routing
     (; river, recharge) = subsurface_flow.boundary_conditions
-    (; land_indices) = model.domain.river.network
-    idx = land_indices[1]
+    (; land_cell_indices_containing_river) = model.domain.river.network
+    idx = land_cell_indices_containing_river[1]
 
     Wflow.run_timestep!(model)
 
@@ -234,7 +234,8 @@ end
         @test river.variables.flux_av[1] ≈ 37872.287583718644
         @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
         @test mean(river.variables.flux_av) ≈ -39618.370151473195
-        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ 39618.3701514732
+        @test mean(subsurface_flow.variables.to_river[land_cell_indices_containing_river]) ≈
+              39618.3701514732
         @test recharge.variables.rate[1] ≈ -0.0002922905062717429
         @test mean(recharge.variables.rate) ≈ 0.0009271689030318317
     end
@@ -251,7 +252,8 @@ end
         @test river.variables.flux[1] == river.variables.flux_av[1]
         @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
         @test mean(river.variables.flux_av) ≈ 129.0006905680265
-        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ -129.0006905680318
+        @test mean(subsurface_flow.variables.to_river[land_cell_indices_containing_river]) ≈
+              -129.0006905680318
         @test recharge.variables.rate[1] ≈ -0.00021663702639498745
         @test mean(recharge.variables.rate) ≈ 0.0010751049777759111
     end

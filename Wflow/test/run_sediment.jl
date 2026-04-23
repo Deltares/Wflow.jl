@@ -75,7 +75,7 @@
         @test mean(overland_flow.sediment_flux.variables.clay) ≈ 0.006578791733506439
 
         @test mean(river_flow.hydrological_forcing.q_river) ≈ 0.6975180562953642
-        @test river_flow.hydrological_forcing.waterlevel_river[domain.river.network.order[end]] ≈
+        @test river_flow.hydrological_forcing.waterlevel_river[domain.river.network.cell_order[end]] ≈
               0.006103649735450745
         @test mean(domain.river.parameters.flow_width) ≈ 22.628250814095523
 

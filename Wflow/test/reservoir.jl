@@ -1,9 +1,9 @@
 @testitem "Update reservoir simple" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Simple reservoir (outflowfunc = 4)
-    n = 1
+    n_reservoirs = 1
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],
@@ -63,9 +63,9 @@ end
 @testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # ReservoirModel Modified Puls approach (outflowfunc = 3)
-    n = 1
+    n_reservoirs = 1
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],
@@ -159,9 +159,9 @@ end
             sh,
         ),
     )
-    n = 2
+    n_reservoirs = 2
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0, 0.0],
         external_inflow = [0.0, 0.0],
         actual_external_abstraction_av = [0.0, 0.0],
@@ -202,9 +202,9 @@ end
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     using Accessors: @reset
     datadir = joinpath(@__DIR__, "data")
-    n = 1
+    n_reservoirs = 1
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],

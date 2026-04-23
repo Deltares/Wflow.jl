@@ -1,35 +1,35 @@
 "Struct for storing (shared) variables for river and overland flow models"
 @with_kw struct FlowVariables
-    n::Int
-    q::Vector{Float64} = zeros(n)            # Discharge [m³ s⁻¹]
-    qlat::Vector{Float64} = zeros(n)         # Lateral inflow per unit length [m² s⁻¹]
-    qin::Vector{Float64} = zeros(n)          # Inflow from upstream cells [m³ s⁻¹]
-    qin_av::Vector{Float64} = zeros(n)       # Average inflow from upstream cells  [m³ s⁻¹] for model timestep Δt
-    q_av::Vector{Float64} = zeros(n)         # Average discharge [m³ s⁻¹] for model timestep Δt
-    storage::Vector{Float64} = zeros(n)      # Kinematic wave storage [m³] (based on water depth h)
-    h::Vector{Float64} = zeros(n)            # Water depth [m]
+    n_cells::Int
+    q::Vector{Float64} = zeros(n_cells)            # Discharge [m³ s⁻¹]
+    qlat::Vector{Float64} = zeros(n_cells)         # Lateral inflow per unit length [m² s⁻¹]
+    qin::Vector{Float64} = zeros(n_cells)          # Inflow from upstream cells [m³ s⁻¹]
+    qin_av::Vector{Float64} = zeros(n_cells)       # Average inflow from upstream cells  [m³ s⁻¹] for model timestep Δt
+    q_av::Vector{Float64} = zeros(n_cells)         # Average discharge [m³ s⁻¹] for model timestep Δt
+    storage::Vector{Float64} = zeros(n_cells)      # Kinematic wave storage [m³] (based on water depth h)
+    h::Vector{Float64} = zeros(n_cells)            # Water depth [m]
 end
 
 "Struct for storing Manning flow parameters"
 @with_kw struct ManningFlowParameters
-    n::Int
+    n_river_cells::Int
     beta::Float64                 # constant in Manning's equation [-]
     slope::Vector{Float64}        # Slope [m m⁻¹]
     mannings_n::Vector{Float64}   # Manning's roughness [s m⁻⅓]
     alpha_pow::Float64            # Used in the power part of alpha [-]
-    alpha_term::Vector{Float64} = fill(MISSING_VALUE, n)   # Term used in computation of alpha [-]
-    alpha::Vector{Float64} = fill(MISSING_VALUE, n)        # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s3/5 m1/5]
+    alpha_term::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)   # Term used in computation of alpha [-]
+    alpha::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)        # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s3/5 m1/5]
 end
 
 "Initialize Manning flow parameters"
 function ManningFlowParameters(mannings_n::Vector{Float64}, slope::Vector{Float64})
-    n = length(slope)
+    n_river_cells = length(slope)
     parameters = ManningFlowParameters(;
-        n,
-        beta = Float64(0.6),
+        n_river_cells,
+        beta=Float64(0.6),
         slope,
         mannings_n,
-        alpha_pow = Float64((2.0 / 3.0) * 0.6),
+        alpha_pow=Float64((2.0 / 3.0) * 0.6),
     )
     return parameters
 end
@@ -53,30 +53,30 @@ end
 
 "Initialize river flow model parameters"
 function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainRiver)
-    (; indices) = domain.network
+    (; river_indices_2d) = domain.network
     (; slope) = domain.parameters
     mannings_n = ncread(
         dataset,
         config,
         "river_water_flow__manning_n_parameter",
         Routing;
-        sel = indices,
+        sel=river_indices_2d,
     )
     bankfull_depth =
-        ncread(dataset, config, "river_bank_water__depth", Routing; sel = indices)
+        ncread(dataset, config, "river_bank_water__depth", Routing; sel=river_indices_2d)
 
     flow_params = ManningFlowParameters(mannings_n, slope)
-    parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth)
+    parameters = RiverFlowParameters(; flow=flow_params, bankfull_depth)
     return parameters
 end
 
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R}
-    n::Int
-    inwater::Vector{Float64} = zeros(n)                         # Lateral inflow [m³ s⁻¹]
-    external_inflow::Vector{Float64} = zeros(n)                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
-    actual_external_abstraction_av::Vector{Float64} = zeros(n)  # Actual abstraction from external negative inflow [m³ s⁻¹]
-    abstraction::Vector{Float64} = zeros(n)                     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
+    n_river_cells::Int
+    inwater::Vector{Float64} = zeros(n_river_cells)                         # Lateral inflow [m³ s⁻¹]
+    external_inflow::Vector{Float64} = zeros(n_river_cells)                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    actual_external_abstraction_av::Vector{Float64} = zeros(n_river_cells)  # Actual abstraction from external negative inflow [m³ s⁻¹]
+    abstraction::Vector{Float64} = zeros(n_river_cells)                     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
     reservoir::R                                                # ReservoirModel model struct of arrays
 end
 
@@ -85,23 +85,23 @@ function RiverFlowBC(
     dataset::NCDataset,
     config::Config,
     network::NetworkRiver,
-    reservoir::Union{ReservoirModel, Nothing},
+    reservoir::Union{ReservoirModel,Nothing},
 )
-    (; indices) = network
+    (; river_indices_2d) = network
     external_inflow = ncread(
         dataset,
         config,
         "river_water__external_inflow_volume_flow_rate",
         Routing;
-        sel = indices,
+        sel=river_indices_2d,
     )
-    n = length(indices)
-    bc = RiverFlowBC(; n, external_inflow, reservoir)
+    n_river_cells = length(river_indices_2d)
+    bc = RiverFlowBC(; n_river_cells, external_inflow, reservoir)
     return bc
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlowModel{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
+@with_kw struct KinWaveRiverFlowModel{R<:RiverFlowBC,A<:AbstractAllocationModel} <:
                 AbstractRiverFlowModel
     timestepping::TimeStepping
     boundary_conditions::R
@@ -115,17 +115,18 @@ function KinWaveRiverFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir::Union{ReservoirModel, Nothing},
+    reservoir::Union{ReservoirModel,Nothing},
 )
-    (; indices) = domain.network
-    n = length(indices)
+    (; river_indices_2d) = domain.network
+    n_river_cells = length(river_indices_2d)
 
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
+    timestepping = init_kinematic_wave_timestepping(config, n_river_cells; domain="river")
 
     allocation =
-        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
+        do_water_demand(config) ? AllocationRiverModel(; n_river_cells) :
+        NoAllocationRiverModel(n_river_cells)
 
-    variables = FlowVariables(; n)
+    variables = FlowVariables(; n_cells=n_river_cells)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
@@ -142,9 +143,9 @@ end
 
 "Struct for storing overland flow model variables"
 @with_kw struct OverLandFlowVariables
-    n::Int
-    flow::FlowVariables = FlowVariables(; n)
-    to_river::Vector{Float64} = zeros(n) # Part of overland flow [m³ s⁻¹] that flows to the river
+    n_land_cells::Int
+    flow::FlowVariables = FlowVariables(; n_cells=n_land_cells)
+    to_river::Vector{Float64} = zeros(n_land_cells) # Part of overland flow [m³ s⁻¹] that flows to the river
 end
 
 "Overload `getproperty` for overland flow model variables"
@@ -160,8 +161,8 @@ end
 
 "Struct for storing overland flow model boundary conditions"
 @with_kw struct LandFlowBC
-    n::Int
-    inwater::Vector{Float64} = zeros(n) # Lateral inflow [m³ s⁻¹]
+    n_land_cells::Int
+    inwater::Vector{Float64} = zeros(n_land_cells) # Lateral inflow [m³ s⁻¹]
 end
 
 "Overland flow model using the kinematic wave method and the Manning flow{ equation"
@@ -174,22 +175,22 @@ end
 
 "Initialize Overland flow model `KinWaveOverlandFlowModel`"
 function KinWaveOverlandFlowModel(dataset::NCDataset, config::Config, domain::DomainLand)
-    (; indices) = domain.network
+    (; land_indices_2d) = domain.network
     (; slope) = domain.parameters
     mannings_n = ncread(
         dataset,
         config,
         "land_surface_water_flow__manning_n_parameter",
         Routing;
-        sel = indices,
+        sel=land_indices_2d,
     )
 
-    n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
+    n_land_cells = length(land_indices_2d)
+    timestepping = init_kinematic_wave_timestepping(config, n_land_cells; domain="land")
 
-    variables = OverLandFlowVariables(; n)
+    variables = OverLandFlowVariables(; n_land_cells)
     parameters = ManningFlowParameters(mannings_n, slope)
-    boundary_conditions = LandFlowBC(; n)
+    boundary_conditions = LandFlowBC(; n_land_cells)
 
     overland_flow =
         KinWaveOverlandFlowModel(; timestepping, boundary_conditions, variables, parameters)
@@ -261,52 +262,66 @@ function kinwave_land_update!(
     domain::DomainLand,
     dt::Float64,
 )
-    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
+    (; order_of_subdomains, subdomain_global_order, order_subdomain, upstream_nodes) =
         domain.network
 
     (; beta, alpha) = overland_flow_model.parameters
     (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
-    ns = length(order_of_subdomains)
+    n_subdomain_sets = length(order_of_subdomains)
     qin .= 0.0
-    for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
-            m = order_of_subdomains[k][i]
-            for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
+    for subdomain_set_idx in 1:n_subdomain_sets
+        threaded_foreach(
+            eachindex(order_of_subdomains[subdomain_set_idx]);
+            basesize=1,
+        ) do in_subdomain_set_idx
+            subdomain_idx = order_of_subdomains[subdomain_set_idx][in_subdomain_set_idx]
+            for (river_global_traversion_idx, land_cell_idx) in
+                zip(subdomain_global_order[subdomain_idx], order_subdomain[subdomain_idx])
                 # for a river cell without a reservoir part of the upstream surface flow
                 # goes to the river (flow_fraction_to_river) and part goes to the surface
                 # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
                 # reservoir are excluded
-                to_river[v] +=
-                    sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt
-                if surface_flow_width[v] > 0.0
-                    qin[v] = sum_at(
-                        i -> q[i] * (1.0 - flow_fraction_to_river[i]),
-                        upstream_nodes[n],
+                to_river[land_cell_idx] +=
+                    sum_at(
+                        land_cell_idx_other ->
+                            q[land_cell_idx_other] *
+                            flow_fraction_to_river[land_cell_idx_other],
+                        upstream_nodes[river_global_traversion_idx],
+                    ) * dt
+                if surface_flow_width[land_cell_idx] > 0.0
+                    qin[land_cell_idx] = sum_at(
+                        land_cell_idx_other ->
+                            q[land_cell_idx_other] *
+                            (1.0 - flow_fraction_to_river[land_cell_idx_other]),
+                        upstream_nodes[river_global_traversion_idx],
                     )
                 end
 
-                q[v] = kinematic_wave(
-                    qin[v],
-                    q[v],
-                    qlat[v],
-                    alpha[v],
+                q[land_cell_idx] = kinematic_wave(
+                    qin[land_cell_idx],
+                    q[land_cell_idx],
+                    qlat[land_cell_idx],
+                    alpha[land_cell_idx],
                     beta,
                     dt,
-                    flow_length[v],
+                    flow_length[land_cell_idx],
                 )
 
                 # update h, only if flow width > 0.0
-                if surface_flow_width[v] > 0.0
-                    crossarea = alpha[v] * pow(q[v], beta)
-                    h[v] = crossarea / surface_flow_width[v]
+                if surface_flow_width[land_cell_idx] > 0.0
+                    crossarea = alpha[land_cell_idx] * pow(q[land_cell_idx], beta)
+                    h[land_cell_idx] = crossarea / surface_flow_width[land_cell_idx]
                 end
-                storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
+                storage[land_cell_idx] =
+                    flow_length[land_cell_idx] *
+                    surface_flow_width[land_cell_idx] *
+                    h[land_cell_idx]
 
                 # average flow (here accumulated for model timestep Δt)
-                q_av[v] += q[v] * dt
-                qin_av[v] += qin[v] * dt
+                q_av[land_cell_idx] += q[land_cell_idx] * dt
+                qin_av[land_cell_idx] += qin[land_cell_idx] * dt
             end
         end
     end
@@ -362,7 +377,7 @@ function kinwave_river_update!(
         graph,
         order_of_subdomains,
         order_subdomain,
-        subdomain_indices,
+        subdomain_global_order,
         upstream_nodes,
         reservoir_indices,
     ) = domain.network
@@ -378,64 +393,74 @@ function kinwave_river_update!(
         res_bc = reservoir.boundary_conditions
     end
 
-    ns = length(order_of_subdomains)
+    n_subdomain_sets = length(order_of_subdomains)
     qin .= 0.0
-    for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
-            m = order_of_subdomains[k][i]
-            for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
+    for subdomain_set_idx in 1:n_subdomain_sets
+        threaded_foreach(
+            eachindex(order_of_subdomains[subdomain_set_idx]);
+            basesize=1,
+        ) do in_subdomain_set_idx
+            subdomain_idx = order_of_subdomains[subdomain_set_idx][in_subdomain_set_idx]
+            for (river_global_traversion_idx, river_cell_idx) in
+                zip(subdomain_global_order[subdomain_idx], order_subdomain[subdomain_idx])
                 # qin by outflow from upstream reservoir location is added
-                qin[v] += sum_at(q, upstream_nodes[n])
+                qin[river_cell_idx] +=
+                    sum_at(q, upstream_nodes[river_global_traversion_idx])
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If external_inflow < 0, abstraction is limited
-                if external_inflow[v] < 0.0
-                    _abstraction = min(-external_inflow[v], (storage[v] / dt) * 0.80)
-                    actual_external_abstraction_av[v] += _abstraction * dt
-                    _inflow = -_abstraction / flow_length[v]
+                if external_inflow[river_cell_idx] < 0.0
+                    _abstraction = min(
+                        -external_inflow[river_cell_idx],
+                        (storage[river_cell_idx] / dt) * 0.80,
+                    )
+                    actual_external_abstraction_av[river_cell_idx] += _abstraction * dt
+                    _inflow = -_abstraction / flow_length[river_cell_idx]
                 else
-                    _inflow = external_inflow[v] / flow_length[v]
+                    _inflow = external_inflow[river_cell_idx] / flow_length[river_cell_idx]
                 end
                 # internal abstraction (water demand) is limited by river storage and
                 # negative external inflow as part of water allocation computations.
-                _inflow -= abstraction[v] / flow_length[v]
+                _inflow -= abstraction[river_cell_idx] / flow_length[river_cell_idx]
 
-                q[v] = kinematic_wave(
-                    qin[v],
-                    q[v],
-                    qlat[v] + _inflow,
-                    alpha[v],
+                q[river_cell_idx] = kinematic_wave(
+                    qin[river_cell_idx],
+                    q[river_cell_idx],
+                    qlat[river_cell_idx] + _inflow,
+                    alpha[river_cell_idx],
                     beta,
                     dt,
-                    flow_length[v],
+                    flow_length[river_cell_idx],
                 )
 
-                if !isnothing(reservoir) && reservoir_indices[v] != 0
+                if !isnothing(reservoir) && reservoir_indices[river_cell_idx] != 0
                     # run reservoir model and copy reservoir outflow to inflow (qin) of
                     # downstream river cell
-                    i = reservoir_indices[v]
+                    reservoir_idx = reservoir_indices[river_cell_idx]
                     # If external_inflow < 0, abstraction is limited
-                    if res_bc.external_inflow[i] < 0.0
+                    if res_bc.external_inflow[reservoir_idx] < 0.0
                         _abstraction = min(
-                            -res_bc.external_inflow[i],
-                            (reservoir.variables.storage[i] / dt) * 0.98,
+                            -res_bc.external_inflow[reservoir_idx],
+                            (reservoir.variables.storage[reservoir_idx] / dt) * 0.98,
                         )
-                        res_bc.actual_external_abstraction_av[i] += _abstraction * dt
+                        res_bc.actual_external_abstraction_av[reservoir_idx] +=
+                            _abstraction * dt
                         _inflow = -_abstraction
                     else
-                        _inflow = res_bc.external_inflow[i]
+                        _inflow = res_bc.external_inflow[reservoir_idx]
                     end
                     net_inflow =
-                        q[v] +
-                        res_bc.inflow_overland[i] +
-                        res_bc.inflow_subsurface[i] +
+                        q[river_cell_idx] +
+                        res_bc.inflow_overland[reservoir_idx] +
+                        res_bc.inflow_subsurface[reservoir_idx] +
                         _inflow
-                    update_reservoir_model!(reservoir, i, net_inflow, dt, dt_forcing)
+                    update_reservoir_model!(reservoir, reservoir_idx, net_inflow, dt, dt_forcing)
 
-                    downstream_nodes = outneighbors(graph, v)
+                    downstream_nodes = outneighbors(graph, river_cell_idx)
                     n_downstream = length(downstream_nodes)
                     if n_downstream == 1
-                        j = only(downstream_nodes)
-                        qin[j] = reservoir.variables.outflow[i]
+                        river_cell_idx_downstream = only(downstream_nodes)
+                        qin[river_cell_idx_downstream] =
+                            reservoir.variables.outflow[reservoir_idx]
                     elseif n_downstream == 0
                         error(
                             """A reservoir without a downstream river node is not supported.
@@ -447,13 +472,16 @@ function kinwave_river_update!(
                     end
                 end
                 # update h and storage
-                crossarea = alpha[v] * pow(q[v], beta)
-                h[v] = crossarea / flow_width[v]
-                storage[v] = flow_length[v] * flow_width[v] * h[v]
+                crossarea = alpha[river_cell_idx] * pow(q[river_cell_idx], beta)
+                h[river_cell_idx] = crossarea / flow_width[river_cell_idx]
+                storage[river_cell_idx] =
+                    flow_length[river_cell_idx] *
+                    flow_width[river_cell_idx] *
+                    h[river_cell_idx]
 
                 # average variables (here accumulated for model timestep Δt)
-                q_av[v] += q[v] * dt
-                qin_av[v] += qin[v] * dt
+                q_av[river_cell_idx] += q[river_cell_idx] * dt
+                qin_av[river_cell_idx] += qin[river_cell_idx] * dt
             end
         end
     end
@@ -516,26 +544,26 @@ function stable_timestep(
     flow_model::S,
     flow_length::Vector{Float64},
     p::Float64,
-) where {S <: Union{KinWaveOverlandFlowModel, KinWaveRiverFlowModel}}
+) where {S<:Union{KinWaveOverlandFlowModel,KinWaveRiverFlowModel}}
     (; q) = flow_model.variables
     (; alpha, beta) = flow_model.parameters
     (; stable_timesteps) = flow_model.timestepping
 
-    n = length(q)
+    n_cells = length(q)
     stable_timesteps .= Inf
-    k = 0
-    for i in 1:n
-        if q[i] > 0.0
-            k += 1
-            c = 1.0 / (alpha[i] * beta * pow(q[i], (beta - 1.0)))
-            stable_timesteps[k] = (flow_length[i] / c)
+    stable_timestep_idx = 0
+    for cell_idx in 1:n_cells
+        if q[cell_idx] > 0.0
+            stable_timestep_idx += 1
+            c = 1.0 / (alpha[cell_idx] * beta * pow(q[cell_idx], (beta - 1.0)))
+            stable_timesteps[stable_timestep_idx] = (flow_length[cell_idx] / c)
         end
     end
 
-    dt_min = if k == 1
-        stable_timesteps[k]
-    elseif k > 0
-        quantile!(@view(stable_timesteps[1:k]), p)
+    dt_min = if stable_timestep_idx == 1
+        stable_timesteps[stable_timestep_idx]
+    elseif stable_timestep_idx > 0
+        quantile!(@view(stable_timesteps[1:stable_timestep_idx]), p)
     else
         600.0
     end
@@ -557,14 +585,17 @@ function update_lateral_inflow!(
     (; inwater) = river_flow_model.boundary_conditions
     (; net_runoff_river) = runoff.variables
 
-    (; land_indices) = domain.river.network
+    (; land_cell_indices_containing_river) = domain.river.network
     (; cell_area) = domain.river.parameters
     (; area) = domain.land.parameters
 
     inwater .= (
-        get_flux_to_river(subsurface_flow, land_indices) .+
-        overland_flow.variables.to_river[land_indices] .+
-        (net_runoff_river[land_indices] .* area[land_indices] .* 0.001) ./ dt .+
+        get_flux_to_river(subsurface_flow, land_cell_indices_containing_river) .+
+        overland_flow.variables.to_river[land_cell_indices_containing_river] .+
+        (
+            net_runoff_river[land_cell_indices_containing_river] .*
+            area[land_cell_indices_containing_river] .* 0.001
+        ) ./ dt .+
         (get_nonirrigation_returnflow(allocation) .* 0.001 .* cell_area) ./ dt
     )
     return nothing
@@ -586,12 +617,13 @@ function update_lateral_inflow!(
     (; inwater) = overland_flow_model.boundary_conditions
 
     (; area) = domain.land.parameters
-    (; land_indices) = domain.drain.network
+    (; land_cell_indices_containing_drainage) = domain.drain.network
 
     if config.model.drain__flag
         drain = subsurface_flow.boundary_conditions.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[land_indices] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
+        drainflux[land_cell_indices_containing_drainage] =
+            -drain.variables.flux ./ tosecond(BASETIMESTEP)
     else
         drainflux = 0.0
     end
@@ -607,19 +639,25 @@ Update overland and subsurface flow contribution to inflow of a reservoir model 
 flow model `AbstractRiverFlowModel` for a single timestep.
 """
 function update_inflow!(
-    reservoir_model::Union{ReservoirModel, Nothing},
+    reservoir_model::Union{ReservoirModel,Nothing},
     river_flow_model::AbstractRiverFlowModel,
     external_models::NamedTuple,
     network::NetworkReservoir,
 )
     (; overland_flow, subsurface_flow) = external_models
-    (; land_indices) = network
+    (; land_cell_indices_containing_reservoir) = network
     if !isnothing(reservoir_model)
         (; inflow_overland, inflow_subsurface) = reservoir_model.boundary_conditions
-        inflow_overland .=
-            get_inflow_reservoir(river_flow_model, overland_flow, land_indices)
-        inflow_subsurface .=
-            get_inflow_reservoir(river_flow_model, subsurface_flow, land_indices)
+        inflow_overland .= get_inflow_reservoir(
+            river_flow_model,
+            overland_flow,
+            land_cell_indices_containing_reservoir,
+        )
+        inflow_subsurface .= get_inflow_reservoir(
+            river_flow_model,
+            subsurface_flow,
+            land_cell_indices_containing_reservoir,
+        )
     end
     return nothing
 end

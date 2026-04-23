@@ -22,41 +22,52 @@ end
 function VegetationParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    land_indices_2d::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
-    rootingdepth =
-        ncread(dataset, config, "vegetation_root__depth", LandHydrologySBM; sel = indices)
-    kc = ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
+    n_land_cells = length(land_indices_2d)
+    rootingdepth = ncread(
+        dataset,
+        config,
+        "vegetation_root__depth",
+        LandHydrologySBM;
+        sel = land_indices_2d,
+    )
+    kc = ncread(
+        dataset,
+        config,
+        "vegetation__crop_factor",
+        LandHydrologySBM;
+        sel = land_indices_2d,
+    )
     if do_cyclic(config) && haskey(config.input.cyclic, "vegetation__leaf_area_index")
         storage_specific_leaf = ncread(
             dataset,
             config,
             "vegetation__specific_leaf_storage",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         )
         storage_wood = ncread(
             dataset,
             config,
             "vegetation_wood_water__storage_capacity",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         )
         kext = ncread(
             dataset,
             config,
             "vegetation_canopy__light_extinction_coefficient",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         )
         vegetation_parameter_set = VegetationParameters(;
-            leaf_area_index = fill(MISSING_VALUE, n),
+            leaf_area_index = fill(MISSING_VALUE, n_land_cells),
             storage_wood,
             kext,
             storage_specific_leaf,
-            canopygapfraction = fill(MISSING_VALUE, n),
-            cmax = fill(MISSING_VALUE, n),
+            canopygapfraction = fill(MISSING_VALUE, n_land_cells),
+            cmax = fill(MISSING_VALUE, n_land_cells),
             rootingdepth,
             kc,
         )
@@ -66,14 +77,14 @@ function VegetationParameters(
             config,
             "vegetation_canopy__gap_fraction",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         )
         cmax = ncread(
             dataset,
             config,
             "vegetation_water__storage_capacity",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         )
         vegetation_parameter_set = VegetationParameters(;
             leaf_area_index = nothing,

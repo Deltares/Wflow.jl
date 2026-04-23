@@ -103,13 +103,13 @@ end
 
 function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIndex{2}}
     if occursin("reservoir", key)
-        return domain.reservoir.network.indices_outlet
+        return domain.reservoir.network.outlet_indices_2d
     elseif occursin("river", key) || occursin("floodplain", key)
-        return domain.river.network.indices
+        return domain.river.network.river_indices_2d
     elseif occursin("drain", key)
-        return domain.drain.network.indices
+        return domain.drain.network.drain_indices_2d
     else
-        return domain.land.network.indices
+        return domain.land.network.land_indices_2d
     end
 end
 
@@ -400,12 +400,18 @@ function set_layerthickness(
     cum_depth::SVector,
     thickness::SVector,
 )::SVector
+    n_land_cells = length(thickness)
     thicknesslayers = thickness .* MISSING_VALUE
-    for i in 1:length(thicknesslayers)
-        if reference_depth > cum_depth[i + 1]
-            thicknesslayers = setindex(thicknesslayers, thickness[i], i)
-        elseif reference_depth - cum_depth[i] > 0.0
-            thicknesslayers = setindex(thicknesslayers, reference_depth - cum_depth[i], i)
+    for land_cell_idx in 1:n_land_cells
+        if reference_depth > cum_depth[land_cell_idx + 1]
+            thicknesslayers =
+                setindex(thicknesslayers, thickness[land_cell_idx], land_cell_idx)
+        elseif reference_depth - cum_depth[land_cell_idx] > 0.0
+            thicknesslayers = setindex(
+                thicknesslayers,
+                reference_depth - cum_depth[land_cell_idx],
+                land_cell_idx,
+            )
         end
     end
     return thicknesslayers
@@ -614,63 +620,73 @@ function set_effective_flowwidth!(
     we_y::Vector{Float64},
     domain::Domain,
 )::Nothing
-    (; local_drain_direction, indices) = domain.river.network
+    (; local_drain_direction, river_indices_2d) = domain.river.network
     (; edge_indices, reverse_indices) = domain.land.network
     (; flow_width, reservoir_outlet) = domain.river.parameters
-    reverse_indices = reverse_indices[indices]
+    reverse_indices = reverse_indices[river_indices_2d]
 
-    graph = flowgraph(local_drain_direction, indices, PCR_DIR)
+    graph = flowgraph(local_drain_direction, river_indices_2d, PCR_DIR)
     toposort = topological_sort_by_dfs(graph)
-    n = length(we_x)
-    for v in toposort
-        dst = outneighbors(graph, v)
+    n_land_cells = length(we_x)
+    for land_cell_idx_2d in toposort
+        dst = outneighbors(graph, land_cell_idx_2d)
         isempty(dst) && continue
-        w = min(flow_width[v], flow_width[only(dst)])
-        dir = PCR_DIR[local_drain_direction[v]]
-        idx = reverse_indices[v]
+        w = min(flow_width[land_cell_idx_2d], flow_width[only(dst)])
+        dir = PCR_DIR[local_drain_direction[land_cell_idx_2d]]
+        land_cell_idx = reverse_indices[land_cell_idx_2d]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
-            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[land_cell_idx] =
+                reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                max(we_x[land_cell_idx] - 0.5 * w, 0.0)
+            we_y[land_cell_idx] =
+                reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                max(we_y[land_cell_idx] - 0.5 * w, 0.0)
         elseif dir == CartesianIndex(-1, -1)
-            if edge_indices.xd[idx] <= n
-                we_y[edge_indices.xd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.xd[land_cell_idx] <= n_land_cells
+                we_y[edge_indices.xd[land_cell_idx]] =
+                    reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                    max(we_y[edge_indices.xd[land_cell_idx]] - 0.5 * w, 0.0)
             end
-            if edge_indices.yd[idx] <= n
-                we_x[edge_indices.yd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.yd[land_cell_idx] <= n_land_cells
+                we_x[edge_indices.yd[land_cell_idx]] =
+                    reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                    max(we_x[edge_indices.yd[land_cell_idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(1, 0)
-            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
+            we_y[land_cell_idx] =
+                reservoir_outlet[land_cell_idx_2d] ? 0.0 : max(we_y[land_cell_idx] - w, 0.0)
         elseif dir == CartesianIndex(0, 1)
-            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
+            we_x[land_cell_idx] =
+                reservoir_outlet[land_cell_idx_2d] ? 0.0 : max(we_x[land_cell_idx] - w, 0.0)
         elseif dir == CartesianIndex(-1, 0)
-            if edge_indices.xd[idx] <= n
-                we_y[edge_indices.xd[idx]] =
-                    reservoir_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
+            if edge_indices.xd[land_cell_idx] <= n_land_cells
+                we_y[edge_indices.xd[land_cell_idx]] =
+                    reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                    max(we_y[edge_indices.xd[land_cell_idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(0, -1)
-            if edge_indices.yd[idx] <= n
-                we_x[edge_indices.yd[idx]] =
-                    reservoir_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
+            if edge_indices.yd[land_cell_idx] <= n_land_cells
+                we_x[edge_indices.yd[land_cell_idx]] =
+                    reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                    max(we_x[edge_indices.yd[land_cell_idx]] - w, 0.0)
             end
         elseif dir == CartesianIndex(1, -1)
-            we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
-            if edge_indices.yd[idx] <= n
-                we_x[edge_indices.yd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
+            we_y[land_cell_idx] = max(we_y[land_cell_idx] - 0.5 * w, 0.0)
+            if edge_indices.yd[land_cell_idx] <= n_land_cells
+                we_x[edge_indices.yd[land_cell_idx]] =
+                    reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                    max(we_x[edge_indices.yd[land_cell_idx]] - 0.5 * w, 0.0)
             end
         elseif dir == CartesianIndex(-1, 1)
-            if edge_indices.xd[idx] <= n
-                we_y[edge_indices.xd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
+            if edge_indices.xd[land_cell_idx] <= n_land_cells
+                we_y[edge_indices.xd[land_cell_idx]] =
+                    reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                    max(we_y[edge_indices.xd[land_cell_idx]] - 0.5 * w, 0.0)
             end
-            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_x[land_cell_idx] =
+                reservoir_outlet[land_cell_idx_2d] ? 0.0 :
+                max(we_x[land_cell_idx] - 0.5 * w, 0.0)
         end
     end
     return nothing
@@ -722,40 +738,75 @@ function threaded_foreach(f::Function, x::AbstractArray; basesize::Integer)::Not
 end
 
 """
-    hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)
-    hydraulic_conductivity_at_depth(p::KvExponentialConstant, kvfrac, z, i, n)
-    hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
-    hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
+    hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, land_cell_idx, soil_layer_idx)
+    hydraulic_conductivity_at_depth(p::KvExponentialConstant, kvfrac, z, land_cell_idx, soil_layer_idx)
+    hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, land_cell_idx, soil_layer_idx)
+    hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, land_cell_idx, soil_layer_idx)
 
-Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using multiplication
-factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
+Return vertical hydraulic conductivity `kv_z` at depth `z` at `land_cell_idx` using multiplication
+factor `kv_frac` at `soil_layer_idx` and vertical hydraulic conductivity profile `p`.
 """
-function hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)
-    kv_z = kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
+function hydraulic_conductivity_at_depth(
+    p::KvExponential,
+    kvfrac,
+    z,
+    land_cell_idx,
+    soil_layer_idx,
+)
+    kv_z =
+        kvfrac[land_cell_idx][soil_layer_idx] *
+        p.kv_0[land_cell_idx] *
+        exp(-p.f[land_cell_idx] * z)
     return kv_z
 end
 
-function hydraulic_conductivity_at_depth(p::KvExponentialConstant, kvfrac, z, i, n)
+function hydraulic_conductivity_at_depth(
+    p::KvExponentialConstant,
+    kvfrac,
+    z,
+    land_cell_idx,
+    soil_layer_idx,
+)
     (; kv_0, f) = p.exponential
-    if z < p.z_exp[i]
-        kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * z)
+    if z < p.z_exp[land_cell_idx]
+        kv_z =
+            kvfrac[land_cell_idx][soil_layer_idx] *
+            kv_0[land_cell_idx] *
+            exp(-f[land_cell_idx] * z)
     else
-        kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * p.z_exp[i])
+        kv_z =
+            kvfrac[land_cell_idx][soil_layer_idx] *
+            kv_0[land_cell_idx] *
+            exp(-f[land_cell_idx] * p.z_exp[land_cell_idx])
     end
     return kv_z
 end
 
-function hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
-    kv_z = kvfrac[i][n] * p.kv[i][n]
+function hydraulic_conductivity_at_depth(
+    p::KvLayered,
+    kvfrac,
+    z,
+    land_cell_idx,
+    soil_layer_idx,
+)
+    kv_z = kvfrac[land_cell_idx][soil_layer_idx] * p.kv[land_cell_idx][soil_layer_idx]
     return kv_z
 end
 
-function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
-    return if z < p.z_layered[i]
-        kvfrac[i][n] * p.kv[i][n]
+function hydraulic_conductivity_at_depth(
+    p::KvLayeredExponential,
+    kvfrac,
+    z,
+    land_cell_idx,
+    soil_layer_idx,
+)
+    return if z < p.z_layered[land_cell_idx]
+        kvfrac[land_cell_idx][soil_layer_idx] * p.kv[land_cell_idx][soil_layer_idx]
     else
-        n = p.nlayers_kv[i]
-        kvfrac[i][n] * p.kv[i][n] * exp(-p.f[i] * (z - p.z_layered[i]))
+        soil_layer_idx = p.nlayers_kv[land_cell_idx]
+        kvfrac[land_cell_idx][soil_layer_idx] *
+        p.kv[land_cell_idx][soil_layer_idx] *
+        exp(-p.f[land_cell_idx] * (z - p.z_layered[land_cell_idx]))
     end
 end
 
@@ -772,31 +823,43 @@ function kh_layered_profile!(
     kv_profile::KvLayered,
     dt,
 )
+    (; n_land_cells) = soil_model
     (; nlayers, sumlayers, act_thickl, soilthickness) = soil_model.parameters
     (; n_unsatlayers, zi) = soil_model.variables
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; khfrac) = subsurface_flow_model.parameters
 
     t_factor = (tosecond(BASETIMESTEP) / dt)
-    for i in eachindex(kh)
-        m = nlayers[i]
+    for land_cell_idx in 1:n_land_cells
+        n_soil_layers = nlayers[land_cell_idx]
 
-        if soilthickness[i] > zi[i]
+        if soilthickness[land_cell_idx] > zi[land_cell_idx]
             transmissivity = 0.0
-            _sumlayers = @view sumlayers[i][2:end]
-            n = max(n_unsatlayers[i], 1)
-            transmissivity += (_sumlayers[n] - zi[i]) * kv_profile.kv[i][n]
-            n += 1
-            while n <= m
-                transmissivity += act_thickl[i][n] * kv_profile.kv[i][n]
-                n += 1
+            _sumlayers = @view sumlayers[land_cell_idx][2:end]
+            soil_layer_idx = max(n_unsatlayers[land_cell_idx], 1)
+            transmissivity +=
+                (_sumlayers[soil_layer_idx] - zi[land_cell_idx]) *
+                kv_profile.kv[land_cell_idx][soil_layer_idx]
+            soil_layer_idx += 1
+            while soil_layer_idx <= n_soil_layers
+                transmissivity +=
+                    act_thickl[land_cell_idx][soil_layer_idx] *
+                    kv_profile.kv[land_cell_idx][soil_layer_idx]
+                soil_layer_idx += 1
             end
             # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
             # [mm] and zi [mm])
-            kh[i] =
-                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+            kh[land_cell_idx] =
+                0.001 *
+                (transmissivity / (soilthickness[land_cell_idx] - zi[land_cell_idx])) *
+                t_factor *
+                khfrac[land_cell_idx]
         else
-            kh[i] = 0.001 * kv_profile.kv[i][m] * t_factor * khfrac[i]
+            kh[land_cell_idx] =
+                0.001 *
+                kv_profile.kv[land_cell_idx][n_soil_layers] *
+                t_factor *
+                khfrac[land_cell_idx]
         end
     end
     return nothing
@@ -808,6 +871,7 @@ function kh_layered_profile!(
     kv_profile::KvLayeredExponential,
     dt,
 )
+    (; n_land_cells) = soil_model
     (; nlayers, sumlayers, act_thickl, soilthickness) = soil_model.parameters
     (; nlayers_kv, z_layered, kv, f) = kv_profile
     (; n_unsatlayers, zi) = soil_model.variables
@@ -815,50 +879,69 @@ function kh_layered_profile!(
     (; khfrac) = subsurface_flow_model.parameters
     t_factor = (tosecond(BASETIMESTEP) / dt)
 
-    for i in eachindex(kh)
-        m = nlayers[i]
+    for land_cell_idx in 1:n_land_cells
+        n_soil_layers = nlayers[land_cell_idx]
 
-        if soilthickness[i] > zi[i]
+        if soilthickness[land_cell_idx] > zi[land_cell_idx]
             transmissivity = 0.0
-            n = max(n_unsatlayers[i], 1)
-            if zi[i] >= z_layered[i]
-                zt = soilthickness[i] - z_layered[i]
-                j = nlayers_kv[i]
+            soil_layer_idx = max(n_unsatlayers[land_cell_idx], 1)
+            if zi[land_cell_idx] >= z_layered[land_cell_idx]
+                zt = soilthickness[land_cell_idx] - z_layered[land_cell_idx]
+                soil_layer_idx = nlayers_kv[land_cell_idx]
                 transmissivity +=
-                    kv[i][j] / f[i] *
-                    (exp(-f[i] * (zi[i] - z_layered[i])) - exp(-f[i] * zt))
-                n = m
+                    kv[land_cell_idx][soil_layer_idx] / f[land_cell_idx] * (
+                        exp(
+                            -f[land_cell_idx] *
+                            (zi[land_cell_idx] - z_layered[land_cell_idx]),
+                        ) - exp(-f[land_cell_idx] * zt)
+                    )
+                soil_layer_idx = n_soil_layers
             else
-                _sumlayers = @view sumlayers[i][2:end]
-                transmissivity += (_sumlayers[n] - zi[i]) * kv[i][n]
+                _sumlayers = @view sumlayers[land_cell_idx][2:end]
+                transmissivity +=
+                    (_sumlayers[soil_layer_idx] - zi[land_cell_idx]) *
+                    kv[land_cell_idx][soil_layer_idx]
             end
-            n += 1
-            while n <= m
-                if n > nlayers_kv[i]
-                    zt = soilthickness[i] - z_layered[i]
-                    j = nlayers_kv[i]
-                    transmissivity += kv[i][j] / f[i] * (1.0 - exp(-f[i] * zt))
-                    n = m
+            soil_layer_idx += 1
+            while soil_layer_idx <= n_soil_layers
+                if soil_layer_idx > nlayers_kv[land_cell_idx]
+                    zt = soilthickness[land_cell_idx] - z_layered[land_cell_idx]
+                    j = nlayers_kv[land_cell_idx]
+                    transmissivity +=
+                        kv[land_cell_idx][j] / f[land_cell_idx] *
+                        (1.0 - exp(-f[land_cell_idx] * zt))
+                    soil_layer_idx = n_soil_layers
                 else
-                    transmissivity += act_thickl[i][n] * kv[i][n]
+                    transmissivity +=
+                        act_thickl[land_cell_idx][soil_layer_idx] *
+                        kv[land_cell_idx][soil_layer_idx]
                 end
-                n += 1
+                soil_layer_idx += 1
             end
             # convert units for kh [m d⁻¹] computation (transmissivity [mm² Δt⁻¹], soilthickness
             # [mm] and zi [mm])
-            kh[i] =
-                0.001 * (transmissivity / (soilthickness[i] - zi[i])) * t_factor * khfrac[i]
+            kh[land_cell_idx] =
+                0.001 *
+                (transmissivity / (soilthickness[land_cell_idx] - zi[land_cell_idx])) *
+                t_factor *
+                khfrac[land_cell_idx]
         else
-            if zi[i] >= z_layered[i]
-                j = nlayers_kv[i]
-                kh[i] =
+            if zi[land_cell_idx] >= z_layered[land_cell_idx]
+                j = nlayers_kv[land_cell_idx]
+                kh[land_cell_idx] =
                     0.001 *
-                    kv[i][j] *
-                    exp(-f[i] * (zi[i] - z_layered[i])) *
-                    khfrac[i] *
+                    kv[land_cell_idx][j] *
+                    exp(
+                        -f[land_cell_idx] * (zi[land_cell_idx] - z_layered[land_cell_idx]),
+                    ) *
+                    khfrac[land_cell_idx] *
                     t_factor
             else
-                kh[i] = 0.001 * kv[i][m] * t_factor * khfrac[i]
+                kh[land_cell_idx] =
+                    0.001 *
+                    kv[land_cell_idx][n_soil_layers] *
+                    t_factor *
+                    khfrac[land_cell_idx]
             end
         end
     end
@@ -901,27 +984,31 @@ function initialize_lateral_ssf_model!(
 )
     (; kh_0, f) = kh_profile.exponential
     (; z_exp) = kh_profile
-    (; q, q_max, zi) = subsurface_flow_model.variables
+    (; q, q_max, zi, n_land_cells) = subsurface_flow_model.variables
     (; soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
     q_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
-    for i in eachindex(q)
-        q_max[i] =
-            ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * z_exp[i])) + q_constant[i]
-        if zi[i] < z_exp[i]
-            q[i] =
+    for land_cell_idx in 1:n_land_cells
+        q_max[land_cell_idx] =
+            ((kh_0[land_cell_idx] * slope[land_cell_idx]) / f[land_cell_idx]) *
+            (1.0 - exp(-f[land_cell_idx] * z_exp[land_cell_idx])) +
+            q_constant[land_cell_idx]
+        if zi[land_cell_idx] < z_exp[land_cell_idx]
+            q[land_cell_idx] =
                 (
-                    ((kh_0[i] * slope[i]) / f[i]) *
-                    (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + q_constant[i]
-                ) * flow_width[i]
+                    ((kh_0[land_cell_idx] * slope[land_cell_idx]) / f[land_cell_idx]) * (
+                        exp(-f[land_cell_idx] * zi[land_cell_idx]) -
+                        exp(-f[land_cell_idx] * z_exp[land_cell_idx])
+                    ) + q_constant[land_cell_idx]
+                ) * flow_width[land_cell_idx]
         else
-            q[i] =
-                kh_0[i] *
-                exp(-f[i] * zi[i]) *
-                slope[i] *
-                (soilthickness[i] - zi[i]) *
-                flow_width[i]
+            q[land_cell_idx] =
+                kh_0[land_cell_idx] *
+                exp(-f[land_cell_idx] * zi[land_cell_idx]) *
+                slope[land_cell_idx] *
+                (soilthickness[land_cell_idx] - zi[land_cell_idx]) *
+                flow_width[land_cell_idx]
         end
     end
     return nothing
@@ -943,19 +1030,25 @@ function initialize_lateral_ssf_model!(
 )
     (; kh) = subsurface_flow_model.parameters.kh_profile
     (; nlayers, act_thickl) = soil_model.parameters
-    (; q, q_max, zi) = subsurface_flow_model.variables
+    (; q, q_max, zi, n_land_cells) = subsurface_flow_model.variables
     (; khfrac, soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
-    for i in eachindex(q)
-        q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
+    for land_cell_idx in 1:n_land_cells
+        q[land_cell_idx] =
+            kh[land_cell_idx] *
+            (soilthickness[land_cell_idx] - zi[land_cell_idx]) *
+            slope[land_cell_idx] *
+            flow_width[land_cell_idx]
         kh_max = 0.0
-        for j in 1:nlayers[i]
-            kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
+        for soil_layer_idx in 1:nlayers[land_cell_idx]
+            kh_max +=
+                kv_profile.kv[land_cell_idx][soil_layer_idx] *
+                act_thickl[land_cell_idx][soil_layer_idx]
         end
-        kh_max *= khfrac[i] * 0.001 * 0.001
-        q_max[i] = kh_max * slope[i]
+        kh_max *= khfrac[land_cell_idx] * 0.001 * 0.001
+        q_max[land_cell_idx] = kh_max * slope[land_cell_idx]
     end
     return nothing
 end
@@ -967,7 +1060,7 @@ function initialize_lateral_ssf_model!(
     kv_profile::KvLayeredExponential,
     dt,
 )
-    (; q, q_max, zi) = subsurface_flow_model.variables
+    (; q, q_max, zi, n_land_cells) = subsurface_flow_model.variables
     (; khfrac, soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
     (; nlayers, act_thickl) = soil_model.parameters
@@ -975,21 +1068,30 @@ function initialize_lateral_ssf_model!(
     (; kv, f, nlayers_kv, z_layered) = kv_profile
 
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
-    for i in eachindex(q)
-        q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
+    for land_cell_idx in 1:n_land_cells
+        q[land_cell_idx] =
+            kh[land_cell_idx] *
+            (soilthickness[land_cell_idx] - zi[land_cell_idx]) *
+            slope[land_cell_idx] *
+            flow_width[land_cell_idx]
         kh_max = 0.0
-        for j in 1:nlayers[i]
-            if j <= nlayers_kv[i]
-                kh_max += kv[i][j] * act_thickl[i][j]
+        for soil_layer_idx in 1:nlayers[land_cell_idx]
+            if soil_layer_idx <= nlayers_kv[land_cell_idx]
+                kh_max +=
+                    kv[land_cell_idx][soil_layer_idx] *
+                    act_thickl[land_cell_idx][soil_layer_idx]
             else
-                zt = soil_model.parameters.soilthickness[i] - z_layered[i]
-                k = max(j - 1, 1)
-                kh_max += kv[i][k] / f[i] * (1.0 - exp(-f[i] * zt))
+                zt =
+                    soil_model.parameters.soilthickness[land_cell_idx] -
+                    z_layered[land_cell_idx]
+                kh_max +=
+                    kv[land_cell_idx][max(soil_layer_idx - 1, 1)] / f[land_cell_idx] *
+                    (1.0 - exp(-f[land_cell_idx] * zt))
                 break
             end
         end
-        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
-        q_max[i] = kh_max * slope[i]
+        kh_max = kh_max * khfrac[land_cell_idx] * 0.001 * 0.001
+        q_max[land_cell_idx] = kh_max * slope[land_cell_idx]
     end
     return nothing
 end
@@ -1021,30 +1123,37 @@ function water_table_change(
     soil_model::SbmSoilModel,
     net_flux::Float64,
     specific_yield::Float64,
-    i::Int,
+    land_cell_idx::Int,
 )
     (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil_model.variables
     (; theta_s, theta_r) = soil_model.parameters
 
     # effective porosity (difference between saturated and residual water content)
-    theta_e = theta_s[i] - theta_r[i]
+    theta_e = theta_s[land_cell_idx] - theta_r[land_cell_idx]
 
     if net_flux <= 0.0
         dh = net_flux / specific_yield
     else
         dh = 0.0
         f_conv = 0.001 # convert units from [mm] to [m]
-        for k in n_unsatlayers[i]:-1:1
+        for soil_layer_idx in n_unsatlayers[land_cell_idx]:-1:1
             capacity = max(
-                f_conv * (ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k]),
+                f_conv * (
+                    ustorelayerthickness[land_cell_idx][soil_layer_idx] * theta_e -
+                    ustorelayerdepth[land_cell_idx][soil_layer_idx]
+                ),
                 0.0,
             )
             flux_layer = min(net_flux, capacity)
             if capacity <= net_flux
                 # if unsaturated layer is fully saturated dh equals layer thickness
-                dh += f_conv * ustorelayerthickness[i][k]
+                dh += f_conv * ustorelayerthickness[land_cell_idx][soil_layer_idx]
             else
-                sy = theta_e - (ustorelayerdepth[i][k] / ustorelayerthickness[i][k])
+                sy =
+                    theta_e - (
+                        ustorelayerdepth[land_cell_idx][soil_layer_idx] /
+                        ustorelayerthickness[land_cell_idx][soil_layer_idx]
+                    )
                 dh += flux_layer / sy
             end
             net_flux -= flux_layer

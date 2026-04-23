@@ -55,10 +55,18 @@ end
 
 "Kinematic wave surface flow rate over the whole network for a single timestep"
 function kin_wave!(q, graph, toposort, q_prev, q_lat, alpha, beta, flow_length, dt)
-    for v in toposort
-        upstream_nodes = inneighbors(graph, v)
+    for land_cell_idx in toposort
+        upstream_nodes = inneighbors(graph, land_cell_idx)
         q_in = sum_at(q, upstream_nodes)
-        q[v] = kinematic_wave(q_in, q_prev[v], q_lat, alpha[v], beta, dt, flow_length[v])
+        q[land_cell_idx] = kinematic_wave(
+            q_in,
+            q_prev[land_cell_idx],
+            q_lat,
+            alpha[land_cell_idx],
+            beta,
+            dt,
+            flow_length[land_cell_idx],
+        )
     end
     return q
 end

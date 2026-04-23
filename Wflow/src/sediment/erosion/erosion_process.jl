@@ -295,7 +295,7 @@ end
     function river_erosion_store!(
         store_vec::Vector{Float64}
         excess_sediment::Float64,
-        v::Int,
+        river_cell_idx::Int,
     )
 
 River erosion of the previously deposited sediment.
@@ -303,20 +303,24 @@ River erosion of the previously deposited sediment.
 # Arguments
 - `store_vec` (sediment_store [t])
 - `excess_sediment` (excess sediment [t Δt⁻¹])
-- `v` (index [-])
+- `river_cell_idx` (index [-])
 
 # Output
 - `erosion` (river erosion [t Δt⁻¹])
 - `excess_sediment` (updated excess sediment [t Δt⁻¹])
 """
-function river_erosion_store!(store_vec::Vector{Float64}, excess_sediment::Float64, v::Int)
-    store = store_vec[v]
+function river_erosion_store!(
+    store_vec::Vector{Float64},
+    excess_sediment::Float64,
+    river_cell_idx::Int,
+)
+    store = store_vec[river_cell_idx]
     if store > 0
         # River erosion of the previously deposited sediment
         erosion = min(store, excess_sediment)
         # Update the excess sediment and the sediment store
         excess_sediment -= erosion
-        store_vec[v] = store - erosion
+        store_vec[river_cell_idx] = store - erosion
     else
         erosion = 0.0
     end

@@ -1,8 +1,8 @@
 "Sediment transport in overland flow model"
 @with_kw struct OverlandFlowSedimentModel{
-    TT <: AbstractTransportCapacityModel,
-    SF <: AbstractSedimentLandTransportModel,
-    TR <: AbstractSedimentToRiverModel,
+    TT<:AbstractTransportCapacityModel,
+    SF<:AbstractSedimentLandTransportModel,
+    TR<:AbstractSedimentToRiverModel,
 } <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TT
@@ -11,8 +11,8 @@
 end
 
 function get_transport_capacity(
-    transport_methods::Dict{<:EnumX.Enum, Type{<:AbstractTransportCapacityModel}},
-    transport_method::Union{LandTransportType.T, RiverTransportType.T},
+    transport_methods::Dict{<:EnumX.Enum,Type{<:AbstractTransportCapacityModel}},
+    transport_method::Union{LandTransportType.T,RiverTransportType.T},
     dataset::NCDataset,
     config::Config,
     indices,
@@ -23,7 +23,7 @@ function get_transport_capacity(
 end
 
 const land_transport_method =
-    Dict{LandTransportType.T, Type{<:AbstractTransportCapacityModel}}(
+    Dict{LandTransportType.T,Type{<:AbstractTransportCapacityModel}}(
         LandTransportType.yalinpart => TransportCapacityYalinDifferentiationModel,
         LandTransportType.govers => TransportCapacityGoversModel,
         LandTransportType.yalin => TransportCapacityYalinModel,
@@ -36,7 +36,7 @@ function OverlandFlowSedimentModel(
     domain::DomainLand,
     soilloss::SoilLossModel,
 )
-    (; indices) = domain.network
+    (; land_indices_2d) = domain.network
     (; hydrological_forcing) = soilloss
 
     # Check what transport capacity equation will be used
@@ -50,15 +50,15 @@ function OverlandFlowSedimentModel(
         land_transport,
         dataset,
         config,
-        indices,
+        land_indices_2d,
     )
 
     if do_river || land_transport == LandTransportType.yalinpart
-        sediment_flux = SedimentLandTransportDifferentiationModel(indices)
-        to_river = SedimentToRiverDifferentiationModel(indices)
+        sediment_flux = SedimentLandTransportDifferentiationModel(land_indices_2d)
+        to_river = SedimentToRiverDifferentiationModel(land_indices_2d)
     else
-        sediment_flux = SedimentLandTransportModel(indices)
-        to_river = SedimentToRiverModel(indices)
+        sediment_flux = SedimentLandTransportModel(land_indices_2d)
+        to_river = SedimentToRiverModel(land_indices_2d)
     end
 
     overland_flow_sediment = OverlandFlowSedimentModel{
@@ -117,10 +117,10 @@ end
 ### River ###
 "Sediment transport in river model"
 @with_kw struct RiverSedimentModel{
-    TTR <: AbstractTransportCapacityModel,
-    ER <: AbstractRiverErosionModel,
-    SFR <: AbstractSedimentRiverTransportModel,
-    CR <: AbstractSedimentConcentrationsRiverModel,
+    TTR<:AbstractTransportCapacityModel,
+    ER<:AbstractRiverErosionModel,
+    SFR<:AbstractSedimentRiverTransportModel,
+    CR<:AbstractSedimentConcentrationsRiverModel,
 } <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TTR
@@ -130,7 +130,7 @@ end
 end
 
 const river_transport_method =
-    Dict{RiverTransportType.T, Type{<:AbstractTransportCapacityModel}}(
+    Dict{RiverTransportType.T,Type{<:AbstractTransportCapacityModel}}(
         RiverTransportType.bagnold => TransportCapacityBagnoldModel,
         RiverTransportType.engelund => TransportCapacityEngelundModel,
         RiverTransportType.yang => TransportCapacityYangModel,
@@ -140,9 +140,9 @@ const river_transport_method =
 
 "Initialize the river sediment transport model"
 function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
-    (; indices) = domain.network
-    n = length(indices)
-    hydrological_forcing = HydrologicalForcing(; n)
+    (; river_indices_2d) = domain.network
+    n_river_cells = length(river_indices_2d)
+    hydrological_forcing = HydrologicalForcing(; n_cells=n_river_cells)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
@@ -152,17 +152,17 @@ function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRi
         river_transport,
         dataset,
         config,
-        indices,
+        river_indices_2d,
     )
 
     # Potential river erosion
-    potential_erosion = RiverErosionJulianTorresModel(dataset, config, indices)
+    potential_erosion = RiverErosionJulianTorresModel(dataset, config, river_indices_2d)
 
     # Sediment flux in river / mass balance
-    sediment_flux = SedimentRiverTransportModel(dataset, config, indices)
+    sediment_flux = SedimentRiverTransportModel(dataset, config, river_indices_2d)
 
     # Concentrations
-    concentrations = SedimentConcentrationsRiverModel(dataset, config, indices)
+    concentrations = SedimentConcentrationsRiverModel(dataset, config, river_indices_2d)
 
     river_sediment = RiverSedimentModel(;
         hydrological_forcing,
@@ -207,7 +207,7 @@ function update_river_sediment_model!(
         river_flow_model.transport_capacity,
         sediment_to_river_model,
         river_flow_model.potential_erosion,
-        domain.network.land_indices,
+        domain.network.land_cell_indices_containing_river,
     )
     update_sediment_river_transport_model!(river_flow_model.sediment_flux, domain, dt)
 

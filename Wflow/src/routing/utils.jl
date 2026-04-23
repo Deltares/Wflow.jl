@@ -3,8 +3,8 @@ const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
 "Convert a gridded drainage direction to a directed graph"
 function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)
     # prepare a directed graph to be filled
-    n = length(indices)
-    graph = DiGraph(n)
+    n_cells = length(indices)
+    graph = DiGraph(n_cells)
 
     # loop over ldd, adding the edge to the downstream node
     for (from_node, from_index) in enumerate(indices)
@@ -34,16 +34,16 @@ the graph implements the Graphs interface, and the order is a valid topological 
 such as that returned by `Graphs.topological_sort_by_dfs`.
 """
 function accucapacitystate!(material, network, capacity)
-    (; graph, order) = network
-    for v in order
-        downstream_nodes = outneighbors(graph, v)
-        n = length(downstream_nodes)
-        flux_val = min(material[v], capacity[v])
-        material[v] -= flux_val
-        if n == 0
+    (; graph, cell_order) = network
+    for cell_idx in cell_order
+        downstream_nodes = outneighbors(graph, cell_idx)
+        n_downstream_cells = length(downstream_nodes)
+        flux_val = min(material[cell_idx], capacity[cell_idx])
+        material[cell_idx] -= flux_val
+        if iszero(n_downstream_cells)
             # pit: material is transported out of the map if a capacity is set,
             # cannot add the material anywhere
-        elseif n == 1
+        elseif isone(n_downstream_cells)
             material[only(downstream_nodes)] += flux_val
         else
             error("bifurcations not supported")
@@ -73,17 +73,17 @@ interface, and the order is a valid topological ordering such as that returned b
 `Graphs.topological_sort_by_dfs`.
 """
 function accucapacityflux!(flux, material, network, capacity)
-    (; graph, order) = network
-    for v in order
-        downstream_nodes = outneighbors(graph, v)
-        n = length(downstream_nodes)
-        flux_val = min(material[v], capacity[v])
-        material[v] -= flux_val
-        flux[v] = flux_val
-        if n == 0
+    (; graph, cell_order) = network
+    for cell_idx in cell_order
+        downstream_nodes = outneighbors(graph, cell_idx)
+        n_downstream_cells = length(downstream_nodes)
+        flux_val = min(material[cell_idx], capacity[cell_idx])
+        material[cell_idx] -= flux_val
+        flux[cell_idx] = flux_val
+        if iszero(n_downstream_cells)
             # pit: material is transported out of the map if a capacity is set,
             # cannot add the material anywhere
-        elseif n == 1
+        elseif isone(n_downstream_cells)
             material[only(downstream_nodes)] += flux_val
         else
             error("bifurcations not supported")
@@ -116,9 +116,9 @@ function accucapacityflux_state(material, network, capacity)
 end
 
 function flux_in!(flux_in, flux, network)
-    (; upstream_nodes, order) = network
-    for (i, v) in enumerate(order)
-        flux_in[v] = sum_at(flux, upstream_nodes[i])
+    (; upstream_nodes, cell_order) = network
+    for (i, cell_idx) in enumerate(cell_order)
+        flux_in[cell_idx] = sum_at(flux, upstream_nodes[i])
     end
     return nothing
 end

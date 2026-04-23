@@ -223,7 +223,7 @@ end
     add_edge!(g, 3, 5)
     add_edge!(g, 4, 6)
     add_edge!(g, 5, 6)
-    network = (graph = g, order = [1, 2, 3, 4, 5, 6])
+    network = (graph = g, cell_order = [1, 2, 3, 4, 5, 6])
 
     # example 1, accucapacityflux
     material = Float64[0.5, 2, 2, 0.5, 2, 0.5]
@@ -268,7 +268,7 @@ end
 
     L = 1000.0
     dx = 5.0
-    n = Int(L / dx)
+    n_river_cells = Int(L / dx)
 
     # analytical solution MacDonald (1997) for channel with length L of 1000.0 m, Manning's
     # n of 0.03, constant inflow of 20.0 m3/s at upper boundary and channel width of 10.0 m
@@ -290,34 +290,45 @@ end
     zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
 
     # initialize local inertial river flow model
-    graph = DiGraph(n)
-    for i in 1:n
+    graph = DiGraph(n_river_cells)
+    for i in 1:(n_river_cells)
         add_edge!(graph, i, i + 1)
     end
 
-    dl = fill(dx, n)
-    width = fill(10.0, n)
-    n_river = fill(0.03, n)
+    dl = fill(dx, n_river_cells)
+    width = fill(10.0, n_river_cells)
+    n_river = fill(0.03, n_river_cells)
 
     # for each edge the src and dst node is required
     nodes_at_edge = Wflow.adjacent_nodes_at_edge(graph)
-    _ne = ne(graph)
+    n_river_edges = ne(graph)
 
     # determine z, width, length and manning's n at edges
-    zb_max = fill(0.0, _ne)
-    width_at_edge = fill(0.0, _ne)
-    length_at_edge = fill(0.0, _ne)
-    mannings_n_sq = fill(0.0, _ne)
-    for i in 1:_ne
-        zb_max[i] = max(zb[nodes_at_edge.src[i]], zb[nodes_at_edge.dst[i]])
-        width_at_edge[i] = min(width[nodes_at_edge.dst[i]], width[nodes_at_edge.src[i]])
-        length_at_edge[i] = 0.5 * (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
+    zb_max = fill(0.0, n_river_edges)
+    width_at_edge = fill(0.0, n_river_edges)
+    length_at_edge = fill(0.0, n_river_edges)
+    mannings_n_sq = fill(0.0, n_river_edges)
+    for river_edge_idx in 1:n_river_edges
+        zb_max[river_edge_idx] = max(
+            zb[nodes_at_edge.src[river_edge_idx]],
+            zb[nodes_at_edge.dst[river_edge_idx]],
+        )
+        width_at_edge[river_edge_idx] = min(
+            width[nodes_at_edge.dst[river_edge_idx]],
+            width[nodes_at_edge.src[river_edge_idx]],
+        )
+        length_at_edge[river_edge_idx] =
+            0.5 *
+            (dl[nodes_at_edge.dst[river_edge_idx]] + dl[nodes_at_edge.src[river_edge_idx]])
         mannings_n =
             (
-                n_river[nodes_at_edge.dst[i]] * dl[nodes_at_edge.dst[i]] +
-                n_river[nodes_at_edge.src[i]] * dl[nodes_at_edge.src[i]]
-            ) / (dl[nodes_at_edge.dst[i]] + dl[nodes_at_edge.src[i]])
-        mannings_n_sq[i] = mannings_n * mannings_n
+                n_river[nodes_at_edge.dst[river_edge_idx]] *
+                dl[nodes_at_edge.dst[river_edge_idx]] +
+                n_river[nodes_at_edge.src[river_edge_idx]] *
+                dl[nodes_at_edge.src[river_edge_idx]]
+            ) /
+            (dl[nodes_at_edge.dst[river_edge_idx]] + dl[nodes_at_edge.src[river_edge_idx]])
+        mannings_n_sq[river_edge_idx] = mannings_n * mannings_n
     end
 
     river_network = Wflow.NetworkRiver(;
@@ -330,53 +341,53 @@ end
     params_river = Wflow.RiverParameters(;
         flow_width = width,
         flow_length = dl,
-        reservoir_outlet = zeros(n),
+        reservoir_outlet = zeros(n_river_cells),
     )
     domain_river = Wflow.DomainRiver(; network = river_network, parameters = params_river)
     domain = Wflow.Domain(; river = domain_river)
 
     h_thresh = 1.0e-03
     froude_limit = true
-    h_init = zeros(n - 1)
-    push!(h_init, h_a[n])
+    h_init = zeros(n_river_cells - 1)
+    push!(h_init, h_a[n_river_cells])
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7)
     parameters = Wflow.LocalInertialRiverFlowParameters(;
-        n,
-        ne = _ne,
-        active_n = collect(1:(n - 1)),
-        active_e = collect(1:_ne),
+        n_river_cells,
+        n_river_edges,
+        active_n = collect(1:(n_river_cells - 1)),
+        active_e = collect(1:n_river_edges),
         h_thresh,
         zb_max,
         mannings_n_sq,
         mannings_n = n_river,
         flow_width_at_edge = width_at_edge,
         flow_length_at_edge = length_at_edge,
-        bankfull_storage = fill(Wflow.MISSING_VALUE, n),
-        bankfull_depth = fill(Wflow.MISSING_VALUE, n),
+        bankfull_storage = fill(Wflow.MISSING_VALUE, n_river_cells),
+        bankfull_depth = fill(Wflow.MISSING_VALUE, n_river_cells),
         zb,
         froude_limit,
     )
 
     variables = Wflow.LocalInertialRiverFlowVariables(;
-        n,
-        n_edges = _ne,
-        q0 = zeros(_ne),
-        q = zeros(_ne),
-        q_av = zeros(_ne),
-        q_channel_av = zeros(_ne),
+        n_river_cells,
+        n_river_edges,
+        q0 = zeros(n_river_edges),
+        q = zeros(n_river_edges),
+        q_av = zeros(n_river_edges),
+        q_channel_av = zeros(n_river_edges),
         h = h_init,
-        zs_max = zeros(_ne),
-        zs_src = zeros(_ne),
-        zs_dst = zeros(_ne),
-        hf = zeros(_ne),
-        a = zeros(_ne),
-        r = zeros(_ne),
-        storage = fill(0.0, n),
-        error = zeros(n),
+        zs_max = zeros(n_river_edges),
+        zs_src = zeros(n_river_edges),
+        zs_dst = zeros(n_river_edges),
+        hf = zeros(n_river_edges),
+        a = zeros(n_river_edges),
+        r = zeros(n_river_edges),
+        storage = fill(0.0, n_river_cells),
+        error = zeros(n_river_cells),
     )
 
-    boundary_conditions = Wflow.RiverFlowBC(; n, reservoir = nothing)
+    boundary_conditions = Wflow.RiverFlowBC(; n_river_cells, reservoir = nothing)
 
     sw_river = Wflow.LocalInertialRiverFlowModel(;
         timestepping,
@@ -384,7 +395,7 @@ end
         parameters,
         variables,
         floodplain = nothing,
-        allocation = Wflow.NoAllocationRiverModel(n),
+        allocation = Wflow.NoAllocationRiverModel(n_river_cells),
     )
 
     # run until steady state is reached

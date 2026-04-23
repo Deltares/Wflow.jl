@@ -112,9 +112,9 @@
     @testset "subsurface flow" begin
         q_av = model.routing.subsurface_flow.variables.q_av
         @test sum(q_av) ≈ 6.250079949202134e7
-        @test q_av[domain.land.network.order[1]] ≈ 699.3636285243076
-        @test q_av[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
-        @test q_av[domain.land.network.order[end]] ≈ 287.61501877867994
+        @test q_av[domain.land.network.cell_order[1]] ≈ 699.3636285243076
+        @test q_av[domain.land.network.cell_order[end - 100]] ≈ 2395.6159482448143
+        @test q_av[domain.land.network.cell_order[end]] ≈ 287.61501877867994
     end
 
     @testset "overland flow" begin
@@ -122,7 +122,7 @@
         @test sum(q_av) ≈ 264.6944359620204
         @test q_av[26625] ≈ 0.0
         @test q_av[39308] ≈ 0.0
-        @test q_av[domain.land.network.order[end]] ≈ 1.0e-30
+        @test q_av[domain.land.network.cell_order[end]] ≈ 1.0e-30
     end
 
     @testset "river flow" begin
@@ -130,7 +130,7 @@
         @test sum(q_av) ≈ 3696.5789619579173
         @test q_av[1622] ≈ 0.0007502850311515928
         @test q_av[43] ≈ 11.458528971675033
-        @test q_av[domain.river.network.order[end]] ≈ 0.04397648668235761
+        @test q_av[domain.river.network.cell_order[end]] ≈ 0.04397648668235761
     end
 
     @testset "reservoir simple" begin
@@ -629,7 +629,7 @@ end
             config
         end
 
-        i = 100
+        land_cell_idx = 100
 
         @testset "exponential profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.exponential)
@@ -638,12 +638,21 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[land_cell_idx]
             kvfrac = soil.parameters.kvfrac
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
-            @test kv_z ≈ kvfrac[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.f[i] * z)
-            @test subsurface_flow.variables.q_max[i] ≈ 28.32720603576582
-            @test subsurface_flow.variables.q[i] ≈ 11683.330684556406
+            kv_z = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                z,
+                land_cell_idx,
+                2,
+            )
+            @test kv_z ≈
+                  kvfrac[land_cell_idx][2] *
+                  kv_profile.kv_0[land_cell_idx] *
+                  exp(-kv_profile.f[land_cell_idx] * z)
+            @test subsurface_flow.variables.q_max[land_cell_idx] ≈ 28.32720603576582
+            @test subsurface_flow.variables.q[land_cell_idx] ≈ 11683.330684556406
         end
 
         @testset "exponential constant profile" begin
@@ -653,20 +662,37 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[land_cell_idx]
             kvfrac = soil.parameters.kvfrac
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
+            kv_z = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                z,
+                land_cell_idx,
+                2,
+            )
             @test kv_z ≈
-                  kvfrac[i][2] *
-                  kv_profile.exponential.kv_0[i] *
-                  exp(-kv_profile.exponential.f[i] * z)
-            kv_400 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 400.0, i, 2)
-            kv_1000 =
-                Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 1000.0, i, 3)
+                  kvfrac[land_cell_idx][2] *
+                  kv_profile.exponential.kv_0[land_cell_idx] *
+                  exp(-kv_profile.exponential.f[land_cell_idx] * z)
+            kv_400 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                400.0,
+                land_cell_idx,
+                2,
+            )
+            kv_1000 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                1000.0,
+                land_cell_idx,
+                3,
+            )
             @test kv_400 ≈ kv_1000
             @test all(kv_profile.z_exp .== 400.0)
-            @test subsurface_flow.variables.q_max[i] ≈ 49.38558575188426
-            @test subsurface_flow.variables.q[i] ≈ 24810.460986497365
+            @test subsurface_flow.variables.q_max[land_cell_idx] ≈ 49.38558575188426
+            @test subsurface_flow.variables.q[land_cell_idx] ≈ 24810.460986497365
         end
 
         @testset "layered profile" begin
@@ -676,14 +702,20 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[land_cell_idx]
             kvfrac = soil.parameters.kvfrac
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
-                  kv_profile.kv[i][2]
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                z,
+                land_cell_idx,
+                2,
+            ) ≈ kv_profile.kv[land_cell_idx][2]
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile, 86400.0)
-            @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 47.508932674632355
-            @test subsurface_flow.variables.q_max[i] ≈ 30.237094380100316
-            @test subsurface_flow.variables.q[i] ≈ 14546.518932613191
+            @test subsurface_flow.parameters.kh_profile.kh[land_cell_idx] ≈
+                  47.508932674632355
+            @test subsurface_flow.variables.q_max[land_cell_idx] ≈ 30.237094380100316
+            @test subsurface_flow.variables.q[land_cell_idx] ≈ 14546.518932613191
         end
 
         config = get_config(Wflow.VerticalConductivityProfile.layered_exponential)
@@ -694,16 +726,22 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[land_cell_idx]
             kvfrac = soil.parameters.kvfrac
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
-                  kv_profile.kv[i][2]
-            @test kv_profile.nlayers_kv[i] == 2
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                z,
+                land_cell_idx,
+                2,
+            ) ≈ kv_profile.kv[land_cell_idx][2]
+            @test kv_profile.nlayers_kv[land_cell_idx] == 2
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile, 86400.0)
-            @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 33.76026208801769
+            @test subsurface_flow.parameters.kh_profile.kh[land_cell_idx] ≈
+                  33.76026208801769
             @test all(kv_profile.z_layered[1:10] .== 400.0)
-            @test subsurface_flow.variables.q_max[i] ≈ 23.4840490395906
-            @test subsurface_flow.variables.q[i] ≈ 10336.88327617503
+            @test subsurface_flow.variables.q_max[land_cell_idx] ≈ 23.4840490395906
+            @test subsurface_flow.variables.q[land_cell_idx] ≈ 10336.88327617503
         end
 
         @testset "river flow layered exponential profile" begin
