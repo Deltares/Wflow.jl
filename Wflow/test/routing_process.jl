@@ -662,46 +662,87 @@ end
 end
 
 @testitem "unit: update_directional_flow!" begin
-    n = 3
+    n = 4
     overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
-        timestepping = Wflow.TimeStepping(),
-        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n),
+        timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
+        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
+            n,
+            runoff = [0.0, 0.0, 0.003001456821567986, 0.003946974022257571],
+        ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
             n,
-            ywidth = [926.6458124188031],
+            ywidth = [
+                926.6857061478484,
+                869.7426481339323,
+                812.7995901200163,
+                926.6857061478484,
+            ],
             xwidth = [],
-            zx_max = [337.2740173339844],
+            zx_max = [
+                257.3280029296875,
+                232.67100524902344,
+                232.67100524902344,
+                232.67100524902344,
+            ],
             theta = 1.0,
             h_thresh = 1e-3,
             zy_max = [],
-            mannings_n_sq = [0.5916686815198524],
-            z = [336.8810119628906, 337.2740173339844],
+            mannings_n_sq = [
+                0.24167056670421605,
+                0.2883451232664811,
+                0.3928782408368683,
+                0.14841499234322786,
+            ],
+            z = [
+                257.3280029296875,
+                227.5050048828125,
+                232.67100524902344,
+                232.67100524902344,
+            ],
             froude_limit = true,
         ),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
             n,
-            qx0 = [0.0, 0.0, 0.0],
-            qx = [0.0],
-            qx_av = [0.0],
-            h = [0.0009993302787366092, 0.99946962306692],
+            qx0 = [0.0, -3.6332616217117395, -0.7525806207906618, 11.442368862604644],
+            qx = [0.0, -3.63341089804407, -0.7526187151790501, 11.442744833230684],
+            qx_av = [0.0, 0.0, 0.0, 0.0],
+            h = [0.0, 1.3754708010382453, 0.11735139800699446, 0.1800961164684578],
+            storage = [0.0, 783157.9568615163, 237954.47204911432, 294805.28423353645],
         ),
     )
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
             network = Wflow.NetworkLand(;
-                edge_indices = Wflow.EdgeConnectivity(; xu = [2], xd = [3]),
+                edge_indices = Wflow.EdgeConnectivity(;
+                    xu = [2, 3, 5, 5],
+                    xd = [5, 1, 2, 3],
+                ),
             ),
             parameters = Wflow.LandParameters(;
-                x_length = [618.15300002725236, 618.15300002725236],
+                x_length = [
+                    614.4202561305977,
+                    614.4202561305977,
+                    614.4202561305977,
+                    614.4202561305977,
+                ],
+                y_length = [
+                    926.6857061478484,
+                    926.6857061478484,
+                    926.6857061478484,
+                    926.6857061478484,
+                ],
+                river_location = [0, 0, 1, 1],
             ),
         ),
     )
-    i = 1
-    dt = 17.99954463344083
+    i = 2
+    dt = Wflow.stable_timestep(overland_flow_model, domain.land.parameters)
     is_x_direction = true
 
+    @test dt ≈ 117.10556654947368
+    overland_flow_model.variables.qx0 .= overland_flow_model.variables.qx
     Wflow.update_directional_flow!(overland_flow_model, domain, i, dt, is_x_direction)
-    @test overland_flow_model.variables.qx[1] ≈ -367.9977761166829
+    @test overland_flow_model.variables.qx[i] ≈ -3.633493490896127
 end
 
 @testitem "unit: local_inertial_update_water_depth!" begin
