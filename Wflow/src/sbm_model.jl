@@ -136,7 +136,8 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             (; bankfull_storage) = routing.river_flow.parameters
             for land_cell_idx in eachindex(land_v.storage)
                 if river_location[land_cell_idx]
-                    river_cell_idx = domain.land.network.river_indices[land_cell_idx]
+                    river_cell_idx =
+                        domain.land.network.land_cell_river_indices[land_cell_idx]
                     if land_v.h[land_cell_idx] > 0.0
                         land_v.storage[land_cell_idx] =
                             land_v.h[land_cell_idx] *

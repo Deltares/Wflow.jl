@@ -2,7 +2,7 @@ abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D<:AbstractDemandModel,A<:AbstractAllocationModel} <:
+@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
                 AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
@@ -28,7 +28,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
             GashInterceptionModel(dataset, config, land_indices_2d, vegetation_parameters)
         @info "Using the Gash interception model since dt >= 23 hours."
     else
-        interception = RutterInterceptionModel(vegetation_parameters, n)
+        interception = RutterInterceptionModel(vegetation_parameters, n_land_cells)
         @info "Using the modified Rutter interception model since dt < 23 hours."
     end
 
@@ -40,7 +40,7 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
         snow = NoSnowModel(n_land_cells)
     end
     if do_snow && do_glacier
-        glacier_bc = SnowStateBC(; snow_storage=snow.variables.snow_storage)
+        glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
         glacier = GlacierHbvModel(dataset, config, land_indices_2d, dt, glacier_bc)
     elseif !do_snow && do_glacier
         @warn string(
@@ -155,7 +155,8 @@ function update_total_water_storage!(
     fill!(total_storage, 0)
 
     # Burn the river routing values
-    for (river_cell_idx, land_cell_idx) in enumerate(domain.river.network.land_cell_indices_containing_river)
+    for (river_cell_idx, land_cell_idx) in
+        enumerate(domain.river.network.land_cell_indices_containing_river)
         total_storage[land_cell_idx] = (
             (
                 river_flow.variables.h[river_cell_idx] *
@@ -172,7 +173,7 @@ function update_total_water_storage!(
         interception.variables.canopy_storage .+ get_water_depth(demand.paddy)
 
     # Chunk the data for parallel computing
-    threaded_foreach(1:n_land_cells; basesize=1000) do land_cell_idx
+    threaded_foreach(1:n_land_cells; basesize = 1000) do land_cell_idx
         sub_surface = ustoredepth[land_cell_idx] + satwaterdepth[land_cell_idx]
         lateral = (
             overland_flow.variables.h[land_cell_idx] *

@@ -26,7 +26,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSFModel{Kh,B<:SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@with_kw struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
@@ -64,13 +64,13 @@ function LateralSsfParameters(
     area::Vector{Float64},
 )
     elevation =
-        ncread(dataset, config, "land_surface__elevation", Routing; sel=land_indices_2d)
+        ncread(dataset, config, "land_surface__elevation", Routing; sel = land_indices_2d)
     khfrac = ncread(
         dataset,
         config,
         "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
         Routing;
-        sel=land_indices_2d,
+        sel = land_indices_2d,
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
@@ -100,7 +100,7 @@ function LateralSsfParameters(
         soilthickness,
         specific_yield,
         area,
-        top=elevation,
+        top = elevation,
     )
     return ssf_parameters
 end
@@ -126,7 +126,7 @@ function LateralSSFModel(
     (; area) = domain.land.parameters
     n_land_cells = length(land_indices_2d)
     timestepping =
-        init_kinematic_wave_timestepping(config, n_land_cells; domain="subsurface")
+        init_kinematic_wave_timestepping(config, n_land_cells; domain = "subsurface")
     parameters =
         LateralSsfParameters(dataset, config, land_indices_2d, soil.parameters, area)
     zi = 0.001 * soil.variables.zi
@@ -138,7 +138,7 @@ function LateralSSFModel(
         river = nothing
     end
     if config.model.drain__flag
-        drain = DrainageModel(dataset, config, drain.network.indices)
+        drain = DrainageModel(dataset, config, drain.network.drain_indices_2d)
     else
         drain = nothing
     end
@@ -202,7 +202,7 @@ function kinwave_subsurface_update!(
     for subdomain_set_idx in 1:n_subdomain_sets
         threaded_foreach(
             eachindex(order_of_subdomains[subdomain_set_idx]);
-            basesize=1,
+            basesize = 1,
         ) do in_subdomain_set_idx
             subdomain_idx = order_of_subdomains[subdomain_set_idx][in_subdomain_set_idx]
             for (land_global_traversion_idx, land_cell_idx) in
