@@ -1221,11 +1221,11 @@ function read_dims(A::CFVariable_MF, dim_sel::NamedTuple)
             dim = internal_dim_name(dim_name)
             # each dim should either be in dim_sel or be size 1
             if dim in keys(dim_sel)
-                idx = dim_sel[dim]
-                push!(indexer, idx)
+                dim_index = dim_sel[dim]
+                push!(indexer, dim_index)
                 # Would be nice to generalize this to anything that drops the dimension
                 # when used to index. Not sure how we could support `begin` or `end` here.
-                if !(idx isa Int)
+                if !(dim_index isa Int)
                     push!(data_dim_order, dim)
                 end
             else

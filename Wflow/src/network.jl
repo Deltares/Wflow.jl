@@ -44,7 +44,7 @@ end
 "Struct for storing network information land domain."
 @kwdef struct NetworkLand
     # dimension of 2D model
-    modelsize::Tuple{Int,Int} = (0, 0)
+    modelsize::Tuple{Int, Int} = (0, 0)
     # local drain direction using the 8 point pour algorithm
     local_drain_direction::Vector{UInt8} = UInt8[]
     # water allocation areas [-]
@@ -91,7 +91,7 @@ function NetworkLand(dataset::NCDataset, config::Config)
         dataset,
         config,
         land_indices_2d;
-        do_pits=config.model.pit__flag,
+        do_pits = config.model.pit__flag,
     )
     cell_order = topological_sort_by_dfs(graph)
     streamorder = stream_order(graph, cell_order)
@@ -134,10 +134,10 @@ function EdgeConnectivity(network::NetworkLand)
     (; modelsize, land_indices_2d, reverse_indices) = network
     n_land_cells = length(land_indices_2d)
     edge_indices = EdgeConnectivity(;
-        xu=zeros(n_land_cells),
-        xd=zeros(n_land_cells),
-        yu=zeros(n_land_cells),
-        yd=zeros(n_land_cells),
+        xu = zeros(n_land_cells),
+        xd = zeros(n_land_cells),
+        yu = zeros(n_land_cells),
+        yd = zeros(n_land_cells),
     )
 
     nrow, ncol = modelsize
@@ -160,8 +160,8 @@ function get_drainage_network(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}};
-    do_pits::Bool=false,
-    logging::Bool=true,
+    do_pits::Bool = false,
+    logging::Bool = true,
 )
     ldd_2d = ncread(dataset, config, "basin__local_drain_direction", Domain; logging)
     ldd = convert(Array{UInt8}, ldd_2d[indices])
@@ -217,13 +217,13 @@ function NetworkRiver(
     dataset::NCDataset,
     config::Config,
     network::NetworkLand;
-    do_pits=false,
+    do_pits = false,
 )
     river_location_2d =
-        ncread(dataset, config, "river_location__mask", Domain; logging=false)
+        ncread(dataset, config, "river_location__mask", Domain; logging = false)
     river_indices_2d, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction =
-        get_drainage_network(dataset, config, river_indices_2d; do_pits, logging=false)
+        get_drainage_network(dataset, config, river_indices_2d; do_pits, logging = false)
     cell_order = topological_sort_by_dfs(graph)
     river_location = river_location_2d[network.land_indices_2d]
     land_cell_indices_containing_river = findall(!iszero, river_location)
@@ -249,13 +249,14 @@ domain.
 """
 function network_subdomains(config::Config, network::NetworkRiver)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
-    order_of_subdomains, subdomain_global_order, toposort_subdomain = kinwave_set_subdomains(
-        network.graph,
-        network.cell_order,
-        pit_inds,
-        network.streamorder,
-        config.model.river_streamorder__min_count,
-    )
+    order_of_subdomains, subdomain_global_order, toposort_subdomain =
+        kinwave_set_subdomains(
+            network.graph,
+            network.cell_order,
+            pit_inds,
+            network.streamorder,
+            config.model.river_streamorder__min_count,
+        )
     @reset network.order_of_subdomains = order_of_subdomains
     @reset network.order_subdomain = toposort_subdomain
     @reset network.subdomain_global_order = subdomain_global_order
@@ -277,7 +278,7 @@ function EdgesAtNode(network::NetworkRiver)
     return edges_at_node
 end
 
-"Struct for storing network information reservoir."
+"Struct for storing network information for the reservoirs."
 @kwdef struct NetworkReservoir
     # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
@@ -302,7 +303,7 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
         config,
         "reservoir_location__count",
         Routing;
-        sel=river_indices_2d,
+        sel = river_indices_2d,
         logging,
     )
 
@@ -336,9 +337,9 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     land_cell_indices_containing_reservoir =
         network.land_cell_indices_containing_river[river_cell_indices_containing_reservoir]
     network = NetworkReservoir(;
-        outlet_indices_2d=inds,
-        indices_coverage=inds_coverage,
-        reverse_indices=rev_inds,
+        outlet_indices_2d = inds,
+        indices_coverage = inds_coverage,
+        reverse_indices = rev_inds,
         river_cell_indices_containing_reservoir,
         land_cell_indices_containing_reservoir,
     )

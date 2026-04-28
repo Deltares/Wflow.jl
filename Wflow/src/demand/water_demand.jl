@@ -895,9 +895,12 @@ function groundwater_allocation_area!(
 
         # water abstracted from groundwater and allocated.
         for land_cell_idx in inds_land[alloc_area_idx]
-            act_groundwater_abst_vol[land_cell_idx] += frac_abstract_gw * available_groundwater[land_cell_idx]
-            act_groundwater_abst[land_cell_idx] = 1000.0 * (act_groundwater_abst_vol[land_cell_idx] / area[land_cell_idx])
-            groundwater_alloc[land_cell_idx] += frac_allocate_gw * groundwater_demand[land_cell_idx]
+            act_groundwater_abst_vol[land_cell_idx] +=
+                frac_abstract_gw * available_groundwater[land_cell_idx]
+            act_groundwater_abst[land_cell_idx] =
+                1000.0 * (act_groundwater_abst_vol[land_cell_idx] / area[land_cell_idx])
+            groundwater_alloc[land_cell_idx] +=
+                frac_allocate_gw * groundwater_demand[land_cell_idx]
         end
     end
     return nothing
@@ -910,7 +913,10 @@ function return_flow(
     nonirri_alloc::Vector{Float64},
 )
     for land_cell_idx in eachindex(demand_model.variables.returnflow)
-        frac = bounded_divide(demand_model.demand.demand_gross[land_cell_idx], nonirri_demand_gross[land_cell_idx])
+        frac = bounded_divide(
+            demand_model.demand.demand_gross[land_cell_idx],
+            nonirri_demand_gross[land_cell_idx],
+        )
         allocate = frac * nonirri_alloc[land_cell_idx]
         demand_model.variables.returnflow[land_cell_idx] =
             demand_model.variables.returnflow_fraction[land_cell_idx] * allocate

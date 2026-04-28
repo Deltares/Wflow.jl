@@ -346,7 +346,8 @@ function ncread(
             # provided through the TOML file.
             # if index, scale and offset is provided in the TOML as a list.
             for layer_idx in eachindex(layer)
-                A[:, :, layer[layer_idx]] = A[:, :, layer[layer_idx]] .* scale[layer_idx] .+ offset[layer_idx]
+                A[:, :, layer[layer_idx]] =
+                    A[:, :, layer[layer_idx]] .* scale[layer_idx] .+ offset[layer_idx]
             end
         else
             apply_affine_transform!(A, var)
@@ -516,7 +517,8 @@ function get_flow_fraction_to_river(
         nbs = inneighbors(graph, river_land_cell_idx)
         for neighbor_idx in nbs
             if ldd[neighbor_idx] != ldd[river_land_cell_idx]
-                fraction[neighbor_idx] = slope[neighbor_idx] / (slope[river_land_cell_idx] + slope[neighbor_idx])
+                fraction[neighbor_idx] =
+                    slope[neighbor_idx] / (slope[river_land_cell_idx] + slope[neighbor_idx])
             end
         end
     end
@@ -702,7 +704,11 @@ end
 "Partition indices with at least size `basesize`"
 function _partition(xs::Integer, basesize::Integer)
     n_partitions = Int(max(1, xs ÷ basesize))
-    return (Int(1 + ((partition_idx - 1) * xs) ÷ n_partitions):Int((partition_idx * xs) ÷ n_partitions) for partition_idx in 1:n_partitions)
+    return (
+        Int(1 + ((partition_idx - 1) * xs) ÷ n_partitions):Int(
+            (partition_idx * xs) ÷ n_partitions,
+        ) for partition_idx in 1:n_partitions
+    )
 end
 
 """
@@ -719,19 +725,19 @@ function threaded_foreach(f::Function, x::AbstractArray; basesize::Integer)::Not
         if length(partitions) > 1 && Threads.nthreads() > 1
             @sync for p in partitions
                 Threads.@spawn begin
-                    for idx in eachindex(p)
-                        f(@inbounds p[idx])
+                    for element_idx in eachindex(p)
+                        f(@inbounds p[element_idx])
                     end
                 end
             end
         else
-            for idx in eachindex(x)
-                f(@inbounds x[idx])
+            for element_idx in eachindex(x)
+                f(@inbounds x[element_idx])
             end
         end
     else
-        @batch per = thread minbatch = basesize for idx in eachindex(x)
-            f(@inbounds x[idx])
+        @batch per = thread minbatch = basesize for element_idx in eachindex(x)
+            f(@inbounds x[element_idx])
         end
     end
     return nothing

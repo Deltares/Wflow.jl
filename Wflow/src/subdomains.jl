@@ -135,8 +135,8 @@ function graph_from_nodes(
     n_nodes = maximum(subbas)
     g = DiGraph(n_nodes)
     for node_idx in 1:n_nodes
-        idx = findall(x -> x == node_idx, subbas)
-        ds_idx = outneighbors(graph, only(idx))
+        node_indices = findall(x -> x == node_idx, subbas)
+        ds_idx = outneighbors(graph, only(node_indices))
         to_node = subbas_fill[ds_idx]
         if !isempty(to_node)
             add_edge!(g, node_idx, only(to_node))
@@ -243,7 +243,8 @@ function kinwave_set_subdomains(
         # index (multiple basins/outlets in the kinematic wave domain)
         subbas_order = Vector{Vector{Int}}(undef, maximum(dist_group_index))
         for group_idx in 1:maximum(dist_group_index)
-            subbas_order[group_idx] = reduce(vcat, order_subbas[dist_group_index .== group_idx])
+            subbas_order[group_idx] =
+                reduce(vcat, order_subbas[dist_group_index .== group_idx])
         end
     else
         subbas_order = [[1]]

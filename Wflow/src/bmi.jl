@@ -102,20 +102,20 @@ function BMI.get_input_var_names(model::Model)
     (; config, land) = model
     if do_api(config)
         var_names = config.API.variables
-        idx = []
+        indices_to_remove = []
         for (var_idx, var) in enumerate(var_names)
             if startswith(var, "soil_layer_") && occursin(r"soil_layer_\d+_", var)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
             if isnothing(get_metadata(var, land; model))
-                push!(idx, var_idx)
+                push!(indices_to_remove, var_idx)
                 @warn(
                     "$var is not listed as variable for BMI exchange and removed from list"
                 )
             end
         end
-        deleteat!(var_names, idx)
+        deleteat!(var_names, indices_to_remove)
         return var_names
     else
         @warn("TOML file does not contain section [API] to extract model var names")

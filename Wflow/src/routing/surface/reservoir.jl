@@ -15,7 +15,7 @@
     # reservoir area [m²]
     area::Vector{Float64}
     # index of lower reservoir (linked reservoirs) [-]
-    lower_reservoir_ind::Vector{Int} = fill(0, length(area))
+    lower_reservoir_ind::Vector{Int} = zeros(Int, length(area))
     # reservoir maximum storage for rating curve types 1 and 4 [m³]
     maxstorage::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # water level threshold H₀ [m] below that level outflow is zero
@@ -25,9 +25,9 @@
     # rating curve exponent [-]
     e::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # data for storage curve
-    sh::Vector{Union{SH,Missing}} = Vector{Union{SH,Missing}}(missing, length(area))
+    sh::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
     # data for rating curve
-    hq::Vector{Union{HQ,Missing}} = Vector{Union{HQ,Missing}}(missing, length(area))
+    hq::Vector{Union{HQ, Missing}} = Vector{Union{HQ, Missing}}(missing, length(area))
     # column index of rating curve data hq
     col_index_hq::Vector{Int} = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
@@ -46,20 +46,20 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
     (; outlet_indices_2d) = network
 
     area =
-        ncread(dataset, config, "reservoir_surface__area", Routing; sel=outlet_indices_2d)
+        ncread(dataset, config, "reservoir_surface__area", Routing; sel = outlet_indices_2d)
     waterlevel = ncread(
         dataset,
         config,
         "reservoir_water_surface__initial_elevation",
         Routing;
-        sel=outlet_indices_2d,
+        sel = outlet_indices_2d,
     )
     storfunc = ncread(
         dataset,
         config,
         "reservoir_water__storage_curve_type_count",
         Routing;
-        sel=outlet_indices_2d,
+        sel = outlet_indices_2d,
     )
     storfunc = to_enumx.(ReservoirProfileType.T, storfunc)
     outflowfunc = ncread(
@@ -67,7 +67,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         config,
         "reservoir_water__rating_curve_type_count",
         Routing;
-        sel=outlet_indices_2d,
+        sel = outlet_indices_2d,
     )
     outflowfunc = to_enumx.(ReservoirOutflowType.T, outflowfunc)
     linked_reslocs = ncread(
@@ -75,7 +75,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         config,
         "reservoir_lower_location__count",
         Routing;
-        sel=outlet_indices_2d,
+        sel = outlet_indices_2d,
     )
 
     n_reservoirs = length(area)
@@ -84,11 +84,11 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         config,
         "reservoir_location__count",
         Routing;
-        sel=outlet_indices_2d,
+        sel = outlet_indices_2d,
     )
     @info "Read `$n_reservoirs` reservoir locations."
 
-    parameters = ReservoirParameters(; id=reslocs, area, outflowfunc, storfunc)
+    parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
 
     if ReservoirOutflowType.free_weir in outflowfunc ||
        ReservoirOutflowType.modified_puls in outflowfunc
@@ -97,21 +97,21 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             config,
             "reservoir_water_flow_threshold_level__elevation",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
         b = ncread(
             dataset,
             config,
             "reservoir_water__rating_curve_coefficient",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
         e = ncread(
             dataset,
             config,
             "reservoir_water__rating_curve_exponent",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
     end
     if ReservoirOutflowType.simple in outflowfunc
@@ -120,35 +120,35 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
             config,
             "reservoir_water_demand__required_downstream_volume_flow_rate",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
         maxrelease = ncread(
             dataset,
             config,
             "reservoir_water_release_below_spillway__max_volume_flow_rate",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
         maxstorage = ncread(
             dataset,
             config,
             "reservoir_water__max_volume",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
         targetfullfrac = ncread(
             dataset,
             config,
             "reservoir_water__target_full_volume_fraction",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
         targetminfrac = ncread(
             dataset,
             config,
             "reservoir_water__target_min_volume_fraction",
             Routing;
-            sel=outlet_indices_2d,
+            sel = outlet_indices_2d,
         )
     end
 
@@ -232,11 +232,11 @@ function ReservoirVariables(
         config,
         "reservoir_water__outgoing_observed_volume_flow_rate",
         Routing;
-        sel=outlet_indices_2d,
+        sel = outlet_indices_2d,
     )
     variables = ReservoirVariables(;
         waterlevel,
-        storage=initialize_storage(storfunc, area, waterlevel, sh),
+        storage = initialize_storage(storfunc, area, waterlevel, sh),
         outflow_obs,
     )
     return variables
@@ -262,7 +262,7 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         config,
         "reservoir_water__external_inflow_volume_flow_rate",
         Routing;
-        sel=outlet_indices_2d,
+        sel = outlet_indices_2d,
     )
     n_reservoirs = length(outlet_indices_2d)
     bc = ReservoirBC(; n_reservoirs, external_inflow)
@@ -291,7 +291,7 @@ function waterlevel(
     storfunc::ReservoirProfileType.T,
     area::Float64,
     storage::Float64,
-    sh::Union{SH,Missing},
+    sh::Union{SH, Missing},
 )
     if storfunc == ReservoirProfileType.linear
         waterlevel = storage / area
@@ -324,7 +324,7 @@ function initialize_storage(
     storfunc::Vector{ReservoirProfileType.T},
     area::Vector{Float64},
     waterlevel::Vector{Float64},
-    sh::Vector{Union{SH,Missing}},
+    sh::Vector{Union{SH, Missing}},
 )
     storage = similar(area)
     for reservoir_idx in eachindex(storage)
@@ -347,11 +347,12 @@ function interpolate_linear(x, xp, fp)
     elseif x >= maximum(xp)
         return maximum(fp)
     else
-        idx = findall(i -> i <= x, xp)
-        i1 = last(idx)
-        i2 = i1 + 1
-        return fp[i1] * (1.0 - (x - xp[i1]) / (xp[i2] - xp[i1])) +
-               fp[i2] * (x - xp[i1]) / (xp[i2] - xp[i1])
+        matching_indices = findall(val -> val <= x, xp)
+        lower_idx = last(matching_indices)
+        upper_idx = lower_idx + 1
+        return fp[lower_idx] *
+               (1.0 - (x - xp[lower_idx]) / (xp[upper_idx] - xp[lower_idx])) +
+               fp[upper_idx] * (x - xp[lower_idx]) / (xp[upper_idx] - xp[lower_idx])
     end
 end
 
@@ -623,7 +624,7 @@ end
 
 "Check if observed outflow is used for reservoirs"
 function using_observed_outflow(
-    reservoir_model::Union{ReservoirModel,Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing},
     config::Config,
 )
     par = "reservoir_water__outgoing_observed_volume_flow_rate"
