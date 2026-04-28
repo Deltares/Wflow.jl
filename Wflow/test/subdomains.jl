@@ -26,8 +26,8 @@
     if nthreads() == 1
         @testset "Nonparallel (nthreads = 1)" begin
             @test subbas_order == [[1]]
-            @test indices_subbas == [[1:length(domain.land.network.order);]]
-            @test topo_subbas == [domain.land.network.order]
+            @test indices_subbas == [[1:length(domain.land.network.cell_order);]]
+            @test topo_subbas == [domain.land.network.cell_order]
         end
     else
         @testset "Parallel (nthreads > 1)" begin
