@@ -63,10 +63,10 @@ end
 @testitem "unit: unsaturated_zone_flow!" begin
     using StaticArrays: SVector
     include("testing_utils.jl")
-    n = 1
+    n_land_cells = 1
     N = 6
     soil_model = init_sbm_soil_model(
-        n,
+        n_land_cells,
         N;
         ustorelayerthickness = [SVector((50.0, 5.081648613929929, NaN, NaN, NaN, NaN))],
         ustorelayerdepth = [
@@ -98,10 +98,10 @@ end
 
 @testitem "unit: soil_evaporation!" begin
     include("testing_utils.jl")
-    n = 1
+    n_land_cells = 1
     N = 6
     soil_model = init_sbm_soil_model(
-        n,
+        n_land_cells,
         N;
         potential_soilevaporation = [2.8],
         ustorelayerthickness = [SVector((50.0, 21.472680450878443, NaN, NaN, NaN, NaN))],
@@ -126,10 +126,10 @@ end
 
 @testitem "unit: transpiration!" begin
     include("testing_utils.jl")
-    n = 1
+    n_land_cells = 1
     N = 4
     soil_model = init_sbm_soil_model(
-        n,
+        n_land_cells,
         N;
         h3_high = [-400.0],
         h3_low = [-1000.0],
@@ -175,10 +175,10 @@ end
 
 @testitem "unit: capillary_flux!" begin
     include("testing_utils.jl")
-    n = 1
+    n_land_cells = 1
     N = 6
     soil_model = init_sbm_soil_model(
-        n,
+        n_land_cells,
         N;
         rootingdepth = [384.1],
         n_unsatlayers = [6],

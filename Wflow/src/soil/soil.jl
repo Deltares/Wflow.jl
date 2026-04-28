@@ -1049,7 +1049,6 @@ function actual_infiltration_soil_path!(soil_model::SbmSoilModel)
     p = soil_model.parameters
     (; water_flux_surface) = soil_model.boundary_conditions
 
-    n = length(water_flux_surface)
     threaded_foreach(1:n_land_cells; basesize=1000) do land_cell_idx
         v.actinfiltsoil[land_cell_idx], v.actinfiltpath[land_cell_idx] =
             actual_infiltration_soil_path(

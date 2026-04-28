@@ -336,9 +336,9 @@ function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     end
 end
 
-function saturated_thickness(gwf::GroundwaterFlowModel, index::Int)
-    return min(gwf.parameters.top[index], gwf.variables.head[index]) -
-           gwf.parameters.bottom[index]
+function saturated_thickness(gwf::GroundwaterFlowModel, land_cell_idx::Int)
+    return min(gwf.parameters.top[land_cell_idx], gwf.variables.head[land_cell_idx]) -
+           gwf.parameters.bottom[land_cell_idx]
 end
 
 function saturated_thickness(gwf::GroundwaterFlowModel)
@@ -667,12 +667,12 @@ function sum_boundary_fluxes(
         isnothing(bc) && continue
         typeof(bc) == exclude && continue
         indices = get_boundary_index(bc, domain)
-        for (i, index) in enumerate(indices)
-            flux = bc.variables.flux_av[i]
+        for (boundary_idx, land_cell_idx) in enumerate(indices)
+            flux = bc.variables.flux_av[boundary_idx]
             if flux > 0.0
-                flux_in[index] += flux
+                flux_in[land_cell_idx] += flux
             else
-                flux_out[index] -= flux
+                flux_out[land_cell_idx] -= flux
             end
         end
     end

@@ -144,17 +144,17 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
-        cond = drainage_model.parameters.conductance[i]
+    for (boundary_idx, land_cell_idx) in enumerate(indices)
+        cond = drainage_model.parameters.conductance[boundary_idx]
         delta_head = min(
             0,
-            drainage_model.parameters.elevation[i] -
-            subsurface_flow_model.variables.head[index],
+            drainage_model.parameters.elevation[boundary_idx] -
+            subsurface_flow_model.variables.head[land_cell_idx],
         )
-        flux = check_flux(cond * delta_head, subsurface_flow_model, index)
-        drainage_model.variables.flux[i] = flux
-        drainage_model.variables.flux_av[i] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[index] += flux
+        flux = check_flux(cond * delta_head, subsurface_flow_model, land_cell_idx)
+        drainage_model.variables.flux[boundary_idx] = flux
+        drainage_model.variables.flux_av[boundary_idx] += dt * flux
+        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
     end
     return nothing
 end
@@ -180,14 +180,14 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
-        cond = headboundary.parameters.conductance[i]
+    for (boundary_idx, land_cell_idx) in enumerate(indices)
+        cond = headboundary.parameters.conductance[boundary_idx]
         delta_head =
-            headboundary.variables.head[i] - subsurface_flow_model.variables.head[index]
-        flux = check_flux(cond * delta_head, subsurface_flow_model, index)
-        headboundary.variables.flux[i] = flux
-        headboundary.variables.flux_av[i] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[index] += flux
+            headboundary.variables.head[boundary_idx] - subsurface_flow_model.variables.head[land_cell_idx]
+        flux = check_flux(cond * delta_head, subsurface_flow_model, land_cell_idx)
+        headboundary.variables.flux[boundary_idx] = flux
+        headboundary.variables.flux_av[boundary_idx] += dt * flux
+        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
     end
     return nothing
 end
@@ -210,15 +210,15 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
+    for (boundary_idx, land_cell_idx) in enumerate(indices)
         flux = check_flux(
-            recharge_model.variables.rate[i] * subsurface_flow_model.parameters.area[index],
+            recharge_model.variables.rate[boundary_idx] * subsurface_flow_model.parameters.area[land_cell_idx],
             subsurface_flow_model,
-            index,
+            land_cell_idx,
         )
-        recharge_model.variables.flux[i] = flux
-        recharge_model.variables.flux_av[i] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[index] += flux
+        recharge_model.variables.flux[boundary_idx] = flux
+        recharge_model.variables.flux_av[boundary_idx] += dt * flux
+        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
     end
     return nothing
 end
@@ -239,15 +239,15 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
+    for (boundary_idx, land_cell_idx) in enumerate(indices)
         flux = check_flux(
-            well_model.variables.volumetric_rate[i],
+            well_model.variables.volumetric_rate[boundary_idx],
             subsurface_flow_model,
-            index,
+            land_cell_idx,
         )
-        well_model.variables.flux[i] = flux
-        well_model.variables.flux_av[i] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[index] += flux
+        well_model.variables.flux[boundary_idx] = flux
+        well_model.variables.flux_av[boundary_idx] += dt * flux
+        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
     end
     return nothing
 end
@@ -256,10 +256,10 @@ function update_river_storage_stage!(
     gwf_river_model::GwfRiverModel,
     river_flow_model::AbstractRiverFlowModel,
 )
-    for i in eachindex(gwf_river_model.variables.stage)
-        gwf_river_model.variables.stage[i] =
-            river_flow_model.variables.h[i] + gwf_river_model.parameters.bottom[i]
-        gwf_river_model.variables.storage[i] = river_flow_model.variables.storage[i]
+    for river_cell_idx in eachindex(gwf_river_model.variables.stage)
+        gwf_river_model.variables.stage[river_cell_idx] =
+            river_flow_model.variables.h[river_cell_idx] + gwf_river_model.parameters.bottom[river_cell_idx]
+        gwf_river_model.variables.storage[river_cell_idx] = river_flow_model.variables.storage[river_cell_idx]
     end
     return nothing
 end

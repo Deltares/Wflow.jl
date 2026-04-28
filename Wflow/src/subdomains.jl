@@ -30,8 +30,8 @@ Return the Strahler streamorder based on directed acyclic graph `g` and topologi
 `toposort`.
 """
 function stream_order(g::SimpleDiGraph{Int}, toposort::Vector{Int})::Vector{Int}
-    n = length(toposort)
-    strord = fill(1, n)
+    n_cells = length(toposort)
+    strord = fill(1, n_cells)
     for v in toposort
         inds_up = inneighbors(g, v)
         if !isempty(inds_up)
@@ -58,10 +58,10 @@ function subbasins(
     toposort::Vector{Int},
     min_sto::Int,
 )::Vector{Int}
-    n = length(toposort)
-    subbas = fill(0, n)
+    n_cells = length(toposort)
+    subbas = fill(0, n_cells)
 
-    i = 1
+    subbas_id = 1
     for v in toposort
         if streamorder[v] < min_sto
             continue
@@ -69,13 +69,13 @@ function subbasins(
         ds_nodes = outneighbors(g, v)
         if !isempty(ds_nodes)
             if streamorder[v] != streamorder[only(ds_nodes)]
-                subbas[v] = i
-                i += 1
+                subbas[v] = subbas_id
+                subbas_id += 1
             end
         else
             # also set pits (without a downstream node)
-            subbas[v] = i
-            i += 1
+            subbas[v] = subbas_id
+            subbas_id += 1
         end
     end
     return subbas
@@ -96,23 +96,23 @@ function subbasins_order(
 )::Vector{Vector{Int}}
     order = Vector{Vector{Int}}(undef, max_dist + 1)
     order[1] = [outlet]
-    for i in 1:max_dist
+    for dist_idx in 1:max_dist
         v = Vector{Int}()
-        for n in order[i]
-            ups_nodes = inneighbors(g, n)
+        for node_idx in order[dist_idx]
+            ups_nodes = inneighbors(g, node_idx)
             if !isempty(ups_nodes)
                 append!(v, ups_nodes)
             end
         end
-        order[i + 1] = v
+        order[dist_idx + 1] = v
     end
 
     # move subbasins without upstream neighbor (headwater) to index [max_dist+1]
-    for i in 1:max_dist
-        for s in order[i]
+    for dist_idx in 1:max_dist
+        for s in order[dist_idx]
             if isempty(inneighbors(g, s))
                 append!(order[max_dist + 1], s)
-                filter!(e -> e ≠ s, order[i])
+                filter!(e -> e ≠ s, order[dist_idx])
             end
         end
     end
@@ -132,14 +132,14 @@ function graph_from_nodes(
     subbas::Vector{Int},
     subbas_fill::Vector{Int},
 )::SimpleDiGraph{Int}
-    n = maximum(subbas)
-    g = DiGraph(n)
-    for i in 1:n
-        idx = findall(x -> x == i, subbas)
+    n_nodes = maximum(subbas)
+    g = DiGraph(n_nodes)
+    for node_idx in 1:n_nodes
+        idx = findall(x -> x == node_idx, subbas)
         ds_idx = outneighbors(graph, only(idx))
         to_node = subbas_fill[ds_idx]
         if !isempty(to_node)
-            add_edge!(g, i, only(to_node))
+            add_edge!(g, node_idx, only(to_node))
         end
     end
     return g
@@ -183,20 +183,20 @@ function kinwave_set_subdomains(
         # pre-allocate the Vector with indices matching the topological order of the
         # complete domain (upstream neighbors are stored at these indices)
         index_toposort = fill(0, length(toposort))
-        for (i, j) in enumerate(toposort)
-            index_toposort[j] = i
+        for (traversal_idx, cell_idx) in enumerate(toposort)
+            index_toposort[cell_idx] = traversal_idx
         end
 
         order_subbas = Vector{Vector{Int}}()
         indices_subbas = Vector{Vector{Int}}()
         topo_subbas = Vector{Vector{Int}}()
-        index = Vector{Int}()
+        dist_group_index = Vector{Int}()
         total_subbas = 0
-        for i in 1:n_pits
+        for pit_idx in 1:n_pits
             # extract subbasins per basin, make a graph at the subbasin level, calculate the
             # maximum distance of this graph, and group and order the subbasin ids from
             # upstream to downstream
-            basin = findall(x -> x == i, basin_fill)
+            basin = findall(x -> x == pit_idx, basin_fill)
             g, vmap = induced_subgraph(graph, basin)
             toposort_b = topological_sort_by_dfs(g)
             streamorder_subbas = streamorder[vmap]
@@ -217,12 +217,12 @@ function kinwave_set_subdomains(
             end
             # subbasins need a unique id (in case of multiple basins/outlets in the
             # kinematic wave domain)
-            for n in 1:length(v_subbas)
-                v_subbas[n] .= v_subbas[n] .+ total_subbas
+            for subbas_group_idx in 1:length(v_subbas)
+                v_subbas[subbas_group_idx] .= v_subbas[subbas_group_idx] .+ total_subbas
             end
             total_subbas += n_subbas
             append!(order_subbas, v_subbas)
-            append!(index, 1:length(v_subbas))
+            append!(dist_group_index, 1:length(v_subbas))
             # in case of multiple subbasins calculate topological order per subbasin
             # (subgraph of the corresponding basin graph g), and the indices that match the
             # subbasin topological order
@@ -241,9 +241,9 @@ function kinwave_set_subdomains(
         end
         # reduce the order of subbasin ids by merging groups of subbasins that have the same
         # index (multiple basins/outlets in the kinematic wave domain)
-        subbas_order = Vector{Vector{Int}}(undef, maximum(index))
-        for m in 1:maximum(index)
-            subbas_order[m] = reduce(vcat, order_subbas[index .== m])
+        subbas_order = Vector{Vector{Int}}(undef, maximum(dist_group_index))
+        for group_idx in 1:maximum(dist_group_index)
+            subbas_order[group_idx] = reduce(vcat, order_subbas[dist_group_index .== group_idx])
         end
     else
         subbas_order = [[1]]

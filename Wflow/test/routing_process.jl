@@ -291,8 +291,8 @@ end
 
     # initialize local inertial river flow model
     graph = DiGraph(n_river_cells)
-    for i in 1:(n_river_cells)
-        add_edge!(graph, i, i + 1)
+    for river_cell_idx in 1:(n_river_cells)
+        add_edge!(graph, river_cell_idx, river_cell_idx + 1)
     end
 
     dl = fill(dx, n_river_cells)

@@ -141,14 +141,14 @@ function EdgeConnectivity(network::NetworkLand)
     )
 
     nrow, ncol = modelsize
-    for (v, i) in enumerate(land_indices_2d)
-        for (m, neighbor) in enumerate(NEIGHBORS)
-            j = i + neighbor
-            dir = DIRS[m]
+    for (land_cell_idx, cartesian_idx) in enumerate(land_indices_2d)
+        for (neighbor_idx, neighbor) in enumerate(NEIGHBORS)
+            j = cartesian_idx + neighbor
+            dir = DIRS[neighbor_idx]
             if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (reverse_indices[j] != 0)
-                getfield(edge_indices, dir)[v] = reverse_indices[j]
+                getfield(edge_indices, dir)[land_cell_idx] = reverse_indices[j]
             else
-                getfield(edge_indices, dir)[v] = n_land_cells + 1
+                getfield(edge_indices, dir)[land_cell_idx] = n_land_cells + 1
             end
         end
     end
@@ -317,13 +317,13 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     inds_map2river = fill(0, length(river_indices_2d))
     inds = CartesianIndex{2}[]
     counter = 0
-    for (i, ind) in enumerate(river_indices_2d)
-        id = locs[i]
+    for (river_cell_idx, cartesian_idx) in enumerate(river_indices_2d)
+        id = locs[river_cell_idx]
         if id > 0
-            push!(inds, ind)
+            push!(inds, cartesian_idx)
             counter += 1
-            inds_map2river[i] = counter
-            rev_inds[ind] = counter
+            inds_map2river[river_cell_idx] = counter
+            rev_inds[cartesian_idx] = counter
 
             # get all indices related to this reservoir outlet
             # done in this loop to ensure that the order is equal to the order in the

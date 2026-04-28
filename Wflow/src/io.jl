@@ -74,9 +74,9 @@ function load_fixed_forcing!(model)
             # land model
             if par in mover_params
                 if do_reservoirs
-                    for (i, sel_reservoir) in enumerate(sel_reservoirs)
+                    for (reservoir_idx, sel_reservoir) in enumerate(sel_reservoirs)
                         param[reverse_indices[sel_reservoir]] .= 0
-                        param_res[par][i] = val
+                        param_res[par][reservoir_idx] = val
                     end
                 end
             end
@@ -116,10 +116,10 @@ function update_forcing!(model)
         # land model
         if par in mover_params
             if do_reservoirs
-                for (i, sel_reservoir) in enumerate(sel_reservoirs)
+                for (reservoir_idx, sel_reservoir) in enumerate(sel_reservoirs)
                     avg = mean(data[sel_reservoir])
                     data[sel_reservoir] .= 0
-                    param_res[par][i] = avg
+                    param_res[par][reservoir_idx] = avg
                 end
             end
         end
@@ -833,14 +833,14 @@ function write_netcdf_timestep(model, dataset)
         elseif elemtype <: SVector
             # check if an extra dimension and index is specified in the TOML file
             if haskey(nc, writer.extra_dim.name)
-                i = only(nc.layer)
-                v = nt.reducer(getindex.(A, i))
+                layer_idx = only(nc.layer)
+                v = nt.reducer(getindex.(A, layer_idx))
                 dataset[name][:, time_index] .= v
             else
                 nlayer = length(first(A))
-                for i in 1:nlayer
-                    v = nt.reducer(getindex.(A, i))
-                    dataset[name][:, i, time_index] .= v
+                for layer_idx in 1:nlayer
+                    v = nt.reducer(getindex.(A, layer_idx))
+                    dataset[name][:, layer_idx, time_index] .= v
                 end
             end
         else
@@ -870,11 +870,11 @@ function write_netcdf_timestep(model, dataset, parameters)
             dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
-            for i in 1:nlayer
+            for layer_idx in 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, missing)
-                buffer[sel] .= getindex.(vector, i)
-                dataset[key][:, :, i, time_index] = buffer
+                buffer[sel] .= getindex.(vector, layer_idx)
+                dataset[key][:, :, layer_idx, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
@@ -1010,12 +1010,12 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
-        for i in eachindex(map_2d)
-            v = map_2d[i]
+        for cartesian_idx in eachindex(map_2d)
+            v = map_2d[cartesian_idx]
             ismissing(v) && continue
             v::Int
             vector = inds[v]
-            ind = rev_inds[i]
+            ind = rev_inds[cartesian_idx]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
                     map `$map` value $v for parameter $param""")

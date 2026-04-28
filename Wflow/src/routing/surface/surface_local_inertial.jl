@@ -330,26 +330,26 @@ function local_inertial_river_update!(
             )
         end
 
-        n = 0
+        n_active_flood_edges = 0
         @inbounds for river_edge_idx in river_p.active_e
             @inbounds if river_v.hf[river_edge_idx] > river_p.h_thresh
-                n += 1
-                floodplain_v.hf_index[n] = river_edge_idx
+                n_active_flood_edges += 1
+                floodplain_v.hf_index[n_active_flood_edges] = river_edge_idx
             else
                 floodplain_v.q[river_edge_idx] = 0.0
             end
         end
 
-        @batch per = thread minbatch = 1000 for river_cell_idx in 1:n
-            river_edge_idx = floodplain_v.hf_index[river_cell_idx]
+        @batch per = thread minbatch = 1000 for flood_edge_idx in 1:n_active_flood_edges
+            river_edge_idx = floodplain_v.hf_index[flood_edge_idx]
             river_cell_idx_src = nodes_at_edge.src[river_edge_idx]
             river_cell_idx_dst = nodes_at_edge.dst[river_edge_idx]
 
             i0 = 0
-            for river_cell_idx in eachindex(floodplain_p.profile.depth)
+            for depth_idx in eachindex(floodplain_p.profile.depth)
                 i0 +=
                     1 * (
-                        floodplain_p.profile.depth[river_cell_idx] <=
+                        floodplain_p.profile.depth[depth_idx] <=
                         floodplain_v.hf[river_edge_idx]
                     )
             end
@@ -1365,9 +1365,9 @@ end
 "helper function to get interpolation indices"
 function interpolation_indices(x, v::AbstractVector)
     i1 = 1
-    for i in eachindex(v)
-        if v[i] <= x
-            i1 = i
+    for idx in eachindex(v)
+        if v[idx] <= x
+            i1 = idx
         end
     end
     if i1 == length(v)
@@ -1407,11 +1407,11 @@ function flood_depth(
     profile::FloodPlainProfile,
     flood_storage::Float64,
     flow_length::Float64,
-    i::Int,
+    river_cell_idx::Int,
 )
-    i1, i2 = interpolation_indices(flood_storage, @view profile.storage[:, i])
-    ΔA = (flood_storage - profile.storage[i1, i]) / flow_length
-    dh = ΔA / profile.width[i2, i]
+    i1, i2 = interpolation_indices(flood_storage, @view profile.storage[:, river_cell_idx])
+    ΔA = (flood_storage - profile.storage[i1, river_cell_idx]) / flow_length
+    dh = ΔA / profile.width[i2, river_cell_idx]
     flood_depth = profile.depth[i1] + dh
     return flood_depth
 end
@@ -1424,11 +1424,11 @@ function FloodPlainModel(
     zb_floodplain::Vector{Float64},
 )
     (; river_indices_2d, local_drain_direction, graph) = domain.network
-    n = length(river_indices_2d)
+    n_river_cells = length(river_indices_2d)
     index_pit = findall(x -> x == 5, local_drain_direction)
     parameters = FloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit)
     n_edges = ne(graph)
-    variables = FloodPlainVariables(n, n_edges, index_pit)
+    variables = FloodPlainVariables(n_river_cells, n_edges, index_pit)
 
     floodplain = FloodPlainModel(; parameters, variables)
     return floodplain

@@ -94,8 +94,8 @@ function active_indices(
     indices = filter(i -> !isequal(A[i], nodata), all_inds)
 
     reverse_indices = zeros(Int, size(A))
-    for (i, I) in enumerate(indices)
-        reverse_indices[I] = i
+    for (linear_idx, cartesian_idx) in enumerate(indices)
+        reverse_indices[cartesian_idx] = linear_idx
     end
 
     return indices, reverse_indices
@@ -134,17 +134,17 @@ function cell_lengths(
     celllength::Real,
     cell_length_in_meter::Bool,
 )::Tuple{Vector{Float64}, Vector{Float64}}
-    n = length(y)
-    xl = fill(MISSING_VALUE, n)
-    yl = fill(MISSING_VALUE, n)
+    n_cells = length(y)
+    xl = fill(MISSING_VALUE, n_cells)
+    yl = fill(MISSING_VALUE, n_cells)
     if cell_length_in_meter
         xl .= celllength
         yl .= celllength
     else
-        for i in 1:n
-            longlen, latlen = lattometres(y[i])
-            xl[i] = longlen * celllength
-            yl[i] = latlen * celllength
+        for cell_idx in 1:n_cells
+            longlen, latlen = lattometres(y[cell_idx])
+            xl[cell_idx] = longlen * celllength
+            yl[cell_idx] = latlen * celllength
         end
     end
     return xl, yl
@@ -177,7 +177,7 @@ function set_states!(
             @info "Setting initial state from netCDF." ncpath = instate_path ncvarname =
                 ncname state
             sel = active_indices(domain, state)
-            n = length(sel)
+            n_active_cells = length(sel)
             dims = length(dimnames(ds[ncname]))
             # 4 dims, for example (x,y,layer,time) where dim layer is an SVector for soil layers
             if dims == 4
@@ -212,9 +212,9 @@ function set_states!(
                         A = map(type, A)
                     end
                 end
-                # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
+                # set state in model object, only set active cells ([1:n_active_cells]) (ignore boundary conditions/ghost points)
                 lens = get_metadata(state, typeof(land), Routing; model).lens
-                lens(model)[1:n] .= A
+                lens(model)[1:n_active_cells] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",
@@ -345,8 +345,8 @@ function ncread(
             # the modifier index is only set in combination with scale and offset for SVectors,
             # provided through the TOML file.
             # if index, scale and offset is provided in the TOML as a list.
-            for i in eachindex(layer)
-                A[:, :, layer[i]] = A[:, :, layer[i]] .* scale[i] .+ offset[i]
+            for layer_idx in eachindex(layer)
+                A[:, :, layer[layer_idx]] = A[:, :, layer[layer_idx]] .* scale[layer_idx] .+ offset[layer_idx]
             end
         else
             apply_affine_transform!(A, var)
@@ -500,9 +500,9 @@ end
 """
     get_flow_fraction_to_river(graph, ldd, inds_river, slope)
 
-Return flow `fraction` to a river cell (at index `j`) based on the ratio of the land surface
-`slope` at index `j` to the sum of the land surface `slope` at index `j` and at river cell
-index `i`.
+Return flow `fraction` to a river cell (at `neighbor_idx`) based on the ratio of the land surface
+`slope` at `neighbor_idx` to the sum of the land surface `slope` at `neighbor_idx` and at river cell
+`river_land_cell_idx`.
 """
 function get_flow_fraction_to_river(
     graph::SimpleDiGraph{Int},
@@ -510,13 +510,13 @@ function get_flow_fraction_to_river(
     inds_river::Vector{Int},
     slope::Vector{<:Real},
 )::Vector{Float64}
-    n = length(slope)
-    fraction = zeros(n)
-    for i in inds_river
-        nbs = inneighbors(graph, i)
-        for j in nbs
-            if ldd[j] != ldd[i]
-                fraction[j] = slope[j] / (slope[i] + slope[j])
+    n_cells = length(slope)
+    fraction = zeros(n_cells)
+    for river_land_cell_idx in inds_river
+        nbs = inneighbors(graph, river_land_cell_idx)
+        for neighbor_idx in nbs
+            if ldd[neighbor_idx] != ldd[river_land_cell_idx]
+                fraction[neighbor_idx] = slope[neighbor_idx] / (slope[river_land_cell_idx] + slope[neighbor_idx])
             end
         end
     end
@@ -535,11 +535,11 @@ Used in the structs of arrays to ensure all vectors are of equal length.
 function equal_size_vectors(x::Tuple)
     # all vectors in this struct should be the same size
     inds_vec = findall(arg -> isa(arg, AbstractVector), x)
-    n = length(x[inds_vec[1]])
+    expected_length = length(x[inds_vec[1]])
     x_vec = x[inds_vec]
 
     for arr in x_vec
-        if length(arr) != n
+        if length(arr) != expected_length
             throw(ArgumentError("Not all vectors are of equal length"))
         end
     end
@@ -587,19 +587,19 @@ function adjacent_edges_at_node(
     nodes = vertices(graph)
     src_edge = Vector{Int}[]
     dst_edge = copy(src_edge)
-    for i in 1:nv(graph)
-        push!(src_edge, findall(isequal(nodes[i]), nodes_at_edge.dst))
-        push!(dst_edge, findall(isequal(nodes[i]), nodes_at_edge.src))
+    for node_idx in 1:nv(graph)
+        push!(src_edge, findall(isequal(nodes[node_idx]), nodes_at_edge.dst))
+        push!(dst_edge, findall(isequal(nodes[node_idx]), nodes_at_edge.src))
     end
     return (src = src_edge, dst = dst_edge)
 end
 
 "Add `vertex` and `edge` to `pits` of a directed `graph`"
 function add_vertex_edge_graph!(graph::SimpleDiGraph{Int}, pits::Vector{Int})::Nothing
-    n = nv(graph)
-    for (i, v) in enumerate(pits)
+    n_nodes = nv(graph)
+    for (pit_idx, pit_node) in enumerate(pits)
         add_vertex!(graph)
-        add_edge!(graph, v, n + i)
+        add_edge!(graph, pit_node, n_nodes + pit_idx)
     end
     return nothing
 end
@@ -701,8 +701,8 @@ end
 
 "Partition indices with at least size `basesize`"
 function _partition(xs::Integer, basesize::Integer)
-    n = Int(max(1, xs ÷ basesize))
-    return (Int(1 + ((i - 1) * xs) ÷ n):Int((i * xs) ÷ n) for i in 1:n)
+    n_partitions = Int(max(1, xs ÷ basesize))
+    return (Int(1 + ((partition_idx - 1) * xs) ÷ n_partitions):Int((partition_idx * xs) ÷ n_partitions) for partition_idx in 1:n_partitions)
 end
 
 """
@@ -719,19 +719,19 @@ function threaded_foreach(f::Function, x::AbstractArray; basesize::Integer)::Not
         if length(partitions) > 1 && Threads.nthreads() > 1
             @sync for p in partitions
                 Threads.@spawn begin
-                    for i in eachindex(p)
-                        f(@inbounds p[i])
+                    for idx in eachindex(p)
+                        f(@inbounds p[idx])
                     end
                 end
             end
         else
-            for i in eachindex(x)
-                f(@inbounds x[i])
+            for idx in eachindex(x)
+                f(@inbounds x[idx])
             end
         end
     else
-        @batch per = thread minbatch = basesize for i in eachindex(x)
-            f(@inbounds x[i])
+        @batch per = thread minbatch = basesize for idx in eachindex(x)
+            f(@inbounds x[idx])
         end
     end
     return nothing

@@ -173,9 +173,9 @@ function update_demand_gross!(nonpaddy_model::NonPaddyModel, soil_model::SbmSoil
     for land_cell_idx in 1:n_land_cells
         if irrigation_areas[land_cell_idx] && irrigation_trigger[land_cell_idx]
             irri_dem_gross = 0.0
-            for k in 1:n_unsatlayers[land_cell_idx]
+            for soil_layer_idx in 1:n_unsatlayers[land_cell_idx]
                 depletion, readily_available_water =
-                    water_demand_root_zone(soil_model, land_cell_idx, k)
+                    water_demand_root_zone(soil_model, land_cell_idx, soil_layer_idx)
 
                 # check if maximum irrigation rate has been applied at the previous time step.
                 max_irri_rate_applied =
@@ -875,13 +875,13 @@ function groundwater_allocation_area!(
     (; area) = domain.land.parameters
 
     # loop over allocation areas
-    for i in eachindex(inds_river)
+    for alloc_area_idx in eachindex(inds_river)
         # groundwater demand and availability (allocation area)
         gw_demand_vol = 0.0
         gw_available = 0.0
-        for j in inds_land[i]
-            gw_demand_vol += groundwater_demand[j] * 0.001 * area[j]
-            gw_available += available_groundwater[j]
+        for land_cell_idx in inds_land[alloc_area_idx]
+            gw_demand_vol += groundwater_demand[land_cell_idx] * 0.001 * area[land_cell_idx]
+            gw_available += available_groundwater[land_cell_idx]
         end
         # total actual groundwater abstraction [m3] in an allocation area, minimum of
         # available  groundwater and demand in an allocation area.
@@ -894,10 +894,10 @@ function groundwater_allocation_area!(
         frac_allocate_gw = bounded_divide(gw_abstraction, gw_demand_vol)
 
         # water abstracted from groundwater and allocated.
-        for j in inds_land[i]
-            act_groundwater_abst_vol[j] += frac_abstract_gw * available_groundwater[j]
-            act_groundwater_abst[j] = 1000.0 * (act_groundwater_abst_vol[j] / area[j])
-            groundwater_alloc[j] += frac_allocate_gw * groundwater_demand[j]
+        for land_cell_idx in inds_land[alloc_area_idx]
+            act_groundwater_abst_vol[land_cell_idx] += frac_abstract_gw * available_groundwater[land_cell_idx]
+            act_groundwater_abst[land_cell_idx] = 1000.0 * (act_groundwater_abst_vol[land_cell_idx] / area[land_cell_idx])
+            groundwater_alloc[land_cell_idx] += frac_allocate_gw * groundwater_demand[land_cell_idx]
         end
     end
     return nothing
@@ -909,11 +909,11 @@ function return_flow(
     nonirri_demand_gross::Vector{Float64},
     nonirri_alloc::Vector{Float64},
 )
-    for i in eachindex(demand_model.variables.returnflow)
-        frac = bounded_divide(demand_model.demand.demand_gross[i], nonirri_demand_gross[i])
-        allocate = frac * nonirri_alloc[i]
-        demand_model.variables.returnflow[i] =
-            demand_model.variables.returnflow_fraction[i] * allocate
+    for land_cell_idx in eachindex(demand_model.variables.returnflow)
+        frac = bounded_divide(demand_model.demand.demand_gross[land_cell_idx], nonirri_demand_gross[land_cell_idx])
+        allocate = frac * nonirri_alloc[land_cell_idx]
+        demand_model.variables.returnflow[land_cell_idx] =
+            demand_model.variables.returnflow_fraction[land_cell_idx] * allocate
     end
     return demand_model.variables.returnflow
 end

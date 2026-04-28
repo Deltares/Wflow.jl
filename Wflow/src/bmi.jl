@@ -103,13 +103,13 @@ function BMI.get_input_var_names(model::Model)
     if do_api(config)
         var_names = config.API.variables
         idx = []
-        for (i, var) in enumerate(var_names)
+        for (var_idx, var) in enumerate(var_names)
             if startswith(var, "soil_layer_") && occursin(r"soil_layer_\d+_", var)
                 # map to standard name for layered soil model variable (not available per layer)
                 var, _ = soil_layer_standard_name(var)
             end
             if isnothing(get_metadata(var, land; model))
-                push!(idx, i)
+                push!(idx, var_idx)
                 @warn(
                     "$var is not listed as variable for BMI exchange and removed from list"
                 )
@@ -204,7 +204,7 @@ end
 
 function BMI.get_value_ptr(model::Model, name::String)
     (; domain) = model
-    n = length(active_indices(domain, name))
+    n_active_cells = length(active_indices(domain, name))
 
     if startswith(name, "soil_layer_") && occursin(r"soil_layer_\d+_", name)
         name_2d, ind = soil_layer_standard_name(name)
@@ -213,13 +213,13 @@ function BMI.get_value_ptr(model::Model, name::String)
         el_type = eltype(first(model_vals))
         dim = length(first(model_vals))
         value = reshape(reinterpret(el_type, model_vals), dim, :)
-        return @view value[ind, 1:n]
+        return @view value[ind, 1:n_active_cells]
     else
         (; lens) = get_metadata(name; model)
         if isnothing(lens)
             error("Accessing '$name' is not supported.")
         end
-        return @view(lens(model)[1:n])
+        return @view(lens(model)[1:n_active_cells])
     end
 end
 
@@ -279,7 +279,7 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])
-    inds = [sel[i][1] for i in eachindex(sel)]
+    inds = [sel[cell_idx][1] for cell_idx in eachindex(sel)]
     x_nc = read_x_axis(dataset)
     x .= x_nc[inds]
     return x
@@ -289,7 +289,7 @@ function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])
-    inds = [sel[i][2] for i in eachindex(sel)]
+    inds = [sel[cell_idx][2] for cell_idx in eachindex(sel)]
     y_nc = read_y_axis(dataset)
     y .= y_nc[inds]
     return y
@@ -320,26 +320,26 @@ end
 
 function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int})
     (; domain) = model
-    n = length(edge_nodes)
-    m = div(n, 2)
+    n_edge_entries = length(edge_nodes)
+    n_edges = div(n_edge_entries, 2)
     # inactive nodes (boundary/ghost points) are set at -999
     if grid == 3
         nodes_at_edge = adjacent_nodes_at_edge(domain.river.network.graph)
-        nodes_at_edge.dst[nodes_at_edge.dst .== m + 1] .= -999
-        edge_nodes[range(1, n; step = 2)] = nodes_at_edge.src
-        edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
+        nodes_at_edge.dst[nodes_at_edge.dst .== n_edges + 1] .= -999
+        edge_nodes[range(1, n_edge_entries; step = 2)] = nodes_at_edge.src
+        edge_nodes[range(2, n_edge_entries; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
         xu = domain.land.network.edge_indices.xu
-        edge_nodes[range(1, n; step = 2)] = 1:m
-        xu[xu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = xu
+        edge_nodes[range(1, n_edge_entries; step = 2)] = 1:n_edges
+        xu[xu .== n_edges + 1] .= -999
+        edge_nodes[range(2, n_edge_entries; step = 2)] = xu
         return edge_nodes
     elseif grid == 5
         yu = domain.land.network.edge_indices.yu
-        edge_nodes[range(1, n; step = 2)] = 1:m
-        yu[yu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = yu
+        edge_nodes[range(1, n_edge_entries; step = 2)] = 1:n_edges
+        yu[yu .== n_edges + 1] .= -999
+        edge_nodes[range(2, n_edge_entries; step = 2)] = yu
         return edge_nodes
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
