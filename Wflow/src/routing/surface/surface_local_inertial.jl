@@ -477,10 +477,10 @@ function update_floodplain_flow!(
     return nothing
 end
 update_floodplain_flow!(
-    river_flow_model::LocalInertialRiverFlowModel,
+    river_flow_model::LocalInertialRiverFlowModel{R, Nothing},
     domain::DomainRiver,
     dt::Float64,
-) = nothing
+) where {R} = nothing
 
 function update_bc_reservoir_model!(
     river_flow_model::LocalInertialRiverFlowModel,
@@ -1265,11 +1265,15 @@ Returns tuple: (inflow, abstraction_to_add)
 )
     # [m³ s⁻¹] < [m³ s⁻¹]
     if river_flow_model.boundary_conditions.external_inflow[river_idx] < 0.0
-        # [m³] = min([m³], [m³])
-        available_volume = min(
-            overland_flow_model.variables.storage[i],
-            river_flow_model.parameters.bankfull_storage[river_idx],
-        )
+        # TODO: This is quite clearly wrong; in the `if` case a depth is
+        # assigned to a volume
+        available_volume =
+            if overland_flow_model.variables.storage[i] >=
+               river_flow_model.parameters.bankfull_storage[river_idx]
+                river_flow_model.parameters.bankfull_depth[river_idx]
+            else
+                river_flow_model.variables.storage[river_idx]
+            end
         # [m³ s⁻¹] = min([m³ s⁻¹], [m³] / [s⁻¹] * [-])
         _abstraction = min(
             -river_flow_model.boundary_conditions.external_inflow[river_idx],

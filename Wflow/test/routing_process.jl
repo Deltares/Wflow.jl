@@ -391,7 +391,7 @@ end
 end
 
 @testitem "unit: local_inertial_river_update!" begin
-    using Wflow: to_SI, MM_PER_DT, MM
+    using Wflow: to_SI, MM_PER_DT, MM, get_average
     dt = 86400.0
     n = 2
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
@@ -506,13 +506,13 @@ end
     @test river_flow_model.floodplain.variables.q_av.cumulative_material[1] ≈
           -281840.1408600272
 
-    Wflow.update_bc_reservoir!(river_flow_model, domain, dt)
+    Wflow.update_bc_reservoir_model!(river_flow_model, domain, dt)
 
     @test river_flow_model.boundary_conditions.reservoir.variables.storage[1] ≈
           7.391913765967477e6
     @test river_flow_model.boundary_conditions.reservoir.variables.waterlevel[1] ≈
           2.428382753193495
-    @test river_flow_model.boundary_conditions.reservoir.variables.outflow[1] ≈
+    @test get_average(river_flow_model.boundary_conditions.reservoir.variables.outflow)[1] ≈
           0.00018509186397934759
     @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow.cumulative_material[1] ≈
           7.141856080688971e6
@@ -798,6 +798,7 @@ end
 end
 
 @testitem "unit: local inertial river flow with one reservoir" begin
+    using Wflow: get_average
     # Test local inertial river routing (no floodplain) on a 3-node graph (1 → 2 → 3) and a
     # simple reservoir (outflowfunc = simple) at node 2. Each sub-step of the local inertial
     # update is called and verified individually:
@@ -895,7 +896,7 @@ end
     @test river_flow_model.variables.a ≈ [4.247964427147839, 0.0]
     @test river_flow_model.variables.r ≈ [0.04480000374545946, 0.0]
     @test river_flow_model.variables.q ≈ [0.534558444239785, 0.0]
-    @test river_flow_model.variables.q_av ≈ [486.35699517356477, 0.0]
+    @test river_flow_model.variables.q_av.cumulative_material ≈ [486.35699517356477, 0.0]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
@@ -910,9 +911,9 @@ end
     @test river_flow_model.variables.q[2] ≈ 3.0009999145276134
     @test river_flow_model.variables.q[2] ==
           river_flow_model.boundary_conditions.reservoir.variables.outflow[1]
-    @test river_flow_model.variables.q_av[2] ≈ 2730.397988608082
-    @test river_flow_model.variables.q_av[2] ==
-          river_flow_model.boundary_conditions.reservoir.variables.outflow_av[1]
+    @test river_flow_model.variables.q_av.cumulative_material[2] ≈ 2730.397988608082
+    @test river_flow_model.variables.q_av.cumulative_material[2] ==
+          river_flow_model.boundary_conditions.reservoir.variables.outflow_av.cumulative_material[1]
 
     @test river_flow_model.boundary_conditions.reservoir.variables.storage[1] ≈
           4.443593370702217e7
@@ -922,7 +923,7 @@ end
           3.0009999145276134
     @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow[1] ≈
           525.2968994074305
-    @test river_flow_model.boundary_conditions.reservoir.variables.actevap[1] ≈
+    @test river_flow_model.boundary_conditions.reservoir.variables.actevap.cumulative_material[1] ≈
           0.004843999273837613
 
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
@@ -1056,7 +1057,8 @@ end
     @test river_flow_model.variables.a ≈ [280.7225571209805, 271.4609085323917]
     @test river_flow_model.variables.r ≈ [1.8354842671202385, 1.7763698223484754]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
-    @test river_flow_model.variables.q_av ≈ [6778.106459961183, 6608.686781773178]
+    @test river_flow_model.variables.q_av.cumulative_material ≈
+          [6778.106459961183, 6608.686781773178]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
@@ -1067,7 +1069,7 @@ end
     @test river_flow_model.floodplain.variables.r ≈
           [0.28876507912737354, 0.22735103521877678]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074651032168534, 6.14213116671929]
-    @test river_flow_model.floodplain.variables.q_av ≈
+    @test river_flow_model.floodplain.variables.q_av.cumulative_material ≈
           [163.41957033732095, 303.47846610520196]
 
     Wflow.update_bc_reservoir_model!(
