@@ -73,7 +73,7 @@ end
 @testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType, to_SI
     include("testing_utils.jl")
-    # Reservoir Modified Puls approach (outflowfunc = 3)
+    # ReservoirModel Modified Puls approach (outflowfunc = 3)
     n = 1
     dt = 86400.0
     res_bc = Wflow.ReservoirBC(;
@@ -204,6 +204,58 @@ end
     @test reservoir.variables.storage[1] ≈ 4.4998100277777776e7
     @test reservoir.variables.waterlevel[1] ≈ 0.9683379629629354
     @test reservoir.variables.outflow[1] ≈ 1.0
+end
+
+@testitem "unit: update_reservoir_model!" begin
+    using Graphs: DiGraph, add_edge!
+    using Wflow: AerageVector, get_average, to_SI, MM_PER_DT
+
+    dt = 86400.0
+
+    n = 1
+    reservoir_model = Wflow.ReservoirModel(;
+        boundary_conditions = Wflow.ReservoirBC(;
+            n,
+            external_inflow = [-1.0],
+            inflow_overland = [0.0],
+            inflow_subsurface = [0.00041241066945499203],
+            precipitation = [to_SI(0.07000001519918442, MM_PER_DT; dt_val = dt)],
+            evaporation = [to_SI(0.529999852180481, MM_PER_DT; dt_val = dt)],
+        ),
+        parameters = Wflow.ReservoirParameters(;
+            id = [1],
+            storfunc = [Wflow.ReservoirProfileType.linear],
+            outflowfunc = [Wflow.ReservoirOutflowType.simple],
+            area = [9.069779e4],
+            maxrelease = [1.74],
+            demand = [0.2175],
+            targetminfrac = [0.358469158],
+            targetfullfrac = [0.83492106199],
+            maxstorage = [3.3e7],
+        ),
+        variables = Wflow.ReservoirVariables(;
+            waterlevel = [3.0266425035195113],
+            storage = [2.7450978618928656e7],
+        ),
+    )
+
+    river_flow_vars =
+        Wflow.FlowVariables(; n = 2, q = [0.00012002923701686638, 0.21747539140212965])
+
+    graph = DiGraph(2)
+    add_edge!(graph, 1, 2)
+    network = Wflow.NetworkRiver(; graph, reservoir_indices = [1])
+
+    v = 1
+    dt = 1000.0
+
+    Wflow.update_reservoir_model!(reservoir_model, river_flow_vars, network, v, dt)
+    @test river_flow_vars.qin[2] ≈ 0.21749985206208133
+    @test reservoir_model.boundary_conditions.actual_external_abstraction_av.cumulative_material[1] ≈
+          1000.0
+    @test reservoir_model.variables.storage[1] ≈ 2.744976116863499e7
+    @test reservoir_model.variables.waterlevel[1] ≈ 3.013219350720886
+    @test reservoir_model.variables.outflow[1] ≈ 0.21749985206208133
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
