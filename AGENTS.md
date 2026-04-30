@@ -30,7 +30,12 @@ NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Access
 - **Immutable struct updates**: use `@reset` from Accessors.jl
 
 ## Simulation loop (`run_timestep!`)
-1. `advance!(clock)` 2. `load_dynamic_input!` 3. `storage_prev!` 4. `update_model!` 5. `compute_mass_balance!` 6. `write_output`
+1. `advance!(clock)`
+2. `load_dynamic_input!`
+3. `storage_prev!`
+4. `update_model!`
+5. `compute_mass_balance!`
+6. `write_output`
 
 ## Model types (`config.model.type`)
 - `sbm`: SBM soil + kinematic wave subsurface + surface routing (snow, glaciers, reservoirs, demand)
@@ -64,6 +69,12 @@ NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Access
 - Reservoir: precip/evap averaged over coverage cells, zeroed in land model
 
 ## Testing
+- To run a subset of test items filtered by name use e.g. for unit tests
+
+```
+pixi run julia --project=Wflow --eval='using Pkg; Pkg.test(test_args=[\"unit\"])'
+```
+
 - `TestItemRunner.jl` with `@testitem` (not `@testset`); unit tests prefixed `"unit: "`
 - Test data: `utils/download_test_data.jl` → Moselle/Piave datasets
 - Integration: init model → run 1–2 steps → assert values with `≈`
