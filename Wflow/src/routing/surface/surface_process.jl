@@ -49,7 +49,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     u = cbrt(C / b)
 
     # Newton-Raphson in u-space with equivalent convergence criterion |p(u)| <= epsilon
-    epsilon = 1.0e-12
+    epsilon = 1.0e-13
     max_iters = 3000
     for _ in 1:max_iters
         u2 = u * u
