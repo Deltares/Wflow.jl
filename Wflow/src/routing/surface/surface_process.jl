@@ -16,41 +16,54 @@ end
 
 lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
 
-"Kinematic wave surface flow rate for a single cell and timestep"
+"""
+    kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
+
+Solve the kinematic wave equation for discharge `q` [m³ s⁻¹] at a single cell and timestep.
+
+Finds the root of the implicit finite-difference discretization:
+
+    (dt/dx) * q + alpha * q^beta - C = 0
+
+where C = (dt/dx) * q_in + alpha * q_prev^beta + dt * q_lat.
+
+With beta = 3/5, the substitution u = q^(1/5) transforms this into a sparse quintic
+polynomial in u:
+
+    p(u) = a * u^5 + b * u^3 - C = 0,  with a = dt/dx, b = alpha
+
+This avoids expensive `pow` calls in the Newton-Raphson loop. The polynomial is convex for
+u > 0 (p''(u) = 20a*u³ + 6b*u > 0), so Newton-Raphson from an overestimate converges
+monotonically without risk of divergence.
+"""
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0
-    else
-        dt_dx = dt / dx
-        exponent = beta - 1.0
-        # initial estimate using linear scheme
-        alpha_beta = alpha * beta
-        ab_pq = alpha_beta * pow(((q_prev + q_in) / 2.0), exponent)
-        q = (dt_dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt_dx + ab_pq)
-        if isnan(q)
-            q = 0.0
-        end
-        q = max(q, KIN_WAVE_MIN_FLOW)
-        # newton-raphson
-        max_iters = 3000
-        epsilon = 1.0e-12
-        count = 0
-        constant_term = dt_dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
-        while true
-            f_q = dt_dx * q + alpha * pow(q, beta) - constant_term
-            df_q = dt_dx + alpha * beta * pow(q, exponent)
-            q -= (f_q / df_q)
-            if isnan(q)
-                q = 0.0
-            end
-            q = max(q, KIN_WAVE_MIN_FLOW)
-            if (abs(f_q) <= epsilon) || (count >= max_iters)
-                break
-            end
-            count += 1
-        end
-        return q
     end
+
+    a = dt / dx
+    b = alpha
+    C = a * q_in + b * pow(q_prev, beta) + dt * q_lat
+
+    # Initial overestimate: u₀ = cbrt(C / b) satisfies p(u₀) > 0
+    u = cbrt(C / b)
+
+    # Newton-Raphson in u-space with equivalent convergence criterion |p(u)| <= epsilon
+    epsilon = 1.0e-12
+    max_iters = 3000
+    for _ in 1:max_iters
+        u2 = u * u
+        u3 = u2 * u
+        u4 = u2 * u2
+        u5 = u4 * u
+        p = a * u5 + b * u3 - C
+        abs(p) <= epsilon && break
+        dp = 5.0 * a * u4 + 3.0 * b * u2
+        u -= p / dp
+    end
+
+    q = u * u * u * u * u  # u^5
+    return max(q, KIN_WAVE_MIN_FLOW)
 end
 
 "Kinematic wave surface flow rate over the whole network for a single timestep"

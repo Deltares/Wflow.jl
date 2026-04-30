@@ -69,7 +69,8 @@ NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Access
 - Reservoir: precip/evap averaged over coverage cells, zeroed in land model
 
 ## Testing
-- To run a subset of test items filtered by name use e.g. for unit tests
+- To run a subset of test items filtered by name use e.g. for unit tests.
+  **Important:** use outer single quotes and inner escaped double quotes (`'...[\"...\"]'`):
 
 ```
 pixi run julia --project=Wflow --eval='using Pkg; Pkg.test(test_args=[\"unit\"])'

@@ -5,7 +5,7 @@ get_standard_name_map(::Type{<:SoilLossModel}) = sediment_standard_name_map
 get_standard_name_map(::Type{<:Domain}) = domain_standard_name_map
 get_standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
-const PARAMETER_TYPES = Union{Float64, Int, Bool, Nothing}
+const PARAMETER_TYPES = Union{Float64,Int,Bool,Nothing}
 
 """
 Metadata associated with parameters and variables.
@@ -25,10 +25,10 @@ Metadata associated with parameters and variables.
 """
 @kwdef struct ParameterMetadata{
     L,
-    D <: PARAMETER_TYPES,
-    F <: PARAMETER_TYPES,
-    T <: PARAMETER_TYPES,
-    N <: Union{Symbol, Nothing},
+    D<:PARAMETER_TYPES,
+    F<:PARAMETER_TYPES,
+    T<:PARAMETER_TYPES,
+    N<:Union{Symbol,Nothing},
 }
     lens::L = nothing
     unit::Unit = EMPTY_UNIT
@@ -40,6 +40,7 @@ Metadata associated with parameters and variables.
     allow_dynamic_input::Bool = false
     dimname::N = nothing
     tags::Vector{Symbol} = []
+    _lens_string::String = string(lens)
     function ParameterMetadata(
         lens::L,
         unit,
@@ -51,7 +52,8 @@ Metadata associated with parameters and variables.
         allow_dynamic_input,
         dimname::N,
         flags,
-    ) where {L, D, F, N}
+        _lens_string,
+    ) where {L,D,F,N}
         if isnothing(type)
             type = if !isnothing(default)
                 D
@@ -63,7 +65,7 @@ Metadata associated with parameters and variables.
                 Float64
             end
         end
-        return new{L, D, F, type, N}(
+        return new{L,D,F,type,N}(
             lens,
             unit,
             default,
@@ -74,16 +76,17 @@ Metadata associated with parameters and variables.
             allow_dynamic_input,
             dimname,
             flags,
+            _lens_string,
         )
     end
 end
 
 function metadata_from_lens_string(
     lens_string::AbstractString,
-    standard_name_map::OrderedDict{String, ParameterMetadata},
-)::Union{ParameterMetadata, Nothing}
+    standard_name_map::OrderedDict{String,ParameterMetadata},
+)::Union{ParameterMetadata,Nothing}
     for metadata_candidate in values(standard_name_map)
-        if string(metadata_candidate.lens)[7:(end - 1)] == lens_string
+        if metadata_candidate._lens_string[7:(end-1)] == lens_string
             return metadata_candidate
         end
     end
@@ -93,8 +96,8 @@ end
 function get_metadata(
     name::AbstractString,
     types::Vararg{Type};
-    model = nothing,
-)::Union{ParameterMetadata, Nothing}
+    model=nothing,
+)::Union{ParameterMetadata,Nothing}
     metadata = nothing
     for type in types
         standard_name_map = get_standard_name_map(type)
@@ -139,7 +142,7 @@ function get_metadata(
     name::AbstractString,
     land::AbstractLandModel;
     kwargs...,
-)::Union{ParameterMetadata, Nothing}
+)::Union{ParameterMetadata,Nothing}
     # Check whether it is a land variable first
     metadata = get(get_standard_name_map(land), name, nothing)
 
@@ -161,7 +164,7 @@ get_metadata(name::AbstractString, L::Type) = get_standard_name_map(L)[name]
 get_metadata(name::AbstractString; kwargs...) =
     get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...; kwargs...)
 
-function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
+function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input=false)
     metadata = get_metadata(name; model)
 
     return if !isnothing(metadata) && !isnothing(metadata.lens)
