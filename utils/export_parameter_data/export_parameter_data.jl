@@ -1,6 +1,9 @@
 using Wflow
 using JSON
 using OrderedCollections: OrderedDict
+using Pkg
+
+Pkg.instantiate()
 
 function to_dict(standard_name_map)
     out = OrderedDict{String, OrderedDict{String, Any}}()
