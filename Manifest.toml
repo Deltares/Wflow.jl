@@ -2,7 +2,7 @@
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "fcb1d77e62cd1e2cb8f30c849cf2339888fbe761"
+project_hash = "a9bfa389b120cfc51092878c28f8ceeef1582a1d"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1466,11 +1466,9 @@ version = "0.4.4"
 
 [[deps.PackageCompiler]]
 deps = ["Artifacts", "Glob", "LazyArtifacts", "Libdl", "Pkg", "Printf", "RelocatableFolders", "TOML", "UUIDs", "p7zip_jll"]
-git-tree-sha1 = "ad15cf51ad294a089f0d5f006e9bbe24789c5994"
-repo-rev = "bundle-less-artifacts"
-repo-url = "https://github.com/visr/PackageCompiler.jl"
+git-tree-sha1 = "5193091a937c1e84cab042d55f8071dd2116c6f2"
 uuid = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
-version = "2.2.5"
+version = "2.3.0"
 
 [[deps.Packing]]
 deps = ["GeometryBasics"]
