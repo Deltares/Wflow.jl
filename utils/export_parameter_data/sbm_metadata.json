@@ -301,7 +301,7 @@
     "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Return flow from non-irrgation sectors",
+    "description": "Return flow from non-irrigation sectors",
     "allow_missing": false,
     "allow_dynamic_input": false
   },

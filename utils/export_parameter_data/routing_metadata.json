@@ -477,7 +477,7 @@
     "allow_dynamic_input": false
   },
   "river__slope": {
-    "unit": "m",
+    "unit": "m m-1",
     "default": null,
     "fill": null,
     "type": "Float64",
