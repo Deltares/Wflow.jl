@@ -1,758 +1,758 @@
 {
-  "reservoir_water__outgoing_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Outflow of the reservoir"
-  },
-  "river_water__external_inflow_volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": 0.0,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "External inflow into the river (negative for abstractions)"
-  },
-  "subsurface_water__volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Average subsurface flow"
-  },
-  "reservoir_water__volume": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Reservoir water volume"
-  },
-  "reservoir_water_release_below_spillway__max_volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Maximum amount that can be released if below spillway"
-  },
-  "reservoir_water__target_min_volume_fraction": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Target minimum full fraction (of max storage)"
-  },
-  "land_surface_water__x_component_of_instantaneous_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Flow in x direction"
-  },
-  "subsurface_water_mass_balance_relative_error__number": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Subsurface water mass balance relative error"
-  },
-  "floodplain_water__volume": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Floodplain water volume"
-  },
-  "land_drain__conductance": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m2 day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Drain conductance"
-  },
-  "river_water__lateral_inflow_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Lateral inflow to river"
-  },
-  "reservoir_water__outgoing_observed_volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Observed outflow reservoir"
-  },
-  "model_boundary_condition_river_bank_water__depth": {
-    "allow_dynamic_input": false,
-    "default": 0,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Int64",
-    "description": "Boundary condition bankfull depth downstream river outlets"
-  },
-  "river__width": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": 0.0,
-    "type": "Float64",
-    "description": "River width"
-  },
-  "river_water__infiltration_conductance": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m2 day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River bed infiltration conductance"
-  },
-  "reservoir_water_demand__required_downstream_volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Minimum (environmental) flow released from reservoir"
-  },
-  "river_water__volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River (+ floodplain for local inertial routing) discharge"
-  },
-  "land_surface_water_flow__manning_n_parameter": {
-    "allow_dynamic_input": false,
-    "default": 0.072,
-    "unit": "s m-1/3",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Manning's roughness"
-  },
-  "floodplain_water__volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Floodplain discharge"
-  },
-  "river_water__volume": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River water volume"
-  },
-  "river_water__exfiltration_conductance": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m2 day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River bed exfiltration conductance"
-  },
-  "reservoir_water__precipitation_volume_flux": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "mm Δt-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Average precipitation over the reservoir area"
-  },
-  "land_drain_water__to_subsurface_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Exchange flux (drain to aquifer)"
-  },
-  "reservoir_area__count": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "-",
-    "allow_missing": true,
-    "fill": null,
-    "type": "Int64",
-    "description": "Reservoir coverage"
-  },
-  "subsurface_water__hydraulic_head": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Groundwater head"
-  },
-  "model_constant_boundary_condition__hydraulic_head": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Head of the boundary"
-  },
-  "river_water_flow__manning_n_parameter": {
-    "allow_dynamic_input": false,
-    "default": 0.036,
-    "unit": "s m-1/3",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Manning's roughness"
-  },
-  "land_surface_water_mass_balance_relative_error__number": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Overland flow mass balance relative error"
-  },
-  "land_surface_water__volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Discharge overland flow"
-  },
-  "land_surface__slope": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m m-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Land surface slope"
-  },
-  "river_water__external_abstraction_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Actual abstraction based on external negative inflow"
-  },
-  "land_surface_water__depth": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Water depth"
-  },
-  "reservoir_water_mass_balance_relative_error__number": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Reservoir water mass balance relative error"
-  },
-  "land_surface_water__to_river_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Discharge overland flow that flows to the river"
-  },
   "floodplain_water__depth": {
-    "allow_dynamic_input": false,
-    "default": null,
     "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Floodplain water depth"
-  },
-  "reservoir_water__rating_curve_exponent": {
-    "allow_dynamic_input": false,
     "default": null,
-    "unit": "-",
-    "allow_missing": false,
     "fill": null,
     "type": "Float64",
-    "description": "Rating curve exponent"
-  },
-  "reservoir_water_mass_balance_error__volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "m3 s-1",
+    "description": "Floodplain water depth",
     "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Reservoir water mass balance error"
-  },
-  "subsurface_water_saturated_zone_top__depth": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Pseudo-water table depth (top of the saturated zone)"
-  },
-  "reservoir_water_surface__initial_elevation": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Water level of reservoir (used for initialization)"
-  },
-  "land_surface_water_mass_balance_error__volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Overland flow mass balance error"
-  },
-  "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Factor controlling the reduction of horizontal conductivity with depth"
-  },
-  "river_water_mass_balance_error__volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River water mass balance error"
-  },
-  "land_surface_water__y_component_of_instantaneous_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Flow in y direction"
-  },
-  "subsurface_water__specific_yield": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Specific yield"
-  },
-  "land_surface_water_flow__ground_elevation": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": 0.0,
-    "type": "Float64",
-    "description": "Elevation of each cell"
-  },
-  "river_water__instantaneous_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River discharge"
-  },
-  "reservoir_water__external_inflow_volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": 0.0,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "External inflow reservoir (negative for abstractions)"
-  },
-  "reservoir_water__evaporation_volume_flux": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "mm Δt-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Average actual evaporation over the reservoir area"
+    "allow_dynamic_input": false
   },
   "floodplain_water__instantaneous_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
     "unit": "m3 s-1",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Floodplain discharge"
-  },
-  "river_bank_water__depth": {
-    "allow_dynamic_input": false,
-    "default": 1.0,
-    "unit": "m",
+    "description": "Floodplain discharge",
     "allow_missing": false,
-    "fill": 0.0,
-    "type": "Float64",
-    "description": "Bankfull river depth"
-  },
-  "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Horizontal conductivity"
-  },
-  "river_bottom__elevation": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River bottom elevation"
-  },
-  "reservoir_water__rating_curve_type_count": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Int64",
-    "description": "Type of reservoir rating curve"
-  },
-  "reservoir_lower_location__count": {
-    "allow_dynamic_input": false,
-    "default": 0,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": 0,
-    "type": "Int64",
-    "description": "Index of lower reservoir (linked reservoir)"
-  },
-  "reservoir_water__storage_curve_type_count": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Int64",
-    "description": "Type of reservoir storage curve"
-  },
-  "land_drain_location__mask": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": false,
-    "type": "Bool",
-    "description": "Drain location"
-  },
-  "river__length": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": 0.0,
-    "type": "Float64",
-    "description": "River length"
-  },
-  "river_bank_water__elevation": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": 0.0,
-    "type": "Float64",
-    "description": "Bankfull elevation of the river"
-  },
-  "reservoir_water__incoming_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 s-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Inflow into the reservoir"
+    "allow_dynamic_input": false
   },
   "floodplain_water__sum_of_volume_per_depth": {
-    "allow_dynamic_input": false,
-    "default": null,
     "unit": "m3",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Floodplain profile (cumulative volume per flood depth)"
-  },
-  "river_water__to_subsurface_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 day-1",
+    "description": "Floodplain profile (cumulative volume per flood depth)",
     "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "floodplain_water__volume": {
+    "unit": "m3",
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Exchange flux (river to aquifer)"
-  },
-  "land_drain__elevation": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
+    "description": "Floodplain water volume",
     "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "floodplain_water__volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Drain elevation"
-  },
-  "reservoir_water__target_full_volume_fraction": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "-",
+    "description": "Floodplain discharge",
     "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Target fraction full (of max storage)"
-  },
-  "river_water__depth": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River water depth"
-  },
-  "reservoir_water_surface__elevation": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Reservoir water level"
-  },
-  "subsurface_water__to_river_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Part of subsurface flow that flows to the river"
-  },
-  "reservoir_location__count": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": 0,
-    "type": "Int64",
-    "description": "Outlet of the reservoirs in which each reservoir has a unique id"
-  },
-  "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m3 day-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Net recharge flux"
-  },
-  "reservoir_surface__area": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m2",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Area of the reservoir"
-  },
-  "river_water_mass_balance_relative_error__number": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River water mass balance relative error"
+    "allow_dynamic_input": false
   },
   "floodplain_water_flow__manning_n_parameter": {
-    "allow_dynamic_input": false,
-    "default": 0.072,
     "unit": "s m-1/3",
-    "allow_missing": false,
+    "default": 0.072,
     "fill": null,
     "type": "Float64",
-    "description": "Manning's roughness"
+    "description": "Manning's roughness",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   },
-  "model_boundary_condition_river__length": {
-    "allow_dynamic_input": false,
-    "default": 10000.0,
+  "land_drain__conductance": {
+    "unit": "m2 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Drain conductance",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_drain__elevation": {
     "unit": "m",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Boundary condition river length downstream river outlets"
-  },
-  "subsurface_water_mass_balance_error__volume_flow_rate": {
-    "allow_dynamic_input": true,
-    "default": null,
-    "unit": "m3 day-1",
+    "description": "Drain elevation",
     "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Subsurface water mass balance error"
+    "allow_dynamic_input": false
   },
-  "reservoir_water__rating_curve_coefficient": {
-    "allow_dynamic_input": false,
-    "default": null,
+  "land_drain_location__mask": {
     "unit": "-",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Rating curve coefficient"
-  },
-  "river__slope": {
-    "allow_dynamic_input": false,
     "default": null,
-    "unit": "m",
+    "fill": false,
+    "type": "Bool",
+    "description": "Drain location",
     "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "River slope"
+    "allow_dynamic_input": false
   },
-  "subsurface_water__exfiltration_volume_flux": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "m Δt-1",
-    "allow_missing": false,
-    "fill": null,
-    "type": "Float64",
-    "description": "Exfiltration (groundwater above surface level, saturated excess conditions)"
-  },
-  "subsurface_water__instantaneous_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
+  "land_drain_water__to_subsurface_volume_flow_rate": {
     "unit": "m3 day-1",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Subsurface flow"
+    "description": "Exchange flux (drain to aquifer)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   },
   "land_surface__elevation": {
-    "allow_dynamic_input": false,
-    "default": null,
     "unit": "m",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Land surface elevation"
+    "description": "Land surface elevation",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface__slope": {
+    "unit": "m m-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land surface slope",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water__depth": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Water depth",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   },
   "land_surface_water__instantaneous_volume_flow_rate": {
-    "allow_dynamic_input": false,
-    "default": null,
     "unit": "m3 s-1",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Discharge overland flow"
+    "description": "Discharge overland flow",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water__to_river_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Discharge overland flow that flows to the river",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   },
   "land_surface_water__volume": {
-    "allow_dynamic_input": false,
-    "default": null,
     "unit": "m3",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Total surface water storage of cell (including river storage for river cells)"
-  },
-  "reservoir_water__potential_evaporation_volume_flux": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "mm Δt-1",
+    "description": "Total surface water storage of cell (including river storage for river cells)",
     "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water__volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Average potential evaporation over the reservoir area"
-  },
-  "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio": {
-    "allow_dynamic_input": false,
-    "default": null,
-    "unit": "-",
+    "description": "Discharge overland flow",
     "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water__x_component_of_instantaneous_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "A multiplication factor applied to vertical hydraulic conductivity"
+    "description": "Flow in x direction",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   },
-  "reservoir_water_flow_threshold_level__elevation": {
-    "allow_dynamic_input": false,
+  "land_surface_water__y_component_of_instantaneous_volume_flow_rate": {
+    "unit": "m3 s-1",
     "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Flow in y direction",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water_flow__ground_elevation": {
     "unit": "m",
+    "default": null,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Elevation of each cell",
     "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water_flow__manning_n_parameter": {
+    "unit": "s m-1/3",
+    "default": 0.072,
     "fill": null,
     "type": "Float64",
-    "description": "Water level threshold, below this level outflow is zero"
+    "description": "Manning's roughness",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "land_surface_water_mass_balance_error__volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Overland flow mass balance error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "land_surface_water_mass_balance_relative_error__number": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Overland flow mass balance relative error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "model_boundary_condition_river__length": {
+    "unit": "m",
+    "default": 10000.0,
+    "fill": null,
+    "type": "Float64",
+    "description": "Boundary condition river length downstream river outlets",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "model_boundary_condition_river_bank_water__depth": {
+    "unit": "m",
+    "default": 0,
+    "fill": null,
+    "type": "Int64",
+    "description": "Boundary condition bankfull depth downstream river outlets",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "model_constant_boundary_condition__hydraulic_head": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Head of the boundary",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_area__count": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Int64",
+    "description": "Reservoir coverage",
+    "allow_missing": true,
+    "allow_dynamic_input": false
+  },
+  "reservoir_location__count": {
+    "unit": "-",
+    "default": null,
+    "fill": 0,
+    "type": "Int64",
+    "description": "Outlet of the reservoirs in which each reservoir has a unique id",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_lower_location__count": {
+    "unit": "-",
+    "default": 0,
+    "fill": 0,
+    "type": "Int64",
+    "description": "Index of lower reservoir (linked reservoir)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_surface__area": {
+    "unit": "m2",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Area of the reservoir",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__evaporation_volume_flux": {
+    "unit": "mm Δt-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Average actual evaporation over the reservoir area",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__external_inflow_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": 0.0,
+    "fill": null,
+    "type": "Float64",
+    "description": "External inflow reservoir (negative for abstractions)",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water__incoming_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Inflow into the reservoir",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   },
   "reservoir_water__max_volume": {
-    "allow_dynamic_input": false,
-    "default": null,
     "unit": "m3",
-    "allow_missing": false,
+    "default": null,
     "fill": null,
     "type": "Float64",
-    "description": "Maximum volume (above which water is spilled)"
+    "description": "Maximum volume (above which water is spilled)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__outgoing_observed_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Observed outflow reservoir",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water__outgoing_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Outflow of the reservoir",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__potential_evaporation_volume_flux": {
+    "unit": "mm Δt-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Average potential evaporation over the reservoir area",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__precipitation_volume_flux": {
+    "unit": "mm Δt-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Average precipitation over the reservoir area",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__rating_curve_coefficient": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Rating curve coefficient",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__rating_curve_exponent": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Rating curve exponent",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__rating_curve_type_count": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Int64",
+    "description": "Type of reservoir rating curve",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__storage_curve_type_count": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Int64",
+    "description": "Type of reservoir storage curve",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water__target_full_volume_fraction": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Target fraction full (of max storage)",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water__target_min_volume_fraction": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Target minimum full fraction (of max storage)",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water__volume": {
+    "unit": "m3",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Reservoir water volume",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water_demand__required_downstream_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Minimum (environmental) flow released from reservoir",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water_flow_threshold_level__elevation": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Water level threshold, below this level outflow is zero",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water_mass_balance_error__volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Reservoir water mass balance error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water_mass_balance_relative_error__number": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Reservoir water mass balance relative error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water_release_below_spillway__max_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Maximum amount that can be released if below spillway",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "reservoir_water_surface__elevation": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Reservoir water level",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "reservoir_water_surface__initial_elevation": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Water level of reservoir (used for initialization)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river__length": {
+    "unit": "m",
+    "default": null,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "River length",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river__slope": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River slope",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river__width": {
+    "unit": "m",
+    "default": null,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "River width",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_bank_water__depth": {
+    "unit": "m",
+    "default": 1.0,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Bankfull river depth",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_bank_water__elevation": {
+    "unit": "m",
+    "default": null,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Bankfull elevation of the river",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_bottom__elevation": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bottom elevation",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__depth": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River water depth",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__exfiltration_conductance": {
+    "unit": "m2 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bed exfiltration conductance",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__external_abstraction_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Actual abstraction based on external negative inflow",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__external_inflow_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": 0.0,
+    "fill": null,
+    "type": "Float64",
+    "description": "External inflow into the river (negative for abstractions)",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "river_water__infiltration_conductance": {
+    "unit": "m2 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bed infiltration conductance",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__instantaneous_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River discharge",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__lateral_inflow_volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Lateral inflow to river",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__to_subsurface_volume_flow_rate": {
+    "unit": "m3 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Exchange flux (river to aquifer)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__volume": {
+    "unit": "m3",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River water volume",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water__volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River (+ floodplain for local inertial routing) discharge",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water_flow__manning_n_parameter": {
+    "unit": "s m-1/3",
+    "default": 0.036,
+    "fill": null,
+    "type": "Float64",
+    "description": "Manning's roughness",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "river_water_mass_balance_error__volume_flow_rate": {
+    "unit": "m3 s-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River water mass balance error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "river_water_mass_balance_relative_error__number": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "River water mass balance relative error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter": {
+    "unit": "m-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Factor controlling the reduction of horizontal conductivity with depth",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity": {
+    "unit": "m day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Horizontal conductivity",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water__exfiltration_volume_flux": {
+    "unit": "m Δt-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Exfiltration (groundwater above surface level, saturated excess conditions)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "A multiplication factor applied to vertical hydraulic conductivity",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water__hydraulic_head": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Groundwater head",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water__instantaneous_volume_flow_rate": {
+    "unit": "m3 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Subsurface flow",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water__specific_yield": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Specific yield",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water__to_river_volume_flow_rate": {
+    "unit": "m3 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Part of subsurface flow that flows to the river",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water__volume_flow_rate": {
+    "unit": "m3 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Average subsurface flow",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water_mass_balance_error__volume_flow_rate": {
+    "unit": "m3 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Subsurface water mass balance error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "subsurface_water_mass_balance_relative_error__number": {
+    "unit": "-",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Subsurface water mass balance relative error",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
+  "subsurface_water_saturated_zone_top__depth": {
+    "unit": "m",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Pseudo-water table depth (top of the saturated zone)",
+    "allow_missing": false,
+    "allow_dynamic_input": false
+  },
+  "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate": {
+    "unit": "m3 day-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net recharge flux",
+    "allow_missing": false,
+    "allow_dynamic_input": false
   }
 }

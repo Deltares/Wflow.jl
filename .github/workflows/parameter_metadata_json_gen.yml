@@ -1,14 +1,15 @@
 name: Parameter & variable metadata JSON generation
 on:
+  workflow_dispatch:
   push:
     branches: [ master ]
-    paths: [ "Wflow/src/standard_name" ]
+    paths: [ "Wflow/src/standard_name/**" ]
   pull_request:
-    paths: [ "Wflow/src/standard_name" ]
+    paths: [ "Wflow/src/standard_name/**" ]
 jobs:
   json_gen:
     name: JSON generation
-    runs-on: ubuntu latest
+    runs-on: ubuntu-latest
     continue-on-error: true
     steps:
       - uses: actions/checkout@v6
