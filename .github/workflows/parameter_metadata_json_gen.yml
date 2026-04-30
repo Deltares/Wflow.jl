@@ -1,0 +1,22 @@
+name: Parameter & variable metadata JSON generation
+on:
+  push:
+    branches: [ master ]
+    paths: [ "Wflow/src/standard_name" ]
+  pull_request:
+    paths: [ "Wflow/src/standard_name" ]
+jobs:
+  json_gen:
+    name: JSON generation
+    runs-on: ubuntu latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: julia-actions/cache@v3
+      - uses: prefix-dev/setup-pixi@v0.9.5
+      - name: prepare pixi
+        run: pixi run install-julia
+      - name: Test parameter metadata JSON generation
+        run: pixi run parameter_metadata_json_gen
+      - name: Ensure that there was no change in the metadata
+        run: git diff --exit-code

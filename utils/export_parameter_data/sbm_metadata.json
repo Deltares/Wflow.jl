@@ -1,0 +1,1010 @@
+{
+  "soil__thickness": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil thickness"
+  },
+  "soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Depth from soil surface for which `layered` profile is valid, when a `layered_exponential` saturated hydraulic conductivity profile is used"
+  },
+  "atmosphere_water__precipitation_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Precipitation"
+  },
+  "irrigated_non_paddy__irrigation_efficiency": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Irrigation efficiency"
+  },
+  "irrigated_paddy__gross_water_demand_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Irrigation (paddy) gross demand"
+  },
+  "vegetation_root__feddes_critical_pressure_head_h3_high": {
+    "allow_dynamic_input": false,
+    "default": -400.0,
+    "unit": "cm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Critical pressure head h3_high of the root water uptake reduction function (Feddes)"
+  },
+  "vegetation_canopy_water__interception_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Interception"
+  },
+  "soil_water_root_zone__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Root water storage in unsaturated and saturated zone (excluding residual water content)"
+  },
+  "snowpack_liquid_water__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Liquid water content in the snow pack"
+  },
+  "soil_water__saturated_volume_fraction": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Saturated water content"
+  },
+  "soil_water_unsaturated_zone__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Amount of water in the unsaturated store"
+  },
+  "domestic__net_water_demand_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net domestic water demand"
+  },
+  "irrigated_paddy_area__count": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Int64",
+    "description": "Irrigation areas (paddy)"
+  },
+  "glacier_ice__melt_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Melt from the glacier"
+  },
+  "compacted_soil_surface_water__infiltration_capacity": {
+    "allow_dynamic_input": false,
+    "default": 10.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Infiltration capacity of compacted areas"
+  },
+  "soil_layer_water_unsaturated_zone__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Amount of water in the unsaturated store, per soil layer"
+  },
+  "soil_water_root_zone__volume_percentage": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "%",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Volumetric water content in root zone (including residual water content and saturated zone)"
+  },
+  "irrigated_non_paddy_area__count": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Int64",
+    "description": "Irrigation areas (non-paddy)"
+  },
+  "soil_water_saturated_zone_bottom__max_leakage_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Maximum leakage from saturated zone"
+  },
+  "vegetation_canopy__gap_fraction": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Canopy gap fraction"
+  },
+  "atmosphere_air__temperature": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "°C",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Temperature"
+  },
+  "snowpack__melting_temperature_threshold": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "°C",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Threshold temperature for snowmelt"
+  },
+  "soil_layer_water__brooks_corey_exponent": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Brooks-Corey power coefficient per soil layer"
+  },
+  "irrigated_paddy__min_depth": {
+    "allow_dynamic_input": false,
+    "default": 20.0,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Minimum required water depth in the irrigated paddy fields"
+  },
+  "soil_wet_root__sigmoid_function_shape_parameter": {
+    "allow_dynamic_input": false,
+    "default": -500.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Controls sharpness of transition between fully wet and fully dry roots"
+  },
+  "vegetation_canopy__light_extinction_coefficient": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Extinction coefficient (to calculate canopy gap fraction)"
+  },
+  "compacted_soil__area_fraction": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Fraction of compacted soil area"
+  },
+  "vegetation_wood_water__storage_capacity": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Storage woody part of vegetation"
+  },
+  "land_surface_water__abstraction_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Actual surface water abstraction"
+  },
+  "vegetation__crop_factor": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Crop coefficient"
+  },
+  "vegetation_canopy_water__throughfall_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Throughfall"
+  },
+  "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth"
+  },
+  "industry__gross_water_demand_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Gross industry water demand"
+  },
+  "land_surface__evapotranspiration_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total actual evapotranspiration"
+  },
+  "soil_water__air_entry_pressure_head": {
+    "allow_dynamic_input": false,
+    "default": -10.0,
+    "unit": "cm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Air entry pressure head of soil"
+  },
+  "vegetation_root__feddes_critical_pressure_head_h2": {
+    "allow_dynamic_input": false,
+    "default": -100.0,
+    "unit": "cm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Critical pressure head h2 of the root water uptake reduction function (Feddes)"
+  },
+  "subsurface_water__abstraction_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Actual groundwater abstraction"
+  },
+  "vegetation_root__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Rooting depth"
+  },
+  "soil_water__infiltration_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Actual infiltration into the unsaturated zone"
+  },
+  "land__allocated_non_irrigation_water_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Allocated water for non-irrigation"
+  },
+  "vegetation__specific_leaf_storage": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Specific leaf storage"
+  },
+  "land_water_covered__area_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Fraction of open water"
+  },
+  "non_compacted_soil_surface_water__excess_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Excess water for non-compacted soil fraction"
+  },
+  "irrigated_paddy__irrigation_trigger_flag": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Bool",
+    "description": "Paddy irrigation trigger flag"
+  },
+  "land_water_storage__total_depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total water storage (excluding floodplains and reservoirs)"
+  },
+  "irrigated_paddy__optimal_depth": {
+    "allow_dynamic_input": false,
+    "default": 50.0,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Optimal water depth in the irrigated paddy fields"
+  },
+  "irrigated_paddy__irrigation_efficiency": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Irrigation efficiency"
+  },
+  "soil_surface_temperature__weight_coefficient": {
+    "allow_dynamic_input": false,
+    "default": 0.1125,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Weighting coefficient for soil surface temperature"
+  },
+  "soil_layer_water__volume_percentage": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "%",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Volumetric water content per soil layer (including residual water content and saturated zone)"
+  },
+  "glacier_ice__melting_temperature_threshold": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "°C",
+    "allow_missing": false,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Threshold temperature for glacier melt "
+  },
+  "soil_water_saturated_zone_top__capillary_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Actual capillary rise"
+  },
+  "land_water_allocation_area__count": {
+    "allow_dynamic_input": false,
+    "default": 1,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Int64",
+    "description": "Allocation areas"
+  },
+  "industry__net_water_demand_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net industry water demand"
+  },
+  "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.001,
+    "unit": "day-1",
+    "allow_missing": false,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Fraction of the snowpack on top of the glacier converted into ice"
+  },
+  "livestock__gross_water_demand_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Gross livestock water demand"
+  },
+  "soil_surface_water__infiltration_reduction_parameter": {
+    "allow_dynamic_input": false,
+    "default": 0.038,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Controls soil infiltration reduction factor when soil is frozen"
+  },
+  "soil_water__transpiration_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Transpiration from vegetation"
+  },
+  "soil_water_root_zone__volume_fraction": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "m3 m-3",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Volumetric water content in root zone (including residual water content and saturated zone)"
+  },
+  "snowpack_water__runoff_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Runoff from snowpack"
+  },
+  "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer"
+  },
+  "snowpack__leq_depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Liquid-water equivalent of snow pack (SWE)"
+  },
+  "soil_layer_water__volume_fraction": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "m3 m-3",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Volumetric water content per soil layer (including residual water content and saturated zone)"
+  },
+  "vegetation_root__feddes_critical_pressure_head_h4": {
+    "allow_dynamic_input": false,
+    "default": -16000.0,
+    "unit": "cm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Critical pressure head h4 of the root water uptake reduction function (Feddes)"
+  },
+  "paddy_surface_water__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Water depth in paddy field"
+  },
+  "soil_surface_water__vertical_saturated_hydraulic_conductivity": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Vertical saturated hydraulic conductivity at soil surface"
+  },
+  "vegetation_root__feddes_critical_pressure_head_h1": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "cm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Critical pressure head h1 of the root water uptake reduction function (Feddes)"
+  },
+  "vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)"
+  },
+  "atmosphere_air__snowfall_temperature_interval": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "°C",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Threshold temperature interval length"
+  },
+  "land__allocated_irrigation_water_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Allocated water for irrigation"
+  },
+  "land_surface_water__potential_evaporation_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Potential evaporation"
+  },
+  "snowpack_dry_snow__leq_depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Liquid-water equivalent of dry snow"
+  },
+  "land_water_mass_balance_error__volume_flux": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land water mass balance error"
+  },
+  "glacier_surface__area_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Fraction covered by a glacier"
+  },
+  "atmosphere_air__snowfall_temperature_threshold": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "°C",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Threshold temperature for snowfall"
+  },
+  "soil_surface_water_saturated_zone__exfiltration_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Water exfiltrating from saturated store during saturation excess conditions"
+  },
+  "soil_water_saturated_zone_top__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Pseudo-water table depth (top of the saturated zone)"
+  },
+  "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio": {
+    "allow_dynamic_input": false,
+    "default": 0.1,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Gash interception model parameter"
+  },
+  "glacier_ice__initial_leq_depth": {
+    "allow_dynamic_input": false,
+    "default": 5500.0,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Initial glacier liquid-water equivalent (cold state)"
+  },
+  "irrigated_paddy__max_irrigation_rate": {
+    "allow_dynamic_input": false,
+    "default": 25.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Maximum irrigation rate"
+  },
+  "irrigated_non_paddy__irrigation_trigger_flag": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Bool",
+    "description": "Non-paddy irrigation trigger flag"
+  },
+  "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Depth from soil surface for which exponential decline of the vertical saturated hydraulic conductivity at the soil surface is valid, when an `exponential_constant` saturated hydraulic conductivity profile is used"
+  },
+  "compacted_soil_surface_water__excess_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Excess water for compacted soil fraction"
+  },
+  "livestock__net_water_demand_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net livestock water demand"
+  },
+  "snowpack__liquid_water_holding_capacity": {
+    "allow_dynamic_input": false,
+    "default": 0.1,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Water holding capacity as fraction of current snow pack"
+  },
+  "land_water_mass_balance_relative_error__number": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Land water mass balance relative error"
+  },
+  "domestic__gross_water_demand_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": 0.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Gross domestic water demand"
+  },
+  "soil_surface_water__runoff_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total surface runoff from infiltration and saturation excess"
+  },
+  "glacier_ice__leq_depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Glacier liquid-water equivalent"
+  },
+  "irrigated_paddy__max_depth": {
+    "allow_dynamic_input": false,
+    "default": 80.0,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Water depth when paddy field starts spilling water (overflow)"
+  },
+  "snowpack__degree_day_coefficient": {
+    "allow_dynamic_input": false,
+    "default": 3.75,
+    "unit": "mm °C-1 day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Degree-day factor for snowmelt"
+  },
+  "soil_water_saturated_zone_bottom__leakage_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Actual leakage from saturated store"
+  },
+  "snowpack_meltwater__volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Amount of snow melt"
+  },
+  "soil_water_saturated_zone_top__capillary_rise_averianov_exponent": {
+    "allow_dynamic_input": false,
+    "default": 2.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Averianov exponent controlling capillary rise"
+  },
+  "vegetation__leaf_area_index": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "m2 m-2",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Leaf area index"
+  },
+  "irrigated_non_paddy__gross_water_demand_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Irrigation (non-paddy) gross demand"
+  },
+  "soil_surface_water__net_runoff_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net surface runoff (after open water evaporation)"
+  },
+  "irrigated_non_paddy__max_irrigation_rate": {
+    "allow_dynamic_input": false,
+    "default": 25.0,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Maximum irrigation rate"
+  },
+  "soil_water_saturated_zone_top__net_recharge_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Net recharge to saturated zone"
+  },
+  "vegetation_canopy_water__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Canopy storage"
+  },
+  "glacier_ice__degree_day_coefficient": {
+    "allow_dynamic_input": false,
+    "default": 3.0,
+    "unit": "mm °C-1 day-1",
+    "allow_missing": false,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Degree-day factor for melt from glacier"
+  },
+  "land__non_irrigation_return_flow_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Return flow from non-irrgation sectors"
+  },
+  "soil_layer_water__vertical_saturated_hydraulic_conductivity": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm day-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Vertical saturated hydraulic conductivity per soil layer, when a `layered` or `layered_exponential` saturated hydraulic conductivity profile is used"
+  },
+  "soil_water__residual_volume_fraction": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Residual water content"
+  },
+  "soil_root__length_density_fraction": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Fraction of the root length density per soil layer"
+  },
+  "land_surface_water__withdrawal_fraction": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Fraction surface water used"
+  },
+  "soil_surface__temperature": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "°C",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil surface temperature, only when snow is modelled"
+  },
+  "soil_water_saturated_zone__depth": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Amount of water in the saturated store"
+  },
+  "vegetation_root__feddes_critical_pressure_head_h3_low": {
+    "allow_dynamic_input": false,
+    "default": -1000.0,
+    "unit": "cm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Critical pressure head h3_low of the root water uptake reduction function (Feddes)"
+  },
+  "vegetation_water__storage_capacity": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Maximum canopy storage"
+  },
+  "soil_water_saturated_zone_top__recharge_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Downward flux from unsaturated to saturated zone"
+  },
+  "vegetation_canopy_water__stemflow_volume_flux": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Stemflow"
+  },
+  "soil_water_saturated_zone_top__capillary_rise_max_water_table_depth": {
+    "allow_dynamic_input": false,
+    "default": 2000.0,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Maximum water table depth for capillary rise"
+  }
+}

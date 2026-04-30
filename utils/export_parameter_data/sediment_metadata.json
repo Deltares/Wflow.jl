@@ -1,0 +1,749 @@
+{
+  "river_water_sediment_deposition__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total sediment deposition"
+  },
+  "soil_erosion__usle_k_factor": {
+    "allow_dynamic_input": false,
+    "default": 0.1,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "USLE soil erodibility factor"
+  },
+  "soil_small_aggregates__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil content small aggregates"
+  },
+  "river_water_clay__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Clay left in cell"
+  },
+  "river_water_sediment__kodatie_transport_capacity_b_coefficient": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Kodatie transport capacity coefficient b"
+  },
+  "land_surface_water_sediment_transport_capacity__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total sediment transport capacity"
+  },
+  "vegetation_canopy_water__interception_volume_flux": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "mm Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Rainfall interception by the vegetation"
+  },
+  "river_water_gravel__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sediment flux (gravel)"
+  },
+  "silt__mean_diameter": {
+    "allow_dynamic_input": false,
+    "default": 10.0,
+    "unit": "μm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Silt mean diameter"
+  },
+  "soil_erosion__answers_overland_flow_factor": {
+    "allow_dynamic_input": false,
+    "default": 0.9,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Answers overland flow erosion factor"
+  },
+  "river_water_gravel__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Gravel left in cell"
+  },
+  "river_water_clay__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sediment flux (clay)"
+  },
+  "vegetation_canopy__gap_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.1,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Canopy gap fraction"
+  },
+  "river_bottom_and_bank_silt__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.65,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bed/bank content silt"
+  },
+  "vegetation_canopy__height": {
+    "allow_dynamic_input": false,
+    "default": 0.5,
+    "unit": "m",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Canopy height"
+  },
+  "river_water__volume_flow_rate": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "m3 s-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "River discharge"
+  },
+  "river_water_silt__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Silt left in cell"
+  },
+  "land_surface_water_sediment__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total sediment flux"
+  },
+  "compacted_soil__area_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.01,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Fraction of the soil that is covered (eg paved, snow, etc)"
+  },
+  "land_surface_water_sediment__govers_transport_capacity_exponent": {
+    "allow_dynamic_input": false,
+    "default": 4.27,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Govers transport capacity exponent"
+  },
+  "river_bottom_and_bank_sediment__median_diameter": {
+    "allow_dynamic_input": false,
+    "default": 0.1,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Median diameter in the river bed/bank"
+  },
+  "gravel__mean_diameter": {
+    "allow_dynamic_input": false,
+    "default": 2000.0,
+    "unit": "μm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Gravel mean diameter"
+  },
+  "river_water_small_aggregates__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sediment flux (small aggregates)"
+  },
+  "river_water_sediment__mass_concentration": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "g m-3",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total sediment concentration in the river"
+  },
+  "sand__mean_diameter": {
+    "allow_dynamic_input": false,
+    "default": 200.0,
+    "unit": "μm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sand mean diameter"
+  },
+  "overland_flow_soil_erosion__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total soil erosion from overland flow"
+  },
+  "sediment__particle_density": {
+    "allow_dynamic_input": false,
+    "default": 2650.0,
+    "unit": "kg m-3",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Particle density"
+  },
+  "land_surface_water_small_aggregates__to_river_mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Small aggregates flux flowing into the river"
+  },
+  "river_bed_large_aggregates__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Large aggregates stored on the river bed after deposition"
+  },
+  "river_bottom_and_bank_clay__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.15,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bed/bank content clay"
+  },
+  "soil_erosion__eurosem_exponent": {
+    "allow_dynamic_input": false,
+    "default": 2.0,
+    "unit": "m-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Exponent EUROSEM"
+  },
+  "land_surface_sediment__median_diameter": {
+    "allow_dynamic_input": false,
+    "default": 0.1,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Particle median diameter"
+  },
+  "clay__mean_diameter": {
+    "allow_dynamic_input": false,
+    "default": 2.0,
+    "unit": "μm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Clay mean diameter"
+  },
+  "land_surface_water_sediment__govers_transport_capacity_coefficient": {
+    "allow_dynamic_input": false,
+    "default": 0.000505,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Govers transport capacity coefficient"
+  },
+  "land_surface_water__volume_flow_rate": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "m3 s-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Overland flow discharge"
+  },
+  "land_surface_water__depth": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "m",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Overland flow water depth"
+  },
+  "river_bed_sand__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sand stored on the river bed after deposition"
+  },
+  "soil_erosion__answers_rainfall_factor": {
+    "allow_dynamic_input": false,
+    "default": 0.108,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Answers rainfall erosion factor"
+  },
+  "sediment_small_aggregates__mean_diameter": {
+    "allow_dynamic_input": false,
+    "default": 30.0,
+    "unit": "μm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Small aggregates mean diameter"
+  },
+  "land_surface_water_sand__to_river_mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sand flux flowing into the river"
+  },
+  "river_bed_silt__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Silt stored on the river bed after deposition"
+  },
+  "soil_clay__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.4,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil content clay"
+  },
+  "river_sediment__median_diameter": {
+    "allow_dynamic_input": false,
+    "default": 0.1,
+    "unit": "mm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Particle mean diameter"
+  },
+  "river_bottom_and_bank_gravel__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.05,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bed/bank content gravel"
+  },
+  "river_water_sediment__kodatie_transport_capacity_a_coefficient": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Kodatie transport capacity coefficient a"
+  },
+  "soil_erosion_clay__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total clay erosion"
+  },
+  "river_bed_clay__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Clay stored on the river bed after deposition"
+  },
+  "river_bottom_and_bank_sand__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.15,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "River bed/bank content sand"
+  },
+  "soil_erosion_silt__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total silt erosion"
+  },
+  "river_water_silt__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sediment flux (silt)"
+  },
+  "river_water_sand__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sand left in cell"
+  },
+  "soil_erosion__usle_c_factor": {
+    "allow_dynamic_input": false,
+    "default": 0.01,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "USLE crop management factor"
+  },
+  "river_water_small_aggregates__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Small aggregates left in cell"
+  },
+  "river_water_sand__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sediment flux (sand)"
+  },
+  "soil_silt__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.3,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil content silt"
+  },
+  "river_water__depth": {
+    "allow_dynamic_input": true,
+    "default": null,
+    "unit": "m",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "River water depth"
+  },
+  "sediment_large_aggregates__mean_diameter": {
+    "allow_dynamic_input": false,
+    "default": 500.0,
+    "unit": "μm",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Large aggregates mean diameter"
+  },
+  "land_surface_water_clay__to_river_mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Clay flux flowing into the river"
+  },
+  "river_water_sediment__bagnold_transport_capacity_exponent": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Bagnold transport capacity exponent"
+  },
+  "reservoir_water_sediment__bedload_trapping_efficiency": {
+    "allow_dynamic_input": false,
+    "default": 1.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Reservoir sediment bedload trapping efficiency"
+  },
+  "river_water_sediment__bedload_mass_concentration": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "g m-3",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Suspended sediment concentration in the river"
+  },
+  "reservoir_location__count": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": 0,
+    "type": "Int64",
+    "description": "Reservoir location ids"
+  },
+  "land_surface_water_large_aggregates__to_river_mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Large aggregates flux flowing into the river"
+  },
+  "river_water_sediment_erosion__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total sediment erosion (from store + direct river bed/bank)"
+  },
+  "river_water_sediment__kodatie_transport_capacity_c_coefficient": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Kodatie transport capacity coefficient c"
+  },
+  "soil_erosion__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total soil erosion"
+  },
+  "reservoir_surface__area": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "m2",
+    "allow_missing": false,
+    "fill": 0.0,
+    "type": "Float64",
+    "description": "Reservoir surface area"
+  },
+  "soil_sand__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.3,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil content sand"
+  },
+  "river_water_sediment__kodatie_transport_capacity_d_coefficient": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Kodatie transport capacity coefficient d"
+  },
+  "land_surface_water_silt__to_river_mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Silt flux flowing into the river"
+  },
+  "soil_erosion_large_aggregates__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total large aggregates erosion"
+  },
+  "river_water_large_aggregates__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Large aggregates left in cell"
+  },
+  "river_water_sediment__suspended_mass_concentration": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "g m-3",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Suspended sediment concentration in river"
+  },
+  "rainfall_soil_erosion__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total soil erosion from rainfall (splash)"
+  },
+  "soil_large_aggregates__mass_fraction": {
+    "allow_dynamic_input": false,
+    "default": 0.0,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil content large aggregates"
+  },
+  "soil_erosion__rainfall_soil_detachability_factor": {
+    "allow_dynamic_input": false,
+    "default": 0.6,
+    "unit": "g J-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Soil detachability factor"
+  },
+  "soil_erosion_sand__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total sand erosion"
+  },
+  "soil_erosion_small_aggregates__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total small aggregates erosion"
+  },
+  "river_bed_gravel__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Gravel stored on the river bed after deposition"
+  },
+  "river_water_large_aggregates__mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Sediment flux (large aggregates)"
+  },
+  "river_bed_small_aggregates__mass": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Small aggregates stored on the river bed after deposition"
+  },
+  "land_surface_water_sediment__to_river_mass_flow_rate": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "ton Δt-1",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Total sediment flux flowing into the river"
+  },
+  "river_water_sediment__bagnold_transport_capacity_coefficient": {
+    "allow_dynamic_input": false,
+    "default": null,
+    "unit": "-",
+    "allow_missing": false,
+    "fill": null,
+    "type": "Float64",
+    "description": "Bagnold transport capacity coefficient"
+  }
+}
