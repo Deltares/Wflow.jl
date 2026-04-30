@@ -10,6 +10,7 @@ Explain how you addressed the bug/feature request, what choices you made and why
 - [ ] Tests & pre-commit hooks pass
 - [ ] Updated documentation if needed
 - [ ] Updated changelog.qmd if needed
+- [ ] A review by Copilot was done to ensure the requirements in `AGENTS.md` are satisfied
 
 ## Additional Notes (optional)
 Add any additional notes or information that may be helpful.
