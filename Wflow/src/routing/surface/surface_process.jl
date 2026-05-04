@@ -46,19 +46,23 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     C = a * q_in + b * pow(q_prev, beta) + dt * q_lat
 
     # Initial overestimate: u₀ = cbrt(C / b) satisfies p(u₀) > 0
-    u = cbrt(C / b)
+    dt_dx = dt / dx
+    exponent = beta - 1.0
+    # initial estimate using linear scheme
+    alpha_beta = alpha * beta
+    ab_pq = alpha_beta * pow(((q_prev + q_in) / 2.0), exponent)
+    q = (dt_dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt_dx + ab_pq)
+    u = cbrt(q)
 
     # Newton-Raphson in u-space with equivalent convergence criterion |p(u)| <= epsilon
-    epsilon = 1.0e-13
+    epsilon = 1.0e-12
     max_iters = 3000
     for _ in 1:max_iters
         u2 = u * u
         u3 = u2 * u
-        u4 = u2 * u2
-        u5 = u4 * u
-        p = a * u5 + b * u3 - C
+        p = u3 * (a * u2 + b) - C
         abs(p) <= epsilon && break
-        dp = 5.0 * a * u4 + 3.0 * b * u2
+        dp = u2 * (5 * a * u2 + 3 * b)
         u -= p / dp
     end
 
