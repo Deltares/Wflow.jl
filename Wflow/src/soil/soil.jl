@@ -507,10 +507,9 @@ function SbmSoilParameters(
         theta_fc = ncread(
             dataset,
             config,
-            "soil_water__field_capacity_volume_fraction";
-            optional = false,
+            "soil_water__field_capacity_volume_fraction",
+            LandHydrologySBM;
             sel = indices,
-            type = Float64,
         )
     else
         theta_fc = field_capacity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
@@ -647,12 +646,13 @@ function update_bc_soil_model!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .= max.(
-        runoff.boundary_conditions.water_flux_surface .+
-        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-        0.0,
-    )
+    water_flux_surface .=
+        max.(
+            runoff.boundary_conditions.water_flux_surface .+
+            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+            0.0,
+        )
     return nothing
 end
 
