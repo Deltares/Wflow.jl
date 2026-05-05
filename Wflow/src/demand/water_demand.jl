@@ -944,14 +944,17 @@ function update_water_allocation_model!(
     # for reservoir locations set river abstraction at zero and abstract volume
     # from reservoir, including an update of waterlevel
     if !isnothing(reservoir)
+        (; variables, parameters) = reservoir
+        (; storage, waterlevel) = variables
+        (; level_from_storage) = parameters
+
         @. abstraction[inds_reservoir] = 0.0
-        @. reservoir.variables.storage -= act_surfacewater_abst_vol[inds_reservoir]
-        @. reservoir.variables.waterlevel = waterlevel(
-            reservoir.parameters.storfunc,
-            reservoir.parameters.area,
-            reservoir.variables.storage,
-            reservoir.parameters.sh,
-        )
+        @. storage -= act_surfacewater_abst_vol[inds_reservoir]
+
+        for reservoir_idx in eachindex(storage)
+            waterlevel[reservoir_idx] =
+                level_from_storage[reservoir_idx](storage[reservoir_idx])
+        end
     end
 
     groundwater_alloc .= 0.0

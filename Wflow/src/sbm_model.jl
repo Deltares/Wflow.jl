@@ -172,13 +172,13 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         if reservoir__flag
             # storage must be re-initialized after loading the state with the current
             # waterlevel otherwise the storage will be based on the initial water level
-            reservoirs = routing.river_flow.boundary_conditions.reservoir
-            reservoirs.variables.storage .= initialize_storage(
-                reservoirs.parameters.storfunc,
-                reservoirs.parameters.area,
-                reservoirs.variables.waterlevel,
-                reservoirs.parameters.sh,
-            )
+            (; variables, parameters) = routing.river_flow.boundary_conditions.reservoir
+            (; storage, waterlevel) = variables
+            (; storage_from_level) = parameters
+            storage .= [
+                storage_from_level[reservoir_idx](waterlevel[reservoir_idx]) for
+                reservoir_idx in eachindex(storage)
+            ]
         end
     else
         @info "Set initial conditions from default values."
