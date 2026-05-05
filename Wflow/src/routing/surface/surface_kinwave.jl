@@ -287,7 +287,7 @@ function kinwave_land_update!(
                     )
                 end
 
-                q[v] = kinematic_wave(
+                q[v], crossarea = kinematic_wave(
                     qin[v],
                     q[v],
                     qlat[v],
@@ -299,7 +299,6 @@ function kinwave_land_update!(
 
                 # update h, only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
-                    crossarea = alpha[v] * pow(q[v], beta)
                     h[v] = crossarea / surface_flow_width[v]
                 end
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
@@ -442,7 +441,7 @@ function kinwave_river_update!(
                 # negative external inflow as part of water allocation computations.
                 _inflow -= abstraction[v] / flow_length[v]
 
-                q[v] = kinematic_wave(
+                q[v], crossarea = kinematic_wave(
                     qin[v],
                     q[v],
                     qlat[v] + _inflow,
@@ -463,7 +462,6 @@ function kinwave_river_update!(
                     )
                 end
                 # update h and storage
-                crossarea = alpha[v] * pow(q[v], beta)
                 h[v] = crossarea / flow_width[v]
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
 

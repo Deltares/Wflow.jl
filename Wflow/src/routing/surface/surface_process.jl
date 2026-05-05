@@ -19,7 +19,7 @@ lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
-        return 0.0
+        return 0.0, 0.0
     else
         dt_dx = dt / dx
         # constant_term = (dt/dx)*q_in + alpha*q_prev^(3/5) + dt*q_lat
@@ -41,7 +41,6 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
         # f''(u) = 20*dt_dx * u^3 + 6*alpha * u
         max_iters = 3000
         epsilon = 1.0e-12
-        count = 0
 
         const_1 = 5.0 * dt_dx
         const_2 = 3.0 * alpha
@@ -54,8 +53,8 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
             f_u = u3 * (dt_dx * u2 + alpha) - constant_term
             df_u = u2 * (const_1 * u2 + const_2)
             d2f_u = u * (const_3 * u2 + const_4)
-            # Halley's correction: u -= 2*f*f' / (2*f'^2 - f*f'')
-            u -= (2.0 * f_u * df_u) / (2.0 * df_u * df_u - f_u * d2f_u)
+            # Halley's correction: u -= f*f' / (f'^2 - f*f''/2)
+            u -= (f_u * df_u) / (df_u * df_u - f_u * d2f_u / 2)
             if isnan(u) || u <= 0.0
                 u = KIN_WAVE_MIN_FLOW_QROOT
             end
@@ -63,8 +62,11 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
                 break
             end
         end
-        q = u * u * u * u * u
-        return max(q, KIN_WAVE_MIN_FLOW)
+        u = max(u, KIN_WAVE_MIN_FLOW_QROOT)
+        u3 = u * u * u
+        crossarea = alpha * u3
+        q = u3 * u * u
+        return q, crossarea
     end
 end
 
@@ -73,7 +75,7 @@ function kin_wave!(q, graph, toposort, q_prev, q_lat, alpha, beta, flow_length, 
     for v in toposort
         upstream_nodes = inneighbors(graph, v)
         q_in = sum_at(q, upstream_nodes)
-        q[v] = kinematic_wave(q_in, q_prev[v], q_lat, alpha[v], beta, dt, flow_length[v])
+        q[v], _ = kinematic_wave(q_in, q_prev[v], q_lat, alpha[v], beta, dt, flow_length[v])
     end
     return q
 end
