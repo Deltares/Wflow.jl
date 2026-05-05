@@ -125,13 +125,12 @@ function compute_total_storage!(
 end
 
 """
-    get_storage(river_flow_model::RiverFlowModel{<:LocalInertial}, i)
-    get_storage(river_flow_model::RiverFlowModel{<:KinematicWave}, i)
+    get_storage(river_flow_model::RiverFlowModel, i)
 
-Return storage of a river flow model at index `i`. For `RiverFlowModel{<:LocalInertial}`
-floodplain storage is added to river storage if an optional floodplain is included.
+Return storage of a river flow model at index `i`, floodplain storage is added to river
+storage if an optional floodplain is included.
 """
-function get_storage(river_flow_model::RiverFlowModel{<:LocalInertial}, i)
+function get_storage(river_flow_model::AbstractRiverFlowModel, i)
     (; storage) = river_flow_model.variables
     if isnothing(river_flow_model.floodplain)
         return storage[i]
@@ -140,8 +139,6 @@ function get_storage(river_flow_model::RiverFlowModel{<:LocalInertial}, i)
         return total_storage
     end
 end
-get_storage(river_flow_model::RiverFlowModel{<:KinematicWave}, i) =
-    river_flow_model.variables.storage[i]
 
 """
 Save river (+ floodplain) storage at previous time step as `storage_prev` of river
@@ -296,12 +293,16 @@ function compute_flow_balance!(
     (; storage_prev, error, relative_error) = water_balance
     (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
         river_flow_model.boundary_conditions
-    (; qin_av, q_av, storage) = river_flow_model.variables
+    (; qin_av, q_av) = river_flow_model.variables
 
     for i in eachindex(storage_prev)
         total_in = inwater[i] + qin_av[i] + max(0.0, external_inflow[i])
         total_out = q_av[i] + actual_external_abstraction_av[i] + abstraction[i]
-        storage_rate = (storage[i] - storage_prev[i]) / dt
+        storage = river_flow_model.variables.storage[i]
+        if !isnothing(river_flow_model.floodplain)
+            storage += river_flow_model.floodplain.variables.storage[i]
+        end
+        storage_rate = (storage - storage_prev[i]) / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
@@ -504,10 +505,7 @@ routing.
 function compute_flow_routing_balance!(
     model::Model{R},
 ) where {
-    R <: Routing{
-        <:OverlandFlowModel{<:LocalInertial},
-        <:RiverFlowModel{<:LocalInertial},
-    },
+    R <: Routing{<:OverlandFlowModel{<:LocalInertial}, <:RiverFlowModel{<:LocalInertial}},
 }
     (; river_flow, overland_flow, subsurface_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions

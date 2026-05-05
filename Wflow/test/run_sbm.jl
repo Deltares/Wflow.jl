@@ -203,7 +203,7 @@ end
         (; q_av) = model.routing.river_flow.variables
         @test q_av[4009] ≈ 8.426694842173548 # pit/ outlet, CartesianIndex(141, 228)
         @test q_av[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
-        @test q_av[2508] ≈ 131.40631419288573 # pit/ outlet
+        @test q_av[2508] ≈ 131.40631419288536 # pit/ outlet
         @test q_av[5808] ≈ 0.11941498848157915  # pit/ outlet
     end
 end
@@ -709,6 +709,31 @@ end
     @test maximum(h) ≈ 1.1422278106700228
 end
 
+@testitem "Kinematic river flow including 1D floodplain schematization" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-kw_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_flow) = model.routing
+
+    Wflow.run_timestep!(model)
+    Wflow.run_timestep!(model)
+
+    (; q_av, h) = river_flow.variables
+    @test sum(q_av) ≈ 3727.418193238896
+    @test q_av[1622] ≈ 0.000750286757828644
+    @test q_av[43] ≈ 11.458528971675058
+    @test q_av[501] ≈ 0.33680653896370893
+    @test q_av[5808] ≈ 0.04397636693917755
+    @test h[1622] ≈ 0.0009790323262245453
+    @test h[43] ≈ 0.16099844437124217
+    @test h[501] ≈ 0.21391813674805524
+    @test h[5808] ≈ 0.005801973682481159
+    (; q_av, h) = river_flow.floodplain.variables
+    @test maximum(q_av) ≈ 6.079511650002338
+    @test maximum(h) ≈ 0.12123075887001009
+end
+
 @testitem "run wflow sbm" begin
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
@@ -792,6 +817,29 @@ end
     @testset "water balance second timestep" begin
         @test all(e -> abs(e) < 1e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance river kinematic wave routing with floodplain" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-kw_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.dir_output = mktempdir()
+    config.model.water_mass_balance__flag = true
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 3e-5, river_water_balance.error)
+        @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
+        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_av)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)
 end

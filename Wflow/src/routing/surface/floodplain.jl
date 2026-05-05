@@ -213,10 +213,13 @@ end
 "Struct to store floodplain variables"
 @with_kw struct FloodPlainVariables <: AbstractFloodPlainVariables
     n::Int
-    q::Vector{Float64} = zeros(n)       # discharge [m³ s⁻¹]
-    q_av::Vector{Float64} = zeros(n)    # average river discharge [m³ s⁻¹] for model timestep Δt
-    storage::Vector{Float64} = zeros(n) # storage [m³]
-    h::Vector{Float64} = zeros(n)       # water depth [m]
+    q::Vector{Float64} = zeros(n)               # discharge [m³ s⁻¹]
+    q_av::Vector{Float64} = zeros(n)            # average floodplain discharge [m³ s⁻¹] for model timestep Δt
+    qin::Vector{Float64} = zeros(n)             # floodplain inflow from upstream cells [m³ s⁻¹]
+    qin_av::Vector{Float64} = zeros(n)          # Average floodplain inflow from upstream cells [m³ s⁻¹] for model timestep Δt
+    storage::Vector{Float64} = zeros(n)         # storage [m³]
+    h::Vector{Float64} = zeros(n)               # water depth [m]
+    flow_capacity::Vector{Float64} = zeros(n)   # flow capacity [m³ dt⁻¹]
 end
 
 "Determine the initial floodplain storage"
@@ -301,20 +304,6 @@ function compute_floodplain_flow_area(
     floodplain_flow_area = compute_flood_flow_area(profile, h, idx, i1, i2)
     floodplain_flow_area = max(floodplain_flow_area - channel_area, 0.0)
     return floodplain_flow_area
-end
-
-function compute_flood_depth_storage(
-    profile::FloodPlainProfile,
-    flood_area::Float64,
-    flow_length::Float64,
-    idx::Int,
-)
-    i1, i2 = interpolation_indices(flood_area, @view profile.a[:, idx])
-    ΔA = (flood_area - profile.a[i1, idx])
-    dh = ΔA / profile.width[i2, idx]
-    flood_depth = profile.depth[i1] + dh
-    flood_storage = profile.storage[i1] + ΔA * flow_length
-    return flood_depth, flood_storage
 end
 
 function active_floodplain_cells(river_flow_model)
