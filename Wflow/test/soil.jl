@@ -99,7 +99,7 @@ end
         N;
         n,
         ustorelayerthickness = [
-            to_SI.(
+            to_SI(
                 SVector((50.0, 5.081648613929929, NaN, NaN, NaN, NaN)),
                 Ref("soil_layer_water_unsaturated_zone__depth"),
             ),
@@ -260,7 +260,7 @@ end
         hb = [to_SI(-10.0, "soil_water__air_entry_pressure_head")],
         h1 = [to_SI(0.0, "vegetation_root__feddes_critical_pressure_head_h1")],
         h2 = [to_SI(-100.0, "vegetation_root__feddes_critical_pressure_head_h2")],
-        h3 = [to_SI(-1000.0, "vegetation_root__feddes_critical_pressure_head_h1")],
+        h3 = [to_SI(-1000.0, "vegetation_root__feddes_critical_pressure_head_h3_low")],
         h4 = [to_SI(-16000.0, "vegetation_root__feddes_critical_pressure_head_h4")],
         alpha_h1 = [1.0],
         rootdistpar = [

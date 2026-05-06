@@ -14,8 +14,8 @@ occurs if the snow storage < 10 mm.
 - `temperature` air temperature [°C => K]
 - `ttm` temperature threshold for ice melting [°C => K]
 - `cfmax` ice degree-day factor in [mm °C⁻¹ day⁻¹ => m K⁻¹ s⁻¹]
-- `g_sifrac` fraction of the snow turned into ice [-]
-- `max_snow_to_glacier` maximum snow to glacier conversion rate
+- `g_sifrac` fraction of the snow turned into ice [s⁻¹]
+- `max_snow_to_glacier` maximum snow to glacier conversion rate [m s⁻¹]
 
 # Output
 - `snow`

@@ -129,14 +129,14 @@ end
 
 "Update snow HBV model for a single timestep"
 function update_snow_model!(
-    model::SnowHbvModel,
+    snow_model::SnowHbvModel,
     atmospheric_forcing::AtmosphericForcing,
     dt::Float64,
 )
     (; temperature) = atmospheric_forcing
-    (; snow_storage, snow_water, swe, snow_melt, runoff) = model.variables
-    (; effective_precip, snow_precip, liquid_precip) = model.boundary_conditions
-    (; tt, tti, ttm, cfmax, whc) = model.parameters
+    (; snow_storage, snow_water, swe, snow_melt, runoff) = snow_model.variables
+    (; effective_precip, snow_precip, liquid_precip) = snow_model.boundary_conditions
+    (; tt, tti, ttm, cfmax, whc) = snow_model.parameters
 
     n = length(temperature)
     threaded_foreach(1:n; basesize = 1000) do i

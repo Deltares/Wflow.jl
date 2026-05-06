@@ -814,12 +814,12 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
         elseif elemtype <: SVector
             # check if an extra dimension and index is specified in the TOML file
             if haskey(output_dataset, extra_dim.name)
-                v = to_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
                 output_dataset[name][:, time_index] .= v
             else
                 nlayer = length(first(A))
                 for i in 1:nlayer
-                    v = to_SI(reducer_(getindex.(A, layer)), unit; dt_val)
+                    v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
                     output_dataset[name][:, i, time_index] .= v
                 end
             end

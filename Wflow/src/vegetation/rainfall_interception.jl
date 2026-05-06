@@ -141,10 +141,13 @@ function rainfall_interception_modrut(
 
     # Drain the canopy_storage again if needed
     if canopy_storage > cmax
-        # [m s⁻¹] = ([m] - [m]) / [s]
-        canopy_drainage = (canopy_storage - cmax) / dt
+        # [m] = [m] - [m]
+        canopy_drainage = canopy_storage - cmax
+        # [m] = [m]
         canopy_storage = cmax
-        throughfall += canopy_drainage
+
+        # [m s⁻¹] += [m] / [s]
+        throughfall += canopy_drainage / dt
     end
 
     return throughfall, canopy_evaporation, stemflow, canopy_storage

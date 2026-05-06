@@ -149,7 +149,7 @@ get_demand_gross(nonpaddy_model::NonPaddyModel) = nonpaddy_model.variables.deman
 get_demand_gross(irrigation_model::NoIrrigationNonPaddyModel) = Zeros(irrigation_model.n)
 
 """
-    update_demand_gross!(nonpaddy_model::NonPaddy, soil::SbmSoilModel, dt::Float64)
+    update_demand_gross!(nonpaddy_model::NonPaddy, soil_model::SbmSoilModel, dt::Float64)
 
 Update gross water demand `demand_gross` of the non-paddy irrigation model for a single
 timestep.
@@ -1107,7 +1107,7 @@ end
 update_demand_gross!(demand_model::NoDemandModel, dt::Float64) = nothing
 
 """
-    update_water_demand_model!(demand_model::DemandModel, soil::SbmSoilModel, dt::Float64)
+    update_water_demand_model!(demand_model::DemandModel, soil_model::SbmSoilModel, dt::Float64)
 
 Update the return flow fraction `returnflow_fraction` of `industry`, `domestic` and
 `livestock`, gross water demand `demand_gross` of `paddy` and `nonpaddy` models, and the

@@ -260,7 +260,7 @@ end
         @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
               subsurface_flow.variables.head[1]
         @test river.variables.flux_average[1] ≈ to_SI(37872.287583718644, M3_PER_DAY)
-        @test subsurface_flow.variables.to_river_Average[idx] ==
+        @test subsurface_flow.variables.to_river_average[idx] ==
               -river.variables.flux_average[1]
         @test mean(river.variables.flux_average) ≈ to_SI(-39618.370151473195, M3_PER_DAY)
         @test mean(subsurface_flow.variables.to_river_average[land_indices]) ≈
@@ -273,7 +273,7 @@ end
 
     @testset "Second timestep" begin
         @test subsurface_flow.variables.head[1] ≈ 1.563147470676254
-        @test mean(subsurface_flow.variables.head) ≈ 1106.4948788348809
+        @test mean(subsurface_flow.variables.head) ≈ 1106.4867249666993
         @test subsurface_flow.variables.zi[1] ≈ 0.05585260657136559
         @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
               subsurface_flow.variables.head[1]

@@ -70,7 +70,7 @@
     end
 
     @testset "overland flow (kinematic wave)" begin
-        q = model.routing.overland_flow.variables.q_av
+        q = model.routing.overland_flow.variables.q_average
         @test sum(q) ≈ 2.2319312569903814e-7
     end
 
