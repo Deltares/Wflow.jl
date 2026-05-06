@@ -71,7 +71,6 @@ function GwfRiverModel(
         sel = indices,
     )
     bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
-    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
