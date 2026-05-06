@@ -181,13 +181,8 @@ end
             exfiltration_conductance = fill(200.0, n),
             bottom = fill(1.0, n),
         )
-        variables = Wflow.GwfRiverVariables(;
-            n,
-            stage = fill(2.0, n),
-            storage = fill(20.0, n),
-            flux = zeros(n),
-            flux_av = Wflow.AverageVector(; n),
-        )
+        variables =
+            Wflow.GwfRiverVariables(; n, stage = fill(2.0, n), storage = fill(20.0, n))
         gwf_river_model = Wflow.GwfRiverModel(; parameters, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 3]
@@ -219,7 +214,8 @@ end
         variables = Wflow.HeadBoundaryVariables(;
             head = [2.0, 2.0],
             flux = [0.0, 0.0],
-            flux_av = Wflow.AverageVector(; n = 2),
+            flux_cumulative = zeros(2),
+            flux_average = zeros(2),
         )
 
         headboundary = Wflow.HeadBoundary(; parameters, variables)
@@ -247,7 +243,8 @@ end
         variables = Wflow.WellVariables(;
             volumetric_rate = [-1000.0],
             flux = [0.0],
-            flux_av = Wflow.AverageVector(; n = 1),
+            flux_average = [0.0],
+            flux_cumulative = [0.0],
         )
         well_model = Wflow.WellModel(; variables)
         gwf_model.variables.q_net_bnds .= 0.0

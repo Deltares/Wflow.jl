@@ -387,11 +387,11 @@ end
     @test model.variables.q ≈ [0.1598124775930105]
     @test model.variables.h[1] ≈ 0.055464507410878765
     @test model.variables.storage[1] ≈ 1331.1481778610903
-    @test model.variables.q_av.cumulative_material[1] ≈ 191.7749731116126
+    @test model.variables.q_cumulative[1] ≈ 191.7749731116126
 end
 
 @testitem "unit: local_inertial_river_update!" begin
-    using Wflow: to_SI, MM_PER_DT, MM, get_average
+    using Wflow: to_SI, MM_PER_DT, MM
     dt = 86400.0
     n = 2
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
@@ -408,7 +408,6 @@ end
                     inflow_subsurface = [5000.0],
                     precipitation = [to_SI(2.0, MM_PER_DT; dt_val = dt)],
                     evaporation = [to_SI(1.0, MM_PER_DT; dt_val = dt)],
-                    inflow = Wflow.AverageVector(; n),
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1, 2],
@@ -494,7 +493,7 @@ end
     @test river_flow_model.variables.a[1] ≈ 150.0
     @test river_flow_model.variables.r[1] ≈ 1.4563106796116505
     @test river_flow_model.variables.q[1] ≈ -575.3037784510024
-    @test river_flow_model.variables.q_av.cumulative_material[1] ≈ -575303.7784510023
+    @test river_flow_model.variables.q_cumulative[1] ≈ -575303.7784510023
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
@@ -503,8 +502,7 @@ end
     @test river_flow_model.floodplain.variables.a[1] ≈ 90.0
     @test river_flow_model.floodplain.variables.r[1] ≈ 0.2356020942408377
     @test river_flow_model.floodplain.variables.q[1] ≈ -281.84014086002725
-    @test river_flow_model.floodplain.variables.q_av.cumulative_material[1] ≈
-          -281840.1408600272
+    @test river_flow_model.floodplain.variables.q_cumulative[1] ≈ -281840.1408600272
 
     Wflow.update_bc_reservoir_model!(river_flow_model, domain, dt)
 
@@ -512,16 +510,16 @@ end
           7.391913765967477e6
     @test river_flow_model.boundary_conditions.reservoir.variables.waterlevel[1] ≈
           2.428382753193495
-    @test get_average(river_flow_model.boundary_conditions.reservoir.variables.outflow)[1] ≈
+    @test river_flow_model.boundary_conditions.reservoir.variables.outflow[1] ≈
           0.00018509186397934759
-    @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow.cumulative_material[1] ≈
+    @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow_cumulative[1] ≈
           7.141856080688971e6
-    @test river_flow_model.boundary_conditions.reservoir.variables.outflow_av.cumulative_material[1] ≈
+    @test river_flow_model.boundary_conditions.reservoir.variables.outflow_cumulative[1] ≈
           0.1850918639793476
-    @test river_flow_model.boundary_conditions.reservoir.variables.actevap.cumulative_material[1] ≈
+    @test river_flow_model.boundary_conditions.reservoir.variables.actevap_cumulative[1] ≈
           to_SI(0.011574074074074073, MM)
     @test river_flow_model.variables.q[1] ≈ 0.00018509186397934759
-    @test river_flow_model.variables.q_av.cumulative_material[1] ≈ -575303.5933591384
+    @test river_flow_model.variables.q_cumulative[1] ≈ -575303.5933591384
 
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
@@ -579,7 +577,7 @@ end
     is_x_direction = true
 
     Wflow.update_directional_flow!(overland_flow_model, domain, i, dt, is_x_direction)
-    @test overland_flow_model.variables.qx_av.cumulative_material[1] ≈ 26493.90166029366
+    @test overland_flow_model.variables.qx_cumulative[1] ≈ 26493.90166029366
 end
 
 @testitem "unit: local_inertial_update_water_depth!" begin
@@ -705,7 +703,7 @@ end
 end
 
 @testitem "unit: kinwave_river_update!" begin
-    using Wflow: to_SI, MM_PER_DT, MM, get_average
+    using Wflow: to_SI, MM_PER_DT, MM
     # Test river kinematic wave routing on a 2-node graph (1 → 2).
     # Node 1 has a simple reservoir (outflowfunc = simple) and a negative external inflow
     # (i.e. abstraction). The test verifies discharge, water depth, storage and averaged
@@ -786,19 +784,18 @@ end
     @test river_flow_model.variables.q ≈ [0.37903337592185243, 3.1969698861305855]
     @test river_flow_model.variables.h ≈ [0.01500830539624011, 0.05407828963124342]
     @test river_flow_model.variables.storage ≈ [1506.7893805755937, 4876.828625285123]
-    @test river_flow_model.variables.q_av.cumulative_material ≈
-          [376.9911072990474, 3179.744302049454]
+    @test river_flow_model.variables.q_cumulative ≈ [376.9911072990474, 3179.744302049454]
 
     (; reservoir) = river_flow_model.boundary_conditions
     @test reservoir.variables.waterlevel[1] ≈ 29.654579645252387
     @test reservoir.variables.storage[1] ≈ 4.443628667214138e7
     @test reservoir.variables.outflow[1] ≈ 3.0009999145314317
-    @test reservoir.variables.actevap.cumulative_material[1] ≈
+    @test reservoir.variables.actevap_cumulative[1] ≈
           to_SI(0.005295387542208319, MM; dt_val = dt)
 end
 
 @testitem "unit: local inertial river flow with one reservoir" begin
-    using Wflow: get_average
+    using Wflow: to_SI, MM_PER_DT, MM
     # Test local inertial river routing (no floodplain) on a 3-node graph (1 → 2 → 3) and a
     # simple reservoir (outflowfunc = simple) at node 2. Each sub-step of the local inertial
     # update is called and verified individually:
@@ -806,6 +803,7 @@ end
     #   2. update_floodplain_flow!     — no floodplain
     #   3. update_bc_reservoir_model!  — reservoir storage, outflow, evaporation
     #   4. update_water_depth_and_storage!
+    model_dt = 86400.0
     n = 3
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
@@ -819,8 +817,8 @@ end
                     external_inflow = [0.0],
                     inflow_overland = [0.0],
                     inflow_subsurface = [0.04279912663469156],
-                    precipitation = [0.017999999225139618],
-                    evaporation = [0.46000000834465027],
+                    precipitation = [to_SI(0.017999999225139618, MM_PER_DT; dt_val = model_dt)],
+                    evaporation = [to_SI(0.46000000834465027, MM_PER_DT; dt_val = model_dt)],
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [2],
@@ -896,7 +894,7 @@ end
     @test river_flow_model.variables.a ≈ [4.247964427147839, 0.0]
     @test river_flow_model.variables.r ≈ [0.04480000374545946, 0.0]
     @test river_flow_model.variables.q ≈ [0.534558444239785, 0.0]
-    @test river_flow_model.variables.q_av.cumulative_material ≈ [486.35699517356477, 0.0]
+    @test river_flow_model.variables.q_cumulative ≈ [486.35699517356477, 0.0]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
@@ -911,9 +909,9 @@ end
     @test river_flow_model.variables.q[2] ≈ 3.0009999145276134
     @test river_flow_model.variables.q[2] ==
           river_flow_model.boundary_conditions.reservoir.variables.outflow[1]
-    @test river_flow_model.variables.q_av.cumulative_material[2] ≈ 2730.397988608082
-    @test river_flow_model.variables.q_av.cumulative_material[2] ==
-          river_flow_model.boundary_conditions.reservoir.variables.outflow_av.cumulative_material[1]
+    @test river_flow_model.variables.q_cumulative[2] ≈ 2730.397988608082
+    @test river_flow_model.variables.q_cumulative[2] ==
+          river_flow_model.boundary_conditions.reservoir.variables.outflow_cumulative[1]
 
     @test river_flow_model.boundary_conditions.reservoir.variables.storage[1] ≈
           4.443593370702217e7
@@ -921,10 +919,10 @@ end
           29.654344093791327
     @test river_flow_model.boundary_conditions.reservoir.variables.outflow[1] ≈
           3.0009999145276134
-    @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow[1] ≈
+    @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow_cumulative[1] ≈
           525.2968994074305
-    @test river_flow_model.boundary_conditions.reservoir.variables.actevap.cumulative_material[1] ≈
-          0.004843999273837613
+    @test river_flow_model.boundary_conditions.reservoir.variables.actevap_cumulative[1] ≈
+          to_SI(0.004843999273837613, MM)
 
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
@@ -1057,8 +1055,7 @@ end
     @test river_flow_model.variables.a ≈ [280.7225571209805, 271.4609085323917]
     @test river_flow_model.variables.r ≈ [1.8354842671202385, 1.7763698223484754]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
-    @test river_flow_model.variables.q_av.cumulative_material ≈
-          [6778.106459961183, 6608.686781773178]
+    @test river_flow_model.variables.q_cumulative ≈ [6778.106459961183, 6608.686781773178]
 
     Wflow.update_floodplain_flow!(river_flow_model, domain.river, dt)
 
@@ -1069,7 +1066,7 @@ end
     @test river_flow_model.floodplain.variables.r ≈
           [0.28876507912737354, 0.22735103521877678]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074651032168534, 6.14213116671929]
-    @test river_flow_model.floodplain.variables.q_av.cumulative_material ≈
+    @test river_flow_model.floodplain.variables.q_cumulative ≈
           [163.41957033732095, 303.47846610520196]
 
     Wflow.update_bc_reservoir_model!(
@@ -1217,14 +1214,8 @@ end
             n_cells = n_river,
             n_edges = 2,
             q = [56.685647296907476, 53.70963118023338],
-            q_av = Wflow.AverageVector(;
-                n = 2,
-                average = [55.860830141394764, 53.06943588871848],
-            ),
-            q_channel_av = Wflow.AverageVector(;
-                n = 2,
-                average = [55.860830141394764, 53.06943588871848],
-            ),
+            q_average = [55.860830141394764, 53.06943588871848],
+            q_channel_average = [55.860830141394764, 53.06943588871848],
             h = [1.485704288021643],
             storage = [185814.5230442402],
         ),

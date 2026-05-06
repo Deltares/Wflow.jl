@@ -526,17 +526,17 @@
     end
 
     @testset "subsurface flow" begin
-        q_av_average = get_average(model.routing.subsurface_flow.variables.q_av)
-        @test sum(q_av_average) ≈ 6.250079949202134e7
-        @test q_av_average[domain.land.network.order[1]] ≈ 699.3636285243076
-        @test q_av_average[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
-        @test q_av_average[domain.land.network.order[end]] ≈ 287.61501877867994
+        q_average = model.routing.subsurface_flow.variables.q_average
+        @test sum(q_average) ≈ 6.250079949202134e7
+        @test q_average[domain.land.network.order[1]] ≈ 699.3636285243076
+        @test q_average[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
+        @test q_average[domain.land.network.order[end]] ≈ 287.61501877867994
     end
 
     @testset "Second timestep: overland routing" begin
         (; overland_flow) = model.routing
 
-        q = Wflow.get_average(overland_flow.variables.q_av)
+        q = overland_flow.variables.q_average
         @test q[26625] ≈ 0.0
         @test q[39308] ≈ 0.0
         @test q[domain.land.network.order[end]] ≈ Wflow.KIN_WAVE_MIN_FLOW
@@ -561,7 +561,7 @@
     end
 
     @testset "river flow" begin
-        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
+        q = model.routing.river_flow.variables.q_average
         @test sum(q) ≈ 3696.5789619579173
         @test q[1622] ≈ 0.0007502850311515928
         @test q[43] ≈ 11.458528971675033
@@ -571,10 +571,10 @@
     @testset "reservoir simple" begin
         res = model.routing.river_flow.boundary_conditions.reservoir
         @test res.variables.outflow[1] ≈ 0.2174998614438593
-        @test Wflow.get_average(res.variables.outflow_av)[1] ≈ 0.21749986282401396
-        @test Wflow.get_average(res.boundary_conditions.inflow)[1] ≈ 0.0005130607130643568
+        @test res.variables.outflow_average[1] ≈ 0.21749986282401396
+        @test res.boundary_conditions.inflow_average[1] ≈ 0.0005130607130643568
         @test res.variables.storage[1] ≈ 2.751299001489657f7
-        @test res.variables.actevap.cumulative_material[1] ≈
+        @test res.variables.actevap_cumulative[1] ≈
               to_SI(0.5400000810623169, MM; dt_val = dt)
         @test res.boundary_conditions.precipitation[1] ≈
               to_SI(0.17999997735023499, MM_PER_DT; dt_val = dt)
@@ -638,7 +638,7 @@ end
     end
 
     @testset "river flow at basin outlets and downstream of one pit" begin
-        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
+        q = model.routing.river_flow.variables.q_average
         @test q[4009] ≈ 8.426694842173548 # pit/ outlet, CartesianIndex(141, 228)
         @test q[4020] ≈ 0.006370691658310787 # downstream of pit 4009, CartesianIndex(141, 229)
         @test q[2508] ≈ 131.40631419288573 # pit/ outlet
@@ -693,7 +693,6 @@ end
 end
 
 @testitem "Cyclic river and reservoir external inflow (kinematic wave routing)" begin
-    using Wflow: get_average
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -708,21 +707,17 @@ end
     @testset "kinematic wave routing: river and reservoir external inflow (cyclic)" begin
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
-        @test get_average(
-            model.routing.river_flow.boundary_conditions.actual_external_abstraction_av,
-        )[44] == 0.0
-        @test get_average(model.routing.river_flow.variables.q_av)[44] ≈ 10.156053077341845
+        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_average[44] ==
+              0.0
+        @test model.routing.river_flow.variables.q_average[44] ≈ 10.156053077341845
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
-        @test get_average(reservoir.boundary_conditions.actual_external_abstraction_av)[2] ==
-              1.0
-        @test get_average(reservoir.boundary_conditions.inflow)[2] ≈ -0.9054049318713108
-        @test get_average(reservoir.variables.outflow_av)[2] ≈ 3.000999922024245
+        @test reservoir.boundary_conditions.actual_external_abstraction_average[2] == 1.0
+        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9054049318713108
+        @test reservoir.variables.outflow_average[2] ≈ 3.000999922024245
     end
 end
 
 @testitem "Cyclic river and reservoir external inflow (local inertial routing)" begin
-    using Wflow: get_average
-
     tomlpath = joinpath(@__DIR__, "sbm_river-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -737,41 +732,37 @@ end
     @testset "local inertial routing: river and reservoir external inflow (cyclic)" begin
         (; reservoir) = model.routing.river_flow.boundary_conditions
         @test model.routing.river_flow.boundary_conditions.external_inflow[44] ≈ 0.75
-        @test get_average(
-            model.routing.river_flow.boundary_conditions.actual_external_abstraction_av,
-        )[44] == 0.0
-        @test get_average(model.routing.river_flow.variables.q_av)[44] ≈ 10.119602100591411
+        @test model.routing.river_flow.boundary_conditions.actual_external_abstraction_average[44] ==
+              0.0
+        @test model.routing.river_flow.variables.q_average[44] ≈ 10.119602100591411
         @test reservoir.boundary_conditions.external_inflow[2] == -1.0
-        @test get_average(reservoir.boundary_conditions.actual_external_abstraction_av)[2] ==
-              1.0
-        @test get_average(reservoir.boundary_conditions.inflow)[2] ≈ -0.9090882985601229
-        @test get_average(reservoir.variables.outflow_av)[2] ≈ 3.000999922022744
+        @test reservoir.boundary_conditions.actual_external_abstraction_average[2] == 1.0
+        @test reservoir.boundary_conditions.inflow_average[2] ≈ -0.9090882985601229
+        @test reservoir.variables.outflow_average[2] ≈ 3.000999922022744
     end
 end
 
 @testitem "External negative inflow" begin
-    using Wflow: get_average
-
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
     model = Wflow.Model(config)
     config.dir_output = mktempdir()
     model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
-    (; actual_external_abstraction_av, external_inflow) =
+    (; actual_external_abstraction_average, external_inflow) =
         model.routing.river_flow.boundary_conditions
-    (; q_av) = model.routing.river_flow.variables
+    (; q_average) = model.routing.river_flow.variables
     @testset "river external negative inflow" begin
         Wflow.run_timestep!(model)
-        @test get_average(actual_external_abstraction_av)[44] ≈ 1.5965227273142157
-        @test get_average(q_av)[44] ≈ 1.4328200140906533
+        @test actual_external_abstraction_average[44] ≈ 1.5965227273142157
+        @test q_average[44] ≈ 1.4328200140906533
         Wflow.run_timestep!(model)
-        @test get_average(actual_external_abstraction_av)[44] ≈ 5.416747895349456
-        @test get_average(q_av)[44] ≈ 4.000700150630984
+        @test actual_external_abstraction_average[44] ≈ 5.416747895349456
+        @test q_average[44] ≈ 4.000700150630984
         Wflow.run_timestep!(model)
-        @test get_average(actual_external_abstraction_av)[44] ≈ 9.756847289612736
+        @test actual_external_abstraction_average[44] ≈ 9.756847289612736
         @test external_inflow[44] == -10.0
-        @test get_average(q_av)[44] ≈ 7.275452569433593
+        @test q_average[44] ≈ 7.275452569433593
     end
 end
 
@@ -824,7 +815,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river flow and depth (local inertial)" begin
-        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
+        q = model.routing.river_flow.variables.q_average
         @test sum(q) ≈ 3692.1984174051863
         @test q[1622] ≈ 7.260572774917902e-5
         @test q[43] ≈ 11.248731903973153
@@ -833,7 +824,7 @@ end
         @test h[1622] ≈ 0.00191277920611667
         @test h[43] ≈ 0.447403557220214
         @test h[501] ≈ 0.37810388857945015
-        q_channel = Wflow.get_average(model.routing.river_flow.variables.q_channel_av)
+        q_channel = model.routing.river_flow.variables.q_channel_average
         @test q ≈ q_channel
     end
 end
@@ -844,20 +835,20 @@ end
     config.dir_output = mktempdir()
     model = Wflow.Model(config)
     model.routing.river_flow.boundary_conditions.external_inflow[44] = -10.0
-    (; actual_external_abstraction_av, external_inflow, reservoir) =
+    (; actual_external_abstraction_average, external_inflow, reservoir) =
         model.routing.river_flow.boundary_conditions
-    (; q_av) = model.routing.river_flow.variables
+    (; q_average) = model.routing.river_flow.variables
     @testset "river external negative inflow (local inertial)" begin
         Wflow.run_timestep!(model)
-        @test Wflow.get_average(actual_external_abstraction_av)[44] ≈ 3.0038267868094692
-        @test Wflow.get_average(q_av)[44] ≈ 0.0007694313441619584
+        @test actual_external_abstraction_average[44] ≈ 3.0038267868094692
+        @test q_average[44] ≈ 0.0007694313441619584
         Wflow.run_timestep!(model)
-        @test Wflow.get_average(actual_external_abstraction_av)[44] ≈ 9.420226369186521
-        @test Wflow.get_average(q_av)[44] ≈ 0.009169625606576883
+        @test actual_external_abstraction_average[44] ≈ 9.420226369186521
+        @test q_average[44] ≈ 0.009169625606576883
         Wflow.run_timestep!(model)
-        @test Wflow.get_average(actual_external_abstraction_av)[44] ≈ 9.999999999999991
-        @test Wflow.get_average(external_inflow)[44] == -10.0
-        @test Wflow.get_average(q_av)[44] ≈ 6.917023458482667
+        @test actual_external_abstraction_average[44] ≈ 9.999999999999991
+        @test external_inflow_average[44] == -10.0
+        @test q_average[44] ≈ 6.917023458482667
     end
     Wflow.close_files(model; delete_output = false)
 end
@@ -872,7 +863,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river and overland flow and depth (local inertial)" begin
-        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
+        q = model.routing.river_flow.variables.q_average
         @test sum(q) ≈ 2415.8565080484427
         @test q[1622] ≈ 7.289953869913158e-5
         @test q[43] ≈ 5.235679976913814
@@ -1032,7 +1023,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "river flow (local inertial) with floodplain schematization simulation" begin
-        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
+        q = model.routing.river_flow.variables.q_average
         @test sum(q) ≈ 3682.763689938466
         @test q[1622] ≈ 7.260572782240141e-5
         @test q[43] ≈ 11.248731903973168
@@ -1053,7 +1044,7 @@ end
     Wflow.run_timestep!(model)
 
     @testset "change boundary condition for local inertial routing (including floodplain)" begin
-        q = Wflow.get_average(model.routing.river_flow.variables.q_av)
+        q = model.routing.river_flow.variables.q_average
         @test sum(q) ≈ 3682.950549280907
         @test q[1622] ≈ 7.260572782240141e-5
         @test q[43] ≈ 11.248731903973168
@@ -1177,7 +1168,7 @@ end
             model = Wflow.Model(config)
             Wflow.run_timestep!(model)
             Wflow.run_timestep!(model)
-            q = Wflow.get_average(model.routing.river_flow.variables.q_av)
+            q = model.routing.river_flow.variables.q_average
             @test sum(q) ≈ 3032.617045063436
             @test q[1622] ≈ 0.0006987386860043929
             @test q[43] ≈ 8.710529495056752
@@ -1209,10 +1200,7 @@ end
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
         @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
         @test all(re -> abs(re) < 6.6e11, overland_water_balance.relative_error)
-        inds = findall(
-            x -> x > 1e-3,
-            Wflow.get_average(model.routing.overland_flow.variables.q_av),
-        )
+        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_average)
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
@@ -1225,17 +1213,11 @@ end
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
         @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
         @test all(re -> abs(re) < 5.4e11, routing.overland_water_balance.relative_error)
-        inds = findall(
-            x -> x > 1e-3,
-            Wflow.get_average(model.routing.overland_flow.variables.q_av),
-        )
+        inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_average)
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 3e-5, river_water_balance.error)
         @test all(re -> abs(re) < 12.2, river_water_balance.relative_error)
-        inds = findall(
-            x -> x > 1e-3,
-            Wflow.get_average(model.routing.river_flow.variables.q_av),
-        )
+        inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_average)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
         @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
         @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)

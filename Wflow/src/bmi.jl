@@ -222,9 +222,6 @@ function BMI.get_value_ptr(model::Model, name::String)
             error("Accessing '$name' is not supported.")
         else
             vec = lens(model)
-            if vec isa AverageVector
-                vec = get_average(vec)
-            end
             return @view(vec[1:n])
         end
     end
@@ -412,7 +409,7 @@ function grid_element_type(
     ::T,
     var::PropertyLens,
 ) where {T <: Union{LocalInertialRiverFlowModel, LocalInertialOverlandFlowModel}}
-    vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
+    vars = (PropertyLens(x) for x in (:q, :q_average, :qx, :qy))
     element_type = if var in vars
         "edge"
     else

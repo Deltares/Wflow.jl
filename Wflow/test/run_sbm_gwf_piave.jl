@@ -50,7 +50,7 @@
         @test reservoir.variables.waterlevel ≈
               [23.970590790933628, 32.68607771649563, 39.97018425222192]
         @test reservoir.variables.storage ≈ [1.5532942832524955e8, 4.28e7, 7.16e7]
-        @test Wflow.get_average(reservoir.variables.outflow_av) ≈
+        @test reservoir.variables.outflow_average ≈
               [3.2489121397532985, 8.556416216129914, 28.17032166161074]
         @test soil.variables.exfiltsatwater[27:31] ≈ to_SI!(
             [
@@ -66,8 +66,8 @@
         @test maximum(soil.variables.exfiltsatwater) ≈
               to_SI(221.53945489105732, MM_PER_DT; dt_val = dt)
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(Wflow.get_average(river_flow.variables.q_av)) ≈ 30.071991490895094
-        @test maximum(Wflow.get_average(river_flow.variables.q_av)) ≈ 117.48258852034441
+        @test mean(river_flow.variables.q_average) ≈ 30.071991490895094
+        @test maximum(river_flow.variables.q_average) ≈ 117.48258852034441
         @test soil.variables.total_storage[7503] ≈ to_SI(472.9217078886107, MM)
         @test soil.variables.total_storage[17] ≈ to_SI(817.4107029296706, MM) # river cell
     end
@@ -90,7 +90,7 @@
         @test reservoir.variables.waterlevel ≈
               [23.964702651630343, 32.686077716495625, 39.97018425222192]
         @test reservoir.variables.storage ≈ [1.5529127318256468e8, 4.28e7, 7.16e7]
-        @test Wflow.get_average(reservoir.variables.outflow_av) ≈
+        @test reservoir.variables.outflow_average ≈
               [3.2489840968665207, 9.467087432483991, 38.61905891069846]
         @test soil.variables.exfiltsatwater[27:33] ≈ to_SI(
             [
@@ -108,8 +108,8 @@
         @test maximum(soil.variables.exfiltsatwater) ≈
               to_SI(334.9786549671658, MM_PER_DT; dt_val = dt)
         @test soil.variables.exfiltsatwater[17] == 0.0
-        @test mean(Wflow.get_average(river_flow.variables.q_av)) ≈ 36.80765857144827
-        @test maximum(Wflow.get_average(river_flow.variables.q_av)) ≈ 141.84332548772514
+        @test mean(river_flow.variables.q_average) ≈ 36.80765857144827
+        @test maximum(river_flow.variables.q_average) ≈ 141.84332548772514
         @test soil.variables.total_storage[7503] ≈ to_SI(463.4074094243159, MM)
         @test soil.variables.total_storage[17] ≈ to_SI(839.5331546043192, MM) # river cell
     end

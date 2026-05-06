@@ -90,7 +90,7 @@
 end
 
 @testitem "Piave water demand and allocation (sbm model)" begin
-    using Wflow: to_SI, MM_PER_DT, MM, get_average
+    using Wflow: to_SI, MM_PER_DT, MM
     using Statistics: mean
 
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
@@ -142,7 +142,7 @@ end
         @test reservoir.variables.waterlevel ≈
               [29.259144530899885, 32.68607771649562, 39.970184252221905]
         @test reservoir.variables.storage ≈ [1.8959925656023118e8, 4.28e7, 7.16e7]
-        @test Wflow.get_average(reservoir.variables.outflow_av) ≈
+        @test reservoir.variables.outflow_average ≈
               [4.839249448770597, 9.70890592273304, 57.64196655435958]
         @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ to_SI(
             [
@@ -157,14 +157,14 @@ end
         )
         @test maximum(soil.variables.exfiltsatwater) ≈
               to_SI(234.1526270577704, MM_PER_DT; dt_val = dt)
-        @test mean(Wflow.get_average(river_flow.variables.q_av)) ≈ 60.35958015226597
-        @test maximum(Wflow.get_average(river_flow.variables.q_av)) ≈ 235.44682290212157
+        @test mean(river_flow.variables.q_average) ≈ 60.35958015226597
+        @test maximum(river_flow.variables.q_average) ≈ 235.44682290212157
     end
 
     Wflow.run_timestep!(model)
 
     @testset "Second timestep" begin
-        sum_total_alloc = sum(Wflow.get_average(total_alloc))
+        sum_total_alloc = sum(total_alloc)
         @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
         @test sum(surfacewater_alloc) ≈ to_SI(1591.415961657279, MM_PER_DT; dt_val = dt)
         @test sum(act_groundwater_abst) ≈ to_SI(337.68291766185564, MM_PER_DT; dt_val = dt)
@@ -181,7 +181,7 @@ end
         @test reservoir.variables.waterlevel ≈
               [29.25110298462435, 32.686077716495625, 39.970184252221905]
         @test reservoir.variables.storage ≈ [1.8954714734036595e8, 4.28e7, 7.16e7]
-        @test Wflow.get_average(reservoir.variables.outflow_av) ≈
+        @test reservoir.variables.outflow_average ≈
               [4.841325917420907, 9.278008188175482, 53.34402066559018]
         @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ to_SI(
             [
@@ -196,8 +196,8 @@ end
         )
         @test maximum(soil.variables.exfiltsatwater) ≈
               to_SI(215.88061474014935, MM_PER_DT; dt_val = dt)
-        @test mean(get_average(river_flow.variables.q_av)) ≈ 56.22490708883267
-        @test maximum(river_flow.variables.q_av) ≈ 227.21143082238987
+        @test mean(river_flow.variables.q_average) ≈ 56.22490708883267
+        @test maximum(river_flow.variables.q_average) ≈ 227.21143082238987
     end
 
     Wflow.close_files(model; delete_output = false)
@@ -237,8 +237,7 @@ end
 
 @testitem "Piave activate river boundary (river subsurface exchange)" begin
     using Statistics: mean
-    using Wflow: to_SI, M3_PER_DAY, get_average
-
+    using Wflow: to_SI, M3_PER_DAY
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -260,13 +259,11 @@ end
         @test subsurface_flow.variables.zi[1] ≈ 0.05409810125066005
         @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
               subsurface_flow.variables.head[1]
-        @test get_average(river.variables.flux_av)[1] ≈
-              to_SI(37872.287583718644, M3_PER_DAY)
-        @test get_average(subsurface_flow.variables.to_river)[idx] ==
-              -get_average(river.variables.flux_av)[1]
-        @test mean(get_average(river.variables.flux_av)) ≈
-              to_SI(-39618.370151473195, M3_PER_DAY)
-        @test mean(get_average(subsurface_flow.variables.to_river)[land_indices]) ≈
+        @test river.variables.flux_average[1] ≈ to_SI(37872.287583718644, M3_PER_DAY)
+        @test subsurface_flow.variables.to_river_Average[idx] ==
+              -river.variables.flux_average[1]
+        @test mean(river.variables.flux_average) ≈ to_SI(-39618.370151473195, M3_PER_DAY)
+        @test mean(subsurface_flow.variables.to_river_average[land_indices]) ≈
               to_SI(39618.3701514732, M3_PER_DAY)
         @test recharge.variables.rate[1] ≈ to_SI(-0.0002922905062717429, M3_PER_DAY)
         @test mean(recharge.variables.rate) ≈ to_SI(0.0009271689030318317, M3_PER_DAY)
@@ -280,14 +277,12 @@ end
         @test subsurface_flow.variables.zi[1] ≈ 0.05585260657136559
         @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
               subsurface_flow.variables.head[1]
-        @test get_average(river.variables.flux_av)[1] ≈
-              to_SI(45231.725584511034, M3_PER_DAY)
-        @test river.variables.flux[1] == get_average(river.variables.flux_av)[1]
-        @test get_average(subsurface_flow.variables.to_river)[idx] ==
-              -get_average(river.variables.flux_av)[1]
-        @test mean(get_average(river.variables.flux_av)) ≈
-              to_SI(129.0006905680265, M3_PER_DAY)
-        @test mean(get_average(subsurface_flow.variables.to_river)[land_indices]) ≈
+        @test river.variables.flux_average[1] ≈ to_SI(45231.725584511034, M3_PER_DAY)
+        @test river.variables.flux[1] == river.variables.flux_average[1]
+        @test subsurface_flow.variables.to_river_average[idx] ==
+              -river.variables.flux_average[1]
+        @test mean(river.variables.flux_average) ≈ to_SI(129.0006905680265, M3_PER_DAY)
+        @test mean(subsurface_flow.variables.to_river_average[land_indices]) ≈
               to_SI(-129.0006905680318, M3_PER_DAY)
         @test recharge.variables.rate[1] ≈ to_SI(-0.00021663702639498745, M3_PER_DAY)
         @test mean(recharge.variables.rate) ≈ to_SI(0.0010751049777759111, M3_PER_DAY)
@@ -295,8 +290,6 @@ end
 end
 
 @testitem "Piave: reservoir without external negative inflow (sbm model)" begin
-    using Wflow: get_average
-
     # test cyclic reservoir external inflow
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
@@ -307,16 +300,13 @@ end
 
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
-    @test get_average(reservoir.boundary_conditions.actual_external_abstraction_av)[1] ==
-          0.0
-    @test get_average(reservoir.boundary_conditions.inflow)[1] ≈ 5.716044819323686
+    @test reservoir.boundary_conditions.actual_external_abstraction_average[1] == 0.0
+    @test reservoir.boundary_conditions.inflow_average[1] ≈ 5.716044819323686
     @test reservoir.variables.storage[1] ≈ 1.8954714734036595e8
-    @test get_average(reservoir.variables.outflow_av)[1] ≈ 4.841325917420907
+    @test reservoir.variables.outflow_average[1] ≈ 4.841325917420907
 end
 
 @testitem "Piave: reservoir with cyclic external negative inflow (sbm model)" begin
-    using Wflow: get_average
-
     tomlpath = joinpath(@__DIR__, "sbm_piave_demand_config.toml")
     config = Wflow.Config(tomlpath)
     config.input.cyclic["reservoir_water__external_inflow_volume_flow_rate"] = "reservoir_inflow"
@@ -327,13 +317,12 @@ end
 
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == -3.0
-    @test get_average(reservoir.boundary_conditions.actual_external_abstraction_av)[1] ≈ 3.0
+    @test reservoir.boundary_conditions.actual_external_abstraction_average[1] ≈ 3.0
     @test reservoir.variables.storage[1] ≈ 1.8903123036901748e8
-    @test get_average(reservoir.variables.outflow_av)[1] ≈ 4.8215504874860775
+    @test reservoir.variables.outflow_average[1] ≈ 4.8215504874860775
 end
 
 @testitem "Piave: reservoir with observed (cyclic) outflow (sbm model)" begin
-    using Wflow: get_average
     using Dates: DateTime
     # test use of observed reservoir outflow (cyclic)
     tomlpath = joinpath(@__DIR__, "sbm_piave_config.toml")
@@ -348,10 +337,10 @@ end
 
     (; reservoir) = model.routing.river_flow.boundary_conditions
     @test reservoir.boundary_conditions.external_inflow[1] == 0.0
-    @test get_average(reservoir.boundary_conditions.actual_external_abstraction_av)[1] ≈ 0.0
-    @test get_average(reservoir.boundary_conditions.inflow)[1] ≈ 5.6955612967900695
+    @test reservoir.boundary_conditions.actual_external_abstraction_average[1] ≈ 0.0
+    @test reservoir.boundary_conditions.inflow_average[1] ≈ 5.6955612967900695
     @test reservoir.variables.storage[1] ≈ 1.901087558591953e8
-    @test get_average(reservoir.variables.outflow_av)[1] ≈ 3.0
+    @test reservoir.variables.outflow_average[1] ≈ 3.0
     @test reservoir.variables.outflow[1] ≈ 3.0
 end
 

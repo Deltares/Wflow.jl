@@ -9,20 +9,28 @@
     exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Subsurface flow [m³ d⁻¹ => m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Cumulative subsurface flow [m³] for model timestep Δt
+    q_cumulative::Vector{Float64} = zeros(n)
     # Average subsurface flow [m³ d⁻¹ => m³ s⁻¹] for model timestep Δt
-    q_av::AverageVector = AverageVector(; n)
+    q_average::Vector{Float64} = zeros(n)
     # Inflow from upstream cells [m³ d⁻¹ => m³ s⁻¹]
     q_in::Vector{Float64} = fill(MISSING_VALUE, n)
+    # cumulative inflow from upstream cells [m³] for model timestep dt
+    q_in_cumulative::Vector{Float64} = zeros(n)
     # Average inflow from upstream cells [m³ d⁻¹ => m³ s⁻¹] for model timestep dt
-    q_in_av::AverageVector = AverageVector(; n)
+    q_in_average::Vector{Float64} = zeros(n)
     # Maximum subsurface flow [m² d⁻¹ => m s⁻¹]
     q_max::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
-    to_river::AverageVector = AverageVector(; n)
+    # Cumulative of the part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
+    to_river_cumulative::Vector{Float64} = zeros(n)
+    # Average of the part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
+    to_river_average::Vector{Float64} = zeros(n)
     # Net flow for boundaries subsurface flow [m³ d⁻¹ => m³ s⁻¹]
     q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Cumulative net flow (total) [m³]
+    q_net_cumulative::Vector{Float64} = zeros(n)
     # Average net flow (total) [m³ d⁻¹ => m³ s⁻¹]
-    q_net_av::AverageVector = AverageVector(; n)
+    q_net_average::Vector{Float64} = zeros(n)
     # Subsurface storage that can be released [m³]
     storage::Vector{Float64}
 end
@@ -178,13 +186,13 @@ function flux_to_river!(
     domain::NetworkRiver,
     dt::Float64,
 )
-    (; to_river) = subsurface_flow_model.variables
+    (; to_river_average, to_river_cumulative) = subsurface_flow_model.variables
     (; river) = subsurface_flow_model.boundary_conditions
     if isnothing(river)
-        average!(to_river, dt)
+        @. to_river_average = to_river_cumulative / dt
     else
         inds = domain.land_indices
-        get_average(to_river)[inds] = -get_average(river.variables.flux_av)
+        to_river_average[inds] = -river.variables.flux_average
     end
     return nothing
 end
@@ -202,17 +210,17 @@ function kinwave_subsurface_update!(
 
     (;
         q_in,
-        q_in_av,
+        q_in_cumulative,
         q,
-        q_av,
-        to_river,
+        q_cumulative,
+        to_river_cumulative,
         zi,
         head,
         exfiltwater,
         q_max,
         storage,
         q_net_bnds,
-        q_net_av,
+        q_net_cumulative,
     ) = subsurface_flow_model.variables
     (; specific_yield, top, soilthickness, kh_profile) = subsurface_flow_model.parameters
     (; river) = subsurface_flow_model.boundary_conditions
@@ -231,12 +239,9 @@ function kinwave_subsurface_update!(
                         i -> q[i] * (1.0 - flow_fraction_to_river[i]),
                         upstream_nodes[n],
                     )
-                    add_to_cumulative!(
-                        to_river,
-                        v,
-                        sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]),
-                        dt,
-                    )
+                    to_river_cumulative[v] +=
+                        sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) *
+                        dt
                 else
                     q_in[v] = sum_at(i -> q[i], upstream_nodes[n])
                 end
@@ -258,13 +263,13 @@ function kinwave_subsurface_update!(
                     v,
                 )
                 # [m³] += [m³ s⁻¹] * [s]
-                add_to_cumulative!(q_in_av, v, q_in[v], dt)
+                q_in_cumulative[v] += q_in[v] * dt
                 # [m³] += [m³ s⁻¹] * [s]
-                add_to_cumulative!(q_av, v, q[v], dt)
+                q_cumulative[v] += q[v] * dt
                 # [m s⁻¹] += [m s⁻¹]
                 exfiltwater[v] += _exfiltwater
                 # [m³] += [m s⁻¹] * [s]
-                add_to_cumulative!(q_net_av, v, netflux * area[v], dt)
+                q_net_cumulative[v] += netflux * area[v] * dt
                 # [m] = [m] - [m]
                 head[v] = top[v] - zi[v]
                 # [m³] = [-] * ([m] - [m]) * [m²]
@@ -284,10 +289,10 @@ function update_subsurface_flow_model!(
     domain::Domain,
     dt::Float64,
 )
-    (; to_river) = subsurface_flow_model.variables
+    (; to_river_cumulative) = subsurface_flow_model.variables
     (; adaptive) = subsurface_flow_model.timestepping
 
-    zero!(to_river)
+    to_river_cumulative .= 0.0
     set_flux_vars!(subsurface_flow_model)
     t = 0.0
     while t < dt
@@ -343,7 +348,7 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
 end
 
 get_flux_to_river(subsurface_flow_model::LateralSSFModel, inds::Vector{Int}) =
-    get_average(subsurface_flow_model.variables.to_river)[inds]
+    subsurface_flow_model.variables.to_river_average[inds]
 
 # wrapper method
 get_water_depth(subsurface_flow_model::LateralSSFModel) = subsurface_flow_model.variables.zi

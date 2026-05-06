@@ -202,12 +202,16 @@ end
     storage::Vector{Float64}
     # outflow from reservoir [m³ s⁻¹]
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    # Cumulative outflow from reservoir [m³] for model timestep dt
+    outflow_cumulative::Vector{Float64} = zeros(length(waterlevel))
     # average outflow from reservoir [m³ s⁻¹] for model timestep dt
-    outflow_av::AverageVector = AverageVector(; n = length(waterlevel))
+    outflow_average::Vector{Float64} = zeros(length(waterlevel))
     # observed outflow from reservoir [m³ s⁻¹]
     outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
+    # cumulative actual evaporation for reservoir area [m]
+    actevap_cumulative::Vector{Float64} = zeros(length(waterlevel))
     # average actual evaporation for reservoir area [mm dt⁻¹ => m s⁻¹]
-    actevap::AverageVector = AverageVector(; n = length(waterlevel))
+    actevap_average::Vector{Float64} = zeros(length(waterlevel))
 end
 
 "Initialize reservoir model variables"
@@ -242,12 +246,16 @@ end
     inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n)
     # inflow from overland flow into reservoir [m³ s⁻¹]
     inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n)
-    # total inflow into reservoir [m³ s⁻¹] for model timestep dt
-    inflow::AverageVector = AverageVector(; n)
+    # cumulative inflow reservoir [m³] for model timestep dt
+    inflow_cumulative::Vector{Float64} = zeros(n)
+    # average inflow into reservoir [m³ s⁻¹] for model timestep dt
+    inflow_average::Vector{Float64} = zeros(n)
     # external inflow (abstraction/supply/demand) [m³ s⁻¹]
     external_inflow::Vector{Float64} = zeros(n)
-    # cumulative actual abstraction from external negative inflow [m³]
-    actual_external_abstraction_av::AverageVector = AverageVector(; n)
+    # cumulative actual abstractoin from external negative flow [m³]
+    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n)
+    # average actual abstraction from external negative inflow [m³ s⁻¹]
+    actual_external_abstraction_average::Vector{Float64} = zeros(n)
     # average precipitation for reservoir area [mm dt⁻¹ => m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
     # average potential evaporation for reservoir area [mm dt⁻¹ => m s⁻¹]
@@ -531,7 +539,7 @@ function update_reservoir_free_weir(
 
         # update values for the lower reservoir in place
         res_v.outflow[lo] = -outflow
-        add_to_cumulative!(res_v.outflow_av, lo, -outflow, dt)
+        res_v.outflow_cumulative[lo] -= outflow * dt
         res_v.storage[lo] = lower_res_storage
         waterlevel[lo] = lower_res_waterlevel
     end
@@ -609,9 +617,9 @@ function update_reservoir_model!(
     res_v.outflow[i] = outflow
 
     # average variables (here accumulated for model timestep dt)
-    add_to_cumulative!(res_bc.inflow, i, inflow, dt)
-    add_to_cumulative!(res_v.outflow_av, i, outflow, dt)
-    add_to_cumulative!(res_v.actevap, i, evaporation / res_p.area[i], dt)
+    res_bc.inflow_cumulative[i] += inflow * dt
+    res_v.outflow_cumulative[i] += outflow * dt
+    res_v.actevap_cumulative[i] += evaporation / res_p.area[i] * dt
     return nothing
 end
 

@@ -305,9 +305,6 @@ end
 
         function test_warm_state(var_name, i, val)
             A, metadata = get_field_in_model(model, var_name)
-            if A isa Wflow.AverageVector
-                A = Wflow.get_average(A)
-            end
             @test A[i] ≈ to_SI(val, metadata.unit)
         end
 
