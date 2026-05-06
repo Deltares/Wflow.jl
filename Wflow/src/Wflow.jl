@@ -337,7 +337,7 @@ function run!(model::Model; close_files = true)
 
     # write output state netCDF
     if !isnothing(writer.endstate_writer.output_path)
-        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
+        @info "Write output states to netCDF file `$(writer.endstate_writer.output_path)`."
     end
     write_netcdf_timestep(model, writer.endstate_writer)
 
