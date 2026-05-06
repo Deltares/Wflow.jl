@@ -267,6 +267,9 @@ end
     # discharge for the river, as well as waterlevel, storage, outflow and actual
     # evaporation for the reservoir.
     using Graphs: DiGraph, add_edge!
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
+    using Wflow: ReservoirProfileType
+    area = 1.498462875e6
     n = 2
     river_flow_model = Wflow.KinWaveRiverFlowModel(;
         timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n)),
@@ -283,9 +286,23 @@ end
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1],
-                    storfunc = [Wflow.ReservoirProfileType.linear],
+                    storfunc = [ReservoirProfileType.linear],
+                    storage_from_level = [
+                        LinearInterpolation(
+                            [0.0, area],
+                            [0.0, 1.0];
+                            extrapolation = ExtrapolationType.Linear,
+                        ),
+                    ],
+                    level_from_storage = [
+                        LinearInterpolation(
+                            [0.0, inv(area)],
+                            [0.0, 1.0];
+                            extrapolation = ExtrapolationType.Linear,
+                        ),
+                    ],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
-                    area = [1.498462875e6],
+                    area = [area],
                     maxrelease = [24.007999420166016],
                     demand = [3.000999927520752],
                     targetminfrac = [0.07482631504535675],
@@ -351,6 +368,7 @@ end
 
 @testitem "unit: local inertial river flow with one reservoir" begin
     using DataInterpolations: LinearInterpolation, ExtrapolationType
+    using Wflow: ReservoirProfileType
     # Test local inertial river routing (no floodplain) on a 3-node graph (1 → 2 → 3) and a
     # simple reservoir (outflowfunc = simple) at node 2. Each sub-step of the local inertial
     # update is called and verified individually:
@@ -379,6 +397,7 @@ end
                 parameters = Wflow.ReservoirParameters(;
                     id = [2],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
+                    storfunc = [ReservoirProfileType.linear],
                     storage_from_level = [
                         LinearInterpolation(
                             [0.0, area],

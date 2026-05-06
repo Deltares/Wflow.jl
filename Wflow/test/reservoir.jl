@@ -16,6 +16,7 @@
     area = 1885665.353626924
     res_params = Wflow.ReservoirParameters(;
         id = [1],
+        storfunc = [ReservoirProfileType.linear],
         storage_from_level = [
             LinearInterpolation(
                 [0.0, area],
@@ -93,6 +94,7 @@ end
     area = 180510409.0
     res_params = Wflow.ReservoirParameters(;
         id = [1],
+        storfunc = [ReservoirProfileType.linear],
         storage_from_level = [
             LinearInterpolation(
                 [0.0, area],
@@ -141,6 +143,7 @@ end
 
 @testitem "unit: update_reservoir_model!" begin
     using Graphs: DiGraph, add_edge!
+    using Wflow: ReservoirProfileType
     using DataInterpolations: LinearInterpolation, ExtrapolationType
 
     n = 1
@@ -158,6 +161,7 @@ end
         ),
         parameters = Wflow.ReservoirParameters(;
             id = [1],
+            storfunc = [ReservoirProfileType.linear],
             storage_from_level = [
                 LinearInterpolation(
                     [0.0, area],
@@ -235,6 +239,7 @@ end
         outflowfunc = [ReservoirOutflowType.free_weir, ReservoirOutflowType.rating_curve],
         b = [140.0, NaN],
         e = [1.5, NaN],
+        storfunc = [ReservoirProfileType.interpolation, ReservoirProfileType.interpolation],
         storage_from_level = [
             LinearInterpolation(
                 sh[1].S,
@@ -339,6 +344,7 @@ end
     res_params = Wflow.ReservoirParameters(;
         id = [1],
         area = [200_000_000],
+        storfunc = [ReservoirProfileType.interpolation],
         storage_from_level = [
             LinearInterpolation(sh.S, sh.H; extrapolation = ExtrapolationType.Linear),
         ],
