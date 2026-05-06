@@ -4,7 +4,7 @@
     n = 1
     N = 3
 
-    model = Wflow.NonPaddyModel(;
+    nonpaddy_model = Wflow.NonPaddyModel(;
         parameters = Wflow.NonPaddyParameters(;
             irrigation_efficiency = [1.0],
             maximum_irrigation_rate = [25.0],
@@ -53,7 +53,7 @@
     @test depletion ≈ 8.490680329931607
     @test readily_available_water ≈ 4.435773290850226
     irri_dem_gross = depletion
-    demand_gross = Wflow.compute_demand_gross(model, soil, irri_dem_gross, i)
+    demand_gross = Wflow.compute_demand_gross(nonpaddy_model, soil, irri_dem_gross, i)
     @test demand_gross ≈ 8.490680329931607
 end
 
@@ -68,10 +68,10 @@ end
         h_opt = [50.0],
         h_max = [80.0],
     )
-    model = Wflow.PaddyModel(; parameters, variables)
-    @test Wflow.compute_irrigation_depth(model, 1) ≈ 35.0
+    paddy_model = Wflow.PaddyModel(; parameters, variables)
+    @test Wflow.compute_irrigation_depth(paddy_model, 1) ≈ 35.0
 
-    Wflow.update_demand_gross!(model)
+    Wflow.update_demand_gross!(paddy_model)
     @test only(variables.demand_gross) ≈ 25.0
 end
 
@@ -79,7 +79,7 @@ end
     include("testing_utils.jl")
     n = 1
 
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -108,20 +108,26 @@ end
 
     dt = 86400.0
 
-    Wflow.surface_water_allocation_local!(model, demand_variables, river, domain, dt)
+    Wflow.surface_water_allocation_local!(
+        allocation_model,
+        demand_variables,
+        river,
+        domain,
+        dt,
+    )
 
     @test river.allocation.variables.act_surfacewater_abst_vol |> only ≈ 12.0
     @test river.allocation.variables.available_surfacewater |> only ≈ 288.0
     @test demand_variables.surfacewater_demand |> only ≈ 0.0
     @test river.allocation.variables.act_surfacewater_abst |> only ≈ 0.02
-    @test model.variables.surfacewater_alloc |> only ≈ 0.02
+    @test allocation_model.variables.surfacewater_alloc |> only ≈ 0.02
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
     include("testing_utils.jl")
 
     n = 3
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
             frac_sw_used = [1.0],
@@ -173,7 +179,13 @@ end
         dt,
     ) ≈ 2.6432180030503854e8
 
-    Wflow.surface_water_allocation_area!(model, demand_variables, river, domain, dt)
+    Wflow.surface_water_allocation_area!(
+        allocation_model,
+        demand_variables,
+        river,
+        domain,
+        dt,
+    )
 
     @test river.allocation.variables.available_surfacewater ≈
           [1.5220980030503854e8, 4.1944e7, 7.0168e7]
@@ -181,13 +193,13 @@ end
           [608.1360277590558, 167.5822285897938, 280.34784035115035]
     @test river.allocation.variables.act_surfacewater_abst ≈
           [1.008608685367754, 0.27797992757124085, 0.46503184145095416]
-    @test model.variables.surfacewater_alloc ≈ [0.65, 0.77, 0.331]
+    @test allocation_model.variables.surfacewater_alloc ≈ [0.65, 0.77, 0.331]
 end
 
 @testitem "unit: groundwater_allocation_local!" begin
     n = 1
 
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
     )
@@ -199,23 +211,23 @@ end
     parameters = Wflow.LandParameters(; area = [591286.4], reservoir_coverage = [false])
 
     Wflow.groundwater_allocation_local!(
-        model,
+        allocation_model,
         demand_variables,
         groundwater_storage,
         parameters,
     )
 
-    @test model.variables.act_groundwater_abst_vol |> only ≈ 59128.64
-    @test model.variables.available_groundwater |> only ≈ 177832.06
+    @test allocation_model.variables.act_groundwater_abst_vol |> only ≈ 59128.64
+    @test allocation_model.variables.available_groundwater |> only ≈ 177832.06
     @test demand_variables.groundwater_demand |> only == 0.0
-    @test model.variables.act_groundwater_abst |> only ≈ 100.0
-    @test model.variables.groundwater_alloc |> only ≈ 100.0
+    @test allocation_model.variables.act_groundwater_abst |> only ≈ 100.0
+    @test allocation_model.variables.groundwater_alloc |> only ≈ 100.0
 end
 
 @testitem "unit: groundwater_allocation_area!" begin
     n = 3
 
-    model = Wflow.AllocationLandModel(;
+    allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(; frac_sw_used = [], areas = []),
         variables = Wflow.AllocationLandVariables(;
@@ -237,11 +249,11 @@ end
         ),
     )
 
-    Wflow.groundwater_allocation_area!(model, demand_variables, domain)
+    Wflow.groundwater_allocation_area!(allocation_model, demand_variables, domain)
 
-    @test model.variables.act_groundwater_abst_vol ≈
+    @test allocation_model.variables.act_groundwater_abst_vol ≈
           [141483.796500842, 143733.60374878853, 142887.23392586954]
-    @test model.variables.act_groundwater_abst ≈
+    @test allocation_model.variables.act_groundwater_abst ≈
           [234.58608886250354, 238.31636396144145, 236.91304717605513]
-    @test model.variables.groundwater_alloc ≈ [23.2345, 12.261, 674.32]
+    @test allocation_model.variables.groundwater_alloc ≈ [23.2345, 12.261, 674.32]
 end

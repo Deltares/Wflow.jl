@@ -177,7 +177,7 @@ end
 "Update the river sediment transport model for a single timestep"
 function update_river_sediment_model!(
     river_flow_model::RiverSedimentModel,
-    to_river_model::SedimentToRiverDifferentiationModel,
+    sediment_to_river_model::SedimentToRiverDifferentiationModel,
     domain::DomainRiver,
     dt::Float64,
 )
@@ -205,7 +205,7 @@ function update_river_sediment_model!(
         river_flow_model.sediment_flux,
         river_flow_model.hydrological_forcing,
         river_flow_model.transport_capacity,
-        to_river_model,
+        sediment_to_river_model,
         river_flow_model.potential_erosion,
         domain.network.land_indices,
     )

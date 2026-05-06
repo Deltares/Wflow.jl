@@ -55,19 +55,12 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
     mannings_n = ncread(
         dataset,
         config,
-        "river_water_flow__manning_n_parameter";
+        "river_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
-        defaults = 0.036,
-        type = Float64,
     )
-    bankfull_depth = ncread(
-        dataset,
-        config,
-        "river_bank_water__depth";
-        sel = indices,
-        defaults = 1.0,
-        type = Float64,
-    )
+    bankfull_depth =
+        ncread(dataset, config, "river_bank_water__depth", Routing; sel = indices)
 
     # use fixed wetted perimeter based on 0.5 * bankfull_depth
     wetted_perimeter = flow_width + bankfull_depth
@@ -88,10 +81,9 @@ function RiverFlowBC(
     external_inflow = ncread(
         dataset,
         config,
-        "river_water__external_inflow_volume_flow_rate";
+        "river_water__external_inflow_volume_flow_rate",
+        Routing;
         sel = indices,
-        defaults = 0.0,
-        type = Float64,
     )
     n = length(indices)
     bc = RiverFlowBC(; n, external_inflow, reservoir)
@@ -171,10 +163,9 @@ function init_kinematic_wave_overland_flow(
     mannings_n = ncread(
         dataset,
         config,
-        "land_surface_water_flow__manning_n_parameter";
+        "land_surface_water_flow__manning_n_parameter",
+        Routing;
         sel = indices,
-        defaults = 0.072,
-        type = Float64,
     )
 
     n = length(indices)
@@ -384,6 +375,59 @@ update_floodplain_model!(
     dt::Float64,
 ) where {T <: KinematicWave, F <: Nothing} = nothing
 
+"Run reservoir model and copy reservoir outflow to inflow (qin) of downstream river cell"
+function update_reservoir_model!(
+    reservoir_model::ReservoirModel,
+    river_flow_vars::RiverFlowVariables,
+    network::NetworkRiver,
+    v::Int,
+    dt::Float64,
+    dt_forcing::Float64,
+)
+    (; boundary_conditions, variables) = reservoir_model
+    (; storage, outflow) = variables
+    (;
+        external_inflow,
+        actual_external_abstraction_av,
+        inflow_overland,
+        inflow_subsurface,
+    ) = boundary_conditions
+    (; q, qin) = river_flow_vars
+    (; reservoir_indices, graph) = network
+
+    i = reservoir_indices[v]
+    iszero(i) && return nothing
+
+    # If the external inflow is negative, the abstraction is limited
+    inflow_ext = external_inflow[i]
+    if inflow_ext < 0.0
+        abstraction = min(-inflow_ext, (storage[i] / dt) * 0.98)
+        actual_external_abstraction_av[i] += abstraction * dt
+        inflow = -abstraction
+    else
+        inflow = inflow_ext
+    end
+
+    net_inflow = q[v] + inflow_overland[i] + inflow_subsurface[i] + inflow
+    update_reservoir_model!(reservoir_model, i, net_inflow, dt, dt_forcing)
+
+    downstream_nodes = outneighbors(graph, v)
+    n_downstream = length(downstream_nodes)
+    if n_downstream == 1
+        j = only(downstream_nodes)
+        qin[j] = outflow[i]
+    elseif n_downstream == 0
+        error(
+            """A reservoir without a downstream river node is not supported.
+            Add a downstream river node or move the reservoir to an upstream node (model schematization).
+            """,
+        )
+    else
+        error("bifurcations not supported")
+    end
+    return nothing
+end
+
 "Update river flow model `RiverFlowModel{<:KinematicWave}` for a single timestep"
 function kinwave_river_update!(
     river_flow_model::RiverFlowModel{<:KinematicWave},
@@ -391,14 +435,8 @@ function kinwave_river_update!(
     dt::Float64,
     dt_forcing::Float64,
 )
-    (;
-        graph,
-        order_of_subdomains,
-        order_subdomain,
-        subdomain_indices,
-        upstream_nodes,
-        reservoir_indices,
-    ) = domain.network
+    (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
+        domain.network
 
     (;
         reservoir,
@@ -413,10 +451,6 @@ function kinwave_river_update!(
     (; h, q, q_av, storage, qin, qin_av, qlat) = river_flow_model.variables
     (; floodplain) = river_flow_model
 
-    if !isnothing(reservoir)
-        res_bc = reservoir.boundary_conditions
-    end
-
     ns = length(order_of_subdomains)
     qin .= 0.0
     for k in 1:ns
@@ -430,69 +464,43 @@ function kinwave_river_update!(
                 if external_inflow[v] < 0.0
                     _abstraction = min(-external_inflow[v], (storage[v] / dt) * 0.80)
                     actual_external_abstraction_av[v] += _abstraction * dt
-                    _inflow_lat = -_abstraction / flow_length[v]
+                    _inflow = -_abstraction / flow_length[v]
                 else
-                    _inflow_lat = external_inflow[v] / flow_length[v]
+                    _inflow = external_inflow[v] / flow_length[v]
                 end
                 # internal abstraction (water demand) is limited by river storage and
                 # negative external inflow as part of water allocation computations.
-                _inflow_lat -= abstraction[v] / flow_length[v]
+                _inflow -= abstraction[v] / flow_length[v]
 
                 if !isnothing(floodplain)
-                    _inflow_lat += floodplain_water_exchange[v] / flow_length[v]
+                    _inflow += floodplain_water_exchange[v] / flow_length[v]
                 end
 
                 q[v] = kinematic_wave(
                     qin[v],
                     q[v],
-                    qlat[v] + _inflow_lat,
+                    qlat[v] + _inflow,
                     alpha[v],
                     beta,
                     dt,
                     flow_length[v],
                 )
 
-                if !isnothing(reservoir) && reservoir_indices[v] != 0
-                    # run reservoir model and copy reservoir outflow to inflow (qin) of
-                    # downstream river cell
-                    i = reservoir_indices[v]
-                    # If external_inflow < 0, abstraction is limited
-                    if res_bc.external_inflow[i] < 0.0
-                        _abstraction = min(
-                            -res_bc.external_inflow[i],
-                            (reservoir.variables.storage[i] / dt) * 0.98,
-                        )
-                        res_bc.actual_external_abstraction_av[i] += _abstraction * dt
-                        res_inflow = -_abstraction
-                    else
-                        res_inflow = res_bc.external_inflow[i]
-                    end
-                    net_inflow =
-                        q[v] +
-                        res_bc.inflow_overland[i] +
-                        res_bc.inflow_subsurface[i] +
-                        res_inflow
-                    update_reservoir_model!(reservoir, i, net_inflow, dt, dt_forcing)
-
-                    downstream_nodes = outneighbors(graph, v)
-                    n_downstream = length(downstream_nodes)
-                    if n_downstream == 1
-                        j = only(downstream_nodes)
-                        qin[j] = reservoir.variables.outflow[i]
-                    elseif n_downstream == 0
-                        error(
-                            """A reservoir without a downstream river node is not supported.
-                            Add a downstream river node or move the reservoir to an upstream node (model schematization).
-                            """,
-                        )
-                    else
-                        error("bifurcations not supported")
-                    end
+                if !isnothing(reservoir)
+                    update_reservoir_model!(
+                        reservoir,
+                        river_flow_model.variables,
+                        domain.network,
+                        v,
+                        dt,
+                        dt_forcing,
+                    )
                 end
                 # update h and storage
                 flow_area = alpha[v] * pow(q[v], beta)
                 h[v] = flow_area / flow_width[v]
                 storage[v] = flow_length[v] * flow_area
+
                 # average variables (here accumulated for model timestep Δt)
                 q_av[v] += q[v] * dt
                 qin_av[v] += qin[v] * dt

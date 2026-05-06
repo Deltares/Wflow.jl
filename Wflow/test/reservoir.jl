@@ -1,4 +1,4 @@
-@testitem "Update reservoir simple" begin
+@testitem "unit: update reservoir simple" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Simple reservoir (outflowfunc = 4)
     n = 1
@@ -60,7 +60,7 @@
     end
 end
 
-@testitem "Update reservoir Modified Puls approach (outflowfunc = 3)" begin
+@testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # ReservoirModel Modified Puls approach (outflowfunc = 3)
     n = 1
@@ -117,6 +117,68 @@ end
     @test res_bc.precipitation[1] ≈ 20.0
     @test res_bc.evaporation[1] ≈ 3.2
     @test res_v.actevap[1] ≈ 3.2
+end
+
+@testitem "unit: update_reservoir_model!" begin
+    using Graphs: DiGraph, add_edge!
+
+    n = 1
+    reservoir_model = Wflow.ReservoirModel(;
+        boundary_conditions = Wflow.ReservoirBC(;
+            n,
+            external_inflow = [-1.0],
+            inflow_overland = [0.0],
+            inflow_subsurface = [0.00041241066945499203],
+            inflow = [0.0],
+            precipitation = [0.07000001519918442],
+            evaporation = [0.529999852180481],
+        ),
+        parameters = Wflow.ReservoirParameters(;
+            id = [1],
+            storfunc = [Wflow.ReservoirProfileType.linear],
+            outflowfunc = [Wflow.ReservoirOutflowType.simple],
+            area = [9.069779e4],
+            maxrelease = [1.74],
+            demand = [0.2175],
+            targetminfrac = [0.358469158],
+            targetfullfrac = [0.83492106199],
+            maxstorage = [3.3e7],
+        ),
+        variables = Wflow.ReservoirVariables(;
+            waterlevel = [3.0266425035195113],
+            storage = [2.7450978618928656e7],
+        ),
+    )
+
+    n_river = 2
+    river_flow_vars = Wflow.RiverFlowVariables(;
+        n = n_river,
+        q = [0.00012002923701686638, 0.21747539140212965],
+        q_av = zeros(n_river),
+        q_channel_av = zeros(n_river),
+    )
+
+    graph = DiGraph(2)
+    add_edge!(graph, 1, 2)
+    network = Wflow.NetworkRiver(; graph, reservoir_indices = [1])
+
+    v = 1
+    dt = 1000.0
+    dt_forcing = 86400.0
+
+    Wflow.update_reservoir_model!(
+        reservoir_model,
+        river_flow_vars,
+        network,
+        v,
+        dt,
+        dt_forcing,
+    )
+    @test river_flow_vars.qin[2] ≈ 0.21749985206208133
+    @test reservoir_model.boundary_conditions.actual_external_abstraction_av[1] ≈ 1000.0
+    @test reservoir_model.variables.storage[1] ≈ 2.744976116863499e7
+    @test reservoir_model.variables.waterlevel[1] ≈ 3.013219350720886
+    @test reservoir_model.variables.outflow[1] ≈ 0.21749985206208133
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
