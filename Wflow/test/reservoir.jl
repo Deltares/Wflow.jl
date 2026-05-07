@@ -1,5 +1,6 @@
 @testitem "unit: update reservoir simple" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
     # Simple reservoir (outflowfunc = 4)
     n = 1
     res_bc = Wflow.ReservoirBC(;
@@ -12,15 +13,30 @@
         precipitation = [4.2],
         evaporation = [1.5],
     )
+    area = 1885665.353626924
     res_params = Wflow.ReservoirParameters(;
         id = [1],
+        storfunc = [ReservoirProfileType.linear],
+        storage_from_level = [
+            LinearInterpolation(
+                [0.0, area],
+                [0.0, 1.0];
+                extrapolation = ExtrapolationType.Linear,
+            ),
+        ],
+        level_from_storage = [
+            LinearInterpolation(
+                [0.0, inv(area)],
+                [0.0, 1.0];
+                extrapolation = ExtrapolationType.Linear,
+            ),
+        ],
         demand = [52.523],
         maxrelease = [420.184],
         maxstorage = [25_000_000.0],
-        area = [1885665.353626924],
+        area = [area],
         targetfullfrac = [0.8],
         targetminfrac = [0.2425554726620697],
-        storfunc = [ReservoirProfileType.linear],
         outflowfunc = [ReservoirOutflowType.simple],
     )
     res_vars = Wflow.ReservoirVariables(;
@@ -62,6 +78,7 @@ end
 
 @testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
     # ReservoirModel Modified Puls approach (outflowfunc = 3)
     n = 1
     res_bc = Wflow.ReservoirBC(;
@@ -74,22 +91,32 @@ end
         precipitation = [20.0],
         evaporation = [3.2],
     )
+    area = 180510409.0
     res_params = Wflow.ReservoirParameters(;
         id = [1],
-        area = [180510409.0],
-        threshold = [0.0],
         storfunc = [ReservoirProfileType.linear],
+        storage_from_level = [
+            LinearInterpolation(
+                [0.0, area],
+                [0.0, 1.0];
+                extrapolation = ExtrapolationType.Linear,
+            ),
+        ],
+        level_from_storage = [
+            LinearInterpolation(
+                [0.0, inv(area)],
+                [0.0, 1.0];
+                extrapolation = ExtrapolationType.Linear,
+            ),
+        ],
+        area = [area],
+        threshold = [0.0],
         outflowfunc = [ReservoirOutflowType.modified_puls],
         b = [0.22],
         e = [2.0],
     )
     res_vars = Wflow.ReservoirVariables(;
-        storage = Wflow.initialize_storage(
-            [ReservoirProfileType.linear],
-            [180510409.0],
-            [18.5],
-            res_params.sh,
-        ),
+        storage = [res_params.storage_from_level[1](18.5)],
         waterlevel = [18.5],
     )
 
@@ -104,12 +131,7 @@ end
     Wflow.set_reservoir_vars!(res)
     Wflow.update_reservoir_model!(res, 1, 2500.0, 86400.0, 86400.0)
     Wflow.average_reservoir_vars!(res, 86400.0)
-    @test Wflow.waterlevel(
-        res_p.storfunc[1],
-        res_p.area[1],
-        res_v.storage[1],
-        res_p.sh[1],
-    ) ≈ 19.672653848925634
+    @test res_p.level_from_storage[1](res_v.storage[1]) ≈ 19.672653848925634
     @test res_v.outflow[1] ≈ 85.14292808113598
     @test res_v.outflow_av ≈ res_v.outflow
     @test res_v.storage[1] ≈ 3.55111879238499e9
@@ -121,8 +143,12 @@ end
 
 @testitem "unit: update_reservoir_model!" begin
     using Graphs: DiGraph, add_edge!
+    using Wflow: ReservoirProfileType
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
 
     n = 1
+    area = 9.069779e4
+    waterlevel = 3.0266425035195113
     reservoir_model = Wflow.ReservoirModel(;
         boundary_conditions = Wflow.ReservoirBC(;
             n,
@@ -135,9 +161,23 @@ end
         ),
         parameters = Wflow.ReservoirParameters(;
             id = [1],
-            storfunc = [Wflow.ReservoirProfileType.linear],
+            storfunc = [ReservoirProfileType.linear],
+            storage_from_level = [
+                LinearInterpolation(
+                    [0.0, area],
+                    [0.0, 1.0];
+                    extrapolation = ExtrapolationType.Linear,
+                ),
+            ],
+            level_from_storage = [
+                LinearInterpolation(
+                    [0.0, inv(area)],
+                    [0.0, 1.0];
+                    extrapolation = ExtrapolationType.Linear,
+                ),
+            ],
             outflowfunc = [Wflow.ReservoirOutflowType.simple],
-            area = [9.069779e4],
+            area = [area],
             maxrelease = [1.74],
             demand = [0.2175],
             targetminfrac = [0.358469158],
@@ -145,8 +185,8 @@ end
             maxstorage = [3.3e7],
         ),
         variables = Wflow.ReservoirVariables(;
-            waterlevel = [3.0266425035195113],
-            storage = [2.7450978618928656e7],
+            waterlevel = [waterlevel],
+            storage = [waterlevel * area],
         ),
     )
 
@@ -169,52 +209,80 @@ end
         dt,
         dt_forcing,
     )
-    @test river_flow_vars.qin[2] ≈ 0.21749985206208133
+    @test river_flow_vars.qin[2] ≈ 5.956584865877593e-6
     @test reservoir_model.boundary_conditions.actual_external_abstraction_av[1] ≈ 1000.0
-    @test reservoir_model.variables.storage[1] ≈ 2.744976116863499e7
-    @test reservoir_model.variables.waterlevel[1] ≈ 3.013219350720886
-    @test reservoir_model.variables.outflow[1] ≈ 0.21749985206208133
+    @test reservoir_model.variables.storage[1] ≈ 273509.8297910273
+    @test reservoir_model.variables.waterlevel[1] ≈ 3.0156173572810023
+    @test reservoir_model.variables.outflow[1] ≈ 5.956584865877593e-6
 end
 
 @testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
     # Linked reservoirs with free weir (outflowfunc = 1)
     datadir = joinpath(@__DIR__, "data")
-    sh = Vector{Union{Wflow.SH, Missing}}([
+    sh = [
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
-    ])
-    hq = Vector{Union{Wflow.HQ, Missing}}([
-        missing,
-        Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
-    ])
+    ]
+    qh = Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv"))
 
     @test keys(sh[1]) == (:H, :S)
     @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
 
+    area = [472461536.0, 60851088.0]
     res_params = Wflow.ReservoirParameters(;
         id = [1, 2],
         lower_reservoir_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, NaN],
-        storfunc = fill(ReservoirProfileType.interpolation, 2),
         outflowfunc = [ReservoirOutflowType.free_weir, ReservoirOutflowType.rating_curve],
         b = [140.0, NaN],
         e = [1.5, NaN],
-        sh,
-        hq,
+        storfunc = [ReservoirProfileType.interpolation, ReservoirProfileType.interpolation],
+        storage_from_level = [
+            LinearInterpolation(
+                sh[1].S,
+                sh[1].H;
+                extrapolation = ExtrapolationType.Constant,
+            ),
+            LinearInterpolation(
+                sh[2].S,
+                sh[2].H;
+                extrapolation = ExtrapolationType.Constant,
+            ),
+        ],
+        level_from_storage = [
+            LinearInterpolation(
+                sh[1].H,
+                sh[1].S;
+                extrapolation = ExtrapolationType.Constant,
+            ),
+            LinearInterpolation(
+                sh[2].H,
+                sh[2].S;
+                extrapolation = ExtrapolationType.Constant,
+            ),
+        ],
         col_index_hq = [15],
     )
-    res_params.maxstorage[2] = Wflow.maximum_storage(res_params, 2)
 
+    for day_idx in 1:size(qh.Q, 2)
+        res_params.rating_curve[2][day_idx] = LinearInterpolation(
+            qh.Q[:, day_idx],
+            qh.H;
+            extrapolation = ExtrapolationType.Constant,
+        )
+    end
+
+    res_params.maxstorage[2] = res_params.storage_from_level[2](maximum(qh.H))
+
+    waterlevel = [395.03027, 394.87833]
     res_vars = Wflow.ReservoirVariables(;
-        waterlevel = [395.03027, 394.87833],
-        storage = Wflow.initialize_storage(
-            fill(ReservoirProfileType.interpolation, 2),
-            [472461536.0, 60851088.0],
-            [395.03027, 394.87833],
-            sh,
-        ),
+        waterlevel,
+        storage = [
+            res_params.storage_from_level[i](waterlevel[i]) for i in eachindex(waterlevel)
+        ],
     )
     n = 2
     res_bc = Wflow.ReservoirBC(;
@@ -257,6 +325,7 @@ end
 # Overflowing reservoir with SH and HQ (outflowfunc = 1)
 @testitem "Overflowing reservoir with SH and HQ" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
     using Accessors: @reset
     datadir = joinpath(@__DIR__, "data")
     n = 1
@@ -270,22 +339,31 @@ end
         precipitation = [10.0],
         evaporation = [2.0],
     )
-    sh = Vector{Union{Wflow.SH, Missing}}([
-        Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
-    ])
-    hq = Vector{Union{Wflow.HQ, Missing}}([
-        Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
-    ])
+    sh = Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv"))
+    qh = Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv"))
     res_params = Wflow.ReservoirParameters(;
         id = [1],
         area = [200_000_000],
         storfunc = [ReservoirProfileType.interpolation],
+        storage_from_level = [
+            LinearInterpolation(sh.S, sh.H; extrapolation = ExtrapolationType.Linear),
+        ],
+        level_from_storage = [
+            LinearInterpolation(sh.H, sh.S; extrapolation = ExtrapolationType.Linear),
+        ],
         outflowfunc = [ReservoirOutflowType.rating_curve],
-        sh,
-        hq,
         col_index_hq = [15],
     )
-    @reset res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
+
+    for day_idx in 1:size(qh.Q, 2)
+        res_params.rating_curve[1][day_idx] = LinearInterpolation(
+            qh.Q[:, day_idx],
+            qh.H;
+            extrapolation = ExtrapolationType.Constant,
+        )
+    end
+
+    @reset res_params.maxstorage[1] = res_params.storage_from_level[1](maximum(qh.H))
     res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
     res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
@@ -297,12 +375,7 @@ end
     Wflow.average_reservoir_vars!(res, 86400.0)
     res_p = res.parameters
     res_v = res.variables
-    @test Wflow.waterlevel(
-        res_p.storfunc[1],
-        res_p.area[1],
-        res_v.storage[1],
-        res_p.sh[1],
-    ) ≈ 398.0 atol = 1e-2
+    @test res_p.level_from_storage[1](res_v.storage[1]) ≈ 398.0
     @test res_v.outflow ≈ [1303.67476852]
     @test res_v.outflow_av ≈ res_v.outflow
     @test res_v.storage ≈ [4.293225e8]

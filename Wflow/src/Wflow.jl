@@ -6,6 +6,7 @@ using Accessors: @optic, @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using CompositionsBase: decompose
+using DataInterpolations: LinearInterpolation, ExtrapolationType
 using Dates:
     Dates,
     Second,

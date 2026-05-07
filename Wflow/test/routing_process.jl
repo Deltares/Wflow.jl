@@ -267,6 +267,9 @@ end
     # discharge for the river, as well as waterlevel, storage, outflow and actual
     # evaporation for the reservoir.
     using Graphs: DiGraph, add_edge!
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
+    using Wflow: ReservoirProfileType
+    area = 1.498462875e6
     n = 2
     river_flow_model = Wflow.KinWaveRiverFlowModel(;
         timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n)),
@@ -283,9 +286,23 @@ end
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1],
-                    storfunc = [Wflow.ReservoirProfileType.linear],
+                    storfunc = [ReservoirProfileType.linear],
+                    storage_from_level = [
+                        LinearInterpolation(
+                            [0.0, area],
+                            [0.0, 1.0];
+                            extrapolation = ExtrapolationType.Linear,
+                        ),
+                    ],
+                    level_from_storage = [
+                        LinearInterpolation(
+                            [0.0, inv(area)],
+                            [0.0, 1.0];
+                            extrapolation = ExtrapolationType.Linear,
+                        ),
+                    ],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
-                    area = [1.498462875e6],
+                    area = [area],
                     maxrelease = [24.007999420166016],
                     demand = [3.000999927520752],
                     targetminfrac = [0.07482631504535675],
@@ -350,6 +367,8 @@ end
 end
 
 @testitem "unit: local inertial river flow with one reservoir" begin
+    using DataInterpolations: LinearInterpolation, ExtrapolationType
+    using Wflow: ReservoirProfileType
     # Test local inertial river routing (no floodplain) on a 3-node graph (1 → 2 → 3) and a
     # simple reservoir (outflowfunc = simple) at node 2. Each sub-step of the local inertial
     # update is called and verified individually:
@@ -358,6 +377,8 @@ end
     #   3. update_bc_reservoir_model!  — reservoir storage, outflow, evaporation
     #   4. update_water_depth_and_storage!
     n = 3
+    area = 1.498462875e6
+    waterlevel = 29.6558203236325
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
@@ -375,9 +396,23 @@ end
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [2],
-                    storfunc = [Wflow.ReservoirProfileType.linear],
                     outflowfunc = [Wflow.ReservoirOutflowType.simple],
-                    area = [1.498462875e6],
+                    storfunc = [ReservoirProfileType.linear],
+                    storage_from_level = [
+                        LinearInterpolation(
+                            [0.0, area],
+                            [0.0, 1.0];
+                            extrapolation = ExtrapolationType.Linear,
+                        ),
+                    ],
+                    level_from_storage = [
+                        LinearInterpolation(
+                            [0.0, inv(area)],
+                            [0.0, 1.0];
+                            extrapolation = ExtrapolationType.Linear,
+                        ),
+                    ],
+                    area = [area],
                     maxrelease = [24.007999420166016],
                     demand = [3.000999927520752],
                     targetminfrac = [0.07482631504535675],
@@ -385,8 +420,8 @@ end
                     maxstorage = [6.2e7],
                 ),
                 variables = Wflow.ReservoirVariables(;
-                    waterlevel = [29.6558203236325],
-                    storage = [4.443814578263413e7],
+                    waterlevel = [waterlevel],
+                    storage = [area * waterlevel],
                     actevap = [0.0],
                     outflow_av = [0.0],
                 ),
@@ -541,36 +576,36 @@ end
                 profile = Wflow.FloodPlainProfile(;
                     depth = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5],
                     storage = [
-                        0.0 0.0 0.0;
-                        77602.0 281141.0 111313.0;
-                        189506.0 609512.0 256357.0;
-                        346960.0 981178.0 420515.0;
-                        526346.0 1.39783e6 602100.0;
-                        747343.0 1.87239e6 814606.0;
+                        0.0 0.0 0.0
+                        77602.0 281141.0 111313.0
+                        189506.0 609512.0 256357.0
+                        346960.0 981178.0 420515.0
+                        526346.0 1.39783e6 602100.0
+                        747343.0 1.87239e6 814606.0
                     ],
                     width = [
-                        149.178 149.178 149.178;
-                        341.577 666.779 758.764;
-                        492.562 778.794 988.691;
-                        693.057 881.476 1118.98;
-                        789.594 988.161 1237.77;
-                        972.752 1125.52 1448.54;
+                        149.178 149.178 149.178
+                        341.577 666.779 758.764
+                        492.562 778.794 988.691
+                        693.057 881.476 1118.98
+                        789.594 988.161 1237.77
+                        972.752 1125.52 1448.54
                     ],
                     a = [
-                        0.0 0.0 0.0;
-                        170.788 333.389 379.382;
-                        417.07 722.786 873.727;
-                        763.598 1163.52 1433.22;
-                        1158.4 1657.6 2052.1;
-                        1644.77 2220.36 2776.38;
+                        0.0 0.0 0.0
+                        170.788 333.389 379.382
+                        417.07 722.786 873.727
+                        763.598 1163.52 1433.22
+                        1158.4 1657.6 2052.1
+                        1644.77 2220.36 2776.38
                     ],
                     p = [
-                        192.399 517.6 609.585;
-                        193.399 518.6 610.585;
-                        345.384 631.615 841.512;
-                        546.879 735.297 972.803;
-                        644.416 842.983 1092.59;
-                        828.573 981.337 1304.37;
+                        192.399 517.6 609.585
+                        193.399 518.6 610.585
+                        345.384 631.615 841.512
+                        546.879 735.297 972.803
+                        644.416 842.983 1092.59
+                        828.573 981.337 1304.37
                     ],
                 ),
                 mannings_n = [0.072, 0.072, 0.072],
@@ -747,7 +782,7 @@ end
     )
     n_river = 1
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
-        timestepping = Wflow.TimeStepping(alpha_coefficient = 0.7),
+        timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         boundary_conditions = Wflow.RiverFlowBC(; n = n_river, reservoir = nothing),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
             n = n_river,
