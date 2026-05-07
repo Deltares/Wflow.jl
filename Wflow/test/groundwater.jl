@@ -299,15 +299,15 @@ end
         q_net = fill(0.0, ncell),
         q_in_av = fill(0.0, ncell),
         q_av = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
+        exfiltration_water = fill(0.0, ncell),
     )
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(conductivity, ncell),
+        hydraulic_conductivity = fill(conductivity, ncell),
         top = fill(top, ncell),
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
-        f = fill(gwf_f, ncell),
+        conductivity_decay_factor = fill(gwf_f, ncell),
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
@@ -322,18 +322,18 @@ end
 
     N = 1
     n = ncell
-    zi = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
+    water_table_depth = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
     soil_model = init_sbm_soil_model(
         n,
         N;
         # Variables
-        ustorelayerthickness = SVector.(zi),
-        ustorelayerdepth = SVector.(zeros(n)),
+        unsaturated_layer_thickness = SVector.(water_table_depth),
+        unsaturated_layer_depth = SVector.(zeros(n)),
         n_unsatlayers = fill(N, n),
-        zi,
+        water_table_depth,
         # Parameters
-        maxlayers = N,
-        nlayers = fill(1, n),
+        maximum_number_of_layers = N,
+        number_of_layers = fill(1, n),
         theta_s = fill(0.45, n),
         theta_r = fill(0.05, n),
     )
@@ -392,15 +392,15 @@ end
         q_net = fill(0.0, ncell),
         q_in_av = fill(0.0, ncell),
         q_av = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
+        exfiltration_water = fill(0.0, ncell),
     )
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(conductivity, ncell),
+        hydraulic_conductivity = fill(conductivity, ncell),
         top = fill(top, ncell),
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
-        f = fill(gwf_f, ncell),
+        conductivity_decay_factor = fill(gwf_f, ncell),
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
@@ -415,18 +415,18 @@ end
 
     N = 1
     n = ncell
-    zi = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
+    water_table_depth = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
     soil_model = init_sbm_soil_model(
         n,
         N;
         # Variables
-        ustorelayerthickness = SVector.(zi),
-        ustorelayerdepth = SVector.(zeros(n)),
+        unsaturated_layer_thickness = SVector.(water_table_depth),
+        unsaturated_layer_depth = SVector.(zeros(n)),
         n_unsatlayers = fill(N, n),
-        zi,
+        water_table_depth,
         # Parameters
-        maxlayers = N,
-        nlayers = fill(1, n),
+        maximum_number_of_layers = N,
+        number_of_layers = fill(1, n),
         theta_s = fill(0.45, n),
         theta_r = fill(0.05, n),
     )

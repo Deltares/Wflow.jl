@@ -8,8 +8,8 @@ abstract type AbstractSedimentRiverTransportModel end
     clay_rate::Vector{Float64} = zeros(n)
     silt_rate::Vector{Float64} = zeros(n)
     sand_rate::Vector{Float64} = zeros(n)
-    sagg_rate::Vector{Float64} = zeros(n)
-    lagg_rate::Vector{Float64} = zeros(n)
+    small_aggregates_rate::Vector{Float64} = zeros(n)
+    large_aggregates_rate::Vector{Float64} = zeros(n)
     gravel_rate::Vector{Float64} = zeros(n)
     # Total Sediment deposition rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -19,15 +19,15 @@ abstract type AbstractSedimentRiverTransportModel end
     leftover_clay::Vector{Float64} = zeros(n)
     leftover_silt::Vector{Float64} = zeros(n)
     leftover_sand::Vector{Float64} = zeros(n)
-    leftover_sagg::Vector{Float64} = zeros(n)
-    leftover_lagg::Vector{Float64} = zeros(n)
+    leftover_small_aggregates::Vector{Float64} = zeros(n)
+    leftover_large_aggregates::Vector{Float64} = zeros(n)
     leftover_gravel::Vector{Float64} = zeros(n)
     # Sediment / particle stored on the river bed after deposition [t] -states
     store_clay::Vector{Float64} = zeros(n)
     store_silt::Vector{Float64} = zeros(n)
     store_sand::Vector{Float64} = zeros(n)
-    store_sagg::Vector{Float64} = zeros(n)
-    store_lagg::Vector{Float64} = zeros(n)
+    store_small_aggregates::Vector{Float64} = zeros(n)
+    store_large_aggregates::Vector{Float64} = zeros(n)
     store_gravel::Vector{Float64} = zeros(n)
 end
 
@@ -44,8 +44,8 @@ end
     erosion_land_clay::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_silt::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    erosion_land_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    erosion_land_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    erosion_land_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    erosion_land_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Sediment erosion rate from direct river erosion [t dt-1]
     potential_erosion_river_bed::Vector{Float64} = fill(MISSING_VALUE, n)
     potential_erosion_river_bank::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -62,17 +62,17 @@ end
     # River bed/bank content gravel [-]
     gravel_fraction::Vector{Float64}
     # Clay mean diameter [µm]
-    dm_clay::Vector{Float64}
+    median_diameter_clay::Vector{Float64}
     # Silt mean diameter [µm]
-    dm_silt::Vector{Float64}
+    median_diameter_silt::Vector{Float64}
     # Sand mean diameter [µm]
-    dm_sand::Vector{Float64}
+    median_diameter_sand::Vector{Float64}
     # Small aggregates mean diameter [µm]
-    dm_sagg::Vector{Float64}
+    median_diameter_small_aggregates::Vector{Float64}
     # Large aggregates mean diameter [µm]
-    dm_lagg::Vector{Float64}
+    median_diameter_large_aggregates::Vector{Float64}
     # Gravel mean diameter [µm]
-    dm_gravel::Vector{Float64}
+    median_diameter_gravel::Vector{Float64}
     # Reservoir outlets [-]
     reservoir_outlet::Vector{Bool}
     # Reservoir area [m²]
@@ -121,24 +121,27 @@ function SedimentRiverTransportParameters(
     if any(abs.(river_fractions .- 1.0) .> 1e-3)
         error("Particle fractions in the river bed must sum to 1")
     end
-    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
-    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
-    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
-    dm_sagg = ncread(
+    median_diameter_clay =
+        ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_silt =
+        ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_sand =
+        ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_small_aggregates = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
         SoilLossModel;
         sel = indices,
     )
-    dm_lagg = ncread(
+    median_diameter_large_aggregates = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter",
         SoilLossModel;
         sel = indices,
     )
-    dm_gravel =
+    median_diameter_gravel =
         ncread(dataset, config, "gravel__mean_diameter", SoilLossModel; sel = indices)
 
     # Reservoirs
@@ -170,12 +173,12 @@ function SedimentRiverTransportParameters(
         silt_fraction,
         sand_fraction,
         gravel_fraction,
-        dm_clay,
-        dm_silt,
-        dm_sand,
-        dm_sagg,
-        dm_lagg,
-        dm_gravel,
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
+        median_diameter_gravel,
         reservoir_outlet = reservoir_outlet .> 0,
         reservoir_area,
         reservoir_trapping_efficiency,
@@ -221,8 +224,8 @@ function update_bc_river_sediment_transport_model!(
         erosion_land_clay,
         erosion_land_silt,
         erosion_land_sand,
-        erosion_land_sagg,
-        erosion_land_lagg,
+        erosion_land_small_aggregates,
+        erosion_land_large_aggregates,
         potential_erosion_river_bed,
         potential_erosion_river_bank,
     ) = sediment_transport_model.boundary_conditions
@@ -234,13 +237,13 @@ function update_bc_river_sediment_transport_model!(
     # Transport capacity
     @. transport_capacity = transport_capacity_model.variables.sediment_transport_capacity
     # Input from soil erosion
-    (; clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) =
+    (; clay_rate, silt_rate, sand_rate, small_aggregates_rate, large_aggregates_rate) =
         sediment_to_river_model.variables
     map!(i -> clay_rate[i], erosion_land_clay, indices_riv)
     map!(i -> silt_rate[i], erosion_land_silt, indices_riv)
     map!(i -> sand_rate[i], erosion_land_sand, indices_riv)
-    map!(i -> sagg_rate[i], erosion_land_sagg, indices_riv)
-    map!(i -> lagg_rate[i], erosion_land_lagg, indices_riv)
+    map!(i -> small_aggregates_rate[i], erosion_land_small_aggregates, indices_riv)
+    map!(i -> large_aggregates_rate[i], erosion_land_large_aggregates, indices_riv)
     # Maximum direct river bed/bank erosion
     @. potential_erosion_river_bed = potential_erosion_model.variables.bed
     @. potential_erosion_river_bank = potential_erosion_model.variables.bank
@@ -259,21 +262,21 @@ function compute_sediment_input(
         erosion_land_clay,
         erosion_land_silt,
         erosion_land_sand,
-        erosion_land_sagg,
-        erosion_land_lagg,
+        erosion_land_small_aggregates,
+        erosion_land_large_aggregates,
     ) = boundary_conditions
     (;
         clay_rate,
         silt_rate,
         sand_rate,
-        sagg_rate,
-        lagg_rate,
+        small_aggregates_rate,
+        large_aggregates_rate,
         gravel_rate,
         leftover_clay,
         leftover_silt,
         leftover_sand,
-        leftover_sagg,
-        leftover_lagg,
+        leftover_small_aggregates,
+        leftover_large_aggregates,
         leftover_gravel,
     ) = variables
 
@@ -281,8 +284,8 @@ function compute_sediment_input(
     input_clay = leftover_clay[v] + erosion_land_clay[v]
     input_silt = leftover_silt[v] + erosion_land_silt[v]
     input_sand = leftover_sand[v] + erosion_land_sand[v]
-    input_sagg = leftover_sagg[v] + erosion_land_sagg[v]
-    input_lagg = leftover_lagg[v] + erosion_land_lagg[v]
+    input_small_aggregates = leftover_small_aggregates[v] + erosion_land_small_aggregates[v]
+    input_large_aggregates = leftover_large_aggregates[v] + erosion_land_large_aggregates[v]
     input_gravel = leftover_gravel[v]
 
     # Add upstream contribution
@@ -293,14 +296,21 @@ function compute_sediment_input(
                 input_clay += clay_rate[i]
                 input_silt += silt_rate[i]
                 input_sand += sand_rate[i]
-                input_sagg += sagg_rate[i]
-                input_lagg += lagg_rate[i]
+                input_small_aggregates += small_aggregates_rate[i]
+                input_large_aggregates += large_aggregates_rate[i]
                 input_gravel += gravel_rate[i]
             end
         end
     end
 
-    return (input_clay, input_silt, input_sand, input_sagg, input_lagg, input_gravel)
+    return (
+        input_clay,
+        input_silt,
+        input_sand,
+        input_small_aggregates,
+        input_large_aggregates,
+        input_gravel,
+    )
 end
 
 """
@@ -345,15 +355,15 @@ function compute_direct_river_erosion(
     erosion_sand = erosion_river * sand_fraction[v]
     erosion_gravel = erosion_river * gravel_fraction[v]
     # No small and large aggregates in the river bed/bank
-    erosion_sagg = 0.0
-    erosion_lagg = 0.0
+    erosion_small_aggregates = 0.0
+    erosion_large_aggregates = 0.0
 
     return (
         erosion_clay,
         erosion_silt,
         erosion_sand,
-        erosion_sagg,
-        erosion_lagg,
+        erosion_small_aggregates,
+        erosion_large_aggregates,
         erosion_gravel,
     )
 end
@@ -366,21 +376,30 @@ function compute_store_erosion!(
     sediment_need::Float64,
     v::Int,
 )
-    (; store_clay, store_silt, store_sand, store_sagg, store_lagg, store_gravel) = variables
+    (;
+        store_clay,
+        store_silt,
+        store_sand,
+        store_small_aggregates,
+        store_large_aggregates,
+        store_gravel,
+    ) = variables
 
     erosion_clay, sediment_need = river_erosion_store!(store_clay, sediment_need, v)
     erosion_silt, sediment_need = river_erosion_store!(store_silt, sediment_need, v)
-    erosion_sagg, sediment_need = river_erosion_store!(store_sagg, sediment_need, v)
+    erosion_small_aggregates, sediment_need =
+        river_erosion_store!(store_small_aggregates, sediment_need, v)
     erosion_sand, sediment_need = river_erosion_store!(store_sand, sediment_need, v)
-    erosion_lagg, sediment_need = river_erosion_store!(store_lagg, sediment_need, v)
+    erosion_large_aggregates, sediment_need =
+        river_erosion_store!(store_large_aggregates, sediment_need, v)
     erosion_gravel, _ = river_erosion_store!(store_gravel, sediment_need, v)
 
     return (
         erosion_clay,
         erosion_silt,
         erosion_sand,
-        erosion_sagg,
-        erosion_lagg,
+        erosion_small_aggregates,
+        erosion_large_aggregates,
         erosion_gravel,
     )
 end
@@ -398,21 +417,29 @@ function compute_reservoir_deposition(
     (; boundary_conditions, parameters) = sediment_transport_model
     (; q, waterlevel) = boundary_conditions
     (;
-        dm_clay,
-        dm_silt,
-        dm_sand,
-        dm_sagg,
-        dm_lagg,
-        dm_gravel,
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
+        median_diameter_gravel,
         reservoir_area,
         reservoir_trapping_efficiency,
     ) = parameters
     (; slope) = domain_parameters
 
-    input_clay, input_silt, input_sand, input_sagg, input_lagg, input_gravel =
-        input_particles
-    erosion_clay, erosion_silt, erosion_sand, erosion_sagg, erosion_lagg, erosion_gravel =
-        erosion_particles
+    input_clay,
+    input_silt,
+    input_sand,
+    input_small_aggregates,
+    input_large_aggregates,
+    input_gravel = input_particles
+    erosion_clay,
+    erosion_silt,
+    erosion_sand,
+    erosion_small_aggregates,
+    erosion_large_aggregates,
+    erosion_gravel = erosion_particles
 
     get_deposition(input, erosion, dm) = reservoir_deposition_camp(
         input + erosion,
@@ -424,19 +451,27 @@ function compute_reservoir_deposition(
         slope[v],
     )
 
-    deposition_clay = get_deposition(input_clay, erosion_clay, dm_clay)
-    deposition_silt = get_deposition(input_silt, erosion_silt, dm_silt)
-    deposition_sand = get_deposition(input_sand, erosion_sand, dm_sand)
-    deposition_sagg = get_deposition(input_sagg, erosion_sagg, dm_sagg)
-    deposition_lagg = get_deposition(input_lagg, erosion_lagg, dm_lagg)
-    deposition_gravel = get_deposition(input_gravel, erosion_gravel, dm_gravel)
+    deposition_clay = get_deposition(input_clay, erosion_clay, median_diameter_clay)
+    deposition_silt = get_deposition(input_silt, erosion_silt, median_diameter_silt)
+    deposition_sand = get_deposition(input_sand, erosion_sand, median_diameter_sand)
+    deposition_small_aggregates = get_deposition(
+        input_small_aggregates,
+        erosion_small_aggregates,
+        median_diameter_small_aggregates,
+    )
+    deposition_large_aggregates = get_deposition(
+        input_large_aggregates,
+        erosion_large_aggregates,
+        median_diameter_large_aggregates,
+    )
+    deposition_gravel = get_deposition(input_gravel, erosion_gravel, median_diameter_gravel)
 
     return (
         deposition_clay,
         deposition_silt,
         deposition_sand,
-        deposition_sagg,
-        deposition_lagg,
+        deposition_small_aggregates,
+        deposition_large_aggregates,
         deposition_gravel,
     )
 end
@@ -461,20 +496,34 @@ function compute_transport_capacity_deposition(
     input_particles::NTuple{6, Float64},
     erosion_particles::NTuple{6, Float64},
 )
-    input_clay, input_silt, input_sand, input_sagg, input_lagg, input_gravel =
-        input_particles
-    erosion_clay, erosion_silt, erosion_sand, erosion_sagg, erosion_lagg, erosion_gravel =
-        erosion_particles
+    input_clay,
+    input_silt,
+    input_sand,
+    input_small_aggregates,
+    input_large_aggregates,
+    input_gravel = input_particles
+    erosion_clay,
+    erosion_silt,
+    erosion_sand,
+    erosion_small_aggregates,
+    erosion_large_aggregates,
+    erosion_gravel = erosion_particles
 
     # From largest to smallest particles
     deposition_gravel, excess_sediment =
         transport_capacity_deposition(excess_sediment, input_gravel, erosion_gravel)
-    deposition_lagg, excess_sediment =
-        transport_capacity_deposition(excess_sediment, input_lagg, erosion_lagg)
+    deposition_large_aggregates, excess_sediment = transport_capacity_deposition(
+        excess_sediment,
+        input_large_aggregates,
+        erosion_large_aggregates,
+    )
     deposition_sand, excess_sediment =
         transport_capacity_deposition(excess_sediment, input_sand, erosion_sand)
-    deposition_sagg, excess_sediment =
-        transport_capacity_deposition(excess_sediment, input_sagg, erosion_sagg)
+    deposition_small_aggregates, excess_sediment = transport_capacity_deposition(
+        excess_sediment,
+        input_small_aggregates,
+        erosion_small_aggregates,
+    )
     deposition_silt, excess_sediment =
         transport_capacity_deposition(excess_sediment, input_silt, erosion_silt)
     deposition_clay, _ =
@@ -484,8 +533,8 @@ function compute_transport_capacity_deposition(
         deposition_clay,
         deposition_silt,
         deposition_sand,
-        deposition_sagg,
-        deposition_lagg,
+        deposition_small_aggregates,
+        deposition_large_aggregates,
         deposition_gravel,
     )
 end
@@ -508,30 +557,59 @@ function compute_natural_deposition(
 )
     (; boundary_conditions, parameters) = sediment_transport_model
     (; q) = boundary_conditions
-    (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) = parameters
+    (;
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
+        median_diameter_gravel,
+    ) = parameters
     (; flow_length, flow_width) = domain_parameters
 
-    input_clay, input_silt, input_sand, input_sagg, input_lagg, input_gravel =
-        input_particles
-    erosion_clay, erosion_silt, erosion_sand, erosion_sagg, erosion_lagg, erosion_gravel =
-        erosion_particles
+    input_clay,
+    input_silt,
+    input_sand,
+    input_small_aggregates,
+    input_large_aggregates,
+    input_gravel = input_particles
+    erosion_clay,
+    erosion_silt,
+    erosion_sand,
+    erosion_small_aggregates,
+    erosion_large_aggregates,
+    erosion_gravel = erosion_particles
 
     # Particle fall velocity [m/s] from Stokes
     xs = ifelse(q[v] > 0.0, 1.055 * flow_length[v] / (q[v] / flow_width[v]), 0.0)
 
-    deposition_clay = natural_deposition(xs, dm_clay[v], input_clay, erosion_clay)
-    deposition_silt = natural_deposition(xs, dm_silt[v], input_silt, erosion_silt)
-    deposition_sand = natural_deposition(xs, dm_sand[v], input_sand, erosion_sand)
-    deposition_sagg = natural_deposition(xs, dm_sagg[v], input_sagg, erosion_sagg)
-    deposition_lagg = natural_deposition(xs, dm_lagg[v], input_lagg, erosion_lagg)
-    deposition_gravel = natural_deposition(xs, dm_gravel[v], input_gravel, erosion_gravel)
+    deposition_clay =
+        natural_deposition(xs, median_diameter_clay[v], input_clay, erosion_clay)
+    deposition_silt =
+        natural_deposition(xs, median_diameter_silt[v], input_silt, erosion_silt)
+    deposition_sand =
+        natural_deposition(xs, median_diameter_sand[v], input_sand, erosion_sand)
+    deposition_small_aggregates = natural_deposition(
+        xs,
+        median_diameter_small_aggregates[v],
+        input_small_aggregates,
+        erosion_small_aggregates,
+    )
+    deposition_large_aggregates = natural_deposition(
+        xs,
+        median_diameter_large_aggregates[v],
+        input_large_aggregates,
+        erosion_large_aggregates,
+    )
+    deposition_gravel =
+        natural_deposition(xs, median_diameter_gravel[v], input_gravel, erosion_gravel)
 
     return (
         deposition_clay,
         deposition_silt,
         deposition_sand,
-        deposition_sagg,
-        deposition_lagg,
+        deposition_small_aggregates,
+        deposition_large_aggregates,
         deposition_gravel,
     )
 end
@@ -556,8 +634,8 @@ function update_variables!(
         store_clay,
         store_silt,
         store_sand,
-        store_sagg,
-        store_lagg,
+        store_small_aggregates,
+        store_large_aggregates,
         store_gravel,
         deposition,
         erosion,
@@ -565,27 +643,39 @@ function update_variables!(
         clay_rate,
         silt_rate,
         sand_rate,
-        sagg_rate,
-        lagg_rate,
+        small_aggregates_rate,
+        large_aggregates_rate,
         gravel_rate,
         leftover_clay,
         leftover_silt,
         leftover_sand,
-        leftover_sagg,
-        leftover_lagg,
+        leftover_small_aggregates,
+        leftover_large_aggregates,
         leftover_gravel,
     ) = variables
 
-    (input_clay, input_silt, input_sand, input_sagg, input_lagg, input_gravel) =
-        input_particles
-    (erosion_clay, erosion_silt, erosion_sand, erosion_sagg, erosion_lagg, erosion_gravel) =
-        erosion_particles
+    (
+        input_clay,
+        input_silt,
+        input_sand,
+        input_small_aggregates,
+        input_large_aggregates,
+        input_gravel,
+    ) = input_particles
+    (
+        erosion_clay,
+        erosion_silt,
+        erosion_sand,
+        erosion_small_aggregates,
+        erosion_large_aggregates,
+        erosion_gravel,
+    ) = erosion_particles
     (
         deposition_clay,
         deposition_silt,
         deposition_sand,
-        deposition_sagg,
-        deposition_lagg,
+        deposition_small_aggregates,
+        deposition_large_aggregates,
         deposition_gravel,
     ) = deposition_particles
 
@@ -593,8 +683,8 @@ function update_variables!(
     store_clay[v] += deposition_clay
     store_silt[v] += deposition_silt
     store_sand[v] += deposition_sand
-    store_sagg[v] += deposition_sagg
-    store_lagg[v] += deposition_lagg
+    store_small_aggregates[v] += deposition_small_aggregates
+    store_large_aggregates[v] += deposition_large_aggregates
     store_gravel[v] += deposition_gravel
 
     # Compute total erosion
@@ -607,24 +697,32 @@ function update_variables!(
     clay_rate[v] = fwaterout * (input_clay + erosion_clay - deposition_clay)
     silt_rate[v] = fwaterout * (input_silt + erosion_silt - deposition_silt)
     sand_rate[v] = fwaterout * (input_sand + erosion_sand - deposition_sand)
-    sagg_rate[v] = fwaterout * (input_sagg + erosion_sagg - deposition_sagg)
-    lagg_rate[v] = fwaterout * (input_lagg + erosion_lagg - deposition_lagg)
+    small_aggregates_rate[v] =
+        fwaterout *
+        (input_small_aggregates + erosion_small_aggregates - deposition_small_aggregates)
+    large_aggregates_rate[v] =
+        fwaterout *
+        (input_large_aggregates + erosion_large_aggregates - deposition_large_aggregates)
     gravel_rate[v] = fwaterout * (input_gravel + erosion_gravel - deposition_gravel)
 
     sediment_rate[v] =
         clay_rate[v] +
         silt_rate[v] +
         sand_rate[v] +
-        sagg_rate[v] +
-        lagg_rate[v] +
+        small_aggregates_rate[v] +
+        large_aggregates_rate[v] +
         gravel_rate[v]
 
     # Leftover sediment for mass balance
     leftover_clay[v] = input_clay + erosion_clay - deposition_clay - clay_rate[v]
     leftover_silt[v] = input_silt + erosion_silt - deposition_silt - silt_rate[v]
     leftover_sand[v] = input_sand + erosion_sand - deposition_sand - sand_rate[v]
-    leftover_sagg[v] = input_sagg + erosion_sagg - deposition_sagg - sagg_rate[v]
-    leftover_lagg[v] = input_lagg + erosion_lagg - deposition_lagg - lagg_rate[v]
+    leftover_small_aggregates[v] =
+        input_small_aggregates + erosion_small_aggregates - deposition_small_aggregates -
+        small_aggregates_rate[v]
+    leftover_large_aggregates[v] =
+        input_large_aggregates + erosion_large_aggregates - deposition_large_aggregates -
+        large_aggregates_rate[v]
     leftover_gravel[v] = input_gravel + erosion_gravel - deposition_gravel - gravel_rate[v]
 
     return nothing
@@ -638,8 +736,14 @@ function update_sediment_river_transport_model!(
 )
     (; waterlevel, q, transport_capacity) = sediment_transport_model.boundary_conditions
     (; reservoir_outlet) = sediment_transport_model.parameters
-    (; store_clay, store_silt, store_sand, store_sagg, store_lagg, store_gravel) =
-        sediment_transport_model.variables
+    (;
+        store_clay,
+        store_silt,
+        store_sand,
+        store_small_aggregates,
+        store_large_aggregates,
+        store_gravel,
+    ) = sediment_transport_model.variables
 
     (; graph, order) = domain.network
     (; flow_width, flow_length, reservoir_coverage) = domain.parameters
@@ -663,8 +767,8 @@ function update_sediment_river_transport_model!(
             store_clay[v] +
             store_silt[v] +
             store_sand[v] +
-            store_sagg[v] +
-            store_lagg[v] +
+            store_small_aggregates[v] +
+            store_large_aggregates[v] +
             store_gravel[v]
 
         # Direct erosion from the river bed/bank
@@ -761,9 +865,9 @@ end
     # Sand load [g m-3]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
     # Small aggregates load [g m-3]
-    sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Large aggregates load [g m-3]
-    lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Gravel load [g m-3]
     gravel::Vector{Float64} = fill(MISSING_VALUE, n)
 end
@@ -771,17 +875,17 @@ end
 "Struct to store river sediment concentrations model parameters"
 @with_kw struct SedimentConcentrationsRiverParameters
     # Clay mean diameter [µm]
-    dm_clay::Vector{Float64}
+    median_diameter_clay::Vector{Float64}
     # Silt mean diameter [µm]
-    dm_silt::Vector{Float64}
+    median_diameter_silt::Vector{Float64}
     # Sand mean diameter [µm]
-    dm_sand::Vector{Float64}
+    median_diameter_sand::Vector{Float64}
     # Small aggregates mean diameter [µm]
-    dm_sagg::Vector{Float64}
+    median_diameter_small_aggregates::Vector{Float64}
     # Large aggregates mean diameter [µm]
-    dm_lagg::Vector{Float64}
+    median_diameter_large_aggregates::Vector{Float64}
     # Gravel mean diameter [µm]
-    dm_gravel::Vector{Float64}
+    median_diameter_gravel::Vector{Float64}
 end
 
 "Initialize river sediment concentrations model parameters"
@@ -790,32 +894,35 @@ function SedimentConcentrationsRiverParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
-    dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
-    dm_sand = ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
-    dm_sagg = ncread(
+    median_diameter_clay =
+        ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_silt =
+        ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_sand =
+        ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_small_aggregates = ncread(
         dataset,
         config,
         "sediment_small_aggregates__mean_diameter",
         SoilLossModel;
         sel = indices,
     )
-    dm_lagg = ncread(
+    median_diameter_large_aggregates = ncread(
         dataset,
         config,
         "sediment_large_aggregates__mean_diameter",
         SoilLossModel;
         sel = indices,
     )
-    dm_gravel =
+    median_diameter_gravel =
         ncread(dataset, config, "gravel__mean_diameter", SoilLossModel; sel = indices)
     conc_parameters = SedimentConcentrationsRiverParameters(;
-        dm_clay,
-        dm_silt,
-        dm_sand,
-        dm_sagg,
-        dm_lagg,
-        dm_gravel,
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
+        median_diameter_gravel,
     )
 
     return conc_parameters
@@ -848,7 +955,7 @@ function update_bc_river_sediment_concentration_model!(
     hydrological_forcing::HydrologicalForcing,
     sediment_transport_model::AbstractSedimentRiverTransportModel,
 )
-    (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) =
+    (; q, waterlevel, clay, silt, sand, small_aggregates, large_aggregates, gravel) =
         sediment_concentrations_model.boundary_conditions
     # Hydrological forcing
     (; q_river, waterlevel_river) = hydrological_forcing
@@ -858,8 +965,8 @@ function update_bc_river_sediment_concentration_model!(
     @. clay = sediment_transport_model.variables.clay_rate
     @. silt = sediment_transport_model.variables.silt_rate
     @. sand = sediment_transport_model.variables.sand_rate
-    @. sagg = sediment_transport_model.variables.sagg_rate
-    @. lagg = sediment_transport_model.variables.lagg_rate
+    @. small_aggregates = sediment_transport_model.variables.small_aggregates_rate
+    @. large_aggregates = sediment_transport_model.variables.large_aggregates_rate
     @. gravel = sediment_transport_model.variables.gravel_rate
 end
 
@@ -879,10 +986,16 @@ function update_river_sediment_concentration_model!(
     parameters::RiverParameters,
     dt::Float64,
 )
-    (; q, waterlevel, clay, silt, sand, sagg, lagg, gravel) =
+    (; q, waterlevel, clay, silt, sand, small_aggregates, large_aggregates, gravel) =
         sediment_transport_model.boundary_conditions
-    (; dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg, dm_gravel) =
-        sediment_transport_model.parameters
+    (;
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
+        median_diameter_gravel,
+    ) = sediment_transport_model.parameters
     (; total, suspended, bed) = sediment_transport_model.variables
     (; slope) = parameters
 
@@ -898,18 +1011,40 @@ function update_river_sediment_concentration_model!(
             dsuspf = 1e3 * sqrt(1.2 * common_term)
 
             # Rouse with diameter
-            SSclay = suspended_solid(dm_clay[i], dsuspf, dbedf, clay[i])
-            SSsilt = suspended_solid(dm_silt[i], dsuspf, dbedf, silt[i])
-            SSsand = suspended_solid(dm_sand[i], dsuspf, dbedf, sand[i])
-            SSsagg = suspended_solid(dm_sagg[i], dsuspf, dbedf, sagg[i])
-            SSlagg = suspended_solid(dm_lagg[i], dsuspf, dbedf, lagg[i])
-            SSgrav = suspended_solid(dm_gravel[i], dsuspf, dbedf, gravel[i])
+            SSclay = suspended_solid(median_diameter_clay[i], dsuspf, dbedf, clay[i])
+            SSsilt = suspended_solid(median_diameter_silt[i], dsuspf, dbedf, silt[i])
+            SSsand = suspended_solid(median_diameter_sand[i], dsuspf, dbedf, sand[i])
+            ss_small_aggregates = suspended_solid(
+                median_diameter_small_aggregates[i],
+                dsuspf,
+                dbedf,
+                small_aggregates[i],
+            )
+            ss_large_aggregates = suspended_solid(
+                median_diameter_large_aggregates[i],
+                dsuspf,
+                dbedf,
+                large_aggregates[i],
+            )
+            SSgrav = suspended_solid(median_diameter_gravel[i], dsuspf, dbedf, gravel[i])
 
             to_conc = 1e6 / (q[i] * dt)
-            total_ = clay[i] + silt[i] + sagg[i] + sand[i] + lagg[i] + gravel[i]
+            total_ =
+                clay[i] +
+                silt[i] +
+                small_aggregates[i] +
+                sand[i] +
+                large_aggregates[i] +
+                gravel[i]
             total[i] = total_ * to_conc
 
-            SS = SSclay + SSsilt + SSsand + SSsagg + SSlagg + SSgrav
+            SS =
+                SSclay +
+                SSsilt +
+                SSsand +
+                ss_small_aggregates +
+                ss_large_aggregates +
+                SSgrav
             suspended[i] = SS * to_conc
             bed[i] = (total_ - SS) * to_conc
         else

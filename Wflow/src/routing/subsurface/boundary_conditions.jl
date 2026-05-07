@@ -11,8 +11,8 @@ end
 
 function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index::Int)
     # Check if cell is dry
-    if subsurface_flow_model.variables.zi[index] >=
-       subsurface_flow_model.parameters.soilthickness[index]
+    if subsurface_flow_model.variables.water_table_depth[index] >=
+       subsurface_flow_model.parameters.soil_thickness[index]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -49,22 +49,16 @@ function GwfRiverModel(
         config,
         "river_water__infiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
         "river_water__exfiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
-    bottom = ncread(
-        dataset,
-        config,
-        "river_bottom__elevation",
-        Routing;
-        sel=indices,
-    )
+    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
@@ -122,20 +116,8 @@ function DrainageModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    elevation = ncread(
-        dataset,
-        config,
-        "land_drain__elevation",
-        Routing;
-        sel=indices,
-    )
-    conductance = ncread(
-        dataset,
-        config,
-        "land_drain__conductance",
-        Routing;
-        sel=indices,
-    )
+    elevation = ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
+    conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
     parameters = DrainageParameters(; elevation, conductance)
     n = length(indices)
     variables = DrainageVariables(; n)

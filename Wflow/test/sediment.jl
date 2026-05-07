@@ -8,8 +8,8 @@
     waterlevel = 0.0
     soil_detachability = 2.0
     eurosem_exponent = 2.0
-    canopyheight = 0.0
-    canopygapfraction = 0.1
+    canopy_height = 0.0
+    canopy_gap_fraction = 0.1
     soilcover_fraction = 0.0
     @test Wflow.rainfall_erosion_eurosem(
         precip,
@@ -17,8 +17,8 @@
         waterlevel,
         soil_detachability,
         eurosem_exponent,
-        canopyheight,
-        canopygapfraction,
+        canopy_height,
+        canopy_gap_fraction,
         soilcover_fraction,
         area,
         dt,
@@ -137,21 +137,21 @@ end
 @testitem "unit: differentiation (Yalin)" begin
     waterlevel = 30.0
     density = 3020.0
-    dm_clay = 2.0
-    dm_silt = 10.0
-    dm_sand = 200.0
-    dm_sagg = 30.0
-    dm_lagg = 500.0
+    median_diameter_clay = 2.0
+    median_diameter_silt = 10.0
+    median_diameter_sand = 200.0
+    median_diameter_small_aggregates = 30.0
+    median_diameter_large_aggregates = 500.0
     slope = 0.15
 
     @test Wflow.transportability_yalin_differentiation(
         waterlevel,
         density,
-        dm_clay,
-        dm_silt,
-        dm_sand,
-        dm_sagg,
-        dm_lagg,
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
         slope,
     ) ≈ 2.3511712003217816e7
 
@@ -267,17 +267,17 @@ end
             clay = [0.0],
             silt = [0.0],
             sand = [1.0e-10],
-            sagg = [0.0],
-            lagg = [2.0e-12],
+            small_aggregates = [0.0],
+            large_aggregates = [2.0e-12],
             gravel = [3.0e-14],
         ),
         parameters = Wflow.SedimentConcentrationsRiverParameters(;
-            dm_clay = [2.0],
-            dm_silt = [10.0],
-            dm_sand = [200.0], # dm < dsuspf
-            dm_sagg = [30.0],
-            dm_lagg = [500.0], # dsuspf < dm < dbedf
-            dm_gravel = [2000.0], # dbedf < dm
+            median_diameter_clay = [2.0],
+            median_diameter_silt = [10.0],
+            median_diameter_sand = [200.0], # dm < dsuspf
+            median_diameter_small_aggregates = [30.0],
+            median_diameter_large_aggregates = [500.0], # dsuspf < dm < dbedf
+            median_diameter_gravel = [2000.0], # dbedf < dm
         ),
     )
     parameters = Wflow.RiverParameters(; slope = [1e-3])
@@ -308,8 +308,8 @@ end
                 erosion_land_clay = fill(5.75e-9, n),
                 erosion_land_silt = fill(5.75e-9, n),
                 erosion_land_sand = fill(5.75e-9, n),
-                erosion_land_sagg = fill(5.75e-9, n),
-                erosion_land_lagg = fill(5.75e-9, n),
+                erosion_land_small_aggregates = fill(5.75e-9, n),
+                erosion_land_large_aggregates = fill(5.75e-9, n),
                 potential_erosion_river_bed = fill(1e-8, n),
                 potential_erosion_river_bank = fill(2e-8, n),
             ),
@@ -318,12 +318,12 @@ end
                 silt_fraction = fill(0.25, n),
                 sand_fraction = fill(0.35, n),
                 gravel_fraction = fill(0.45, n),
-                dm_clay = fill(2.0, n),
-                dm_silt = fill(10.0, n),
-                dm_sand = fill(200.0, n),
-                dm_sagg = fill(30.0, n),
-                dm_lagg = fill(500.0, n),
-                dm_gravel = fill(2000.0, n),
+                median_diameter_clay = fill(2.0, n),
+                median_diameter_silt = fill(10.0, n),
+                median_diameter_sand = fill(200.0, n),
+                median_diameter_small_aggregates = fill(30.0, n),
+                median_diameter_large_aggregates = fill(500.0, n),
+                median_diameter_gravel = fill(2000.0, n),
                 reservoir_outlet = [true, false, false, false],
                 reservoir_area = fill(6e5, n),
                 reservoir_trapping_efficiency = fill(0.5, n),
@@ -357,22 +357,22 @@ end
         @test variables.silt_rate ≈
               [0.0, 5.75e-9, 3.1556126423175254e-17, 2.8701416872481476e-9]
         @test variables.sand_rate ≈ [0.0, 5.75e-9, 0.0, 1.247887690107893e-10]
-        @test variables.sagg_rate ≈ [0.0, 5.75e-9, 0.0, 2.8701416872481476e-9]
-        @test variables.lagg_rate ≈ [0.0, 5.75e-9, 0.0, 0.0]
+        @test variables.small_aggregates_rate ≈ [0.0, 5.75e-9, 0.0, 2.8701416872481476e-9]
+        @test variables.large_aggregates_rate ≈ [0.0, 5.75e-9, 0.0, 0.0]
         @test variables.gravel_rate ≈ [0.0, 0.0, 0.0, 0.0]
         @test variables.deposition ≈ [7.555e-8, 0.0, 6.843204443314384e-8, 1.125e-8]
         @test variables.erosion ≈ [4.13e-8, 0.0, 4.13e-8, 0.0]
         @test variables.leftover_clay ≈ [0.0, 0.0, 0.0, 5.634505394514494e-9]
         @test variables.leftover_silt ≈ [0.0, 0.0, 0.0, 2.8798583127518526e-9]
         @test variables.leftover_sand ≈ [0.0, 0.0, 0.0, 1.2521123098921128e-10]
-        @test variables.leftover_sagg ≈ [0.0, 0.0, 0.0, 2.8798583127518526e-9]
-        @test variables.leftover_lagg ≈ zeros(4)
+        @test variables.leftover_small_aggregates ≈ [0.0, 0.0, 0.0, 2.8798583127518526e-9]
+        @test variables.leftover_large_aggregates ≈ zeros(4)
         @test variables.leftover_gravel ≈ zeros(4)
         @test variables.store_clay ≈ [1.575e-8, 0.0, 8.63204446469996e-9, 0.0]
         @test variables.store_silt ≈ [1.325e-8, 0.0, 1.3249999968443875e-8, 0.0]
         @test variables.store_sand ≈ [1.625e-8, 0.0, 1.625e-8, 5.5e-9]
-        @test variables.store_sagg ≈ [5.75e-9, 0.0, 5.75e-9, 0.0]
-        @test variables.store_lagg ≈ [5.75e-9, 0.0, 5.75e-9, 5.75e-9]
+        @test variables.store_small_aggregates ≈ [5.75e-9, 0.0, 5.75e-9, 0.0]
+        @test variables.store_large_aggregates ≈ [5.75e-9, 0.0, 5.75e-9, 5.75e-9]
         @test variables.store_gravel ≈ [1.88e-8, 5.3e-9, 1.88e-8, 5.3e-9]
     end
 
@@ -383,12 +383,11 @@ end
     input_particles_expected = [1.125e-8, 5.75e-9, 5.75e-9, 5.75e-9, 5.75e-9, 0.0]
     @test all(x -> collect(x) ≈ input_particles_expected, input_particles)
 
-    sediment_need =
-        max.(
-            sediment_flux.boundary_conditions.transport_capacity .-
-            sum(input_particles_expected),
-            0.0,
-        )
+    sediment_need = max.(
+        sediment_flux.boundary_conditions.transport_capacity .-
+        sum(input_particles_expected),
+        0.0,
+    )
     sediment_need[2] = 0.0
     @test sediment_need ≈ [4.6575e-7, 0.0, 4.6575e-7, 0.0]
 
@@ -398,13 +397,12 @@ end
     )
     @test all(≈(5.3e-9), store_sediment)
 
-    erosion_particles =
-        Wflow.compute_direct_river_erosion.(
-            Ref(sediment_flux),
-            sediment_need,
-            store_sediment,
-            order,
-        )
+    erosion_particles = Wflow.compute_direct_river_erosion.(
+        Ref(sediment_flux),
+        sediment_need,
+        store_sediment,
+        order,
+    )
     erosion_particles_expected = [4.5e-9, 7.5e-9, 1.05e-8, 0.0, 0.0, 1.35e-8]
     @test collect.(erosion_particles) ≈
           [erosion_particles_expected, zeros(6), erosion_particles_expected, zeros(6)]
@@ -473,14 +471,13 @@ end
         deposition_particles_4,
     ]
 
-    fwaterout =
-        Wflow.water_outflow_fraction.(
-            sediment_flux.boundary_conditions.waterlevel,
-            sediment_flux.boundary_conditions.q,
-            domain.parameters.flow_width,
-            domain.parameters.flow_length,
-            dt,
-        )
+    fwaterout = Wflow.water_outflow_fraction.(
+        sediment_flux.boundary_conditions.waterlevel,
+        sediment_flux.boundary_conditions.q,
+        domain.parameters.flow_width,
+        domain.parameters.flow_length,
+        dt,
+    )
     @test fwaterout ≈ [1.0, 1.0, 1.0, 0.49915507604315607]
 
     Wflow.update_variables!.(

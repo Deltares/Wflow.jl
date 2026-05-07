@@ -36,11 +36,11 @@ end
 "Struct for storing glacier HBV model parameters"
 @with_kw struct GlacierHbvParameters
     # Threshold temperature for glacier melt [ᵒC]
-    g_ttm::Vector{Float64}
+    glacier_temperature_threshold_melt::Vector{Float64}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{Float64}
+    glacier_degree_day_factor::Vector{Float64}
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{Float64}
+    glacier_snow_to_ice_fraction::Vector{Float64}
     # Fraction covered by a glacier [-]
     glacier_frac::Vector{Float64}
     # Maximum snow to glacier conversion rate [mm Δt⁻¹]
@@ -65,14 +65,14 @@ function GlacierHbvParameters(
     indices::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    g_ttm = ncread(
+    glacier_temperature_threshold_melt = ncread(
         dataset,
         config,
         "glacier_ice__melting_temperature_threshold",
         LandHydrologySBM;
         sel = indices,
     )
-    g_cfmax =
+    glacier_degree_day_factor =
         ncread(
             dataset,
             config,
@@ -80,7 +80,7 @@ function GlacierHbvParameters(
             LandHydrologySBM;
             sel = indices,
         ) .* (dt / BASETIMESTEP)
-    g_sifrac =
+    glacier_snow_to_ice_fraction =
         ncread(
             dataset,
             config,
@@ -96,8 +96,13 @@ function GlacierHbvParameters(
         sel = indices,
     )
     max_snow_to_glacier = 8.0 * (dt / BASETIMESTEP)
-    glacier_hbv_params =
-        GlacierHbvParameters(; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier)
+    glacier_hbv_params = GlacierHbvParameters(;
+        glacier_temperature_threshold_melt,
+        glacier_degree_day_factor,
+        glacier_snow_to_ice_fraction,
+        glacier_frac,
+        max_snow_to_glacier,
+    )
     return glacier_hbv_params
 end
 
@@ -123,8 +128,13 @@ function update_glacier_model!(
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = glacier_model.variables
     (; snow_storage) = glacier_model.boundary_conditions
-    (; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier) =
-        glacier_model.parameters
+    (;
+        glacier_temperature_threshold_melt,
+        glacier_degree_day_factor,
+        glacier_snow_to_ice_fraction,
+        glacier_frac,
+        max_snow_to_glacier,
+    ) = glacier_model.parameters
 
     n = length(temperature)
 
@@ -134,9 +144,9 @@ function update_glacier_model!(
             glacier_store[i],
             snow_storage[i],
             temperature[i],
-            g_ttm[i],
-            g_cfmax[i],
-            g_sifrac[i],
+            glacier_temperature_threshold_melt[i],
+            glacier_degree_day_factor[i],
+            glacier_snow_to_ice_fraction[i],
             max_snow_to_glacier,
         )
     end

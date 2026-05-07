@@ -53,15 +53,16 @@
         @test mean(variables.clay_erosion_rate) ≈ 0.002287480354866626
         @test mean(variables.silt_erosion_rate) ≈ 0.0036164773521184896
         @test mean(variables.sand_erosion_rate) ≈ 0.026301393837924607
-        @test mean(variables.lagg_erosion_rate) ≈ 0.022577957752547836
-        @test mean(variables.sagg_erosion_rate) ≈ 0.022874695590802723
+        @test mean(variables.large_aggregates_erosion_rate) ≈ 0.022577957752547836
+        @test mean(variables.small_aggregates_erosion_rate) ≈ 0.022874695590802723
     end
 
     @testset "second timestep sediment model (routing)" begin
         (; overland_flow, river_flow) = model.routing
 
-        @test overland_flow.transport_capacity.parameters.dm_sand[1] == 200.0
-        @test overland_flow.transport_capacity.parameters.dm_lagg[1] == 500.0
+        @test overland_flow.transport_capacity.parameters.median_diameter_sand[1] == 200.0
+        @test overland_flow.transport_capacity.parameters.median_diameter_large_aggregates[1] ==
+              500.0
 
         @test mean(overland_flow.transport_capacity.boundary_conditions.q) ≈
               0.006879398771052133

@@ -25,9 +25,9 @@ end
     # Exponent EUROSEM [-]
     eurosem_exponent::Vector{Float64}
     # Canopy height [m]
-    canopyheight::Vector{Float64}
+    canopy_height::Vector{Float64}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{Float64}
+    canopy_gap_fraction::Vector{Float64}
     # Fraction of the soil that is covered (eg paved, snow, etc) [-]
     soilcover_fraction::Vector{Float64}
 end
@@ -52,9 +52,9 @@ function RainfallErosionEurosemParameters(
         SoilLossModel;
         sel = indices,
     )
-    canopyheight =
+    canopy_height =
         ncread(dataset, config, "vegetation_canopy__height", SoilLossModel; sel = indices)
-    canopygapfraction = ncread(
+    canopy_gap_fraction = ncread(
         dataset,
         config,
         "vegetation_canopy__gap_fraction",
@@ -72,8 +72,8 @@ function RainfallErosionEurosemParameters(
     eurosem_parameters = RainfallErosionEurosemParameters(;
         soil_detachability,
         eurosem_exponent,
-        canopyheight,
-        canopygapfraction,
+        canopy_height,
+        canopy_gap_fraction,
         soilcover_fraction,
     )
     return eurosem_parameters
@@ -121,8 +121,8 @@ function update_rainfall_erosion_model!(
     (;
         soil_detachability,
         eurosem_exponent,
-        canopyheight,
-        canopygapfraction,
+        canopy_height,
+        canopy_gap_fraction,
         soilcover_fraction,
     ) = rainfall_erosion_model.parameters
     (; soil_erosion_rate) = rainfall_erosion_model.variables
@@ -135,8 +135,8 @@ function update_rainfall_erosion_model!(
             waterlevel[i],
             soil_detachability[i],
             eurosem_exponent[i],
-            canopyheight[i],
-            canopygapfraction[i],
+            canopy_height[i],
+            canopy_gap_fraction[i],
             soilcover_fraction[i],
             parameters.area[i],
             dt,

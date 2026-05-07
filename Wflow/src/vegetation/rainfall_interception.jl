@@ -1,14 +1,14 @@
 
 """
-    rainfall_interception_gash(cmax, e_r, canopy_gap_fraction, precipitation, canopy_storage, max_evaporation)
+    rainfall_interception_gash(maximum_canopy_storage, evaporation_to_precipitation_ratio, canopy_gap_fraction, precipitation, canopy_storage, max_evaporation)
 
-Interception according to the Gash model (for daily timesteps). `cmax` is the maximum canopy
-storage and `e_r` is the ratio of the average evaporation from the wet canopy and the
+Interception according to the Gash model (for daily timesteps). `maximum_canopy_storage` is the maximum canopy
+storage and `evaporation_to_precipitation_ratio` is the ratio of the average evaporation from the wet canopy and the
 average precipitation intensity on a saturated canopy.
 """
 function rainfall_interception_gash(
-    cmax,
-    e_r,
+    maximum_canopy_storage,
+    evaporation_to_precipitation_ratio,
     canopy_gap_fraction,
     precipitation,
     canopy_storage,
@@ -17,15 +17,17 @@ function rainfall_interception_gash(
     # TODO: add other rainfall interception method (lui)
     # TODO: include subdaily Gash model
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
-    if cmax > 0.0
+    if maximum_canopy_storage > 0.0
         if canopy_gap_fraction < inv(1.1)
             pt = 0.1 * canopy_gap_fraction
             pfrac = 1.0 - 1.1 * canopy_gap_fraction # > 0
 
-            if e_r > pfrac
+            if evaporation_to_precipitation_ratio > pfrac
                 p_sat = 0.0
             else
-                p_sat = -cmax / e_r * log(1.0 - e_r / pfrac)
+                p_sat =
+                    -maximum_canopy_storage / evaporation_to_precipitation_ratio *
+                    log(1.0 - evaporation_to_precipitation_ratio / pfrac)
             end
         else
             pt = 1.0 - canopy_gap_fraction
@@ -37,9 +39,9 @@ function rainfall_interception_gash(
         large_storms = precipitation > p_sat
 
         if large_storms
-            iwet = pfrac * p_sat - cmax
-            isat = e_r * (precipitation - p_sat)
-            idry = cmax
+            iwet = pfrac * p_sat - maximum_canopy_storage
+            isat = evaporation_to_precipitation_ratio * (precipitation - p_sat)
+            idry = maximum_canopy_storage
             interception = iwet + isat + idry
         else
             iwet = pfrac * precipitation
@@ -63,17 +65,17 @@ function rainfall_interception_gash(
 end
 
 """
-    rainfall_interception_modrut(precipitation, potential_evaporation, canopy_storage, canopy_gap_fraction, cmax)
+    rainfall_interception_modrut(precipitation, potential_evaporation, canopy_storage, canopy_gap_fraction, maximum_canopy_storage)
 
 Interception according to a modified Rutter model. The model is solved explicitly and there
-is no drainage below `cmax`.
+is no drainage below `maximum_canopy_storage`.
 """
 function rainfall_interception_modrut(
     precipitation,
     potential_evaporation,
     canopy_storage,
     canopy_gap_fraction,
-    cmax,
+    maximum_canopy_storage,
 )
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
     if canopy_gap_fraction < inv(1.1)
@@ -87,11 +89,11 @@ function rainfall_interception_modrut(
     stemflow = precipitation * pt
     throughfall = canopy_gap_fraction * precipitation
 
-    # Canopystorage cannot be larger than cmax, no gravity drainage below that. This check
-    # is required because cmax can change over time
-    if canopy_storage > cmax
-        canopy_drainage = canopy_storage - cmax
-        canopy_storage = cmax
+    # Canopystorage cannot be larger than maximum_canopy_storage, no gravity drainage below that. This check
+    # is required because maximum_canopy_storage can change over time
+    if canopy_storage > maximum_canopy_storage
+        canopy_drainage = canopy_storage - maximum_canopy_storage
+        canopy_storage = maximum_canopy_storage
         throughfall += canopy_drainage
     end
 
@@ -108,9 +110,9 @@ function rainfall_interception_modrut(
     end
 
     # Drain the canopy_storage again if needed
-    if canopy_storage > cmax
-        canopy_drainage = canopy_storage - cmax
-        canopy_storage = cmax
+    if canopy_storage > maximum_canopy_storage
+        canopy_drainage = canopy_storage - maximum_canopy_storage
+        canopy_storage = maximum_canopy_storage
         throughfall += canopy_drainage
     end
 

@@ -13,14 +13,14 @@
         # test if states and depending variables are consistent between soil and groundwater
         # flow models
         (; subsurface_flow) = model.routing
-        (; zi, ustorecapacity) = model.land.soil.variables
+        (; water_table_depth, unsaturated_store_capacity) = model.land.soil.variables
         (; land_indices) = model.domain.river.network
         @test all(
-            0.001 * zi .==
+            0.001 * water_table_depth .==
             subsurface_flow.parameters.top .-
             min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
         )
-        @test all(ustorecapacity[land_indices] .== 0.0)
+        @test all(unsaturated_store_capacity[land_indices] .== 0.0)
         @test all(
             subsurface_flow.variables.head[land_indices] .==
             subsurface_flow.parameters.top[land_indices],
@@ -45,7 +45,7 @@
         @test model.clock.iteration == 1
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test soil.variables.runoff[1] == 0.0
-        @test soil.variables.soilevap[1] == 0.0
+        @test soil.variables.soil_evaporation[1] == 0.0
         @test soil.variables.transpiration[1] ≈ 0.30587632831650247
         @test soil.variables.total_storage[1] ≈ 594.859200902034
         @test soil.variables.total_storage[6] ≈ 665.0260781409222 # river cell
@@ -58,7 +58,7 @@
         (; soil) = model.land
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test soil.variables.runoff[1] == 0.0
-        @test soil.variables.soilevap[1] == 0.0
+        @test soil.variables.soil_evaporation[1] == 0.0
         @test soil.variables.transpiration[4] ≈ 0.9545461724219301
         @test soil.variables.total_storage[1] ≈ 594.6412481941371
         @test soil.variables.total_storage[6] ≈ 646.8344274025224 # river cell
@@ -189,7 +189,7 @@ end
     @testset "second timestep warm start" begin
         (; variables) = model.land.soil
         @test variables.runoff[1] == 0.0
-        @test variables.soilevap[1] ≈ 0.28488618656022874
+        @test variables.soil_evaporation[1] ≈ 0.28488618656022874
         @test variables.transpiration[1] ≈ 1.0122634204681036
     end
 

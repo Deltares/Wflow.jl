@@ -33,13 +33,13 @@ function Model(config::Config, type::SbmGwfModel)
     mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
 
     modelmap = (land = land_hydrology, routing, mass_balance)
-    (; maxlayers) = land_hydrology.soil.parameters
+    (; maximum_number_of_layers) = land_hydrology.soil.parameters
     writer = Writer(
         config,
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim = (name = "layer", value = Float64.(1:(maximum_number_of_layers))),
     )
     close(dataset)
 
@@ -81,7 +81,8 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
         soil.variables.recharge / 1000.0 * (1.0 / dt_gwf)
     if do_water_demand(config)
         @. boundary_conditions.recharge.variables.rate -=
-            land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_gwf)
+            land.allocation.variables.actual_groundwater_abstraction / 1000.0 *
+            (1.0 / dt_gwf)
     end
     # update groundwater domain
     update_subsurface_flow_model!(
@@ -91,7 +92,7 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
         dt_gwf,
         config.model.conductivity_profile,
     )
-    # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
+    # update SBM soil model (runoff, unsaturated_layer_depth and saturated_water_depth)
     update_soil_water_storage!(
         soil,
         (; runoff, demand, subsurface_flow = routing.subsurface_flow),

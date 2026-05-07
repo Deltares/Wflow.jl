@@ -350,10 +350,10 @@ end
 
     @testset "initial parameter values" begin
         (; land) = model
-        @test land.snow.parameters.cfmax[1] ≈ 3.7565300464630127
-        @test land.soil.parameters.soilthickness[1] ≈ 2000.0
+        @test land.snow.parameters.degree_day_factor[1] ≈ 3.7565300464630127
+        @test land.soil.parameters.soil_thickness[1] ≈ 2000.0
         @test land.atmospheric_forcing.precipitation[49951] ≈ 2.2100000381469727
-        @test land.soil.parameters.c[1] ≈
+        @test land.soil.parameters.brooks_corey_exponent[1] ≈
               [9.152995289601465, 8.919674421902961, 8.70537452585209, 8.690681062890977]
     end
 
@@ -378,10 +378,10 @@ end
         Wflow.load_dynamic_input!(model)
 
         (; land) = model
-        @test land.snow.parameters.cfmax[1] == 2.0
-        @test land.soil.parameters.soilthickness[1] ≈ 2000.0 * 3.0 + 100.0
+        @test land.snow.parameters.degree_day_factor[1] == 2.0
+        @test land.soil.parameters.soil_thickness[1] ≈ 2000.0 * 3.0 + 100.0
         @test land.atmospheric_forcing.precipitation[49951] ≈ 1.5 * 2.2100000381469727
-        @test land.soil.parameters.c[1] ≈ [
+        @test land.soil.parameters.brooks_corey_exponent[1] ≈ [
             2.0 * 9.152995289601465,
             8.919674421902961,
             3.0 * 8.70537452585209,

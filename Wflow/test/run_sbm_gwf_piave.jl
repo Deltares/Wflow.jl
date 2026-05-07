@@ -7,17 +7,22 @@
     Wflow.run_timestep!(model)
 
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
-    (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-        model.land.allocation.variables
+    (;
+        total_alloc,
+        irrigation_allocation,
+        non_irrigation_allocation,
+        surfacewater_allocation,
+        actual_groundwater_abstraction,
+    ) = model.land.allocation.variables
     (; soil) = model.land
     (; river_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
 
     @testset "piave water demand and allocation first timestep" begin
         sum_total_alloc = sum(total_alloc)
-        @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1789.6488381807214
-        @test sum(act_groundwater_abst) ≈ 407.090604383911
+        @test sum(irrigation_allocation) + sum(non_irrigation_allocation) ≈ sum_total_alloc
+        @test sum(surfacewater_allocation) ≈ 1789.6488381807214
+        @test sum(actual_groundwater_abstraction) ≈ 407.090604383911
         @test paddy.variables.h[[25, 42, 45]] ≈ [42.968584878704704, 0.0, 33.2318007065323]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 25.0, 0.0]
@@ -42,15 +47,15 @@
         @test reservoir.variables.storage ≈ [1.5532942832524955e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [3.2489121397532985, 8.556416216129914, 28.17032166161074]
-        @test soil.variables.exfiltsatwater[27:31] ≈ [
+        @test soil.variables.exfiltration_saturated_water[27:31] ≈ [
             25.18951221336381,
             0.5051906077504189,
             10.146835651996671,
             6.953613376684251,
             19.4382101688517,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 221.53945489105732
-        @test soil.variables.exfiltsatwater[17] == 0.0
+        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 221.53945489105732
+        @test soil.variables.exfiltration_saturated_water[17] == 0.0
         @test mean(river_flow.variables.q_av) ≈ 30.071991490895094
         @test maximum(river_flow.variables.q_av) ≈ 117.48258852034441
         @test soil.variables.total_storage[7503] ≈ 472.9217078886107
@@ -61,9 +66,9 @@
 
     @testset "piave water demand and allocation second timestep" begin
         sum_total_alloc = sum(total_alloc)
-        @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1646.0718643945509
-        @test sum(act_groundwater_abst) ≈ 350.0797526292415
+        @test sum(irrigation_allocation) + sum(non_irrigation_allocation) ≈ sum_total_alloc
+        @test sum(surfacewater_allocation) ≈ 1646.0718643945509
+        @test sum(actual_groundwater_abstraction) ≈ 350.0797526292415
         @test paddy.variables.h[[25, 42, 45]] ≈ [38.996467765915135, 0.0, 27.60963170377481]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
         @test paddy.variables.demand_gross[[25, 42, 45]] ≈ [0.0, 25.0, 0.0]
@@ -75,7 +80,7 @@
         @test reservoir.variables.storage ≈ [1.5529127318256468e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [3.2489840968665207, 9.467087432483991, 38.61905891069846]
-        @test soil.variables.exfiltsatwater[27:33] ≈ [
+        @test soil.variables.exfiltration_saturated_water[27:33] ≈ [
             38.453465491093255,
             1.8429603097441243,
             16.540511062605493,
@@ -84,8 +89,8 @@
             18.206070056605835,
             19.592872450180813,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 334.9786549671658
-        @test soil.variables.exfiltsatwater[17] == 0.0
+        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 334.9786549671658
+        @test soil.variables.exfiltration_saturated_water[17] == 0.0
         @test mean(river_flow.variables.q_av) ≈ 36.80765857144827
         @test maximum(river_flow.variables.q_av) ≈ 141.84332548772514
         @test soil.variables.total_storage[7503] ≈ 463.4074094243159

@@ -1,38 +1,39 @@
 """
     infiltration(
         potential_infiltration,
-        pathfrac,
-        infiltcapsoil,
-        infiltcappath,
-        ustorecapacity,
+        compacted_area_fraction,
+        infiltration_capacity_soil,
+        infiltration_capacity_path,
+        unsaturated_store_capacity,
         f_infiltration_reduction,
     )
 
-Soil infiltration based on infiltration capacity soil `infiltcapsoil`, infiltration capacity
-paved area `infiltcappath` and unsaturated store capacity `ustorecapacity`. The infiltration
+Soil infiltration based on infiltration capacity soil `infiltration_capacity_soil`, infiltration capacity
+paved area `infiltration_capacity_path` and unsaturated store capacity `unsaturated_store_capacity`. The infiltration
 capacity of the soil and paved area can be reduced with the infiltration reduction factor
 `f_infiltration_reduction`.
 """
 function infiltration(
     potential_infiltration,
-    pathfrac,
-    infiltcapsoil,
-    infiltcappath,
-    ustorecapacity,
+    compacted_area_fraction,
+    infiltration_capacity_soil,
+    infiltration_capacity_path,
+    unsaturated_store_capacity,
     f_infiltration_reduction,
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and paved areas (path).
-    soilinf = potential_infiltration * (1.0 - pathfrac)
-    pathinf = potential_infiltration * pathfrac
+    soilinf = potential_infiltration * (1.0 - compacted_area_fraction)
+    pathinf = potential_infiltration * compacted_area_fraction
 
-    max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
-    max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
-    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
+    max_infiltsoil = min(infiltration_capacity_soil * f_infiltration_reduction, soilinf)
+    max_infiltpath = min(infiltration_capacity_path * f_infiltration_reduction, pathinf)
+    infiltration_soil_and_path =
+        min(max_infiltpath + max_infiltsoil, max(0.0, unsaturated_store_capacity))
 
-    infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
+    infiltration_excess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
-    return infiltsoilpath, infiltexcess
+    return infiltration_soil_and_path, infiltration_excess
 end
 
 """
@@ -77,24 +78,24 @@ Return volumetric water content based on the Brooks-Corey soil hydraulic model.
 function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
     if h < hb
         par_lambda = 2.0 / (c - 3.0)
-        vwc = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
+        volumetric_water_content = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
     else
-        vwc = theta_s
+        volumetric_water_content = theta_s
     end
-    return vwc
+    return volumetric_water_content
 end
 
 """
-    head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+    head_brooks_corey(volumetric_water_content, theta_s, theta_r, c, hb)
 
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
-function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
+function head_brooks_corey(volumetric_water_content, theta_s, theta_r, c, hb)
     par_lambda = 2 / (c - 3.0)
     h = if par_lambda > 0
-        # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
-        # part of the numerical vwc calculation
-        hb / pow(vwc / (theta_s - theta_r), inv(par_lambda))
+        # Note that in the original formula, theta_r is extracted from volumetric_water_content, but theta_r is not
+        # part of the numerical volumetric_water_content calculation
+        hb / pow(volumetric_water_content / (theta_s - theta_r), inv(par_lambda))
     else
         hb
     end
@@ -161,19 +162,19 @@ end
 """
     soil_temperature(tsoil_prev, w_soil, temperature))
 
-Return the near surface soil temperature `tsoil` based on the near surface soil temperature
+Return the near surface soil temperature `top_soil_temperature` based on the near surface soil temperature
 `tsoil_prev` at the previous timestep, and the difference between air `temperature` and near
 surface soil temperature `tsoil_prev` at the previous timestep, weighted with the weighting
 coefficient `w_soil` (Wigmosta et al., 2009).
 """
 function soil_temperature(tsoil_prev, w_soil, temperature)
-    tsoil = tsoil_prev + w_soil * (temperature - tsoil_prev)
-    return tsoil
+    top_soil_temperature = tsoil_prev + w_soil * (temperature - tsoil_prev)
+    return top_soil_temperature
 end
 
 """
     infiltration_reduction_factor(
-        tsoil,
+        top_soil_temperature,
         cf_soil;
         modelsnow = false,
         soil_infiltration_reduction = false,
@@ -181,19 +182,19 @@ end
 
 When both `modelsnow` and `soil_infiltration_reduction` are `true` an infiltration reduction
 factor `f_infiltration_reduction` is computed. The infiltration reduction factor is based on
-the near surface soil temperature `tsoil`, parameter `cf_soil` and a s-curve to make a
-smooth transition of `f_infiltration_reduction` as a function of `tsoil` and `cf_soil`.
+the near surface soil temperature `top_soil_temperature`, parameter `cf_soil` and a s-curve to make a
+smooth transition of `f_infiltration_reduction` as a function of `top_soil_temperature` and `cf_soil`.
 Otherwise, `f_infiltration_reduction` is set to 1.0.
 """
 function infiltration_reduction_factor(
-    tsoil,
+    top_soil_temperature,
     cf_soil;
     modelsnow = false,
     soil_infiltration_reduction = false,
 )
     if modelsnow && soil_infiltration_reduction
         bb = 1.0 / (1.0 - cf_soil)
-        f_infiltration_reduction = scurve(tsoil, 0.0, bb, 8.0) + cf_soil
+        f_infiltration_reduction = scurve(top_soil_temperature, 0.0, bb, 8.0) + cf_soil
     else
         f_infiltration_reduction = 1.0
     end
@@ -203,10 +204,10 @@ end
 "Return soil evaporation from the unsaturated store"
 function soil_evaporation_unsatured_store(
     potential_soilevaporation,
-    ustorelayerdepth,
-    ustorelayerthickness,
+    unsaturated_layer_depth,
+    unsaturated_layer_thickness,
     n_unsatlayers,
-    zi,
+    water_table_depth,
     theta_effective,
 )
     if n_unsatlayers == 0
@@ -214,12 +215,15 @@ function soil_evaporation_unsatured_store(
     elseif n_unsatlayers == 1
         # Check if groundwater level lies below the surface
         soilevapunsat =
-            potential_soilevaporation * min(1.0, ustorelayerdepth / (zi * theta_effective))
+            potential_soilevaporation *
+            min(1.0, unsaturated_layer_depth / (water_table_depth * theta_effective))
     else
         # In case first layer contains no saturated storage
         soilevapunsat =
-            potential_soilevaporation *
-            min(1.0, ustorelayerdepth / (ustorelayerthickness * (theta_effective)))
+            potential_soilevaporation * min(
+                1.0,
+                unsaturated_layer_depth / (unsaturated_layer_thickness * (theta_effective)),
+            )
     end
     return soilevapunsat
 end
@@ -229,41 +233,47 @@ function soil_evaporation_satured_store(
     potential_soilevaporation,
     n_unsatlayers,
     layerthickness,
-    zi,
+    water_table_depth,
     theta_drainable,
 )
     if n_unsatlayers in (0, 1)
-        soilevapsat =
-            potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
-        soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable)
+        soil_evaporation_saturated =
+            potential_soilevaporation *
+            min(1.0, (layerthickness - water_table_depth) / layerthickness)
+        soil_evaporation_saturated = min(
+            soil_evaporation_saturated,
+            (layerthickness - water_table_depth) * theta_drainable,
+        )
     else
-        soilevapsat = 0.0
+        soil_evaporation_saturated = 0.0
     end
-    return soilevapsat
+    return soil_evaporation_saturated
 end
 
-"Return actual infiltration rate for soil `actinfiltsoil` and paved area `actinfiltpath`"
+"Return actual infiltration rate for soil `actual_infiltration_soil` and paved area `actual_infiltration_path`"
 function actual_infiltration_soil_path(
     potential_infiltration,
-    actinfilt,
-    pathfrac,
-    infiltcapsoil,
-    infiltcappath,
+    actual_infiltration,
+    compacted_area_fraction,
+    infiltration_capacity_soil,
+    infiltration_capacity_path,
     f_infiltration_reduction,
 )
-    soilinf = potential_infiltration * (1.0 - pathfrac)
-    pathinf = potential_infiltration * pathfrac
-    if actinfilt > 0.0
-        max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
-        max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
+    soilinf = potential_infiltration * (1.0 - compacted_area_fraction)
+    pathinf = potential_infiltration * compacted_area_fraction
+    if actual_infiltration > 0.0
+        max_infiltsoil = min(infiltration_capacity_soil * f_infiltration_reduction, soilinf)
+        max_infiltpath = min(infiltration_capacity_path * f_infiltration_reduction, pathinf)
 
-        actinfiltsoil = actinfilt * max_infiltsoil / (max_infiltpath + max_infiltsoil)
-        actinfiltpath = actinfilt * max_infiltpath / (max_infiltpath + max_infiltsoil)
+        actual_infiltration_soil =
+            actual_infiltration * max_infiltsoil / (max_infiltpath + max_infiltsoil)
+        actual_infiltration_path =
+            actual_infiltration * max_infiltpath / (max_infiltpath + max_infiltsoil)
 
     else
-        actinfiltsoil = 0.0
-        actinfiltpath = 0.0
+        actual_infiltration_soil = 0.0
+        actual_infiltration_path = 0.0
     end
 
-    return actinfiltsoil, actinfiltpath
+    return actual_infiltration_soil, actual_infiltration_path
 end

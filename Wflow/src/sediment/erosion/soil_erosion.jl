@@ -12,9 +12,9 @@ abstract type AbstractSoilErosionModel end
     # Total sand erosion rate [t dt-1]
     sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total small aggregates erosion rate [t dt-1]
-    sagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total large aggregates erosion rate [t dt-1]
-    lagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
@@ -35,9 +35,9 @@ end
     # Soil content sand [-]
     sand_fraction::Vector{Float64}
     # Soil content small aggregates [-]
-    sagg_fraction::Vector{Float64}
+    small_aggregates_fraction::Vector{Float64}
     # Soil content large aggregates [-]
-    lagg_fraction::Vector{Float64}
+    large_aggregates_fraction::Vector{Float64}
 end
 
 "Initialize soil erosion model parameters"
@@ -52,14 +52,14 @@ function SoilErosionParameters(
         ncread(dataset, config, "soil_silt__mass_fraction", SoilLossModel; sel = indices)
     sand_fraction =
         ncread(dataset, config, "soil_sand__mass_fraction", SoilLossModel; sel = indices)
-    sagg_fraction = ncread(
+    small_aggregates_fraction = ncread(
         dataset,
         config,
         "soil_small_aggregates__mass_fraction",
         SoilLossModel;
         sel = indices,
     )
-    lagg_fraction = ncread(
+    large_aggregates_fraction = ncread(
         dataset,
         config,
         "soil_large_aggregates__mass_fraction",
@@ -68,7 +68,11 @@ function SoilErosionParameters(
     )
     # Check that soil fractions sum to 1
     soil_fractions =
-        clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction
+        clay_fraction +
+        silt_fraction +
+        sand_fraction +
+        small_aggregates_fraction +
+        large_aggregates_fraction
     if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
         error("Particle fractions in the soil must sum to 1")
     end
@@ -76,8 +80,8 @@ function SoilErosionParameters(
         clay_fraction,
         silt_fraction,
         sand_fraction,
-        sagg_fraction,
-        lagg_fraction,
+        small_aggregates_fraction,
+        large_aggregates_fraction,
     )
 
     return soil_parameters
@@ -119,15 +123,20 @@ end
 "Update soil erosion model for a single timestep"
 function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
-    (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
-        soil_erosion_model.parameters
+    (;
+        clay_fraction,
+        silt_fraction,
+        sand_fraction,
+        small_aggregates_fraction,
+        large_aggregates_fraction,
+    ) = soil_erosion_model.parameters
     (;
         soil_erosion_rate,
         clay_erosion_rate,
         silt_erosion_rate,
         sand_erosion_rate,
-        sagg_erosion_rate,
-        lagg_erosion_rate,
+        small_aggregates_erosion_rate,
+        large_aggregates_erosion_rate,
     ) = soil_erosion_model.variables
 
     n = length(rainfall_erosion)
@@ -136,15 +145,15 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
         clay_erosion_rate[i],
         silt_erosion_rate[i],
         sand_erosion_rate[i],
-        sagg_erosion_rate[i],
-        lagg_erosion_rate[i] = total_soil_erosion(
+        small_aggregates_erosion_rate[i],
+        large_aggregates_erosion_rate[i] = total_soil_erosion(
             rainfall_erosion[i],
             overland_flow_erosion[i],
             clay_fraction[i],
             silt_fraction[i],
             sand_fraction[i],
-            sagg_fraction[i],
-            lagg_fraction[i],
+            small_aggregates_fraction[i],
+            large_aggregates_fraction[i],
         )
     end
 end

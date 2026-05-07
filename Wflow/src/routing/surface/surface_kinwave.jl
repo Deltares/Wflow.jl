@@ -206,7 +206,7 @@ function set_reservoir_vars!(reservoir_model::ReservoirModel)
     reservoir_model.boundary_conditions.inflow .= 0.0
     reservoir_model.boundary_conditions.actual_external_abstraction_av .= 0.0
     reservoir_model.variables.outflow_av .= 0.0
-    reservoir_model.variables.actevap .= 0.0
+    reservoir_model.variables.actual_evaporation .= 0.0
 
     return nothing
 end
