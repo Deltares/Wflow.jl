@@ -5,8 +5,10 @@
     zi::Vector{Float64}
     # Hydraulic head [m]
     head::Vector{Float64}
-    # Exfiltration [m Δt⁻¹ => m s⁻¹] (groundwater above surface level, saturated excess conditions)
-    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Cumulative exfiltration [m] (groundwater above surface level, saturated excess conditions)
+    exfiltwater_cumulative::Vector{Float64} = zeros(n)
+    # Average exfiltration [m s⁻¹] (groundwater above surface level, saturated excess conditions)
+    exfiltwater_average::Vector{Float64} = zeros(n)
     # Subsurface flow [m³ d⁻¹ => m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
     # Cumulative subsurface flow [m³] for model timestep Δt
@@ -216,7 +218,7 @@ function kinwave_subsurface_update!(
         to_river_cumulative,
         zi,
         head,
-        exfiltwater,
+        exfiltwater_cumulative,
         q_max,
         storage,
         q_net_bnds,
@@ -266,8 +268,8 @@ function kinwave_subsurface_update!(
                 q_in_cumulative[v] += q_in[v] * dt
                 # [m³] += [m³ s⁻¹] * [s]
                 q_cumulative[v] += q[v] * dt
-                # [m s⁻¹] += [m s⁻¹]
-                exfiltwater[v] += _exfiltwater
+                # [m] += [m s⁻¹] * [s]
+                exfiltwater_cumulative[v] += _exfiltwater * dt
                 # [m³] += [m s⁻¹] * [s]
                 q_net_cumulative[v] += netflux * area[v] * dt
                 # [m] = [m] - [m]

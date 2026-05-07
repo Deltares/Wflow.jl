@@ -81,7 +81,7 @@ function homogenous_aquifer(nrow, ncol)
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
+        exfiltwater_cumulative = fill(0.0, ncell),
     )
 
     gwf_model = Wflow.GroundwaterFlowModel(;
@@ -228,7 +228,9 @@ function test_means(obj::Any, means::Dict{Symbol})
             push!(failed, s)
             err = v - v_obj
             fac = v ./ v_obj
-            println("$s: err = $err, fac = $fac")
+            println("-"^50)
+            println("$s: err = (v_expected - v_actual) = ($v - $v_obj) = $err")
+            @show fac
         end
     end
     return isempty(failed)

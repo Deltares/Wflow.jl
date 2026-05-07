@@ -292,7 +292,7 @@ end
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
+        exfiltwater_cumulative = fill(0.0, ncell),
     )
     parameters = Wflow.GroundwaterFlowParameters(;
         k = fill(conductivity, ncell),

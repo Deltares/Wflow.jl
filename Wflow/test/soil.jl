@@ -99,7 +99,7 @@ end
         N;
         n,
         ustorelayerthickness = [
-            to_SI(
+            to_SI.(
                 SVector((50.0, 5.081648613929929, NaN, NaN, NaN, NaN)),
                 Ref("soil_layer_water_unsaturated_zone__depth"),
             ),
@@ -441,7 +441,7 @@ end
         variables = Wflow.DemandVariables(; n),
     )
 
-    subsurface_flow = (; variables = (; exfiltwater = [0.0]))
+    subsurface_flow = (; variables = (; exfiltwater_average = [0.0]))
     external_models = (; runoff, demand, subsurface_flow)
 
     Wflow.update_soil_water_storage!(soil_model, external_models, dt)

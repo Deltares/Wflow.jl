@@ -364,7 +364,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:kinematic_lateral_subsurface_output],
     ),
     "subsurface_water__exfiltration_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.exfiltwater),
+        lens = @optic(_.routing.subsurface_flow.variables.exfiltwater_average),
         unit = Unit(; m = 1, dt = -1),
         description = "Exfiltration (groundwater above surface level, saturated excess conditions)",
         tags = [:kinematic_lateral_subsurface_output],

@@ -305,7 +305,6 @@
                 :soilthickness => 1.8378337136681173,
                 :specific_yield => 0.134215382295341,
                 :khfrac => 100.0,
-                :specific_yield => 0.18809013342973288,
             ),
         )
         @test test_means(
@@ -316,12 +315,12 @@
             subsurface_flow.variables,
             Dict(
                 :zi => 0.2787378291002851,
-                :to_river => to_SI(83.98143291277904, M3_PER_DAY),
+                :to_river_average => to_SI(83.98143291277904, M3_PER_DAY),
                 :q_in => to_SI(1205.6076607372684, M3_PER_DAY),
                 :storage => 118195.04455118616,
                 :q_max => to_SI(3.149179231329745, M2_PER_DAY),
                 :q => to_SI(1289.6589215389067, M2_PER_DAY),
-                :exfiltwater => to_SI(3.8825439445270756e-5, M_PER_DT; dt_val = dt),
+                :exfiltwater_average => to_SI(3.8825439445270756e-5, M_PER_DT; dt_val = dt),
             ),
         )
     end
@@ -342,17 +341,20 @@
                 :mannings_n => 0.48407901249960045,
             ),
         )
-        @test test_means(overland_flow.variables, Dict(:to_river => 9.421773254130464e-5))
+        @test test_means(
+            overland_flow.variables,
+            Dict(:to_river_average => 9.421773254130464e-5),
+        )
         @test test_means(
             overland_flow.variables.flow,
             Dict(
                 :qin => 0.0006926507774505128,
                 :storage => 15.068288821912116,
                 :h => 2.649435687032212e-5,
-                :qin_av => 0.0006878506670979908,
+                :qin_average => 0.0006878506670979908,
                 :qlat => 2.637385225086365e-7,
                 :q => 0.0007875271901973019,
-                :q_av => 0.0007820683996392956,
+                :q_average => 0.0007820683996392956,
             ),
         )
     end
@@ -363,7 +365,7 @@
         @test test_means(
             river_flow.boundary_conditions,
             Dict(
-                :actual_external_abstraction_av => 0.0,
+                :actual_external_abstraction_average => 0.0,
                 :external_inflow => 0.0,
                 :abstraction => 0.0,
                 :inwater => 0.010415800149478108,
@@ -385,10 +387,10 @@
                 :qin => 0.30373899023076173,
                 :storage => 947.2681057776836,
                 :h => 0.019348596909199465,
-                :qin_av => 0.15655823559102536,
+                :qin_average => 0.15655823559102536,
                 :qlat => 1.808757248203136e-5,
                 :q => 0.3031964891388029,
-                :q_av => 0.15601028451622473,
+                :q_average => 0.15601028451622473,
             ),
         )
     end
@@ -526,11 +528,11 @@
     end
 
     @testset "subsurface flow" begin
-        q_average = model.routing.subsurface_flow.variables.q_average
-        @test sum(q_average) ≈ 6.250079949202134e7
-        @test q_average[domain.land.network.order[1]] ≈ 699.3636285243076
-        @test q_average[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
-        @test q_average[domain.land.network.order[end]] ≈ 287.61501877867994
+        q = model.routing.subsurface_flow.variables.q_cumulative
+        @test sum(q) ≈ 6.250079949202134e7
+        @test q[domain.land.network.order[1]] ≈ 699.3636285243076
+        @test q[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
+        @test q[domain.land.network.order[end]] ≈ 287.61501877867994
     end
 
     @testset "Second timestep: overland routing" begin
@@ -545,17 +547,20 @@
             overland_flow.boundary_conditions,
             Dict(:inwater => 0.001470763758351302),
         )
-        @test test_means(overland_flow.variables, Dict(:to_river => 0.0006258080185533339))
+        @test test_means(
+            overland_flow.variables,
+            Dict(:to_river_average => 0.0006258080185533339),
+        )
         @test test_means(
             overland_flow.variables.flow,
             Dict(
                 :qin => 0.006912379626717226,
                 :storage => 88.07246474045597,
                 :h => 0.00015534152871148443,
-                :qin_av => 0.004661418794902121,
+                :qin_average => 0.004661418794902121,
                 :qlat => 1.6550140762075134e-6,
                 :q => 0.00797347889594406,
-                :q_av => 0.005287226813455454,
+                :q_average => 0.005287226813455454,
             ),
         )
     end
@@ -847,7 +852,7 @@ end
         @test q_average[44] ≈ 0.009169625606576883
         Wflow.run_timestep!(model)
         @test actual_external_abstraction_average[44] ≈ 9.999999999999991
-        @test external_inflow_average[44] == -10.0
+        @test external_inflow[44] == -10.0
         @test q_average[44] ≈ 6.917023458482667
     end
     Wflow.close_files(model; delete_output = false)

@@ -1268,7 +1268,7 @@ end
     update_soil_water_storage!(soil_model::SbmSoilModel, external_models::NamedTuple)
 
 Update the SBM soil model for a single timestep based on the update of a subsurface flow
-model, resulting in a change in water table depth and an exfiltration rate `exfiltwater`.
+model, resulting in a change in water table depth and an exfiltration rate `exfiltwater_average`.
 
 The available water in unsaturated zone `ustoredepth`, unsaturated store capacity
 `ustorecapacity`, `total_soilwater_storage`, land `runoff` and `net_runoff`, the saturated
@@ -1285,7 +1285,7 @@ function update_soil_water_storage!(
     (; runoff_land, ae_openw_l) = runoff.variables
     p = soil_model.parameters
     v = soil_model.variables
-    exfiltsatwater = subsurface_flow.variables.exfiltwater
+    exfiltsatwater = subsurface_flow.variables.exfiltwater_average
 
     # [m]
     rootingdepth = get_rootingdepth(soil_model)
