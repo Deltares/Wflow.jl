@@ -58,7 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
@@ -106,6 +106,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script type="text/javascript" src="../_static/version.js"></script>
 <script>
   window.MathJax = {
@@ -412,6 +415,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#contributions-and-reporting-issues" id="toc-contributions-and-reporting-issues" class="nav-link active" data-scroll-target="#contributions-and-reporting-issues">Contributions and reporting issues</a></li>
+  <li><a href="#parameter-and-variable-metadata-json-export" id="toc-parameter-and-variable-metadata-json-export" class="nav-link" data-scroll-target="#parameter-and-variable-metadata-json-export">Parameter and variable metadata JSON export</a>
+  <ul class="collapse">
+  <li><a href="#output-files" id="toc-output-files" class="nav-link" data-scroll-target="#output-files">Output files</a></li>
+  <li><a href="#json-structure" id="toc-json-structure" class="nav-link" data-scroll-target="#json-structure">JSON structure</a></li>
+  <li><a href="#running-the-export" id="toc-running-the-export" class="nav-link" data-scroll-target="#running-the-export">Running the export</a></li>
+  <li><a href="#ci-guardrail" id="toc-ci-guardrail" class="nav-link" data-scroll-target="#ci-guardrail">CI guardrail</a></li>
+  </ul></li>
   <li><a href="#styledecisions" id="toc-styledecisions" class="nav-link" data-scroll-target="#styledecisions">Style/decisions</a></li>
   </ul>
 </nav>
@@ -444,6 +454,93 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We welcome reporting of issues on <a href="https://github.com/Deltares/Wflow.jl/issues/new/choose">our GitHub page</a>. Please provide a minimum working example so we are able to reproduce the issue. Furthermore, we welcome contributions. We follow the <a href="https://github.com/SciML/ColPrac">ColPrac guide for collaborative practices</a>. New contributors should make sure to read that guide.</p>
 <p>To get started with local development, install Julia and pre-commit by running the command below.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> run install</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="parameter-and-variable-metadata-json-export" class="level2">
+<h2 class="anchored" data-anchor-id="parameter-and-variable-metadata-json-export">Parameter and variable metadata JSON export</h2>
+<p>Wflow maintains an internal standard name system (<code>STANDARD_NAME_MAPS</code>) that serves as the single source of truth for all parameter and variable metadata — including units, defaults, descriptions, and input handling flags. A utility script exports this metadata to machine-readable JSON files, making it accessible for external tools, documentation generation, and validation.</p>
+<section id="output-files" class="level3">
+<h3 class="anchored" data-anchor-id="output-files">Output files</h3>
+<p>The export produces four JSON files in <code>utils/export_parameter_data/</code>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>sbm_metadata.json</code></td>
+<td>Land hydrology (SBM) parameters and variables</td>
+</tr>
+<tr class="even">
+<td><code>routing_metadata.json</code></td>
+<td>Routing parameters and variables</td>
+</tr>
+<tr class="odd">
+<td><code>sediment_metadata.json</code></td>
+<td>Soil erosion and sediment transport parameters and variables</td>
+</tr>
+<tr class="even">
+<td><code>domain_metadata.json</code></td>
+<td>Domain grid parameters (LDD, river mask, subbasins)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="json-structure" class="level3">
+<h3 class="anchored" data-anchor-id="json-structure">JSON structure</h3>
+<p>Each file is a flat JSON object keyed by CSDMS-style standard names. The output is validated against a JSON Schema (<code>metadata_schema.json</code> in the same directory). Internal-only fields (<code>lens</code>, <code>dimname</code>, <code>tags</code>) from <code>ParameterMetadata</code> are intentionally excluded from the JSON output. The full field descriptions are documented on the struct:</p>
+<div id="2" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">Wflow</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">@doc</span> Wflow.ParameterMetadata</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div class="markdown"><p>Metadata associated with parameters and variables.</p>
+<h1>Arguments</h1>
+<ul>
+<li><p><code>lens</code>: The path in the model data structure to the parameter/variable if it exists</p>
+</li>
+<li><p><code>unit</code>: The unit of the parameter/variable in the Wflow input</p>
+</li>
+<li><p><code>default</code>: The default (initial) value of the parameter/variable if it exists</p>
+</li>
+<li><p><code>fill</code>: Missing input values are replaced by this value if allow_missing == false</p>
+</li>
+<li><p><code>type</code>: The output type of the data. Assumed to be <code>Float64</code> if it is not provided and cannot be derived   from <code>default</code> or <code>fill</code></p>
+</li>
+<li><p><code>description</code>: The description of the parameter/variable provided in the Wflow docs</p>
+</li>
+<li><p><code>allow_missing</code>: Whether the parameter/variable is allowed to have missing entries</p>
+</li>
+<li><p><code>allow_dynamic_input</code>: Allow updating this parameter from input via cyclic/forcing</p>
+</li>
+<li><p><code>dimname</code>: The name of the third dimension of the parameter/variable if it exists</p>
+</li>
+<li><p><code>tags</code>: Identifiers to filter parameters/variables for specific tables in the docs</p>
+</li>
+</ul>
+
+
+</div>
+</div>
+</div>
+</section>
+<section id="running-the-export" class="level3">
+<h3 class="anchored" data-anchor-id="running-the-export">Running the export</h3>
+<p>Use the pixi task:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> run parameter_metadata_json_gen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="ci-guardrail" class="level3">
+<h3 class="anchored" data-anchor-id="ci-guardrail">CI guardrail</h3>
+<p>A GitHub Actions workflow (<code>parameter_metadata_json_gen.yml</code>) runs automatically on pushes to <code>master</code> and on PRs that modify files under <code>Wflow/src/standard_name/</code>. It re-generates the JSON files and runs <code>git diff --exit-code</code> to ensure the committed JSON stays in sync with the source standard name maps. If you update any standard name metadata, re-run the export and commit the updated JSON files.</p>
+</section>
 </section>
 <section id="styledecisions" class="level2">
 <h2 class="anchored" data-anchor-id="styledecisions">Style/decisions</h2>
