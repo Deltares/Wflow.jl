@@ -936,6 +936,17 @@
     ]
   },
   {
+    "objectID": "developments/guide.html#parameter-and-variable-metadata-json-export",
+    "href": "developments/guide.html#parameter-and-variable-metadata-json-export",
+    "title": "Developers guide",
+    "section": "Parameter and variable metadata JSON export",
+    "text": "Parameter and variable metadata JSON export\nWflow maintains an internal standard name system (STANDARD_NAME_MAPS) that serves as the single source of truth for all parameter and variable metadata — including units, defaults, descriptions, and input handling flags. A utility script exports this metadata to machine-readable JSON files, making it accessible for external tools, documentation generation, and validation.\n\nOutput files\nThe export produces four JSON files in utils/export_parameter_data/:\n\n\n\n\n\n\n\nFile\nContents\n\n\n\n\nsbm_metadata.json\nLand hydrology (SBM) parameters and variables\n\n\nrouting_metadata.json\nRouting parameters and variables\n\n\nsediment_metadata.json\nSoil erosion and sediment transport parameters and variables\n\n\ndomain_metadata.json\nDomain grid parameters (LDD, river mask, subbasins)\n\n\n\n\n\nJSON structure\nEach file is a flat JSON object keyed by CSDMS-style standard names. The output is validated against a JSON Schema (metadata_schema.json in the same directory). Internal-only fields (lens, dimname, tags) from ParameterMetadata are intentionally excluded from the JSON output. The full field descriptions are documented on the struct:\n\n\nCode\nusing Wflow\n@doc Wflow.ParameterMetadata\n\n\nMetadata associated with parameters and variables.\nArguments\n\nlens: The path in the model data structure to the parameter/variable if it exists\n\nunit: The unit of the parameter/variable in the Wflow input\n\ndefault: The default (initial) value of the parameter/variable if it exists\n\nfill: Missing input values are replaced by this value if allow_missing == false\n\ntype: The output type of the data. Assumed to be Float64 if it is not provided and cannot be derived   from default or fill\n\ndescription: The description of the parameter/variable provided in the Wflow docs\n\nallow_missing: Whether the parameter/variable is allowed to have missing entries\n\nallow_dynamic_input: Allow updating this parameter from input via cyclic/forcing\n\ndimname: The name of the third dimension of the parameter/variable if it exists\n\ntags: Identifiers to filter parameters/variables for specific tables in the docs\n\n\n\n\n\n\n\n\n\nRunning the export\nUse the pixi task:\npixi run parameter_metadata_json_gen\n\n\nCI guardrail\nA GitHub Actions workflow (parameter_metadata_json_gen.yml) runs automatically on pushes to master and on PRs that modify files under Wflow/src/standard_name/. It re-generates the JSON files and runs git diff --exit-code to ensure the committed JSON stays in sync with the source standard name maps. If you update any standard name metadata, re-run the export and commit the updated JSON files.",
+    "crumbs": [
+      "Developments",
+      "Developers guide"
+    ]
+  },
+  {
     "objectID": "developments/guide.html#styledecisions",
     "href": "developments/guide.html#styledecisions",
     "title": "Developers guide",
