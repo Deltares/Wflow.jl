@@ -21,7 +21,7 @@
 end
 
 @testitem "unit: ssf_celerity" begin
-    zi = 0.3
+    water_table_depth = 0.3
     theta_e = 0.274
     slope = 0.00586
     i = 1
@@ -49,7 +49,6 @@ end
 @testitem "kinematic wave overland flow" begin
     using NCDatasets: NCDataset
     using Graphs: topological_sort_by_dfs
-    using BenchmarkTools
 
     dt_sec = 86400.0
     ldd_MISSING_VALUE = 255
@@ -91,9 +90,6 @@ end
     Q = zeros(n)
     # Warm-up call
     Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, DCL, dt_sec)
-    # Benchmark
-    b = @benchmark Wflow.kin_wave!($Q, $graph, $toposort, $Qold, $q, $alpha, $DCL, $dt_sec)
-    display(b)
 
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
