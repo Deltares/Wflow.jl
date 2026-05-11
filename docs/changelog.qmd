@@ -35,6 +35,12 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ### Fixed
 
 ### Changed
+- Improved kinematic wave solver performance by replacing Newton-Raphson with
+  Halley's method, substituting `pow` calls with direct arithmetic on the 5th
+  root of discharge, and computing cross-sectional area as a byproduct of the
+  solve instead of a separate `pow` call. The `beta` parameter has been removed
+  from `ManningFlowParameters` and is now a module-level constant
+  `BETA_KINWAVE` (#898).
 - Drainable porosity or specific yield, defined as the difference between `theta_s`
   (saturated water content) and `theta_fc` (water content at field capacity) is now used to
   compute the change of a falling water table for subsurface flow concepts `LateralSSF` and
