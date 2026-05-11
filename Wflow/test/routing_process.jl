@@ -9,7 +9,7 @@
     q_prev = 0.0
     q_lat = 1.142e-6
 
-    q, crossarea = Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
+    q, crossarea = Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
     @test q ≈ 1.09308660753423e-6
     @test crossarea ≈ 0.0006852061693892164
 
@@ -17,7 +17,7 @@
     q_in = 0.0
     q_prev = 0.0
     q_lat = 0.0
-    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) == (0.0, 0.0)
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx) == (0.0, 0.0)
 end
 
 @testitem "unit: ssf_celerity" begin
@@ -49,6 +49,7 @@ end
 @testitem "kinematic wave overland flow" begin
     using NCDatasets: NCDataset
     using Graphs: topological_sort_by_dfs
+    using BenchmarkTools
 
     dt_sec = 86400.0
     ldd_MISSING_VALUE = 255
@@ -81,14 +82,18 @@ end
 
     # calculate parameters of kinematic wave
     q = 0.000001
-    beta = 0.6
+    beta = Wflow.BETA_KINWAVE
     AlpPow = (2.0 / 3.0) * beta
     AlpTermR = (N ./ sqrt.(slope)) .^ beta
     P = Bw + (2.0 * waterlevel)
     alpha = AlpTermR .* P .^ AlpPow
 
     Q = zeros(n)
-    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+    # Warm-up call
+    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, DCL, dt_sec)
+    # Benchmark
+    b = @benchmark Wflow.kin_wave!($Q, $graph, $toposort, $Qold, $q, $alpha, $DCL, $dt_sec)
+    display(b)
 
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
@@ -305,7 +310,6 @@ end
         parameters = Wflow.RiverFlowParameters(;
             flow = Wflow.ManningFlowParameters(;
                 n,
-                beta = 0.6,
                 slope = [0.017522206529974937, 0.01738094352185726],
                 mannings_n = [0.03, 0.03],
                 alpha_pow = 0.4,

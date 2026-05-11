@@ -17,7 +17,7 @@ end
 lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
 
 "Kinematic wave surface flow rate for a single cell and timestep"
-function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
+function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0, 0.0
     else
@@ -71,11 +71,11 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
 end
 
 "Kinematic wave surface flow rate over the whole network for a single timestep"
-function kin_wave!(q, graph, toposort, q_prev, q_lat, alpha, beta, flow_length, dt)
+function kin_wave!(q, graph, toposort, q_prev, q_lat, alpha, flow_length, dt)
     for v in toposort
         upstream_nodes = inneighbors(graph, v)
         q_in = sum_at(q, upstream_nodes)
-        q[v], _ = kinematic_wave(q_in, q_prev[v], q_lat, alpha[v], beta, dt, flow_length[v])
+        q[v], _ = kinematic_wave(q_in, q_prev[v], q_lat, alpha[v], dt, flow_length[v])
     end
     return q
 end
