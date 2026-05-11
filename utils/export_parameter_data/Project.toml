@@ -1,4 +1,5 @@
 [deps]
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+JSONSchema = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 Wflow = "d48b7d99-76e7-47ae-b1d5-ff0c1cf9a818"
