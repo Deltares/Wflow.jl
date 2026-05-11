@@ -342,6 +342,7 @@ function update_river_channel_flow!(
     (; nodes_at_edge) = domain.network
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
+    (; inwater, abstraction) = river_flow_model.boundary_conditions
 
     @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
         i = river_p.active_e[j]
@@ -935,7 +936,7 @@ function stable_timestep(
         dt = alpha_coefficient * flow_length[i] / celerity
         dt_min = min(dt, dt_min)
     end
-    dt_min = isinf(dt_min) ? 600.0 : dt_min
+    dt_min = isinf(dt_min) ? 60.0 : dt_min
     return dt_min
 end
 

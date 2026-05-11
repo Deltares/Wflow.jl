@@ -699,18 +699,18 @@ end
     Wflow.run_timestep!(model)
 
     (; q_av, h) = river_flow.variables
-    @test sum(q_av) ≈ 2198.5455132587495
-    @test q_av[1622] ≈ 0.0002189225364991537
+    @test sum(q_av) ≈ 2198.5452801537313
+    @test q_av[1622] ≈ 0.0002189256643005604
     @test q_av[43] ≈ 10.2692066407329
-    @test q_av[501] ≈ 0.021410239377431573
-    @test q_av[5808] ≈ 0.004923137077613924
-    @test h[1622] ≈ 0.0017960475101775342
+    @test q_av[501] ≈ 0.02141022323325671
+    @test q_av[5808] ≈ 0.004923073187279234
+    @test h[1622] ≈ 0.0017958855481125012
     @test h[43] ≈ 1.3029109034019006
-    @test h[501] ≈ 0.005400545537332966
-    @test h[5808] ≈ 0.00589431731806414
+    @test h[501] ≈ 0.005400545672072305
+    @test h[5808] ≈ 0.0058942944042401375
     (; q_av, h) = river_flow.floodplain.variables
-    @test maximum(q_av) ≈ 1.1824324225913527
-    @test maximum(h) ≈ 1.1422278106700228
+    @test maximum(q_av) ≈ 1.1824323411611732
+    @test maximum(h) ≈ 1.1422278469202736
 end
 
 @testitem "Kinematic river flow including 1D floodplain schematization" begin
@@ -821,6 +821,30 @@ end
     @testset "water balance second timestep" begin
         @test all(e -> abs(e) < 1e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.close_files(model; delete_output = false)
+end
+
+@testitem "water balance river flow with floodplain using Manning's equation on a staggered grid" begin
+    tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-staggered-scheme_config.toml")
+    config = Wflow.Config(tomlpath)
+    config.model.river_routing = "manning_staggered"
+    config.model.water_mass_balance__flag = true
+    config.dir_output = mktempdir()
+    model = Wflow.Model(config)
+    (; river_water_balance) = model.mass_balance.routing
+    Wflow.run_timestep!(model)
+    @testset "water balance first timestep" begin
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error)
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
+    end
+    Wflow.run_timestep!(model)
+    @testset "water balance second timestep" begin
+        @test all(e -> abs(e) < 0.00012, river_water_balance.error)
+        @test all(re -> abs(re) < 0.33, river_water_balance.relative_error)
+        inds = findall(x -> x > 2.0e-3, model.routing.river_flow.variables.q_av)
+        @test all(e -> abs(e) < 1e-9, river_water_balance.error[inds])
+        @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)
 end

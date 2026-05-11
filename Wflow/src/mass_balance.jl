@@ -314,7 +314,7 @@ Compute water mass balance error and relative error for river (and floodplain) l
 inertial routing.
 """
 function compute_flow_balance!(
-    river_flow_model::RiverFlowModel{<:LocalInertial},
+    river_flow_model::RiverFlowModel{<:AbstractStaggeredRoutingMethod},
     water_balance::MassBalance,
     network::NetworkRiver,
     dt::Float64,
