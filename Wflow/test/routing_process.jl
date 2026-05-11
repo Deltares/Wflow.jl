@@ -21,7 +21,7 @@
 end
 
 @testitem "unit: ssf_celerity" begin
-    water_table_depth = 0.3
+    zi = 0.3
     theta_e = 0.274
     slope = 0.00586
     i = 1
@@ -88,7 +88,6 @@ end
     alpha = AlpTermR .* P .^ AlpPow
 
     Q = zeros(n)
-    # Warm-up call
     Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, DCL, dt_sec)
 
     @test sum(Q) ≈ 2.957806043289641e6
