@@ -9,7 +9,7 @@ execute:
 ```{julia}
 # | code-fold: true
 include("../docs_utils.jl")
-generate_table(Wflow.SoilLoss, :atmospheric_forcing; relative_widths = [6, 4, 2])
+generate_table(Wflow.SoilLossModel, :atmospheric_forcing; relative_widths = [6, 4, 2])
 
 ```
 
