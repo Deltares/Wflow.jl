@@ -1,3 +1,6 @@
+# constant in Manning's equation [-]
+const BETA_KINWAVE = 0.6
+
 "Struct for storing variables for river flow model"
 @with_kw struct RiverFlowVariables <: AbstractRiverFlowVariables
     n::Int
@@ -17,14 +20,12 @@ function ManningFlowParameters(
     slope::Vector{Float64},
     wetted_perimeter::Vector{Float64},
 )
-    beta = Float64(0.6)
     hydraulic_radius_pow = Float64(2.0 / 3.0)
-    alpha_term = @. pow(mannings_n / sqrt(slope), beta)
-    alpha_pow = hydraulic_radius_pow * beta
+    alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
+    alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
 
-    parameters =
-        ManningFlowParameters(; beta, slope, mannings_n, alpha_pow, alpha_term, alpha)
+    parameters = ManningFlowParameters(; slope, mannings_n, alpha_pow, alpha_term, alpha)
     return parameters
 end
 
@@ -254,7 +255,7 @@ function kinwave_land_update!(
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
 
-    (; beta, alpha) = overland_flow_model.parameters
+    (; alpha) = overland_flow_model.parameters
     (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
@@ -277,19 +278,11 @@ function kinwave_land_update!(
                     )
                 end
 
-                q[v] = kinematic_wave(
-                    qin[v],
-                    q[v],
-                    qlat[v],
-                    alpha[v],
-                    beta,
-                    dt,
-                    flow_length[v],
-                )
+                q[v], crossarea =
+                    kinematic_wave(qin[v], q[v], qlat[v], alpha[v], dt, flow_length[v])
 
                 # update h, only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
-                    crossarea = alpha[v] * pow(q[v], beta)
                     h[v] = crossarea / surface_flow_width[v]
                 end
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
@@ -446,7 +439,7 @@ function kinwave_river_update!(
         floodplain_water_exchange,
     ) = river_flow_model.boundary_conditions
 
-    (; beta, alpha) = river_flow_model.parameters
+    (; alpha) = river_flow_model.parameters
     (; flow_width, flow_length) = domain.parameters
     (; h, q, q_av, storage, qin, qin_av, qlat) = river_flow_model.variables
     (; floodplain) = river_flow_model
@@ -476,12 +469,11 @@ function kinwave_river_update!(
                     _inflow += floodplain_water_exchange[v] / flow_length[v]
                 end
 
-                q[v] = kinematic_wave(
+                q[v], flow_area = kinematic_wave(
                     qin[v],
                     q[v],
                     qlat[v] + _inflow,
                     alpha[v],
-                    beta,
                     dt,
                     flow_length[v],
                 )
@@ -497,7 +489,6 @@ function kinwave_river_update!(
                     )
                 end
                 # update h and storage
-                flow_area = alpha[v] * pow(q[v], beta)
                 h[v] = flow_area / flow_width[v]
                 storage[v] = flow_length[v] * flow_area
 
@@ -599,6 +590,9 @@ function update_river_flow_model!(
     return nothing
 end
 
+# constant in Manning's equation [-]
+const BETA_KINWAVE = 0.6
+
 """
 Compute a stable timestep size for the kinematice wave method for a river or overland flow
 model using a nonlinear scheme (Chow et al., 1988).
@@ -615,7 +609,7 @@ function stable_timestep(
     p::Float64,
 ) where {S <: Union{RiverFlowModel{<:KinematicWave}, OverlandFlowModel{<:KinematicWave}}}
     (; q) = flow_model.variables
-    (; alpha, beta) = flow_model.parameters
+    (; alpha) = flow_model.parameters
     (; stable_timesteps) = flow_model.timestepping
 
     n = length(q)
@@ -624,7 +618,7 @@ function stable_timestep(
     for i in 1:n
         if q[i] > 0.0
             k += 1
-            c = 1.0 / (alpha[i] * beta * pow(q[i], (beta - 1.0)))
+            c = 1.0 / (alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
             stable_timesteps[k] = (flow_length[i] / c)
         end
     end

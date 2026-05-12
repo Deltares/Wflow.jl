@@ -1,5 +1,8 @@
 ---
 title: Developers guide
+engine: julia
+execute:
+  cache: false
 ---
 
 ## Contributions and reporting issues
@@ -15,6 +18,53 @@ To get started with local development, install Julia and pre-commit by running t
 ```sh
 pixi run install
 ```
+
+## Parameter and variable metadata JSON export
+
+Wflow maintains an internal standard name system (`STANDARD_NAME_MAPS`) that serves as the single
+source of truth for all parameter and variable metadata — including units, defaults, descriptions,
+and input handling flags. A utility script exports this metadata to machine-readable JSON files,
+making it accessible for external tools, documentation generation, and validation.
+
+### Output files
+
+The export produces four JSON files in `utils/export_parameter_data/`:
+
+| File | Contents |
+|---|---|
+| `sbm_metadata.json` | Land hydrology (SBM) parameters and variables |
+| `routing_metadata.json` | Routing parameters and variables |
+| `sediment_metadata.json` | Soil erosion and sediment transport parameters and variables |
+| `domain_metadata.json` | Domain grid parameters (LDD, river mask, subbasins) |
+
+### JSON structure
+
+Each file is a flat JSON object keyed by CSDMS-style standard names. The output is validated
+against a JSON Schema (`metadata_schema.json` in the same directory). Internal-only fields
+(`lens`, `dimname`, `tags`) from `ParameterMetadata` are intentionally excluded from the JSON
+output. The full field descriptions are documented on the struct:
+
+```{julia}
+# | code-fold: true
+using Wflow
+@doc Wflow.ParameterMetadata
+```
+
+### Running the export
+
+Use the pixi task:
+
+```sh
+pixi run parameter_metadata_json_gen
+```
+
+### CI guardrail
+
+A GitHub Actions workflow (`parameter_metadata_json_gen.yml`) runs automatically on pushes to
+`master` and on PRs that modify files under `Wflow/src/standard_name/`. It re-generates the JSON
+files and runs `git diff --exit-code` to ensure the committed JSON stays in sync with the source
+standard name maps. If you update any standard name metadata, re-run the export and commit the
+updated JSON files.
 
 ## Style/decisions
 

@@ -18,7 +18,6 @@ end
 
 "Struct for storing Manning flow parameters"
 @with_kw struct ManningFlowParameters
-    beta::Float64               # constant in Manning's equation [-]
     slope::Vector{Float64}      # Slope [m m⁻¹]
     mannings_n::Vector{Float64} # Manning's roughness [s m⁻⅓]
     alpha_pow::Float64          # Used in the power part of alpha [-]
