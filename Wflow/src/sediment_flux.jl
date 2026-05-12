@@ -15,11 +15,12 @@ function get_transport_capacity(
     transport_method::Union{LandTransportType.T, RiverTransportType.T},
     dataset::NCDataset,
     config::Config,
-    indices,
+    indices;
+    data_lookup::DataLookup = DataLookup(),
 )::AbstractTransportCapacityModel
     transport_capacity_constr = get(transport_methods, transport_method, nothing)
     @assert !isnothing(transport_capacity_constr)
-    return transport_capacity_constr(dataset, config, indices)
+    return transport_capacity_constr(dataset, config, indices; data_lookup)
 end
 
 const land_transport_method =
@@ -34,7 +35,8 @@ function OverlandFlowSedimentModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainLand,
-    soilloss::SoilLossModel,
+    soilloss::SoilLossModel;
+    data_lookup::DataLookup = DataLookup(),
 )
     (; indices) = domain.network
     (; hydrological_forcing) = soilloss
@@ -50,15 +52,16 @@ function OverlandFlowSedimentModel(
         land_transport,
         dataset,
         config,
-        indices,
+        indices;
+        data_lookup,
     )
 
     if do_river || land_transport == LandTransportType.yalinpart
         sediment_flux = SedimentLandTransportDifferentiationModel(indices)
-        to_river = SedimentToRiverDifferentiationModel(indices)
+        to_river = SedimentToRiverDifferentiationModel(indices; data_lookup)
     else
-        sediment_flux = SedimentLandTransportModel(indices)
-        to_river = SedimentToRiverModel(indices)
+        sediment_flux = SedimentLandTransportModel(indices; data_lookup)
+        to_river = SedimentToRiverModel(indices; data_lookup)
     end
 
     overland_flow_sediment = OverlandFlowSedimentModel{
@@ -139,10 +142,15 @@ const river_transport_method =
     )
 
 "Initialize the river sediment transport model"
-function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
+function RiverSedimentModel(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainRiver;
+    data_lookup::DataLookup = DataLookup(),
+)
     (; indices) = domain.network
     n = length(indices)
-    hydrological_forcing = HydrologicalForcing(; n)
+    hydrological_forcing = HydrologicalForcing(data_lookup; n)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]
@@ -152,17 +160,18 @@ function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRi
         river_transport,
         dataset,
         config,
-        indices,
+        indices;
+        data_lookup,
     )
 
     # Potential river erosion
-    potential_erosion = RiverErosionJulianTorresModel(dataset, config, indices)
+    potential_erosion = RiverErosionJulianTorresModel(dataset, config, indices; data_lookup)
 
     # Sediment flux in river / mass balance
-    sediment_flux = SedimentRiverTransportModel(dataset, config, indices)
+    sediment_flux = SedimentRiverTransportModel(dataset, config, indices; data_lookup)
 
     # Concentrations
-    concentrations = SedimentConcentrationsRiverModel(dataset, config, indices)
+    concentrations = SedimentConcentrationsRiverModel(dataset, config, indices; data_lookup)
 
     river_sediment = RiverSedimentModel(;
         hydrological_forcing,

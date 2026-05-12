@@ -3,26 +3,33 @@
 @enumx ReservoirOutflowType rating_curve = 1 free_weir = 2 modified_puls = 3 simple = 4
 
 "Struct for storing reservoir model parameters"
-@with_kw struct ReservoirParameters
+@with_data_lookup struct ReservoirParameters
     # reservoir location id
+    "reservoir_location__count"
     id::Vector{Int}
     # type of reservoir storage curve, 1: S = AH, 2: S = f(H) from reservoir data and
     # interpolation
+    "reservoir_water__storage_curve_type_count"
     storfunc::Vector{ReservoirProfileType.T}
     # type of reservoir rating curve, 1: Q = f(H) from reservoir data and interpolation, 2:
     # General Q = b(H - H₀)ᵉ, 3: Case of Puls Approach Q = b(H - H₀)², 4: Simple reservoir
+    "reservoir_water__rating_curve_type_count"
     outflowfunc::Vector{ReservoirOutflowType.T}
     # reservoir area [m²]
+    "reservoir_surface__area"
     area::Vector{Float64}
     # index of lower reservoir (linked reservoirs) [-]
     lower_reservoir_ind::Vector{Int} = zeros(Int, length(area))
     # reservoir maximum storage for rating curve types 1 and 4 [m³]
+    "reservoir_water__max_volume"
     maxstorage::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # water level threshold H₀ [m] below that level outflow is zero
     threshold::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # rating curve coefficient [m3/2 s-1] (if e=3/2)
+    "reservoir_water__rating_curve_coefficient"
     b::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # rating curve exponent [-]
+    "reservoir_water__rating_curve_exponent"
     e::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # data for storage curve
     sh::Vector{Union{SH, Missing}} = Vector{Union{SH, Missing}}(missing, length(area))
@@ -31,18 +38,27 @@
     # column index of rating curve data hq
     col_index_hq::Vector{Int} = [1]
     # maximum amount that can be released if below spillway for rating curve type 4 [m³ s⁻¹]
+    "reservoir_water_release_below_spillway__max_volume_flow_rate"
     maxrelease::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # minimum (environmental) flow requirement downstream of the reservoir for rating curve
     # type 4 [m³ s⁻¹]
+    "reservoir_water_demand__required_downstream_volume_flow_rate"
     demand::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # target minimum full fraction (of max storage) for rating curve type 4 [-]
+    "reservoir_water__target_min_volume_fraction"
     targetminfrac::Vector{Float64} = fill(MISSING_VALUE, length(area))
     # target fraction full (of max storage) for rating curve type 4 [-]
+    "reservoir_water__target_full_volume_fraction"
     targetfullfrac::Vector{Float64} = fill(MISSING_VALUE, length(area))
 end
 
 "Initialize reservoir model parameters"
-function ReservoirParameters(dataset::NCDataset, config::Config, network::NetworkReservoir)
+function ReservoirParameters(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkReservoir;
+    data_lookup::DataLookup = DataLookup(),
+)
     (; indices_outlet) = network
 
     area = ncread(dataset, config, "reservoir_surface__area", Routing; sel = indices_outlet)
@@ -82,7 +98,7 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
         ncread(dataset, config, "reservoir_location__count", Routing; sel = indices_outlet)
     @info "Read `$n_reservoirs` reservoir locations."
 
-    parameters = ReservoirParameters(; id = reslocs, area, outflowfunc, storfunc)
+    parameters = ReservoirParameters(data_lookup; id = reslocs, area, outflowfunc, storfunc)
 
     if ReservoirOutflowType.free_weir in outflowfunc ||
        ReservoirOutflowType.modified_puls in outflowfunc
@@ -195,18 +211,23 @@ function ReservoirParameters(dataset::NCDataset, config::Config, network::Networ
 end
 
 "Struct for storing reservoir model variables"
-@with_kw struct ReservoirVariables
+@with_data_lookup struct ReservoirVariables
     # waterlevel H [m] of reservoir
+    "reservoir_water_surface__elevation"
     waterlevel::Vector{Float64}
     # reservoir storage [m³]
+    "reservoir_water__volume"
     storage::Vector{Float64}
     # outflow from reservoir [m³ s⁻¹]
     outflow::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average outflow from reservoir [m³ s⁻¹] for model timestep Δt
+    "reservoir_water__outgoing_volume_flow_rate"
     outflow_av::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # observed outflow from reservoir [m³ s⁻¹]
+    "reservoir_water__outgoing_observed_volume_flow_rate"
     outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # average actual evaporation for reservoir area [mm Δt⁻¹]
+    "reservoir_water__evaporation_volume_flux"
     actevap::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
 end
 
@@ -216,7 +237,8 @@ function ReservoirVariables(
     config::Config,
     network::NetworkReservoir,
     parameters::ReservoirParameters,
-    waterlevel::Vector{Float64},
+    waterlevel::Vector{Float64};
+    data_lookup::DataLookup = DataLookup(),
 )
     (; storfunc, area, sh) = parameters
     (; indices_outlet) = network
@@ -227,7 +249,8 @@ function ReservoirVariables(
         Routing;
         sel = indices_outlet,
     )
-    variables = ReservoirVariables(;
+    variables = ReservoirVariables(
+        data_lookup;
         waterlevel,
         storage = initialize_storage(storfunc, area, waterlevel, sh),
         outflow_obs,
@@ -236,19 +259,28 @@ function ReservoirVariables(
 end
 
 "Struct for storing reservoir model boundary conditions"
-@with_kw struct ReservoirBC
+@with_data_lookup struct ReservoirBC
     n::Int
     inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n)    # inflow from subsurface flow into reservoir [m³ s⁻¹]
     inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n)      # inflow from overland flow into reservoir [m³ s⁻¹]
+    "reservoir_water__incoming_volume_flow_rate"
     inflow::Vector{Float64} = fill(MISSING_VALUE, n)               # total inflow into reservoir [m³ s⁻¹] for model timestep Δt
+    "reservoir_water__external_inflow_volume_flow_rate"
     external_inflow::Vector{Float64}                               # external inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64} = zeros(n)  # actual abstraction from external negative inflow [m³ s⁻¹]
+    "reservoir_water__precipitation_volume_flux"
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)        # average precipitation for reservoir area [mm Δt⁻¹]
+    "reservoir_water__potential_evaporation_volume_flux"
     evaporation::Vector{Float64} = fill(MISSING_VALUE, n)          # average potential evaporation for reservoir area [mm Δt⁻¹]
 end
 
 "Initialize reservoir model boundary conditions"
-function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservoir)
+function ReservoirBC(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkReservoir;
+    data_lookup::DataLookup = DataLookup(),
+)
     (; indices_outlet) = network
     external_inflow = ncread(
         dataset,
@@ -258,7 +290,7 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         sel = indices_outlet,
     )
     n = length(indices_outlet)
-    bc = ReservoirBC(; n, external_inflow)
+    bc = ReservoirBC(data_lookup; n, external_inflow)
     return bc
 end
 
@@ -270,10 +302,16 @@ end
 end
 
 "Initialize reservoir model `SimpleReservoir`"
-function ReservoirModel(dataset::NCDataset, config::Config, network::NetworkReservoir)
-    parameters, waterlevel = ReservoirParameters(dataset, config, network)
-    variables = ReservoirVariables(dataset, config, network, parameters, waterlevel)
-    boundary_conditions = ReservoirBC(dataset, config, network)
+function ReservoirModel(
+    dataset::NCDataset,
+    config::Config,
+    network::NetworkReservoir;
+    data_lookup::DataLookup = DataLookup(),
+)
+    parameters, waterlevel = ReservoirParameters(dataset, config, network; data_lookup)
+    variables =
+        ReservoirVariables(dataset, config, network, parameters, waterlevel; data_lookup)
+    boundary_conditions = ReservoirBC(dataset, config, network; data_lookup)
     reservoir = ReservoirModel(; boundary_conditions, parameters, variables)
 
     return reservoir

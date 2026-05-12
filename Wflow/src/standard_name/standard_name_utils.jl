@@ -11,7 +11,6 @@ const PARAMETER_TYPES = Union{Float64, Int, Bool, Nothing}
 Metadata associated with parameters and variables.
 
 # Arguments
-- `lens`: The path in the model data structure to the parameter/variable if it exists
 - `unit`: The unit of the parameter/variable in the Wflow input
 - `default`: The default (initial) value of the parameter/variable if it exists
 - `fill`: Missing input values are replaced by this value if allow_missing == false
@@ -24,13 +23,11 @@ Metadata associated with parameters and variables.
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
 @kwdef struct ParameterMetadata{
-    L,
     D <: PARAMETER_TYPES,
     F <: PARAMETER_TYPES,
     T <: PARAMETER_TYPES,
     N <: Union{Symbol, Nothing},
 }
-    lens::L = nothing
     unit::Unit = EMPTY_UNIT
     default::D = nothing
     fill::F = nothing
@@ -41,7 +38,6 @@ Metadata associated with parameters and variables.
     dimname::N = nothing
     tags::Vector{Symbol} = []
     function ParameterMetadata(
-        lens::L,
         unit,
         default::D,
         fill::F,
@@ -51,7 +47,7 @@ Metadata associated with parameters and variables.
         allow_dynamic_input,
         dimname::N,
         flags,
-    ) where {L, D, F, N}
+    ) where {D, F, N}
         if isnothing(type)
             type = if !isnothing(default)
                 D
@@ -63,8 +59,7 @@ Metadata associated with parameters and variables.
                 Float64
             end
         end
-        return new{L, D, F, type, N}(
-            lens,
+        return new{D, F, type, N}(
             unit,
             default,
             fill,
@@ -78,58 +73,21 @@ Metadata associated with parameters and variables.
     end
 end
 
-function metadata_from_lens_string(
-    lens_string::AbstractString,
-    standard_name_map::OrderedDict{String, ParameterMetadata},
-)::Union{ParameterMetadata, Nothing}
-    for metadata_candidate in values(standard_name_map)
-        if string(metadata_candidate.lens)[7:(end - 1)] == lens_string
-            return metadata_candidate
-        end
-    end
-    return nothing
-end
-
 function get_metadata(
     name::AbstractString,
     types::Vararg{Type};
-    model = nothing,
+    kwargs...,
 )::Union{ParameterMetadata, Nothing}
     metadata = nothing
     for type in types
         standard_name_map = get_standard_name_map(type)
-        # First see whether 'name' is a standard name within the standard name map
-        # corresponding to 'type'
         metadata_candidate = get(standard_name_map, name, nothing)
-        # If not, see whether 'name' is a path in the model object which matches
-        # a lens in the standard name map
-        if isnothing(metadata_candidate)
-            metadata_candidate = metadata_from_lens_string(name, standard_name_map)
-        end
 
         if !isnothing(metadata_candidate)
-            # Metadata was found; if a model was provided check whether
-            # the lens matches
-            if !isnothing(model) && !isnothing(metadata_candidate.lens)
-                found_matching_lens = false
-                try
-                    metadata_candidate.lens(model)
-                    found_matching_lens = true
-                catch
-                end
-                if found_matching_lens
-                    !isnothing(metadata) && error(
-                        "Ambiguity found for obtaining metadata for '$name'; this key is in the standard nampe map for at least 2 of $types with a fitting lens.",
-                    )
-                    metadata = metadata_candidate
-                end
-            else
-                # If model or lens was not provided assume that the metadata matches
-                !isnothing(metadata) && error(
-                    "Ambiguity found for obtaining metadata for '$name'; this key is in the standard name map for at least 2 of $types and there was no model provided to disambiguate.",
-                )
-                metadata = metadata_candidate
-            end
+            !isnothing(metadata) && error(
+                "Ambiguity found for obtaining metadata for '$name'; this key is in the standard name map for at least 2 of $types.",
+            )
+            metadata = metadata_candidate
         end
     end
     return metadata
@@ -154,30 +112,38 @@ function get_metadata(
     return metadata
 end
 
-get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model); model)
+get_metadata(name::AbstractString, model) = get_metadata(name, typeof(model))
 get_metadata(name::AbstractString, L::Type) = get_standard_name_map(L)[name]
 
 # When no model or model type is specified, search all standard name maps
-get_metadata(name::AbstractString; kwargs...) =
-    get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...; kwargs...)
+get_metadata(name::AbstractString) =
+    get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...)
 
 function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
-    metadata = get_metadata(name; model)
-
-    return if !isnothing(metadata) && !isnothing(metadata.lens)
-        # If metadata was found, `str` is a standard name or a path in the model object which matches a lens
-        if check_allow_dynamic_input && !metadata.allow_dynamic_input
-            error(
-                "Tried to set '$name' dynamically via cyclic/forcing input, which is not allowed.",
-            )
-        end
-        metadata.lens(model), metadata
+    # Scope metadata lookup to the model's land type to avoid ambiguity
+    # between standard name maps (e.g. routing vs sediment)
+    land = hasproperty(model, :land) ? model.land : nothing
+    metadata = if !isnothing(land) && land isa AbstractLandModel
+        get_metadata(name, land)
     else
-        # If no metadata was found, `str` is either a path in the model object that doesn't match a lens or is invalid
-        try
-            param(model, name), metadata
-        catch
-            error("Couldn't obtain a field from this model specified by '$name'.")
-        end
+        get_metadata(name)
+    end
+
+    if check_allow_dynamic_input && !isnothing(metadata) && !metadata.allow_dynamic_input
+        error(
+            "Tried to set '$name' dynamically via cyclic/forcing input, which is not allowed.",
+        )
+    end
+
+    # Try data_lookup first (standard name registered at construction time)
+    if hasproperty(model, :data_lookup) && haskey(model.data_lookup, name)
+        return model.data_lookup[name], metadata
+    end
+
+    # Fall back to param (path-based access into the model struct tree)
+    try
+        return param(model, name), metadata
+    catch
+        error("Couldn't obtain a field from this model specified by '$name'.")
     end
 end

@@ -15,26 +15,30 @@ end
 function SoilLossModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     (; rainfall_erosion, overland_flow_erosion) = config.model
     n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(; n)
-    hydrological_forcing = HydrologicalForcing(; n)
+    atmospheric_forcing = AtmosphericForcing(data_lookup; n)
+    hydrological_forcing = HydrologicalForcing(data_lookup; n)
 
     # Rainfall erosion
     if rainfall_erosion == RainfallErosionType.answers
-        rainfall_erosion = RainfallErosionAnswersModel(dataset, config, indices)
+        rainfall_erosion =
+            RainfallErosionAnswersModel(dataset, config, indices; data_lookup)
     elseif rainfall_erosion == RainfallErosionType.eurosem
-        rainfall_erosion = RainfallErosionEurosemModel(dataset, config, indices)
+        rainfall_erosion =
+            RainfallErosionEurosemModel(dataset, config, indices; data_lookup)
     end
 
     # Overland flow erosion
-    overland_flow_erosion = OverlandFlowErosionAnswersModel(dataset, config, indices)
+    overland_flow_erosion =
+        OverlandFlowErosionAnswersModel(dataset, config, indices; data_lookup)
 
     # Total soil erosion and particle differentiation
-    soil_erosion = SoilErosionModel(dataset, config, indices)
+    soil_erosion = SoilErosionModel(dataset, config, indices; data_lookup)
 
     soil_loss = SoilLossModel(;
         atmospheric_forcing,

@@ -1,23 +1,28 @@
 abstract type AbstractInterceptionModel end
 
 "Struct for storing interception model variables"
-@with_kw struct InterceptionVariables
+@with_data_lookup struct InterceptionVariables
     n::Int
     # Canopy potential evaporation [mm Δt⁻¹]
     canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Interception loss by evaporation [mm Δt⁻¹]
+    "vegetation_canopy_water__interception_volume_flux"
     interception_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Canopy storage [mm]
+    "vegetation_canopy_water__depth"
     canopy_storage::Vector{Float64} = zeros(n)
     # Stemflow [mm Δt⁻¹]
+    "vegetation_canopy_water__stemflow_volume_flux"
     stemflow::Vector{Float64} = fill(MISSING_VALUE, n)
     # Throughfall [mm Δt⁻¹]
+    "vegetation_canopy_water__throughfall_volume_flux"
     throughfall::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing Gash interception model parameters"
-@with_kw struct GashParameters
+@with_data_lookup struct GashParameters
     # ratio [-] of wet canopy [mm Δt⁻¹] and the average precipitation intensity [mm Δt⁻¹] on a saturated canopy
+    "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio"
     e_r::Vector{Float64}
     vegetation_parameter_set::VegetationParameters
 end
@@ -33,7 +38,8 @@ function GashInterceptionModel(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    vegetation_parameter_set::VegetationParameters,
+    vegetation_parameter_set::VegetationParameters;
+    data_lookup::DataLookup = DataLookup(),
 )
     e_r = ncread(
         dataset,
@@ -43,8 +49,8 @@ function GashInterceptionModel(
         sel = indices,
     )
     n = length(indices)
-    parameters = GashParameters(; e_r, vegetation_parameter_set)
-    variables = InterceptionVariables(; n)
+    parameters = GashParameters(data_lookup; e_r, vegetation_parameter_set)
+    variables = InterceptionVariables(data_lookup; n)
     interception_model = GashInterceptionModel(; parameters, variables)
     return interception_model
 end
@@ -92,8 +98,12 @@ end
 end
 
 "Initialize Rutter interception model"
-function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
-    variables = InterceptionVariables(; n)
+function RutterInterceptionModel(
+    vegetation_parameter_set::VegetationParameters,
+    n::Int;
+    data_lookup::DataLookup = DataLookup(),
+)
+    variables = InterceptionVariables(data_lookup; n)
     interception_model =
         RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
     return interception_model

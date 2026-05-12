@@ -20,17 +20,21 @@ function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index
     end
 end
 
-@with_kw struct GwfRiverParameters
+@with_data_lookup struct GwfRiverParameters
+    "river_water__infiltration_conductance"
     infiltration_conductance::Vector{Float64} # [m² d⁻¹]
+    "river_water__exfiltration_conductance"
     exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
+    "river_bottom__elevation"
     bottom::Vector{Float64} # [m]
 end
 
-@with_kw struct GwfRiverVariables
+@with_data_lookup struct GwfRiverVariables
     n::Int
     stage::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
     storage::Vector{Float64} = fill(MISSING_VALUE, n) # [m³]
     flux::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
+    "river_water__to_subsurface_volume_flow_rate"
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
 end
 
@@ -42,34 +46,33 @@ end
 function GwfRiverModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     infiltration_conductance = ncread(
         dataset,
         config,
         "river_water__infiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
         "river_water__exfiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
-    bottom = ncread(
-        dataset,
-        config,
-        "river_bottom__elevation",
-        Routing;
-        sel=indices,
-    )
+    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
 
-    parameters =
-        GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
+    parameters = GwfRiverParameters(
+        data_lookup,
+        infiltration_conductance,
+        exfiltration_conductance,
+        bottom,
+    )
     n = length(indices)
-    variables = GwfRiverVariables(; n)
+    variables = GwfRiverVariables(data_lookup; n)
     river_model = GwfRiverModel(parameters, variables)
     return river_model
 end
@@ -101,14 +104,17 @@ function flux!(
     return nothing
 end
 
-@with_kw struct DrainageParameters
+@with_data_lookup struct DrainageParameters
+    "land_drain__elevation"
     elevation::Vector{Float64} # [m]
+    "land_drain__conductance"
     conductance::Vector{Float64} # [m² d⁻¹]
 end
 
-@with_kw struct DrainageVariables
+@with_data_lookup struct DrainageVariables
     n::Int
     flux::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
+    "land_drain_water__to_subsurface_volume_flow_rate"
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
 end
 
@@ -120,25 +126,14 @@ end
 function DrainageModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
-    elevation = ncread(
-        dataset,
-        config,
-        "land_drain__elevation",
-        Routing;
-        sel=indices,
-    )
-    conductance = ncread(
-        dataset,
-        config,
-        "land_drain__conductance",
-        Routing;
-        sel=indices,
-    )
-    parameters = DrainageParameters(; elevation, conductance)
+    elevation = ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
+    conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
+    parameters = DrainageParameters(data_lookup; elevation, conductance)
     n = length(indices)
-    variables = DrainageVariables(; n)
+    variables = DrainageVariables(data_lookup; n)
 
     drainage_model = DrainageModel(parameters, variables)
     return drainage_model
@@ -198,10 +193,11 @@ function flux!(
     return nothing
 end
 
-@with_kw struct RechargeVariables
+@with_data_lookup struct RechargeVariables
     n::Int
     rate::Vector{Float64} = fill(MISSING_VALUE, n) # [m d⁻¹]
     flux::Vector{Float64} = zeros(n) # [m³ d⁻¹]
+    "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate"
     flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹]
 end
 

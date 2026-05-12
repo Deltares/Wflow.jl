@@ -1,33 +1,53 @@
 abstract type AbstractSedimentRiverTransportModel end
 
 "Struct to store river sediment transport model variables"
-@with_kw struct SedimentRiverTransportVariables
+@with_data_lookup struct SedimentRiverTransportVariables
     n::Int
     # Sediment flux [t dt-1]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    "river_water_clay__mass_flow_rate"
     clay_rate::Vector{Float64} = zeros(n)
+    "river_water_silt__mass_flow_rate"
     silt_rate::Vector{Float64} = zeros(n)
+    "river_water_sand__mass_flow_rate"
     sand_rate::Vector{Float64} = zeros(n)
+    "river_water_small_aggregates__mass_flow_rate"
     sagg_rate::Vector{Float64} = zeros(n)
+    "river_water_large_aggregates__mass_flow_rate"
     lagg_rate::Vector{Float64} = zeros(n)
+    "river_water_gravel__mass_flow_rate"
     gravel_rate::Vector{Float64} = zeros(n)
     # Total Sediment deposition rate [t dt-1]
+    "river_water_sediment_deposition__mass"
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sediment erosion rate (from store + direct river bed/bank) [t dt-1]
+    "river_water_sediment_erosion__mass"
     erosion::Vector{Float64} = fill(MISSING_VALUE, n)
     # Sediment / particle left in the cell [t] - states
+    "river_water_clay__mass"
     leftover_clay::Vector{Float64} = zeros(n)
+    "river_water_silt__mass"
     leftover_silt::Vector{Float64} = zeros(n)
+    "river_water_sand__mass"
     leftover_sand::Vector{Float64} = zeros(n)
+    "river_water_small_aggregates__mass"
     leftover_sagg::Vector{Float64} = zeros(n)
+    "river_water_large_aggregates__mass"
     leftover_lagg::Vector{Float64} = zeros(n)
+    "river_water_gravel__mass"
     leftover_gravel::Vector{Float64} = zeros(n)
     # Sediment / particle stored on the river bed after deposition [t] -states
+    "river_bed_clay__mass"
     store_clay::Vector{Float64} = zeros(n)
+    "river_bed_silt__mass"
     store_silt::Vector{Float64} = zeros(n)
+    "river_bed_sand__mass"
     store_sand::Vector{Float64} = zeros(n)
+    "river_bed_small_aggregates__mass"
     store_sagg::Vector{Float64} = zeros(n)
+    "river_bed_large_aggregates__mass"
     store_lagg::Vector{Float64} = zeros(n)
+    "river_bed_gravel__mass"
     store_gravel::Vector{Float64} = zeros(n)
 end
 
@@ -52,14 +72,18 @@ end
 end
 
 "Struct to store river sediment transport model parameters"
-@with_kw struct SedimentRiverTransportParameters
+@with_data_lookup struct SedimentRiverTransportParameters
     # River bed/bank content clay [-]
+    "river_bottom_and_bank_clay__mass_fraction"
     clay_fraction::Vector{Float64}
     # River bed/bank content silt [-]
+    "river_bottom_and_bank_silt__mass_fraction"
     silt_fraction::Vector{Float64}
     # River bed/bank content sand [-]
+    "river_bottom_and_bank_sand__mass_fraction"
     sand_fraction::Vector{Float64}
     # River bed/bank content gravel [-]
+    "river_bottom_and_bank_gravel__mass_fraction"
     gravel_fraction::Vector{Float64}
     # Clay mean diameter [µm]
     dm_clay::Vector{Float64}
@@ -74,10 +98,13 @@ end
     # Gravel mean diameter [µm]
     dm_gravel::Vector{Float64}
     # Reservoir outlets [-]
+    "reservoir_location__count"
     reservoir_outlet::Vector{Bool}
     # Reservoir area [m²]
+    "reservoir_surface__area"
     reservoir_area::Vector{Float64}
     # Reservoir trapping efficiency [-]
+    "reservoir_water_sediment__bedload_trapping_efficiency"
     reservoir_trapping_efficiency::Vector{Float64}
 end
 
@@ -85,7 +112,8 @@ end
 function SedimentRiverTransportParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
     clay_fraction = ncread(
@@ -165,7 +193,8 @@ function SedimentRiverTransportParameters(
         reservoir_trapping_efficiency = zeros(n)
     end
 
-    river_parameters = SedimentRiverTransportParameters(;
+    river_parameters = SedimentRiverTransportParameters(
+        data_lookup;
         clay_fraction,
         silt_fraction,
         sand_fraction,
@@ -196,12 +225,14 @@ end
 function SedimentRiverTransportModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
 
-    parameters = SedimentRiverTransportParameters(dataset, config, indices)
-    sediment_transport_model = SedimentRiverTransportModel(; n, parameters)
+    parameters = SedimentRiverTransportParameters(dataset, config, indices; data_lookup)
+    variables = SedimentRiverTransportVariables(data_lookup; n)
+    sediment_transport_model = SedimentRiverTransportModel(; n, parameters, variables)
     return sediment_transport_model
 end
 
@@ -738,13 +769,16 @@ end
 abstract type AbstractSedimentConcentrationsRiverModel end
 
 "Struct to store river sediment concentrations model variables"
-@with_kw struct SedimentConcentrationsRiverVariables
+@with_data_lookup struct SedimentConcentrationsRiverVariables
     n::Int
     # Total sediment concentration in the river [g m-3]
+    "river_water_sediment__mass_concentration"
     total::Vector{Float64} = fill(MISSING_VALUE, n)
     # suspended sediemnt concentration in the river [g m-3]
+    "river_water_sediment__suspended_mass_concentration"
     suspended::Vector{Float64} = fill(MISSING_VALUE, n)
     # bed load sediment concentration in the river [g m-3]
+    "river_water_sediment__bedload_mass_concentration"
     bed::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -769,18 +803,24 @@ end
 end
 
 "Struct to store river sediment concentrations model parameters"
-@with_kw struct SedimentConcentrationsRiverParameters
+@with_data_lookup struct SedimentConcentrationsRiverParameters
     # Clay mean diameter [µm]
+    "clay__mean_diameter"
     dm_clay::Vector{Float64}
     # Silt mean diameter [µm]
+    "silt__mean_diameter"
     dm_silt::Vector{Float64}
     # Sand mean diameter [µm]
+    "sand__mean_diameter"
     dm_sand::Vector{Float64}
     # Small aggregates mean diameter [µm]
+    "sediment_small_aggregates__mean_diameter"
     dm_sagg::Vector{Float64}
     # Large aggregates mean diameter [µm]
+    "sediment_large_aggregates__mean_diameter"
     dm_lagg::Vector{Float64}
     # Gravel mean diameter [µm]
+    "gravel__mean_diameter"
     dm_gravel::Vector{Float64}
 end
 
@@ -788,7 +828,8 @@ end
 function SedimentConcentrationsRiverParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     dm_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
     dm_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
@@ -809,7 +850,8 @@ function SedimentConcentrationsRiverParameters(
     )
     dm_gravel =
         ncread(dataset, config, "gravel__mean_diameter", SoilLossModel; sel = indices)
-    conc_parameters = SedimentConcentrationsRiverParameters(;
+    conc_parameters = SedimentConcentrationsRiverParameters(
+        data_lookup;
         dm_clay,
         dm_silt,
         dm_sand,
@@ -834,11 +876,15 @@ end
 function SedimentConcentrationsRiverModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = SedimentConcentrationsRiverParameters(dataset, config, indices)
-    sediment_concentrations_model = SedimentConcentrationsRiverModel(; n, parameters)
+    parameters =
+        SedimentConcentrationsRiverParameters(dataset, config, indices; data_lookup)
+    variables = SedimentConcentrationsRiverVariables(data_lookup; n)
+    sediment_concentrations_model =
+        SedimentConcentrationsRiverModel(; n, parameters, variables)
     return sediment_concentrations_model
 end
 

@@ -1,9 +1,10 @@
 abstract type AbstractTransportCapacityModel end
 
 "Struct to store total transport capacity model variables"
-@with_kw struct TransportCapacityModelVariables
+@with_data_lookup struct TransportCapacityModelVariables
     n::Int
     # Total sediment transport capacity [t dt-1]
+    "land_surface_water_sediment_transport_capacity__mass_flow_rate"
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -37,12 +38,15 @@ end
 ##################### Overland Flow #####################
 
 "Struct to store Govers overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityGoversParameters
+@with_data_lookup struct TransportCapacityGoversParameters
     # Particle density [kg m-3]
+    "sediment__particle_density"
     density::Vector{Float64}
     # Govers transport capacity coefficient [-]
+    "land_surface_water_sediment__govers_transport_capacity_coefficient"
     c_govers::Vector{Float64}
     # Govers transport capacity exponent [-]
+    "land_surface_water_sediment__govers_transport_capacity_exponent"
     n_govers::Vector{Float64}
 end
 
@@ -50,7 +54,8 @@ end
 function TransportCapacityGoversParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     density =
         ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
@@ -68,7 +73,7 @@ function TransportCapacityGoversParameters(
         SoilLossModel;
         sel = indices,
     )
-    tc_parameters = TransportCapacityGoversParameters(; density, c_govers, n_govers)
+    tc_parameters = TransportCapacityGoversParameters(data_lookup; density, c_govers, n_govers)
 
     return tc_parameters
 end
@@ -85,10 +90,11 @@ end
 function TransportCapacityGoversModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityGoversParameters(dataset, config, indices)
+    parameters = TransportCapacityGoversParameters(dataset, config, indices; data_lookup)
     transport_capacity_model = TransportCapacityGoversModel(; n, parameters)
     return transport_capacity_model
 end
@@ -123,10 +129,11 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityYalinParameters
+@with_data_lookup struct TransportCapacityYalinParameters
     # Particle density [kg m-3]
     density::Vector{Float64}
     # Particle mean diameter [mm]
+    "land_surface_sediment__median_diameter"
     d50::Vector{Float64}
 end
 
@@ -134,7 +141,8 @@ end
 function TransportCapacityYalinParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     density =
         ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
@@ -146,7 +154,7 @@ function TransportCapacityYalinParameters(
         sel = indices,
     )
 
-    tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
+    tc_parameters = TransportCapacityYalinParameters(data_lookup; density = density, d50 = d50)
 
     return tc_parameters
 end
@@ -163,10 +171,11 @@ end
 function TransportCapacityYalinModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityYalinParameters(dataset, config, indices)
+    parameters = TransportCapacityYalinParameters(dataset, config, indices; data_lookup)
     transport_capacity = TransportCapacityYalinModel(; n, parameters)
     return transport_capacity
 end
@@ -236,7 +245,8 @@ end
 function TransportCapacityYalinDifferentiationParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     density =
         ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
@@ -283,10 +293,11 @@ end
 function TransportCapacityYalinDifferentiationModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
+    parameters = TransportCapacityYalinDifferentiationParameters(dataset, config, indices; data_lookup)
     transport_capacity_model = TransportCapacityYalinDifferentiationModel(; n, parameters)
     return transport_capacity_model
 end
@@ -382,10 +393,11 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store common river transport capacity model parameters"
-@with_kw struct TransportCapacityRiverParameters
+@with_data_lookup struct TransportCapacityRiverParameters
     # Particle density [kg m-3]
     density::Vector{Float64}
     # Particle mean diameter [mm]
+    "river_sediment__median_diameter"
     d50::Vector{Float64}
 end
 
@@ -393,7 +405,8 @@ end
 function TransportCapacityRiverParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     density =
         ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
@@ -405,16 +418,18 @@ function TransportCapacityRiverParameters(
         sel = indices,
     )
 
-    tc_parameters = TransportCapacityRiverParameters(; density, d50)
+    tc_parameters = TransportCapacityRiverParameters(data_lookup; density, d50)
 
     return tc_parameters
 end
 
 "Struct to store Bagnold transport capacity model parameters"
-@with_kw struct TransportCapacityBagnoldParameters
+@with_data_lookup struct TransportCapacityBagnoldParameters
     # Bagnold transport capacity coefficient [-]
+    "river_water_sediment__bagnold_transport_capacity_coefficient"
     c_bagnold::Vector{Float64}
     # Bagnold transport capacity exponent [-]
+    "river_water_sediment__bagnold_transport_capacity_exponent"
     e_bagnold::Vector{Float64}
 end
 
@@ -422,7 +437,8 @@ end
 function TransportCapacityBagnoldParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     c_bagnold = ncread(
         dataset,
@@ -439,7 +455,7 @@ function TransportCapacityBagnoldParameters(
         sel = indices,
     )
 
-    tc_parameters = TransportCapacityBagnoldParameters(; c_bagnold, e_bagnold)
+    tc_parameters = TransportCapacityBagnoldParameters(data_lookup; c_bagnold, e_bagnold)
 
     return tc_parameters
 end
@@ -456,10 +472,11 @@ end
 function TransportCapacityBagnoldModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityBagnoldParameters(dataset, config, indices)
+    parameters = TransportCapacityBagnoldParameters(dataset, config, indices; data_lookup)
     transport_capacity_model = TransportCapacityBagnoldModel(; n, parameters)
     return transport_capacity_model
 end
@@ -502,10 +519,11 @@ end
 function TransportCapacityEngelundModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityRiverParameters(dataset, config, indices)
+    parameters = TransportCapacityRiverParameters(dataset, config, indices; data_lookup)
     transport_capacity_model = TransportCapacityEngelundModel(; n, parameters)
     return transport_capacity_model
 end
@@ -536,14 +554,18 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store Kodatie river transport capacity model parameters"
-@with_kw struct TransportCapacityKodatieParameters
+@with_data_lookup struct TransportCapacityKodatieParameters
     # Kodatie transport capacity coefficient a [-]
+    "river_water_sediment__kodatie_transport_capacity_a_coefficient"
     a_kodatie::Vector{Float64}
     # Kodatie transport capacity coefficient b [-]
+    "river_water_sediment__kodatie_transport_capacity_b_coefficient"
     b_kodatie::Vector{Float64}
     # Kodatie transport capacity coefficient c [-]
+    "river_water_sediment__kodatie_transport_capacity_c_coefficient"
     c_kodatie::Vector{Float64}
     # Kodatie transport capacity coefficient d [-]
+    "river_water_sediment__kodatie_transport_capacity_d_coefficient"
     d_kodatie::Vector{Float64}
 end
 
@@ -551,7 +573,8 @@ end
 function TransportCapacityKodatieParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     a_kodatie = ncread(
         dataset,
@@ -583,7 +606,7 @@ function TransportCapacityKodatieParameters(
     )
 
     tc_parameters =
-        TransportCapacityKodatieParameters(; a_kodatie, b_kodatie, c_kodatie, d_kodatie)
+        TransportCapacityKodatieParameters(data_lookup; a_kodatie, b_kodatie, c_kodatie, d_kodatie)
 
     return tc_parameters
 end
@@ -600,10 +623,11 @@ end
 function TransportCapacityKodatieModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityKodatieParameters(dataset, config, indices)
+    parameters = TransportCapacityKodatieParameters(dataset, config, indices; data_lookup)
     transport_capacity_model = TransportCapacityKodatieModel(; n, parameters)
     return transport_capacity_model
 end
@@ -647,10 +671,11 @@ end
 function TransportCapacityYangModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityRiverParameters(dataset, config, indices)
+    parameters = TransportCapacityRiverParameters(dataset, config, indices; data_lookup)
     transport_capacity = TransportCapacityYangModel(; n, parameters)
     return transport_capacity
 end
@@ -692,10 +717,11 @@ end
 function TransportCapacityMolinasModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityRiverParameters(dataset, config, indices)
+    parameters = TransportCapacityRiverParameters(dataset, config, indices; data_lookup)
     transport_capacity = TransportCapacityMolinasModel(; n, parameters)
     return transport_capacity
 end

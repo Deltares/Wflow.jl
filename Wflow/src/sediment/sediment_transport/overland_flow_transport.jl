@@ -1,9 +1,10 @@
 abstract type AbstractSedimentLandTransportModel end
 
 "Struct to store total sediment flux in overland flow model variables"
-@with_kw struct SedimentLandTransportVariables
+@with_data_lookup struct SedimentLandTransportVariables
     n::Int
     # Total sediment rate [t dt-1]
+    "land_surface_water_sediment__mass_flow_rate"
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sediment deposition rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -26,9 +27,13 @@ end
 end
 
 "Initialize total sediment flux in overland flow model"
-function SedimentLandTransportModel(indices::Vector{CartesianIndex{2}})
+function SedimentLandTransportModel(
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
+)
     n = length(indices)
-    sediment_transport_model = SedimentLandTransportModel(; n)
+    variables = SedimentLandTransportVariables(data_lookup; n)
+    sediment_transport_model = SedimentLandTransportModel(; n, variables)
     return sediment_transport_model
 end
 

@@ -1,11 +1,13 @@
 abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
-@with_kw struct GlacierVariables
+@with_data_lookup struct GlacierVariables
     n::Int
     # Water within the glacier [mm]
+    "glacier_ice__leq_depth"
     glacier_store::Vector{Float64}
     # Glacier melt [mm Δt⁻¹]
+    "glacier_ice__melt_volume_flux"
     glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -13,7 +15,8 @@ end
 function GlacierVariables(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     glacier_store = ncread(
         dataset,
@@ -23,7 +26,7 @@ function GlacierVariables(
         sel = indices,
     )
     n = length(glacier_store)
-    vars = GlacierVariables(; n, glacier_store)
+    vars = GlacierVariables(data_lookup; n, glacier_store)
     return vars
 end
 
@@ -34,14 +37,18 @@ end
 end
 
 "Struct for storing glacier HBV model parameters"
-@with_kw struct GlacierHbvParameters
+@with_data_lookup struct GlacierHbvParameters
     # Threshold temperature for glacier melt [ᵒC]
+    "glacier_ice__melting_temperature_threshold"
     g_ttm::Vector{Float64}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
+    "glacier_ice__degree_day_coefficient"
     g_cfmax::Vector{Float64}
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
+    "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction"
     g_sifrac::Vector{Float64}
     # Fraction covered by a glacier [-]
+    "glacier_surface__area_fraction"
     glacier_frac::Vector{Float64}
     # Maximum snow to glacier conversion rate [mm Δt⁻¹]
     max_snow_to_glacier::Float64
@@ -63,7 +70,8 @@ function GlacierHbvParameters(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    dt::Second,
+    dt::Second;
+    data_lookup::DataLookup = DataLookup(),
 )
     g_ttm = ncread(
         dataset,
@@ -96,8 +104,14 @@ function GlacierHbvParameters(
         sel = indices,
     )
     max_snow_to_glacier = 8.0 * (dt / BASETIMESTEP)
-    glacier_hbv_params =
-        GlacierHbvParameters(; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier)
+    glacier_hbv_params = GlacierHbvParameters(
+        data_lookup;
+        g_ttm,
+        g_cfmax,
+        g_sifrac,
+        glacier_frac,
+        max_snow_to_glacier,
+    )
     return glacier_hbv_params
 end
 
@@ -107,10 +121,11 @@ function GlacierHbvModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
     dt::Second,
-    boundary_conditions::SnowStateBC,
+    boundary_conditions::SnowStateBC;
+    data_lookup::DataLookup = DataLookup(),
 )
-    parameters = GlacierHbvParameters(dataset, config, indices, dt)
-    variables = GlacierVariables(dataset, config, indices)
+    parameters = GlacierHbvParameters(dataset, config, indices, dt; data_lookup)
+    variables = GlacierVariables(dataset, config, indices; data_lookup)
     glacier_model = GlacierHbvModel(; boundary_conditions, parameters, variables)
     return glacier_model
 end

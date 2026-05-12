@@ -17,8 +17,9 @@ end
 end
 
 "Struct for storing river erosion model parameters"
-@with_kw struct RiverErosionParameters
+@with_data_lookup struct RiverErosionParameters
     # Mean diameter [mm] in the river bed/bank
+    "river_bottom_and_bank_sediment__median_diameter"
     d50::Vector{Float64}
 end
 
@@ -34,7 +35,8 @@ end
 function RiverErosionParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     d50 = ncread(
         dataset,
@@ -43,7 +45,7 @@ function RiverErosionParameters(
         SoilLossModel;
         sel = indices,
     )
-    river_parameters = RiverErosionParameters(; d50)
+    river_parameters = RiverErosionParameters(data_lookup; d50)
 
     return river_parameters
 end
@@ -52,10 +54,11 @@ end
 function RiverErosionJulianTorresModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = RiverErosionParameters(dataset, config, indices)
+    parameters = RiverErosionParameters(dataset, config, indices; data_lookup)
     river_erosion_model = RiverErosionJulianTorresModel(; n, parameters)
     return river_erosion_model
 end

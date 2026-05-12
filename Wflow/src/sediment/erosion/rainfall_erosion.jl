@@ -1,9 +1,10 @@
 abstract type AbstractRainfallErosionModel end
 
 "Struct for storing rainfall erosion model variables"
-@with_kw struct RainfallErosionModelVariables
+@with_data_lookup struct RainfallErosionModelVariables
     n::Int
     # Total soil erosion rate [t dt-1] from rainfall (splash)
+    "rainfall_soil_erosion__mass_flow_rate"
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -19,16 +20,21 @@ end
 end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
-@with_kw struct RainfallErosionEurosemParameters
+@with_data_lookup struct RainfallErosionEurosemParameters
     # Soil detachability factor [g J-1]
+    "soil_erosion__rainfall_soil_detachability_factor"
     soil_detachability::Vector{Float64}
     # Exponent EUROSEM [-]
+    "soil_erosion__eurosem_exponent"
     eurosem_exponent::Vector{Float64}
     # Canopy height [m]
+    "vegetation_canopy__height"
     canopyheight::Vector{Float64}
     # Canopy gap fraction [-]
+    "vegetation_canopy__gap_fraction"
     canopygapfraction::Vector{Float64}
     # Fraction of the soil that is covered (eg paved, snow, etc) [-]
+    "compacted_soil__area_fraction"
     soilcover_fraction::Vector{Float64}
 end
 
@@ -36,7 +42,8 @@ end
 function RainfallErosionEurosemParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     soil_detachability = ncread(
         dataset,
@@ -69,7 +76,8 @@ function RainfallErosionEurosemParameters(
         sel = indices,
     )
 
-    eurosem_parameters = RainfallErosionEurosemParameters(;
+    eurosem_parameters = RainfallErosionEurosemParameters(
+        data_lookup;
         soil_detachability,
         eurosem_exponent,
         canopyheight,
@@ -91,10 +99,11 @@ end
 function RainfallErosionEurosemModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = RainfallErosionEurosemParameters(dataset, config, indices)
+    parameters = RainfallErosionEurosemParameters(dataset, config, indices; data_lookup)
     rainfall_erosion_model = RainfallErosionEurosemModel(; n, parameters)
     return rainfall_erosion_model
 end
@@ -152,12 +161,13 @@ end
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
-@with_kw struct RainfallErosionAnswersParameters
+@with_data_lookup struct RainfallErosionAnswersParameters
     # Soil erodibility factor [-]
     usle_k::Vector{Float64}
     # Crop management factor [-]
     usle_c::Vector{Float64}
     # ANSWERS rainfall erosion factor [-]
+    "soil_erosion__answers_rainfall_factor"
     answers_rainfall_factor::Vector{Float64}
 end
 
@@ -165,7 +175,8 @@ end
 function RainfallErosionAnswersParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     usle_k =
         ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLossModel; sel = indices)
@@ -179,8 +190,12 @@ function RainfallErosionAnswersParameters(
         sel = indices,
     )
 
-    answers_parameters =
-        RainfallErosionAnswersParameters(; usle_k, usle_c, answers_rainfall_factor)
+    answers_parameters = RainfallErosionAnswersParameters(
+        data_lookup;
+        usle_k,
+        usle_c,
+        answers_rainfall_factor,
+    )
     return answers_parameters
 end
 
@@ -196,10 +211,11 @@ end
 function RainfallErosionAnswersModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = RainfallErosionAnswersParameters(dataset, config, indices)
+    parameters = RainfallErosionAnswersParameters(dataset, config, indices; data_lookup)
     rainfall_erosion_model = RainfallErosionAnswersModel(; n, parameters)
     return rainfall_erosion_model
 end

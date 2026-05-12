@@ -93,7 +93,6 @@ end
 end
 
 @testitem "Lenses" begin
-    using Accessors: @optic
     configs = Wflow.Config[]
 
     for file_name in [

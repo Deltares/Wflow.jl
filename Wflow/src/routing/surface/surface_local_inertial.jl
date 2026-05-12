@@ -1,7 +1,7 @@
 abstract type AbstractFloodPlainModel end
 
 "Struct for storing local inertial river flow model parameters"
-@with_kw struct LocalInertialRiverFlowParameters
+@with_data_lookup struct LocalInertialRiverFlowParameters
     n::Int                                  # number of cells [-]
     ne::Int                                 # number of edges [-]
     active_n::Vector{Int}                   # active nodes [-]
@@ -11,8 +11,10 @@ abstract type AbstractFloodPlainModel end
     zb::Vector{Float64}                     # river bed elevation [m]
     zb_max::Vector{Float64}                 # maximum channel bed elevation [m]
     bankfull_storage::Vector{Float64}       # bankfull storage [m³]
+    "river_bank_water__depth"
     bankfull_depth::Vector{Float64}         # bankfull depth [m]
     mannings_n_sq::Vector{Float64}          # Manning's roughness squared at edge [(s m-1/3)2]
+    "river_water_flow__manning_n_parameter"
     mannings_n::Vector{Float64}             # Manning's roughness [s m-1/3] at node
     flow_length_at_edge::Vector{Float64}    # flow (river) length at edge [m]
     flow_width_at_edge::Vector{Float64}     # flow (river) width at edge [m]
@@ -22,7 +24,8 @@ end
 function LocalInertialRiverFlowParameters(
     dataset::NCDataset,
     config::Config,
-    domain::DomainRiver,
+    domain::DomainRiver;
+    data_lookup::DataLookup = DataLookup(),
 )
     alpha = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
@@ -86,7 +89,8 @@ function LocalInertialRiverFlowParameters(
     end
     active_index = findall(x -> x == 0, reservoir_outlet)
 
-    parameters = LocalInertialRiverFlowParameters(;
+    parameters = LocalInertialRiverFlowParameters(
+        data_lookup;
         n,
         ne = n_edges,
         active_n = active_index,
@@ -106,13 +110,16 @@ function LocalInertialRiverFlowParameters(
 end
 
 "Struct for storing local inertial river flow model variables"
-@with_kw struct LocalInertialRiverFlowVariables
+@with_data_lookup struct LocalInertialRiverFlowVariables
     n::Int
     n_edges::Int
+    "river_water__instantaneous_volume_flow_rate"
     q::Vector{Float64} = zeros(n_edges)                        # river discharge at edge (subgrid channel) [m³ s⁻¹]
     q0::Vector{Float64} = zeros(n_edges)                       # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
+    "river_water__volume_flow_rate"
     q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
     q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
+    "river_water__depth"
     h::Vector{Float64}                        # water depth [m]
     zs_max::Vector{Float64} = zeros(n_edges)  # maximum water elevation at edge [m]
     zs_src::Vector{Float64} = zeros(n_edges)  # water elevation of source node of edge [m]
@@ -120,6 +127,7 @@ end
     hf::Vector{Float64} = zeros(n_edges)       # water depth at edge [m]
     a::Vector{Float64} = zeros(n_edges)        # flow area at edge [m²]
     r::Vector{Float64} = zeros(n_edges)        # wetted perimeter at edge [m]
+    "river_water__volume"
     storage::Vector{Float64} = zeros(n)        # river storage [m³]
     error::Vector{Float64} = zeros(n)          # error storage [m³]
 end
@@ -128,7 +136,8 @@ end
 function LocalInertialRiverFlowVariables(
     dataset::NCDataset,
     config::Config,
-    network::NetworkRiver,
+    network::NetworkRiver;
+    data_lookup::DataLookup = DataLookup(),
 )
     (; pit_indices, indices, graph) = network
 
@@ -147,7 +156,8 @@ function LocalInertialRiverFlowVariables(
     q_av = zeros(n_edges)
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
     append!(h, riverdepth_bc)
-    variables = LocalInertialRiverFlowVariables(;
+    variables = LocalInertialRiverFlowVariables(
+        data_lookup;
         n,
         n_edges,
         q_av,
@@ -176,7 +186,8 @@ function LocalInertialRiverFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir_model::Union{ReservoirModel, Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing};
+    data_lookup::DataLookup = DataLookup(),
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and edges. This information is extracted from the directed graph of the
@@ -193,13 +204,15 @@ function LocalInertialRiverFlowModel(
     alpha_coefficient = config.model.river_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; alpha_coefficient)
 
-    parameters = LocalInertialRiverFlowParameters(dataset, config, domain)
-    variables = LocalInertialRiverFlowVariables(dataset, config, domain.network)
-    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir_model)
+    parameters = LocalInertialRiverFlowParameters(dataset, config, domain; data_lookup)
+    variables =
+        LocalInertialRiverFlowVariables(dataset, config, domain.network; data_lookup)
+    boundary_conditions =
+        RiverFlowBC(dataset, config, domain.network, reservoir_model; data_lookup)
 
     if config.model.floodplain_1d__flag
         zb_floodplain = parameters.zb .+ parameters.bankfull_depth
-        floodplain = FloodPlainModel(dataset, config, domain, zb_floodplain)
+        floodplain = FloodPlainModel(dataset, config, domain, zb_floodplain; data_lookup)
     else
         floodplain = nothing
     end
@@ -637,30 +650,34 @@ function update_river_flow_model!(
 end
 
 "Struct to store local inertial overland flow model variables"
-@with_kw struct LocalInertialOverlandFlowVariables
+@with_data_lookup struct LocalInertialOverlandFlowVariables
     n::Int
     # flow in y direction at edge at previous time step [m³ s⁻¹]
     qy0::Vector{Float64} = zeros(n + 1)
     # flow in x direction at edge at previous time step [m³ s⁻¹]
     qx0::Vector{Float64} = zeros(n + 1)
     # flow in x direction at edge [m³ s⁻¹]
+    "land_surface_water__x_component_of_instantaneous_volume_flow_rate"
     qx::Vector{Float64} = zeros(n + 1)
     # average flow in x direction at edge [m³ s⁻¹] for model timestep Δt
     qx_av::Vector{Float64} = zeros(n + 1)
     # flow in y direction at edge [m³ s⁻¹]
+    "land_surface_water__y_component_of_instantaneous_volume_flow_rate"
     qy::Vector{Float64} = zeros(n + 1)
     # average flow in y direction at edge [m³ s⁻¹] for model timestep Δt
     qy_av::Vector{Float64} = zeros(n + 1)
     # total storage of cell [m³] (including river storage for river cells)
+    "land_surface_water__volume"
     storage::Vector{Float64} = zeros(n)
     # error storage [m³]
     error::Vector{Float64} = zeros(n)
     # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
+    "land_surface_water__depth"
     h::Vector{Float64} = zeros(n)
 end
 
 "Struct to store local inertial overland flow model parameters"
-@with_kw struct LocalInertialOverlandFlowParameters
+@with_data_lookup struct LocalInertialOverlandFlowParameters
     n::Int                              # number of cells [-]
     xwidth::Vector{Float64}             # effective flow width x direction at edge (floodplain) [m]
     ywidth::Vector{Float64}             # effective flow width y direction at edge (floodplain) [m]
@@ -669,6 +686,7 @@ end
     zx_max::Vector{Float64}             # maximum cell elevation at edge [m] (x direction)
     zy_max::Vector{Float64}             # maximum cell elevation at edge [m] (y direction)
     mannings_n_sq::Vector{Float64}      # Manning's roughness squared at edge [(s m-1/3)2]
+    "land_surface_water_flow__ground_elevation"
     z::Vector{Float64}                  # elevation [m] of cell
     froude_limit::Bool                  # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
 end
@@ -677,7 +695,8 @@ end
 function LocalInertialOverlandFlowParameters(
     dataset::NCDataset,
     config::Config,
-    domain::Domain,
+    domain::Domain;
+    data_lookup::DataLookup = DataLookup(),
 )
     froude_limit = config.model.land_surface_water_flow__froude_limit_flag # limit flow to subcritical according to Froude number
     alpha = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
@@ -720,7 +739,8 @@ function LocalInertialOverlandFlowParameters(
     we_x = copy(x_length)
     we_y = copy(y_length)
     set_effective_flowwidth!(we_x, we_y, domain)
-    parameters = LocalInertialOverlandFlowParameters(;
+    parameters = LocalInertialOverlandFlowParameters(
+        data_lookup;
         n,
         xwidth = we_x,
         ywidth = we_y,
@@ -750,14 +770,19 @@ end
 end
 
 "Initialize local inertial overland flow model"
-function LocalInertialOverlandFlowModel(dataset::NCDataset, config::Config, domain::Domain)
+function LocalInertialOverlandFlowModel(
+    dataset::NCDataset,
+    config::Config,
+    domain::Domain;
+    data_lookup::DataLookup = DataLookup(),
+)
     alpha_coefficient = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; alpha_coefficient)
 
     n = length(domain.land.network.indices)
     boundary_conditions = LocalInertialOverlandFlowBC(; n)
-    parameters = LocalInertialOverlandFlowParameters(dataset, config, domain)
-    variables = LocalInertialOverlandFlowVariables(; n)
+    parameters = LocalInertialOverlandFlowParameters(dataset, config, domain; data_lookup)
+    variables = LocalInertialOverlandFlowVariables(data_lookup; n)
 
     overland_flow_model = LocalInertialOverlandFlowModel(;
         timestepping,
@@ -1394,8 +1419,9 @@ function FloodPlainProfile(
 end
 
 "Struct to store floodplain flow model parameters"
-@with_kw struct FloodPlainParameters
+@with_data_lookup struct FloodPlainParameters
     profile::FloodPlainProfile          # floodplain profile
+    "floodplain_water_flow__manning_n_parameter"
     mannings_n::Vector{Float64}         # manning's roughness [s m-1/3]
     mannings_n_sq::Vector{Float64}      # manning's roughness squared at edge [(s m-1/3)2]
     zb_max::Vector{Float64}             # maximum bankfull elevation at edge [m]
@@ -1407,7 +1433,8 @@ function FloodPlainParameters(
     config::Config,
     domain::DomainRiver,
     zb_floodplain::Vector{Float64},
-    index_pit::Vector{Int},
+    index_pit::Vector{Int};
+    data_lookup::DataLookup = DataLookup(),
 )
     (; indices, nodes_at_edge, graph) = domain.network
     (; flow_length) = domain.parameters
@@ -1436,29 +1463,40 @@ function FloodPlainParameters(
         mannings_n_sq[i] = mannings_n_i * mannings_n_i
         zb_max[i] = max(zb_floodplain[src_node], zb_floodplain[dst_node])
     end
-    parameters = FloodPlainParameters(profile, mannings_n, mannings_n_sq, zb_max)
+    parameters =
+        FloodPlainParameters(data_lookup, profile, mannings_n, mannings_n_sq, zb_max)
     return parameters
 end
 
 "Struct to store floodplain flow model variables"
-@with_kw struct FloodPlainVariables
+@with_data_lookup struct FloodPlainVariables
     n::Int
     n_edges::Int
+    "floodplain_water__volume"
     storage::Vector{Float64} = zeros(n)    # storage [m³]
+    "floodplain_water__depth"
     h::Vector{Float64}                     # water depth [m]
     error::Vector{Float64} = zeros(n)      # error storage [m³]
     a::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
     r::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
     hf::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
     q0::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step
+    "floodplain_water__instantaneous_volume_flow_rate"
     q::Vector{Float64} = zeros(n_edges)    # discharge at edge  [m³ s⁻¹]
+    "floodplain_water__volume_flow_rate"
     q_av::Vector{Float64} = zeros(n_edges) # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
     hf_index::Vector{Int} = zeros(Int, n_edges) # edge index with `hf` [-] above depth threshold
 end
 
 "Initialize floodplain flow model variables"
-function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
-    variables = FloodPlainVariables(; n, n_edges, h = zeros(n + length(index_pit)))
+function FloodPlainVariables(
+    n::Int,
+    n_edges::Int,
+    index_pit::Vector{Int};
+    data_lookup::DataLookup = DataLookup(),
+)
+    variables =
+        FloodPlainVariables(data_lookup; n, n_edges, h = zeros(n + length(index_pit)))
     return variables
 end
 
@@ -1546,14 +1584,16 @@ function FloodPlainModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    zb_floodplain::Vector{Float64},
+    zb_floodplain::Vector{Float64};
+    data_lookup::DataLookup = DataLookup(),
 )
     (; indices, local_drain_direction, graph) = domain.network
     n = length(indices)
     index_pit = findall(x -> x == 5, local_drain_direction)
-    parameters = FloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit)
+    parameters =
+        FloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit; data_lookup)
     n_edges = ne(graph)
-    variables = FloodPlainVariables(n, n_edges, index_pit)
+    variables = FloodPlainVariables(n, n_edges, index_pit; data_lookup)
 
     floodplain = FloodPlainModel(; parameters, variables)
     return floodplain

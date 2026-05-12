@@ -1,9 +1,10 @@
 abstract type AbstractOverlandFlowErosionModel end
 
 "Struct for storing overland flow erosion model variables"
-@with_kw struct OverlandFlowErosionVariables
+@with_data_lookup struct OverlandFlowErosionVariables
     n::Int
     # Total soil erosion rate [t dt-1] from overland flow
+    "overland_flow_soil_erosion__mass_flow_rate"
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -15,12 +16,15 @@ end
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
-@with_kw struct OverlandFlowErosionAnswersParameters
+@with_data_lookup struct OverlandFlowErosionAnswersParameters
     # Soil erodibility factor [-]
+    "soil_erosion__usle_k_factor"
     usle_k::Vector{Float64}
     # Crop management factor [-]
+    "soil_erosion__usle_c_factor"
     usle_c::Vector{Float64}
     # ANSWERS overland flow erosion factor [-]
+    "soil_erosion__answers_overland_flow_factor"
     answers_overland_flow_factor::Vector{Float64}
 end
 
@@ -28,7 +32,8 @@ end
 function OverlandFlowErosionAnswersParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     usle_k =
         ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLossModel; sel = indices)
@@ -42,8 +47,12 @@ function OverlandFlowErosionAnswersParameters(
         sel = indices,
     )
 
-    answers_parameters =
-        OverlandFlowErosionAnswersParameters(; usle_k, usle_c, answers_overland_flow_factor)
+    answers_parameters = OverlandFlowErosionAnswersParameters(
+        data_lookup;
+        usle_k,
+        usle_c,
+        answers_overland_flow_factor,
+    )
     return answers_parameters
 end
 
@@ -59,10 +68,11 @@ end
 function OverlandFlowErosionAnswersModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
+    parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices; data_lookup)
     overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n, parameters)
     return overland_flow_erosion_model
 end

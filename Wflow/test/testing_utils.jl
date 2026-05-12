@@ -139,15 +139,13 @@ function init_sbm_soil_model(n, N; kwargs...)
 
     # Vectors of other types
     for field_name in [
-        # Variables
+        # Variables (Float64)
         :ustorecapacity,
         :satwaterdepth,
         :drainable_waterdepth,
         :zi,
-        :n_unsatlayers,
         :total_soilwater_storage,
-        # Parameters
-        :nlayers,
+        # Parameters (Float64)
         :theta_s,
         :theta_r,
         :theta_fc,
@@ -172,7 +170,17 @@ function init_sbm_soil_model(n, N; kwargs...)
         :soil_fraction,
     ]
         if !haskey(kwargs, field_name)
-            kwargs[field_name] = []
+            kwargs[field_name] = Float64[]
+        end
+    end
+    for field_name in [
+        # Variables (Int)
+        :n_unsatlayers,
+        # Parameters (Int)
+        :nlayers,
+    ]
+        if !haskey(kwargs, field_name)
+            kwargs[field_name] = Int[]
         end
     end
 

@@ -1,14 +1,19 @@
 "Struct for storing lateral subsurface flow model variables"
-@with_kw struct LateralSsfVariables
+@with_data_lookup struct LateralSsfVariables
     n::Int
+    "subsurface_water_saturated_zone_top__depth"
     zi::Vector{Float64}                                     # Pseudo-water table depth [m] (top of the saturated zone)
     head::Vector{Float64}                                   # Hydraulic head [m]
+    "subsurface_water__exfiltration_volume_flux"
     exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n)   # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    "subsurface_water__instantaneous_volume_flow_rate"
     q::Vector{Float64} = fill(MISSING_VALUE, n)             # Subsurface flow [m³ d⁻¹]
+    "subsurface_water__volume_flow_rate"
     q_av::Vector{Float64} = fill(MISSING_VALUE, n)          # Average subsurface flow [m³ d⁻¹] for model timestep Δt
     q_in::Vector{Float64} = fill(MISSING_VALUE, n)          # Inflow from upstream cells [m³ d⁻¹]
     q_in_av::Vector{Float64} = fill(MISSING_VALUE, n)       # Average inflow from upstream cells [m³ d⁻¹] for model timestep Δt
     q_max::Vector{Float64} = fill(MISSING_VALUE, n)         # Maximum subsurface flow [m² d⁻¹]
+    "subsurface_water__to_river_volume_flow_rate"
     to_river::Vector{Float64} = fill(MISSING_VALUE, n)      # Part of subsurface flow [m³ d⁻¹] that flows to the river
     q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n)    # Net flow for boundaries subsurface flow [m³ d⁻¹]
     q_net_av::Vector{Float64} = fill(MISSING_VALUE, n)      # Average net flow (total) [m³ d⁻¹]
@@ -16,8 +21,9 @@
 end
 
 "Struct for storing lateral subsurface flow model parameters"
-@with_kw struct LateralSsfParameters{Kh}
+@with_data_lookup struct LateralSsfParameters{Kh}
     kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]
+    "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio"
     khfrac::Vector{Float64}             # A multiplication factor applied to vertical hydraulic conductivity `kv` [-]
     soilthickness::Vector{Float64}      # Soil thickness [m]
     specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_fc) [-]
@@ -26,7 +32,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSFModel{Kh,B<:SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@with_kw struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
@@ -61,21 +67,16 @@ function LateralSsfParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
     soil::SbmSoilParameters,
-    area::Vector{Float64},
+    area::Vector{Float64};
+    data_lookup::DataLookup = DataLookup(),
 )
-    elevation = ncread(
-        dataset,
-        config,
-        "land_surface__elevation",
-        Routing;
-        sel=indices,
-    )
+    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
     khfrac = ncread(
         dataset,
         config,
         "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
         Routing;
-        sel=indices,
+        sel = indices,
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
@@ -99,44 +100,56 @@ function LateralSsfParameters(
         kh_profile = KhLayered(fill(MISSING_VALUE, n_cells))
     end
     specific_yield = @. lower_bound_drainable_porosity(theta_s, theta_fc)
-    ssf_parameters = LateralSsfParameters(;
+    ssf_parameters = LateralSsfParameters(
+        data_lookup;
         kh_profile,
         khfrac,
         soilthickness,
         specific_yield,
         area,
-        top=elevation,
+        top = elevation,
     )
     return ssf_parameters
 end
 
 "Initialize lateral subsurface flow model variables"
-function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
+function LateralSsfVariables(
+    ssf::LateralSsfParameters,
+    zi::Vector{Float64};
+    data_lookup::DataLookup = DataLookup(),
+)
     n = length(zi)
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * ssf.area
     head = @. ssf.top - zi
-    variables = LateralSsfVariables(; n, zi, storage, head)
+    variables = LateralSsfVariables(data_lookup; n, zi, storage, head)
     return variables
 end
 
 "Initialize lateral subsurface flow model"
-function LateralSSFModel(dataset::NCDataset, config::Config, domain::Domain, soil::SbmSoilModel)
+function LateralSSFModel(
+    dataset::NCDataset,
+    config::Config,
+    domain::Domain,
+    soil::SbmSoilModel;
+    data_lookup::DataLookup = DataLookup(),
+)
     (; land, river, drain) = domain
     (; indices) = land.network
     (; area) = domain.land.parameters
     n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain="subsurface")
-    parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
+    timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
+    parameters =
+        LateralSsfParameters(dataset, config, indices, soil.parameters, area; data_lookup)
     zi = 0.001 * soil.variables.zi
-    variables = LateralSsfVariables(parameters, zi)
+    variables = LateralSsfVariables(parameters, zi; data_lookup)
     recharge = RechargeModel(; n)
     if config.model.river_subsurface_exchange_head_based__flag
-        river = GwfRiverModel(dataset, config, river.network.indices)
+        river = GwfRiverModel(dataset, config, river.network.indices; data_lookup)
     else
         river = nothing
     end
     if config.model.drain__flag
-        drain = DrainageModel(dataset, config, drain.network.indices)
+        drain = DrainageModel(dataset, config, drain.network.indices; data_lookup)
     else
         drain = nothing
     end
@@ -199,7 +212,7 @@ function kinwave_subsurface_update!(
 
     ns = length(order_of_subdomains)
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 if isnothing(river)

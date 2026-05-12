@@ -8,6 +8,7 @@ function Model(config::Config, type::SbmModel)
     # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
     dataset = NCDataset(static_path)
+    data_lookup = DataLookup(config)
 
     reader = NCReader(config)
     clock = Clock(config, reader)
@@ -21,14 +22,15 @@ function Model(config::Config, type::SbmModel)
         water_demand = do_water_demand(config),
     )...
 
-    domain = Domain(dataset, config, type)
+    domain = Domain(dataset, config, type; data_lookup)
 
-    land_hydrology = LandHydrologySBM(dataset, config, domain.land)
-    routing = Routing(dataset, config, domain, land_hydrology.soil, type)
+    land_hydrology = LandHydrologySBM(dataset, config, domain.land; data_lookup)
+    routing = Routing(dataset, config, domain, land_hydrology.soil, type; data_lookup)
     mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
 
     (; maxlayers) = land_hydrology.soil.parameters
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land = land_hydrology, routing, mass_balance, data_lookup)
+    @show data_lookup
     writer = Writer(
         config,
         modelmap,
@@ -47,6 +49,7 @@ function Model(config::Config, type::SbmModel)
         clock,
         reader,
         writer,
+        data_lookup,
         SbmModel(),
     )
 
