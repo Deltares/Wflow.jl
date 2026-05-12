@@ -92,7 +92,7 @@ end
     @test relative_error ≈ -2 / 11
 end
 
-@testitem "Lenses" begin
+@testitem "Data lookup" begin
     configs = Wflow.Config[]
 
     for file_name in [
@@ -124,50 +124,18 @@ end
     for (map_name, standard_name_map) in Wflow.STANDARD_NAME_MAPS
         @testset "Test lenses: $map_name" begin
             invalids = String[]
-            for (name, data) in standard_name_map
-                (; lens) = data
-                isnothing(lens) && continue
+            for name in keys(standard_name_map)
                 valid = false
                 for model in models
-                    try
-                        lens(model)
-                        valid = true
-                        break
-                    catch
-                        nothing
-                    end
+                    haskey(model.data_lookup, name)
+                    valid = true
+                    break
                 end
                 !valid && push!(invalids, name)
             end
-            expected_invalids = if map_name == "sbm"
-                # The lenses associated with these standard names aren't actually invalid,
-                # these parameters are just not used in any test model
-                Set([
-                    "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
-                    "soil_layer_water__vertical_saturated_hydraulic_conductivity",
-                ])
-            else
-                Set{String}()
-            end
-            @test Set(invalids) == expected_invalids
+            @test isempty(invalids)
         end
     end
-
-    # Find duplicate lenses
-    lenses = vcat(
-        [
-            getfield.(values(standard_name_map), :lens) for
-            (_, standard_name_map) in Wflow.STANDARD_NAME_MAPS
-        ]...,
-    )
-    filter!(!isnothing, lenses)
-    duplicates = Set()
-    for unique_lens in unique(lenses)
-        if count(==(unique_lens), lenses) > 1
-            push!(duplicates, unique_lens)
-        end
-    end
-    @test isempty(duplicates)
 end
 
 @testitem "Variable tags" begin

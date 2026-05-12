@@ -11,7 +11,7 @@ abstract type AbstractSedimentLandTransportModel end
 end
 
 "Struct to store total sediment flux in overland flow model boundary conditions"
-@with_kw struct SedimentLandTransportBC
+@kwdef struct SedimentLandTransportBC
     n::Int
     # Erosion rate material [t dt-1]
     erosion::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -20,7 +20,7 @@ end
 end
 
 "Struct to store total sediment flux in overland flow model"
-@with_kw struct SedimentLandTransportModel <: AbstractSedimentLandTransportModel
+@kwdef struct SedimentLandTransportModel <: AbstractSedimentLandTransportModel
     n::Int
     boundary_conditions::SedimentLandTransportBC = SedimentLandTransportBC(; n)
     variables::SedimentLandTransportVariables = SedimentLandTransportVariables(; n)
@@ -64,9 +64,10 @@ function update_sediment_overland_model!(
 end
 
 "Struct to store differentiated sediment flux in overland flow model variables"
-@with_kw struct SedimentLandTransportDifferentiationVariables
+@with_data_lookup struct SedimentLandTransportDifferentiationVariables
     n::Int
     # Total sediment rate [t dt-1]
+    "land_surface_water_sediment__mass_flow_rate"
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Deposition rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -93,7 +94,7 @@ end
 end
 
 "Struct to store differentiated sediment flux in overland flow model boundary conditions"
-@with_kw struct SedimentLandTransportDifferentiationBC
+@kwdef struct SedimentLandTransportDifferentiationBC
     n::Int
     # Erosion rate clay [t dt-1]
     erosion_clay::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -118,8 +119,8 @@ end
 end
 
 "Struct to store differentiated sediment flux in overland flow model"
-@with_kw struct SedimentLandTransportDifferentiationModel <:
-                AbstractSedimentLandTransportModel
+@kwdef struct SedimentLandTransportDifferentiationModel <:
+              AbstractSedimentLandTransportModel
     n::Int
     boundary_conditions::SedimentLandTransportDifferentiationBC =
         SedimentLandTransportDifferentiationBC(; n)
@@ -128,9 +129,13 @@ end
 end
 
 "Initialize differentiated sediment flux in overland flow model"
-function SedimentLandTransportDifferentiationModel(indices::Vector{CartesianIndex{2}})
+function SedimentLandTransportDifferentiationModel(
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
+)
     n = length(indices)
-    sediment_transport_model = SedimentLandTransportDifferentiationModel(; n)
+    variables = SedimentLandTransportDifferentiationVariables(data_lookup; n)
+    sediment_transport_model = SedimentLandTransportDifferentiationModel(; n, variables)
     return sediment_transport_model
 end
 

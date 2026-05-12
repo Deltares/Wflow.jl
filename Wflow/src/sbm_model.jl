@@ -30,7 +30,6 @@ function Model(config::Config, type::SbmModel)
 
     (; maxlayers) = land_hydrology.soil.parameters
     modelmap = (land = land_hydrology, routing, mass_balance, data_lookup)
-    @show data_lookup
     writer = Writer(
         config,
         modelmap,

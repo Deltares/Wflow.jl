@@ -239,7 +239,7 @@ function SbmSoilVariables(
 end
 
 "Struct for storing SBM soil model boundary conditions"
-@with_kw struct SbmSoilBC
+@kwdef struct SbmSoilBC
     n::Int
     # Water flux at the soil surface [mm Δt⁻¹]
     water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -643,7 +643,7 @@ function SbmSoilParameters(
 end
 
 "SBM soil model"
-@with_kw struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
+@kwdef struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
     n::Int
     boundary_conditions::SbmSoilBC = SbmSoilBC(; n)
     parameters::SbmSoilParameters{N, M, Kv}

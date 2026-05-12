@@ -25,7 +25,7 @@ abstract type AbstractSnowModel end
 end
 
 "Struct for storing snow model boundary conditions"
-@with_kw struct SnowBC
+@kwdef struct SnowBC
     n::Int
     # Effective precipitation [mm Δt⁻¹]
     effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -55,7 +55,7 @@ end
 end
 
 "Snow HBV model"
-@with_kw struct SnowHbvModel <: AbstractSnowModel
+@kwdef struct SnowHbvModel <: AbstractSnowModel
     n::Int
     boundary_conditions::SnowBC = SnowBC(; n)
     parameters::SnowHbvParameters

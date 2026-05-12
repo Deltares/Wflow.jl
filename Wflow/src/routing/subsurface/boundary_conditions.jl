@@ -38,7 +38,7 @@ end
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
 end
 
-@with_kw struct GwfRiverModel <: AbstractSubsurfaceFlowBC
+@kwdef struct GwfRiverModel <: AbstractSubsurfaceFlowBC
     parameters::GwfRiverParameters
     variables::GwfRiverVariables
 end
@@ -47,26 +47,26 @@ function GwfRiverModel(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}};
-    data_lookup::DataLookup = DataLookup(),
+    data_lookup::DataLookup=DataLookup(),
 )
     infiltration_conductance = ncread(
         dataset,
         config,
         "river_water__infiltration_conductance",
         Routing;
-        sel = indices,
+        sel=indices,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
         "river_water__exfiltration_conductance",
         Routing;
-        sel = indices,
+        sel=indices,
     )
-    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
+    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel=indices)
 
     parameters = GwfRiverParameters(
-        data_lookup,
+        data_lookup;
         infiltration_conductance,
         exfiltration_conductance,
         bottom,
@@ -118,7 +118,7 @@ end
     flux_av::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
 end
 
-@with_kw struct DrainageModel <: AbstractSubsurfaceFlowBC
+@kwdef struct DrainageModel <: AbstractSubsurfaceFlowBC
     parameters::DrainageParameters
     variables::DrainageVariables
 end
@@ -127,10 +127,10 @@ function DrainageModel(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}};
-    data_lookup::DataLookup = DataLookup(),
+    data_lookup::DataLookup=DataLookup(),
 )
-    elevation = ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
-    conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
+    elevation = ncread(dataset, config, "land_drain__elevation", Routing; sel=indices)
+    conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel=indices)
     parameters = DrainageParameters(data_lookup; elevation, conductance)
     n = length(indices)
     variables = DrainageVariables(data_lookup; n)
@@ -160,17 +160,17 @@ function flux!(
     return nothing
 end
 
-@with_kw struct HeadBoundaryParameters
+@kwdef struct HeadBoundaryParameters
     conductance::Vector{Float64} # [m² d⁻¹]
 end
 
-@with_kw struct HeadBoundaryVariables
+@kwdef struct HeadBoundaryVariables
     head::Vector{Float64} # [m]
     flux::Vector{Float64} # [m³ d⁻¹]
     flux_av::Vector{Float64} # [m³ d⁻¹]
 end
 
-@with_kw struct HeadBoundary <: AbstractSubsurfaceFlowBC
+@kwdef struct HeadBoundary <: AbstractSubsurfaceFlowBC
     parameters::HeadBoundaryParameters
     variables::HeadBoundaryVariables
 end
@@ -201,7 +201,7 @@ end
     flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹]
 end
 
-@with_kw struct RechargeModel <: AbstractSubsurfaceFlowBC
+@kwdef struct RechargeModel <: AbstractSubsurfaceFlowBC
     n::Int
     variables::RechargeVariables = RechargeVariables(; n)
 end
@@ -225,13 +225,13 @@ function flux!(
     return nothing
 end
 
-@with_kw struct WellVariables
+@kwdef struct WellVariables
     volumetric_rate::Vector{Float64} # [m³ d⁻¹]
     flux::Vector{Float64} # [m³ d⁻¹]
     flux_av::Vector{Float64} # [m³ d⁻¹]
 end
 
-@with_kw struct WellModel <: AbstractSubsurfaceFlowBC
+@kwdef struct WellModel <: AbstractSubsurfaceFlowBC
     variables::WellVariables
 end
 

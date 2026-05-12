@@ -37,17 +37,29 @@ function DataLookup(config::Config)
     DataLookup{N}()
 end
 
+function _check_duplicate_key(data_lookup::DataLookup, key::AbstractString)
+    if haskey(data_lookup, key)
+        error(
+            "Duplicate registration in DataLookup: key '$key' is already registered. " *
+            "Each standard name must be registered exactly once.",
+        )
+    end
+end
+
 function Base.setindex!(
     data_lookup::DataLookup,
-    value::Vector{Float64},
+    value::Vector{<:AbstractFloat},
     key::AbstractString,
 )
+    _check_duplicate_key(data_lookup, key)
     data_lookup.data_float[key] = value
 end
 function Base.setindex!(data_lookup::DataLookup, value::Vector{Int}, key::AbstractString)
+    _check_duplicate_key(data_lookup, key)
     data_lookup.data_int[key] = value
 end
 function Base.setindex!(data_lookup::DataLookup, value::Vector{Bool}, key::AbstractString)
+    _check_duplicate_key(data_lookup, key)
     data_lookup.data_bool[key] = value
 end
 function Base.setindex!(
@@ -55,16 +67,21 @@ function Base.setindex!(
     value::Vector{<:SVector{N, Float64}},
     key::AbstractString,
 ) where {N}
+    _check_duplicate_key(data_lookup, key)
     data_lookup.data_svector[key] = value
 end
+Base.setindex!(data_lookup::DataLookup, value::Nothing, key::AbstractString) = nothing
 function Base.setindex!(
     data_lookup::DataLookup,
     value::Vector{<:EnumX.Enum},
     key::AbstractString,
 )
+    _check_duplicate_key(data_lookup, key)
+    # Convert EnumX instances to Int
     data_lookup.data_int[key] = Int.(value)
 end
 function Base.setindex!(data_lookup::DataLookup, value::Vector, key::AbstractString)
+    _check_duplicate_key(data_lookup, key)
     # fallback: convert to Float64 if possible, otherwise error
     data_lookup.data_float[key] = convert(Vector{Float64}, value)
 end
@@ -103,6 +120,14 @@ function Base.haskey(data_lookup::DataLookup, key::AbstractString)
            haskey(data_lookup.data_int, key) ||
            haskey(data_lookup.data_bool, key) ||
            haskey(data_lookup.data_svector, key)
+end
+
+function Base.get(data_lookup::DataLookup, key::AbstractString, default)
+    haskey(data_lookup.data_float, key) && return data_lookup.data_float[key]
+    haskey(data_lookup.data_int, key) && return data_lookup.data_int[key]
+    haskey(data_lookup.data_bool, key) && return data_lookup.data_bool[key]
+    haskey(data_lookup.data_svector, key) && return data_lookup.data_svector[key]
+    return default
 end
 
 """

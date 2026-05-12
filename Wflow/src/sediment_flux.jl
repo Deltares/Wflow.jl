@@ -1,5 +1,5 @@
 "Sediment transport in overland flow model"
-@with_kw struct OverlandFlowSedimentModel{
+@kwdef struct OverlandFlowSedimentModel{
     TT <: AbstractTransportCapacityModel,
     SF <: AbstractSedimentLandTransportModel,
     TR <: AbstractSedimentToRiverModel,
@@ -57,7 +57,7 @@ function OverlandFlowSedimentModel(
     )
 
     if do_river || land_transport == LandTransportType.yalinpart
-        sediment_flux = SedimentLandTransportDifferentiationModel(indices)
+        sediment_flux = SedimentLandTransportDifferentiationModel(indices; data_lookup)
         to_river = SedimentToRiverDifferentiationModel(indices; data_lookup)
     else
         sediment_flux = SedimentLandTransportModel(indices; data_lookup)
@@ -119,7 +119,7 @@ end
 
 ### River ###
 "Sediment transport in river model"
-@with_kw struct RiverSedimentModel{
+@kwdef struct RiverSedimentModel{
     TTR <: AbstractTransportCapacityModel,
     ER <: AbstractRiverErosionModel,
     SFR <: AbstractSedimentRiverTransportModel,
@@ -150,7 +150,12 @@ function RiverSedimentModel(
 )
     (; indices) = domain.network
     n = length(indices)
-    hydrological_forcing = HydrologicalForcing(data_lookup; n)
+    # Construct HydrologicalForcing without data_lookup to avoid overwriting land-domain
+    # registrations (e.g. "land_surface_water__volume_flow_rate") with river-sized vectors.
+    # Only register river-domain names explicitly.
+    hydrological_forcing = HydrologicalForcing(; n)
+    data_lookup["river_water__depth"] = hydrological_forcing.waterlevel_river
+    data_lookup["river_water__volume_flow_rate"] = hydrological_forcing.q_river
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]

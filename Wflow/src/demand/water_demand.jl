@@ -17,19 +17,19 @@ struct NoAllocationRiverModel <: AbstractAllocationModel
 end
 
 "Struct to store non-irrigation water demand variables"
-@with_kw struct NonIrrigationDemandVariables
+@kwdef struct NonIrrigationDemandVariables
     returnflow::Vector{Float64}               # return flow [mm Δt⁻¹]
     returnflow_fraction::Vector{Float64}      # return flow fraction [-]
 end
 
 "Struct to store prescribed water demand variables"
-@with_kw struct PrescribedDemand
+@kwdef struct PrescribedDemand
     demand_gross::Vector{Float64}     # gross water demand [mm Δt⁻¹]
     demand_net::Vector{Float64}       # net water demand [mm Δt⁻¹]
 end
 
 "Non-irrigation water demand model"
-@with_kw struct NonIrrigationDemandModel <: AbstractDemandModel
+@kwdef struct NonIrrigationDemandModel <: AbstractDemandModel
     demand::PrescribedDemand
     variables::NonIrrigationDemandVariables
 end
@@ -44,7 +44,8 @@ function NonIrrigationDemandModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
     dt::Second,
-    sector::AbstractString,
+    sector::AbstractString;
+    data_lookup::DataLookup = DataLookup(),
 )
     demand_gross =
         ncread(
@@ -66,6 +67,8 @@ function NonIrrigationDemandModel(
     returnflow_f = return_flow_fraction.(demand_gross, demand_net)
 
     demand = PrescribedDemand(; demand_gross, demand_net)
+    data_lookup["$(sector)__gross_water_demand_volume_flux"] = demand.demand_gross
+    data_lookup["$(sector)__net_water_demand_volume_flux"] = demand.demand_net
     vars = NonIrrigationDemandVariables(;
         returnflow_fraction = returnflow_f,
         returnflow = fill(Float64(0), n),
@@ -95,7 +98,7 @@ end
 end
 
 "Non-paddy (other crops than flooded rice) irrigation model"
-@with_kw struct NonPaddyModel <: AbstractIrrigationModel
+@kwdef struct NonPaddyModel <: AbstractIrrigationModel
     parameters::NonPaddyParameters
     variables::NonPaddyVariables
 end
@@ -274,7 +277,7 @@ end
 end
 
 "PaddyModel (flooded rice) irrigation model"
-@with_kw struct PaddyModel <: AbstractIrrigationModel
+@kwdef struct PaddyModel <: AbstractIrrigationModel
     parameters::PaddyParameters
     variables::PaddyVariables
 end
@@ -454,7 +457,7 @@ end
 update_demand_gross!(::NoIrrigationPaddyModel) = nothing
 
 "Struct to store water demand model variables"
-@with_kw struct DemandVariables
+@kwdef struct DemandVariables
     n::Int
     irri_demand_gross::Vector{Float64} = zeros(n)        # irrigation gross demand [mm Δt⁻¹]
     nonirri_demand_gross::Vector{Float64} = zeros(n)     # non-irrigation gross demand [mm Δt⁻¹]
@@ -464,7 +467,7 @@ update_demand_gross!(::NoIrrigationPaddyModel) = nothing
 end
 
 "Water demand model"
-@with_kw struct DemandModel{
+@kwdef struct DemandModel{
     D <: AbstractDemandModel,
     I <: AbstractDemandModel,
     L <: AbstractDemandModel,
@@ -479,7 +482,7 @@ end
     variables::DemandVariables
 end
 
-@with_kw struct NoDemandModel <: AbstractDemandModel
+@kwdef struct NoDemandModel <: AbstractDemandModel
     n::Int
     domestic::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
     industry::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
@@ -504,7 +507,7 @@ function DemandModel(
     ) =
         if getfield(config.model.water_demand, Symbol("$(name)__flag"))::Bool
             if constr == NonIrrigationDemandModel
-                constr(dataset, config, indices, dt, name)
+                constr(dataset, config, indices, dt, name; data_lookup)
             else
                 constr(dataset, config, indices, dt; data_lookup)
             end
@@ -535,7 +538,7 @@ end
 end
 
 "River allocation model"
-@with_kw struct AllocationRiverModel <: AbstractAllocationModel
+@kwdef struct AllocationRiverModel <: AbstractAllocationModel
     n::Int
     variables::AllocationRiverVariables = AllocationRiverVariables(; n)
 end
@@ -572,7 +575,7 @@ end
 end
 
 "Land allocation model"
-@with_kw struct AllocationLandModel <: AbstractAllocationModel
+@kwdef struct AllocationLandModel <: AbstractAllocationModel
     n::Int
     parameters::AllocationLandParameters
     variables::AllocationLandVariables = AllocationLandVariables(; n)
@@ -603,7 +606,11 @@ function AllocationLandModel(
     n = length(indices)
 
     parameters = AllocationLandParameters(data_lookup; areas, frac_sw_used)
-    allocation = AllocationLandModel(; n, parameters)
+    allocation = AllocationLandModel(;
+        n,
+        parameters,
+        variables = AllocationLandVariables(data_lookup; n),
+    )
     return allocation
 end
 

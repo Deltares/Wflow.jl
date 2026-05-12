@@ -52,7 +52,7 @@ abstract type AbstractSedimentRiverTransportModel end
 end
 
 "Struct to store river sediment transport model boundary conditions"
-@with_kw struct SedimentRiverTransportBC
+@kwdef struct SedimentRiverTransportBC
     n::Int
     # Waterlevel [m]
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -214,7 +214,7 @@ function SedimentRiverTransportParameters(
 end
 
 "Struct to store river sediment transport model"
-@with_kw struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
+@kwdef struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
     n::Int
     boundary_conditions::SedimentRiverTransportBC = SedimentRiverTransportBC(; n)
     parameters::SedimentRiverTransportParameters
@@ -783,7 +783,7 @@ abstract type AbstractSedimentConcentrationsRiverModel end
 end
 
 "Struct to store river sediment concentrations model boundary conditions"
-@with_kw struct SedimentConcentrationsRiverBC
+@kwdef struct SedimentConcentrationsRiverBC
     n::Int
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -864,7 +864,7 @@ function SedimentConcentrationsRiverParameters(
 end
 
 "Struct to store river sediment concentrations model"
-@with_kw struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
+@kwdef struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
     n::Int
     boundary_conditions::SedimentConcentrationsRiverBC = SedimentConcentrationsRiverBC(; n)
     parameters::SedimentConcentrationsRiverParameters

@@ -31,7 +31,7 @@ function GlacierVariables(
 end
 
 "Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
-@with_kw struct SnowStateBC
+@kwdef struct SnowStateBC
     # Snow storage [mm]
     snow_storage::Vector{Float64}
 end
@@ -55,7 +55,7 @@ end
 end
 
 "Glacier HBV model"
-@with_kw struct GlacierHbvModel <: AbstractGlacierModel
+@kwdef struct GlacierHbvModel <: AbstractGlacierModel
     boundary_conditions::SnowStateBC
     parameters::GlacierHbvParameters
     variables::GlacierVariables

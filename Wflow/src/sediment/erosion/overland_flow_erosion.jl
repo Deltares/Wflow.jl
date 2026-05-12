@@ -9,7 +9,7 @@ abstract type AbstractOverlandFlowErosionModel end
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
-@with_kw struct OverlandFlowErosionBC
+@kwdef struct OverlandFlowErosionBC
     n::Int
     # Overland flow [m3 s-1]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -57,7 +57,7 @@ function OverlandFlowErosionAnswersParameters(
 end
 
 "ANSWERS overland flow erosion model"
-@with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
+@kwdef struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
     n::Int
     boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n)
     parameters::OverlandFlowErosionAnswersParameters
@@ -73,7 +73,8 @@ function OverlandFlowErosionAnswersModel(
 )
     n = length(indices)
     parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices; data_lookup)
-    overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n, parameters)
+    variables = OverlandFlowErosionVariables(data_lookup; n)
+    overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n, parameters, variables)
     return overland_flow_erosion_model
 end
 

@@ -295,7 +295,7 @@ function ReservoirBC(
 end
 
 "Reservoir model"
-@with_kw struct ReservoirModel
+@kwdef struct ReservoirModel
     boundary_conditions::ReservoirBC
     parameters::ReservoirParameters
     variables::ReservoirVariables

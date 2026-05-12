@@ -1,15 +1,14 @@
 abstract type AbstractTransportCapacityModel end
 
 "Struct to store total transport capacity model variables"
-@with_data_lookup struct TransportCapacityModelVariables
+@kwdef struct TransportCapacityModelVariables
     n::Int
     # Total sediment transport capacity [t dt-1]
-    "land_surface_water_sediment_transport_capacity__mass_flow_rate"
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total transport capacity model boundary conditions"
-@with_kw struct TransportCapacityBC
+@kwdef struct TransportCapacityBC
     n::Int
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -73,13 +72,14 @@ function TransportCapacityGoversParameters(
         SoilLossModel;
         sel = indices,
     )
-    tc_parameters = TransportCapacityGoversParameters(data_lookup; density, c_govers, n_govers)
+    tc_parameters =
+        TransportCapacityGoversParameters(data_lookup; density, c_govers, n_govers)
 
     return tc_parameters
 end
 
 "Govers overland flow transport capacity model"
-@with_kw struct TransportCapacityGoversModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityGoversModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityGoversParameters
@@ -95,7 +95,10 @@ function TransportCapacityGoversModel(
 )
     n = length(indices)
     parameters = TransportCapacityGoversParameters(dataset, config, indices; data_lookup)
-    transport_capacity_model = TransportCapacityGoversModel(; n, parameters)
+    variables = TransportCapacityModelVariables(; n)
+    data_lookup["land_surface_water_sediment_transport_capacity__mass_flow_rate"] =
+        variables.sediment_transport_capacity
+    transport_capacity_model = TransportCapacityGoversModel(; n, parameters, variables)
     return transport_capacity_model
 end
 
@@ -154,13 +157,14 @@ function TransportCapacityYalinParameters(
         sel = indices,
     )
 
-    tc_parameters = TransportCapacityYalinParameters(data_lookup; density = density, d50 = d50)
+    tc_parameters =
+        TransportCapacityYalinParameters(data_lookup; density = density, d50 = d50)
 
     return tc_parameters
 end
 
 "Yalin overland flow transport capacity model"
-@with_kw struct TransportCapacityYalinModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityYalinModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityYalinParameters
@@ -176,7 +180,10 @@ function TransportCapacityYalinModel(
 )
     n = length(indices)
     parameters = TransportCapacityYalinParameters(dataset, config, indices; data_lookup)
-    transport_capacity = TransportCapacityYalinModel(; n, parameters)
+    variables = TransportCapacityModelVariables(; n)
+    data_lookup["land_surface_water_sediment_transport_capacity__mass_flow_rate"] =
+        variables.sediment_transport_capacity
+    transport_capacity = TransportCapacityYalinModel(; n, parameters, variables)
     return transport_capacity
 end
 
@@ -209,7 +216,7 @@ function update_transport_capacity_model!(
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
-@with_kw struct TransportCapacityYalinDifferentiationModelVariables
+@kwdef struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
     # Total sediment transport capacity [t dt-1]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -226,7 +233,7 @@ end
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
-@with_kw struct TransportCapacityYalinDifferentiationParameters
+@kwdef struct TransportCapacityYalinDifferentiationParameters
     # Particle density [kg m-3]
     density::Vector{Float64}
     # Clay mean diameter [μm]
@@ -281,7 +288,7 @@ function TransportCapacityYalinDifferentiationParameters(
 end
 
 "Yalin differentiated overland flow transport capacity model"
-@with_kw struct TransportCapacityYalinDifferentiationModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityYalinDifferentiationModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityYalinDifferentiationParameters
@@ -297,8 +304,17 @@ function TransportCapacityYalinDifferentiationModel(
     data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = TransportCapacityYalinDifferentiationParameters(dataset, config, indices; data_lookup)
-    transport_capacity_model = TransportCapacityYalinDifferentiationModel(; n, parameters)
+    parameters = TransportCapacityYalinDifferentiationParameters(
+        dataset,
+        config,
+        indices;
+        data_lookup,
+    )
+    variables = TransportCapacityYalinDifferentiationModelVariables(; n)
+    data_lookup["land_surface_water_sediment_transport_capacity__mass_flow_rate"] =
+        variables.sediment_transport_capacity
+    transport_capacity_model =
+        TransportCapacityYalinDifferentiationModel(; n, parameters, variables)
     return transport_capacity_model
 end
 
@@ -461,7 +477,7 @@ function TransportCapacityBagnoldParameters(
 end
 
 "Bagnold river transport capacity model"
-@with_kw struct TransportCapacityBagnoldModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityBagnoldModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityBagnoldParameters
@@ -477,7 +493,8 @@ function TransportCapacityBagnoldModel(
 )
     n = length(indices)
     parameters = TransportCapacityBagnoldParameters(dataset, config, indices; data_lookup)
-    transport_capacity_model = TransportCapacityBagnoldModel(; n, parameters)
+    variables = TransportCapacityModelVariables(; n)
+    transport_capacity_model = TransportCapacityBagnoldModel(; n, parameters, variables)
     return transport_capacity_model
 end
 
@@ -508,7 +525,7 @@ function update_transport_capacity_model!(
 end
 
 "Engelund and Hansen river transport capacity model parameters"
-@with_kw struct TransportCapacityEngelundModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityEngelundModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityRiverParameters
@@ -524,7 +541,8 @@ function TransportCapacityEngelundModel(
 )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices; data_lookup)
-    transport_capacity_model = TransportCapacityEngelundModel(; n, parameters)
+    variables = TransportCapacityModelVariables(; n)
+    transport_capacity_model = TransportCapacityEngelundModel(; n, parameters, variables)
     return transport_capacity_model
 end
 
@@ -605,14 +623,19 @@ function TransportCapacityKodatieParameters(
         sel = indices,
     )
 
-    tc_parameters =
-        TransportCapacityKodatieParameters(data_lookup; a_kodatie, b_kodatie, c_kodatie, d_kodatie)
+    tc_parameters = TransportCapacityKodatieParameters(
+        data_lookup;
+        a_kodatie,
+        b_kodatie,
+        c_kodatie,
+        d_kodatie,
+    )
 
     return tc_parameters
 end
 
 "Kodatie river transport capacity model"
-@with_kw struct TransportCapacityKodatieModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityKodatieModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
@@ -628,7 +651,8 @@ function TransportCapacityKodatieModel(
 )
     n = length(indices)
     parameters = TransportCapacityKodatieParameters(dataset, config, indices; data_lookup)
-    transport_capacity_model = TransportCapacityKodatieModel(; n, parameters)
+    variables = TransportCapacityModelVariables(; n)
+    transport_capacity_model = TransportCapacityKodatieModel(; n, parameters, variables)
     return transport_capacity_model
 end
 
@@ -660,7 +684,7 @@ function update_transport_capacity_model!(
 end
 
 "Yang river transport capacity model"
-@with_kw struct TransportCapacityYangModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityYangModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityRiverParameters
@@ -676,7 +700,8 @@ function TransportCapacityYangModel(
 )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices; data_lookup)
-    transport_capacity = TransportCapacityYangModel(; n, parameters)
+    variables = TransportCapacityModelVariables(; n)
+    transport_capacity = TransportCapacityYangModel(; n, parameters, variables)
     return transport_capacity
 end
 
@@ -706,7 +731,7 @@ function update_transport_capacity_model!(
 end
 
 "Molinas and Wu river transport capacity model"
-@with_kw struct TransportCapacityMolinasModel <: AbstractTransportCapacityModel
+@kwdef struct TransportCapacityMolinasModel <: AbstractTransportCapacityModel
     n::Int
     boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
     parameters::TransportCapacityRiverParameters
@@ -722,7 +747,8 @@ function TransportCapacityMolinasModel(
 )
     n = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices; data_lookup)
-    transport_capacity = TransportCapacityMolinasModel(; n, parameters)
+    variables = TransportCapacityModelVariables(; n)
+    transport_capacity = TransportCapacityMolinasModel(; n, parameters, variables)
     return transport_capacity
 end
 

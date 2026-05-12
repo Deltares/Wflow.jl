@@ -9,7 +9,7 @@ abstract type AbstractRainfallErosionModel end
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
-@with_kw struct RainfallErosionEurosemBC
+@kwdef struct RainfallErosionEurosemBC
     n::Int
     # precipitation [mm dt-1]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -88,7 +88,7 @@ function RainfallErosionEurosemParameters(
 end
 
 "EUROSEM rainfall erosion model"
-@with_kw struct RainfallErosionEurosemModel <: AbstractRainfallErosionModel
+@kwdef struct RainfallErosionEurosemModel <: AbstractRainfallErosionModel
     n::Int
     boundary_conditions::RainfallErosionEurosemBC = RainfallErosionEurosemBC(; n)
     parameters::RainfallErosionEurosemParameters
@@ -104,7 +104,8 @@ function RainfallErosionEurosemModel(
 )
     n = length(indices)
     parameters = RainfallErosionEurosemParameters(dataset, config, indices; data_lookup)
-    rainfall_erosion_model = RainfallErosionEurosemModel(; n, parameters)
+    variables = RainfallErosionModelVariables(data_lookup; n)
+    rainfall_erosion_model = RainfallErosionEurosemModel(; n, parameters, variables)
     return rainfall_erosion_model
 end
 
@@ -154,7 +155,7 @@ function update_rainfall_erosion_model!(
 end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
-@with_kw struct RainfallErosionAnswersBC
+@kwdef struct RainfallErosionAnswersBC
     n::Int
     # precipitation [mm dt-1]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -200,7 +201,7 @@ function RainfallErosionAnswersParameters(
 end
 
 "ANSWERS rainfall erosion model"
-@with_kw struct RainfallErosionAnswersModel <: AbstractRainfallErosionModel
+@kwdef struct RainfallErosionAnswersModel <: AbstractRainfallErosionModel
     n::Int
     boundary_conditions::RainfallErosionAnswersBC = RainfallErosionAnswersBC(; n)
     parameters::RainfallErosionAnswersParameters
@@ -216,7 +217,8 @@ function RainfallErosionAnswersModel(
 )
     n = length(indices)
     parameters = RainfallErosionAnswersParameters(dataset, config, indices; data_lookup)
-    rainfall_erosion_model = RainfallErosionAnswersModel(; n, parameters)
+    variables = RainfallErosionModelVariables(data_lookup; n)
+    rainfall_erosion_model = RainfallErosionAnswersModel(; n, parameters, variables)
     return rainfall_erosion_model
 end
 

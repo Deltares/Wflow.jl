@@ -32,7 +32,7 @@ end
 end
 
 "Lateral subsurface flow model"
-@with_kw struct LateralSSFModel{Kh, B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@kwdef struct LateralSSFModel{Kh,B<:SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     boundary_conditions::B
     parameters::LateralSsfParameters{Kh}
@@ -68,15 +68,15 @@ function LateralSsfParameters(
     indices::Vector{CartesianIndex{2}},
     soil::SbmSoilParameters,
     area::Vector{Float64};
-    data_lookup::DataLookup = DataLookup(),
+    data_lookup::DataLookup=DataLookup(),
 )
-    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
+    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel=indices)
     khfrac = ncread(
         dataset,
         config,
         "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio",
         Routing;
-        sel = indices,
+        sel=indices,
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
@@ -103,11 +103,11 @@ function LateralSsfParameters(
     ssf_parameters = LateralSsfParameters(
         data_lookup;
         kh_profile,
-        khfrac,
+        khfrac=Float64.(khfrac),
         soilthickness,
         specific_yield,
         area,
-        top = elevation,
+        top=elevation,
     )
     return ssf_parameters
 end
@@ -116,7 +116,7 @@ end
 function LateralSsfVariables(
     ssf::LateralSsfParameters,
     zi::Vector{Float64};
-    data_lookup::DataLookup = DataLookup(),
+    data_lookup::DataLookup=DataLookup(),
 )
     n = length(zi)
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * ssf.area
@@ -131,13 +131,13 @@ function LateralSSFModel(
     config::Config,
     domain::Domain,
     soil::SbmSoilModel;
-    data_lookup::DataLookup = DataLookup(),
+    data_lookup::DataLookup=DataLookup(),
 )
     (; land, river, drain) = domain
     (; indices) = land.network
     (; area) = domain.land.parameters
     n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
+    timestepping = init_kinematic_wave_timestepping(config, n; domain="subsurface")
     parameters =
         LateralSsfParameters(dataset, config, indices, soil.parameters, area; data_lookup)
     zi = 0.001 * soil.variables.zi
@@ -212,7 +212,7 @@ function kinwave_subsurface_update!(
 
     ns = length(order_of_subdomains)
     for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
+        threaded_foreach(eachindex(order_of_subdomains[k]); basesize=1) do i
             m = order_of_subdomains[k][i]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 if isnothing(river)

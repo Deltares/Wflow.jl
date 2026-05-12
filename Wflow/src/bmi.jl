@@ -167,7 +167,16 @@ end
 
 function BMI.get_var_location(model::Model, name::String)
     grid = BMI.get_var_grid(model, name)
-    return grid <= 2 ? "node" : "node"  # TODO: support edge elements for local inertial
+    # Grids 3 and 4 are x/y components of local inertial overland flow — always edge
+    if grid == 3 || grid == 4
+        return "edge"
+    elseif grid == 2 && model.routing.river_flow isa LocalInertialRiverFlowModel
+        # River/floodplain flow rate variables are edge-based in local inertial
+        if occursin("volume_flow_rate", name)
+            return "edge"
+        end
+    end
+    return "node"
 end
 
 function BMI.get_current_time(model::Model)
@@ -213,7 +222,10 @@ function BMI.get_value_ptr(model::Model, name::String)
         value = reshape(reinterpret(el_type, model_vals), dim, :)
         return @view value[ind, 1:n]
     else
-        vec, _ = get_field_in_model(model, name)
+        vec = get(model.data_lookup, name, nothing)
+        if isnothing(vec)
+            error("Accessing '$name' is not supported.")
+        end
         return @view(vec[1:n])
     end
 end
@@ -385,40 +397,4 @@ function soil_layer_standard_name(name::AbstractString)
     # Fallback for unexpected format
     @warn "Unable to parse layer standard name: $name"
     return name, nothing
-end
-
-"""
-    grid_element_type(model, lens::ComposedFunction)
-    grid_element_type(::T, var::PropertyLens)
-    grid_element_type(model, var::PropertyLens)
-
-Return the grid element type of a model variable (PropertyLens `var`) based on a `lens`. A
-`lens` allows access to a nested model variable.
-"""
-function grid_element_type(
-    ::T,
-    var::PropertyLens,
-) where {T <: Union{LocalInertialRiverFlowModel, LocalInertialOverlandFlowModel}}
-    vars = (PropertyLens(x) for x in (:q, :q_av, :qx, :qy))
-    element_type = if var in vars
-        "edge"
-    else
-        "node"
-    end
-    return element_type
-end
-
-grid_element_type(model, var::PropertyLens) = "node"
-
-function grid_element_type(model::Model, lens::ComposedFunction)
-    lens_components = decompose(lens)
-    var = lens_components[1]
-    element_type = if PropertyLens(:river_flow) in lens_components
-        grid_element_type(model.routing.river_flow, var)
-    elseif PropertyLens(:overland_flow) in lens_components
-        grid_element_type(model.routing.overland_flow, var)
-    else
-        grid_element_type(model, var)
-    end
-    return element_type
 end

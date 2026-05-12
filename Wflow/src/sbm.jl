@@ -2,8 +2,8 @@ abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
-                AbstractLandModel
+@kwdef struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+              AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel

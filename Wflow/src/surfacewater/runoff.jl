@@ -1,7 +1,7 @@
 abstract type AbstractRunoffModel end
 
 "Struct for storing open water runoff variables"
-@with_kw struct OpenWaterRunoffVariables
+@kwdef struct OpenWaterRunoffVariables
     n::Int
     # Runoff from river based on riverfrac [mm Δt⁻¹]
     runoff_river::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -16,7 +16,7 @@ abstract type AbstractRunoffModel end
 end
 
 "Struct for storing open water runoff boundary conditions"
-@with_kw struct OpenWaterRunoffBC
+@kwdef struct OpenWaterRunoffBC
     n::Int
     water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n) # [mm dt-1]
     waterdepth_land::Vector{Float64} = fill(MISSING_VALUE, n) # [mm]
@@ -24,7 +24,7 @@ end
 end
 
 "Open water runoff model"
-@with_kw struct OpenWaterRunoff <: AbstractRunoffModel
+@kwdef struct OpenWaterRunoff <: AbstractRunoffModel
     n::Int
     boundary_conditions::OpenWaterRunoffBC = OpenWaterRunoffBC(; n)
     variables::OpenWaterRunoffVariables = OpenWaterRunoffVariables(; n)

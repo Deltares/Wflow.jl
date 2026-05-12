@@ -1,5 +1,5 @@
 "Soil loss model"
-@with_kw struct SoilLossModel{
+@kwdef struct SoilLossModel{
     RE <: AbstractRainfallErosionModel,
     OFE <: AbstractOverlandFlowErosionModel,
     SE <: AbstractSoilErosionModel,
@@ -22,7 +22,14 @@ function SoilLossModel(
     n = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(data_lookup; n)
-    hydrological_forcing = HydrologicalForcing(data_lookup; n)
+    # Construct HydrologicalForcing without data_lookup to avoid registering river-domain
+    # names (e.g. "river_water__volume_flow_rate") with land-sized vectors.
+    # Only register land-domain names explicitly.
+    hydrological_forcing = HydrologicalForcing(; n)
+    data_lookup["vegetation_canopy_water__interception_volume_flux"] =
+        hydrological_forcing.interception
+    data_lookup["land_surface_water__depth"] = hydrological_forcing.waterlevel_land
+    data_lookup["land_surface_water__volume_flow_rate"] = hydrological_forcing.q_land
 
     # Rainfall erosion
     if rainfall_erosion == RainfallErosionType.answers

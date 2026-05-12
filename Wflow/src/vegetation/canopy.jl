@@ -28,7 +28,7 @@ end
 end
 
 "Gash interception model"
-@with_kw struct GashInterceptionModel <: AbstractInterceptionModel
+@kwdef struct GashInterceptionModel <: AbstractInterceptionModel
     parameters::GashParameters
     variables::InterceptionVariables
 end
@@ -92,7 +92,7 @@ function update_interception_model!(
 end
 
 "Rutter interception model"
-@with_kw struct RutterInterceptionModel <: AbstractInterceptionModel
+@kwdef struct RutterInterceptionModel <: AbstractInterceptionModel
     parameters::VegetationParameters
     variables::InterceptionVariables
 end
