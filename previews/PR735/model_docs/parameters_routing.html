@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-57dc95d957e224fdf271fe8df9a7ec86.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-1573febd5e47aaadf7b0d9bca9ac8986.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-57dc95d957e224fdf271fe8df9a7ec86.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -564,6 +564,9 @@ window.Quarto = {
   <li><a href="#groundwater-flow" id="toc-groundwater-flow" class="nav-link" data-scroll-target="#groundwater-flow">Groundwater flow</a>
   <ul class="collapse">
   <li><a href="#unconfined-aquifer" id="toc-unconfined-aquifer" class="nav-link" data-scroll-target="#unconfined-aquifer">Unconfined aquifer</a></li>
+  </ul></li>
+  <li><a href="#subsurface-flow-boundaries" id="toc-subsurface-flow-boundaries" class="nav-link" data-scroll-target="#subsurface-flow-boundaries">Subsurface flow boundaries</a>
+  <ul class="collapse">
   <li><a href="#river-boundary" id="toc-river-boundary" class="nav-link" data-scroll-target="#river-boundary">River boundary</a></li>
   <li><a href="#drainage-boundary" id="toc-drainage-boundary" class="nav-link" data-scroll-target="#drainage-boundary">Drainage boundary</a></li>
   <li><a href="#recharge-boundary" id="toc-recharge-boundary" class="nav-link" data-scroll-target="#recharge-boundary">Recharge boundary</a></li>
@@ -612,20 +615,24 @@ window.Quarto = {
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_generic_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_generic_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 46%">
-<col style="width: 38%">
-<col style="width: 15%">
+<col style="width: 35%">
+<col style="width: 28%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -633,11 +640,15 @@ window.Quarto = {
 <td style="text-align: left;"><code>reservoir_location__count</code></td>
 <td style="text-align: left;">Outlet of the reservoirs in which each reservoir has a unique id</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_area__count</code></td>
 <td style="text-align: left;">Reservoir coverage</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
 </tr>
 </tbody>
 </table>
@@ -649,22 +660,26 @@ window.Quarto = {
 <div id="4" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 40%">
-<col style="width: 33%">
-<col style="width: 13%">
-<col style="width: 13%">
+<col style="width: 31%">
+<col style="width: 26%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -672,12 +687,16 @@ window.Quarto = {
 <td style="text-align: left;"><code>reservoir_surface__area</code></td>
 <td style="text-align: left;">Area of the reservoir</td>
 <td style="text-align: left;">m²</td>
+<td style="text-align: left;">m²</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water__max_volume</code></td>
 <td style="text-align: left;">Maximum volume (above which water is spilled)</td>
 <td style="text-align: left;">m³</td>
+<td style="text-align: left;">m³</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -685,23 +704,31 @@ window.Quarto = {
 <td style="text-align: left;">Rating curve coefficient</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water__rating_curve_exponent</code></td>
 <td style="text-align: left;">Rating curve exponent</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_water_flow_threshold_level__elevation</code></td>
 <td style="text-align: left;">Water level threshold, below this level outflow is zero</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_lower_location__count</code></td>
 <td style="text-align: left;">Index of lower reservoir (linked reservoir)</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">0</td>
 </tr>
 <tr class="dataRow odd">
@@ -709,17 +736,23 @@ window.Quarto = {
 <td style="text-align: left;">Type of reservoir storage curve</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water__rating_curve_type_count</code></td>
 <td style="text-align: left;">Type of reservoir rating curve</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_water_surface__initial_elevation</code></td>
 <td style="text-align: left;">Water level of reservoir (used for initialization)</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">-</td>
 </tr>
 </tbody>
@@ -732,22 +765,26 @@ window.Quarto = {
 <div id="6" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>([Wflow.Routing, Wflow.LandHydrologySBM], <span class="op">:</span>reservoir_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>([Wflow.Routing, Wflow.LandHydrologySBM], <span class="op">:</span>reservoir_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 40%">
-<col style="width: 33%">
-<col style="width: 13%">
-<col style="width: 13%">
+<col style="width: 31%">
+<col style="width: 26%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -755,12 +792,16 @@ window.Quarto = {
 <td style="text-align: left;"><code>reservoir_water_demand__required_downstream_volume_flow_rate</code></td>
 <td style="text-align: left;">Minimum (environmental) flow released from reservoir</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water_release_below_spillway__max_volume_flow_rate</code></td>
 <td style="text-align: left;">Maximum amount that can be released if below spillway</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -768,23 +809,31 @@ window.Quarto = {
 <td style="text-align: left;">Target fraction full (of max storage)</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water__target_min_volume_fraction</code></td>
 <td style="text-align: left;">Target minimum full fraction (of max storage)</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_water__outgoing_observed_volume_flow_rate</code></td>
 <td style="text-align: left;">Observed outflow reservoir</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">NaN</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water__external_inflow_volume_flow_rate</code></td>
 <td style="text-align: left;">External inflow reservoir (negative for abstractions)</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
@@ -797,26 +846,29 @@ window.Quarto = {
 <div id="8" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_water_surface__elevation</code></td>
 <td style="text-align: left;">Reservoir water level</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 </tbody>
@@ -829,20 +881,22 @@ window.Quarto = {
 <div id="10" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>reservoir_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -850,36 +904,43 @@ window.Quarto = {
 <td style="text-align: left;"><code>reservoir_water__volume</code></td>
 <td style="text-align: left;">Reservoir water volume</td>
 <td style="text-align: left;">m³</td>
+<td style="text-align: left;">m³</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water_surface__elevation</code></td>
 <td style="text-align: left;">Reservoir water level</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_water__outgoing_volume_flow_rate</code></td>
 <td style="text-align: left;">Outflow of the reservoir</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water__incoming_volume_flow_rate</code></td>
 <td style="text-align: left;">Inflow into the reservoir</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_water__evaporation_volume_flux</code></td>
 <td style="text-align: left;">Average actual evaporation over the reservoir area</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">m s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water__precipitation_volume_flux</code></td>
 <td style="text-align: left;">Average precipitation over the reservoir area</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">m s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_water__potential_evaporation_volume_flux</code></td>
 <td style="text-align: left;">Average potential evaporation over the reservoir area</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
+<td style="text-align: left;">m s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -896,22 +957,26 @@ window.Quarto = {
 <div id="12" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -919,30 +984,40 @@ window.Quarto = {
 <td style="text-align: left;"><code>river__length</code></td>
 <td style="text-align: left;">River length</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river__width</code></td>
 <td style="text-align: left;">River width</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_flow__manning_n_parameter</code></td>
 <td style="text-align: left;">Manning's roughness</td>
 <td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.036</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bank_water__depth</code></td>
 <td style="text-align: left;">Bankfull river depth</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">1.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river__slope</code></td>
 <td style="text-align: left;">River slope</td>
-<td style="text-align: left;">m</td>
+<td style="text-align: left;">m m⁻¹</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 </tbody>
@@ -955,35 +1030,35 @@ window.Quarto = {
 <div id="14" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
-<td style="text-align: left;"><code>reservoir_water_surface__elevation</code></td>
-<td style="text-align: left;">Reservoir water level</td>
-<td style="text-align: left;">m</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__external_inflow_volume_flow_rate</code></td>
 <td style="text-align: left;">External inflow into the river (negative for abstractions)</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
@@ -996,20 +1071,22 @@ window.Quarto = {
 <div id="16" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1017,10 +1094,12 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">River discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__depth</code></td>
 <td style="text-align: left;">River water depth</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 </tbody>
@@ -1033,20 +1112,22 @@ window.Quarto = {
 <div id="18" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1054,30 +1135,36 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">River discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__depth</code></td>
 <td style="text-align: left;">River water depth</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
-<td style="text-align: left;">River (+ floodplain) discharge</td>
+<td style="text-align: left;">River (+ floodplain for local inertial routing) discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__volume</code></td>
 <td style="text-align: left;">River water volume</td>
 <td style="text-align: left;">m³</td>
+<td style="text-align: left;">m³</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__lateral_inflow_volume_flow_rate</code></td>
 <td style="text-align: left;">Lateral inflow to river</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__external_abstraction_volume_flow_rate</code></td>
 <td style="text-align: left;">Actual abstraction based on external negative inflow</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
@@ -1093,22 +1180,26 @@ window.Quarto = {
 <div id="20" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -1116,12 +1207,16 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water_flow__manning_n_parameter</code></td>
 <td style="text-align: left;">Manning's roughness</td>
 <td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.072</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface__slope</code></td>
 <td style="text-align: left;">Land surface slope</td>
 <td style="text-align: left;">m m⁻¹</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 </tbody>
@@ -1134,20 +1229,22 @@ window.Quarto = {
 <div id="22" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1155,10 +1252,12 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Discharge overland flow</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water__depth</code></td>
 <td style="text-align: left;">Water depth</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 </tbody>
@@ -1171,20 +1270,22 @@ window.Quarto = {
 <div id="24" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_wave_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1192,25 +1293,30 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Discharge overland flow</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water__depth</code></td>
 <td style="text-align: left;">Water depth</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water__volume_flow_rate</code></td>
 <td style="text-align: left;">Discharge overland flow</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water__to_river_volume_flow_rate</code></td>
 <td style="text-align: left;">Discharge overland flow that flows to the river</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water__volume</code></td>
 <td style="text-align: left;">Total surface water storage of cell (including river storage for river cells)</td>
+<td style="text-align: left;">m³</td>
 <td style="text-align: left;">m³</td>
 </tr>
 </tbody>
@@ -1226,20 +1332,24 @@ window.Quarto = {
 <div id="26" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 33%">
-<col style="width: 16%">
+<col style="width: 37%">
+<col style="width: 25%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1247,11 +1357,15 @@ window.Quarto = {
 <td style="text-align: left;"><code>subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio</code></td>
 <td style="text-align: left;">A multiplication factor applied to vertical hydraulic conductivity</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface__slope</code></td>
 <td style="text-align: left;">Land surface slope</td>
 <td style="text-align: left;">m m⁻¹</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1263,27 +1377,30 @@ window.Quarto = {
 <div id="28" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
-<td style="text-align: left;"><code>subsurface_water__volume_flow_rate</code></td>
+<td style="text-align: left;"><code>subsurface_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Subsurface flow</td>
 <td style="text-align: left;">m³ day⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -1295,42 +1412,54 @@ window.Quarto = {
 <div id="30" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>kinematic_lateral_subsurface_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
-<td style="text-align: left;"><code>subsurface_water__volume_flow_rate</code></td>
+<td style="text-align: left;"><code>subsurface_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Subsurface flow</td>
 <td style="text-align: left;">m³ day⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
+<td style="text-align: left;"><code>subsurface_water__volume_flow_rate</code></td>
+<td style="text-align: left;">Average subsurface flow</td>
+<td style="text-align: left;">m³ day⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+</tr>
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water_saturated_zone_top__depth</code></td>
 <td style="text-align: left;">Pseudo-water table depth (top of the saturated zone)</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
 </tr>
-<tr class="dataRow odd">
+<tr class="dataRow even">
 <td style="text-align: left;"><code>subsurface_water__exfiltration_volume_flux</code></td>
 <td style="text-align: left;">Exfiltration (groundwater above surface level, saturated excess conditions)</td>
 <td style="text-align: left;">m Δt⁻¹</td>
+<td style="text-align: left;">m s⁻¹</td>
 </tr>
-<tr class="dataRow even">
+<tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water__to_river_volume_flow_rate</code></td>
 <td style="text-align: left;">Part of subsurface flow that flows to the river</td>
 <td style="text-align: left;">m³ day⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -1348,22 +1477,26 @@ window.Quarto = {
 <div id="32" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -1371,49 +1504,106 @@ window.Quarto = {
 <td style="text-align: left;"><code>river__length</code></td>
 <td style="text-align: left;">River length</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river__width</code></td>
 <td style="text-align: left;">River width</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_flow__manning_n_parameter</code></td>
 <td style="text-align: left;">Manning's roughness</td>
 <td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.036</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bank_water__depth</code></td>
 <td style="text-align: left;">Bankfull river depth</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">1.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__external_inflow_volume_flow_rate</code></td>
 <td style="text-align: left;">External inflow into the river (negative for abstractions)</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>model_boundary_condition_river__length</code></td>
 <td style="text-align: left;">Boundary condition river length downstream river outlets</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">10000.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>model_boundary_condition_river_bank_water__depth</code></td>
 <td style="text-align: left;">Boundary condition bankfull depth downstream river outlets</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bank_water__elevation</code></td>
 <td style="text-align: left;">Bankfull elevation of the river</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="static-or-cyclicforcing-input-2" class="level4">
+<h4 class="anchored" data-anchor-id="static-or-cyclicforcing-input-2">Static or cyclic/forcing input</h4>
+<div id="34" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_static_cyclic_forcing_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<table class="table-striped table-hover caption-top table table-sm small">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="columnLabelRow header">
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="dataRow odd">
+<td style="text-align: left;"><code>river_water__external_inflow_volume_flow_rate</code></td>
+<td style="text-align: left;">External inflow into the river (negative for abstractions)</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">0.0</td>
 </tr>
 </tbody>
 </table>
@@ -1422,23 +1612,25 @@ window.Quarto = {
 </section>
 <section id="states-4" class="level4">
 <h4 class="anchored" data-anchor-id="states-4">States</h4>
-<div id="34" class="cell" data-execution_count="1">
+<div id="36" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1446,10 +1638,12 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">River discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__depth</code></td>
 <td style="text-align: left;">River water depth</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 </tbody>
@@ -1459,23 +1653,25 @@ window.Quarto = {
 </section>
 <section id="output-4" class="level4">
 <h4 class="anchored" data-anchor-id="output-4">Output</h4>
-<div id="36" class="cell" data-execution_count="1">
+<div id="38" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_river_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1483,25 +1679,30 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">River discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__depth</code></td>
 <td style="text-align: left;">River water depth</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__volume_flow_rate</code></td>
-<td style="text-align: left;">River (+ floodplain) discharge</td>
+<td style="text-align: left;">River (+ floodplain for local inertial routing) discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__volume</code></td>
 <td style="text-align: left;">River water volume</td>
 <td style="text-align: left;">m³</td>
+<td style="text-align: left;">m³</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water__external_abstraction_volume_flow_rate</code></td>
 <td style="text-align: left;">Actual abstraction based on external negative inflow</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
@@ -1514,25 +1715,29 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="d-floodplain-flow">1D floodplain flow</h3>
 <section id="input-5" class="level4">
 <h4 class="anchored" data-anchor-id="input-5">Input</h4>
-<div id="38" class="cell" data-execution_count="1">
+<div id="40" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -1540,12 +1745,16 @@ window.Quarto = {
 <td style="text-align: left;"><code>floodplain_water__sum_of_volume_per_depth</code></td>
 <td style="text-align: left;">Floodplain profile (cumulative volume per flood depth)</td>
 <td style="text-align: left;">m³</td>
+<td style="text-align: left;">m³</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>floodplain_water_flow__manning_n_parameter</code></td>
 <td style="text-align: left;">Manning's roughness</td>
 <td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.072</td>
 </tr>
 </tbody>
@@ -1555,23 +1764,25 @@ window.Quarto = {
 </section>
 <section id="states-5" class="level4">
 <h4 class="anchored" data-anchor-id="states-5">States</h4>
-<div id="40" class="cell" data-execution_count="1">
+<div id="42" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1579,10 +1790,12 @@ window.Quarto = {
 <td style="text-align: left;"><code>floodplain_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Floodplain discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>floodplain_water__depth</code></td>
 <td style="text-align: left;">Floodplain water depth</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 </tbody>
@@ -1592,23 +1805,25 @@ window.Quarto = {
 </section>
 <section id="output-5" class="level4">
 <h4 class="anchored" data-anchor-id="output-5">Output</h4>
-<div id="42" class="cell" data-execution_count="1">
+<div id="44" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_floodplain_1D_flow_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1616,20 +1831,24 @@ window.Quarto = {
 <td style="text-align: left;"><code>floodplain_water__instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Floodplain discharge</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>floodplain_water__depth</code></td>
 <td style="text-align: left;">Floodplain water depth</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>floodplain_water__volume</code></td>
 <td style="text-align: left;">Floodplain water volume</td>
 <td style="text-align: left;">m³</td>
+<td style="text-align: left;">m³</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>floodplain_water__volume_flow_rate</code></td>
 <td style="text-align: left;">Floodplain discharge</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
@@ -1642,25 +1861,29 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="overland-flow-1">Overland flow</h3>
 <section id="input-6" class="level4">
 <h4 class="anchored" data-anchor-id="input-6">Input</h4>
-<div id="44" class="cell" data-execution_count="1">
+<div id="46" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -1668,12 +1891,16 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water_flow__manning_n_parameter</code></td>
 <td style="text-align: left;">Manning's roughness</td>
 <td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">s m⁻¹ᐟ³</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.072</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_flow__ground_elevation</code></td>
 <td style="text-align: left;">Elevation of each cell</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 </tbody>
@@ -1683,23 +1910,25 @@ window.Quarto = {
 </section>
 <section id="states-6" class="level4">
 <h4 class="anchored" data-anchor-id="states-6">States</h4>
-<div id="46" class="cell" data-execution_count="1">
+<div id="48" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 37%">
-<col style="width: 50%">
-<col style="width: 12%">
+<col style="width: 33%">
+<col style="width: 44%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1707,15 +1936,18 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water__depth</code></td>
 <td style="text-align: left;">Water depth</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water__x_component_of_instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Flow in x direction</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water__y_component_of_instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Flow in y direction</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
@@ -1725,23 +1957,25 @@ window.Quarto = {
 </section>
 <section id="output-6" class="level4">
 <h4 class="anchored" data-anchor-id="output-6">Output</h4>
-<div id="48" class="cell" data-execution_count="1">
+<div id="50" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>local_inertial_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1749,20 +1983,24 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water__depth</code></td>
 <td style="text-align: left;">Water depth</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water__volume</code></td>
 <td style="text-align: left;">Total surface water storage of cell (including river storage for river cells)</td>
+<td style="text-align: left;">m³</td>
 <td style="text-align: left;">m³</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water__x_component_of_instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Flow in x direction</td>
 <td style="text-align: left;">m³ s⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water__y_component_of_instantaneous_volume_flow_rate</code></td>
 <td style="text-align: left;">Flow in y direction</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 <td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
@@ -1778,23 +2016,27 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="unconfined-aquifer">Unconfined aquifer</h3>
 <section id="input-gwf-unconfined" class="level4">
 <h4 class="anchored" data-anchor-id="input-gwf-unconfined">Input</h4>
-<div id="50" class="cell" data-execution_count="1">
+<div id="52" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 33%">
-<col style="width: 16%">
+<col style="width: 37%">
+<col style="width: 25%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1802,21 +2044,29 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface__elevation</code></td>
 <td style="text-align: left;">Land surface elevation</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✗</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>subsurface_surface_water__horizontal_saturated_hydraulic_conductivity</code></td>
 <td style="text-align: left;">Horizontal conductivity</td>
 <td style="text-align: left;">m day⁻¹</td>
+<td style="text-align: left;">m s⁻¹</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water__specific_yield</code></td>
 <td style="text-align: left;">Specific yield</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter</code></td>
 <td style="text-align: left;">Factor controlling the reduction of horizontal conductivity with depth</td>
 <td style="text-align: left;">m⁻¹</td>
+<td style="text-align: left;">m⁻¹</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1825,29 +2075,32 @@ window.Quarto = {
 </section>
 <section id="state-gwf-unconfined" class="level4">
 <h4 class="anchored" data-anchor-id="state-gwf-unconfined">States</h4>
-<div id="52" class="cell" data-execution_count="1">
+<div id="54" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water__hydraulic_head</code></td>
 <td style="text-align: left;">Groundwater head</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 </tbody>
@@ -1857,29 +2110,32 @@ window.Quarto = {
 </section>
 <section id="output-7" class="level4">
 <h4 class="anchored" data-anchor-id="output-7">Output</h4>
-<div id="54" class="cell" data-execution_count="1">
+<div id="56" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_unconfined_aquifer_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>subsurface_water__hydraulic_head</code></td>
 <td style="text-align: left;">Groundwater head</td>
+<td style="text-align: left;">m</td>
 <td style="text-align: left;">m</td>
 </tr>
 </tbody>
@@ -1888,27 +2144,35 @@ window.Quarto = {
 </div>
 </section>
 </section>
+</section>
+<section id="subsurface-flow-boundaries" class="level2">
+<h2 class="anchored" data-anchor-id="subsurface-flow-boundaries">Subsurface flow boundaries</h2>
+<p>Boundary conditions for both the groundwater flow and lateral subsurface flow concepts. The constant head boundary can only be applied as part of the groundwater flow concept.</p>
 <section id="river-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="river-boundary">River boundary</h3>
 <section id="input-gwf-river" class="level4">
 <h4 class="anchored" data-anchor-id="input-gwf-river">Input</h4>
-<div id="56" class="cell" data-execution_count="1">
+<div id="58" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_river_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_river_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 33%">
-<col style="width: 16%">
+<col style="width: 37%">
+<col style="width: 25%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1916,16 +2180,22 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_water__infiltration_conductance</code></td>
 <td style="text-align: left;">River bed infiltration conductance</td>
 <td style="text-align: left;">m² day⁻¹</td>
+<td style="text-align: left;">m² s⁻¹</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water__exfiltration_conductance</code></td>
 <td style="text-align: left;">River bed exfiltration conductance</td>
 <td style="text-align: left;">m² day⁻¹</td>
+<td style="text-align: left;">m² s⁻¹</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_bottom__elevation</code></td>
 <td style="text-align: left;">River bottom elevation</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -1934,23 +2204,25 @@ window.Quarto = {
 </section>
 <section id="output-gwf-river" class="level4">
 <h4 class="anchored" data-anchor-id="output-gwf-river">Output</h4>
-<div id="58" class="cell" data-execution_count="1">
+<div id="60" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_river_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_river_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -1958,6 +2230,7 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_water__to_subsurface_volume_flow_rate</code></td>
 <td style="text-align: left;">Exchange flux (river to aquifer)</td>
 <td style="text-align: left;">m³ day⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -1969,23 +2242,27 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="drainage-boundary">Drainage boundary</h3>
 <section id="input-gwf-drainage" class="level4">
 <h4 class="anchored" data-anchor-id="input-gwf-drainage">Input</h4>
-<div id="60" class="cell" data-execution_count="1">
+<div id="62" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_drainage_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_drainage_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 33%">
-<col style="width: 16%">
+<col style="width: 37%">
+<col style="width: 25%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1993,16 +2270,22 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_drain__elevation</code></td>
 <td style="text-align: left;">Drain elevation</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_drain__conductance</code></td>
 <td style="text-align: left;">Drain conductance</td>
 <td style="text-align: left;">m² day⁻¹</td>
+<td style="text-align: left;">m² s⁻¹</td>
+<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_drain_location__mask</code></td>
 <td style="text-align: left;">Drain location</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
 </tr>
 </tbody>
 </table>
@@ -2011,23 +2294,25 @@ window.Quarto = {
 </section>
 <section id="output-gwf-drainage" class="level4">
 <h4 class="anchored" data-anchor-id="output-gwf-drainage">Output</h4>
-<div id="62" class="cell" data-execution_count="1">
+<div id="64" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_drainage_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_drainage_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -2035,6 +2320,7 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_drain_water__to_subsurface_volume_flow_rate</code></td>
 <td style="text-align: left;">Exchange flux (drain to aquifer)</td>
 <td style="text-align: left;">m³ day⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -2046,23 +2332,25 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="recharge-boundary">Recharge boundary</h3>
 <section id="output-gwf-recharge" class="level4">
 <h4 class="anchored" data-anchor-id="output-gwf-recharge">Output</h4>
-<div id="64" class="cell" data-execution_count="1">
+<div id="66" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_recharge_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_recharge_boundary_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -2070,6 +2358,7 @@ window.Quarto = {
 <td style="text-align: left;"><code>subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate</code></td>
 <td style="text-align: left;">Net recharge flux</td>
 <td style="text-align: left;">m³ day⁻¹</td>
+<td style="text-align: left;">m³ s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -2081,23 +2370,27 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="constant-head-boundary">Constant head boundary</h3>
 <section id="input-7" class="level4">
 <h4 class="anchored" data-anchor-id="input-7">Input</h4>
-<div id="66" class="cell" data-execution_count="1">
+<div id="68" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_constant_head_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Routing, <span class="op">:</span>groundwater_constant_head_boundary_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 50%">
-<col style="width: 33%">
-<col style="width: 16%">
+<col style="width: 37%">
+<col style="width: 25%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -2105,6 +2398,8 @@ window.Quarto = {
 <td style="text-align: left;"><code>model_constant_boundary_condition__hydraulic_head</code></td>
 <td style="text-align: left;">Head of the boundary</td>
 <td style="text-align: left;">m</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -2119,25 +2414,29 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="transport-capacity-overland-flow">Transport capacity overland flow</h3>
 <section id="input-8" class="level4">
 <h4 class="anchored" data-anchor-id="input-8">Input</h4>
-<div id="68" class="cell" data-execution_count="1">
+<div id="70" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_cap_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_transport_cap_overland_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -2145,55 +2444,73 @@ window.Quarto = {
 <td style="text-align: left;"><code>sediment__particle_density</code></td>
 <td style="text-align: left;">Particle density</td>
 <td style="text-align: left;">kg m⁻³</td>
+<td style="text-align: left;">kg m⁻³</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">2650.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_sediment__median_diameter</code></td>
 <td style="text-align: left;">Particle median diameter</td>
 <td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.1</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>clay__mean_diameter</code></td>
 <td style="text-align: left;">Clay mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">2.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>silt__mean_diameter</code></td>
 <td style="text-align: left;">Silt mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">10.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>sand__mean_diameter</code></td>
 <td style="text-align: left;">Sand mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">200.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>sediment_small_aggregates__mean_diameter</code></td>
 <td style="text-align: left;">Small aggregates mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">30.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>sediment_large_aggregates__mean_diameter</code></td>
 <td style="text-align: left;">Large aggregates mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">500.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_sediment__govers_transport_capacity_coefficient</code></td>
 <td style="text-align: left;">Govers transport capacity coefficient</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">5.0e-7</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">0.000505</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water_sediment__govers_transport_capacity_exponent</code></td>
 <td style="text-align: left;">Govers transport capacity exponent</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">1.5</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">4.27</td>
 </tr>
 </tbody>
 </table>
@@ -2205,25 +2522,29 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="transport-capacity-river">Transport capacity river</h3>
 <section id="input-9" class="level4">
 <h4 class="anchored" data-anchor-id="input-9">Input</h4>
-<div id="70" class="cell" data-execution_count="1">
+<div id="72" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_cap_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_transport_cap_river_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -2231,43 +2552,57 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_sediment__median_diameter</code></td>
 <td style="text-align: left;">Particle mean diameter</td>
 <td style="text-align: left;">mm</td>
-<td style="text-align: left;">1.0</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">0.1</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment__bagnold_transport_capacity_coefficient</code></td>
 <td style="text-align: left;">Bagnold transport capacity coefficient</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">0.0017</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__bagnold_transport_capacity_exponent</code></td>
 <td style="text-align: left;">Bagnold transport capacity exponent</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">1.8</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_a_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient a</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">5.0</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_b_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient b</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">0.6</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_c_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient c</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__kodatie_transport_capacity_d_coefficient</code></td>
 <td style="text-align: left;">Kodatie transport capacity coefficient d</td>
 <td style="text-align: left;">-</td>
-<td style="text-align: left;">2.0</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 </tbody>
 </table>
@@ -2279,23 +2614,25 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="overland-flow-transport">Overland flow transport</h3>
 <section id="output-8" class="level4">
 <h4 class="anchored" data-anchor-id="output-8">Output</h4>
-<div id="72" class="cell" data-execution_count="1">
+<div id="74" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_transport_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_transport_overland_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -2303,41 +2640,49 @@ window.Quarto = {
 <td style="text-align: left;"><code>land_surface_water_sediment_transport_capacity__mass_flow_rate</code></td>
 <td style="text-align: left;">Total sediment transport capacity</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_sediment__to_river_mass_flow_rate</code></td>
 <td style="text-align: left;">Total sediment flux flowing into the river</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water_clay__to_river_mass_flow_rate</code></td>
 <td style="text-align: left;">Clay flux flowing into the river</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_silt__to_river_mass_flow_rate</code></td>
 <td style="text-align: left;">Silt flux flowing into the river</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water_sand__to_river_mass_flow_rate</code></td>
 <td style="text-align: left;">Sand flux flowing into the river</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_small_aggregates__to_river_mass_flow_rate</code></td>
 <td style="text-align: left;">Small aggregates flux flowing into the river</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_surface_water_large_aggregates__to_river_mass_flow_rate</code></td>
 <td style="text-align: left;">Large aggregates flux flowing into the river</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>land_surface_water_sediment__mass_flow_rate</code></td>
 <td style="text-align: left;">Total sediment flux</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -2349,25 +2694,29 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="river-erosion">River erosion</h3>
 <section id="input-10" class="level4">
 <h4 class="anchored" data-anchor-id="input-10">Input</h4>
-<div id="74" class="cell" data-execution_count="1">
+<div id="76" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_erosion_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -2375,6 +2724,8 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_bottom_and_bank_sediment__median_diameter</code></td>
 <td style="text-align: left;">Median diameter in the river bed/bank</td>
 <td style="text-align: left;">mm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.1</td>
 </tr>
 </tbody>
@@ -2387,25 +2738,29 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="river-transport">River transport</h3>
 <section id="input-11" class="level4">
 <h4 class="anchored" data-anchor-id="input-11">Input</h4>
-<div id="76" class="cell" data-execution_count="1">
+<div id="78" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_transport_input; relative_widths <span class="op">=</span> [<span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 28%">
-<col style="width: 14%">
-<col style="width: 14%">
+<col style="width: 33%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -2414,77 +2769,103 @@ window.Quarto = {
 <td style="text-align: left;">Reservoir location ids</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>clay__mean_diameter</code></td>
 <td style="text-align: left;">Clay mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">2.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>silt__mean_diameter</code></td>
 <td style="text-align: left;">Silt mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">10.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>sand__mean_diameter</code></td>
 <td style="text-align: left;">Sand mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">200.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>sediment_small_aggregates__mean_diameter</code></td>
 <td style="text-align: left;">Small aggregates mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">30.0</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>sediment_large_aggregates__mean_diameter</code></td>
 <td style="text-align: left;">Large aggregates mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">500.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>reservoir_surface__area</code></td>
 <td style="text-align: left;">Reservoir surface area</td>
 <td style="text-align: left;">m²</td>
+<td style="text-align: left;">m²</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>reservoir_water_sediment__bedload_trapping_efficiency</code></td>
 <td style="text-align: left;">Reservoir sediment bedload trapping efficiency</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">1.0</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_bottom_and_bank_clay__mass_fraction</code></td>
 <td style="text-align: left;">River bed/bank content clay</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.15</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bottom_and_bank_silt__mass_fraction</code></td>
 <td style="text-align: left;">River bed/bank content silt</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.65</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_bottom_and_bank_sand__mass_fraction</code></td>
 <td style="text-align: left;">River bed/bank content sand</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.15</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bottom_and_bank_gravel__mass_fraction</code></td>
 <td style="text-align: left;">River bed/bank content gravel</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">0.05</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>gravel__mean_diameter</code></td>
 <td style="text-align: left;">Gravel mean diameter</td>
 <td style="text-align: left;">μm</td>
+<td style="text-align: left;">m</td>
+<td style="text-align: left;">✓</td>
 <td style="text-align: left;">2000.0</td>
 </tr>
 </tbody>
@@ -2494,23 +2875,25 @@ window.Quarto = {
 </section>
 <section id="states-7" class="level4">
 <h4 class="anchored" data-anchor-id="states-7">States</h4>
-<div id="78" class="cell" data-execution_count="1">
+<div id="80" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_transport_state; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -2518,91 +2901,109 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_bed_clay__mass</code></td>
 <td style="text-align: left;">Clay stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bed_silt__mass</code></td>
 <td style="text-align: left;">Silt stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_bed_sand__mass</code></td>
 <td style="text-align: left;">Sand stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bed_small_aggregates__mass</code></td>
 <td style="text-align: left;">Small aggregates stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_bed_large_aggregates__mass</code></td>
 <td style="text-align: left;">Large aggregates stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bed_gravel__mass</code></td>
 <td style="text-align: left;">Gravel stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_clay__mass</code></td>
 <td style="text-align: left;">Clay left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_silt__mass</code></td>
 <td style="text-align: left;">Silt left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sand__mass</code></td>
 <td style="text-align: left;">Sand left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_small_aggregates__mass</code></td>
 <td style="text-align: left;">Small aggregates left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_large_aggregates__mass</code></td>
 <td style="text-align: left;">Large aggregates left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_gravel__mass</code></td>
 <td style="text-align: left;">Gravel left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_clay__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (clay)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_silt__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (silt)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sand__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (sand)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_small_aggregates__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (small aggregates)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_large_aggregates__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (large aggregates)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_gravel__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (gravel)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 </tbody>
 </table>
@@ -2611,23 +3012,25 @@ window.Quarto = {
 </section>
 <section id="output-9" class="level4">
 <h4 class="anchored" data-anchor-id="output-9">Output</h4>
-<div id="80" class="cell" data-execution_count="1">
+<div id="82" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLoss, <span class="op">:</span>sediment_river_transport_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.SoilLossModel, <span class="op">:</span>sediment_river_transport_output; relative_widths <span class="op">=</span> [<span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 42%">
-<col style="width: 42%">
-<col style="width: 14%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
 </tr>
 </thead>
 <tbody>
@@ -2635,116 +3038,139 @@ window.Quarto = {
 <td style="text-align: left;"><code>river_bed_clay__mass</code></td>
 <td style="text-align: left;">Clay stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bed_silt__mass</code></td>
 <td style="text-align: left;">Silt stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_bed_sand__mass</code></td>
 <td style="text-align: left;">Sand stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bed_small_aggregates__mass</code></td>
 <td style="text-align: left;">Small aggregates stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_bed_large_aggregates__mass</code></td>
 <td style="text-align: left;">Large aggregates stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_bed_gravel__mass</code></td>
 <td style="text-align: left;">Gravel stored on the river bed after deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_clay__mass</code></td>
 <td style="text-align: left;">Clay left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_silt__mass</code></td>
 <td style="text-align: left;">Silt left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sand__mass</code></td>
 <td style="text-align: left;">Sand left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_small_aggregates__mass</code></td>
 <td style="text-align: left;">Small aggregates left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_large_aggregates__mass</code></td>
 <td style="text-align: left;">Large aggregates left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_gravel__mass</code></td>
 <td style="text-align: left;">Gravel left in cell</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_clay__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (clay)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_silt__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (silt)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sand__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (sand)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_small_aggregates__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (small aggregates)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_large_aggregates__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (large aggregates)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_gravel__mass_flow_rate</code></td>
 <td style="text-align: left;">Sediment flux (gravel)</td>
 <td style="text-align: left;">ton Δt⁻¹</td>
+<td style="text-align: left;">kg s⁻¹</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__bedload_mass_concentration</code></td>
 <td style="text-align: left;">Suspended sediment concentration in the river</td>
 <td style="text-align: left;">g m⁻³</td>
+<td style="text-align: left;">kg m⁻³</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment__suspended_mass_concentration</code></td>
 <td style="text-align: left;">Suspended sediment concentration in river</td>
 <td style="text-align: left;">g m⁻³</td>
+<td style="text-align: left;">kg m⁻³</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment__mass_concentration</code></td>
 <td style="text-align: left;">Total sediment concentration in the river</td>
 <td style="text-align: left;">g m⁻³</td>
+<td style="text-align: left;">kg m⁻³</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_water_sediment_erosion__mass</code></td>
 <td style="text-align: left;">Total sediment erosion (from store + direct river bed/bank)</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>river_water_sediment_deposition__mass</code></td>
 <td style="text-align: left;">Total sediment deposition</td>
 <td style="text-align: left;">ton</td>
+<td style="text-align: left;">kg</td>
 </tr>
 </tbody>
 </table>

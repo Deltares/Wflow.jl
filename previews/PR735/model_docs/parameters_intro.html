@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-096cb68b894a4adbef7897a8646f0345.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-a919c6baa758de8ba7ea0eca57bc0c42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-57dc95d957e224fdf271fe8df9a7ec86.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-1573febd5e47aaadf7b0d9bca9ac8986.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-57dc95d957e224fdf271fe8df9a7ec86.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -586,7 +586,7 @@ window.Quarto = {
 <p>These tables include standard names, descriptions, units and default values (input parameters) for model parameters, states and variables. The time unit of input flux parameters is day (the model base time step size), hence default values for these parameters are expressed per day. During model initialization these input parameters are converted to the user-defined model time step size Δt.</p>
 <section id="standard-names" class="level2">
 <h2 class="anchored" data-anchor-id="standard-names">Standard names</h2>
-<p>The standard names of model parameters, states and variables are based on <a href="https://csdms.colorado.edu/wiki/CSDMS_Standard_Names">CSDMS Standard Names</a>. These standard names are used in the TOML configuration file and mapped to internal model parameters, states and variables. Model output of model parameters (<code>[output]</code> section of TOML file) is not possible by providing standard names as these are only used for setting model parameters during model initialization, except for parameters that can also have cyclic input. These parameters are listed in tables below “Static or cyclic/forcing input” subsections (for <a href="../model_docs/parameters_landhydrology_sbm.html#input-cyclic-lai">example</a>). To output model parameters and variables without a standard name one to one mapping (dot notation) can be used in the TOML configuration file, but this is not considered as part of the public API, e.g.:</p>
+<p>The standard names of model parameters, states and variables are based on <a href="https://csdms.colorado.edu/wiki/CSDMS_Standard_Names">CSDMS Standard Names</a>. These standard names are used in the TOML configuration file and mapped to internal model parameters, states and variables. These parameters are listed in tables below (for <a href="../model_docs/parameters_landhydrology_sbm.html#input-cyclic-lai">example</a>). Model output of model parameters (<code>[output]</code> section of TOML file) is generally possible, see the parameter tables for any exceptions. To output model parameters and variables without a standard name one to one mapping (dot notation) can be used in the TOML configuration file, but this is not considered as part of the public API, e.g.:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.netcdf_grid.variables]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land.interception.variables.canopy_storage</span> <span class="op">=</span> <span class="st">"canopystorage"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Standard names for routing flow state variables that contain <code>instantaneous</code> in the <code>quantity</code> part of the standard name can be valid for an internal time step (depending on the model simulation time step size) and thus considered instantaneous compared to the model simulation time step Δt <span class="math inline">\(\SIb{}{s}\)</span>. These state flow variables can also be specified as a model output variable.</p>
@@ -598,22 +598,26 @@ window.Quarto = {
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">include</span>(<span class="st">"../docs_utils.jl"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Domain, <span class="op">:</span>generic_input_map; relative_widths <span class="op">=</span> [<span class="fl">4</span>, <span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_table</span>(Wflow.Domain, <span class="op">:</span>generic_input_map; relative_widths <span class="op">=</span> [<span class="fl">4</span>, <span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">2</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
+<col style="width: 26%">
 <col style="width: 33%">
-<col style="width: 41%">
-<col style="width: 8%">
-<col style="width: 16%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 13%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Standard name</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Default (IO unit)</th>
 </tr>
 </thead>
 <tbody>
@@ -622,11 +626,15 @@ window.Quarto = {
 <td style="text-align: left;">Subbasin ids</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>basin__local_drain_direction</code></td>
 <td style="text-align: left;">Local drain direction (1-9)</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
@@ -634,17 +642,23 @@ window.Quarto = {
 <td style="text-align: left;">Pit location mask</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>river_location__mask</code></td>
 <td style="text-align: left;">River mask (0-1)</td>
 <td style="text-align: left;">-</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
+<td style="text-align: left;">-</td>
 </tr>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>land_water_allocation_area__count</code></td>
 <td style="text-align: left;">Water allocation area ids</td>
 <td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">✗</td>
 <td style="text-align: left;">1</td>
 </tr>
 </tbody>
