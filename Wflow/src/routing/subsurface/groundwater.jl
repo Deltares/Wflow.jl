@@ -468,17 +468,16 @@ function conductance(
         # [m] = [m] - [m]
         thickness2 = gwf.parameters.top[j] - gwf.parameters.bottom[j]
         # calculate conductivity values corrected for depth of water table
-        # TODO: Only when the parameter f is assumed unitless does this work out, but f has unit [m⁻¹]
-        # [m s⁻¹] = ([m s⁻¹] / [-]) * ([-] - [-])
-        k1 =
+        # [m² s⁻¹] = ([m s⁻¹] / [m⁻¹]) * ([-] - [-])
+        kH1 =
             (gwf.parameters.k[i] / gwf.parameters.f[i]) *
             (exp(-gwf.parameters.f[i] * zi1) - exp(-gwf.parameters.f[i] * thickness1))
-        k2 =
+        kH2 =
             (gwf.parameters.k[j] / gwf.parameters.f[j]) *
             (exp(-gwf.parameters.f[j] * zi2) - exp(-gwf.parameters.f[j] * thickness2))
         return harmonicmean_conductance(
-            k1,
-            k2,
+            kH1,
+            kH2,
             gwf.connectivity.length1[nzi],
             gwf.connectivity.length2[nzi],
             gwf.connectivity.width[nzi],
