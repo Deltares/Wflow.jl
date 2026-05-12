@@ -25,48 +25,72 @@ end
 lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Float64) = nothing
 
 "Kinematic wave surface flow rate for a single cell and timestep"
-function kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx)
+function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
+    # [m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]
     if q_in + q_prev + q_lat ≈ 0.0
-        return 0.0
+        return 0.0, 0.0
     else
+        # [s m⁻¹] = [s] / [m]
         dt_dx = dt / dx
-        exponent = beta - 1.0
-        # initial estimate using linear scheme
-        alpha_beta = alpha * beta
-        ab_pq = alpha_beta * pow(((q_prev + q_in) / 2.0), exponent)
-        q = (dt_dx * q_in + q_prev * ab_pq + dt * q_lat) / (dt_dx + ab_pq)
-        if isnan(q)
-            q = 0.0
+        # constant_term = (dt/dx)*q_in + alpha*q_prev³ᐟ⁵) + dt*q_lat
+        # Use q_prev^(3/5) = (q_prev¹ᐟ⁵)^3
+        # Let [U] = [m³ s⁻¹]¹ᐟ⁵
+        # [U]
+        u_prev = q_prev >= 0.0 ? Wflow.pow(q_prev, 0.2) : 0.0
+
+        # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [U]³ + [s] * [m² s⁻¹]
+        constant_term = dt_dx * q_in + alpha * u_prev * u_prev * u_prev + dt * q_lat
+
+        # Initial estimate: use u_prev as starting point (cheap, no pow calls)
+        # Since q changes smoothly between timesteps, u_prev is already close to the root.
+        # For the case q_prev == 0, use C/alpha as a rough estimate for u^3, so u ≈ cbrt(C/alpha)
+        u = if u_prev > 0.0
+            u_prev
+        else
+            cbrt(constant_term / alpha)
         end
-        q = max(q, KIN_WAVE_MIN_FLOW)
-        # newton-raphson
+
+        # Halley's method on f(u) = dt_dx * u^5 + alpha * u^3 - C = 0
+        # f'(u)  = 5*dt_dx * u^4 + 3*alpha * u^2
+        # f''(u) = 20*dt_dx * u^3 + 6*alpha * u
         max_iters = 3000
         epsilon = 1.0e-12
-        count = 0
-        constant_term = dt_dx * q_in + alpha * pow(q_prev, beta) + dt * q_lat
-        while true
-            f_q = dt_dx * q + alpha * pow(q, beta) - constant_term
-            df_q = dt_dx + alpha * beta * pow(q, exponent)
-            q -= (f_q / df_q)
-            if isnan(q)
-                q = 0.0
+
+        const_1 = 5.0 * dt_dx
+        const_2 = 3.0 * alpha
+        const_3 = 20.0 * dt_dx
+        const_4 = 6.0 * alpha
+
+        for _ in 1:max_iters
+            u2 = u * u
+            u3 = u2 * u
+            f_u = u3 * (dt_dx * u2 + alpha) - constant_term
+            df_u = u2 * (const_1 * u2 + const_2)
+            d2f_u = u * (const_3 * u2 + const_4)
+            # Halley's correction: u -= f*f' / (f'^2 - f*f''/2)
+            u -= (f_u * df_u) / (df_u * df_u - f_u * d2f_u / 2)
+            if isnan(u) || u <= 0.0
+                u = KIN_WAVE_MIN_FLOW_QROOT
             end
-            q = max(q, KIN_WAVE_MIN_FLOW)
-            if (abs(f_q) <= epsilon) || (count >= max_iters)
+            if (abs(f_u) <= epsilon)
                 break
             end
-            count += 1
         end
-        return q
+        u = max(u, KIN_WAVE_MIN_FLOW_QROOT)
+        u3 = u * u * u
+        crossarea = alpha * u3
+        # [m³ s⁻¹] = [U]⁵
+        q = u3 * u * u
+        return q, crossarea
     end
 end
 
 "Kinematic wave surface flow rate over the whole network for a single timestep"
-function kin_wave!(q, graph, toposort, q_prev, q_lat, alpha, beta, flow_length, dt)
+function kin_wave!(q, graph, toposort, q_prev, q_lat, alpha, flow_length, dt)
     for v in toposort
         upstream_nodes = inneighbors(graph, v)
         q_in = sum_at(q, upstream_nodes)
-        q[v] = kinematic_wave(q_in, q_prev[v], q_lat, alpha[v], beta, dt, flow_length[v])
+        q[v], _ = kinematic_wave(q_in, q_prev[v], q_lat, alpha[v], dt, flow_length[v])
     end
     return q
 end

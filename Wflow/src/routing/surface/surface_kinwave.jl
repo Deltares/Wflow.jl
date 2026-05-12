@@ -23,8 +23,6 @@ end
 
 "Struct for storing Manning flow parameters"
 @with_kw struct ManningFlowParameters
-    # constant in Manning's equation [-]
-    beta::Float64 = 0.6
     # Slope [m m⁻¹]
     slope::Vector{Float64}
     # Manning's roughness [s m⁻⅓]
@@ -285,7 +283,7 @@ function kinwave_land_update!(
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
 
-    (; beta, alpha) = overland_flow_model.parameters
+    (; alpha) = overland_flow_model.parameters
     (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat, to_river_cumulative) =
         overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
@@ -312,20 +310,11 @@ function kinwave_land_update!(
                     )
                 end
 
-                q[v] = kinematic_wave(
-                    qin[v],
-                    q[v],
-                    qlat[v],
-                    alpha[v],
-                    beta,
-                    dt,
-                    flow_length[v],
-                )
+                q[v], crossarea =
+                    kinematic_wave(qin[v], q[v], qlat[v], alpha[v], dt, flow_length[v])
 
                 # update h, only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
-                    # [m²] = [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵
-                    crossarea = alpha[v] * pow(q[v], beta)
                     # [m] = [m²] / [m]
                     h[v] = crossarea / surface_flow_width[v]
                 end
@@ -350,7 +339,7 @@ function update_overland_flow_model!(
     dt::Float64,
 )
     (; inwater) = overland_flow_model.boundary_conditions
-    (; alpha_term, mannings_n, beta, alpha_pow, alpha) = overland_flow_model.parameters
+    (; alpha_term, mannings_n, alpha_pow, alpha) = overland_flow_model.parameters
     (; surface_flow_width, flow_length, slope) = domain.parameters
     (;
         q_average,
@@ -363,7 +352,7 @@ function update_overland_flow_model!(
     ) = overland_flow_model.variables
     (; adaptive) = overland_flow_model.timestepping
 
-    @. alpha_term = pow(mannings_n / sqrt(slope), beta)
+    @. alpha_term = pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     # use fixed alpha value based flow width
     @. alpha = alpha_term * pow(surface_flow_width, alpha_pow)
     @. qlat = inwater / flow_length
@@ -460,7 +449,7 @@ function kinwave_river_update!(
     (; reservoir, external_inflow, actual_external_abstraction_cumulative, abstraction) =
         river_flow_model.boundary_conditions
 
-    (; beta, alpha) = river_flow_model.parameters
+    (; alpha) = river_flow_model.parameters
     (; flow_width, flow_length) = domain.parameters
     (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat) = river_flow_model.variables
 
@@ -490,12 +479,11 @@ function kinwave_river_update!(
                 # [m² s⁻¹] = [m³ s⁻¹] / [m]
                 _inflow -= abstraction[v] / flow_length[v]
 
-                q[v] = kinematic_wave(
+                q[v], crossarea = kinematic_wave(
                     qin[v],
                     q[v],
                     qlat[v] + _inflow,
                     alpha[v],
-                    beta,
                     dt,
                     flow_length[v],
                 )
@@ -510,8 +498,6 @@ function kinwave_river_update!(
                     )
                 end
                 # update h and storage
-                # [m²] = [s³ᐟ⁵ m¹ᐟ⁵] * [m³ s⁻¹]³ᐟ⁵
-                crossarea = alpha[v] * pow(q[v], beta)
                 # [m] = [m²] / [m]
                 h[v] = crossarea / flow_width[v]
                 # [m³] = [m] * [m] * [m]
@@ -536,14 +522,14 @@ function update_river_flow_model!(
     dt::Float64,
 )
     (; reservoir, inwater) = river_flow_model.boundary_conditions
-    (; alpha_term, mannings_n, beta, alpha_pow, alpha, bankfull_depth) =
+    (; alpha_term, mannings_n, alpha_pow, alpha, bankfull_depth) =
         river_flow_model.parameters
     (; slope, flow_width, flow_length) = domain.river.parameters
     (; qlat, qin_average, qin_cumulative) = river_flow_model.variables
     (; adaptive) = river_flow_model.timestepping
 
     # [s³ᐟ⁵ m⁻¹ᐟ⁵] = ([s m⁻¹ᐟ³] / [-])³ᐟ⁵
-    @. alpha_term = pow(mannings_n / sqrt(slope), beta)
+    @. alpha_term = pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     # use fixed alpha value based on 0.5 * bankfull_depth
     # [s³ᐟ⁵ m¹ᐟ⁵] =  [s³ᐟ⁵ m⁻¹ᐟ⁵] * ([m] + [m])²ᐟ⁵
     @. alpha = alpha_term * pow(flow_width + bankfull_depth, alpha_pow)
@@ -572,6 +558,9 @@ function update_river_flow_model!(
     return nothing
 end
 
+# constant in Manning's equation [-]
+const BETA_KINWAVE = 0.6
+
 """
 Compute a stable timestep size for the kinematice wave method for a river or overland flow
 model using a nonlinear scheme (Chow et al., 1988).
@@ -588,7 +577,7 @@ function stable_timestep(
     p::Float64,
 ) where {S <: Union{KinWaveOverlandFlowModel, KinWaveRiverFlowModel}}
     (; q) = flow_model.variables
-    (; alpha, beta) = flow_model.parameters
+    (; alpha) = flow_model.parameters
     (; stable_timesteps) = flow_model.timestepping
 
     n = length(q)
@@ -598,7 +587,7 @@ function stable_timestep(
         if q[i] > 0.0
             k += 1
             # [m s⁻¹] = ([s³ᐟ⁵ m¹ᐟ⁵] * [-] * [m³ s⁻¹]⁻²ᐟ⁵)⁻¹
-            c = inv(alpha[i] * beta * pow(q[i], (beta - 1.0)))
+            c = inv(alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
             # [s] = [m] / [m s⁻¹]
             stable_timesteps[k] = (flow_length[i] / c)
         end

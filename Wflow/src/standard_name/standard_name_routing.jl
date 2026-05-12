@@ -235,7 +235,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "river__slope" => ParameterMetadata(;
         lens = @optic(_.domain.river.parameters.slope),
-        unit = Unit(; m = 1 // 1),
+        unit = Unit(; m = (1, 1)),
         description = "River slope",
         tags = [:kinematic_wave_river_flow_input],
     ),

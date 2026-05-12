@@ -103,7 +103,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; degC = 1, absolute_temperature = true),
         default = 0.0,
         fill = 0.0,
-        description = "Threshold temperature for glacier melt ",
+        description = "Threshold temperature for glacier melt",
         tags = [:glacier_input],
     ),
     "glacier_ice__leq_depth" => ParameterMetadata(;
@@ -258,7 +258,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "land__non_irrigation_return_flow_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.allocation.variables.nonirri_returnflow),
         unit = Unit(; mm = 1, dt = -1),
-        description = "Return flow from non-irrgation sectors",
+        description = "Return flow from non-irrigation sectors",
         tags = [:demand_allocation_output],
     ),
     "land_surface__evapotranspiration_volume_flux" => ParameterMetadata(;
