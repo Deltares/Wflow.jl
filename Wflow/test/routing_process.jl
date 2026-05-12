@@ -8,14 +8,16 @@
     q_in = 1.104e-6
     q_prev = 0.0
     q_lat = 1.142e-6
-    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) ≈
-          1.09308660753423e-6
+
+    q, crossarea = Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
+    @test q ≈ 1.09308660753423e-6
+    @test crossarea ≈ 0.0006852061693892164
 
     # Case q_in + q_prev + q_lat ≈ 0.0
     q_in = 0.0
     q_prev = 0.0
     q_lat = 0.0
-    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) == 0.0
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx) == (0.0, 0.0)
 end
 
 @testitem "unit: ssf_celerity" begin
@@ -52,7 +54,7 @@ end
     ldd_MISSING_VALUE = 255
 
     # read the staticmaps into memory
-    nc = NCDataset("data/input/staticmaps-rhine.nc")
+    nc = NCDataset(normpath(@__DIR__, "data/input/staticmaps-rhine.nc"))
     # helper function to get the axis order and directionality right
     read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
     ldd_2d = read_right(nc, "ldd")
@@ -79,14 +81,14 @@ end
 
     # calculate parameters of kinematic wave
     q = 0.000001
-    beta = 0.6
+    beta = Wflow.BETA_KINWAVE
     AlpPow = (2.0 / 3.0) * beta
     AlpTermR = (N ./ sqrt.(slope)) .^ beta
     P = Bw + (2.0 * waterlevel)
     alpha = AlpTermR .* P .^ AlpPow
 
     Q = zeros(n)
-    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, DCL, dt_sec)
 
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
@@ -303,7 +305,6 @@ end
         parameters = Wflow.RiverFlowParameters(;
             flow = Wflow.ManningFlowParameters(;
                 n,
-                beta = 0.6,
                 slope = [0.017522206529974937, 0.01738094352185726],
                 mannings_n = [0.03, 0.03],
                 alpha_pow = 0.4,
@@ -541,36 +542,36 @@ end
                 profile = Wflow.FloodPlainProfile(;
                     depth = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5],
                     storage = [
-                        0.0 0.0 0.0;
-                        77602.0 281141.0 111313.0;
-                        189506.0 609512.0 256357.0;
-                        346960.0 981178.0 420515.0;
-                        526346.0 1.39783e6 602100.0;
-                        747343.0 1.87239e6 814606.0;
+                        0.0 0.0 0.0
+                        77602.0 281141.0 111313.0
+                        189506.0 609512.0 256357.0
+                        346960.0 981178.0 420515.0
+                        526346.0 1.39783e6 602100.0
+                        747343.0 1.87239e6 814606.0
                     ],
                     width = [
-                        149.178 149.178 149.178;
-                        341.577 666.779 758.764;
-                        492.562 778.794 988.691;
-                        693.057 881.476 1118.98;
-                        789.594 988.161 1237.77;
-                        972.752 1125.52 1448.54;
+                        149.178 149.178 149.178
+                        341.577 666.779 758.764
+                        492.562 778.794 988.691
+                        693.057 881.476 1118.98
+                        789.594 988.161 1237.77
+                        972.752 1125.52 1448.54
                     ],
                     a = [
-                        0.0 0.0 0.0;
-                        170.788 333.389 379.382;
-                        417.07 722.786 873.727;
-                        763.598 1163.52 1433.22;
-                        1158.4 1657.6 2052.1;
-                        1644.77 2220.36 2776.38;
+                        0.0 0.0 0.0
+                        170.788 333.389 379.382
+                        417.07 722.786 873.727
+                        763.598 1163.52 1433.22
+                        1158.4 1657.6 2052.1
+                        1644.77 2220.36 2776.38
                     ],
                     p = [
-                        192.399 517.6 609.585;
-                        193.399 518.6 610.585;
-                        345.384 631.615 841.512;
-                        546.879 735.297 972.803;
-                        644.416 842.983 1092.59;
-                        828.573 981.337 1304.37;
+                        192.399 517.6 609.585
+                        193.399 518.6 610.585
+                        345.384 631.615 841.512
+                        546.879 735.297 972.803
+                        644.416 842.983 1092.59
+                        828.573 981.337 1304.37
                     ],
                 ),
                 mannings_n = [0.072, 0.072, 0.072],
@@ -747,7 +748,7 @@ end
     )
     n_river = 1
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
-        timestepping = Wflow.TimeStepping(alpha_coefficient = 0.7),
+        timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         boundary_conditions = Wflow.RiverFlowBC(; n = n_river, reservoir = nothing),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
             n = n_river,
