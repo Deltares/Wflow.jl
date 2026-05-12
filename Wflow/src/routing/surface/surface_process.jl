@@ -1,4 +1,4 @@
-const tan80 = 5.67
+const TAN80 = 5.67
 
 """
     lateral_snow_transport!(snow, domain, dt)
@@ -12,7 +12,7 @@ function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt
     # [m]
     snow_storage_max = 10.0
     # [-] = min([-], [-]) * min([-], [m] / [m])
-    snowflux_frac = @. min(0.5, slope / tan80) * min(1.0, snow_storage / snow_storage_max)
+    snowflux_frac = @. min(0.5, slope / TAN80) * min(1.0, snow_storage / snow_storage_max)
     # [m s⁻¹] = [-] * [m] / [s]
     maxflux = snowflux_frac .* snow_storage / dt
     # [m s⁻¹]

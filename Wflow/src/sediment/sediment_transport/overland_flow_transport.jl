@@ -57,16 +57,14 @@ function update_sediment_overland_model!(
     (; erosion, transport_capacity) = sediment_transport_model.boundary_conditions
     (; sediment_rate, deposition) = sediment_transport_model.variables
 
-    accucapacityflux!(
+    # All inputs and outputs are rates [kg s⁻¹]
+    accucapacityflux_rate!(
         sediment_rate,
+        deposition,
         erosion,
         network,
         transport_capacity,
-        dt;
-        material_is_flux = true,
     )
-    # [kg s⁻¹] = [kg s⁻¹]
-    deposition .= erosion
 end
 
 "Struct to store differentiated sediment flux in overland flow model variables"
@@ -214,27 +212,15 @@ function update_sediment_overland_model!(
         deposition_lagg,
     ) = sediment_transport_model.variables
 
-    do_accucapacityflux!(rate, erosion, transport_capacity) = accucapacityflux!(
-        rate,
-        erosion,
-        network,
-        transport_capacity,
-        dt;
-        material_is_flux = true,
-    )
+    # All inputs and outputs are rates [kg s⁻¹]
+    do_accucapacityflux!(rate, dep, erosion, tc) =
+        accucapacityflux_rate!(rate, dep, erosion, network, tc)
 
-    do_accucapacityflux!(clay, erosion_clay, transport_capacity_clay)
-    do_accucapacityflux!(silt, erosion_silt, transport_capacity_silt)
-    do_accucapacityflux!(sand, erosion_sand, transport_capacity_sand)
-    do_accucapacityflux!(sagg, erosion_sagg, transport_capacity_sagg)
-    do_accucapacityflux!(lagg, erosion_lagg, transport_capacity_lagg)
-
-    # [kg s⁻¹] = [kg s⁻¹]
-    deposition_clay .= erosion_clay
-    deposition_silt .= erosion_silt
-    deposition_sand .= erosion_sand
-    deposition_sagg .= erosion_sagg
-    deposition_lagg .= erosion_lagg
+    do_accucapacityflux!(clay, deposition_clay, erosion_clay, transport_capacity_clay)
+    do_accucapacityflux!(silt, deposition_silt, erosion_silt, transport_capacity_silt)
+    do_accucapacityflux!(sand, deposition_sand, erosion_sand, transport_capacity_sand)
+    do_accucapacityflux!(sagg, deposition_sagg, erosion_sagg, transport_capacity_sagg)
+    do_accucapacityflux!(lagg, deposition_lagg, erosion_lagg, transport_capacity_lagg)
 
     # [kg s⁻¹] = ∑ [kg s⁻¹]
     @. sediment_rate = clay + silt + sand + sagg + lagg
