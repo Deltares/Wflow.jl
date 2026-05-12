@@ -3,9 +3,9 @@ abstract type AbstractRiverErosionModel end
 "Struct for storing river bed and bank erosion model variables"
 @with_kw struct RiverErosionModelVariables
     n::Int
-    # Potential river bed erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Potential river bed erosion rate [kg s⁻¹]
     bed::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential river bank erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Potential river bank erosion rate [kg s⁻¹]
     bank::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -18,7 +18,7 @@ end
 
 "Struct for storing river erosion model parameters"
 @with_kw struct RiverErosionParameters
-    # Mean diameter [mm => m] in the river bed/bank
+    # Mean diameter [m] in the river bed/bank
     d50::Vector{Float64}
 end
 

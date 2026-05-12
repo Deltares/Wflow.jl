@@ -18,7 +18,7 @@ end
 
 "Struct to store non-irrigation water demand variables"
 @with_kw struct NonIrrigationDemandVariables
-    # return flow [mm dt⁻¹ => m s⁻¹]
+    # return flow [m s⁻¹]
     returnflow::Vector{Float64}
     # return flow fraction [-]
     returnflow_fraction::Vector{Float64}
@@ -26,9 +26,9 @@ end
 
 "Struct to store prescribed water demand variables"
 @with_kw struct PrescribedDemand
-    # gross water demand [mm dt⁻¹ => m s⁻¹]
+    # gross water demand [m s⁻¹]
     demand_gross::Vector{Float64}
-    # net water demand [mm dt⁻¹ => m s⁻¹]
+    # net water demand [m s⁻¹]
     demand_net::Vector{Float64}
 end
 
@@ -79,13 +79,13 @@ end
 "Struct to store non-paddy irrigation model variables"
 @with_kw struct NonPaddyVariables
     n::Int
-    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n)   # irrigation gross demand [mm dt⁻¹ => m s⁻¹]
+    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n)   # irrigation gross demand [m s⁻¹]
 end
 
 "Struct to store non-paddy irrigation model parameters"
 @with_kw struct NonPaddyParameters
     irrigation_efficiency::Vector{Float64}        # irrigation efficiency [-]
-    maximum_irrigation_rate::Vector{Float64}      # maximum irrigation rate [mm dt⁻¹ => m s⁻¹]
+    maximum_irrigation_rate::Vector{Float64}      # maximum irrigation rate [m s⁻¹]
     irrigation_areas::Vector{Bool}                # irrigation areas [-]
     irrigation_trigger::Vector{Bool}              # irrigation on or off [-]
 end
@@ -261,20 +261,20 @@ end
 "Struct to store paddy irrigation model variables"
 @with_kw struct PaddyVariables
     n::Int
-    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n) # irrigation gross demand [mm dt⁻¹ => m s⁻¹]
-    h::Vector{Float64} = zeros(n)                          # actual water depth in rice field [mm => m]
-    evaporation::Vector{Float64} = zeros(n)                # evaporation rate [mm dt⁻¹ => m s⁻¹]
+    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n) # irrigation gross demand [m s⁻¹]
+    h::Vector{Float64} = zeros(n)                          # actual water depth in rice field [m]
+    evaporation::Vector{Float64} = zeros(n)                # evaporation rate [m s⁻¹]
 end
 
 "Struct to store paddy irrigation model parameters"
 @with_kw struct PaddyParameters
     irrigation_efficiency::Vector{Float64}        # irrigation efficiency [-]
-    maximum_irrigation_rate::Vector{Float64}      # maximum irrigation rate [mm dt⁻¹ => m s⁻¹]
+    maximum_irrigation_rate::Vector{Float64}      # maximum irrigation rate [m s⁻¹]
     irrigation_areas::Vector{Bool}                # irrigation areas [-]
     irrigation_trigger::Vector{Bool}              # irrigation on or off [-]
-    h_min::Vector{Float64}                        # minimum required water depth in the irrigated rice field [mm => m]
-    h_opt::Vector{Float64}                        # optimal water depth in the irrigated rice fields  [mm => m]
-    h_max::Vector{Float64}                        # water depth when rice field starts spilling water (overflow)  [mm => m]
+    h_min::Vector{Float64}                        # minimum required water depth in the irrigated rice field [m]
+    h_opt::Vector{Float64}                        # optimal water depth in the irrigated rice fields  [m]
+    h_max::Vector{Float64}                        # water depth when rice field starts spilling water (overflow)  [m]
 end
 
 "PaddyModel (flooded rice) irrigation model"
@@ -461,11 +461,11 @@ update_demand_gross!(paddy_model::NoIrrigationPaddyModel, dt::Float64) = nothing
 "Struct to store water demand model variables"
 @with_kw struct DemandVariables
     n::Int
-    irri_demand_gross::Vector{Float64} = zeros(n)        # irrigation gross demand [mm dt⁻¹ => m s⁻¹]
-    nonirri_demand_gross::Vector{Float64} = zeros(n)     # non-irrigation gross demand [mm dt⁻¹ => m s⁻¹]
-    total_gross_demand::Vector{Float64} = zeros(n)       # total gross demand [mm dt⁻¹ => m s¹]
-    surfacewater_demand::Vector{Float64} = zeros(n)      # demand from surface water [mm dt⁻¹ => m s⁻¹]
-    groundwater_demand::Vector{Float64} = zeros(n)       # demand from groundwater [mm dt⁻¹ => m s⁻¹]
+    irri_demand_gross::Vector{Float64} = zeros(n)        # irrigation gross demand [m s⁻¹]
+    nonirri_demand_gross::Vector{Float64} = zeros(n)     # non-irrigation gross demand [m s⁻¹]
+    total_gross_demand::Vector{Float64} = zeros(n)       # total gross demand [m s¹]
+    surfacewater_demand::Vector{Float64} = zeros(n)      # demand from surface water [m s⁻¹]
+    groundwater_demand::Vector{Float64} = zeros(n)       # demand from groundwater [m s⁻¹]
 end
 
 "Water demand model"
@@ -525,10 +525,10 @@ end
 "Struct to store river allocation model variables"
 @with_kw struct AllocationRiverVariables
     n::Int
-    act_surfacewater_abst::Vector{Float64} = zeros(n)       # actual surface water abstraction [mm dt⁻¹ => m s⁻¹]
-    act_surfacewater_abst_vol::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ dt⁻¹ => m³ s⁻¹]
+    act_surfacewater_abst::Vector{Float64} = zeros(n)       # actual surface water abstraction [m s⁻¹]
+    act_surfacewater_abst_vol::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ s⁻¹]
     available_surfacewater::Vector{Float64} = zeros(n)      # available surface water [m³]
-    nonirri_returnflow::Vector{Float64} = zeros(n)          # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
+    nonirri_returnflow::Vector{Float64} = zeros(n)          # return flow from non irrigation [m s⁻¹]
 end
 
 "River allocation model"
@@ -551,23 +551,23 @@ end
 "Struct to store land allocation model variables"
 @with_kw struct AllocationLandVariables
     n::Int
-    # allocation from surface water [mm dt⁻¹ => m s⁻¹]
+    # allocation from surface water [m s⁻¹]
     surfacewater_alloc::Vector{Float64} = zeros(n)
-    # actual groundwater abstraction [mm dt⁻¹ => m s⁻¹]
+    # actual groundwater abstraction [m s⁻¹]
     act_groundwater_abst::Vector{Float64} = zeros(n)
-    # actual groundwater abstraction [m³ dt⁻¹ => m³ s⁻¹]
+    # actual groundwater abstraction [m³ s⁻¹]
     act_groundwater_abst_vol::Vector{Float64} = zeros(n)
     # available groundwater [m³]
     available_groundwater::Vector{Float64} = zeros(n)
-    # allocation from groundwater [mm dt⁻¹ => m s⁻¹]
+    # allocation from groundwater [m s⁻¹]
     groundwater_alloc::Vector{Float64} = zeros(n)
-    # allocated water for irrigation [mm dt⁻¹ => m s⁻¹]
+    # allocated water for irrigation [m s⁻¹]
     irri_alloc::Vector{Float64} = zeros(n)
-    # allocated water for non-irrigation [mm dt⁻¹ => m s⁻¹]
+    # allocated water for non-irrigation [m s⁻¹]
     nonirri_alloc::Vector{Float64} = zeros(n)
-    # total allocated water [mm dt⁻¹ => m s⁻¹]
+    # total allocated water [m s⁻¹]
     total_alloc::Vector{Float64} = zeros(n)
-    # return flow from non irrigation [mm dt⁻¹ => m s⁻¹]
+    # return flow from non irrigation [m s⁻¹]
     nonirri_returnflow::Vector{Float64} = zeros(n)
 end
 

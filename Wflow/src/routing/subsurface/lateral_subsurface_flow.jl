@@ -9,29 +9,29 @@
     exfiltwater_cumulative::Vector{Float64} = zeros(n)
     # Average exfiltration [m s⁻¹] (groundwater above surface level, saturated excess conditions)
     exfiltwater_average::Vector{Float64} = zeros(n)
-    # Subsurface flow [m³ d⁻¹ => m³ s⁻¹]
+    # Subsurface flow [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
     # Cumulative subsurface flow [m³] for model timestep Δt
     q_cumulative::Vector{Float64} = zeros(n)
-    # Average subsurface flow [m³ d⁻¹ => m³ s⁻¹] for model timestep Δt
+    # Average subsurface flow [m³ s⁻¹] for model timestep Δt
     q_average::Vector{Float64} = zeros(n)
-    # Inflow from upstream cells [m³ d⁻¹ => m³ s⁻¹]
+    # Inflow from upstream cells [m³ s⁻¹]
     q_in::Vector{Float64} = fill(MISSING_VALUE, n)
     # cumulative inflow from upstream cells [m³] for model timestep dt
     q_in_cumulative::Vector{Float64} = zeros(n)
-    # Average inflow from upstream cells [m³ d⁻¹ => m³ s⁻¹] for model timestep dt
+    # Average inflow from upstream cells [m³ s⁻¹] for model timestep dt
     q_in_average::Vector{Float64} = zeros(n)
-    # Maximum subsurface flow [m² d⁻¹ => m s⁻¹]
+    # Maximum subsurface flow [m s⁻¹]
     q_max::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Cumulative of the part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
+    # Cumulative of the part of subsurface flow [m³ s⁻¹] that flows to the river
     to_river_cumulative::Vector{Float64} = zeros(n)
-    # Average of the part of subsurface flow [m³ d⁻¹ => m³ s⁻¹] that flows to the river
+    # Average of the part of subsurface flow [m³ s⁻¹] that flows to the river
     to_river_average::Vector{Float64} = zeros(n)
-    # Net flow for boundaries subsurface flow [m³ d⁻¹ => m³ s⁻¹]
+    # Net flow for boundaries subsurface flow [m³ s⁻¹]
     q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n)
     # Cumulative net flow (total) [m³]
     q_net_cumulative::Vector{Float64} = zeros(n)
-    # Average net flow (total) [m³ d⁻¹ => m³ s⁻¹]
+    # Average net flow (total) [m³ s⁻¹]
     q_net_average::Vector{Float64} = zeros(n)
     # Subsurface storage that can be released [m³]
     storage::Vector{Float64}
@@ -63,7 +63,7 @@ end
 
 "Exponential depth profile of horizontal hydraulic conductivity at the soil surface"
 struct KhExponential
-    # Horizontal hydraulic conductivity at soil surface [m d⁻¹ => m s⁻¹]
+    # Horizontal hydraulic conductivity at soil surface [m s⁻¹]
     kh_0::Vector{Float64}
     # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
     f::Vector{Float64}

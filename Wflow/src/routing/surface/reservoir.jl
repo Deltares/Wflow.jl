@@ -210,7 +210,7 @@ end
     outflow_obs::Vector{Float64} = fill(MISSING_VALUE, length(waterlevel))
     # cumulative actual evaporation for reservoir area [m]
     actevap_cumulative::Vector{Float64} = zeros(length(waterlevel))
-    # average actual evaporation for reservoir area [mm dt⁻¹ => m s⁻¹]
+    # average actual evaporation for reservoir area [m s⁻¹]
     actevap_average::Vector{Float64} = zeros(length(waterlevel))
 end
 
@@ -256,9 +256,9 @@ end
     actual_external_abstraction_cumulative::Vector{Float64} = zeros(n)
     # average actual abstraction from external negative inflow [m³ s⁻¹]
     actual_external_abstraction_average::Vector{Float64} = zeros(n)
-    # average precipitation for reservoir area [mm dt⁻¹ => m s⁻¹]
+    # average precipitation for reservoir area [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
-    # average potential evaporation for reservoir area [mm dt⁻¹ => m s⁻¹]
+    # average potential evaporation for reservoir area [m s⁻¹]
     evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 

@@ -3,7 +3,7 @@ abstract type AbstractOverlandFlowErosionModel end
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
     n::Int
-    # Total soil erosion rate [t dt⁻¹ => kg s⁻¹] from overland flow
+    # Total soil erosion rate [kg s⁻¹] from overland flow
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 

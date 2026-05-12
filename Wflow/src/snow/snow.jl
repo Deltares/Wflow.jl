@@ -3,42 +3,42 @@ abstract type AbstractSnowModel end
 "Struct for storing snow model variables"
 @with_kw struct SnowVariables
     n::Int
-    # Snow storage [mm => m]
+    # Snow storage [m]
     snow_storage::Vector{Float64} = zeros(n)
-    # Liquid water content in the snow pack [mm => m]
+    # Liquid water content in the snow pack [m]
     snow_water::Vector{Float64} = zeros(n)
-    # Snow water equivalent (SWE) [mm => m]
+    # Snow water equivalent (SWE) [m]
     swe::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Snow melt [mm dt⁻¹ => m s⁻¹]
+    # Snow melt [m s⁻¹]
     snow_melt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Runoff from snowpack [mm dt⁻¹ => m s⁻¹]
+    # Runoff from snowpack [m s⁻¹]
     runoff::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Lateral snow (SWE) transport from upstreams cells [mm dt⁻¹ => m s⁻¹]
+    # Lateral snow (SWE) transport from upstreams cells [m s⁻¹]
     snow_in::Vector{Float64} = zeros(n)
-    # Lateral snow (SWE) transport out of a cell [mm dt⁻¹ => m s⁻¹]
+    # Lateral snow (SWE) transport out of a cell [m s⁻¹]
     snow_out::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing snow model boundary conditions"
 @with_kw struct SnowBC
     n::Int
-    # Effective precipitation [mm dt⁻¹ => m s⁻¹]
+    # Effective precipitation [m s⁻¹]
     effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Snow precipitation [mm dt⁻¹ => m s⁻¹]
+    # Snow precipitation [m s⁻¹]
     snow_precip::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Liquid precipitation [mm dt⁻¹ => m s⁻¹]
+    # Liquid precipitation [m s⁻¹]
     liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing snow HBV model parameters"
 @with_kw struct SnowHbvParameters
-    # Degree-day factor [mm °C⁻¹ dt⁻¹ => m K⁻¹ s⁻¹]
+    # Degree-day factor [m K⁻¹ s⁻¹]
     cfmax::Vector{Float64}
-    # Threshold temperature for snowfall [°C => K]
+    # Threshold temperature for snowfall [K]
     tt::Vector{Float64}
-    # Threshold temperature interval length [°C => K]
+    # Threshold temperature interval length [K]
     tti::Vector{Float64}
-    # Threshold temperature for snowmelt [°C => K]
+    # Threshold temperature for snowmelt [K]
     ttm::Vector{Float64}
     # Water holding capacity as fraction of current snow pack [-]
     whc::Vector{Float64}

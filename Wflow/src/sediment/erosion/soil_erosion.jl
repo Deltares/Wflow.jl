@@ -3,26 +3,26 @@ abstract type AbstractSoilErosionModel end
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
     n::Int
-    # Total soil erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Total soil erosion rate [kg s⁻¹]
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total clay erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Total clay erosion rate [kg s⁻¹]
     clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total silt erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Total silt erosion rate [kg s⁻¹]
     silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total sand erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Total sand erosion rate [kg s⁻¹]
     sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total small aggregates erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Total small aggregates erosion rate [kg s⁻¹]
     sagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total large aggregates erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Total large aggregates erosion rate [kg s⁻¹]
     lagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
     n::Int
-    # Rainfall erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Rainfall erosion rate [kg s⁻¹]
     rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Overland flow erosion rate [t dt⁻¹ => kg s⁻¹]
+    # Overland flow erosion rate [kg s⁻¹]
     overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 

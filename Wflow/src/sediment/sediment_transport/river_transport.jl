@@ -4,7 +4,7 @@ abstract type AbstractSedimentConcentrationsRiverModel end
 "Struct to store river sediment transport model variables"
 @with_kw struct SedimentRiverTransportVariables
     n::Int
-    # Sediment flux [t dt⁻¹ => kg s⁻¹]
+    # Sediment flux [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     clay_rate::Vector{Float64} = zeros(n)
     silt_rate::Vector{Float64} = zeros(n)
@@ -12,18 +12,18 @@ abstract type AbstractSedimentConcentrationsRiverModel end
     sagg_rate::Vector{Float64} = zeros(n)
     lagg_rate::Vector{Float64} = zeros(n)
     gravel_rate::Vector{Float64} = zeros(n)
-    # Total Sediment deposition rate [t dt⁻¹ => kg s⁻¹]
+    # Total Sediment deposition rate [kg s⁻¹]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total sediment erosion rate (from store + direct river bed/bank) [t dt⁻¹ => kg s⁻¹]
+    # Total sediment erosion rate (from store + direct river bed/bank) [kg s⁻¹]
     erosion::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sediment / particle left in the cell [t => kg] - states
+    # Sediment / particle left in the cell [kg] - states
     leftover_clay::Vector{Float64} = zeros(n)
     leftover_silt::Vector{Float64} = zeros(n)
     leftover_sand::Vector{Float64} = zeros(n)
     leftover_sagg::Vector{Float64} = zeros(n)
     leftover_lagg::Vector{Float64} = zeros(n)
     leftover_gravel::Vector{Float64} = zeros(n)
-    # Sediment / particle stored on the river bed after deposition [t => kg] -states
+    # Sediment / particle stored on the river bed after deposition [kg] -states
     store_clay::Vector{Float64} = zeros(n)
     store_silt::Vector{Float64} = zeros(n)
     store_sand::Vector{Float64} = zeros(n)
@@ -39,15 +39,15 @@ end
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity of the flow [t dt⁻¹ => kg s⁻¹]
+    # Transport capacity of the flow [kg s⁻¹]
     transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sediment input rate from land erosion [t dt⁻¹ => kg s⁻¹]
+    # Sediment input rate from land erosion [kg s⁻¹]
     erosion_land_clay::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_silt::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_sand::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
     erosion_land_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sediment erosion rate from direct river erosion [t dt⁻¹ => kg s⁻¹]
+    # Sediment erosion rate from direct river erosion [kg s⁻¹]
     potential_erosion_river_bed::Vector{Float64} = fill(MISSING_VALUE, n)
     potential_erosion_river_bank::Vector{Float64} = fill(MISSING_VALUE, n)
 end
@@ -62,17 +62,17 @@ end
     sand_fraction::Vector{Float64}
     # River bed/bank content gravel [-]
     gravel_fraction::Vector{Float64}
-    # Clay mean diameter [µm => m]
+    # Clay mean diameter [m]
     dm_clay::Vector{Float64}
-    # Silt mean diameter [µm => m]
+    # Silt mean diameter [m]
     dm_silt::Vector{Float64}
-    # Sand mean diameter [µm => m]
+    # Sand mean diameter [m]
     dm_sand::Vector{Float64}
-    # Small aggregates mean diameter [µm => m]
+    # Small aggregates mean diameter [m]
     dm_sagg::Vector{Float64}
-    # Large aggregates mean diameter [µm => m]
+    # Large aggregates mean diameter [m]
     dm_lagg::Vector{Float64}
-    # Gravel mean diameter [µm => m]
+    # Gravel mean diameter [m]
     dm_gravel::Vector{Float64}
     # Reservoir outlets [-]
     reservoir_outlet::Vector{Bool}
@@ -786,11 +786,11 @@ end
 "Struct to store river sediment concentrations model variables"
 @with_kw struct SedimentConcentrationsRiverVariables
     n::Int
-    # Total sediment concentration in the river [g m⁻³ => kg m⁻³]
+    # Total sediment concentration in the river [kg m⁻³]
     total::Vector{Float64} = fill(MISSING_VALUE, n)
-    # suspended sediment concentration in the river [g m⁻³ => kg m⁻³]
+    # suspended sediment concentration in the river [kg m⁻³]
     suspended::Vector{Float64} = fill(MISSING_VALUE, n)
-    # bed load sediment concentration in the river [g m⁻³ => kg m⁻³]
+    # bed load sediment concentration in the river [kg m⁻³]
     bed::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -800,33 +800,33 @@ end
     # Discharge [m³ s⁻¹]
     q::Vector{Float64} = fill(MISSING_VALUE, n)
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
-    # Clay load [t dt⁻¹ => kg s⁻¹]
+    # Clay load [kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt load [t dt⁻¹ => kg s⁻¹]
+    # Silt load [kg s⁻¹]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand load [t dt⁻¹ => kg s⁻¹]
+    # Sand load [kg s⁻¹]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates load [t dt⁻¹ => kg s⁻¹]
+    # Small aggregates load [kg s⁻¹]
     sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates load [t dt⁻¹ => kg s⁻¹]
+    # Large aggregates load [kg s⁻¹]
     lagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Gravel load [t dt⁻¹ => kg s⁻¹]
+    # Gravel load [kg s⁻¹]
     gravel::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store river sediment concentrations model parameters"
 @with_kw struct SedimentConcentrationsRiverParameters
-    # Clay mean diameter [µm => m]
+    # Clay mean diameter [m]
     dm_clay::Vector{Float64}
-    # Silt mean diameter [µm => m]
+    # Silt mean diameter [m]
     dm_silt::Vector{Float64}
-    # Sand mean diameter [µm => m]
+    # Sand mean diameter [m]
     dm_sand::Vector{Float64}
-    # Small aggregates mean diameter [µm => m]
+    # Small aggregates mean diameter [m]
     dm_sagg::Vector{Float64}
-    # Large aggregates mean diameter [µm => m]
+    # Large aggregates mean diameter [m]
     dm_lagg::Vector{Float64}
-    # Gravel mean diameter [µm => m]
+    # Gravel mean diameter [m]
     dm_gravel::Vector{Float64}
 end
 

@@ -9,11 +9,11 @@ occurs if the snow storage < 10 mm.
 
 # Arguments
 - `glacier_frac` fraction covered by glaciers [-]
-- `glacier_store` volume of the glacier [mm => m] w.e.
-- `snow_storage` snow storage on top of glacier [mm => m]
-- `temperature` air temperature [°C => K]
-- `ttm` temperature threshold for ice melting [°C => K]
-- `cfmax` ice degree-day factor in [mm °C⁻¹ day⁻¹ => m K⁻¹ s⁻¹]
+- `glacier_store` volume of the glacier [m] w.e.
+- `snow_storage` snow storage on top of glacier [m]
+- `temperature` air temperature [K]
+- `ttm` temperature threshold for ice melting [K]
+- `cfmax` ice degree-day factor in [m K⁻¹ s⁻¹]
 - `g_sifrac` fraction of the snow turned into ice [s⁻¹]
 - `max_snow_to_glacier` maximum snow to glacier conversion rate [m s⁻¹]
 

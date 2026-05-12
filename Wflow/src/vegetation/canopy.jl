@@ -3,21 +3,21 @@ abstract type AbstractInterceptionModel end
 "Struct for storing interception model variables"
 @with_kw struct InterceptionVariables
     n::Int
-    # Canopy potential evaporation [mm dt⁻¹ => m s⁻¹]
+    # Canopy potential evaporation [m s⁻¹]
     canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Interception loss by evaporation [mm dt⁻¹ => m s⁻¹]
+    # Interception loss by evaporation [m s⁻¹]
     interception_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Canopy storage [mm => m]
+    # Canopy storage [m]
     canopy_storage::Vector{Float64} = zeros(n)
-    # Stemflow [mm dt⁻¹ => m s⁻¹]
+    # Stemflow [m s⁻¹]
     stemflow::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Throughfall [mm dt⁻¹ => m s⁻¹]
+    # Throughfall [m s⁻¹]
     throughfall::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing Gash interception model parameters"
 @with_kw struct GashParameters
-    # ratio [-] of wet canopy [mm dt⁻¹ => m s⁻¹] and the average precipitation intensity [mm dt⁻¹ => m s⁻¹] on a saturated canopy
+    # ratio [-] of wet canopy [m s⁻¹] and the average precipitation intensity [m s⁻¹] on a saturated canopy
     e_r::Vector{Float64}
     vegetation_parameter_set::VegetationParameters
 end

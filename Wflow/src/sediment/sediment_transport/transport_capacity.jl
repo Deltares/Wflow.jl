@@ -3,7 +3,7 @@ abstract type AbstractTransportCapacityModel end
 "Struct to store total transport capacity model variables"
 @with_kw struct TransportCapacityModelVariables
     n::Int
-    # Total sediment transport capacity [t dt-1 => kg s⁻¹]
+    # Total sediment transport capacity [kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -130,7 +130,7 @@ end
 @with_kw struct TransportCapacityYalinParameters
     # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Particle mean diameter [mm => m]
+    # Particle mean diameter [m]
     d50::Vector{Float64}
 end
 
@@ -206,17 +206,17 @@ end
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
 @with_kw struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
-    # Total sediment transport capacity [t dt⁻¹ => kg s⁻¹]
+    # Total sediment transport capacity [kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity clay [t dt⁻¹ => kg s⁻¹]
+    # Transport capacity clay [kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity silt [t dt⁻¹ => kg s⁻¹]
+    # Transport capacity silt [kg s⁻¹]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity sand [t dt⁻¹ => kg s⁻¹]
+    # Transport capacity sand [kg s⁻¹]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity small aggregates [t dt⁻¹ => kg s⁻¹]
+    # Transport capacity small aggregates [kg s⁻¹]
     sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity large aggregates [t dt⁻¹ => kg s⁻¹]
+    # Transport capacity large aggregates [kg s⁻¹]
     lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -224,15 +224,15 @@ end
 @with_kw struct TransportCapacityYalinDifferentiationParameters
     # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Clay mean diameter [μm => m]
+    # Clay mean diameter [m]
     dm_clay::Vector{Float64}
-    # Silt mean diameter [μm => m]
+    # Silt mean diameter [m]
     dm_silt::Vector{Float64}
-    # Sand mean diameter [μm => m]
+    # Sand mean diameter [m]
     dm_sand::Vector{Float64}
-    # Small aggregates mean diameter [μm => m]
+    # Small aggregates mean diameter [m]
     dm_sagg::Vector{Float64}
-    # Large aggregates mean diameter [μm => m]
+    # Large aggregates mean diameter [m]
     dm_lagg::Vector{Float64}
 end
 
@@ -389,7 +389,7 @@ end
 @with_kw struct TransportCapacityRiverParameters
     # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Particle mean diameter [mm => m]
+    # Particle mean diameter [m]
     d50::Vector{Float64}
 end
 

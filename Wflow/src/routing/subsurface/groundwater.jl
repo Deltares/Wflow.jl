@@ -75,25 +75,25 @@ instead.
     n::Int
     # hydraulic head [m]
     head::Vector{Float64}
-    # conductance [m² d⁻¹ => m² s⁻¹]
+    # conductance [m² s⁻¹]
     conductance::Vector{Float64}
     # total storage of water that can be released [m³]
     storage::Vector{Float64}
-    # net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
+    # net flow (groundwater and boundaries) [m³ s⁻¹]
     q_net::Vector{Float64} = zeros(n)
     # cumulative net flow (groundwater and boundaries) [m³]
     q_net_cumulative::Vector{Float64} = zeros(n)
-    # average net flow (groundwater and boundaries) [m³ d⁻¹ => m³ s⁻¹]
+    # average net flow (groundwater and boundaries) [m³ s⁻¹]
     q_net_average::Vector{Float64} = zeros(n)
-    # net flow boundaries [m³ d⁻¹ => m³ s⁻¹]
+    # net flow boundaries [m³ s⁻¹]
     q_net_bnds::Vector{Float64} = zeros(n)
     # cumulative groundwater (lateral) inflow for model timestep dt [m³]
     q_in_cumulative::Vector{Float64} = zeros(n)
-    # average groundwater (lateral) inflow for model timestep dt [m³ d⁻¹ => m³ s⁻¹]
+    # average groundwater (lateral) inflow for model timestep dt [m³ s⁻¹]
     q_in_average::Vector{Float64} = zeros(n)
     # cumulative groundwater (lateral) outflow for model timestep dt [m³]
     q_cumulative::Vector{Float64} = zeros(n)
-    # average groundwater (lateral) outflow for model timestep dt [m³ d⁻¹ => m³ s⁻¹]
+    # average groundwater (lateral) outflow for model timestep dt [m³ s⁻¹]
     q_average::Vector{Float64} = zeros(n)
     # Cumulative exfiltration [m] (groundwater above surface level, saturated excess conditions)
     exfiltwater_cumulative::Vector{Float64} = zeros(n)
@@ -102,7 +102,7 @@ instead.
 end
 
 @with_kw struct GroundwaterFlowParameters
-    # reference horizontal conductivity [m d⁻¹ => m s⁻¹]
+    # reference horizontal conductivity [m s⁻¹]
     k::Vector{Float64}
     # top of groundwater layer [m]
     top::Vector{Float64}

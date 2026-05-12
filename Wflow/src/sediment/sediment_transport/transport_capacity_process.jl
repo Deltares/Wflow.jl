@@ -10,13 +10,13 @@ Mask transport capacity values for reservoirs,
  and rivers.
 
 # Arguments
-- `transport_capacity` (total sediment transport capacity [t dt⁻¹ => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 - `reservoirs` (reservoirs mask [-])
 - `rivers` (rivers mask [-])
 - `dt` (timestep [s])
 
 # Output
-- `transport_capacity` (masked total sediment transport capacity [t dt-1 => kg s⁻¹])
+- `transport_capacity` (masked total sediment transport capacity [kg s⁻¹])
 """
 function mask_transport_capacity(transport_capacity, reservoirs, rivers, dt)
     # Full deposition in rivers to switch to river concept
@@ -46,7 +46,7 @@ end
 Limit to stream flow and not debris flow and convert transport in [t m⁻³] to ton.
 
 # Arguments
-- `transport_capacity_density` (total sediment transport capacity [t m⁻³ => kg m⁻³])
+- `transport_capacity_density` (total sediment transport capacity [kg m⁻³])
 - `q` (discharge [m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `width` (drain width [m])
@@ -54,7 +54,7 @@ Limit to stream flow and not debris flow and convert transport in [t m⁻³] to 
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt⁻¹ => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function limit_and_convert_transport_capacity(
     transport_capacity_density,
@@ -103,7 +103,7 @@ Total sediment transport capacity based on Govers.
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt⁻¹ => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function transport_capacity_govers(
     q,
@@ -160,7 +160,7 @@ Total sediment transport capacity based on Yalin.
 - `q` (discharge [m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m⁻³])
-- `d50` (median grain size [mm => m])
+- `d50` (median grain size [m])
 - `slope` (slope [-])
 - `width` (drain width [m])
 - `reservoirs` (reservoirs mask [-])
@@ -168,7 +168,7 @@ Total sediment transport capacity based on Yalin.
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt⁻¹ => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function transport_capacity_yalin(
     q::Float64,
@@ -229,11 +229,11 @@ Total flow transportability based on Yalin with particle differentiation.
 # Arguments
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m⁻³])
-- `dm_clay` (clay median grain size [μm => m])
-- `dm_silt` (silt median grain size [μm => m])
-- `dm_sand` (sand median grain size [μm => m])
-- `dm_sagg` (small aggregates median grain size [μm => m])
-- `dm_lagg` (large aggregates median grain size [μm => m])
+- `dm_clay` (clay median grain size [m])
+- `dm_silt` (silt median grain size [m])
+- `dm_sand` (sand median grain size [m])
+- `dm_sagg` (small aggregates median grain size [m])
+- `dm_lagg` (large aggregates median grain size [m])
 - `slope` (slope [-])
 
 # Output
@@ -283,7 +283,7 @@ Transport capacity for a specific grain size based on Yalin with particle differ
 - `q` (discharge [m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m⁻³])
-- `dm` (median grain size [μm => m])
+- `dm` (median grain size [m])
 - `slope` (slope [-])
 - `width` (drain width [m])
 - `reservoirs` (reservoirs mask [-])
@@ -366,7 +366,7 @@ Total sediment transport capacity based on Bagnold.
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt⁻¹ => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function transport_capacity_bagnold(
     q::Float64,
@@ -415,14 +415,14 @@ Total sediment transport capacity based on Engelund and Hansen.
 - `q` (discharge [m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m⁻³])
-- `d50` (median grain size [mm => m])
+- `d50` (median grain size [m])
 - `width` (drain width [m])
 - `length` (drain length [m])
 - `slope` (slope [-])
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt⁻¹ => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function transport_capacity_engelund(
     q::Float64,
@@ -506,7 +506,7 @@ Total sediment transport capacity based on Kodatie.
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt-1 => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function transport_capacity_kodatie(
     q,
@@ -570,14 +570,14 @@ Total sediment transport capacity based on Yang sand and gravel equations.
 - `q` (discharge [m³ s⁻¹])
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m⁻³])
-- `d50` (median grain size [mm => m])
+- `d50` (median grain size [m])
 - `width` (drain width [m])
 - `length` (drain length [m])
 - `slope` (slope [-])
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt-1 => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function transport_capacity_yang(
     q::Float64,
@@ -674,7 +674,7 @@ Total sediment transport capacity based on Molinas and Wu.
 - `dt` (time step [s])
 
 # Output
-- `transport_capacity` (total sediment transport capacity [t dt⁻¹ => kg s⁻¹])
+- `transport_capacity` (total sediment transport capacity [kg s⁻¹])
 """
 function transport_capacity_molinas(q, waterlevel, density, d50, width, length, slope, dt)
     # Transport capacity from Molinas and Wu

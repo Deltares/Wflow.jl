@@ -3,81 +3,81 @@ abstract type AbstractSoilModel end
 "Struct for storing SBM soil model variables"
 @with_kw struct SbmSoilVariables{N}
     n::Int
-    # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm => m]
+    # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [m]
     h3::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Unsaturated store capacity [mm => m]
+    # Unsaturated store capacity [m]
     ustorecapacity::Vector{Float64}
-    # Amount of water in the unsaturated store, per layer [mm => m]
+    # Amount of water in the unsaturated store, per layer [m]
     ustorelayerdepth::Vector{SVector{N, Float64}}
-    # Thickness of unsaturated zone, per layer [mm => m]
+    # Thickness of unsaturated zone, per layer [m]
     ustorelayerthickness::Vector{SVector{N, Float64}}
-    # Saturated store [mm => m]
+    # Saturated store [m]
     satwaterdepth::Vector{Float64}
-    # Drainable water store [mm => m]
+    # Drainable water store [m]
     drainable_waterdepth::Vector{Float64}
-    # Pseudo-water table depth [mm => m] (top of the saturated zone)
+    # Pseudo-water table depth [m] (top of the saturated zone)
     zi::Vector{Float64}
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int}
-    # Transpiration [mm dt⁻¹ => m s⁻¹]
+    # Transpiration [m s⁻¹]
     transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual evaporation from unsaturated store [mm dt⁻¹ => m s⁻¹]
+    # Actual evaporation from unsaturated store [m s⁻¹]
     ae_ustore::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Soil evaporation from unsaturated and saturated store [mm dt⁻¹ => m s⁻¹]
+    # Soil evaporation from unsaturated and saturated store [m s⁻¹]
     soilevap::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Soil evaporation from saturated store [mm dt⁻¹ => m s⁻¹]
+    # Soil evaporation from saturated store [m s⁻¹]
     soilevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual capillary rise [mm dt⁻¹ => m s⁻¹]
+    # Actual capillary rise [m s⁻¹]
     actcapflux::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual transpiration from saturated store [mm dt⁻¹ => m s⁻¹]
+    # Actual transpiration from saturated store [m s⁻¹]
     actevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total actual evapotranspiration [mm dt⁻¹ => m s⁻¹]
+    # Total actual evapotranspiration [m s⁻¹]
     actevap::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual infiltration into the unsaturated zone [mm dt⁻¹ => m s⁻¹]
+    # Actual infiltration into the unsaturated zone [m s⁻¹]
     actinfilt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual infiltration non-compacted fraction [mm dt⁻¹ => m s⁻¹]
+    # Actual infiltration non-compacted fraction [m s⁻¹]
     actinfiltsoil::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual infiltration compacted fraction [mm dt⁻¹ => m s⁻¹]
+    # Actual infiltration compacted fraction [m s⁻¹]
     actinfiltpath::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual infiltration (compacted and the non-compacted areas) [mm dt⁻¹ => m s⁻¹]
+    # Actual infiltration (compacted and the non-compacted areas) [m s⁻¹]
     infiltsoilpath::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Infiltration excess water [mm dt⁻¹ => m s⁻¹]
+    # Infiltration excess water [m s⁻¹]
     infiltexcess::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Water that cannot infiltrate due to saturated soil (saturation excess) [mm dt⁻¹ => m s⁻¹]
+    # Water that cannot infiltrate due to saturated soil (saturation excess) [m s⁻¹]
     excesswater::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Water exfiltrating during saturation excess conditions [mm dt⁻¹ => m s⁻¹]
+    # Water exfiltrating during saturation excess conditions [m s⁻¹]
     exfiltsatwater::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Excess water for non-compacted fraction [mm dt⁻¹ => m s⁻¹]
+    # Excess water for non-compacted fraction [m s⁻¹]
     excesswatersoil::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Excess water for compacted fraction [mm dt⁻¹ => m s⁻¹]
+    # Excess water for compacted fraction [m s⁻¹]
     excesswaterpath::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm dt⁻¹ => m s⁻¹]
+    # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [m s⁻¹]
     runoff::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Net surface runoff (surface runoff - actual open water evaporation) [mm dt⁻¹ => m s⁻¹]
+    # Net surface runoff (surface runoff - actual open water evaporation) [m s⁻¹]
     net_runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
     vwc::Vector{SVector{N, Float64}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
     vwc_perc::Vector{SVector{N, Float64}}
-    # Root water storage [mm => m] in unsaturated and saturated zone (excluding theta_r)
+    # Root water storage [m] in unsaturated and saturated zone (excluding theta_r)
     rootstore::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
     vwc_root::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
     vwc_percroot::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Amount of available water in the unsaturated zone [mm => m]
+    # Amount of available water in the unsaturated zone [m]
     ustoredepth::Vector{Float64} = zeros(n)
-    # Downward flux from unsaturated to saturated zone [mm dt⁻¹ => m s⁻¹]
+    # Downward flux from unsaturated to saturated zone [m s⁻¹]
     transfer::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Net recharge to saturated store [mm dt⁻¹ => m s⁻¹]
+    # Net recharge to saturated store [m s⁻¹]
     recharge::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Actual leakage from saturated store [mm dt⁻¹ => m s⁻¹]
+    # Actual leakage from saturated store [m s⁻¹]
     actleakage::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total water storage (excluding floodplain volume and reservoirs) [mm => m]
+    # Total water storage (excluding floodplain volume and reservoirs) [m]
     total_storage::Vector{Float64} = zeros(Float64, n)
-    # Total soil water storage [mm => m]
+    # Total soil water storage [m]
     total_soilwater_storage::Vector{Float64}
-    # Top soil temperature [ᵒC => K]
+    # Top soil temperature [K]
     tsoil::Vector{Float64} = to_SI.(fill(10.0, n), Ref(ABSOLUTE_DEGREES))
     # Soil infiltration reduction factor (when soil is frozen) [-]
     f_infiltration_reduction::Vector{Float64} = ones(n)
@@ -95,25 +95,25 @@ end
     theta_r::Vector{Float64}
     # Field capacity water content [-]
     theta_fc::Vector{Float64}
-    # Soilwater capacity [mm => m]
+    # Soilwater capacity [m]
     soilwatercapacity::Vector{Float64}
     # Multiplication factor [-] applied to kv_z (vertical flow)
     kvfrac::Vector{SVector{N, Float64}}
-    # Air entry pressure [cm => m] of soil (Brooks-Corey)
+    # Air entry pressure [m] of soil (Brooks-Corey)
     hb::Vector{Float64}
-    # Soil thickness [mm => m]
+    # Soil thickness [m]
     soilthickness::Vector{Float64}
-    # Thickness of soil layers [mm => m]
+    # Thickness of soil layers [m]
     act_thickl::Vector{SVector{N, Float64}}
-    # Cumulative sum of soil layers [mm => m], starting at soil surface (0)
+    # Cumulative sum of soil layers [m], starting at soil surface (0)
     sumlayers::Vector{SVector{M, Float64}}
-    # Infiltration capacity of the compacted areas [mm dt⁻¹ => m s⁻¹]
+    # Infiltration capacity of the compacted areas [m s⁻¹]
     infiltcappath::Vector{Float64}
-    # Soil infiltration capacity [mm dt⁻¹ => m s⁻¹]
+    # Soil infiltration capacity [m s⁻¹]
     infiltcapsoil::Vector{Float64}
-    # Maximum leakage [mm dt⁻¹ => m s⁻¹] from saturated zone
+    # Maximum leakage [m s⁻¹] from saturated zone
     maxleakage::Vector{Float64}
-    # Parameter [mm => m] controlling capillary rise
+    # Parameter [m] controlling capillary rise
     cap_hmax::Vector{Float64}
     # Coefficient [-] controlling capillary rise
     cap_n::Vector{Float64}
@@ -125,19 +125,19 @@ end
     cf_soil::Vector{Float64}
     # Fraction of compacted area  [-]
     pathfrac::Vector{Float64}
-    # Controls how roots are linked to water table [mm⁻¹ => m⁻¹]
+    # Controls how roots are linked to water table [m⁻¹]
     rootdistpar::Vector{Float64}
     # Fraction of the root length density in each soil layer [-]
     rootfraction::Vector{SVector{N, Float64}}
-    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm => m]
+    # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [m]
     h1::Vector{Float64}
-    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm => m]
+    # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [m]
     h2::Vector{Float64}
-    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm => m]
+    # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [m]
     h3_high::Vector{Float64}
-    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm => m]
+    # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [m]
     h3_low::Vector{Float64}
-    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm => m]
+    # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [m]
     h4::Vector{Float64}
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
     alpha_h1::Vector{Float64}
@@ -199,44 +199,44 @@ end
 "Struct for storing SBM soil model boundary conditions"
 @with_kw struct SbmSoilBC
     n::Int
-    # Water flux at the soil surface [mm dt⁻¹ => m s⁻¹]
+    # Water flux at the soil surface [m s⁻¹]
     water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential transpiration rate [mm dt⁻¹ => m s⁻¹]
+    # Potential transpiration rate [m s⁻¹]
     potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Potential soil evaporation rate [mm dt⁻¹ => m s⁻¹]
+    # Potential soil evaporation rate [m s⁻¹]
     potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
 struct KvExponential
-    # Vertical hydraulic conductivity [mm dt⁻¹ => m s⁻¹] at soil surface
+    # Vertical hydraulic conductivity [m s⁻¹] at soil surface
     kv_0::Vector{Float64}
-    # A scaling parameter [mm⁻¹ => m⁻¹] (controls exponential decline of kv_0)
+    # A scaling parameter [m⁻¹] (controls exponential decline of kv_0)
     f::Vector{Float64}
 end
 
 "Exponential constant depth profile of vertical hydraulic conductivity"
 struct KvExponentialConstant
     exponential::KvExponential
-    # Depth [mm => m] from soil surface for which exponential decline of kv_0 is valid
+    # Depth [m] from soil surface for which exponential decline of kv_0 is valid
     z_exp::Vector{Float64}
 end
 
 "Layered depth profile of vertical hydraulic conductivity"
 struct KvLayered{N}
-    # Vertical hydraulic conductivity [mm dt⁻¹ => m s⁻¹] per soil layer
+    # Vertical hydraulic conductivity [m s⁻¹] per soil layer
     kv::Vector{SVector{N, Float64}}
 end
 
 "Layered exponential depth profile of vertical hydraulic conductivity"
 struct KvLayeredExponential{N}
-    # A scaling parameter [mm⁻¹ => m⁻¹] (controls exponential decline of kv_0)
+    # A scaling parameter [m⁻¹] (controls exponential decline of kv_0)
     f::Vector{Float64}
-    # Vertical hydraulic conductivity [mm dt⁻¹ => m s⁻¹] per soil layer
+    # Vertical hydraulic conductivity [m s⁻¹] per soil layer
     kv::Vector{SVector{N, Float64}}
     # Number of soil layers [-] with vertical hydraulic conductivity value `kv`
     nlayers_kv::Vector{Int}
-    # Depth [mm => m] from soil surface for which layered profile is valid
+    # Depth [m] from soil surface for which layered profile is valid
     z_layered::Vector{Float64}
 end
 

@@ -25,9 +25,9 @@ function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index
 end
 
 @with_kw struct GwfRiverParameters
-    # [m² d⁻¹ => m² s⁻¹]
+    # [m² s⁻¹]
     infiltration_conductance::Vector{Float64}
-    # [m² d⁻¹ => m² s⁻¹]
+    # [m² s⁻¹]
     exfiltration_conductance::Vector{Float64}
     bottom::Vector{Float64} # [m]
 end
@@ -38,11 +38,11 @@ end
     stage::Vector{Float64} = fill(MISSING_VALUE, n)
     # [m³]
     storage::Vector{Float64} = fill(MISSING_VALUE, n)
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux::Vector{Float64} = fill(MISSING_VALUE, n)
     # [m³]
     flux_cumulative::Vector{Float64} = zeros(n)
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -124,15 +124,15 @@ end
 @with_kw struct DrainageParameters
     # [m]
     elevation::Vector{Float64}
-    # [m² d⁻¹ => m² s⁻¹]
+    # [m² s⁻¹]
     conductance::Vector{Float64}
 end
 
 @with_kw struct DrainageVariables
     n::Int
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux::Vector{Float64} = fill(MISSING_VALUE, n)
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux_average::Vector{Float64} = zeros(n)
     # [m³]
     flux_cumulative::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -186,18 +186,18 @@ function flux!(
 end
 
 @with_kw struct HeadBoundaryParameters
-    # [m² d⁻¹] => [m² s⁻¹]
+    # [m² s⁻¹]
     conductance::Vector{Float64}
 end
 
 @with_kw struct HeadBoundaryVariables
     # [m]
     head::Vector{Float64}
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux::Vector{Float64}
     # [m³]
     flux_cumulative::Vector{Float64}
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux_average::Vector{Float64}
 end
 
@@ -232,12 +232,12 @@ end
 
 @with_kw struct RechargeVariables
     n::Int
-    # [m d⁻¹ => m s⁻¹]
+    # [m s⁻¹]
     rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux::Vector{Float64} = zeros(n)
     flux_cumulative::Vector{Float64} = zeros(n)
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -270,13 +270,13 @@ function flux!(
 end
 
 @with_kw struct WellVariables
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     volumetric_rate::Vector{Float64}
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux::Vector{Float64}
     # [m³]
     flux_cumulative::Vector{Float64}
-    # [m³ d⁻¹ => m³ s⁻¹]
+    # [m³ s⁻¹]
     flux_average::Vector{Float64}
 end
 

@@ -3,14 +3,14 @@ abstract type AbstractSedimentToRiverModel end
 "Struct to store total sediment reaching the river model variables"
 @with_kw struct SedimentToRiverVariables
     n::Int
-    # Total sediment rate to the river [t dt⁻¹ => kg s⁻¹]
+    # Total sediment rate to the river [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
 @with_kw struct SedimentToRiverBC
     n::Int
-    # Deposition material rate [t dt⁻¹ => kg s⁻¹]
+    # Deposition material rate [kg s⁻¹]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -55,32 +55,32 @@ end
 "Struct to store differentiated sediment reaching the river model variables"
 @with_kw struct SedimentToRiverDifferentiationVariables
     n::Int
-    # Total sediment rate [t dt⁻¹ => kg s⁻¹]
+    # Total sediment rate [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Clay rate [t dt⁻¹ => kg s⁻¹]
+    # Clay rate [kg s⁻¹]
     clay_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt rate [t dt⁻¹ => kg s⁻¹]
+    # Silt rate [kg s⁻¹]
     silt_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand rate [t dt⁻¹ => kg s⁻¹]
+    # Sand rate [kg s⁻¹]
     sand_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates rate [t dt⁻¹ => kg s⁻¹]
+    # Small aggregates rate [kg s⁻¹]
     sagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates rate [t dt⁻¹ => kg s⁻¹]
+    # Large aggregates rate [kg s⁻¹]
     lagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
 @with_kw struct SedimentToRiverDifferentiationBC
     n::Int
-    # Clay deposition rate [t dt⁻¹ => kg s⁻¹]
+    # Clay deposition rate [kg s⁻¹]
     deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt deposition rate [t dt⁻¹ => kg s⁻¹]
+    # Silt deposition rate [kg s⁻¹]
     deposition_silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand deposition rate [t dt⁻¹ => kg s⁻¹]
+    # Sand deposition rate [kg s⁻¹]
     deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates deposition rate [t dt⁻¹ => kg s⁻¹]
+    # Small aggregates deposition rate [kg s⁻¹]
     deposition_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates deposition rate [t dt⁻¹ => kg s⁻¹]
+    # Large aggregates deposition rate [kg s⁻¹]
     deposition_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 

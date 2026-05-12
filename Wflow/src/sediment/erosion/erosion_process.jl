@@ -15,10 +15,10 @@
 Rainfall erosion model based on EUROSEM.
 
 # Arguments
-- `precip` (precipitation [mm dt⁻¹ => m s⁻¹])
-- `interception` (interception [mm dt⁻¹ => m s⁻¹])
+- `precip` (precipitation [m s⁻¹])
+- `interception` (interception [m s⁻¹])
 - `waterlevel` (water level [m])
-- `soil_detachability` (soil detachability [g J⁻¹ => kg J⁻¹])
+- `soil_detachability` (soil detachability [kg J⁻¹])
 - `eurosem_exponent` (EUROSEM exponent [-])
 - `canopyheight` (canopy height [m])
 - `canopygapfraction` (canopy gap fraction [-])
@@ -27,7 +27,7 @@ Rainfall erosion model based on EUROSEM.
 - `dt` (timestep [s])
 
 # Output
-- `rainfall_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
+- `rainfall_erosion` (soil loss [kg s⁻¹])
 """
 function rainfall_erosion_eurosem(
     precip::Float64,
@@ -91,7 +91,7 @@ end
 Rainfall erosion model based on ANSWERS.
 
 # Arguments
-- `precip` (precipitation [mm dt⁻¹ => m s⁻¹])
+- `precip` (precipitation [m s⁻¹])
 - `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha-1 h-1 MJ-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
 - `answers_rainfall_factor` (ANSWERS rainfall erosion factor [-], treated as unitless but could have units)
@@ -99,7 +99,7 @@ Rainfall erosion model based on ANSWERS.
 - `dt` (timestep [s])
 
 # Output
-- `rainfall_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
+- `rainfall_erosion` (soil loss [kg s⁻¹])
 """
 function rainfall_erosion_answers(
     precip::Float64,
@@ -141,7 +141,7 @@ Overland flow erosion model based on ANSWERS.
 - `dt` (timestep [s])
 
 # Output
-- `overland_flow_erosion` (soil loss [t dt⁻¹ => kg s⁻¹])
+- `overland_flow_erosion` (soil loss [kg s⁻¹])
 """
 function overland_flow_erosion_answers(
     overland_flow::Float64,
@@ -175,8 +175,8 @@ end
 Calculate total soil erosion and particle differentiation.
 
 # Arguments
-- `rainfall_erosion` (soil loss from rainfall erosion [t dt⁻¹ => kg s⁻¹])
-- `overland_flow_erosion` (soil loss from overland flow erosion [t dt⁻¹ => kg s⁻¹])
+- `rainfall_erosion` (soil loss from rainfall erosion [kg s⁻¹])
+- `overland_flow_erosion` (soil loss from overland flow erosion [kg s⁻¹])
 - `clay_fraction` (clay fraction [-])
 - `silt_fraction` (silt fraction [-])
 - `sand_fraction` (sand fraction [-])
@@ -184,12 +184,12 @@ Calculate total soil erosion and particle differentiation.
 - `lagg_fraction` (large aggregates fraction [-])
 
 # Output
-- `soil_erosion` (total soil loss [t dt⁻¹ => kg s⁻¹])
-- `clay_erosion` (clay loss [t dt⁻¹ => kg s⁻¹])
-- `silt_erosion` (silt loss [t dt⁻¹ => kg s⁻¹])
-- `sand_erosion` (sand loss [t dt⁻¹ => kg s⁻¹])
-- `sagg_erosion` (small aggregates loss [t dt⁻¹ => kg s⁻¹])
-- `lagg_erosion` (large aggregates loss [t dt⁻¹ => kg s⁻¹])
+- `soil_erosion` (total soil loss [kg s⁻¹])
+- `clay_erosion` (clay loss [kg s⁻¹])
+- `silt_erosion` (silt loss [kg s⁻¹])
+- `sand_erosion` (sand loss [kg s⁻¹])
+- `sagg_erosion` (small aggregates loss [kg s⁻¹])
+- `lagg_erosion` (large aggregates loss [kg s⁻¹])
 """
 function total_soil_erosion(
     rainfall_erosion,
@@ -233,15 +233,15 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 
 # Arguments
 - `waterlevel` (water level [m])
-- `d50` (median grain size [mm => m])
+- `d50` (median grain size [m])
 - `width` (width [m])
 - `length` (length [m])
 - `slope` (slope [-])
 - `dt` (timestep [seconds])
 
 # Output
-- `bed` (potential river erosion [t dt⁻¹ => kg s⁻¹])
-- `bank` (potential bank erosion [t dt⁻¹ => kg s⁻¹])
+- `bed` (potential river erosion [kg s⁻¹])
+- `bank` (potential bank erosion [kg s⁻¹])
 """
 function river_erosion_julian_torres(
     waterlevel::Float64,
@@ -313,14 +313,14 @@ end
 River erosion of the previously deposited sediment.
 
 # Arguments
-- `store_vec` (sediment_store [t => kg])
-- `excess_sediment` (excess sediment [t Δt⁻¹ => kg s⁻¹])
+- `store_vec` (sediment_store [kg])
+- `excess_sediment` (excess sediment [kg s⁻¹])
 - `dt` (timestep [s])
 - `v` (index [-])
 
 # Output
-- `erosion` (river erosion [t dt⁻¹ => kg s⁻¹])
-- `excess_sediment` (updated excess sediment [t dt⁻¹ => kg s⁻¹])
+- `erosion` (river erosion [kg s⁻¹])
+- `excess_sediment` (updated excess sediment [kg s⁻¹])
 """
 function river_erosion_store!(
     store_vec::Vector{Float64},
