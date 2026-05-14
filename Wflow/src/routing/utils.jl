@@ -16,7 +16,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
         # find the node id of the downstream cell
         to_node = searchsortedfirst(indices, to_index)
         if to_node > length(indices) || indices[to_node] != to_index
-            @warn "Invalid drainage direction value at node `$from_node` (LDD=`$ldd_val`), assuming pit"
+            @warn "Invalid drainage direction value at node `$from_node` (LDD=`$ldd_val`), assign pit value at node"
             ldd[from_node] = 5
             continue
         end

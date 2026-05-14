@@ -377,9 +377,9 @@ end
     config.dir_output = mktempdir()
 
     config.input.subbasin_location__count = "wflow_landuse"
-    config.input.subbasin_active_area__count = [10, 3]
+    config.input.subbasin_active_location__count = [10, 3]
     # disable csv output to prevent errors
-    config.output.csv = Wflow.CSVSection(; _was_specified = false, path = "")
+    # config.output.csv = Wflow.CSVSection(; _was_specified = false, path = "")
 
     # important to test this first, as the flag will be set to false after the first model
     # initialization, and we want to verify that the warning is logged
@@ -393,11 +393,14 @@ end
 
     @test_logs (
         :warn,
-        "Invalid drainage direction value at node `1` (LDD=`7`), assuming pit",
+        "Invalid drainage direction value at node `1` (LDD=`7`), assign pit value at node",
     ) match_mode = :any Wflow.Model(config)
 
     @test_logs (
         :warn,
         "Allocation area ids `[18, 30, 31]` are present both inside and outside the active model domain. This may lead to incorrect water allocation.",
     ) match_mode = :any Wflow.Model(config)
+
+    @test_logs (:warn, "Inactive coordinate specified for output, skipping") match_mode =
+        :any Wflow.Model(config)
 end

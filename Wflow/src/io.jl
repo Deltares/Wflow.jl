@@ -237,9 +237,9 @@ function setup_scalar_netcdf(
     calendar,
     time_units,
     extra_dim,
-    config;
+    config,
+    indices;
     float_type = Float32,
-    indices = nothing,
 )
     (; land) = modelmap
     ds = create_tracked_netcdf(path)
@@ -579,17 +579,15 @@ function locations_map(ds, mapname, config, indices = nothing)
         config,
         mapname,
         Writer;
+        sel = indices,
         metadata = ParameterMetadata(; type = Int, allow_missing = true),
     )
-    if !isnothing(indices)
-        map_2d = mask_to_indices(map_2d, indices; fill_value = missing)
-    end
     ids = unique(skipmissing(map_2d))
     return ids
 end
 
 "Get a Vector{String} of all columns names for the CSV header, except the first, time"
-function csv_header(cols, dataset, config, indices = nothing)
+function csv_header(cols, dataset, config, indices)
     out = String[]
     for col in cols
         (; header, map) = col
@@ -790,8 +788,8 @@ function Writer(config, modelmap, domain, nc_static; extra_dim = nothing)
             config.time.calendar,
             config.time.time_units,
             extra_dim,
-            config;
-            indices = indices,
+            config,
+            indices,
         )
 
         for var in config.output.netcdf_scalar.variable
@@ -1070,8 +1068,12 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
             ind = rev_inds[index.x, index.y]
+            if iszero(ind)
+                @warn "Inactive index specified for output, skipping" fileformat param =
+                    parameter index
+                return _ -> missing
+            end
             @info "Adding scalar output for linear index." fileformat param = parameter index
-            iszero(ind) && error("inactive loc specified for output")
             return A -> getindex(A, ind)
         end
     elseif !isnothing(coordinate)
@@ -1081,8 +1083,12 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
         _, ix = findmin(abs.(x_nc .- x))
         I = CartesianIndex(ix, iy)
         i = rev_inds[I]
+        if iszero(i)
+            @warn "Inactive coordinate specified for output, skipping" fileformat param =
+                parameter x y
+            return _ -> missing
+        end
         @info "Adding scalar output for coordinate." fileformat param = parameter x y
-        iszero(i) && error("inactive coordinate specified for output")
         return A -> getindex(A, i)
     else
         error("unknown reducer")

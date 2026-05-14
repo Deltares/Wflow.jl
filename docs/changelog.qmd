@@ -58,7 +58,7 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 - Support for running only a subsection of the model, either by using a smaller active
   domain via `input.subbasin_location__count`, or specify specific subcatchments by linking
   `input.subbasin_location__count` to a subcatchment map, and indicate which subbasins
-  should be active by providing their IDs in `input.subbasin_active_area__count`.
+  should be active by providing their IDs in `input.subbasin_active_location__count`.
 
 ## v1.0.2 - 2026-03-05
 

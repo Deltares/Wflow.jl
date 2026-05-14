@@ -168,7 +168,7 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     reservoir_area__count::Union{Nothing, String} = nothing
     reservoir_location__count::Union{Nothing, String} = nothing
     subbasin_location__count::String
-    subbasin_active_area__count::Union{Nothing, Vector{Int}} = nothing
+    subbasin_active_location__count::Union{Nothing, Vector{Int}} = nothing
     # Variable name mappings
     forcing::InputEntries
     static::InputEntries
