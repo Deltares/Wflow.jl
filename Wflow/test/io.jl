@@ -265,7 +265,7 @@ end
 
 @testitem "Model initialization" begin
     using NCDatasets: dimnames
-    using Wflow: get_field_in_model, to_SI, to_SI!, get_metadata
+    using Wflow: get_field_in_model, get_metadata
 
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
@@ -305,19 +305,19 @@ end
 
         function test_warm_state(var_name, i, val)
             A, metadata = get_field_in_model(model, var_name)
-            @test A[i] ≈ to_SI(val, metadata.unit)
+            @test A[i] ≈ val
         end
 
         test_warm_state("reservoir_water_surface__elevation", 1, 3.6172022486284856)
-        test_warm_state("soil_water_saturated_zone__depth", 9115, 477.13548089422125)
-        test_warm_state("snowpack_dry_snow__leq_depth", 5, 11.019233179897599)
-        test_warm_state("soil_surface__temperature", 5, 0.21814478119608938)
+        test_warm_state("soil_water_saturated_zone__depth", 9115, 0.47713548089422125)
+        test_warm_state("snowpack_dry_snow__leq_depth", 5, 0.011019233179897598)
+        test_warm_state("soil_surface__temperature", 5, 273.36814478119607)
         var_name = "soil_layer_water_unsaturated_zone__depth"
-        (; lens, unit) = Wflow.get_metadata(var_name, land)
-        @test lens(model)[50063][1] ≈ to_SI(9.969116007201725, unit)
+        (; lens) = Wflow.get_metadata(var_name, land)
+        @test lens(model)[50063][1] ≈ 0.009969116007201725
         test_warm_state("snowpack_liquid_water__depth", 5, 0.0)
         test_warm_state("vegetation_canopy_water__depth", 50063, 0.0)
-        test_warm_state("soil_water_saturated_zone__depth", 50063, 558.8578304603327)
+        test_warm_state("soil_water_saturated_zone__depth", 50063, 0.5588578304603328)
         test_warm_state(
             "river_water__instantaneous_volume_flow_rate",
             149,
@@ -355,29 +355,26 @@ end
 
     @testset "initial parameter values" begin
         (; land, clock) = model
-        dt_val = Wflow.tosecond(clock.dt)
 
         function test_initial_parameter_value(var_name, i, val; rtol = nothing)
             A, metadata = Wflow.get_field_in_model(model, var_name)
-            (; unit) = metadata
-            val_SI = val isa Vector ? to_SI!(val, unit; dt_val) : to_SI(val, unit; dt_val)
             if isnothing(rtol)
-                @test isapprox(A[i], val_SI)
+                @test isapprox(A[i], val)
             else
-                @test isapprox(A[i], val_SI; rtol)
+                @test isapprox(A[i], val; rtol)
             end
         end
 
         test_initial_parameter_value(
             "snowpack__degree_day_coefficient",
             1,
-            3.7565300464630127,
+            4.347835701924783e-8,
         )
-        test_initial_parameter_value("soil__thickness", 1, 2000.0)
+        test_initial_parameter_value("soil__thickness", 1, 2.0)
         test_initial_parameter_value(
             "atmosphere_water__precipitation_volume_flux",
             49951,
-            2.2100000381469727;
+            2.5578704145219592e-8;
             rtol = 1e-7,
         )
         test_initial_parameter_value(
@@ -411,17 +408,11 @@ end
         Wflow.load_dynamic_input!(model)
 
         (; land) = model
-        @test land.snow.parameters.cfmax[1] ==
-              to_SI(2.0, get_metadata("snowpack__degree_day_coefficient").unit)
-        @test land.soil.parameters.soilthickness[1] ≈
-              to_SI(2000.0 * 3.0 + 100.0, get_metadata("soil__thickness").unit)
+        @test land.snow.parameters.cfmax[1] == 2.3148148148148148e-8
+        @test land.soil.parameters.soilthickness[1] ≈ 6.1000000000000005
         @test isapprox(
             land.atmospheric_forcing.precipitation[49951],
-            to_SI(
-                1.5 * 2.2100000381469727,
-                get_metadata("atmosphere_water__precipitation_volume_flux").unit;
-                dt_val = model.config.time.timestepsecs,
-            ),
+            3.8368056217829386e-8,
             rtol = 1e-7,
         )
         @test land.soil.parameters.c[1] ≈ [

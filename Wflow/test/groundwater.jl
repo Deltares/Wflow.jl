@@ -255,16 +255,13 @@ end
 end
 
 @testitem "integration: unconfined transient 1D" begin
-    using Wflow: to_SI, Unit
     using StaticArrays: SVector
     include("testing_utils.jl")
-    M_PER_DAY = Unit(; m = 1, d = -1)
-    DAY = Unit(; d = 1)
 
     nrow = 1
     ncol = 9
     shape = (nrow, ncol)
-    conductivity = to_SI(200.0, M_PER_DAY)
+    conductivity = 0.0023148148148148147
     top = 150.0
     bottom = 0.0
     specific_yield = 0.15
@@ -331,7 +328,7 @@ end
         theta_r = fill(0.05, n),
     )
 
-    time = to_SI(20.0, DAY)
+    time = 1.728e6
     t = 0.0
     (; alpha_coefficient) = gwf_model.timestepping
     while t < time
@@ -349,15 +346,13 @@ end
 end
 
 @testitem "integration: unconfined transient 1D, exponential conductivity" begin
-    using Wflow: to_SI, Unit, MM_PER_DT
     using StaticArrays: SVector
-    DAY = Unit(; d = 1)
     include("testing_utils.jl")
     dt = 86400.0
     nrow = 1
     ncol = 9
     shape = (nrow, ncol)
-    conductivity = to_SI(200.0, MM_PER_DT; dt_val = dt)
+    conductivity = 2.3148148148148148e-6
     top = 150.0
     bottom = 0.0
     specific_yield = 0.15
@@ -424,7 +419,7 @@ end
         theta_r = fill(0.05, n),
     )
 
-    time = to_SI(20.0, DAY)
+    time = 1.728e6
     t = 0.0
     (; alpha_coefficient) = gwf_model.timestepping
     while t < time

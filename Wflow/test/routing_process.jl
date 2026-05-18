@@ -20,37 +20,29 @@
 end
 
 @testitem "unit: ssf_celerity" begin
-    using Wflow: to_SI, Unit
-    M_PER_DAY = Unit(; m = 1, d = -1)
     zi = 0.3
     theta_e = 0.274
     slope = 0.00586
     i = 1
 
     # Case kh_profile::KhExponential
-    kh_profile =
-        Wflow.KhExponential([to_SI(24.152037048339846, M_PER_DAY)], [1.8001038115471601])
-    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈
-          to_SI(0.3010012323985728, M_PER_DAY)
+    kh_profile = Wflow.KhExponential([0.0002795374658372667], [1.8001038115471601])
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈ 3.4838105601686665e-6
 
     # Case kh_profile::KhExponentialConstant
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
-    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈
-          to_SI(0.3603676427614705, M_PER_DAY)
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, i) ≈ 4.170921791220723e-6
 end
 
 @testitem "unit: kw_ssf_newton_raphson" begin
-    using Wflow: to_SI, M3_PER_DAY, Unit
-    DAY = Unit(; d = 1)
-
-    ssf = to_SI(754.993, M3_PER_DAY)
+    ssf = 0.008738344907407408
     constant_term = 77.774
-    celerity = to_SI(12.254, M3_PER_DAY)
-    dt = to_SI(1.0, DAY)
+    celerity = 0.0001418287037037037
+    dt = 86400.0
     dx = 1103.816
 
     @test Wflow.kw_ssf_newton_raphson(ssf, constant_term, celerity, dt, dx) ≈
-          to_SI(942.5785713676884, M3_PER_DAY)
+          0.01090947420564454
 end
 
 @testitem "kinematic wave overland flow" begin
@@ -391,7 +383,6 @@ end
 end
 
 @testitem "unit: local_inertial_river_update!" begin
-    using Wflow: to_SI, MM_PER_DT, MM
     dt = 86400.0
     n = 2
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
@@ -406,8 +397,8 @@ end
                     external_inflow = [-1.0],
                     inflow_overland = [3000.0],
                     inflow_subsurface = [5000.0],
-                    precipitation = [to_SI(2.0, MM_PER_DT; dt_val = dt)],
-                    evaporation = [to_SI(1.0, MM_PER_DT; dt_val = dt)],
+                    precipitation = [2.3148148148148148e-8],
+                    evaporation = [1.1574074074074074e-8],
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1, 2],
@@ -517,7 +508,7 @@ end
     @test river_flow_model.boundary_conditions.reservoir.variables.outflow_cumulative[1] ≈
           0.1850918639793476
     @test river_flow_model.boundary_conditions.reservoir.variables.actevap_cumulative[1] ≈
-          to_SI(0.011574074074074073, MM)
+          1.1574074074074073e-5
     @test river_flow_model.variables.q[1] ≈ 0.00018509186397934759
     @test river_flow_model.variables.q_cumulative[1] ≈ -575303.5933591384
 
@@ -703,7 +694,6 @@ end
 end
 
 @testitem "unit: kinwave_river_update!" begin
-    using Wflow: to_SI, MM_PER_DT, MM
     # Test river kinematic wave routing on a 2-node graph (1 → 2).
     # Node 1 has a simple reservoir (outflowfunc = simple) and a negative external inflow
     # (i.e. abstraction). The test verifies discharge, water depth, storage and averaged
@@ -723,8 +713,8 @@ end
                 boundary_conditions = Wflow.ReservoirBC(;
                     n,
                     external_inflow = [-0.1],
-                    precipitation = [to_SI(0.01799999922513961, MM_PER_DT; dt_val = dt)],
-                    evaporation = [to_SI(0.46000000834465027, MM_PER_DT; dt_val = dt)],
+                    precipitation = [2.0833332436504178e-10],
+                    evaporation = [5.324074170655674e-9],
                     inflow_overland = [0.0],
                     inflow_subsurface = [0.02735223635554672],
                 ),
@@ -789,12 +779,10 @@ end
     @test reservoir.variables.waterlevel[1] ≈ 29.654579645252387
     @test reservoir.variables.storage[1] ≈ 4.443628667214138e7
     @test reservoir.variables.outflow[1] ≈ 3.0009999145314317
-    @test reservoir.variables.actevap_cumulative[1] ≈
-          to_SI(0.005295387542208319, MM; dt_val = dt)
+    @test reservoir.variables.actevap_cumulative[1] ≈ 5.295387542208319e-6
 end
 
 @testitem "unit: local inertial river flow with one reservoir" begin
-    using Wflow: to_SI, MM_PER_DT, MM
     # Test local inertial river routing (no floodplain) on a 3-node graph (1 → 2 → 3) and a
     # simple reservoir (outflowfunc = simple) at node 2. Each sub-step of the local inertial
     # update is called and verified individually:
@@ -816,12 +804,8 @@ end
                     external_inflow = [0.0],
                     inflow_overland = [0.0],
                     inflow_subsurface = [0.04279912663469156],
-                    precipitation = [
-                        to_SI(0.017999999225139618, MM_PER_DT; dt_val = model_dt),
-                    ],
-                    evaporation = [
-                        to_SI(0.46000000834465027, MM_PER_DT; dt_val = model_dt),
-                    ],
+                    precipitation = [2.0833332436504186e-10],
+                    evaporation = [5.324074170655674e-9],
                 ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [2],
@@ -925,7 +909,7 @@ end
     @test river_flow_model.boundary_conditions.reservoir.boundary_conditions.inflow_cumulative[1] ≈
           525.2968994074305
     @test river_flow_model.boundary_conditions.reservoir.variables.actevap_cumulative[1] ≈
-          to_SI(0.004843999273837613, MM)
+          4.843999273837613e-6
 
     Wflow.update_water_depth_and_storage!(river_flow_model, domain.river, dt)
 
@@ -1300,13 +1284,10 @@ end
 end
 
 @testitem "local inertial long channel MacDonald (1997)" begin
-    using Wflow: Unit, to_SI
     using QuadGK: quadgk
     using Graphs: DiGraph, add_edge!, ne
     using Statistics: mean
     using Wflow: GRAVITATIONAL_ACCELERATION
-
-    CM = Unit(; cm = 1)
 
     L = 1000.0
     dx = 5.0
@@ -1430,7 +1411,7 @@ end
     end
 
     # test for mean absolute error [m]
-    @test mean(abs.(sw_river.variables.h .- h_a)) ≈ to_SI(1.873574206931199, CM)
+    @test mean(abs.(sw_river.variables.h .- h_a)) ≈ 0.01873574206931199
 end
 
 @testitem "unit: local_inertial_flow" begin
