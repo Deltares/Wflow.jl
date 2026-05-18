@@ -6,7 +6,8 @@
     "type": "Int64",
     "description": "Local drain direction (1-9)",
     "allow_missing": true,
-    "allow_dynamic_input": false
+    "allow_dynamic_input": false,
+    "allow_output": false
   },
   "basin_pit_location__mask": {
     "unit": "-",
@@ -15,7 +16,8 @@
     "type": "Bool",
     "description": "Pit location mask",
     "allow_missing": false,
-    "allow_dynamic_input": false
+    "allow_dynamic_input": false,
+    "allow_output": false
   },
   "land_water_allocation_area__count": {
     "unit": "-",
@@ -24,7 +26,8 @@
     "type": "Int64",
     "description": "Water allocation area ids",
     "allow_missing": false,
-    "allow_dynamic_input": false
+    "allow_dynamic_input": false,
+    "allow_output": false
   },
   "river_location__mask": {
     "unit": "-",
@@ -33,7 +36,8 @@
     "type": "Bool",
     "description": "River mask (0-1)",
     "allow_missing": false,
-    "allow_dynamic_input": false
+    "allow_dynamic_input": false,
+    "allow_output": false
   },
   "subbasin_location__count": {
     "unit": "-",
@@ -42,6 +46,7 @@
     "type": "Int64",
     "description": "Subbasin ids",
     "allow_missing": true,
-    "allow_dynamic_input": false
+    "allow_dynamic_input": false,
+    "allow_output": false
   }
 }

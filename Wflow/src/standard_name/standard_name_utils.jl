@@ -19,6 +19,7 @@ Metadata associated with parameters and variables.
 - `description`: The description of the parameter/variable provided in the Wflow docs
 - `allow_missing`: Whether the parameter/variable is allowed to have missing entries
 - `allow_dynamic_input`: Allow updating this parameter from input via cyclic/forcing
+- `allow_output`: Whether the parameter/variable is allowed as model output
 - `dimname`: The name of the third dimension of the parameter/variable if it exists
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
@@ -35,6 +36,7 @@ Metadata associated with parameters and variables.
     description::String = ""
     allow_missing::Bool = false
     allow_dynamic_input::Bool = false
+    allow_output::Bool = true
     dimname::N = nothing
     tags::Vector{Symbol} = []
     function ParameterMetadata(
@@ -45,6 +47,7 @@ Metadata associated with parameters and variables.
         description,
         allow_missing,
         allow_dynamic_input,
+        allow_output,
         dimname::N,
         flags,
     ) where {D, F, N}
@@ -67,6 +70,7 @@ Metadata associated with parameters and variables.
             description,
             allow_missing,
             allow_dynamic_input,
+            allow_output,
             dimname,
             flags,
         )

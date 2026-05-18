@@ -84,6 +84,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         default = 5500.0,
         fill = 0.0,
         description = "Initial glacier liquid-water equivalent (cold state)",
+        allow_output = false,
         tags = [:glacier_input],
     ),
     "glacier_ice__melting_temperature_threshold" => ParameterMetadata(;
@@ -210,6 +211,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "land_water_covered__area_fraction" => ParameterMetadata(;
         default = 0.0,
         description = "Fraction of open water",
+        allow_output = false,
         tags = [:soil_input],
     ),
     "land__allocated_irrigation_water_volume_flux" => ParameterMetadata(;
@@ -341,6 +343,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ParameterMetadata(;
             unit = Unit(; mm = 1),
             description = "Depth from soil surface for which `layered` profile is valid, when a `layered_exponential` saturated hydraulic conductivity profile is used",
+            allow_output = false,
             tags = [:soil_input],
         ),
     "soil_surface_temperature__weight_coefficient" => ParameterMetadata(;

@@ -15,6 +15,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         type = Int,
         allow_missing = true,
         description = "Reservoir coverage",
+        allow_output = false,
         tags = [:reservoir_generic_input],
     ),
     #### Input
@@ -39,12 +40,14 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "reservoir_water_flow_threshold_level__elevation" => ParameterMetadata(;
         unit = Unit(; m = 1),
         description = "Water level threshold, below this level outflow is zero",
+        allow_output = false,
         tags = [:reservoir_input],
     ),
     "reservoir_lower_location__count" => ParameterMetadata(;
         default = 0,
         fill = 0,
         description = "Index of lower reservoir (linked reservoir)",
+        allow_output = false,
         tags = [:reservoir_input],
     ),
     "reservoir_water__storage_curve_type_count" => ParameterMetadata(;
@@ -60,6 +63,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "reservoir_water_surface__initial_elevation" => ParameterMetadata(;
         unit = Unit(; m = 1),
         description = "Water level of reservoir (used for initialization)",
+        allow_output = false,
         tags = [:reservoir_input],
     ),
     #### Static or cyclic/forcing input
@@ -306,6 +310,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         unit = Unit(; m = 1),
         default = 1.0e4,
         description = "Boundary condition river length downstream river outlets",
+        allow_output = false,
         tags = [:local_inertial_river_input],
     ),
     "model_boundary_condition_river_bank_water__depth" => ParameterMetadata(;

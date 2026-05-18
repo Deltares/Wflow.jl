@@ -19,6 +19,7 @@ function to_dict(standard_name_map)
             "description" => metadata.description,
             "allow_missing" => metadata.allow_missing,
             "allow_dynamic_input" => metadata.allow_dynamic_input,
+            "allow_output" => metadata.allow_output,
         )
     end
 
