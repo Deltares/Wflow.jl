@@ -2,34 +2,33 @@ abstract type AbstractSedimentLandTransportModel end
 
 "Struct to store total sediment flux in overland flow model variables"
 @with_kw struct SedimentLandTransportVariables
-    n_land_cells::Int
+    n_cells::Int
     # Total sediment rate [t dt-1]
-    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total sediment deposition rate [t dt-1]
-    deposition::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    deposition::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct to store total sediment flux in overland flow model boundary conditions"
 @with_kw struct SedimentLandTransportBC
-    n_land_cells::Int
+    n_cells::Int
     # Erosion rate material [t dt-1]
-    erosion::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    erosion::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity [t dt-1]
-    transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct to store total sediment flux in overland flow model"
 @with_kw struct SedimentLandTransportModel <: AbstractSedimentLandTransportModel
-    n_land_cells::Int
-    boundary_conditions::SedimentLandTransportBC = SedimentLandTransportBC(; n_land_cells)
-    variables::SedimentLandTransportVariables =
-        SedimentLandTransportVariables(; n_land_cells)
+    n_cells::Int
+    boundary_conditions::SedimentLandTransportBC = SedimentLandTransportBC(; n_cells)
+    variables::SedimentLandTransportVariables = SedimentLandTransportVariables(; n_cells)
 end
 
 "Initialize total sediment flux in overland flow model"
 function SedimentLandTransportModel(land_indices_2d::Vector{CartesianIndex{2}})
-    n_land_cells = length(land_indices_2d)
-    sediment_transport_model = SedimentLandTransportModel(; n_land_cells)
+    n_cells = length(land_indices_2d)
+    sediment_transport_model = SedimentLandTransportModel(; n_cells)
     return sediment_transport_model
 end
 
@@ -61,74 +60,74 @@ end
 
 "Struct to store differentiated sediment flux in overland flow model variables"
 @with_kw struct SedimentLandTransportDifferentiationVariables
-    n_land_cells::Int
+    n_cells::Int
     # Total sediment rate [t dt-1]
-    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Deposition rate [t dt-1]
-    deposition::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    deposition::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Clay rate [t dt-1]
-    clay::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    clay::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Deposition clay rate [t dt-1]
-    deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Silt rate [t dt-1]
-    silt::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    silt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Deposition silt rate [t dt-1]
-    deposition_silt::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    deposition_silt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Sand rate [t dt-1]
-    sand::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    sand::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Deposition sand rate [t dt-1]
-    deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Small aggregates rate [t dt-1]
-    sagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    sagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Deposition rate small aggregates [t dt-1]
-    deposition_sagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    deposition_sagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Large aggregates rate [t dt-1]
-    lagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    lagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Deposition rate large aggregates [t dt-1]
-    deposition_lagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    deposition_lagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct to store differentiated sediment flux in overland flow model boundary conditions"
 @with_kw struct SedimentLandTransportDifferentiationBC
-    n_land_cells::Int
+    n_cells::Int
     # Erosion rate clay [t dt-1]
-    erosion_clay::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    erosion_clay::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Erosion rate silt [t dt-1]
-    erosion_silt::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    erosion_silt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Erosion rate sand [t dt-1]
-    erosion_sand::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    erosion_sand::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Erosion rate small aggregates [t dt-1]
-    erosion_sagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    erosion_sagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Erosion large aggregates [t dt-1]
-    erosion_lagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    erosion_lagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity clay [t dt-1]
-    transport_capacity_clay::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    transport_capacity_clay::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity silt [t dt-1]
-    transport_capacity_silt::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    transport_capacity_silt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity sand [t dt-1]
-    transport_capacity_sand::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    transport_capacity_sand::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity small aggregates [t dt-1]
-    transport_capacity_sagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    transport_capacity_sagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity large aggregates [t dt-1]
-    transport_capacity_lagg::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    transport_capacity_lagg::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct to store differentiated sediment flux in overland flow model"
 @with_kw struct SedimentLandTransportDifferentiationModel <:
                 AbstractSedimentLandTransportModel
-    n_land_cells::Int
+    n_cells::Int
     boundary_conditions::SedimentLandTransportDifferentiationBC =
-        SedimentLandTransportDifferentiationBC(; n_land_cells)
+        SedimentLandTransportDifferentiationBC(; n_cells)
     variables::SedimentLandTransportDifferentiationVariables =
-        SedimentLandTransportDifferentiationVariables(; n_land_cells)
+        SedimentLandTransportDifferentiationVariables(; n_cells)
 end
 
 "Initialize differentiated sediment flux in overland flow model"
 function SedimentLandTransportDifferentiationModel(
     land_indices_2d::Vector{CartesianIndex{2}},
 )
-    n_land_cells = length(land_indices_2d)
-    sediment_transport_model = SedimentLandTransportDifferentiationModel(; n_land_cells)
+    n_cells = length(land_indices_2d)
+    sediment_transport_model = SedimentLandTransportDifferentiationModel(; n_cells)
     return sediment_transport_model
 end
 

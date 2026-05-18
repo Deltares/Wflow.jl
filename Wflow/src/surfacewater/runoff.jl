@@ -2,32 +2,32 @@ abstract type AbstractRunoffModel end
 
 "Struct for storing open water runoff variables"
 @with_kw struct OpenWaterRunoffVariables
-    n_land_cells::Int
+    n_cells::Int
     # Runoff from river based on riverfrac [mm Δt⁻¹]
-    runoff_river::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    runoff_river::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Net runoff from river [mm Δt⁻¹]
-    net_runoff_river::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    net_runoff_river::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Runoff from land based on waterfrac [mm Δt⁻¹]
-    runoff_land::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    runoff_land::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual evaporation from open water (land) [mm Δt⁻¹]
-    ae_openw_l::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    ae_openw_l::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual evaporation from river [mm Δt⁻¹]
-    ae_openw_r::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    ae_openw_r::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing open water runoff boundary conditions"
 @with_kw struct OpenWaterRunoffBC
-    n_land_cells::Int
-    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n_land_cells) # [mm dt-1]
-    waterdepth_land::Vector{Float64} = fill(MISSING_VALUE, n_land_cells) # [mm]
-    waterdepth_river::Vector{Float64} = zeros(n_land_cells) # [mm]
+    n_cells::Int
+    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [mm dt-1]
+    waterdepth_land::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [mm]
+    waterdepth_river::Vector{Float64} = zeros(n_cells) # [mm]
 end
 
 "Open water runoff model"
 @with_kw struct OpenWaterRunoff <: AbstractRunoffModel
-    n_land_cells::Int
-    boundary_conditions::OpenWaterRunoffBC = OpenWaterRunoffBC(; n_land_cells)
-    variables::OpenWaterRunoffVariables = OpenWaterRunoffVariables(; n_land_cells)
+    n_cells::Int
+    boundary_conditions::OpenWaterRunoffBC = OpenWaterRunoffBC(; n_cells)
+    variables::OpenWaterRunoffVariables = OpenWaterRunoffVariables(; n_cells)
 end
 
 "Return the water flux at the surface (boundary condition) when snow is not modelled"
@@ -72,7 +72,8 @@ function update_bc_open_water_runoff_model!(
     # evaporation
     waterdepth_land .= routing.overland_flow.variables.h .* 1000.0
     for (river_cell_idx, land_cell_idx) in enumerate(land_cell_indices_containing_river)
-        waterdepth_river[land_cell_idx] = routing.river_flow.variables.h[river_cell_idx] * 1000.0
+        waterdepth_river[land_cell_idx] =
+            routing.river_flow.variables.h[river_cell_idx] * 1000.0
     end
     return nothing
 end

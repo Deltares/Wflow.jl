@@ -111,9 +111,9 @@ end
 end
 
 @with_kw struct DrainageVariables
-    n_land_cells::Int
-    flux::Vector{Float64} = fill(MISSING_VALUE, n_land_cells) # [m³ d⁻¹]
-    flux_av::Vector{Float64} = fill(MISSING_VALUE, n_land_cells) # [m³ d⁻¹]
+    n_cells::Int
+    flux::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [m³ d⁻¹]
+    flux_av::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [m³ d⁻¹]
 end
 
 @with_kw struct DrainageModel <: AbstractSubsurfaceFlowBC
@@ -131,8 +131,8 @@ function DrainageModel(
     conductance =
         ncread(dataset, config, "land_drain__conductance", Routing; sel = land_indices_2d)
     parameters = DrainageParameters(; elevation, conductance)
-    n_land_cells = length(land_indices_2d)
-    variables = DrainageVariables(; n_land_cells)
+    n_cells = length(land_indices_2d)
+    variables = DrainageVariables(; n_cells)
 
     drainage_model = DrainageModel(parameters, variables)
     return drainage_model
@@ -183,7 +183,8 @@ function flux!(
     for (boundary_idx, land_cell_idx) in enumerate(indices)
         cond = headboundary.parameters.conductance[boundary_idx]
         delta_head =
-            headboundary.variables.head[boundary_idx] - subsurface_flow_model.variables.head[land_cell_idx]
+            headboundary.variables.head[boundary_idx] -
+            subsurface_flow_model.variables.head[land_cell_idx]
         flux = check_flux(cond * delta_head, subsurface_flow_model, land_cell_idx)
         headboundary.variables.flux[boundary_idx] = flux
         headboundary.variables.flux_av[boundary_idx] += dt * flux
@@ -193,15 +194,15 @@ function flux!(
 end
 
 @with_kw struct RechargeVariables
-    n_land_cells::Int
-    rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells) # [m d⁻¹]
-    flux::Vector{Float64} = zeros(n_land_cells) # [m³ d⁻¹]
-    flux_av::Vector{Float64} = zeros(n_land_cells) # [m³ d⁻¹]
+    n_cells::Int
+    rate::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [m d⁻¹]
+    flux::Vector{Float64} = zeros(n_cells) # [m³ d⁻¹]
+    flux_av::Vector{Float64} = zeros(n_cells) # [m³ d⁻¹]
 end
 
 @with_kw struct RechargeModel <: AbstractSubsurfaceFlowBC
-    n_land_cells::Int
-    variables::RechargeVariables = RechargeVariables(; n_land_cells)
+    n_cells::Int
+    variables::RechargeVariables = RechargeVariables(; n_cells)
 end
 
 function flux!(
@@ -212,7 +213,8 @@ function flux!(
 )
     for (boundary_idx, land_cell_idx) in enumerate(indices)
         flux = check_flux(
-            recharge_model.variables.rate[boundary_idx] * subsurface_flow_model.parameters.area[land_cell_idx],
+            recharge_model.variables.rate[boundary_idx] *
+            subsurface_flow_model.parameters.area[land_cell_idx],
             subsurface_flow_model,
             land_cell_idx,
         )
@@ -258,8 +260,10 @@ function update_river_storage_stage!(
 )
     for river_cell_idx in eachindex(gwf_river_model.variables.stage)
         gwf_river_model.variables.stage[river_cell_idx] =
-            river_flow_model.variables.h[river_cell_idx] + gwf_river_model.parameters.bottom[river_cell_idx]
-        gwf_river_model.variables.storage[river_cell_idx] = river_flow_model.variables.storage[river_cell_idx]
+            river_flow_model.variables.h[river_cell_idx] +
+            gwf_river_model.parameters.bottom[river_cell_idx]
+        gwf_river_model.variables.storage[river_cell_idx] =
+            river_flow_model.variables.storage[river_cell_idx]
     end
     return nothing
 end
@@ -271,9 +275,9 @@ update_river_storage_stage!(
 
 flux!(::Nothing, ::AbstractSubsurfaceFlowModel, ::Vector{Int}, ::Float64) = nothing
 
-get_boundary_index(::RechargeModel, domain::Domain) = domain.land.network.land_cell_indices
+get_boundary_index(::RechargeModel, domain::Domain) = domain.land.network.cell_indices
 get_boundary_index(::GwfRiverModel, domain::Domain) =
     domain.river.network.land_cell_indices_containing_river
 get_boundary_index(::DrainageModel, domain::Domain) =
-    domain.drain.network.land_cell_indices_containing_drainage
+    domain.drain.network.cell_indices_containing_drainage
 get_boundary_index(::Nothing, ::Domain) = Int[]

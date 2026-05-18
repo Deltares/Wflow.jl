@@ -1,17 +1,17 @@
 "Struct for storing lateral subsurface flow model variables"
 @with_kw struct LateralSsfVariables
-    n_land_cells::Int
+    n_cells::Int
     zi::Vector{Float64}                                     # Pseudo-water table depth [m] (top of the saturated zone)
     head::Vector{Float64}                                   # Hydraulic head [m]
-    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)   # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
-    q::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)             # Subsurface flow [m³ d⁻¹]
-    q_av::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)          # Average subsurface flow [m³ d⁻¹] for model timestep Δt
-    q_in::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)          # Inflow from upstream cells [m³ d⁻¹]
-    q_in_av::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)       # Average inflow from upstream cells [m³ d⁻¹] for model timestep Δt
-    q_max::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)         # Maximum subsurface flow [m² d⁻¹]
-    to_river::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)      # Part of subsurface flow [m³ d⁻¹] that flows to the river
-    q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)    # Net flow for boundaries subsurface flow [m³ d⁻¹]
-    q_net_av::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)      # Average net flow (total) [m³ d⁻¹]
+    exfiltwater::Vector{Float64} = fill(MISSING_VALUE, n_cells)   # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    q::Vector{Float64} = fill(MISSING_VALUE, n_cells)             # Subsurface flow [m³ d⁻¹]
+    q_av::Vector{Float64} = fill(MISSING_VALUE, n_cells)          # Average subsurface flow [m³ d⁻¹] for model timestep Δt
+    q_in::Vector{Float64} = fill(MISSING_VALUE, n_cells)          # Inflow from upstream cells [m³ d⁻¹]
+    q_in_av::Vector{Float64} = fill(MISSING_VALUE, n_cells)       # Average inflow from upstream cells [m³ d⁻¹] for model timestep Δt
+    q_max::Vector{Float64} = fill(MISSING_VALUE, n_cells)         # Maximum subsurface flow [m² d⁻¹]
+    to_river::Vector{Float64} = fill(MISSING_VALUE, n_cells)      # Part of subsurface flow [m³ d⁻¹] that flows to the river
+    q_net_bnds::Vector{Float64} = fill(MISSING_VALUE, n_cells)    # Net flow for boundaries subsurface flow [m³ d⁻¹]
+    q_net_av::Vector{Float64} = fill(MISSING_VALUE, n_cells)      # Average net flow (total) [m³ d⁻¹]
     storage::Vector{Float64}                                # Subsurface storage that can be released [m³]
 end
 
@@ -107,10 +107,10 @@ end
 
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
-    n_land_cells = length(zi)
+    n_cells = length(zi)
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * ssf.area
     head = @. ssf.top - zi
-    variables = LateralSsfVariables(; n_land_cells, zi, storage, head)
+    variables = LateralSsfVariables(; n_cells, zi, storage, head)
     return variables
 end
 
@@ -124,14 +124,13 @@ function LateralSSFModel(
     (; land, river, drain) = domain
     (; land_indices_2d) = land.network
     (; area) = domain.land.parameters
-    n_land_cells = length(land_indices_2d)
-    timestepping =
-        init_kinematic_wave_timestepping(config, n_land_cells; domain = "subsurface")
+    n_cells = length(land_indices_2d)
+    timestepping = init_kinematic_wave_timestepping(config, n_cells; domain = "subsurface")
     parameters =
         LateralSsfParameters(dataset, config, land_indices_2d, soil.parameters, area)
     zi = 0.001 * soil.variables.zi
     variables = LateralSsfVariables(parameters, zi)
-    recharge = RechargeModel(; n_land_cells)
+    recharge = RechargeModel(; n_cells)
     if config.model.river_subsurface_exchange_head_based__flag
         river = GwfRiverModel(dataset, config, river.network.river_indices_2d)
     else
@@ -303,14 +302,14 @@ criterion. Li et al. (1975) found that the nonlinear scheme is unconditionally s
 that a wide range of dt/dx values can be used without loss of accuracy.
 """
 function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainLand)
-    (; zi, n_land_cells) = subsurface_flow_model.variables
+    (; zi, n_cells) = subsurface_flow_model.variables
     (; specific_yield, kh_profile) = subsurface_flow_model.parameters
     (; flow_length, slope) = domain.parameters
     (; stable_timesteps, alpha_coefficient) = subsurface_flow_model.timestepping
 
     stable_timesteps .= Inf
     stable_timestep_idx = 0
-    for land_cell_idx in 1:n_land_cells
+    for land_cell_idx in 1:n_cells
         if zi[land_cell_idx] > 0.0
             stable_timestep_idx += 1
             c = ssf_celerity(

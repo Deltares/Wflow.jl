@@ -2,28 +2,28 @@ abstract type AbstractSoilErosionModel end
 
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
-    n_land_cells::Int
+    n_cells::Int
     # Total soil erosion rate [t dt-1]
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total clay erosion rate [t dt-1]
-    clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total silt erosion rate [t dt-1]
-    silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total sand erosion rate [t dt-1]
-    sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total small aggregates erosion rate [t dt-1]
-    sagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    sagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total large aggregates erosion rate [t dt-1]
-    lagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    lagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
-    n_land_cells::Int
+    n_cells::Int
     # Rainfall erosion rate [t dt-1]
-    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Overland flow erosion rate [t dt-1]
-    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing soil erosion model parameters"
@@ -100,10 +100,10 @@ end
 
 "Total soil erosion with differentiation model"
 @with_kw struct SoilErosionModel <: AbstractSoilErosionModel
-    n_land_cells::Int
-    boundary_conditions::SoilErosionBC = SoilErosionBC(; n_land_cells)
+    n_cells::Int
+    boundary_conditions::SoilErosionBC = SoilErosionBC(; n_cells)
     parameters::SoilErosionParameters
-    variables::SoilErosionModelVariables = SoilErosionModelVariables(; n_land_cells)
+    variables::SoilErosionModelVariables = SoilErosionModelVariables(; n_cells)
 end
 
 "Initialize soil erosion model"
@@ -112,9 +112,9 @@ function SoilErosionModel(
     config::Config,
     land_indices_2d::Vector{CartesianIndex{2}},
 )
-    n_land_cells = length(land_indices_2d)
+    n_cells = length(land_indices_2d)
     parameters = SoilErosionParameters(dataset, config, land_indices_2d)
-    soil_erosion_model = SoilErosionModel(; n_land_cells, parameters)
+    soil_erosion_model = SoilErosionModel(; n_cells, parameters)
     return soil_erosion_model
 end
 
@@ -133,7 +133,7 @@ end
 
 "Update soil erosion model for a single timestep"
 function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
-    (; n_land_cells) = soil_erosion_model
+    (; n_cells) = soil_erosion_model
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
     (; clay_fraction, silt_fraction, sand_fraction, sagg_fraction, lagg_fraction) =
         soil_erosion_model.parameters
@@ -146,7 +146,7 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
         lagg_erosion_rate,
     ) = soil_erosion_model.variables
 
-    threaded_foreach(1:n_land_cells; basesize = 1000) do land_cell_idx
+    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
         soil_erosion_rate[land_cell_idx],
         clay_erosion_rate[land_cell_idx],
         silt_erosion_rate[land_cell_idx],

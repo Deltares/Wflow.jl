@@ -2,16 +2,16 @@ abstract type AbstractOverlandFlowErosionModel end
 
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
-    n_land_cells::Int
+    n_cells::Int
     # Total soil erosion rate [t dt-1] from overland flow
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
-    n_land_cells::Int
+    n_cells::Int
     # Overland flow [m3 s-1]
-    q::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    q::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
@@ -59,10 +59,10 @@ end
 
 "ANSWERS overland flow erosion model"
 @with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
-    n_land_cells::Int
-    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n_land_cells)
+    n_cells::Int
+    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n_cells)
     parameters::OverlandFlowErosionAnswersParameters
-    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n_land_cells)
+    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n_cells)
 end
 
 "Initialize ANSWERS overland flow erosion model"
@@ -71,10 +71,9 @@ function OverlandFlowErosionAnswersModel(
     config::Config,
     land_indices_2d::Vector{CartesianIndex{2}},
 )
-    n_land_cells = length(land_indices_2d)
+    n_cells = length(land_indices_2d)
     parameters = OverlandFlowErosionAnswersParameters(dataset, config, land_indices_2d)
-    overland_flow_erosion_model =
-        OverlandFlowErosionAnswersModel(; n_land_cells, parameters)
+    overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n_cells, parameters)
     return overland_flow_erosion_model
 end
 
@@ -94,13 +93,13 @@ function update_overland_flow_erosion_model!(
     geometry::LandParameters,
     dt::Float64,
 )
-    (; n_land_cells) = overland_flow_erosion_model
+    (; n_cells) = overland_flow_erosion_model
     (; q) = overland_flow_erosion_model.boundary_conditions
     (; usle_k, usle_c, answers_overland_flow_factor) =
         overland_flow_erosion_model.parameters
     (; soil_erosion_rate) = overland_flow_erosion_model.variables
 
-    threaded_foreach(1:n_land_cells; basesize = 1000) do land_cell_idx
+    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
         soil_erosion_rate[land_cell_idx] = overland_flow_erosion_answers(
             q[land_cell_idx],
             usle_k[land_cell_idx],

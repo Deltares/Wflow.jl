@@ -2,11 +2,11 @@ abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
 @with_kw struct GlacierVariables
-    n_land_cells::Int
+    n_cells::Int
     # Water within the glacier [mm]
     glacier_store::Vector{Float64}
     # Glacier melt [mm Δt⁻¹]
-    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n_land_cells)
+    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Initialize glacier model variables"
@@ -20,10 +20,10 @@ function GlacierVariables(
         config,
         "glacier_ice__initial_leq_depth",
         LandHydrologySBM;
-        sel=land_indices_2d,
+        sel = land_indices_2d,
     )
-    n_land_cells = length(glacier_store)
-    vars = GlacierVariables(; n_land_cells, glacier_store)
+    n_cells = length(glacier_store)
+    vars = GlacierVariables(; n_cells, glacier_store)
     return vars
 end
 
@@ -55,7 +55,7 @@ end
 end
 
 struct NoGlacierModel <: AbstractGlacierModel
-    n_land_cells::Int
+    n_cells::Int
 end
 
 "Initialize glacier HBV model parameters"
@@ -70,7 +70,7 @@ function GlacierHbvParameters(
         config,
         "glacier_ice__melting_temperature_threshold",
         LandHydrologySBM;
-        sel=land_indices_2d,
+        sel = land_indices_2d,
     )
     g_cfmax =
         ncread(
@@ -78,7 +78,7 @@ function GlacierHbvParameters(
             config,
             "glacier_ice__degree_day_coefficient",
             LandHydrologySBM;
-            sel=land_indices_2d,
+            sel = land_indices_2d,
         ) .* (dt / BASETIMESTEP)
     g_sifrac =
         ncread(
@@ -86,14 +86,14 @@ function GlacierHbvParameters(
             config,
             "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction",
             LandHydrologySBM;
-            sel=land_indices_2d,
+            sel = land_indices_2d,
         ) .* (dt / BASETIMESTEP)
     glacier_frac = ncread(
         dataset,
         config,
         "glacier_surface__area_fraction",
         LandHydrologySBM;
-        sel=land_indices_2d,
+        sel = land_indices_2d,
     )
     max_snow_to_glacier = 8.0 * (dt / BASETIMESTEP)
     glacier_hbv_params =
@@ -121,12 +121,12 @@ function update_glacier_model!(
     atmospheric_forcing::AtmosphericForcing,
 )
     (; temperature) = atmospheric_forcing
-    (; glacier_store, glacier_melt, n_land_cells) = glacier_model.variables
+    (; glacier_store, glacier_melt, n_cells) = glacier_model.variables
     (; snow_storage) = glacier_model.boundary_conditions
     (; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier) =
         glacier_model.parameters
 
-    threaded_foreach(1:n_land_cells; basesize=1000) do land_cell_idx
+    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
         snow_storage[land_cell_idx],
         _,
         glacier_store[land_cell_idx],
@@ -152,11 +152,11 @@ function update_glacier_model!(
 end
 
 # wrapper methods
-get_glacier_melt(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_land_cells)
+get_glacier_melt(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
 get_glacier_melt(glacier_model::AbstractGlacierModel) = glacier_model.variables.glacier_melt
-get_glacier_fraction(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_land_cells)
+get_glacier_fraction(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
 get_glacier_fraction(glacier_model::AbstractGlacierModel) =
     glacier_model.parameters.glacier_frac
-get_glacier_store(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_land_cells)
+get_glacier_store(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
 get_glacier_store(glacier_model::AbstractGlacierModel) =
     glacier_model.variables.glacier_store

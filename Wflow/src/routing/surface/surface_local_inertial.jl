@@ -40,7 +40,7 @@ function LocalInertialRiverFlowParameters(
         config,
         "model_boundary_condition_river__length",
         Routing;
-        sel=pit_indices,
+        sel = pit_indices,
     )
     bankfull_elevation_2d = ncread(dataset, config, "river_bank_water__elevation", Routing)
     bankfull_depth_2d = ncread(dataset, config, "river_bank_water__depth", Routing)
@@ -53,7 +53,7 @@ function LocalInertialRiverFlowParameters(
         config,
         "river_water_flow__manning_n_parameter",
         Routing;
-        sel=river_indices_2d,
+        sel = river_indices_2d,
     )
 
     n_river_cells = length(river_indices_2d)
@@ -91,18 +91,18 @@ function LocalInertialRiverFlowParameters(
     parameters = LocalInertialRiverFlowParameters(;
         n_river_cells,
         n_river_edges,
-        active_n=active_index,
-        active_e=active_index,
+        active_n = active_index,
+        active_e = active_index,
         froude_limit,
-        h_thresh=waterdepth_threshold,
+        h_thresh = waterdepth_threshold,
         zb,
         zb_max,
         bankfull_storage,
         bankfull_depth,
         mannings_n,
         mannings_n_sq,
-        flow_length_at_edge=length_at_edge,
-        flow_width_at_edge=width_at_edge,
+        flow_length_at_edge = length_at_edge,
+        flow_width_at_edge = width_at_edge,
     )
     return parameters
 end
@@ -139,7 +139,7 @@ function LocalInertialRiverFlowVariables(
         config,
         "model_boundary_condition_river_bank_water__depth",
         Routing;
-        sel=pit_indices,
+        sel = pit_indices,
     )
 
     n_river_cells = length(river_indices_2d)
@@ -153,7 +153,7 @@ function LocalInertialRiverFlowVariables(
         n_river_cells,
         n_river_edges,
         q_av,
-        q_channel_av=config.model.floodplain_1d__flag ? zeros(n_river_edges) : q_av,
+        q_channel_av = config.model.floodplain_1d__flag ? zeros(n_river_edges) : q_av,
         h,
     )
     return variables
@@ -161,9 +161,9 @@ end
 
 "Shallow water river flow model using the local inertial method"
 @with_kw struct LocalInertialRiverFlowModel{
-    R<:RiverFlowBC,
-    F<:Union{AbstractFloodPlainModel,Nothing},
-    A<:AbstractAllocationModel,
+    R <: RiverFlowBC,
+    F <: Union{AbstractFloodPlainModel, Nothing},
+    A <: AbstractAllocationModel,
 } <: AbstractRiverFlowModel
     timestepping::TimeStepping
     boundary_conditions::R
@@ -178,7 +178,7 @@ function LocalInertialRiverFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir_model::Union{ReservoirModel,Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing},
 )
     # The local inertial approach makes use of a staggered grid (Bates et al. (2010)),
     # with nodes and edges. This information is extracted from the directed graph of the
@@ -213,8 +213,8 @@ function LocalInertialRiverFlowModel(
         parameters,
         variables,
         floodplain,
-        allocation=do_water_demand(config) ? AllocationRiverModel(n_river_cells) :
-                   NoAllocationRiverModel(n_river_cells),
+        allocation = do_water_demand(config) ? AllocationRiverModel(n_river_cells) :
+                     NoAllocationRiverModel(n_river_cells),
     )
     return river_flow
 end
@@ -322,10 +322,10 @@ end
 Update floodplain flow for the local inertial river flow model.
 """
 function update_floodplain_flow!(
-    river_flow_model::LocalInertialRiverFlowModel{R,F},
+    river_flow_model::LocalInertialRiverFlowModel{R, F},
     domain::DomainRiver,
     dt::Float64,
-) where {R,F<:AbstractFloodPlainModel}
+) where {R, F <: AbstractFloodPlainModel}
     (; nodes_at_edge) = domain.network
     (; flow_width) = domain.parameters
 
@@ -437,10 +437,10 @@ function update_floodplain_flow!(
 end
 
 update_floodplain_flow!(
-    model::LocalInertialRiverFlowModel{R,F},
+    model::LocalInertialRiverFlowModel{R, F},
     domain::DomainRiver,
     dt::Float64,
-) where {R,F<:Nothing} = nothing
+) where {R, F <: Nothing} = nothing
 
 """
 Update reservoir boundary conditions for the local inertial river flow model.
@@ -651,7 +651,7 @@ function update_river_flow_model!(
     river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
     clock::Clock;
-    update_h=true,
+    update_h = true,
 )
     (; reservoir) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
@@ -688,30 +688,30 @@ end
 
 "Struct to store local inertial overland flow model variables"
 @with_kw struct LocalInertialOverlandFlowVariables
-    n_land_cells::Int
+    n_cells::Int
     # flow in y direction at edge at previous time step [m³ s⁻¹]
-    qy0::Vector{Float64} = zeros(n_land_cells + 1)
+    qy0::Vector{Float64} = zeros(n_cells + 1)
     # flow in x direction at edge at previous time step [m³ s⁻¹]
-    qx0::Vector{Float64} = zeros(n_land_cells + 1)
+    qx0::Vector{Float64} = zeros(n_cells + 1)
     # flow in x direction at edge [m³ s⁻¹]
-    qx::Vector{Float64} = zeros(n_land_cells + 1)
+    qx::Vector{Float64} = zeros(n_cells + 1)
     # average flow in x direction at edge [m³ s⁻¹] for model timestep Δt
-    qx_av::Vector{Float64} = zeros(n_land_cells + 1)
+    qx_av::Vector{Float64} = zeros(n_cells + 1)
     # flow in y direction at edge [m³ s⁻¹]
-    qy::Vector{Float64} = zeros(n_land_cells + 1)
+    qy::Vector{Float64} = zeros(n_cells + 1)
     # average flow in y direction at edge [m³ s⁻¹] for model timestep Δt
-    qy_av::Vector{Float64} = zeros(n_land_cells + 1)
+    qy_av::Vector{Float64} = zeros(n_cells + 1)
     # total storage of cell [m³] (including river storage for river cells)
-    storage::Vector{Float64} = zeros(n_land_cells)
+    storage::Vector{Float64} = zeros(n_cells)
     # error storage [m³]
-    error::Vector{Float64} = zeros(n_land_cells)
+    error::Vector{Float64} = zeros(n_cells)
     # water depth of cell [m] (for river cells the reference is the river bed elevation `zb`)
-    h::Vector{Float64} = zeros(n_land_cells)
+    h::Vector{Float64} = zeros(n_cells)
 end
 
 "Struct to store local inertial overland flow model parameters"
 @with_kw struct LocalInertialOverlandFlowParameters
-    n_land_cells::Int                   # number of cells [-]
+    n_cells::Int                   # number of cells [-]
     xwidth::Vector{Float64}             # effective flow width x direction at edge (floodplain) [m]
     ywidth::Vector{Float64}             # effective flow width y direction at edge (floodplain) [m]
     theta::Float64                      # weighting factor (de Almeida et al., 2012) [-]
@@ -744,22 +744,22 @@ function LocalInertialOverlandFlowParameters(
         config,
         "land_surface_water_flow__manning_n_parameter",
         Routing;
-        sel=land_indices_2d,
+        sel = land_indices_2d,
     )
     elevation_2d =
         ncread(dataset, config, "land_surface_water_flow__ground_elevation", Routing)
     elevation = elevation_2d[land_indices_2d]
-    n_land_cells = length(domain.land.network.land_indices_2d)
+    n_cells = length(domain.land.network.land_indices_2d)
 
-    zx_max = zeros(n_land_cells)
-    zy_max = zeros(n_land_cells)
-    for land_cell_idx in 1:n_land_cells
+    zx_max = zeros(n_cells)
+    zy_max = zeros(n_cells)
+    for land_cell_idx in 1:n_cells
         xu = edge_indices.xu[land_cell_idx]
-        if xu <= n_land_cells
+        if xu <= n_cells
             zx_max[land_cell_idx] = max(elevation[land_cell_idx], elevation[xu])
         end
         yu = edge_indices.yu[land_cell_idx]
-        if yu <= n_land_cells
+        if yu <= n_cells
             zy_max[land_cell_idx] = max(elevation[land_cell_idx], elevation[yu])
         end
     end
@@ -771,15 +771,15 @@ function LocalInertialOverlandFlowParameters(
     we_y = copy(y_length)
     set_effective_flowwidth!(we_x, we_y, domain)
     parameters = LocalInertialOverlandFlowParameters(;
-        n_land_cells,
-        xwidth=we_x,
-        ywidth=we_y,
+        n_cells,
+        xwidth = we_x,
+        ywidth = we_y,
         theta,
-        h_thresh=waterdepth_threshold,
+        h_thresh = waterdepth_threshold,
         zx_max,
         zy_max,
-        mannings_n_sq=mannings_n .* mannings_n,
-        z=elevation,
+        mannings_n_sq = mannings_n .* mannings_n,
+        z = elevation,
         froude_limit,
     )
     return parameters
@@ -787,8 +787,8 @@ end
 
 "Struct to store local inertial overland flow model boundary conditions"
 @with_kw struct LocalInertialOverlandFlowBC
-    n_land_cells::Int
-    runoff::Vector{Float64} = zeros(n_land_cells) # runoff from hydrological model [m³ s⁻¹]
+    n_cells::Int
+    runoff::Vector{Float64} = zeros(n_cells) # runoff from hydrological model [m³ s⁻¹]
 end
 
 "Local inertial overland flow model using the local inertial method"
@@ -804,10 +804,10 @@ function LocalInertialOverlandFlowModel(dataset::NCDataset, config::Config, doma
     alpha_coefficient = config.model.land_local_inertial_flow__alpha_coefficient # stability coefficient for model time step (0.2-0.7)
     timestepping = TimeStepping(; alpha_coefficient)
 
-    n_land_cells = length(domain.land.network.land_indices_2d)
-    boundary_conditions = LocalInertialOverlandFlowBC(; n_land_cells)
+    n_cells = length(domain.land.network.land_indices_2d)
+    boundary_conditions = LocalInertialOverlandFlowBC(; n_cells)
     parameters = LocalInertialOverlandFlowParameters(dataset, config, domain)
-    variables = LocalInertialOverlandFlowVariables(; n_land_cells)
+    variables = LocalInertialOverlandFlowVariables(; n_cells)
 
     overland_flow_model = LocalInertialOverlandFlowModel(;
         timestepping,
@@ -851,10 +851,10 @@ function stable_timestep(
 )
     dt_min = Inf
     (; alpha_coefficient) = overland_flow_model.timestepping
-    (; n_land_cells) = overland_flow_model.parameters
+    (; n_cells) = overland_flow_model.parameters
     (; x_length, y_length, river_location) = parameters
     (; h) = overland_flow_model.variables
-    @batch per = thread reduction = ((min, dt_min),) for land_cell_idx in 1:n_land_cells
+    @batch per = thread reduction = ((min, dt_min),) for land_cell_idx in 1:n_cells
         @fastmath @inbounds dt = if river_location[land_cell_idx] == 0
             alpha_coefficient * min(x_length[land_cell_idx], y_length[land_cell_idx]) /
             sqrt(GRAVITATIONAL_ACCELERATION * h[land_cell_idx])
@@ -900,12 +900,12 @@ function update_inflow!(
     subsurface_flow_model::AbstractSubsurfaceFlowModel,
     network::NetworkReservoir,
 )
-    (; land_cell_indices_containing_reservoir) = network
+    (; cell_indices_containing_reservoir) = network
     (; inflow_subsurface) = reservoir_model.boundary_conditions
     inflow_subsurface .= get_inflow_reservoir(
         river_flow_model,
         subsurface_flow_model,
-        land_cell_indices_containing_reservoir,
+        cell_indices_containing_reservoir,
     )
     return nothing
 end
@@ -952,7 +952,7 @@ function update_overland_flow_model!(
     river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
     clock::Clock;
-    update_h=false,
+    update_h = false,
 )
     (; reservoir) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
@@ -1029,7 +1029,7 @@ Update flow for a single direction in the local inertial overland flow model.
 
     # the effective flow width is zero when the river width exceeds the cell width and
     # floodplain flow is not calculated.
-    if upstream_idx <= land_p.n_land_cells && width != 0.0
+    if upstream_idx <= land_p.n_cells && width != 0.0
         zs_current = land_p.z[land_cell_idx] + land_v.h[land_cell_idx]
         zs_upstream = land_p.z[upstream_idx] + land_v.h[upstream_idx]
         zs_max = max(zs_current, zs_upstream)
@@ -1081,7 +1081,7 @@ function local_inertial_update_fluxes!(
     v.qx0 .= v.qx
     v.qy0 .= v.qy
 
-    @batch per = thread minbatch = 6000 for land_cell_idx in 1:p.n_land_cells
+    @batch per = thread minbatch = 6000 for land_cell_idx in 1:(p.n_cells)
         # update qx (x-direction)
         update_directional_flow!(overland_flow_model, domain, land_cell_idx, dt, true)
 
@@ -1098,11 +1098,11 @@ single timestep.
 """
 function update_inflow_reservoir!(
     overland_flow_model::LocalInertialOverlandFlowModel,
-    reservoir_model::Union{ReservoirModel,Nothing},
+    reservoir_model::Union{ReservoirModel, Nothing},
     domain::Domain,
 )
     indices = domain.land.network.edge_indices
-    reservoir_indices = domain.reservoir.network.land_cell_indices_containing_reservoir
+    reservoir_indices = domain.reservoir.network.cell_indices_containing_reservoir
     land_bc = overland_flow_model.boundary_conditions
     land_v = overland_flow_model.variables
 
@@ -1129,7 +1129,7 @@ Compute storage change for a river cell from fluxes.
     dt::Float64,
 )
     indices = domain.land.network.edge_indices
-    inds_river = domain.land.network.land_cell_river_indices
+    inds_river = domain.land.network.river_cell_indices
     edges_at_node = domain.river.network.edges_at_node
     river_idx = inds_river[land_cell_idx]
 
@@ -1251,7 +1251,7 @@ Update storage and water depth for a single river cell.
     land_cell_idx::Int,
     dt::Float64,
 )
-    inds_river = domain.land.network.land_cell_river_indices
+    inds_river = domain.land.network.river_cell_indices
     river_idx = inds_river[land_cell_idx]
 
     # Compute and apply storage change from fluxes
@@ -1342,7 +1342,7 @@ function local_inertial_update_water_depth!(
     (; river_location, reservoir_outlet) = domain.land.parameters
 
     @batch per = thread minbatch = 6000 for land_cell_idx in
-                                            1:overland_flow_model.parameters.n_land_cells
+                                            1:(overland_flow_model.parameters.n_cells)
         if river_location[land_cell_idx]
             # Process river cells (excluding reservoir outlets)
             if !reservoir_outlet[land_cell_idx]
@@ -1396,7 +1396,7 @@ function FloodPlainProfile(
         config,
         "floodplain_water__sum_of_volume_per_depth",
         Routing;
-        sel=river_indices_2d,
+        sel = river_indices_2d,
     )
     n_river_cells = length(river_indices_2d)
 
@@ -1423,20 +1423,20 @@ function FloodPlainProfile(
         riv_cell = 0
         diff_storage = diff(storage[:, river_cell_idx])
 
-        for flood_depth_idx in 1:(n_depths-1)
+        for flood_depth_idx in 1:(n_depths - 1)
             # assume rectangular shape of flood depth segment
-            width[flood_depth_idx+1, river_cell_idx] =
+            width[flood_depth_idx + 1, river_cell_idx] =
                 diff_storage[flood_depth_idx] /
                 (h[flood_depth_idx] * flow_length[river_cell_idx])
             # check provided flood storage (floodplain width should be constant or increasing
             # as a function of flood depth)
-            if width[flood_depth_idx+1, river_cell_idx] <
+            if width[flood_depth_idx + 1, river_cell_idx] <
                width[flood_depth_idx, river_cell_idx]
                 # raise warning only if difference is larger than rounding error of 0.01 m³
                 if (
                     (
                         width[flood_depth_idx, river_cell_idx] -
-                        width[flood_depth_idx+1, river_cell_idx]
+                        width[flood_depth_idx + 1, river_cell_idx]
                     ) *
                     h[flood_depth_idx] *
                     flow_length[river_cell_idx]
@@ -1447,28 +1447,28 @@ function FloodPlainProfile(
                         error_vol + (
                             (
                                 width[flood_depth_idx, river_cell_idx] -
-                                width[flood_depth_idx+1, river_cell_idx]
+                                width[flood_depth_idx + 1, river_cell_idx]
                             ) *
                             h[flood_depth_idx] *
                             flow_length[river_cell_idx]
                         )
                 end
-                width[flood_depth_idx+1, river_cell_idx] =
+                width[flood_depth_idx + 1, river_cell_idx] =
                     width[flood_depth_idx, river_cell_idx]
             end
-            a[flood_depth_idx+1, river_cell_idx] =
-                width[flood_depth_idx+1, river_cell_idx] * h[flood_depth_idx]
-            p[flood_depth_idx+1, river_cell_idx] =
+            a[flood_depth_idx + 1, river_cell_idx] =
+                width[flood_depth_idx + 1, river_cell_idx] * h[flood_depth_idx]
+            p[flood_depth_idx + 1, river_cell_idx] =
                 (
-                    width[flood_depth_idx+1, river_cell_idx] -
+                    width[flood_depth_idx + 1, river_cell_idx] -
                     width[flood_depth_idx, river_cell_idx]
                 ) + 2.0 * h[flood_depth_idx]
-            segment_storage[flood_depth_idx+1, river_cell_idx] =
-                a[flood_depth_idx+1, river_cell_idx] * flow_length[river_cell_idx]
+            segment_storage[flood_depth_idx + 1, river_cell_idx] =
+                a[flood_depth_idx + 1, river_cell_idx] * flow_length[river_cell_idx]
             if flood_depth_idx == 1
                 # for interpolation wetted perimeter at flood depth 0.0 is required
                 p[flood_depth_idx, river_cell_idx] =
-                    p[flood_depth_idx+1, river_cell_idx] - 2.0 * h[flood_depth_idx]
+                    p[flood_depth_idx + 1, river_cell_idx] - 2.0 * h[flood_depth_idx]
             end
         end
 
@@ -1480,8 +1480,8 @@ function FloodPlainProfile(
     end
 
     if incorrect_vol > 0
-        perc_riv_cells = round(100.0 * (riv_cells / n_river_cells); digits=2)
-        perc_error_vol = round(100.0 * (error_vol / sum(start_storage[end, :])); digits=2)
+        perc_riv_cells = round(100.0 * (riv_cells / n_river_cells); digits = 2)
+        perc_error_vol = round(100.0 * (error_vol / sum(start_storage[end, :])); digits = 2)
         @warn string(
             "The provided storage of $incorrect_vol rectangular floodplain schematization",
             " segments for $riv_cells river cells ($perc_riv_cells % of total river cells)",
@@ -1496,7 +1496,7 @@ function FloodPlainProfile(
     p = hcat(p, p[:, index_pit])
 
     # initialize floodplain profile parameters
-    profile = FloodPlainProfile(; storage, width, depth=flood_depths, a, p)
+    profile = FloodPlainProfile(; storage, width, depth = flood_depths, a, p)
     return profile
 end
 
@@ -1526,7 +1526,7 @@ function FloodPlainParameters(
         config,
         "floodplain_water_flow__manning_n_parameter",
         Routing;
-        sel=river_indices_2d,
+        sel = river_indices_2d,
     )
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes
@@ -1568,7 +1568,7 @@ function FloodPlainVariables(n_river_cells::Int, n_river_edges::Int, index_pit::
     variables = FloodPlainVariables(;
         n_river_cells,
         n_river_edges,
-        h=zeros(n_river_cells + length(index_pit)),
+        h = zeros(n_river_cells + length(index_pit)),
     )
     return variables
 end

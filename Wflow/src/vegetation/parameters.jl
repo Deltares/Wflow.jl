@@ -24,7 +24,7 @@ function VegetationParameters(
     config::Config,
     land_indices_2d::Vector{CartesianIndex{2}},
 )
-    n_land_cells = length(land_indices_2d)
+    n_cells = length(land_indices_2d)
     rootingdepth = ncread(
         dataset,
         config,
@@ -62,12 +62,12 @@ function VegetationParameters(
             sel = land_indices_2d,
         )
         vegetation_parameter_set = VegetationParameters(;
-            leaf_area_index = fill(MISSING_VALUE, n_land_cells),
+            leaf_area_index = fill(MISSING_VALUE, n_cells),
             storage_wood,
             kext,
             storage_specific_leaf,
-            canopygapfraction = fill(MISSING_VALUE, n_land_cells),
-            cmax = fill(MISSING_VALUE, n_land_cells),
+            canopygapfraction = fill(MISSING_VALUE, n_cells),
+            cmax = fill(MISSING_VALUE, n_cells),
             rootingdepth,
             kc,
         )

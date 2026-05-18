@@ -201,11 +201,11 @@ end
 
     @testset "drainage" begin
         dt = 1.0
-        n_land_cells = 2
+        n_cells = 2
         parameters =
             Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
         variables =
-            Wflow.DrainageVariables(; n_land_cells, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
+            Wflow.DrainageVariables(; n_cells, flux = [0.0, 0.0], flux_av = [0.0, 0.0])
         drainage_model = Wflow.DrainageModel(; parameters, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2]
@@ -233,14 +233,14 @@ end
 
     @testset "recharge" begin
         dt = 1.0
-        n_land_cells = 3
+        n_cells = 3
         variables = Wflow.RechargeVariables(;
-            n_land_cells,
+            n_cells,
             rate = [1.0e-3, 1.0e-3, 1.0e-3],
             flux = [0.0, 0.0, 0.0],
             flux_av = [0.0, 0.0, 0.0],
         )
-        recharge_model = Wflow.RechargeModel(; n_land_cells, variables)
+        recharge_model = Wflow.RechargeModel(; n_cells, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2, 3]
         Wflow.flux!(recharge_model, gwf_model, index, dt)
@@ -285,7 +285,7 @@ end
     dy = fill(cellsize, nrow)
     indices, reverse_indices = Wflow.active_indices(domain, false)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
-    n_land_cells = connectivity.ncell
+    n_cells = connectivity.ncell
     xc = collect(range(0.0; stop = aquifer_length - cellsize, step = cellsize))
 
     # constant head on left boundary, 0 at 0
@@ -293,22 +293,22 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1])
 
     variables = Wflow.GroundwaterFlowVariables(;
-        n_land_cells,
+        n_cells,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
-        storage = zeros(n_land_cells),
-        q_net = zeros(n_land_cells),
-        q_in_av = zeros(n_land_cells),
-        q_av = zeros(n_land_cells),
-        exfiltwater = zeros(n_land_cells),
+        storage = zeros(n_cells),
+        q_net = zeros(n_cells),
+        q_in_av = zeros(n_cells),
+        q_av = zeros(n_cells),
+        exfiltwater = zeros(n_cells),
     )
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(conductivity, n_land_cells),
-        top = fill(top, n_land_cells),
-        bottom = fill(bottom, n_land_cells),
-        area = fill(cellsize * cellsize, n_land_cells),
-        specific_yield = fill(specific_yield, n_land_cells),
-        f = fill(gwf_f, n_land_cells),
+        k = fill(conductivity, n_cells),
+        top = fill(top, n_cells),
+        bottom = fill(bottom, n_cells),
+        area = fill(cellsize * cellsize, n_cells),
+        specific_yield = fill(specific_yield, n_cells),
+        f = fill(gwf_f, n_cells),
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
@@ -324,18 +324,18 @@ end
     N = 1
     zi = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
     soil_model = init_sbm_soil_model(
-        n_land_cells,
+        n_cells,
         N;
         # Variables
         ustorelayerthickness = SVector.(zi),
-        ustorelayerdepth = SVector.(zeros(n_land_cells)),
-        n_unsatlayers = fill(N, n_land_cells),
+        ustorelayerdepth = SVector.(zeros(n_cells)),
+        n_unsatlayers = fill(N, n_cells),
         zi,
         # Parameters
         maxlayers = N,
-        nlayers = fill(1, n_land_cells),
-        theta_s = fill(0.45, n_land_cells),
-        theta_r = fill(0.05, n_land_cells),
+        nlayers = fill(1, n_cells),
+        theta_s = fill(0.45, n_cells),
+        theta_r = fill(0.05, n_cells),
     )
 
     time = 20.0
@@ -377,7 +377,7 @@ end
     dy = fill(cellsize, nrow)
     indices, reverse_indices = Wflow.active_indices(domain, false)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
-    n_land_cells = connectivity.ncell
+    n_cells = connectivity.ncell
     xc = collect(range(0.0; stop = aquifer_length - cellsize, step = cellsize))
 
     # constant head on left boundary, 0 at 0
@@ -385,22 +385,22 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1])
 
     variables = Wflow.GroundwaterFlowVariables(;
-        n_land_cells,
+        n_cells,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
-        storage = fill(0.0, n_land_cells),
-        q_net = fill(0.0, n_land_cells),
-        q_in_av = fill(0.0, n_land_cells),
-        q_av = fill(0.0, n_land_cells),
-        exfiltwater = fill(0.0, n_land_cells),
+        storage = fill(0.0, n_cells),
+        q_net = fill(0.0, n_cells),
+        q_in_av = fill(0.0, n_cells),
+        q_av = fill(0.0, n_cells),
+        exfiltwater = fill(0.0, n_cells),
     )
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(conductivity, n_land_cells),
-        top = fill(top, n_land_cells),
-        bottom = fill(bottom, n_land_cells),
-        area = fill(cellsize * cellsize, n_land_cells),
-        specific_yield = fill(specific_yield, n_land_cells),
-        f = fill(gwf_f, n_land_cells),
+        k = fill(conductivity, n_cells),
+        top = fill(top, n_cells),
+        bottom = fill(bottom, n_cells),
+        area = fill(cellsize * cellsize, n_cells),
+        specific_yield = fill(specific_yield, n_cells),
+        f = fill(gwf_f, n_cells),
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
@@ -416,18 +416,18 @@ end
     N = 1
     zi = @. 1000.0 * (gwf_model.parameters.top - gwf_model.variables.head)
     soil_model = init_sbm_soil_model(
-        n_land_cells,
+        n_cells,
         N;
         # Variables
         ustorelayerthickness = SVector.(zi),
-        ustorelayerdepth = SVector.(zeros(n_land_cells)),
-        n_unsatlayers = fill(N, n_land_cells),
+        ustorelayerdepth = SVector.(zeros(n_cells)),
+        n_unsatlayers = fill(N, n_cells),
         zi,
         # Parameters
         maxlayers = N,
-        nlayers = fill(1, n_land_cells),
-        theta_s = fill(0.45, n_land_cells),
-        theta_r = fill(0.05, n_land_cells),
+        nlayers = fill(1, n_cells),
+        theta_s = fill(0.45, n_cells),
+        theta_r = fill(0.05, n_cells),
     )
 
     time = 20.0

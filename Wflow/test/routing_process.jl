@@ -101,11 +101,11 @@ end
 @testitem "unit: kinematic_wave_ssf" begin
     using StaticArrays: SVector
     include("testing_utils.jl")
-    n_land_cells = 1
+    n_cells = 1
     N = 4
 
     soil = init_sbm_soil_model(
-        n_land_cells,
+        n_cells,
         N;
         # Variables
         ustorelayerthickness = [SVector(100.0, 300.0, 119.83408703759733, NaN)],
@@ -160,7 +160,7 @@ end
     @test net_flux ≈ -0.037393206532277116
 
     soil = init_sbm_soil_model(
-        n_land_cells,
+        n_cells,
         N;
         # Variables
         ustorelayerthickness = [SVector(100.0, 300.0, 348.31246153148595, NaN)],
@@ -672,15 +672,15 @@ end
 @testitem "unit: update_directional_flow!" begin
     # Test local inertial overland flow routing in x-direction at edge 2 (i = 2) using 3
     # nodes.
-    n_land_cells = 3
+    n_cells = 3
     overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
-            n_land_cells,
+            n_cells,
             runoff = [0.0, 0.0, 0.003001456821567986],
         ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
-            n_land_cells,
+            n_cells,
             ywidth = [926.6857061478484, 869.7426481339323, 812.7995901200163],
             xwidth = [],
             zx_max = [257.3280029296875, 232.67100524902344, 232.67100524902344],
@@ -692,7 +692,7 @@ end
             froude_limit = true,
         ),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
-            n_land_cells,
+            n_cells,
             qx0 = [0.0, -3.6332616217117395, -0.7525806207906618, 0.0],
             qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
             qx_av = [0.0, 0.0, 0.0, 0.0],
@@ -732,22 +732,22 @@ end
     # Test update of river and land water depth and storage using 3 nodes for local inertial
     # overland and river flow (subgrid channel) routing, with 2 land cells and 1 river cell:
     # | land | land | river |.
-    n_land_cells = 3
+    n_cells = 3
     overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
-            n_land_cells,
+            n_cells,
             qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
             qy = [0.0, -0.7369647824685662, 0.0, 0.0],
             storage = [0.0, 783157.9568615163, 237954.47204911432],
             h = [0.0, 1.3754708010382453, 0.11735139800699446],
         ),
         boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
-            n_land_cells,
+            n_cells,
             runoff = [0.0, 0.0, 0.003001456821567986],
         ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
-            n_land_cells,
+            n_cells,
             xwidth = [],
             ywidth = [],
             theta = 1.0,
@@ -794,7 +794,7 @@ end
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
             network = Wflow.NetworkLand(;
-                land_cell_river_indices = [0, 0, 1],
+                river_cell_indices = [0, 0, 1],
                 edge_indices = Wflow.EdgeConnectivity(; xd = [4, 1, 2], yd = [4, 4, 4]),
             ),
             parameters = Wflow.LandParameters(;
