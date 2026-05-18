@@ -753,14 +753,14 @@ function LocalInertialOverlandFlowParameters(
 
     zx_max = zeros(n_cells)
     zy_max = zeros(n_cells)
-    for land_cell_idx in 1:n_cells
-        xu = edge_indices.xu[land_cell_idx]
+    for cell_idx in 1:n_cells
+        xu = edge_indices.xu[cell_idx]
         if xu <= n_cells
-            zx_max[land_cell_idx] = max(elevation[land_cell_idx], elevation[xu])
+            zx_max[cell_idx] = max(elevation[cell_idx], elevation[xu])
         end
-        yu = edge_indices.yu[land_cell_idx]
+        yu = edge_indices.yu[cell_idx]
         if yu <= n_cells
-            zy_max[land_cell_idx] = max(elevation[land_cell_idx], elevation[yu])
+            zy_max[cell_idx] = max(elevation[cell_idx], elevation[yu])
         end
     end
 
@@ -854,10 +854,10 @@ function stable_timestep(
     (; n_cells) = overland_flow_model.parameters
     (; x_length, y_length, river_location) = parameters
     (; h) = overland_flow_model.variables
-    @batch per = thread reduction = ((min, dt_min),) for land_cell_idx in 1:n_cells
-        @fastmath @inbounds dt = if river_location[land_cell_idx] == 0
-            alpha_coefficient * min(x_length[land_cell_idx], y_length[land_cell_idx]) /
-            sqrt(GRAVITATIONAL_ACCELERATION * h[land_cell_idx])
+    @batch per = thread reduction = ((min, dt_min),) for cell_idx in 1:n_cells
+        @fastmath @inbounds dt = if river_location[cell_idx] == 0
+            alpha_coefficient * min(x_length[cell_idx], y_length[cell_idx]) /
+            sqrt(GRAVITATIONAL_ACCELERATION * h[cell_idx])
         else
             Inf
         end
@@ -881,7 +881,7 @@ function update_bc_overland_flow_model!(
     (; net_runoff) = soil.variables
     (; net_runoff_river) = runoff.variables
     (; area) = domain.land.parameters
-    river_indices = domain.river.network.land_cell_indices_containing_river
+    river_indices = domain.river.network.cell_indices_containing_river
 
     @. overland_flow_model.boundary_conditions.runoff =
         net_runoff / 1000.0 * area / dt + net_runoff_river * area * 0.001 / dt
@@ -997,7 +997,7 @@ Update flow for a single direction in the local inertial overland flow model.
 @inline function update_directional_flow!(
     overland_flow_model::LocalInertialOverlandFlowModel,
     domain::Domain,
-    land_cell_idx::Int,
+    cell_idx::Int,
     dt::Float64,
     is_x_direction::Bool,
 )
@@ -1008,19 +1008,19 @@ Update flow for a single direction in the local inertial overland flow model.
 
     # Select direction-specific parameters based on the boolean flag
     if is_x_direction
-        upstream_idx = indices.xu[land_cell_idx]
-        downstream_idx = indices.xd[land_cell_idx]
-        width = land_p.ywidth[land_cell_idx]
-        z_max = land_p.zx_max[land_cell_idx]
+        upstream_idx = indices.xu[cell_idx]
+        downstream_idx = indices.xd[cell_idx]
+        width = land_p.ywidth[cell_idx]
+        z_max = land_p.zx_max[cell_idx]
         length_vec = x_length
         q_current = land_v.qx
         q_prev = land_v.qx0
         q_av = land_v.qx_av
     else
-        upstream_idx = indices.yu[land_cell_idx]
-        downstream_idx = indices.yd[land_cell_idx]
-        width = land_p.xwidth[land_cell_idx]
-        z_max = land_p.zy_max[land_cell_idx]
+        upstream_idx = indices.yu[cell_idx]
+        downstream_idx = indices.yd[cell_idx]
+        width = land_p.xwidth[cell_idx]
+        z_max = land_p.zy_max[cell_idx]
         length_vec = y_length
         q_current = land_v.qy
         q_prev = land_v.qy0
@@ -1030,16 +1030,16 @@ Update flow for a single direction in the local inertial overland flow model.
     # the effective flow width is zero when the river width exceeds the cell width and
     # floodplain flow is not calculated.
     if upstream_idx <= land_p.n_cells && width != 0.0
-        zs_current = land_p.z[land_cell_idx] + land_v.h[land_cell_idx]
+        zs_current = land_p.z[cell_idx] + land_v.h[cell_idx]
         zs_upstream = land_p.z[upstream_idx] + land_v.h[upstream_idx]
         zs_max = max(zs_current, zs_upstream)
         hf = (zs_max - z_max)
 
         if hf > land_p.h_thresh
-            length = 0.5 * (length_vec[land_cell_idx] + length_vec[upstream_idx]) # can be precalculated
-            q_current[land_cell_idx] = local_inertial_flow(
+            length = 0.5 * (length_vec[cell_idx] + length_vec[upstream_idx]) # can be precalculated
+            q_current[cell_idx] = local_inertial_flow(
                 land_p.theta,
-                q_prev[land_cell_idx],
+                q_prev[cell_idx],
                 q_prev[downstream_idx],
                 q_prev[upstream_idx],
                 zs_current,
@@ -1047,21 +1047,21 @@ Update flow for a single direction in the local inertial overland flow model.
                 hf,
                 width,
                 length,
-                land_p.mannings_n_sq[land_cell_idx],
+                land_p.mannings_n_sq[cell_idx],
                 land_p.froude_limit,
                 dt,
             )
             # limit q in case water is not available
-            if land_v.h[land_cell_idx] <= 0.0
-                q_current[land_cell_idx] = min(q_current[land_cell_idx], 0.0)
+            if land_v.h[cell_idx] <= 0.0
+                q_current[cell_idx] = min(q_current[cell_idx], 0.0)
             end
             if land_v.h[upstream_idx] <= 0.0
-                q_current[land_cell_idx] = max(q_current[land_cell_idx], 0.0)
+                q_current[cell_idx] = max(q_current[cell_idx], 0.0)
             end
         else
-            q_current[land_cell_idx] = 0.0
+            q_current[cell_idx] = 0.0
         end
-        q_av[land_cell_idx] += q_current[land_cell_idx] * dt
+        q_av[cell_idx] += q_current[cell_idx] * dt
     end
     return nothing
 end
@@ -1081,12 +1081,12 @@ function local_inertial_update_fluxes!(
     v.qx0 .= v.qx
     v.qy0 .= v.qy
 
-    @batch per = thread minbatch = 6000 for land_cell_idx in 1:(p.n_cells)
+    @batch per = thread minbatch = 6000 for cell_idx in 1:(p.n_cells)
         # update qx (x-direction)
-        update_directional_flow!(overland_flow_model, domain, land_cell_idx, dt, true)
+        update_directional_flow!(overland_flow_model, domain, cell_idx, dt, true)
 
         # update qy (y-direction)
-        update_directional_flow!(overland_flow_model, domain, land_cell_idx, dt, false)
+        update_directional_flow!(overland_flow_model, domain, cell_idx, dt, false)
     end
     return nothing
 end
@@ -1106,14 +1106,12 @@ function update_inflow_reservoir!(
     land_bc = overland_flow_model.boundary_conditions
     land_v = overland_flow_model.variables
 
-    for (reservoir_idx, land_cell_idx) in enumerate(reservoir_indices)
-        yd = indices.yd[land_cell_idx]
-        xd = indices.xd[land_cell_idx]
+    for (reservoir_idx, cell_idx) in enumerate(reservoir_indices)
+        yd = indices.yd[cell_idx]
+        xd = indices.xd[cell_idx]
         reservoir_model.boundary_conditions.inflow_overland[reservoir_idx] =
-            land_bc.runoff[land_cell_idx] + (
-                land_v.qx[xd] - land_v.qx[land_cell_idx] + land_v.qy[yd] -
-                land_v.qy[land_cell_idx]
-            )
+            land_bc.runoff[cell_idx] +
+            (land_v.qx[xd] - land_v.qx[cell_idx] + land_v.qy[yd] - land_v.qy[cell_idx])
     end
     return nothing
 end
@@ -1125,29 +1123,27 @@ Compute storage change for a river cell from fluxes.
     overland_flow_model::LocalInertialOverlandFlowModel,
     river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
-    land_cell_idx::Int,
+    cell_idx::Int,
     dt::Float64,
 )
     indices = domain.land.network.edge_indices
     inds_river = domain.land.network.river_cell_indices
     edges_at_node = domain.river.network.edges_at_node
-    river_idx = inds_river[land_cell_idx]
+    river_idx = inds_river[cell_idx]
 
-    yd = indices.yd[land_cell_idx]
-    xd = indices.xd[land_cell_idx]
+    yd = indices.yd[cell_idx]
+    xd = indices.xd[cell_idx]
 
     net_river_flow =
         sum_at(river_flow_model.variables.q, edges_at_node.src[river_idx]) -
         sum_at(river_flow_model.variables.q, edges_at_node.dst[river_idx])
     net_land_flow =
-        overland_flow_model.variables.qx[xd] -
-        overland_flow_model.variables.qx[land_cell_idx] +
-        overland_flow_model.variables.qy[yd] -
-        overland_flow_model.variables.qy[land_cell_idx]
+        overland_flow_model.variables.qx[xd] - overland_flow_model.variables.qx[cell_idx] +
+        overland_flow_model.variables.qy[yd] - overland_flow_model.variables.qy[cell_idx]
     net_flow =
         net_river_flow +
         net_land_flow +
-        overland_flow_model.boundary_conditions.runoff[land_cell_idx] -
+        overland_flow_model.boundary_conditions.runoff[cell_idx] -
         river_flow_model.boundary_conditions.abstraction[river_idx]
     storage_change = net_flow * dt
 
@@ -1161,13 +1157,13 @@ Returns tuple: (inflow, abstraction_to_add)
 @inline function compute_external_inflow(
     river_flow_model::LocalInertialRiverFlowModel,
     overland_flow_model::LocalInertialOverlandFlowModel,
-    land_cell_idx::Int,
+    cell_idx::Int,
     river_idx::Int,
     dt::Float64,
 )
     if river_flow_model.boundary_conditions.external_inflow[river_idx] < 0.0
         available_volume =
-            if overland_flow_model.variables.storage[land_cell_idx] >=
+            if overland_flow_model.variables.storage[cell_idx] >=
                river_flow_model.parameters.bankfull_storage[river_idx]
                 river_flow_model.parameters.bankfull_depth[river_idx]
             else
@@ -1190,7 +1186,7 @@ Returns tuple: (river_h, land_h, river_storage)
 @inline function compute_water_depths(
     total_storage::Float64,
     river_idx::Int,
-    land_cell_idx::Int,
+    cell_idx::Int,
     river::LocalInertialRiverFlowModel,
     domain::Domain,
 )
@@ -1199,8 +1195,8 @@ Returns tuple: (river_h, land_h, river_storage)
         river_h =
             river.parameters.bankfull_depth[river_idx] +
             (total_storage - river.parameters.bankfull_storage[river_idx]) / (
-                domain.land.parameters.x_length[land_cell_idx] *
-                domain.land.parameters.y_length[land_cell_idx]
+                domain.land.parameters.x_length[cell_idx] *
+                domain.land.parameters.y_length[cell_idx]
             )
         land_h = river_h - river.parameters.bankfull_depth[river_idx]
         river_storage =
@@ -1225,19 +1221,17 @@ Compute storage change for a land cell from horizontal fluxes and runoff.
 @inline function compute_land_storage_change(
     overland_flow_model::LocalInertialOverlandFlowModel,
     network::NetworkLand,
-    land_cell_idx::Int,
+    cell_idx::Int,
     dt::Float64,
 )
     indices = network.edge_indices
-    yd = indices.yd[land_cell_idx]
-    xd = indices.xd[land_cell_idx]
+    yd = indices.yd[cell_idx]
+    xd = indices.xd[cell_idx]
 
     return (
-        overland_flow_model.variables.qx[xd] -
-        overland_flow_model.variables.qx[land_cell_idx] +
-        overland_flow_model.variables.qy[yd] -
-        overland_flow_model.variables.qy[land_cell_idx] +
-        overland_flow_model.boundary_conditions.runoff[land_cell_idx]
+        overland_flow_model.variables.qx[xd] - overland_flow_model.variables.qx[cell_idx] +
+        overland_flow_model.variables.qy[yd] - overland_flow_model.variables.qy[cell_idx] +
+        overland_flow_model.boundary_conditions.runoff[cell_idx]
     ) * dt
 end
 
@@ -1248,51 +1242,51 @@ Update storage and water depth for a single river cell.
     overland_flow_model::LocalInertialOverlandFlowModel,
     river_flow_model::LocalInertialRiverFlowModel,
     domain::Domain,
-    land_cell_idx::Int,
+    cell_idx::Int,
     dt::Float64,
 )
     inds_river = domain.land.network.river_cell_indices
-    river_idx = inds_river[land_cell_idx]
+    river_idx = inds_river[cell_idx]
 
     # Compute and apply storage change from fluxes
     storage_change = compute_river_storage_change(
         overland_flow_model,
         river_flow_model,
         domain,
-        land_cell_idx,
+        cell_idx,
         dt,
     )
-    overland_flow_model.variables.storage[land_cell_idx] += storage_change
+    overland_flow_model.variables.storage[cell_idx] += storage_change
 
     # Handle negative storage
-    if overland_flow_model.variables.storage[land_cell_idx] < 0.0
-        overland_flow_model.variables.error[land_cell_idx] +=
-            abs(overland_flow_model.variables.storage[land_cell_idx])
-        overland_flow_model.variables.storage[land_cell_idx] = 0.0 # set storage to zero
+    if overland_flow_model.variables.storage[cell_idx] < 0.0
+        overland_flow_model.variables.error[cell_idx] +=
+            abs(overland_flow_model.variables.storage[cell_idx])
+        overland_flow_model.variables.storage[cell_idx] = 0.0 # set storage to zero
     end
 
     # Compute and apply external inflow
     inflow, abstraction_to_add = compute_external_inflow(
         river_flow_model,
         overland_flow_model,
-        land_cell_idx,
+        cell_idx,
         river_idx,
         dt,
     )
-    overland_flow_model.variables.storage[land_cell_idx] += inflow * dt
+    overland_flow_model.variables.storage[cell_idx] += inflow * dt
     river_flow_model.boundary_conditions.actual_external_abstraction_av[river_idx] +=
         abstraction_to_add
 
     # Compute and apply water depths
     river_h, land_h, river_storage = compute_water_depths(
-        overland_flow_model.variables.storage[land_cell_idx],
+        overland_flow_model.variables.storage[cell_idx],
         river_idx,
-        land_cell_idx,
+        cell_idx,
         river_flow_model,
         domain,
     )
     river_flow_model.variables.h[river_idx] = river_h
-    overland_flow_model.variables.h[land_cell_idx] = land_h
+    overland_flow_model.variables.h[cell_idx] = land_h
     river_flow_model.variables.storage[river_idx] = river_storage
 
     return nothing
@@ -1304,27 +1298,25 @@ Update storage and water depth for a single land cell (non-river).
 @inline function update_land_cell_storage_and_depth!(
     overland_flow_model::LocalInertialOverlandFlowModel,
     domain::DomainLand,
-    land_cell_idx::Int,
+    cell_idx::Int,
     dt::Float64,
 )
     # Compute and apply storage change
     storage_change =
-        compute_land_storage_change(overland_flow_model, domain.network, land_cell_idx, dt)
-    overland_flow_model.variables.storage[land_cell_idx] += storage_change
+        compute_land_storage_change(overland_flow_model, domain.network, cell_idx, dt)
+    overland_flow_model.variables.storage[cell_idx] += storage_change
 
     # Handle negative storage
-    if overland_flow_model.variables.storage[land_cell_idx] < 0.0
-        overland_flow_model.variables.error[land_cell_idx] +=
-            abs(overland_flow_model.variables.storage[land_cell_idx])
-        overland_flow_model.variables.storage[land_cell_idx] = 0.0 # set storage to zero
+    if overland_flow_model.variables.storage[cell_idx] < 0.0
+        overland_flow_model.variables.error[cell_idx] +=
+            abs(overland_flow_model.variables.storage[cell_idx])
+        overland_flow_model.variables.storage[cell_idx] = 0.0 # set storage to zero
     end
 
     # Update water depth
-    overland_flow_model.variables.h[land_cell_idx] =
-        overland_flow_model.variables.storage[land_cell_idx] / (
-            domain.parameters.x_length[land_cell_idx] *
-            domain.parameters.y_length[land_cell_idx]
-        )
+    overland_flow_model.variables.h[cell_idx] =
+        overland_flow_model.variables.storage[cell_idx] /
+        (domain.parameters.x_length[cell_idx] * domain.parameters.y_length[cell_idx])
 
     return nothing
 end
@@ -1341,16 +1333,16 @@ function local_inertial_update_water_depth!(
 )
     (; river_location, reservoir_outlet) = domain.land.parameters
 
-    @batch per = thread minbatch = 6000 for land_cell_idx in
+    @batch per = thread minbatch = 6000 for cell_idx in
                                             1:(overland_flow_model.parameters.n_cells)
-        if river_location[land_cell_idx]
+        if river_location[cell_idx]
             # Process river cells (excluding reservoir outlets)
-            if !reservoir_outlet[land_cell_idx]
+            if !reservoir_outlet[cell_idx]
                 update_river_cell_storage_and_depth!(
                     overland_flow_model,
                     river_flow_model,
                     domain,
-                    land_cell_idx,
+                    cell_idx,
                     dt,
                 )
             end
@@ -1359,7 +1351,7 @@ function local_inertial_update_water_depth!(
             update_land_cell_storage_and_depth!(
                 overland_flow_model,
                 domain.land,
-                land_cell_idx,
+                cell_idx,
                 dt,
             )
         end

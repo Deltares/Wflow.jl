@@ -126,20 +126,18 @@ function update_glacier_model!(
     (; g_ttm, g_cfmax, g_sifrac, glacier_frac, max_snow_to_glacier) =
         glacier_model.parameters
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        snow_storage[land_cell_idx],
-        _,
-        glacier_store[land_cell_idx],
-        glacier_melt[land_cell_idx] = glacier_hbv(
-            glacier_frac[land_cell_idx],
-            glacier_store[land_cell_idx],
-            snow_storage[land_cell_idx],
-            temperature[land_cell_idx],
-            g_ttm[land_cell_idx],
-            g_cfmax[land_cell_idx],
-            g_sifrac[land_cell_idx],
-            max_snow_to_glacier,
-        )
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        snow_storage[cell_idx], _, glacier_store[cell_idx], glacier_melt[cell_idx] =
+            glacier_hbv(
+                glacier_frac[cell_idx],
+                glacier_store[cell_idx],
+                snow_storage[cell_idx],
+                temperature[cell_idx],
+                g_ttm[cell_idx],
+                g_cfmax[cell_idx],
+                g_sifrac[cell_idx],
+                max_snow_to_glacier,
+            )
     end
     return nothing
 end

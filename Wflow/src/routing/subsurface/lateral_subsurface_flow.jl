@@ -164,7 +164,7 @@ function flux_to_river!(
     if isnothing(river)
         to_river ./= dt
     else
-        to_river[domain.land_cell_indices_containing_river] .= -river.variables.flux_av
+        to_river[domain.cell_indices_containing_river] .= -river.variables.flux_av
     end
     return nothing
 end
@@ -204,59 +204,57 @@ function kinwave_subsurface_update!(
             basesize = 1,
         ) do in_subdomain_set_idx
             subdomain_idx = order_of_subdomains[subdomain_set_idx][in_subdomain_set_idx]
-            for (land_global_traversion_idx, land_cell_idx) in
+            for (land_global_traversion_idx, cell_idx) in
                 zip(subdomain_global_order[subdomain_idx], order_subdomain[subdomain_idx])
                 if isnothing(river)
                     # for a river cell without a reservoir part of the upstream subsurface flow
                     # goes to the river (flow_fraction_to_river) and part goes to the subsurface
                     # flow reservoir (1.0 - flow_fraction_to_river) upstream nodes with a
                     # reservoir are excluded
-                    q_in[land_cell_idx] = sum_at(
-                        land_cell_idx_other ->
-                            q[land_cell_idx_other] *
-                            (1.0 - flow_fraction_to_river[land_cell_idx_other]),
+                    q_in[cell_idx] = sum_at(
+                        cell_idx_other ->
+                            q[cell_idx_other] *
+                            (1.0 - flow_fraction_to_river[cell_idx_other]),
                         upstream_nodes[land_global_traversion_idx],
                     )
-                    to_river[land_cell_idx] +=
+                    to_river[cell_idx] +=
                         sum_at(
-                            land_cell_idx_other ->
-                                q[land_cell_idx_other] *
-                                flow_fraction_to_river[land_cell_idx_other],
+                            cell_idx_other ->
+                                q[cell_idx_other] * flow_fraction_to_river[cell_idx_other],
                             upstream_nodes[land_global_traversion_idx],
                         ) * dt
                 else
-                    q_in[land_cell_idx] = sum_at(
-                        land_cell_idx_other -> q[land_cell_idx_other],
+                    q_in[cell_idx] = sum_at(
+                        cell_idx_other -> q[cell_idx_other],
                         upstream_nodes[land_global_traversion_idx],
                     )
                 end
 
-                q[land_cell_idx], zi[land_cell_idx], _exfiltwater, netflux =
-                    kinematic_wave_ssf(
-                        q_in[land_cell_idx],
-                        q[land_cell_idx],
-                        zi[land_cell_idx],
-                        q_net_bnds[land_cell_idx],
-                        slope[land_cell_idx],
-                        specific_yield[land_cell_idx],
-                        soilthickness[land_cell_idx],
-                        dt,
-                        flow_length[land_cell_idx],
-                        flow_width[land_cell_idx],
-                        q_max[land_cell_idx],
-                        kh_profile,
-                        soil_model,
-                        land_cell_idx,
-                    )
-                q_in_av[land_cell_idx] += q_in[land_cell_idx] * dt
-                q_av[land_cell_idx] += q[land_cell_idx] * dt
-                exfiltwater[land_cell_idx] += _exfiltwater
-                q_net_av[land_cell_idx] += netflux * area[land_cell_idx]
-                head[land_cell_idx] = top[land_cell_idx] - zi[land_cell_idx]
-                storage[land_cell_idx] =
-                    specific_yield[land_cell_idx] *
-                    (soilthickness[land_cell_idx] - zi[land_cell_idx]) *
-                    area[land_cell_idx]
+                q[cell_idx], zi[cell_idx], _exfiltwater, netflux = kinematic_wave_ssf(
+                    q_in[cell_idx],
+                    q[cell_idx],
+                    zi[cell_idx],
+                    q_net_bnds[cell_idx],
+                    slope[cell_idx],
+                    specific_yield[cell_idx],
+                    soilthickness[cell_idx],
+                    dt,
+                    flow_length[cell_idx],
+                    flow_width[cell_idx],
+                    q_max[cell_idx],
+                    kh_profile,
+                    soil_model,
+                    cell_idx,
+                )
+                q_in_av[cell_idx] += q_in[cell_idx] * dt
+                q_av[cell_idx] += q[cell_idx] * dt
+                exfiltwater[cell_idx] += _exfiltwater
+                q_net_av[cell_idx] += netflux * area[cell_idx]
+                head[cell_idx] = top[cell_idx] - zi[cell_idx]
+                storage[cell_idx] =
+                    specific_yield[cell_idx] *
+                    (soilthickness[cell_idx] - zi[cell_idx]) *
+                    area[cell_idx]
             end
         end
     end
@@ -309,17 +307,17 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
 
     stable_timesteps .= Inf
     stable_timestep_idx = 0
-    for land_cell_idx in 1:n_cells
-        if zi[land_cell_idx] > 0.0
+    for cell_idx in 1:n_cells
+        if zi[cell_idx] > 0.0
             stable_timestep_idx += 1
             c = ssf_celerity(
-                zi[land_cell_idx],
-                slope[land_cell_idx],
-                specific_yield[land_cell_idx],
+                zi[cell_idx],
+                slope[cell_idx],
+                specific_yield[cell_idx],
                 kh_profile,
-                land_cell_idx,
+                cell_idx,
             )
-            stable_timesteps[stable_timestep_idx] = (flow_length[land_cell_idx] / c)
+            stable_timesteps[stable_timestep_idx] = (flow_length[cell_idx] / c)
         end
     end
 

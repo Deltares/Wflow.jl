@@ -146,20 +146,20 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
         lagg_erosion_rate,
     ) = soil_erosion_model.variables
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        soil_erosion_rate[land_cell_idx],
-        clay_erosion_rate[land_cell_idx],
-        silt_erosion_rate[land_cell_idx],
-        sand_erosion_rate[land_cell_idx],
-        sagg_erosion_rate[land_cell_idx],
-        lagg_erosion_rate[land_cell_idx] = total_soil_erosion(
-            rainfall_erosion[land_cell_idx],
-            overland_flow_erosion[land_cell_idx],
-            clay_fraction[land_cell_idx],
-            silt_fraction[land_cell_idx],
-            sand_fraction[land_cell_idx],
-            sagg_fraction[land_cell_idx],
-            lagg_fraction[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        soil_erosion_rate[cell_idx],
+        clay_erosion_rate[cell_idx],
+        silt_erosion_rate[cell_idx],
+        sand_erosion_rate[cell_idx],
+        sagg_erosion_rate[cell_idx],
+        lagg_erosion_rate[cell_idx] = total_soil_erosion(
+            rainfall_erosion[cell_idx],
+            overland_flow_erosion[cell_idx],
+            clay_fraction[cell_idx],
+            silt_fraction[cell_idx],
+            sand_fraction[cell_idx],
+            sagg_fraction[cell_idx],
+            lagg_fraction[cell_idx],
         )
     end
 end

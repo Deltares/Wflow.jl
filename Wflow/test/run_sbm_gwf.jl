@@ -14,16 +14,16 @@
         # flow models
         (; subsurface_flow) = model.routing
         (; zi, ustorecapacity) = model.land.soil.variables
-        (; land_cell_indices_containing_river) = model.domain.river.network
+        (; cell_indices_containing_river) = model.domain.river.network
         @test all(
             0.001 * zi .==
             subsurface_flow.parameters.top .-
             min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
         )
-        @test all(ustorecapacity[land_cell_indices_containing_river] .== 0.0)
+        @test all(ustorecapacity[cell_indices_containing_river] .== 0.0)
         @test all(
-            subsurface_flow.variables.head[land_cell_indices_containing_river] .==
-            subsurface_flow.parameters.top[land_cell_indices_containing_river],
+            subsurface_flow.variables.head[cell_indices_containing_river] .==
+            subsurface_flow.parameters.top[cell_indices_containing_river],
         )
     end
 

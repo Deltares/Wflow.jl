@@ -112,17 +112,17 @@ function update_transport_capacity_model!(
 
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        sediment_transport_capacity[land_cell_idx] = transport_capacity_govers(
-            q[land_cell_idx],
-            waterlevel[land_cell_idx],
-            c_govers[land_cell_idx],
-            n_govers[land_cell_idx],
-            density[land_cell_idx],
-            slope[land_cell_idx],
-            flow_width[land_cell_idx],
-            reservoir_coverage[land_cell_idx],
-            river_location[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        sediment_transport_capacity[cell_idx] = transport_capacity_govers(
+            q[cell_idx],
+            waterlevel[cell_idx],
+            c_govers[cell_idx],
+            n_govers[cell_idx],
+            density[cell_idx],
+            slope[cell_idx],
+            flow_width[cell_idx],
+            reservoir_coverage[cell_idx],
+            river_location[cell_idx],
             dt,
         )
     end
@@ -196,16 +196,16 @@ function update_transport_capacity_model!(
 
     (; slope, flow_width, reservoir_coverage, river_location) = parameters
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        sediment_transport_capacity[land_cell_idx] = transport_capacity_yalin(
-            q[land_cell_idx],
-            waterlevel[land_cell_idx],
-            density[land_cell_idx],
-            d50[land_cell_idx],
-            slope[land_cell_idx],
-            flow_width[land_cell_idx],
-            reservoir_coverage[land_cell_idx],
-            river_location[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        sediment_transport_capacity[cell_idx] = transport_capacity_yalin(
+            q[cell_idx],
+            waterlevel[cell_idx],
+            density[cell_idx],
+            d50[cell_idx],
+            slope[cell_idx],
+            flow_width[cell_idx],
+            reservoir_coverage[cell_idx],
+            river_location[cell_idx],
             dt,
         )
     end
@@ -328,83 +328,83 @@ function update_transport_capacity_model!(
 
     (; slope, flow_width, river_location, reservoir_coverage) = parameters
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
         dtot = transportability_yalin_differentiation(
-            waterlevel[land_cell_idx],
-            density[land_cell_idx],
-            dm_clay[land_cell_idx],
-            dm_silt[land_cell_idx],
-            dm_sand[land_cell_idx],
-            dm_sagg[land_cell_idx],
-            dm_lagg[land_cell_idx],
-            slope[land_cell_idx],
+            waterlevel[cell_idx],
+            density[cell_idx],
+            dm_clay[cell_idx],
+            dm_silt[cell_idx],
+            dm_sand[cell_idx],
+            dm_sagg[cell_idx],
+            dm_lagg[cell_idx],
+            slope[cell_idx],
         )
-        clay[land_cell_idx] = transport_capacity_yalin_differentiation(
-            q[land_cell_idx],
-            waterlevel[land_cell_idx],
-            density[land_cell_idx],
-            dm_clay[land_cell_idx],
-            slope[land_cell_idx],
-            flow_width[land_cell_idx],
-            reservoir_coverage[land_cell_idx],
-            river_location[land_cell_idx],
+        clay[cell_idx] = transport_capacity_yalin_differentiation(
+            q[cell_idx],
+            waterlevel[cell_idx],
+            density[cell_idx],
+            dm_clay[cell_idx],
+            slope[cell_idx],
+            flow_width[cell_idx],
+            reservoir_coverage[cell_idx],
+            river_location[cell_idx],
             dtot,
             dt,
         )
-        silt[land_cell_idx] = transport_capacity_yalin_differentiation(
-            q[land_cell_idx],
-            waterlevel[land_cell_idx],
-            density[land_cell_idx],
-            dm_silt[land_cell_idx],
-            slope[land_cell_idx],
-            flow_width[land_cell_idx],
-            reservoir_coverage[land_cell_idx],
-            river_location[land_cell_idx],
+        silt[cell_idx] = transport_capacity_yalin_differentiation(
+            q[cell_idx],
+            waterlevel[cell_idx],
+            density[cell_idx],
+            dm_silt[cell_idx],
+            slope[cell_idx],
+            flow_width[cell_idx],
+            reservoir_coverage[cell_idx],
+            river_location[cell_idx],
             dtot,
             dt,
         )
-        sand[land_cell_idx] = transport_capacity_yalin_differentiation(
-            q[land_cell_idx],
-            waterlevel[land_cell_idx],
-            density[land_cell_idx],
-            dm_sand[land_cell_idx],
-            slope[land_cell_idx],
-            flow_width[land_cell_idx],
-            reservoir_coverage[land_cell_idx],
-            river_location[land_cell_idx],
+        sand[cell_idx] = transport_capacity_yalin_differentiation(
+            q[cell_idx],
+            waterlevel[cell_idx],
+            density[cell_idx],
+            dm_sand[cell_idx],
+            slope[cell_idx],
+            flow_width[cell_idx],
+            reservoir_coverage[cell_idx],
+            river_location[cell_idx],
             dtot,
             dt,
         )
-        sagg[land_cell_idx] = transport_capacity_yalin_differentiation(
-            q[land_cell_idx],
-            waterlevel[land_cell_idx],
-            density[land_cell_idx],
-            dm_sagg[land_cell_idx],
-            slope[land_cell_idx],
-            flow_width[land_cell_idx],
-            reservoir_coverage[land_cell_idx],
-            river_location[land_cell_idx],
+        sagg[cell_idx] = transport_capacity_yalin_differentiation(
+            q[cell_idx],
+            waterlevel[cell_idx],
+            density[cell_idx],
+            dm_sagg[cell_idx],
+            slope[cell_idx],
+            flow_width[cell_idx],
+            reservoir_coverage[cell_idx],
+            river_location[cell_idx],
             dtot,
             dt,
         )
-        lagg[land_cell_idx] = transport_capacity_yalin_differentiation(
-            q[land_cell_idx],
-            waterlevel[land_cell_idx],
-            density[land_cell_idx],
-            dm_lagg[land_cell_idx],
-            slope[land_cell_idx],
-            flow_width[land_cell_idx],
-            reservoir_coverage[land_cell_idx],
-            river_location[land_cell_idx],
+        lagg[cell_idx] = transport_capacity_yalin_differentiation(
+            q[cell_idx],
+            waterlevel[cell_idx],
+            density[cell_idx],
+            dm_lagg[cell_idx],
+            slope[cell_idx],
+            flow_width[cell_idx],
+            reservoir_coverage[cell_idx],
+            river_location[cell_idx],
             dtot,
             dt,
         )
-        sediment_transport_capacity[land_cell_idx] =
-            clay[land_cell_idx] +
-            silt[land_cell_idx] +
-            sand[land_cell_idx] +
-            sagg[land_cell_idx] +
-            lagg[land_cell_idx]
+        sediment_transport_capacity[cell_idx] =
+            clay[cell_idx] +
+            silt[cell_idx] +
+            sand[cell_idx] +
+            sagg[cell_idx] +
+            lagg[cell_idx]
     end
 end
 

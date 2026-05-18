@@ -209,7 +209,7 @@ end
 
 "Initialize (shared) land parameters for model types `sbm` and `sbm_gwf`"
 function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
-    (; land_cell_indices_containing_river) = domain.river.network
+    (; cell_indices_containing_river) = domain.river.network
     (; network) = domain.land
     x_length, y_length = get_cell_lengths(dataset, config, network)
     area = x_length .* y_length
@@ -228,7 +228,7 @@ function LandParameters(dataset::NCDataset, config::Config, domain::Domain)
     flow_fraction_to_river = get_flow_fraction_to_river(
         network.graph,
         network.local_drain_direction,
-        land_cell_indices_containing_river,
+        cell_indices_containing_river,
         slope,
     )
 
@@ -273,13 +273,13 @@ end
 function initialize_shared_parameters(dataset::NCDataset, config::Config, domain::Domain)
     land_params = LandParameters(dataset, config, domain)
     river_params = RiverParameters(dataset, config, domain.river.network)
-    (; land_cell_indices_containing_river) = domain.river.network
+    (; cell_indices_containing_river) = domain.river.network
 
-    @reset river_params.cell_area = land_params.area[land_cell_indices_containing_river]
+    @reset river_params.cell_area = land_params.area[cell_indices_containing_river]
     @reset river_params.reservoir_coverage =
-        land_params.reservoir_coverage[land_cell_indices_containing_river]
+        land_params.reservoir_coverage[cell_indices_containing_river]
     @reset river_params.reservoir_outlet =
-        land_params.reservoir_outlet[land_cell_indices_containing_river]
+        land_params.reservoir_outlet[cell_indices_containing_river]
 
     return land_params, river_params
 end
@@ -319,13 +319,9 @@ function get_river_fraction(
     n_cells = length(river_location)
     river_fraction = fill(MISSING_VALUE, n_cells)
 
-    for land_cell_idx in eachindex(river_fraction)
-        river_fraction[land_cell_idx] = if river_location[land_cell_idx]
-            min(
-                (river_length[land_cell_idx] * river_width[land_cell_idx]) /
-                (area[land_cell_idx]),
-                1.0,
-            )
+    for cell_idx in eachindex(river_fraction)
+        river_fraction[cell_idx] = if river_location[cell_idx]
+            min((river_length[cell_idx] * river_width[cell_idx]) / (area[cell_idx]), 1.0)
         else
             0.0
         end
@@ -414,10 +410,8 @@ function get_allocation_area_indices(dataset::NCDataset, config::Config, domain:
     for a in unique_areas
         area_index = findall(x -> x == a, areas)
         push!(allocation_area_inds, area_index)
-        area_river_index = findall(
-            x -> x == a,
-            areas[domain.river.network.land_cell_indices_containing_river],
-        )
+        area_river_index =
+            findall(x -> x == a, areas[domain.river.network.cell_indices_containing_river])
         push!(river_allocation_area_inds, area_river_index)
     end
     return allocation_area_inds, river_allocation_area_inds

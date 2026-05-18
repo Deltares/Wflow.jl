@@ -275,49 +275,46 @@ function kinwave_land_update!(
             basesize = 1,
         ) do in_subdomain_set_idx
             subdomain_idx = order_of_subdomains[subdomain_set_idx][in_subdomain_set_idx]
-            for (river_global_traversion_idx, land_cell_idx) in
+            for (river_global_traversion_idx, cell_idx) in
                 zip(subdomain_global_order[subdomain_idx], order_subdomain[subdomain_idx])
                 # for a river cell without a reservoir part of the upstream surface flow
                 # goes to the river (flow_fraction_to_river) and part goes to the surface
                 # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
                 # reservoir are excluded
-                to_river[land_cell_idx] +=
+                to_river[cell_idx] +=
                     sum_at(
-                        land_cell_idx_other ->
-                            q[land_cell_idx_other] *
-                            flow_fraction_to_river[land_cell_idx_other],
+                        cell_idx_other ->
+                            q[cell_idx_other] * flow_fraction_to_river[cell_idx_other],
                         upstream_nodes[river_global_traversion_idx],
                     ) * dt
-                if surface_flow_width[land_cell_idx] > 0.0
-                    qin[land_cell_idx] = sum_at(
-                        land_cell_idx_other ->
-                            q[land_cell_idx_other] *
-                            (1.0 - flow_fraction_to_river[land_cell_idx_other]),
+                if surface_flow_width[cell_idx] > 0.0
+                    qin[cell_idx] = sum_at(
+                        cell_idx_other ->
+                            q[cell_idx_other] *
+                            (1.0 - flow_fraction_to_river[cell_idx_other]),
                         upstream_nodes[river_global_traversion_idx],
                     )
                 end
 
-                q[land_cell_idx], crossarea = kinematic_wave(
-                    qin[land_cell_idx],
-                    q[land_cell_idx],
-                    qlat[land_cell_idx],
-                    alpha[land_cell_idx],
+                q[cell_idx], crossarea = kinematic_wave(
+                    qin[cell_idx],
+                    q[cell_idx],
+                    qlat[cell_idx],
+                    alpha[cell_idx],
                     dt,
-                    flow_length[land_cell_idx],
+                    flow_length[cell_idx],
                 )
 
                 # update h, only if flow width > 0.0
-                if surface_flow_width[land_cell_idx] > 0.0
-                    h[land_cell_idx] = crossarea / surface_flow_width[land_cell_idx]
+                if surface_flow_width[cell_idx] > 0.0
+                    h[cell_idx] = crossarea / surface_flow_width[cell_idx]
                 end
-                storage[land_cell_idx] =
-                    flow_length[land_cell_idx] *
-                    surface_flow_width[land_cell_idx] *
-                    h[land_cell_idx]
+                storage[cell_idx] =
+                    flow_length[cell_idx] * surface_flow_width[cell_idx] * h[cell_idx]
 
                 # average flow (here accumulated for model timestep Δt)
-                q_av[land_cell_idx] += q[land_cell_idx] * dt
-                qin_av[land_cell_idx] += qin[land_cell_idx] * dt
+                q_av[cell_idx] += q[cell_idx] * dt
+                qin_av[cell_idx] += qin[cell_idx] * dt
             end
         end
     end
@@ -606,16 +603,16 @@ function update_lateral_inflow!(
     (; inwater) = river_flow_model.boundary_conditions
     (; net_runoff_river) = runoff.variables
 
-    (; land_cell_indices_containing_river) = domain.river.network
+    (; cell_indices_containing_river) = domain.river.network
     (; cell_area) = domain.river.parameters
     (; area) = domain.land.parameters
 
     inwater .= (
-        get_flux_to_river(subsurface_flow, land_cell_indices_containing_river) .+
-        overland_flow.variables.to_river[land_cell_indices_containing_river] .+
+        get_flux_to_river(subsurface_flow, cell_indices_containing_river) .+
+        overland_flow.variables.to_river[cell_indices_containing_river] .+
         (
-            net_runoff_river[land_cell_indices_containing_river] .*
-            area[land_cell_indices_containing_river] .* 0.001
+            net_runoff_river[cell_indices_containing_river] .*
+            area[cell_indices_containing_river] .* 0.001
         ) ./ dt .+
         (get_nonirrigation_returnflow(allocation) .* 0.001 .* cell_area) ./ dt
     )

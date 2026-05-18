@@ -1,11 +1,11 @@
 function check_flux(
     flux::Float64,
     subsurface_flow_model::GroundwaterFlowModel,
-    land_cell_idx::Int,
+    cell_idx::Int,
 )
     # Check if cell is dry
-    if subsurface_flow_model.variables.head[land_cell_idx] <=
-       subsurface_flow_model.parameters.bottom[land_cell_idx]
+    if subsurface_flow_model.variables.head[cell_idx] <=
+       subsurface_flow_model.parameters.bottom[cell_idx]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -13,14 +13,10 @@ function check_flux(
     end
 end
 
-function check_flux(
-    flux::Float64,
-    subsurface_flow_model::LateralSSFModel,
-    land_cell_idx::Int,
-)
+function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, cell_idx::Int)
     # Check if cell is dry
-    if subsurface_flow_model.variables.zi[land_cell_idx] >=
-       subsurface_flow_model.parameters.soilthickness[land_cell_idx]
+    if subsurface_flow_model.variables.zi[cell_idx] >=
+       subsurface_flow_model.parameters.soilthickness[cell_idx]
         # If cell is dry, no negative flux is allowed
         return max(0, flux)
     else
@@ -83,8 +79,8 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (river_cell_idx, land_cell_idx) in enumerate(indices)
-        head = subsurface_flow_model.variables.head[land_cell_idx]
+    for (river_cell_idx, cell_idx) in enumerate(indices)
+        head = subsurface_flow_model.variables.head[cell_idx]
         stage = gwf_river_model.variables.stage[river_cell_idx]
         if stage > head
             max_infiltration_flux = gwf_river_model.variables.storage[river_cell_idx] / dt
@@ -95,10 +91,10 @@ function flux!(
         else
             cond = gwf_river_model.parameters.exfiltration_conductance[river_cell_idx]
             delta_head = stage - head
-            flux = check_flux(cond * delta_head, subsurface_flow_model, land_cell_idx)
+            flux = check_flux(cond * delta_head, subsurface_flow_model, cell_idx)
         end
         gwf_river_model.variables.flux[river_cell_idx] = flux
-        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
+        subsurface_flow_model.variables.q_net_bnds[cell_idx] += flux
         gwf_river_model.variables.storage[river_cell_idx] -= dt * flux
         gwf_river_model.variables.flux_av[river_cell_idx] += dt * flux
     end
@@ -144,17 +140,17 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (boundary_idx, land_cell_idx) in enumerate(indices)
+    for (boundary_idx, cell_idx) in enumerate(indices)
         cond = drainage_model.parameters.conductance[boundary_idx]
         delta_head = min(
             0,
             drainage_model.parameters.elevation[boundary_idx] -
-            subsurface_flow_model.variables.head[land_cell_idx],
+            subsurface_flow_model.variables.head[cell_idx],
         )
-        flux = check_flux(cond * delta_head, subsurface_flow_model, land_cell_idx)
+        flux = check_flux(cond * delta_head, subsurface_flow_model, cell_idx)
         drainage_model.variables.flux[boundary_idx] = flux
         drainage_model.variables.flux_av[boundary_idx] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
+        subsurface_flow_model.variables.q_net_bnds[cell_idx] += flux
     end
     return nothing
 end
@@ -180,15 +176,15 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (boundary_idx, land_cell_idx) in enumerate(indices)
+    for (boundary_idx, cell_idx) in enumerate(indices)
         cond = headboundary.parameters.conductance[boundary_idx]
         delta_head =
             headboundary.variables.head[boundary_idx] -
-            subsurface_flow_model.variables.head[land_cell_idx]
-        flux = check_flux(cond * delta_head, subsurface_flow_model, land_cell_idx)
+            subsurface_flow_model.variables.head[cell_idx]
+        flux = check_flux(cond * delta_head, subsurface_flow_model, cell_idx)
         headboundary.variables.flux[boundary_idx] = flux
         headboundary.variables.flux_av[boundary_idx] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
+        subsurface_flow_model.variables.q_net_bnds[cell_idx] += flux
     end
     return nothing
 end
@@ -211,16 +207,16 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (boundary_idx, land_cell_idx) in enumerate(indices)
+    for (boundary_idx, cell_idx) in enumerate(indices)
         flux = check_flux(
             recharge_model.variables.rate[boundary_idx] *
-            subsurface_flow_model.parameters.area[land_cell_idx],
+            subsurface_flow_model.parameters.area[cell_idx],
             subsurface_flow_model,
-            land_cell_idx,
+            cell_idx,
         )
         recharge_model.variables.flux[boundary_idx] = flux
         recharge_model.variables.flux_av[boundary_idx] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
+        subsurface_flow_model.variables.q_net_bnds[cell_idx] += flux
     end
     return nothing
 end
@@ -241,15 +237,15 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (boundary_idx, land_cell_idx) in enumerate(indices)
+    for (boundary_idx, cell_idx) in enumerate(indices)
         flux = check_flux(
             well_model.variables.volumetric_rate[boundary_idx],
             subsurface_flow_model,
-            land_cell_idx,
+            cell_idx,
         )
         well_model.variables.flux[boundary_idx] = flux
         well_model.variables.flux_av[boundary_idx] += dt * flux
-        subsurface_flow_model.variables.q_net_bnds[land_cell_idx] += flux
+        subsurface_flow_model.variables.q_net_bnds[cell_idx] += flux
     end
     return nothing
 end
@@ -277,7 +273,7 @@ flux!(::Nothing, ::AbstractSubsurfaceFlowModel, ::Vector{Int}, ::Float64) = noth
 
 get_boundary_index(::RechargeModel, domain::Domain) = domain.land.network.cell_indices
 get_boundary_index(::GwfRiverModel, domain::Domain) =
-    domain.river.network.land_cell_indices_containing_river
+    domain.river.network.cell_indices_containing_river
 get_boundary_index(::DrainageModel, domain::Domain) =
     domain.drain.network.cell_indices_containing_drainage
 get_boundary_index(::Nothing, ::Domain) = Int[]

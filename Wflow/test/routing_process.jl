@@ -24,17 +24,15 @@ end
     zi = 0.3
     theta_e = 0.274
     slope = 0.00586
-    land_cell_idx = 1
+    cell_idx = 1
 
     # Case kh_profile::KhExponential
     kh_profile = Wflow.KhExponential([24.152037048339846], [1.8001038115471601])
-    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, land_cell_idx) ≈
-          0.3010012323985728
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, cell_idx) ≈ 0.3010012323985728
 
     # Case kh_profile::KhExponentialConstant
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
-    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, land_cell_idx) ≈
-          0.3603676427614705
+    @test Wflow.ssf_celerity(zi, slope, theta_e, kh_profile, cell_idx) ≈ 0.3603676427614705
 end
 
 @testitem "unit: kw_ssf_newton_raphson" begin
@@ -712,7 +710,7 @@ end
             ),
         ),
     )
-    land_cell_idx = 2
+    cell_idx = 2
     dt = Wflow.stable_timestep(overland_flow_model, domain.land.parameters)
     is_x_direction = true
 
@@ -721,11 +719,11 @@ end
     Wflow.update_directional_flow!(
         overland_flow_model,
         domain,
-        land_cell_idx,
+        cell_idx,
         dt,
         is_x_direction,
     )
-    @test overland_flow_model.variables.qx[land_cell_idx] ≈ -3.633493490896127
+    @test overland_flow_model.variables.qx[cell_idx] ≈ -3.633493490896127
 end
 
 @testitem "unit: local_inertial_update_water_depth!" begin

@@ -207,7 +207,7 @@ function update_river_sediment_model!(
         river_flow_model.transport_capacity,
         sediment_to_river_model,
         river_flow_model.potential_erosion,
-        domain.network.land_cell_indices_containing_river,
+        domain.network.cell_indices_containing_river,
     )
     update_sediment_river_transport_model!(river_flow_model.sediment_flux, domain, dt)
 

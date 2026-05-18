@@ -155,14 +155,14 @@ function update_total_water_storage!(
     fill!(total_storage, 0)
 
     # Burn the river routing values
-    for (river_cell_idx, land_cell_idx) in
-        enumerate(domain.river.network.land_cell_indices_containing_river)
-        total_storage[land_cell_idx] = (
+    for (river_cell_idx, cell_idx) in
+        enumerate(domain.river.network.cell_indices_containing_river)
+        total_storage[cell_idx] = (
             (
                 river_flow.variables.h[river_cell_idx] *
                 flow_width[river_cell_idx] *
                 flow_length[river_cell_idx]
-            ) / (area[land_cell_idx]) * 1000 # Convert to mm
+            ) / (area[cell_idx]) * 1000 # Convert to mm
         )
     end
 
@@ -173,16 +173,14 @@ function update_total_water_storage!(
         interception.variables.canopy_storage .+ get_water_depth(demand.paddy)
 
     # Chunk the data for parallel computing
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        sub_surface = ustoredepth[land_cell_idx] + satwaterdepth[land_cell_idx]
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        sub_surface = ustoredepth[cell_idx] + satwaterdepth[cell_idx]
         lateral = (
-            overland_flow.variables.h[land_cell_idx] *
-            (1 - river_fraction[land_cell_idx]) *
-            1000 # convert to mm
+            overland_flow.variables.h[cell_idx] * (1 - river_fraction[cell_idx]) * 1000 # convert to mm
         )
 
         # Add everything to the total water storage
-        total_storage[land_cell_idx] += (sub_surface + lateral)
+        total_storage[cell_idx] += (sub_surface + lateral)
     end
     return nothing
 end

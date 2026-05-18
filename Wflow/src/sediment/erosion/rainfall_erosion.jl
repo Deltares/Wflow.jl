@@ -133,17 +133,17 @@ function update_rainfall_erosion_model!(
     ) = rainfall_erosion_model.parameters
     (; soil_erosion_rate) = rainfall_erosion_model.variables
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        soil_erosion_rate[land_cell_idx] = rainfall_erosion_eurosem(
-            precipitation[land_cell_idx],
-            interception[land_cell_idx],
-            waterlevel[land_cell_idx],
-            soil_detachability[land_cell_idx],
-            eurosem_exponent[land_cell_idx],
-            canopyheight[land_cell_idx],
-            canopygapfraction[land_cell_idx],
-            soilcover_fraction[land_cell_idx],
-            parameters.area[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        soil_erosion_rate[cell_idx] = rainfall_erosion_eurosem(
+            precipitation[cell_idx],
+            interception[cell_idx],
+            waterlevel[cell_idx],
+            soil_detachability[cell_idx],
+            eurosem_exponent[cell_idx],
+            canopyheight[cell_idx],
+            canopygapfraction[cell_idx],
+            soilcover_fraction[cell_idx],
+            parameters.area[cell_idx],
             dt,
         )
     end
@@ -239,13 +239,13 @@ function update_rainfall_erosion_model!(
     (; usle_k, usle_c, answers_rainfall_factor) = rainfall_erosion_model.parameters
     (; soil_erosion_rate) = rainfall_erosion_model.variables
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        soil_erosion_rate[land_cell_idx] = rainfall_erosion_answers(
-            precipitation[land_cell_idx],
-            usle_k[land_cell_idx],
-            usle_c[land_cell_idx],
-            answers_rainfall_factor[land_cell_idx],
-            parameters.area[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        soil_erosion_rate[cell_idx] = rainfall_erosion_answers(
+            precipitation[cell_idx],
+            usle_k[cell_idx],
+            usle_c[cell_idx],
+            answers_rainfall_factor[cell_idx],
+            parameters.area[cell_idx],
             dt,
         )
     end

@@ -140,28 +140,28 @@ function update_snow_model!(
     (; tt, tti, ttm, cfmax, whc) = parameters
     (; temperature) = atmospheric_forcing
 
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        snow_precip[land_cell_idx], liquid_precip[land_cell_idx] = precipitation_hbv(
-            effective_precip[land_cell_idx],
-            temperature[land_cell_idx],
-            tti[land_cell_idx],
-            tt[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        snow_precip[cell_idx], liquid_precip[cell_idx] = precipitation_hbv(
+            effective_precip[cell_idx],
+            temperature[cell_idx],
+            tti[cell_idx],
+            tt[cell_idx],
         )
     end
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        snow_storage[land_cell_idx],
-        snow_water[land_cell_idx],
-        swe[land_cell_idx],
-        snow_melt[land_cell_idx],
-        runoff[land_cell_idx] = snowpack_hbv(
-            snow_storage[land_cell_idx],
-            snow_water[land_cell_idx],
-            snow_precip[land_cell_idx],
-            liquid_precip[land_cell_idx],
-            temperature[land_cell_idx],
-            ttm[land_cell_idx],
-            cfmax[land_cell_idx],
-            whc[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        snow_storage[cell_idx],
+        snow_water[cell_idx],
+        swe[cell_idx],
+        snow_melt[cell_idx],
+        runoff[cell_idx] = snowpack_hbv(
+            snow_storage[cell_idx],
+            snow_water[cell_idx],
+            snow_precip[cell_idx],
+            liquid_precip[cell_idx],
+            temperature[cell_idx],
+            ttm[cell_idx],
+            cfmax[cell_idx],
+            whc[cell_idx],
         )
     end
     return nothing

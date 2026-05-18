@@ -63,7 +63,7 @@ function update_bc_open_water_runoff_model!(
 )
     (; water_flux_surface, waterdepth_river, waterdepth_land) =
         open_water_runoff_model.boundary_conditions
-    (; land_cell_indices_containing_river) = network
+    (; cell_indices_containing_river) = network
     (; snow, glacier, interception) = external_models
 
     get_water_flux_surface!(water_flux_surface, snow, glacier, interception)
@@ -71,9 +71,8 @@ function update_bc_open_water_runoff_model!(
     # extract water depth h [m] from the land and river routing, used to limit open water
     # evaporation
     waterdepth_land .= routing.overland_flow.variables.h .* 1000.0
-    for (river_cell_idx, land_cell_idx) in enumerate(land_cell_indices_containing_river)
-        waterdepth_river[land_cell_idx] =
-            routing.river_flow.variables.h[river_cell_idx] * 1000.0
+    for (river_cell_idx, cell_idx) in enumerate(cell_indices_containing_river)
+        waterdepth_river[cell_idx] = routing.river_flow.variables.h[river_cell_idx] * 1000.0
     end
     return nothing
 end

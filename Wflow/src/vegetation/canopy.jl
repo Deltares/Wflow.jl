@@ -62,32 +62,30 @@ function update_interception_model!(
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
-        threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-            canopyfraction = 1.0 - canopygapfraction[land_cell_idx]
-            ewet = canopyfraction * potential_evaporation[land_cell_idx] * kc[land_cell_idx]
-            e_r[land_cell_idx] =
-                precipitation[land_cell_idx] > 0.0 ?
-                min(
-                    0.25,
-                    ewet / max(0.0001, canopyfraction * precipitation[land_cell_idx]),
-                ) : 0.0
+        threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+            canopyfraction = 1.0 - canopygapfraction[cell_idx]
+            ewet = canopyfraction * potential_evaporation[cell_idx] * kc[cell_idx]
+            e_r[cell_idx] =
+                precipitation[cell_idx] > 0.0 ?
+                min(0.25, ewet / max(0.0001, canopyfraction * precipitation[cell_idx])) :
+                0.0
         end
     end
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        canopy_potevap[land_cell_idx] =
-            kc[land_cell_idx] *
-            potential_evaporation[land_cell_idx] *
-            (1.0 - canopygapfraction[land_cell_idx])
-        throughfall[land_cell_idx],
-        interception_rate[land_cell_idx],
-        stemflow[land_cell_idx],
-        canopy_storage[land_cell_idx] = rainfall_interception_gash(
-            cmax[land_cell_idx],
-            e_r[land_cell_idx],
-            canopygapfraction[land_cell_idx],
-            precipitation[land_cell_idx],
-            canopy_storage[land_cell_idx],
-            canopy_potevap[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        canopy_potevap[cell_idx] =
+            kc[cell_idx] *
+            potential_evaporation[cell_idx] *
+            (1.0 - canopygapfraction[cell_idx])
+        throughfall[cell_idx],
+        interception_rate[cell_idx],
+        stemflow[cell_idx],
+        canopy_storage[cell_idx] = rainfall_interception_gash(
+            cmax[cell_idx],
+            e_r[cell_idx],
+            canopygapfraction[cell_idx],
+            precipitation[cell_idx],
+            canopy_storage[cell_idx],
+            canopy_potevap[cell_idx],
         )
     end
     return nothing
@@ -122,20 +120,20 @@ function update_interception_model!(
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters)
     end
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        canopy_potevap[land_cell_idx] =
-            kc[land_cell_idx] *
-            potential_evaporation[land_cell_idx] *
-            (1.0 - canopygapfraction[land_cell_idx])
-        throughfall[land_cell_idx],
-        interception_rate[land_cell_idx],
-        stemflow[land_cell_idx],
-        canopy_storage[land_cell_idx] = rainfall_interception_modrut(
-            precipitation[land_cell_idx],
-            canopy_potevap[land_cell_idx],
-            canopy_storage[land_cell_idx],
-            canopygapfraction[land_cell_idx],
-            cmax[land_cell_idx],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        canopy_potevap[cell_idx] =
+            kc[cell_idx] *
+            potential_evaporation[cell_idx] *
+            (1.0 - canopygapfraction[cell_idx])
+        throughfall[cell_idx],
+        interception_rate[cell_idx],
+        stemflow[cell_idx],
+        canopy_storage[cell_idx] = rainfall_interception_modrut(
+            precipitation[cell_idx],
+            canopy_potevap[cell_idx],
+            canopy_storage[cell_idx],
+            canopygapfraction[cell_idx],
+            cmax[cell_idx],
         )
     end
     return nothing
@@ -153,12 +151,11 @@ function update_canopy_parameters!(parameters::VegetationParameters)
     ) = parameters
 
     n_cells = length(leaf_area_index)
-    threaded_foreach(1:n_cells; basesize = 1000) do land_cell_idx
-        cmax[land_cell_idx] =
-            storage_specific_leaf[land_cell_idx] * leaf_area_index[land_cell_idx] +
-            storage_wood[land_cell_idx]
-        canopygapfraction[land_cell_idx] =
-            exp(-kext[land_cell_idx] * leaf_area_index[land_cell_idx])
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        cmax[cell_idx] =
+            storage_specific_leaf[cell_idx] * leaf_area_index[cell_idx] +
+            storage_wood[cell_idx]
+        canopygapfraction[cell_idx] = exp(-kext[cell_idx] * leaf_area_index[cell_idx])
     end
     return nothing
 end

@@ -141,14 +141,14 @@ function EdgeConnectivity(network::NetworkLand)
     )
 
     nrow, ncol = modelsize
-    for (land_cell_idx, cartesian_idx) in enumerate(land_indices_2d)
+    for (cell_idx, cartesian_idx) in enumerate(land_indices_2d)
         for (neighbor_idx, neighbor) in enumerate(NEIGHBORS)
             j = cartesian_idx + neighbor
             dir = DIRS[neighbor_idx]
             if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (reverse_indices[j] != 0)
-                getfield(edge_indices, dir)[land_cell_idx] = reverse_indices[j]
+                getfield(edge_indices, dir)[cell_idx] = reverse_indices[j]
             else
-                getfield(edge_indices, dir)[land_cell_idx] = n_cells + 1
+                getfield(edge_indices, dir)[cell_idx] = n_cells + 1
             end
         end
     end

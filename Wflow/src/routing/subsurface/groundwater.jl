@@ -148,10 +148,8 @@ function ConstantHead(
         sel = land_indices_2d,
     )
     n_cells = length(land_indices_2d)
-    index_constanthead = filter(
-        land_cell_idx -> !isequal(constanthead[land_cell_idx], MISSING_VALUE),
-        1:n_cells,
-    )
+    index_constanthead =
+        filter(cell_idx -> !isequal(constanthead[cell_idx], MISSING_VALUE), 1:n_cells)
     head = constanthead[index_constanthead]
     variables = ConstantHeadVariables(head)
     constant_head = ConstantHead(; variables, index = index_constanthead)
@@ -215,7 +213,7 @@ function GroundwaterFlowModel(
 )
     (; land, river, drain) = domain
 
-    (; land_cell_indices_containing_river) = river.network
+    (; cell_indices_containing_river) = river.network
     (; land_indices_2d, reverse_indices) = land.network
     (; x_length, y_length, area) = land.parameters
 
@@ -236,8 +234,7 @@ function GroundwaterFlowModel(
 
     # cold state for groundwater head based on water table depth zi
     initial_head = elevation .- soil.variables.zi / 1000.0
-    initial_head[land_cell_indices_containing_river] =
-        elevation[land_cell_indices_containing_river]
+    initial_head[cell_indices_containing_river] = elevation[cell_indices_containing_river]
     if config.model.constanthead__flag
         initial_head[constanthead.index] = constanthead.variables.head
     end
@@ -336,9 +333,9 @@ function harmonicmean_conductance(kH1, kH2, l1, l2, width)
     end
 end
 
-function saturated_thickness(gwf::GroundwaterFlowModel, land_cell_idx::Int)
-    return min(gwf.parameters.top[land_cell_idx], gwf.variables.head[land_cell_idx]) -
-           gwf.parameters.bottom[land_cell_idx]
+function saturated_thickness(gwf::GroundwaterFlowModel, cell_idx::Int)
+    return min(gwf.parameters.top[cell_idx], gwf.variables.head[cell_idx]) -
+           gwf.parameters.bottom[cell_idx]
 end
 
 function saturated_thickness(gwf::GroundwaterFlowModel)
@@ -346,23 +343,23 @@ function saturated_thickness(gwf::GroundwaterFlowModel)
 end
 
 """
-    horizontal_conductance(land_cell_idx::Int, land_cell_idx_other::int, nzi::Int, parameters::GroundwaterFlowParameters, connectivity::Connectivity)
+    horizontal_conductance(cell_idx::Int, cell_idx_other::int, nzi::Int, parameters::GroundwaterFlowParameters, connectivity::Connectivity)
 
 Compute fully saturated horizontal conductance for a single connection between two cells.
 Geometry characteristics are taken from the `connectivity`
 struct , using the non-zero index (nzi) of its CSC data structure.
 """
 function horizontal_conductance(
-    land_cell_idx::Int,
-    land_cell_idx_other::Int,
+    cell_idx::Int,
+    cell_idx_other::Int,
     nzi::Int,
     parameters::GroundwaterFlowParameters,
     connectivity::Connectivity,
 )
-    k1 = parameters.k[land_cell_idx]
-    k2 = parameters.k[land_cell_idx_other]
-    H1 = parameters.top[land_cell_idx] - parameters.bottom[land_cell_idx]
-    H2 = parameters.top[land_cell_idx_other] - parameters.bottom[land_cell_idx_other]
+    k1 = parameters.k[cell_idx]
+    k2 = parameters.k[cell_idx_other]
+    H1 = parameters.top[cell_idx] - parameters.bottom[cell_idx]
+    H2 = parameters.top[cell_idx_other] - parameters.bottom[cell_idx_other]
     length1 = connectivity.length1[nzi]
     length2 = connectivity.length2[nzi]
     width = connectivity.width[nzi]
@@ -382,13 +379,13 @@ function initialize_conductance!(
     connectivity::Connectivity,
 )
     (; n_cells) = variables
-    for land_cell_idx in 1:n_cells
+    for cell_idx in 1:n_cells
         # Loop over connections for cell j
-        for nzi in connections(connectivity, land_cell_idx)
-            land_cell_idx_other = connectivity.rowval[nzi]
+        for nzi in connections(connectivity, cell_idx)
+            cell_idx_other = connectivity.rowval[nzi]
             variables.conductance[nzi] = horizontal_conductance(
-                land_cell_idx,
-                land_cell_idx_other,
+                cell_idx,
+                cell_idx_other,
                 nzi,
                 parameters,
                 connectivity,
@@ -425,35 +422,28 @@ Open-File Report 91-536, 99 p
 """
 function conductance(
     gwf::GroundwaterFlowModel,
-    land_cell_idx,
-    land_cell_idx_other,
+    cell_idx,
+    cell_idx_other,
     nzi,
     conductivity_profile::GwfConductivityProfileType.T,
 )
     if conductivity_profile == GwfConductivityProfileType.exponential
         # Extract required variables
-        zi1 = gwf.parameters.top[land_cell_idx] - gwf.variables.head[land_cell_idx]
-        zi2 =
-            gwf.parameters.top[land_cell_idx_other] -
-            gwf.variables.head[land_cell_idx_other]
-        thickness1 =
-            gwf.parameters.top[land_cell_idx] - gwf.parameters.bottom[land_cell_idx]
+        zi1 = gwf.parameters.top[cell_idx] - gwf.variables.head[cell_idx]
+        zi2 = gwf.parameters.top[cell_idx_other] - gwf.variables.head[cell_idx_other]
+        thickness1 = gwf.parameters.top[cell_idx] - gwf.parameters.bottom[cell_idx]
         thickness2 =
-            gwf.parameters.top[land_cell_idx_other] -
-            gwf.parameters.bottom[land_cell_idx_other]
+            gwf.parameters.top[cell_idx_other] - gwf.parameters.bottom[cell_idx_other]
         # calculate conductivity values corrected for depth of water table
         k1 =
-            (gwf.parameters.k[land_cell_idx] / gwf.parameters.f[land_cell_idx]) * (
-                exp(-gwf.parameters.f[land_cell_idx] * zi1) -
-                exp(-gwf.parameters.f[land_cell_idx] * thickness1)
+            (gwf.parameters.k[cell_idx] / gwf.parameters.f[cell_idx]) * (
+                exp(-gwf.parameters.f[cell_idx] * zi1) -
+                exp(-gwf.parameters.f[cell_idx] * thickness1)
             )
         k2 =
-            (
-                gwf.parameters.k[land_cell_idx_other] /
-                gwf.parameters.f[land_cell_idx_other]
-            ) * (
-                exp(-gwf.parameters.f[land_cell_idx_other] * zi2) -
-                exp(-gwf.parameters.f[land_cell_idx_other] * thickness2)
+            (gwf.parameters.k[cell_idx_other] / gwf.parameters.f[cell_idx_other]) * (
+                exp(-gwf.parameters.f[cell_idx_other] * zi2) -
+                exp(-gwf.parameters.f[cell_idx_other] * thickness2)
             )
         return harmonicmean_conductance(
             k1,
@@ -463,18 +453,16 @@ function conductance(
             gwf.connectivity.width[nzi],
         )
     elseif conductivity_profile == GwfConductivityProfileType.uniform
-        head1 = gwf.variables.head[land_cell_idx]
-        head2 = gwf.variables.head[land_cell_idx_other]
+        head1 = gwf.variables.head[cell_idx]
+        head2 = gwf.variables.head[cell_idx_other]
         if head1 >= head2
             saturation =
-                saturated_thickness(gwf, land_cell_idx) /
-                (gwf.parameters.top[land_cell_idx] - gwf.parameters.bottom[land_cell_idx])
+                saturated_thickness(gwf, cell_idx) /
+                (gwf.parameters.top[cell_idx] - gwf.parameters.bottom[cell_idx])
         else
             saturation =
-                saturated_thickness(gwf, land_cell_idx_other) / (
-                    gwf.parameters.top[land_cell_idx_other] -
-                    gwf.parameters.bottom[land_cell_idx_other]
-                )
+                saturated_thickness(gwf, cell_idx_other) /
+                (gwf.parameters.top[cell_idx_other] - gwf.parameters.bottom[cell_idx_other])
         end
         return saturation * gwf.variables.conductance[nzi]
     end
@@ -486,26 +474,19 @@ function flux!(
     dt::Float64,
 )
     (; n_cells) = gwf.variables
-    for land_cell_idx in 1:n_cells
-        # Loop over connections for land_cell_idx
-        for nzi in connections(gwf.connectivity, land_cell_idx)
-            # connection from land_cell_idx -> land_cell_idx_other
-            land_cell_idx_other = gwf.connectivity.rowval[nzi]
-            delta_head =
-                gwf.variables.head[land_cell_idx] - gwf.variables.head[land_cell_idx_other]
-            cond = conductance(
-                gwf,
-                land_cell_idx,
-                land_cell_idx_other,
-                nzi,
-                conductivity_profile,
-            )
+    for cell_idx in 1:n_cells
+        # Loop over connections for cell_idx
+        for nzi in connections(gwf.connectivity, cell_idx)
+            # connection from cell_idx -> cell_idx_other
+            cell_idx_other = gwf.connectivity.rowval[nzi]
+            delta_head = gwf.variables.head[cell_idx] - gwf.variables.head[cell_idx_other]
+            cond = conductance(gwf, cell_idx, cell_idx_other, nzi, conductivity_profile)
             flow = cond * delta_head
-            gwf.variables.q_net[land_cell_idx] -= flow
+            gwf.variables.q_net[cell_idx] -= flow
             if flow > 0.0
-                gwf.variables.q_av[land_cell_idx] += flow * dt
+                gwf.variables.q_av[cell_idx] += flow * dt
             else
-                gwf.variables.q_in_av[land_cell_idx] -= flow * dt
+                gwf.variables.q_in_av[cell_idx] -= flow * dt
             end
         end
     end
@@ -527,22 +508,20 @@ function stable_timestep(
 )
     (; n_cells) = gwf.variables
     dt_min = Inf
-    for land_cell_idx in 1:n_cells
+    for cell_idx in 1:n_cells
         if conductivity_profile == GwfConductivityProfileType.exponential
-            zi = gwf.parameters.top[land_cell_idx] - gwf.variables.head[land_cell_idx]
-            thickness =
-                gwf.parameters.top[land_cell_idx] - gwf.parameters.bottom[land_cell_idx]
+            zi = gwf.parameters.top[cell_idx] - gwf.variables.head[cell_idx]
+            thickness = gwf.parameters.top[cell_idx] - gwf.parameters.bottom[cell_idx]
             value =
-                (gwf.parameters.k[land_cell_idx] / gwf.parameters.f[land_cell_idx]) * (
-                    exp(-gwf.parameters.f[land_cell_idx] * zi) -
-                    exp(-gwf.parameters.f[land_cell_idx] * thickness)
+                (gwf.parameters.k[cell_idx] / gwf.parameters.f[cell_idx]) * (
+                    exp(-gwf.parameters.f[cell_idx] * zi) -
+                    exp(-gwf.parameters.f[cell_idx] * thickness)
                 )
         elseif conductivity_profile == GwfConductivityProfileType.uniform
-            value =
-                gwf.parameters.k[land_cell_idx] * saturated_thickness(gwf, land_cell_idx)
+            value = gwf.parameters.k[cell_idx] * saturated_thickness(gwf, cell_idx)
         end
 
-        dt = gwf.parameters.area[land_cell_idx] * storativity(gwf)[land_cell_idx] / value
+        dt = gwf.parameters.area[cell_idx] * storativity(gwf)[cell_idx] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
     dt_min = alpha_coefficient * dt_min
@@ -572,12 +551,11 @@ function update_head!(gwf::GroundwaterFlowModel, soil::SbmSoilModel, dt::Float64
     (; head, exfiltwater, q_net, n_cells) = gwf.variables
     (; area, specific_yield) = gwf.parameters
 
-    for land_cell_idx in 1:n_cells
-        net_flux = q_net[land_cell_idx] / area[land_cell_idx] * dt
-        dh, exfilt =
-            water_table_change(soil, net_flux, specific_yield[land_cell_idx], land_cell_idx)
-        head[land_cell_idx] += dh
-        exfiltwater[land_cell_idx] += exfilt
+    for cell_idx in 1:n_cells
+        net_flux = q_net[cell_idx] / area[cell_idx] * dt
+        dh, exfilt = water_table_change(soil, net_flux, specific_yield[cell_idx], cell_idx)
+        head[cell_idx] += dh
+        exfiltwater[cell_idx] += exfilt
     end
     # Set constant head (dirichlet) boundaries
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
@@ -667,12 +645,12 @@ function sum_boundary_fluxes(
         isnothing(bc) && continue
         typeof(bc) == exclude && continue
         indices = get_boundary_index(bc, domain)
-        for (boundary_idx, land_cell_idx) in enumerate(indices)
+        for (boundary_idx, cell_idx) in enumerate(indices)
             flux = bc.variables.flux_av[boundary_idx]
             if flux > 0.0
-                flux_in[land_cell_idx] += flux
+                flux_in[cell_idx] += flux
             else
-                flux_out[land_cell_idx] -= flux
+                flux_out[cell_idx] -= flux
             end
         end
     end
