@@ -317,10 +317,8 @@ function update_river_channel_flow!(
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
 
-    # [m³ s⁻¹] = [m³ s⁻¹]
     river_v.q0 .= river_v.q
     if !isnothing(river_flow_model.floodplain)
-        # [m³ s⁻¹] = [m³ s⁻¹]
         river_flow_model.floodplain.variables.q0 .= river_flow_model.floodplain.variables.q
     end
 
@@ -334,9 +332,7 @@ function update_river_channel_flow!(
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
         river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-        # [m²] = [m] * [m]
         river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
-        # [m] = [m²] / ([m] + [-] * [m])
         river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2 * river_v.hf[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
@@ -521,7 +517,6 @@ function update_bc_reservoir_model!(
         # [m³ s⁻¹] = ∑ [m³ s⁻¹]
         net_inflow = q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v] + inflow
         update_reservoir_model!(reservoir, v, net_inflow, dt)
-        # [m³ s⁻¹] = [m³ s⁻¹]
         river_v.q[i] = reservoir.variables.outflow[v]
         # average river discharge (here accumulated for model timestep dt)
         # [m³] += [m³ s⁻¹] * [s]
@@ -568,7 +563,6 @@ function update_bc_reservoir_model!(
         # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]
         net_inflow = q_in + res_bc.inflow_overland[v] + res_bc.inflow_subsurface[v] + inflow
         update_reservoir_model!(reservoir_model, v, net_inflow, dt)
-        # [m³ s⁻¹] = [m³ s⁻¹]
         river_v.q[i] = reservoir_model.variables.outflow[v]
         # average river discharge (here accumulated for model timestep Δt)
         # [m³] += [m³ s⁻¹] * [s]
@@ -617,15 +611,11 @@ function update_water_depth_and_storage!(
             flood_storage = storage_total - river_p.bankfull_storage[i]
             # [m]
             h = flood_depth(floodplain_p.profile, flood_storage, flow_length[i], i)
-            # [m] = [m] + [m]
             river_v.h[i] = river_p.bankfull_depth[i] + h
-            # [m³] = [m] * [m] * [m]
             river_v.storage[i] = river_v.h[i] * flow_width[i] * flow_length[i]
-            # [m³] = max([m³] - [m³], [m³])
             floodplain_v.storage[i] = max(storage_total - river_v.storage[i], 0.0)
             floodplain_v.h[i] = floodplain_v.storage[i] > 0.0 ? h : 0.0
         else
-            # [m] = [m³] / ([m] * [m])
             river_v.h[i] = storage_total / (flow_length[i] * flow_width[i])
             river_v.storage[i] = storage_total
             floodplain_v.h[i] = 0.0
@@ -663,7 +653,6 @@ function update_water_depth_and_storage!(
         q_dst = sum_at(river_v.q, edges_at_node.dst[i])
         # internal abstraction (water demand) is limited by river storage and negative
         # external inflow as part of water allocation computations.
-        # [m³] = ([m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹] - [m³ s⁻¹]) * [s]
         river_v.storage[i] += (q_src - q_dst + inwater[i] - abstraction[i]) * dt
 
         if river_v.storage[i] < 0.0
@@ -682,9 +671,7 @@ function update_water_depth_and_storage!(
             # [m³ s⁻¹] = [m³ s⁻¹]
             inflow = external_inflow[i]
         end
-        # [m³] += [m³ s⁻¹] * [s]
         river_v.storage[i] += inflow * dt # add external inflow
-        # [m] = [m³] / ([m] * [m])
         river_v.h[i] = river_v.storage[i] / (flow_length[i] * flow_width[i])
     end
     return nothing
@@ -986,10 +973,8 @@ function update_bc_overland_flow_model!(
     (; area) = domain.land.parameters
     river_indices = domain.river.network.land_indices
 
-    # [m³ s⁻¹] =  [m s⁻¹] * [m²]
     @. overland_flow_model.boundary_conditions.runoff =
         (net_runoff + net_runoff_river) * area
-    # [m³ s⁻¹] += [m³ s⁻¹]
     overland_flow_model.boundary_conditions.runoff[river_indices] .+=
         get_flux_to_river(subsurface_flow, river_indices)
     return nothing
@@ -1181,7 +1166,6 @@ function local_inertial_update_fluxes!(
     land_v = overland_flow_model.variables
     land_p = overland_flow_model.parameters
 
-    # [m³ s⁻¹] = [m³ s⁻¹]
     land_v.qx0 .= land_v.qx
     land_v.qy0 .= land_v.qy
 
@@ -1387,11 +1371,8 @@ Update storage and water depth for a single river cell.
         river_flow_model,
         domain,
     )
-    # [m] = [m]
     river_flow_model.variables.h[river_idx] = river_h
-    # [m] = [m]
     overland_flow_model.variables.h[i] = land_h
-    # [m³] = [m³]
     river_flow_model.variables.storage[river_idx] = river_storage
 
     return nothing
@@ -1420,7 +1401,6 @@ Update storage and water depth for a single land cell (non-river).
     end
 
     # Update water depth
-    # [m] = [m³] / ([m] * [m])
     overland_flow_model.variables.h[i] =
         overland_flow_model.variables.storage[i] /
         (domain.parameters.x_length[i] * domain.parameters.y_length[i])

@@ -338,7 +338,6 @@ function river_erosion_store!(
         # Update the excess sediment and the sediment store
         # [kg s⁻¹] -= [kg s⁻¹]
         excess_sediment -= erosion
-        # [kg] = [kg] - [kg s⁻¹] * [s]
         store_vec[v] = store - erosion * dt
     else
         # [kg s⁻¹]

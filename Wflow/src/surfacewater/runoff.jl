@@ -41,7 +41,6 @@ function get_water_flux_surface!(
     interception::AbstractInterceptionModel,
 )
     (; throughfall, stemflow) = interception.variables
-    # [m s⁻¹] = [m s⁻¹] + [m s⁻¹]
     @. water_flux_surface = throughfall + stemflow
     return nothing
 end
@@ -53,7 +52,6 @@ function get_water_flux_surface!(
     glacier::AbstractGlacierModel,
     interception::AbstractInterceptionModel,
 )
-    # [m s⁻¹] = [m s⁻¹] + [m s⁻¹] * [-]
     water_flux_surface .=
         get_runoff(snow) .+ get_glacier_melt(glacier) .* get_glacier_fraction(glacier)
     return nothing
@@ -77,7 +75,6 @@ function update_bc_open_water_runoff_model!(
     # evaporation
     waterdepth_land .= routing.overland_flow.variables.h
     for (i, land_index) in enumerate(land_indices)
-        # [m] = [m]
         waterdepth_river[land_index] = routing.river_flow.variables.h[i]
     end
     return nothing
@@ -96,13 +93,10 @@ function update_open_water_runoff_model!(
     (; potential_evaporation) = atmospheric_forcing
     (; river_fraction, water_fraction) = parameters
 
-    # [m s⁻¹] = [-] * [m s⁻¹]
     @. runoff_river = min(1.0, river_fraction) * water_flux_surface
     @. runoff_land = min(1.0, water_fraction) * water_flux_surface
-    # [m s⁻¹] = [-] * min([m] / [s], [m s⁻¹])
     @. ae_openw_r = river_fraction * min(waterdepth_river / dt, potential_evaporation)
     @. ae_openw_l = water_fraction * min(waterdepth_land / dt, potential_evaporation)
-    # [m s⁻¹] = [m s⁻¹] - [m s⁻¹]
     @. net_runoff_river = runoff_river - ae_openw_r
 
     return nothing

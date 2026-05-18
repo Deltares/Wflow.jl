@@ -114,9 +114,7 @@ function update_bc_soil_erosion_model!(
     # [kg s⁻¹]
     ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
-    # [kg s⁻¹] = [kg s⁻¹]
     @. rainfall_erosion = re
-    # [kg s⁻¹] = [kg s⁻¹]
     @. overland_flow_erosion = ole
 end
 
@@ -136,7 +134,6 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
 
     n = length(rainfall_erosion)
     threaded_foreach(1:n; basesize = 1000) do i
-        # [kg s⁻¹]
         soil_erosion_rate[i],
         clay_erosion_rate[i],
         silt_erosion_rate[i],

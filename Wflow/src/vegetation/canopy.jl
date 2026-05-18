@@ -68,7 +68,6 @@ function update_interception_model!(
             canopyfraction = 1.0 - canopygapfraction[i]
             # [m s⁻¹] = [-] * [m s⁻¹] * [-]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
-            # [-] = min([-], [m s⁻¹] / max([m s⁻¹], [-] * [m s⁻¹]))
             e_r[i] =
                 precipitation[i] > 0.0 ?
                 min(
@@ -125,7 +124,6 @@ function update_interception_model!(
     end
     n = length(precipitation)
     threaded_foreach(1:n; basesize = 1000) do i
-        # [m s⁻¹] = [-] * [m s⁻¹] * [-]
         canopy_potevap[i] = kc[i] * potential_evaporation[i] * (1.0 - canopygapfraction[i])
         throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
             rainfall_interception_modrut(
@@ -152,9 +150,7 @@ function update_canopy_parameters!(parameters::VegetationParameters)
 
     n = length(leaf_area_index)
     threaded_foreach(1:n; basesize = 1000) do i
-        # [m] = [m] * [-] + [m]
         cmax[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
-        # [-] = exp([-] * [-])
         canopygapfraction[i] = exp(-kext[i] * leaf_area_index[i])
     end
     return nothing

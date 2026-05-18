@@ -303,7 +303,6 @@ function kinwave_land_update!(
                     sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt
 
                 if surface_flow_width[v] > 0.0
-                    # [m³ s⁻¹] = ∑ [m³ s⁻¹] * [-]
                     qin[v] = sum_at(
                         i -> q[i] * (1.0 - flow_fraction_to_river[i]),
                         upstream_nodes[n],
@@ -315,10 +314,8 @@ function kinwave_land_update!(
 
                 # update h, only if flow width > 0.0
                 if surface_flow_width[v] > 0.0
-                    # [m] = [m²] / [m]
                     h[v] = crossarea / surface_flow_width[v]
                 end
-                # [m³] = [m] * [m] * [m]
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
                 # average flow
@@ -423,7 +420,6 @@ function update_reservoir_model!(
     n_downstream = length(downstream_nodes)
     if n_downstream == 1
         j = only(downstream_nodes)
-        # [m³ s⁻¹] = [m³ s⁻¹]
         qin[j] = outflow[i]
     elseif n_downstream == 0
         error(
@@ -498,9 +494,7 @@ function kinwave_river_update!(
                     )
                 end
                 # update h and storage
-                # [m] = [m²] / [m]
                 h[v] = crossarea / flow_width[v]
-                # [m³] = [m] * [m] * [m]
                 storage[v] = flow_length[v] * flow_width[v] * h[v]
 
                 # average variables
@@ -528,12 +522,9 @@ function update_river_flow_model!(
     (; qlat, qin_average, qin_cumulative) = river_flow_model.variables
     (; adaptive) = river_flow_model.timestepping
 
-    # [s³ᐟ⁵ m⁻¹ᐟ⁵] = ([s m⁻¹ᐟ³] / [-])³ᐟ⁵
     @. alpha_term = pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     # use fixed alpha value based on 0.5 * bankfull_depth
-    # [s³ᐟ⁵ m¹ᐟ⁵] =  [s³ᐟ⁵ m⁻¹ᐟ⁵] * ([m] + [m])²ᐟ⁵
     @. alpha = alpha_term * pow(flow_width + bankfull_depth, alpha_pow)
-    # [m² s⁻¹] = [m³ s⁻¹] / [m]
     @. qlat = inwater / flow_length
 
     set_flow_vars!(river_flow_model)
@@ -588,7 +579,6 @@ function stable_timestep(
             k += 1
             # [m s⁻¹] = ([s³ᐟ⁵ m¹ᐟ⁵] * [-] * [m³ s⁻¹]⁻²ᐟ⁵)⁻¹
             c = inv(alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
-            # [s] = [m] / [m s⁻¹]
             stable_timesteps[k] = (flow_length[i] / c)
         end
     end
@@ -625,7 +615,6 @@ function update_lateral_inflow!(
     nonirrigation_returnflow = get_nonirrigation_returnflow(allocation)
     flux_subsurface_to_river = get_flux_to_river(subsurface_flow, land_indices)
     flux_overland_to_river = overland_flow.variables.to_river_average
-    # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹] + [m s⁻¹] * [m²] + [m s⁻¹] * [m²]
     @. inwater = (
         flux_subsurface_to_river +
         flux_overland_to_river[land_indices] +
@@ -662,7 +651,6 @@ function update_lateral_inflow!(
     end
 
     nonirrigation_returnflow = get_nonirrigation_returnflow(allocation)
-    # [m³ s⁻¹] = ([m s⁻¹] + [m s⁻¹]) * [m²]
     @. inwater = (net_runoff + nonirrigation_returnflow) * area + drainflux
 
     return nothing

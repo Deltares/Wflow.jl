@@ -34,7 +34,6 @@ function update_bc_sediment_to_river_model!(
     sediment_transport_model::SedimentLandTransportModel,
 )
     (; deposition) = sediment_to_river_model.boundary_conditions
-    # [kg s⁻¹] = [kg s⁻¹]
     @. deposition = sediment_transport_model.variables.deposition
 end
 
@@ -112,7 +111,6 @@ function update_bc_sediment_to_river_model!(
         deposition_sagg,
         deposition_lagg,
     ) = sediment_to_river_model.boundary_conditions
-    # [kg s⁻¹] = [kg s⁻¹]
     @. deposition_clay = sediment_transport_model.variables.deposition_clay
     @. deposition_silt = sediment_transport_model.variables.deposition_silt
     @. deposition_sand = sediment_transport_model.variables.deposition_sand
@@ -138,7 +136,6 @@ function update_sediment_to_river_model!(
 
     for (i, river) in enumerate(rivers)
         if river
-            # [kg s⁻¹] = [kg s⁻¹]
             clay_rate[i] = deposition_clay[i]
             silt_rate[i] = deposition_silt[i]
             sand_rate[i] = deposition_sand[i]

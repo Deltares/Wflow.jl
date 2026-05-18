@@ -40,11 +40,9 @@ function update_bc_sediment_land_transport_model!(
 )
     (; erosion, transport_capacity) = sediment_transport_model.boundary_conditions
     (; soil_erosion_rate) = erosion_model.variables
-    # [kg s⁻¹] = [kg s⁻¹]
     @. erosion = soil_erosion_rate
 
     (; sediment_transport_capacity) = transport_capacity_model.variables
-    # [kg s⁻¹] = [kg s⁻¹]
     @. transport_capacity = sediment_transport_capacity
 end
 
@@ -163,7 +161,6 @@ function update_bc_sediment_land_transport_model!(
         sagg_erosion_rate,
         lagg_erosion_rate,
     ) = erosion_model.variables
-    # [kg s⁻¹] = [kg s⁻¹]
     @. erosion_clay = clay_erosion_rate
     @. erosion_silt = silt_erosion_rate
     @. erosion_sand = sand_erosion_rate
@@ -171,7 +168,6 @@ function update_bc_sediment_land_transport_model!(
     @. erosion_lagg = lagg_erosion_rate
 
     (; clay, silt, sand, sagg, lagg) = transport_capacity_model.variables
-    # [kg s⁻¹] = [kg s⁻¹]
     @. transport_capacity_clay = clay
     @. transport_capacity_silt = silt
     @. transport_capacity_sand = sand
@@ -222,9 +218,7 @@ function update_sediment_overland_model!(
     do_accucapacityflux!(sagg, deposition_sagg, erosion_sagg, transport_capacity_sagg)
     do_accucapacityflux!(lagg, deposition_lagg, erosion_lagg, transport_capacity_lagg)
 
-    # [kg s⁻¹] = ∑ [kg s⁻¹]
     @. sediment_rate = clay + silt + sand + sagg + lagg
-    # [kg s⁻¹] = ∑ [kg s⁻¹]
     @. deposition =
         deposition_clay +
         deposition_silt +

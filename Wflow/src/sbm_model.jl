@@ -152,7 +152,6 @@ function set_states!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
         if config.model.type == ModelType.sbm
             (; zi, storage, head) = routing.subsurface_flow.variables
             (; specific_yield, soilthickness, top) = routing.subsurface_flow.parameters
-            # [m] = [m]
             @. zi = land.soil.variables.zi
             # [m] = [m] - [m]
             @. head = top - zi

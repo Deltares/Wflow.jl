@@ -603,10 +603,8 @@ function update_head!(gwf::GroundwaterFlowModel, soil::SbmSoilModel, dt::Float64
         exfiltwater_cumulative[i] += exfilt * dt
     end
     # Set constant head (dirichlet) boundaries
-    # [m] = [m]
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
-    # [m] = [m]
     gwf.variables.head .= minimum_head(gwf)
     # Adjust exfiltration rate for constant head boundaries
     exfiltwater_cumulative[gwf.constanthead.index] .= 0.0

@@ -67,7 +67,6 @@ function update_bc_river_erosion_model!(
 )
     (; waterlevel) = river_erosion_model.boundary_conditions
     (; waterlevel_river) = hydrological_forcing
-    # [m] = [m]
     @. waterlevel = waterlevel_river
 end
 

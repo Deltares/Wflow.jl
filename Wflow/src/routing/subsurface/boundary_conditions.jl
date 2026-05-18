@@ -109,7 +109,6 @@ function flux!(
             # [m³ s⁻¹] = [m² s⁻¹] * [m]
             flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         end
-        # [m³ s⁻¹] = [m³ s⁻¹]
         gwf_river_model.variables.flux[i] = flux
         # [m³ s⁻¹] += [m³ s⁻¹]
         subsurface_flow_model.variables.q_net_bnds[index] += flux
@@ -175,7 +174,6 @@ function flux!(
         )
         # [m³ s⁻¹] = [m² s⁻¹] * [m]
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
-        # [m³ s⁻¹] = [m³ s⁻¹]
         drainage_model.variables.flux[i] = flux
         # [m³] += [m³ s⁻¹] * [s]
         drainage_model.variables.flux_cumulative[i] += flux * dt
@@ -220,7 +218,6 @@ function flux!(
             headboundary.variables.head[i] - subsurface_flow_model.variables.head[index]
         # [m³ s⁻¹] = [m² s⁻¹] * [m]
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
-        # [m³ s⁻¹] = [m³ s⁻¹]
         headboundary.variables.flux[i] = flux
         # [m³] += [m³ s⁻¹] * [s]
         headboundary.variables.flux_cumulative[i] += flux * dt
@@ -259,7 +256,6 @@ function flux!(
             subsurface_flow_model,
             index,
         )
-        # [m³ s⁻¹] = [m³ s⁻¹]
         recharge_model.variables.flux[i] = flux
         # [m³] += [m³ s⁻¹] * [s]
         recharge_model.variables.flux_cumulative[i] += flux * dt
@@ -297,7 +293,6 @@ function flux!(
             subsurface_flow_model,
             index,
         )
-        # [m³ s⁻¹] = [m³ s⁻¹]
         well_model.variables.flux[i] = flux
         well_model.variables.flux_cumulative[i] += flux * dt
         # [m³ s⁻¹] += [m³ s⁻¹]
@@ -314,7 +309,6 @@ function update_river_storage_stage!(
         # [m] = [m] + [m]
         gwf_river_model.variables.stage[i] =
             river_flow_model.variables.h[i] + gwf_river_model.parameters.bottom[i]
-        # [m³] = [m³]
         gwf_river_model.variables.storage[i] = river_flow_model.variables.storage[i]
     end
     return nothing

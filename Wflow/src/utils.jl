@@ -790,10 +790,8 @@ function kh_layered_profile!(
                 transmissivity += act_thickl[i][n] * kv_profile.kv[i][n]
                 n += 1
             end
-            # [m s⁻¹] = ([m² s⁻¹] / ([m] - [m])) * [-]
             kh[i] = (transmissivity / (soilthickness[i] - zi[i])) * khfrac[i]
         else
-            # [m s⁻¹] = [m s⁻¹] * [-]
             kh[i] = kv_profile.kv[i][m] * khfrac[i]
         end
     end
@@ -848,15 +846,12 @@ function kh_layered_profile!(
                 end
                 n += 1
             end
-            # [m s⁻¹] = ([m² s⁻¹] / ([m] - [m])) * [-]
             kh[i] = (transmissivity / (soilthickness[i] - zi[i])) * khfrac[i]
         else
             if zi[i] >= z_layered[i]
                 j = nlayers_kv[i]
-                # [m s⁻¹] = [m s⁻¹] * [-] * [-]
                 kh[i] = kv[i][j] * exp(-f[i] * (zi[i] - z_layered[i])) * khfrac[i]
             else
-                # [m s⁻¹] = [m s⁻¹] * [-]
                 kh[i] = kv[i][m] * khfrac[i]
             end
         end
@@ -889,7 +884,6 @@ function initialize_lateral_ssf_model!(
 
     # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * [-]
     @. q_max = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
-    # [m³ s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * ([-] - [-]) * [m]
     @. q = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
@@ -908,18 +902,15 @@ function initialize_lateral_ssf_model!(
     # [m² s⁻¹] = [m s⁻¹] * [-] * [-] * ([m] - [m])
     q_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(q)
-        # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * [-] + [m² s⁻¹]
         q_max[i] =
             ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * z_exp[i])) + q_constant[i]
         if zi[i] < z_exp[i]
-            # [m³ s⁻¹] = ((([m s⁻¹] * [-]) / [m⁻¹]) * [-] + [m² s⁻¹]) * [m]
             q[i] =
                 (
                     ((kh_0[i] * slope[i]) / f[i]) *
                     (exp(-f[i] * zi[i]) - exp(-f[i] * z_exp[i])) + q_constant[i]
                 ) * flow_width[i]
         else
-            # [m³ s⁻¹] = [m s⁻¹] * [-] * [-] * ([m] - [m]) * [m]
             q[i] =
                 kh_0[i] *
                 exp(-f[i] * zi[i]) *
@@ -953,7 +944,6 @@ function initialize_lateral_ssf_model!(
 
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
     for i in eachindex(q)
-        # [m³ s⁻¹] = [m s⁻¹] * ([m] - [m]) * [-] * [m]
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         # [m² s⁻¹]
         kh_max = 0.0
@@ -963,7 +953,6 @@ function initialize_lateral_ssf_model!(
         end
         # [m² s⁻¹] *= [-]
         kh_max *= khfrac[i]
-        # [m² s⁻¹] = [m² s⁻¹] * [-]
         q_max[i] = kh_max * slope[i]
     end
     return nothing
@@ -985,7 +974,6 @@ function initialize_lateral_ssf_model!(
 
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
     for i in eachindex(q)
-        # [m³ s⁻¹] = [m s⁻¹] * ([m] - [m]) * [-] * [m]
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         # [m² s⁻¹]
         kh_max = 0.0
@@ -1004,7 +992,6 @@ function initialize_lateral_ssf_model!(
         end
         # [m² s⁻¹] = [m² s⁻¹] * [-]
         kh_max = kh_max * khfrac[i]
-        # [m² s⁻¹] = [m² s⁻¹] * [-]
         q_max[i] = kh_max * slope[i]
     end
     return nothing

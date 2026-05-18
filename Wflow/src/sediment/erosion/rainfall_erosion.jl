@@ -107,11 +107,8 @@ function update_bc_rainfall_erosion_model!(
 )
     # [m s⁻¹], [m s⁻¹], [m]
     (; precipitation, interception, waterlevel) = rainfall_erosion_model.boundary_conditions
-    # [m s⁻¹] = [m s⁻¹]
     @. precipitation = atmospheric_forcing.precipitation
-    # [m] = [m]
     @. waterlevel = hydrological_forcing.waterlevel_land
-    # [m s⁻¹] = [m s⁻¹]
     @. interception = hydrological_forcing.interception
 end
 
@@ -215,7 +212,6 @@ function update_bc_rainfall_erosion_model!(
     ::HydrologicalForcing,
 )
     (; precipitation) = rainfall_erosion_model.boundary_conditions
-    # [m s⁻¹] = [m s⁻¹]
     @. precipitation = atmospheric_forcing.precipitation
 end
 

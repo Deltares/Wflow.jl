@@ -229,24 +229,19 @@ function update_bc_river_sediment_transport_model!(
 
     # Hydrological forcing
     (; q_river, waterlevel_river) = hydrological_forcing
-    # [m³ s⁻¹] = [m³ s⁻¹]
     @. q = q_river
-    # [m] = [m]
     @. waterlevel = waterlevel_river
     # Transport capacity
-    # [kg s⁻¹] = [kg s⁻¹]
     @. transport_capacity = transport_capacity_model.variables.sediment_transport_capacity
     # Input from soil erosion
     (; clay_rate, silt_rate, sand_rate, sagg_rate, lagg_rate) =
         sediment_to_river_model.variables
-    # [kg s⁻¹] = [kg s⁻¹]
     map!(i -> clay_rate[i], erosion_land_clay, indices_riv)
     map!(i -> silt_rate[i], erosion_land_silt, indices_riv)
     map!(i -> sand_rate[i], erosion_land_sand, indices_riv)
     map!(i -> sagg_rate[i], erosion_land_sagg, indices_riv)
     map!(i -> lagg_rate[i], erosion_land_lagg, indices_riv)
     # Maximum direct river bed/bank erosion
-    # [kg s⁻¹] = [kg s⁻¹]
     @. potential_erosion_river_bed = potential_erosion_model.variables.bed
     @. potential_erosion_river_bank = potential_erosion_model.variables.bank
 end
@@ -901,7 +896,6 @@ function update_bc_river_sediment_concentration_model!(
     @. q = q_river
     @. waterlevel = waterlevel_river
     # Sediment flux per particle
-    # [kg s⁻¹] = [kg s⁻¹]
     @. clay = sediment_transport_model.variables.clay_rate
     @. silt = sediment_transport_model.variables.silt_rate
     @. sand = sediment_transport_model.variables.sand_rate

@@ -136,9 +136,7 @@ end
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(ssf::LateralSsfParameters, zi::Vector{Float64})
     n = length(zi)
-    # [m³] = [-] * ([m] - [m]) * [m²]
     storage = @. ssf.specific_yield * (ssf.soilthickness - zi) * ssf.area
-    # [m] = [m] - [m]
     head = ssf.top - zi
     variables = LateralSsfVariables(; n, zi, storage, head)
     return variables
@@ -272,9 +270,7 @@ function kinwave_subsurface_update!(
                 exfiltwater_cumulative[v] += _exfiltwater * dt
                 # [m³] += [m s⁻¹] * [s]
                 q_net_cumulative[v] += netflux * area[v] * dt
-                # [m] = [m] - [m]
                 head[v] = top[v] - zi[v]
-                # [m³] = [-] * ([m] - [m]) * [m²]
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
             end
         end
@@ -334,7 +330,6 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
             k += 1
             # [m s⁻¹]
             c = ssf_celerity(zi[i], slope[i], specific_yield[i], kh_profile, i)
-            # [s] = [m] / [m s⁻¹]
             stable_timesteps[k] = (flow_length[i] / c)
         end
     end

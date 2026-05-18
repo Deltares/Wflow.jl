@@ -392,9 +392,7 @@ function update_runoff!(paddy_model::PaddyModel, runoff, dt::Float64)
         !b && continue
         # [m s⁻¹] = max([m s⁻¹] - [m] / [s], [m s⁻¹])
         paddy_runoff = max(runoff[i] - parameters.h_max[i] / dt, 0.0)
-        # [m] = [m s⁻¹] * [s]
         paddy_model.variables.h[i] = (runoff[i] - paddy_runoff) * dt
-        # [m s⁻¹] = [m s⁻¹]
         runoff[i] = paddy_runoff
     end
 end
@@ -681,19 +679,15 @@ function surface_water_allocation_local!(
             surfacewater_demand_vol = surfacewater_demand[i] * area[i]
             # [m³] = min([m³ s⁻¹] * [s], [m³])
             abstraction_vol = min(surfacewater_demand_vol * dt, available_volume)
-            # [m³ s⁻¹] = [m³] / [s]
             act_surfacewater_abst_vol[index_river] = abstraction_vol / dt
             # remaining available surface water and demand [m³]
             available_surfacewater[index_river] =
                 max(available_volume - abstraction_vol, 0.0)
             # [m s⁻¹] = [m³] / ([m²] * [s])
             abstraction = abstraction_vol / (area[i] * dt)
-            # [m s⁻¹] = max([m s⁻¹] - [m s⁻¹], [m s⁻¹])
             surfacewater_demand[i] = max(surfacewater_demand[i] - abstraction, 0.0)
-            # [m s⁻¹]
             # update actual abstraction from river and surface water allocation (land cell)
             act_surfacewater_abst[index_river] = abstraction
-            # [m s⁻¹]
             surfacewater_alloc[i] = abstraction
         end
     end
@@ -753,17 +747,14 @@ function surface_water_allocation_area!(
         # water abstracted from surface water at each river cell (including reservoir
         # locations).
         for j in inds_river[i]
-            # [m³ s⁻¹] = [-] * [m³] / [s]
             act_surfacewater_abst_vol[j] +=
                 frac_abstract_sw * available_surfacewater[j] / dt
-            # [m s⁻¹] = [m³ s⁻¹] / [m²]
             act_surfacewater_abst[j] =
                 act_surfacewater_abst_vol[j] / domain.river.parameters.cell_area[j]
         end
 
         # water allocated to each land cell.
         for j in inds_land[i]
-            # [m s⁻¹] = [-] * [m s⁻¹]
             surfacewater_alloc[j] += frac_allocate_sw * surfacewater_demand[j]
         end
     end
@@ -843,11 +834,9 @@ function groundwater_allocation_local!(
             actual_groundwater_abstraction_volume = abstraction_vol / dt
             act_groundwater_abst_vol[i] = actual_groundwater_abstraction_volume
             # remaining available groundwater and demand
-            # [m³] = max([m³] - [m³], [m³])
             available_groundwater[i] = max(available_volume - abstraction_vol, 0.0)
             # [m s⁻¹] = [m³ s⁻¹] / [m²]
             abstraction = actual_groundwater_abstraction_volume / area[i]
-            # [m s⁻¹] = max([m s⁻¹] - [m s⁻¹], [m s⁻¹])
             groundwater_demand[i] = max(groundwater_demand[i] - abstraction, 0.0)
             # update actual abstraction from groundwater and groundwater allocation (land cell)
             act_groundwater_abst[i] = abstraction
@@ -908,11 +897,8 @@ function groundwater_allocation_area!(
 
         # water abstracted from groundwater and allocated.
         for j in inds_land[i]
-            # [m³ s⁻¹] = [-] * [m³] / [s]
             act_groundwater_abst_vol[j] += frac_abstract_gw * available_groundwater[j] / dt
-            # [m s⁻¹] = [m³ s⁻¹] / [m²]
             act_groundwater_abst[j] = act_groundwater_abst_vol[j] / area[j]
-            # [m s⁻¹] = [-] * [m s⁻¹]
             groundwater_alloc[j] += frac_allocate_gw * groundwater_demand[j]
         end
     end
@@ -990,7 +976,6 @@ function update_water_allocation_model!(
     act_surfacewater_abst .= 0.0
     act_surfacewater_abst_vol .= 0.0
     # total surface water demand for each land cell
-    # [m s⁻¹] = [-] * ([m s⁻¹] + [m s⁻¹])
     @. surfacewater_demand = frac_sw_used * (nonirri_demand_gross + irri_demand_gross)
 
     # local surface water demand and allocation (river, excluding reservoirs)
@@ -1042,13 +1027,10 @@ function update_water_allocation_model!(
 
     # irrigation allocation
     for i in eachindex(total_alloc)
-        # [m s⁻¹] = [m s⁻¹] + [m s⁻¹]
         total_alloc[i] = groundwater_alloc[i] + surfacewater_alloc[i]
         # [-] = [m s⁻¹] / [m s⁻¹]
         frac_irri = bounded_divide(irri_demand_gross[i], total_gross_demand[i])
-        # [m s⁻¹] = [-] * [m s⁻¹]
         irri_alloc[i] = frac_irri * total_alloc[i]
-        # [m s⁻¹] = [m s⁻¹] - [m s⁻¹]
         nonirri_alloc[i] = total_alloc[i] - irri_alloc[i]
     end
 
@@ -1065,7 +1047,6 @@ function update_water_allocation_model!(
     for i in eachindex(nonirri_returnflow)
         if inds_river[i] > 0.0
             k = inds_river[i]
-            # [m s⁻¹] = [m s⁻¹]
             river.allocation.variables.nonirri_returnflow[k] = nonirri_returnflow[i]
             nonirri_returnflow[i] = 0.0
         end
