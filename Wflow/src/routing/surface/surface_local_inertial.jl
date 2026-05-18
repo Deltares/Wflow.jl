@@ -1109,7 +1109,7 @@ Returns tuple: (inflow, abstraction_to_add)
         available_volume =
             if overland_flow_model.variables.storage[i] >=
                river_flow_model.parameters.bankfull_storage[river_idx]
-                river_flow_model.parameters.bankfull_depth[river_idx]
+                river_flow_model.parameters.bankfull_storage[river_idx]
             else
                 river_flow_model.variables.storage[river_idx]
             end
