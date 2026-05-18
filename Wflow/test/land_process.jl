@@ -170,7 +170,7 @@ end
     ttm = 0.0
     cfmax = 3.4
     snow_to_ice_fraction = 0.2
-    max_snow_to_ice_rate = 8.0
+    maximum_snow_to_ice_rate = 8.0
     snow_storage, snow_to_glacier, glacier_storage, glacier_melt = Wflow.glacier_hbv(
         glacier_fraction,
         glacier_store,
@@ -179,7 +179,7 @@ end
         ttm,
         cfmax,
         snow_to_ice_fraction,
-        max_snow_to_ice_rate,
+        maximum_snow_to_ice_rate,
     )
     @test snow_storage ≈ 8.835
     @test snow_to_glacier ≈ 1.9
@@ -210,17 +210,19 @@ end
 @testitem "unit: unsatzone_flow_layer" begin
     kv_z = 256.0
     l_sat = 135.0
-    c = 12.6
+    brooks_corey_exponent = 12.6
 
     # Case usd > 0
     usd = 43.5
-    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    usd_new, sum_ast =
+        Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, brooks_corey_exponent)
     usd_new = 43.49983744545384
     sum_ast = 0.00016255454615829025
 
     # Case usd == 0
     usd = 0
-    usd_new, sum_ast = Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    usd_new, sum_ast =
+        Wflow.unsatzone_flow_layer(usd, kv_z, l_sat, brooks_corey_exponent)
     @test usd_new == 0.0
     @test sum_ast == 0.0
 end
@@ -230,18 +232,42 @@ end
     volumetric_water_content = 0.25
     theta_s = 0.6
     theta_r = 0.15
-    c = 10.5
-    hb = -10.0
-    h = Wflow.head_brooks_corey(volumetric_water_content, theta_s, theta_r, c, hb)
+    brooks_corey_exponent = 10.5
+    air_entry_pressure = -10.0
+    h = Wflow.head_brooks_corey(
+        volumetric_water_content,
+        theta_s,
+        theta_r,
+        brooks_corey_exponent,
+        air_entry_pressure,
+    )
     @test h ≈ -90.6299820833844
-    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈
+    @test Wflow.vwc_brooks_corey(
+        h,
+        air_entry_pressure,
+        theta_s,
+        theta_r,
+        brooks_corey_exponent,
+    ) ≈
           volumetric_water_content + theta_r
 
     # Case par_lambda < 0
-    c = 2.0
-    h = Wflow.head_brooks_corey(volumetric_water_content, theta_s, theta_r, c, hb)
-    @test h == hb
-    @test Wflow.vwc_brooks_corey(h, hb, theta_s, theta_r, c) ≈ theta_s
+    brooks_corey_exponent = 2.0
+    h = Wflow.head_brooks_corey(
+        volumetric_water_content,
+        theta_s,
+        theta_r,
+        brooks_corey_exponent,
+        air_entry_pressure,
+    )
+    @test h == air_entry_pressure
+    @test Wflow.vwc_brooks_corey(
+        h,
+        air_entry_pressure,
+        theta_s,
+        theta_r,
+        brooks_corey_exponent,
+    ) ≈ theta_s
 end
 
 @testitem "unit: Feddes root water uptake" begin

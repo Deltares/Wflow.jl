@@ -1,5 +1,5 @@
 """
-    glacier_hbv(glacier_frac, glacier_store, snow_storage, temperature, temperature_threshold_melt, degree_day_factor, snow_to_ice_fraction, max_snow_to_ice_rate)
+    glacier_hbv(glacier_frac, glacier_store, snow_storage, temperature, temperature_threshold_melt, degree_day_factor, snow_to_ice_fraction, maximum_snow_to_ice_rate)
 
 HBV-light type of glacier modelling.
 First, a fraction of the snowpack is converted into ice using the HBV-light
@@ -15,7 +15,7 @@ occurs if the snow storage < 10 mm.
 - `temperature_threshold_melt` temperature threshold for ice melting [°C]
 - `degree_day_factor` ice degree-day factor in [mm/(°C/day)]
 - `snow_to_ice_fraction` fraction of the snow turned into ice [-]
-- `max_snow_to_ice_rate` maximum snow to glacier conversion rate
+- `maximum_snow_to_ice_rate` maximum snow to glacier conversion rate
 
 # Output
 - `snow`
@@ -32,7 +32,7 @@ function glacier_hbv(
     temperature_threshold_melt,
     degree_day_factor,
     snow_to_ice_fraction,
-    max_snow_to_ice_rate,
+    maximum_snow_to_ice_rate,
 )
 
     # Fraction of the snow transformed into ice (HBV-light model)
@@ -43,7 +43,7 @@ function glacier_hbv(
     end
 
     # Restrict snow_to_glacier conversion
-    snow_to_glacier = min(snow_to_glacier, max_snow_to_ice_rate)
+    snow_to_glacier = min(snow_to_glacier, maximum_snow_to_ice_rate)
 
     snow_storage -= snow_to_glacier * glacier_fraction
     glacier_store += snow_to_glacier

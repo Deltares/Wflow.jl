@@ -547,7 +547,7 @@ get_nonirrigation_returnflow(allocation_model::NoAllocationRiverModel) =
 
 "Struct to store land allocation allocation model parameters"
 @with_kw struct AllocationLandParameters
-    fraction_surface_water_user::Vector{Float64}     # fraction surface water used [-]
+    fraction_surfacewater_used::Vector{Float64}     # fraction surface water used [-]
     areas::Vector{Int}          # allocation areas [-]
 end
 
@@ -578,7 +578,7 @@ function AllocationLandModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    fraction_surface_water_user = ncread(
+    fraction_surfacewater_used = ncread(
         dataset,
         config,
         "land_surface_water__withdrawal_fraction",
@@ -595,7 +595,7 @@ function AllocationLandModel(
 
     n = length(indices)
 
-    parameters = AllocationLandParameters(; areas, fraction_surface_water_user)
+    parameters = AllocationLandParameters(; areas, fraction_surfacewater_used)
     allocation = AllocationLandModel(; n, parameters)
     return allocation
 end
@@ -949,7 +949,7 @@ function update_water_allocation_model!(
         total_gross_demand,
     ) = demand_model.variables
 
-    (; fraction_surface_water_user) = allocation_model.parameters
+    (; fraction_surfacewater_used) = allocation_model.parameters
     (; actual_surfacewater_abstraction, actual_surfacewater_abstraction_volume) =
         river.allocation.variables
     (; abstraction, reservoir) = river.boundary_conditions
@@ -959,8 +959,8 @@ function update_water_allocation_model!(
     actual_surfacewater_abstraction_volume .= 0.0
     # total surface water demand for each land cell
     @. surfacewater_demand =
-        fraction_surface_water_user * non_irrigation_demand_gross +
-        fraction_surface_water_user * irrigation_demand_gross
+        fraction_surfacewater_used * non_irrigation_demand_gross +
+        fraction_surfacewater_used * irrigation_demand_gross
 
     # local surface water demand and allocation (river, excluding reservoirs)
     surface_water_allocation_local!(

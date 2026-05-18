@@ -38,14 +38,14 @@ function infiltration(
 end
 
 """
-    unsatzone_flow_layer(usd, kv_z, l_sat, c)
+    unsatzone_flow_layer(usd, kv_z, l_sat, brooks_corey_exponent)
 
 Assuming a unit head gradient, the transfer of water from an unsaturated store layer `usd`
 is controlled by the vertical saturated hydraulic conductivity `kv_z` (bottom layer or water
 table), the effective saturation degree of the layer (ratio `usd` and `l_sat`), and a
-Brooks-Corey power coefficient `c`.
+Brooks-Corey power coefficient `brooks_corey_exponent`.
 """
-function unsatzone_flow_layer(usd, kv_z, l_sat, c)
+function unsatzone_flow_layer(usd, kv_z, l_sat, brooks_corey_exponent)
     if usd <= 0.0
         return 0.0, 0.0
     end
@@ -53,7 +53,7 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     # first transfer soil water > maximum soil water capacity layer (iteration is not
     # required because of steady theta (usd))
     st_sat = max(0.0, usd - l_sat)
-    st = kv_z * min(pow(usd / l_sat, c), 1.0)
+    st = kv_z * min(pow(usd / l_sat, brooks_corey_exponent), 1.0)
     sum_ast = min(st, st_sat)
     usd -= sum_ast
 
@@ -62,7 +62,8 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     remainder = min(st - sum_ast, usd)
     its = Int(cld(remainder, 0.2))
     for _ in 1:its
-        st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
+        st =
+            (kv_z / its) * min(pow(usd / l_sat, brooks_corey_exponent), 1.0)
         ast = min(st, usd)
         usd -= ast
         sum_ast += ast
@@ -72,14 +73,15 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
 end
 
 """
-    vwc_brooks_corey(h, hb, theta_s, theta_r, brooks_corey_exponent)
+    vwc_brooks_corey(h, air_entry_pressure, theta_s, theta_r, brooks_corey_exponent)
 
 Return volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
-function vwc_brooks_corey(h, hb, theta_s, theta_r, brooks_corey_exponent)
-    if h < hb
+function vwc_brooks_corey(h, air_entry_pressure, theta_s, theta_r, brooks_corey_exponent)
+    if h < air_entry_pressure
         par_lambda = 2.0 / (brooks_corey_exponent - 3.0)
-        volumetric_water_content = (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
+        volumetric_water_content =
+            (theta_s - theta_r) * pow(air_entry_pressure / h, par_lambda) + theta_r
     else
         volumetric_water_content = theta_s
     end

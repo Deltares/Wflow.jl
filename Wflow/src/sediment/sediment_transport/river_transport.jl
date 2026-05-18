@@ -1026,7 +1026,8 @@ function update_river_sediment_concentration_model!(
                 dbedf,
                 large_aggregates[i],
             )
-            ss_grav = suspended_solid(median_diameter_gravel[i], dsuspf, dbedf, gravel[i])
+            ss_gravel =
+                suspended_solid(median_diameter_gravel[i], dsuspf, dbedf, gravel[i])
 
             to_conc = 1e6 / (q[i] * dt)
             total_ =
@@ -1044,7 +1045,7 @@ function update_river_sediment_concentration_model!(
                 ss_sand +
                 ss_small_aggregates +
                 ss_large_aggregates +
-                ss_grav
+                ss_gravel
             suspended[i] = ss * to_conc
             bed[i] = (total_ - ss) * to_conc
         else

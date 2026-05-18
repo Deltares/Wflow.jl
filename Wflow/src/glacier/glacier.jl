@@ -44,7 +44,7 @@ end
     # Fraction covered by a glacier [-]
     glacier_fraction::Vector{Float64}
     # Maximum snow to glacier conversion rate [mm Δt⁻¹]
-    max_snow_to_ice_rate::Float64
+    maximum_snow_to_ice_rate::Float64
 end
 
 "Glacier HBV model"
@@ -95,13 +95,13 @@ function GlacierHbvParameters(
         LandHydrologySBM;
         sel=indices,
     )
-    max_snow_to_ice_rate = 8.0 * (dt / BASETIMESTEP)
+    maximum_snow_to_ice_rate = 8.0 * (dt / BASETIMESTEP)
     glacier_hbv_params = GlacierHbvParameters(;
         temperature_threshold_melt,
         degree_day_factor,
         snow_to_ice_fraction,
         glacier_fraction,
-        max_snow_to_ice_rate,
+        maximum_snow_to_ice_rate,
     )
     return glacier_hbv_params
 end
@@ -133,7 +133,7 @@ function update_glacier_model!(
         degree_day_factor,
         snow_to_ice_fraction,
         glacier_fraction,
-        max_snow_to_ice_rate,
+        maximum_snow_to_ice_rate,
     ) = glacier_model.parameters
 
     n = length(temperature)
@@ -147,7 +147,7 @@ function update_glacier_model!(
             temperature_threshold_melt[i],
             degree_day_factor[i],
             snow_to_ice_fraction[i],
-            max_snow_to_ice_rate,
+            maximum_snow_to_ice_rate,
         )
     end
     return nothing

@@ -263,7 +263,12 @@ end
     )
 
     runoff =
-        (; variables = (; runoff_land = [0.0], actual_evaporation_open_water_land = [0.0]))
+        (;
+            variables = (;
+                runoff_land = [0.0],
+                actual_open_water_evaporation_land = [0.0],
+            ),
+        )
     demand = Wflow.DemandModel(;
         domestic = Wflow.NoDemandModel(; n),
         industry = Wflow.NoDemandModel(; n),

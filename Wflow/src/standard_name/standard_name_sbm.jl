@@ -229,7 +229,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:atmospheric_forcing],
     ),
     "land_surface_water__withdrawal_fraction" => ParameterMetadata(;
-        lens = @optic(_.land.allocation.parameters.fraction_surface_water_user),
+        lens = @optic(_.land.allocation.parameters.fraction_surfacewater_used),
         default = 1.0,
         description = "Fraction surface water used",
         tags = [:demand_allocation_input],

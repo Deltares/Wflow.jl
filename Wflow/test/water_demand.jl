@@ -84,7 +84,7 @@ end
     allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
-            fraction_surface_water_user = [1.0],
+            fraction_surfacewater_used = [1.0],
             areas = [600_000.0],
         ),
     )
@@ -132,7 +132,7 @@ end
     allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
-            fraction_surface_water_user = [1.0],
+            fraction_surfacewater_used = [1.0],
             areas = [600_000.0],
         ),
     )
@@ -204,7 +204,7 @@ end
     allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
-            fraction_surface_water_user = [],
+            fraction_surfacewater_used = [],
             areas = [],
         ),
     )
@@ -236,7 +236,7 @@ end
     allocation_model = Wflow.AllocationLandModel(;
         n,
         parameters = Wflow.AllocationLandParameters(;
-            fraction_surface_water_user = [],
+            fraction_surfacewater_used = [],
             areas = [],
         ),
         variables = Wflow.AllocationLandVariables(;

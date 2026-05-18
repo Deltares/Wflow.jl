@@ -1214,8 +1214,9 @@ function update_soil_water_flow!(
     # total actual evapotranspiration
     v.actual_evapotranspiration .=
         v.soil_evaporation .+ v.transpiration .+
-        runoff.variables.actual_evaporation_open_water_river .+
-        runoff.variables.actual_evaporation_open_water_land .+ get_evaporation(demand.paddy)
+        runoff.variables.actual_open_water_evaporation_river .+
+        runoff.variables.actual_open_water_evaporation_land .+
+        get_evaporation(demand.paddy)
     return nothing
 end
 
@@ -1298,7 +1299,7 @@ the root zone are updated.
 """
 function update_soil_water_storage!(soil_model::SbmSoilModel, external_models::NamedTuple)
     (; runoff, demand, subsurface_flow) = external_models
-    (; runoff_land, actual_evaporation_open_water_land) = runoff.variables
+    (; runoff_land, actual_open_water_evaporation_land) = runoff.variables
     p = soil_model.parameters
     v = soil_model.variables
 
@@ -1390,7 +1391,7 @@ function update_soil_water_storage!(soil_model::SbmSoilModel, external_models::N
     # update runoff and net_runoff (the runoff rate depends on the presence of paddy fields
     # and the h_max parameter of a paddy field)
     update_runoff!(demand.paddy, v.runoff)
-    @. v.net_runoff = v.runoff - actual_evaporation_open_water_land
+    @. v.net_runoff = v.runoff - actual_open_water_evaporation_land
     return nothing
 end
 
