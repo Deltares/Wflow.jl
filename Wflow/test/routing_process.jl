@@ -8,14 +8,16 @@
     q_in = 1.104e-6
     q_prev = 0.0
     q_lat = 1.142e-6
-    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) ≈
-          1.09308660753423e-6
+
+    q, crossarea = Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
+    @test q ≈ 1.09308660753423e-6
+    @test crossarea ≈ 0.0006852061693892164
 
     # Case q_in + q_prev + q_lat ≈ 0.0
     q_in = 0.0
     q_prev = 0.0
     q_lat = 0.0
-    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) == 0.0
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx) == (0.0, 0.0)
 end
 
 @testitem "unit: ssf_celerity" begin
@@ -54,7 +56,7 @@ end
     ldd_MISSING_VALUE = 255
 
     # read the staticmaps into memory
-    nc = NCDataset("data/input/staticmaps-rhine.nc")
+    nc = NCDataset(normpath(@__DIR__, "data/input/staticmaps-rhine.nc"))
     # helper function to get the axis order and directionality right
     read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
     ldd_2d = read_right(nc, "ldd")
@@ -81,14 +83,14 @@ end
 
     # calculate parameters of kinematic wave
     q = 0.000001
-    beta = 0.6
+    beta = Wflow.BETA_KINWAVE
     AlpPow = (2.0 / 3.0) * beta
     AlpTermR = (N ./ sqrt.(slope)) .^ beta
     P = Bw + (2.0 * waterlevel)
     alpha = AlpTermR .* P .^ AlpPow
 
     Q = zeros(n)
-    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, DCL, dt_sec)
 
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
@@ -305,7 +307,6 @@ end
         parameters = Wflow.RiverFlowParameters(;
             flow = Wflow.ManningFlowParameters(;
                 n_river_cells,
-                beta = 0.6,
                 slope = [0.017522206529974937, 0.01738094352185726],
                 mannings_n = [0.03, 0.03],
                 alpha_pow = 0.4,
