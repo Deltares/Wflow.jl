@@ -110,7 +110,7 @@ end
     (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(e -> abs(e) < 0.30, land_water_balance.error)
+        @test all(e -> abs(e) < 3.5e-9, land_water_balance.error)
         @test all(re -> abs(re) < 0.06, land_water_balance.relative_error)
         inds = findall(
             x -> !iszero(x),
@@ -123,14 +123,14 @@ end
         @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
         @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 155.0, subsurface_water_balance.error)
+        @test all(e -> abs(e) < 1.8e-3, subsurface_water_balance.error)
         @test all(re -> abs(re) <= 2.0, subsurface_water_balance.relative_error)
-        @test all(e -> abs(e) < 5.6e-8, subsurface_water_balance.error[inds])
+        @test all(e -> abs(e) < 6.5e-13, subsurface_water_balance.error[inds])
         @test all(re -> abs(re) <= 4.3e-5, subsurface_water_balance.relative_error[inds])
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(e -> abs(e) < 0.07, land_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
         @test all(re -> abs(re) < 0.04, land_water_balance.relative_error)
         inds = findall(
             x -> !iszero(x),
@@ -145,9 +145,9 @@ end
         @test all(e -> abs(e) < 1e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(e -> abs(e) < 37.0, subsurface_water_balance.error)
+        @test all(e -> abs(e) < 4.3e-4, subsurface_water_balance.error)
         @test all(re -> abs(re) < 0.6, subsurface_water_balance.relative_error)
-        @test all(e -> abs(e) < 5.5e-8, subsurface_water_balance.error[inds])
+        @test all(e -> abs(e) < 6.4e-13, subsurface_water_balance.error[inds])
         @test all(re -> abs(re) <= 0.009, subsurface_water_balance.relative_error[inds])
     end
     Wflow.close_files(model; delete_output = false)

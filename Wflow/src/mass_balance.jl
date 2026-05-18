@@ -179,15 +179,11 @@ routing and `land` hydrology model as part of water mass balance `HydrologicalMa
 For `NoMassBalance` storage at previous time step is not required.
 """
 function storage_prev!(model, ::HydrologicalMassBalance)
-    (;
-        river_water_balance,
-        reservoir_water_balance,
-        overland_water_balance,
-        subsurface_water_balance,
-    ) = model.mass_balance.routing
+    (; river_water_balance, reservoir_water_balance, overland_water_balance) =
+        model.mass_balance.routing
     (; land_water_balance) = model.mass_balance
     (; land) = model
-    (; overland_flow, river_flow, subsurface_flow) = model.routing
+    (; overland_flow, river_flow) = model.routing
     (; reservoir) = model.routing.river_flow.boundary_conditions
 
     compute_total_storage!(land, land_water_balance)
