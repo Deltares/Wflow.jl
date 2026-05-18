@@ -452,7 +452,7 @@ end
     (; river_flow) = model.routing
     dh = diff(profile.depth)
     Δv = diff(profile.storage[:, 3])
-    Δa = diff(profile.cross_sectional_area[:, 3])
+    Δa = diff(profile.flow_area[:, 3])
 
     @testset "river flow (local inertial) floodplain schematization" begin
         # floodplain geometry checks (index 3)
@@ -473,7 +473,7 @@ end
             205.6754039497307,
             305.9730700179533,
         ]
-        @test profile.cross_sectional_area[:, 3] ≈ [
+        @test profile.flow_area[:, 3] ≈ [
             0.0,
             49.64308797127469,
             109.21938958707361,
@@ -482,7 +482,7 @@ end
             463.35655296229805,
         ]
         @test dh .* profile.width[2:end, 3] * flow_length[3] ≈ Δv
-        @test profile.cross_sectional_area[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
+        @test profile.flow_area[:, 3] * flow_length[3] ≈ profile.storage[:, 3]
         # flood depth from flood storage (8000.0)
         flood_vol = 8000.0
         river_flow.variables.storage[3] =
@@ -519,7 +519,7 @@ end
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.cross_sectional_area[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 49.64308797127469
@@ -532,7 +532,7 @@ end
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.cross_sectional_area[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 182.032315978456
@@ -545,7 +545,7 @@ end
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.cross_sectional_area[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 228.36739676840216
@@ -558,7 +558,7 @@ end
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.cross_sectional_area[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 695.0377019748654
@@ -571,7 +571,7 @@ end
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
             profile.width[i2, 3],
-            profile.cross_sectional_area[i1, 3],
+            profile.flow_area[i1, 3],
             profile.depth[i1],
             h,
         ) ≈ 959.816157989228
@@ -582,7 +582,7 @@ end
         ) ≈ 308.9730700179533
         @test Wflow.flow_area(
             profile.width[i2, 4],
-            profile.cross_sectional_area[i1, 4],
+            profile.flow_area[i1, 4],
             profile.depth[i1],
             h,
         ) ≈ 407.6395313908081
@@ -657,18 +657,19 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_conductivity_factor = soil.parameters.vertical_conductivity_factor
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
             kv_z = Wflow.hydraulic_conductivity_at_depth(
                 kv_profile,
-                vertical_conductivity_factor,
+                vertical_hydraulic_conductivity_factor,
                 z,
                 i,
                 2,
             )
             @test kv_z ≈
-                  vertical_conductivity_factor[i][2] *
+                  vertical_hydraulic_conductivity_factor[i][2] *
                   kv_profile.kv_0[i] *
-                  exp(-kv_profile.decay_factor[i] * z)
+                  exp(-kv_profile.hydraulic_conductivity_scale_parameter[i] * z)
             @test subsurface_flow.variables.q_max[i] ≈ 28.32720603576582
             @test subsurface_flow.variables.q[i] ≈ 11683.330684556406
         end
@@ -681,28 +682,29 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_conductivity_factor = soil.parameters.vertical_conductivity_factor
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
             kv_z = Wflow.hydraulic_conductivity_at_depth(
                 kv_profile,
-                vertical_conductivity_factor,
+                vertical_hydraulic_conductivity_factor,
                 z,
                 i,
                 2,
             )
             @test kv_z ≈
-                  vertical_conductivity_factor[i][2] *
+                  vertical_hydraulic_conductivity_factor[i][2] *
                   kv_profile.exponential.kv_0[i] *
-                  exp(-kv_profile.exponential.decay_factor[i] * z)
+                  exp(-kv_profile.exponential.hydraulic_conductivity_scale_parameter[i] * z)
             kv_400 = Wflow.hydraulic_conductivity_at_depth(
                 kv_profile,
-                vertical_conductivity_factor,
+                vertical_hydraulic_conductivity_factor,
                 400.0,
                 i,
                 2,
             )
             kv_1000 = Wflow.hydraulic_conductivity_at_depth(
                 kv_profile,
-                vertical_conductivity_factor,
+                vertical_hydraulic_conductivity_factor,
                 1000.0,
                 i,
                 3,
@@ -721,10 +723,11 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_conductivity_factor = soil.parameters.vertical_conductivity_factor
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
             @test Wflow.hydraulic_conductivity_at_depth(
                 kv_profile,
-                vertical_conductivity_factor,
+                vertical_hydraulic_conductivity_factor,
                 z,
                 i,
                 2,
@@ -744,10 +747,11 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_conductivity_factor = soil.parameters.vertical_conductivity_factor
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
             @test Wflow.hydraulic_conductivity_at_depth(
                 kv_profile,
-                vertical_conductivity_factor,
+                vertical_hydraulic_conductivity_factor,
                 z,
                 i,
                 2,

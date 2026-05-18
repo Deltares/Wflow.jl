@@ -413,15 +413,12 @@ function compute_flow_balance!(
         river_flow_model.boundary_conditions
 
     for i in 1:(overland_flow_model.parameters.n)
-        y_downstream = indices.y_downstream[i]
-        x_downstream = indices.x_downstream[i]
+        idx_down = indices.idx_down[i]
+        idx_left = indices.idx_left[i]
         total_in = 0.0
         total_out = 0.0
-        total_in, total_out = add_inflow(
-            total_in,
-            total_out,
-            [qx_av[x_downstream], qy_av[y_downstream], runoff[i]],
-        )
+        total_in, total_out =
+            add_inflow(total_in, total_out, [qx_av[idx_left], qy_av[idx_down], runoff[i]])
         total_in, total_out = add_outflow(total_in, total_out, [qx_av[i], qy_av[i]])
         if river_location[i]
             reservoir_outlet[i] && continue

@@ -76,7 +76,7 @@ end
         theta_s = [0.4414711594581604],
         theta_r = [0.08942600339651108],
         kv_profile = Wflow.KvExponential([364.1460876464844], [0.0033079576678574085]),
-        vertical_conductivity_factor = [SVector((1.0, 1.0, 1.0, 1.0, 1.0, 1.0))],
+        vertical_hydraulic_conductivity_factor = [SVector((1.0, 1.0, 1.0, 1.0, 1.0, 1.0))],
         brooks_corey_exponent = [
             SVector((
                 9.121646881103516,
@@ -87,7 +87,7 @@ end
                 9.716856956481934,
             )),
         ],
-        infiltration_soil_and_path = [0.02277405542765069],
+        infiltration = [0.02277405542765069],
     )
     Wflow.unsaturated_zone_flow!(soil_model)
 
@@ -121,7 +121,7 @@ end
 
     Wflow.soil_evaporation!(soil_model)
 
-    @test soil_model.variables.soil_evaporation_saturated[1] == 0.0
+    @test soil_model.variables.soil_evaporation_saturated_zone[1] == 0.0
     @test soil_model.variables.soil_evaporation[1] ≈ 0.2459598877386006
     @test soil_model.variables.drainable_water_depth[1] ≈ 321.13323174500624
 end
@@ -162,7 +162,7 @@ end
         h3 = [1000.0],
         h4 = [-16000.0],
         alpha_h1 = [1.0],
-        root_distribution_parameter = [-500.0],
+        wet_root_distribution_parameter = [-500.0],
         drainable_water_depth = [72.40310797113221],
     )
     dt = 86400.0
@@ -170,7 +170,7 @@ end
     Wflow.transpiration!(soil_model, dt)
 
     @test soil_model.variables.actual_evaporation_unsaturated_store[1] ≈ 0.05153840858869719
-    @test soil_model.variables.actual_evaporation_saturated[1] ≈ 0.0
+    @test soil_model.variables.actual_evaporation_saturated_zone[1] ≈ 0.0
     @test soil_model.variables.drainable_water_depth[1] ≈ 72.40310797113221
     @test soil_model.variables.transpiration[1] ≈ 0.05153840858869719
 end
@@ -185,7 +185,7 @@ end
         rooting_depth = [384.1],
         n_unsatlayers = [6],
         kv_profile = Wflow.KvExponential([2018.0371], [1.29274e-3]),
-        vertical_conductivity_factor = [SVector((1.0, 1.0, 1.0, 1.0, 1.0, 1.0))],
+        vertical_hydraulic_conductivity_factor = [SVector((1.0, 1.0, 1.0, 1.0, 1.0, 1.0))],
         water_table_depth = [1266.33589],
         unsaturated_layer_thickness = [
             SVector((50.0, 100.0, 50.0, 200.0, 800.0, 66.33589243)),
@@ -242,7 +242,7 @@ end
                 0.48316940665245056,
             )),
         ],
-        volumetric_water_content_percent = [
+        relative_volumetric_water_content = [
             SVector((56.98478799206181, 38.7890394786585, 58.38247554104776, 100.0)),
         ],
         number_of_layers = [4],
@@ -285,10 +285,10 @@ end
     @test soil_model.variables.exfiltration_saturated_water[1] ≈ 0.0
     @test soil_model.variables.volumetric_water_content[1] ≈
           [0.2678129742498539, 0.1885939848613844, 0.2811123711333945, 0.4721985172668562]
-    @test soil_model.variables.volumetric_water_content_percent[1] ≈
+    @test soil_model.variables.relative_volumetric_water_content[1] ≈
           [55.42837989378741, 39.03268341595556, 58.18091279434587, 97.72939072000436]
     @test soil_model.variables.volumetric_water_content_root_zone[1] ≈ 0.20944108733203426
-    @test soil_model.variables.volumetric_water_content_percent_root_zone[1] ≈
+    @test soil_model.variables.relative_volumetric_water_content_root_zone[1] ≈
           43.34734038380604
     @test soil_model.variables.total_soil_water_storage[1] ≈ 438.56081721959094
 end

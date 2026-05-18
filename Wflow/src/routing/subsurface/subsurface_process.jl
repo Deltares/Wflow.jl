@@ -10,9 +10,13 @@ function ssf_celerity(
     kh_profile::KhExponential,
     i,
 )
-    (; kh_0, decay_factor) = kh_profile
+    (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile
     celerity =
-        (kh_0[i] * exp(-decay_factor[i] * water_table_depth) * slope) / specific_yield
+        (
+            kh_0[i] *
+            exp(-hydraulic_conductivity_scale_parameter[i] * water_table_depth) *
+            slope
+        ) / specific_yield
     return celerity
 end
 
@@ -28,9 +32,11 @@ function ssf_celerity(
     i,
 )
     (; z_exp) = kh_profile
-    (; kh_0, decay_factor) = kh_profile.exponential
+    (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile.exponential
     z = water_table_depth < z_exp[i] ? water_table_depth : z_exp[i]
-    celerity = (kh_0[i] * exp(-decay_factor[i] * z) * slope) / specific_yield
+    celerity =
+        (kh_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * z) * slope) /
+        specific_yield
     return celerity
 end
 

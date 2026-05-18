@@ -18,7 +18,7 @@ end
 "Struct for storing lateral subsurface flow model parameters"
 @with_kw struct LateralSsfParameters{Kh}
     kh_profile::Kh                      # Horizontal hydraulic conductivity profile type [-]
-    horizontal_conductivity_fraction::Vector{Float64}             # A multiplication factor applied to vertical hydraulic conductivity `kv` [-]
+    horizontal_to_vertical_hydraulic_conductivity_ratio::Vector{Float64}             # A multiplication factor applied to vertical hydraulic conductivity `kv` [-]
     soil_thickness::Vector{Float64}      # Soil thickness [m]
     specific_yield::Vector{Float64}     # Specific yield (theta_s - theta_fc) [-]
     area::Vector{Float64}               # Area of cell [m²]
@@ -38,7 +38,7 @@ struct KhExponential
     # Horizontal hydraulic conductivity at soil surface [m d⁻¹]
     kh_0::Vector{Float64}
     # A scaling parameter [m⁻¹] (controls exponential decline of kh_0)
-    decay_factor::Vector{Float64}
+    hydraulic_conductivity_scale_parameter::Vector{Float64}
 end
 
 "Exponential constant depth profile of horizontal hydraulic conductivity"
@@ -78,14 +78,14 @@ function LateralSsfParameters(
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
     factor_dt = BASETIMESTEP / Second(config.time.timestepsecs)
     if kh_profile_type == VerticalConductivityProfile.exponential
-        (; kv_0, decay_factor) = soil.kv_profile
+        (; kv_0, hydraulic_conductivity_scale_parameter) = soil.kv_profile
         kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        kh_profile = KhExponential(kh_0, decay_factor .* 1000.0)
+        kh_profile = KhExponential(kh_0, hydraulic_conductivity_scale_parameter .* 1000.0)
     elseif kh_profile_type == VerticalConductivityProfile.exponential_constant
         (; z_exp) = soil.kv_profile
-        (; kv_0, decay_factor) = soil.kv_profile.exponential
+        (; kv_0, hydraulic_conductivity_scale_parameter) = soil.kv_profile.exponential
         kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        exp_profile = KhExponential(kh_0, decay_factor .* 1000.0)
+        exp_profile = KhExponential(kh_0, hydraulic_conductivity_scale_parameter .* 1000.0)
         kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
@@ -95,7 +95,7 @@ function LateralSsfParameters(
     specific_yield = @. lower_bound_drainable_porosity(theta_s, theta_fc)
     ssf_parameters = LateralSsfParameters(;
         kh_profile,
-        horizontal_conductivity_fraction = khfrac,
+        horizontal_to_vertical_hydraulic_conductivity_ratio = khfrac,
         soil_thickness,
         specific_yield,
         area,

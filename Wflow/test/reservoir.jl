@@ -88,7 +88,7 @@ end
             [ReservoirProfileType.linear],
             [180510409.0],
             [18.5],
-            res_params.storage_height_curve,
+            res_params.storage_waterlevel_curve,
         ),
         waterlevel = [18.5],
     )
@@ -108,7 +108,7 @@ end
         res_p.storage_curve_type[1],
         res_p.area[1],
         res_v.storage[1],
-        res_p.storage_height_curve[1],
+        res_p.storage_waterlevel_curve[1],
     ) ≈ 19.672653848925634
     @test res_v.outflow[1] ≈ 85.14292808113598
     @test res_v.outflow_av ≈ res_v.outflow
@@ -180,17 +180,18 @@ end
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Linked reservoirs with free weir (outflowfunc = 1)
     datadir = joinpath(@__DIR__, "data")
-    storage_height_curve = Vector{Union{Wflow.SH, Missing}}([
+    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}([
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
     ])
-    height_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
+    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
         missing,
         Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
 
-    @test keys(storage_height_curve[1]) == (:H, :S)
-    @test typeof(values(storage_height_curve[1])) == Tuple{Vector{Float64}, Vector{Float64}}
+    @test keys(storage_waterlevel_curve[1]) == (:H, :S)
+    @test typeof(values(storage_waterlevel_curve[1])) ==
+          Tuple{Vector{Float64}, Vector{Float64}}
 
     res_params = Wflow.ReservoirParameters(;
         id = [1, 2],
@@ -204,8 +205,8 @@ end
         ],
         rating_curve_coefficient = [140.0, NaN],
         rating_curve_exponent = [1.5, NaN],
-        storage_height_curve,
-        height_discharge_curve,
+        storage_waterlevel_curve,
+        waterlevel_discharge_curve,
         col_index_hq = [15],
     )
     res_params.maximum_storage[2] = Wflow.maximum_storage(res_params, 2)
@@ -216,7 +217,7 @@ end
             fill(ReservoirProfileType.interpolation, 2),
             [472461536.0, 60851088.0],
             [395.03027, 394.87833],
-            storage_height_curve,
+            storage_waterlevel_curve,
         ),
     )
     n = 2
@@ -273,10 +274,10 @@ end
         precipitation = [10.0],
         evaporation = [2.0],
     )
-    storage_height_curve = Vector{Union{Wflow.SH, Missing}}([
+    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}([
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
     ])
-    height_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
+    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
         Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
     res_params = Wflow.ReservoirParameters(;
@@ -284,8 +285,8 @@ end
         area = [200_000_000],
         storage_curve_type = [ReservoirProfileType.interpolation],
         outflow_curve_type = [ReservoirOutflowType.rating_curve],
-        storage_height_curve,
-        height_discharge_curve,
+        storage_waterlevel_curve,
+        waterlevel_discharge_curve,
         col_index_hq = [15],
     )
     @reset res_params.maximum_storage[1] = Wflow.maximum_storage(res_params, 1)
@@ -304,7 +305,7 @@ end
         res_p.storage_curve_type[1],
         res_p.area[1],
         res_v.storage[1],
-        res_p.storage_height_curve[1],
+        res_p.storage_waterlevel_curve[1],
     ) ≈ 398.0 atol = 1e-2
     @test res_v.outflow ≈ [1303.67476852]
     @test res_v.outflow_av ≈ res_v.outflow

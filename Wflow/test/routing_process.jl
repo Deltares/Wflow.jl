@@ -8,14 +8,16 @@
     q_in = 1.104e-6
     q_prev = 0.0
     q_lat = 1.142e-6
-    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) ≈
-          1.09308660753423e-6
+
+    q, crossarea = Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
+    @test q ≈ 1.09308660753423e-6
+    @test crossarea ≈ 0.0006852061693892164
 
     # Case q_in + q_prev + q_lat ≈ 0.0
     q_in = 0.0
     q_prev = 0.0
     q_lat = 0.0
-    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, beta, dt, dx) == 0.0
+    @test Wflow.kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx) == (0.0, 0.0)
 end
 
 @testitem "unit: ssf_celerity" begin
@@ -54,7 +56,7 @@ end
     ldd_MISSING_VALUE = 255
 
     # read the staticmaps into memory
-    nc = NCDataset("data/input/staticmaps-rhine.nc")
+    nc = NCDataset(normpath(@__DIR__, "data/input/staticmaps-rhine.nc"))
     # helper function to get the axis order and directionality right
     read_right(nc, var) = reverse(permutedims(Array(nc[var])); dims = 2)
     ldd_2d = read_right(nc, "ldd")
@@ -81,14 +83,14 @@ end
 
     # calculate parameters of kinematic wave
     q = 0.000001
-    beta = 0.6
+    beta = Wflow.BETA_KINWAVE
     AlpPow = (2.0 / 3.0) * beta
     AlpTermR = (N ./ sqrt.(slope)) .^ beta
     P = Bw + (2.0 * waterlevel)
     alpha = AlpTermR .* P .^ AlpPow
 
     Q = zeros(n)
-    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, beta, DCL, dt_sec)
+    Q = Wflow.kin_wave!(Q, graph, toposort, Qold, q, alpha, DCL, dt_sec)
 
     @test sum(Q) ≈ 2.957806043289641e6
     @test Q[toposort[1]] ≈ 0.007260052312634069
@@ -305,7 +307,6 @@ end
         parameters = Wflow.RiverFlowParameters(;
             flow = Wflow.ManningFlowParameters(;
                 n,
-                beta = 0.6,
                 slope = [0.017522206529974937, 0.01738094352185726],
                 mannings_n = [0.03, 0.03],
                 alpha_pow = 0.4,
@@ -451,7 +452,7 @@ end
     @test river_flow_model.variables.zs_dst ≈ [314.3999938964844, 0.0]
     @test river_flow_model.variables.zs_max ≈ [315.14484852086804, 0.0]
     @test river_flow_model.variables.water_depth_at_edge ≈ [0.04484241735241312, 0.0]
-    @test river_flow_model.variables.cross_sectional_area ≈ [4.247964427147839, 0.0]
+    @test river_flow_model.variables.flow_area ≈ [4.247964427147839, 0.0]
     @test river_flow_model.variables.hydraulic_radius ≈ [0.04480000374545946, 0.0]
     @test river_flow_model.variables.q ≈ [0.534558444239785, 0.0]
     @test river_flow_model.variables.q_av ≈ [486.35699517356477, 0.0]
@@ -558,7 +559,7 @@ end
                         789.594 988.161 1237.77
                         972.752 1125.52 1448.54
                     ],
-                    cross_sectional_area = [
+                    flow_area = [
                         0.0 0.0 0.0
                         170.788 333.389 379.382
                         417.07 722.786 873.727
@@ -616,8 +617,7 @@ end
     @test river_flow_model.variables.zs_max ≈ [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.water_depth_at_edge ≈
           [1.8817912224982933, 1.8197068314233036]
-    @test river_flow_model.variables.cross_sectional_area ≈
-          [280.7225571209805, 271.4609085323917]
+    @test river_flow_model.variables.flow_area ≈ [280.7225571209805, 271.4609085323917]
     @test river_flow_model.variables.hydraulic_radius ≈
           [1.8354842671202385, 1.7763698223484754]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
@@ -628,7 +628,7 @@ end
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [0.2896350506995873, 0.22755065962459753]
     @test river_flow_model.floodplain.variables.hf_index == [1, 2]
-    @test river_flow_model.floodplain.variables.cross_sectional_area ≈
+    @test river_flow_model.floodplain.variables.flow_area ≈
           [55.72538543569419, 117.7803635852996]
     @test river_flow_model.floodplain.variables.hydraulic_radius ≈
           [0.28876507912737354, 0.22735103521877678]
@@ -702,8 +702,8 @@ end
         land = Wflow.DomainLand(;
             network = Wflow.NetworkLand(;
                 edge_indices = Wflow.EdgeConnectivity(;
-                    x_upstream = [2, 3, 4],
-                    x_downstream = [4, 1, 2],
+                    idx_right = [2, 3, 4],
+                    idx_left = [4, 1, 2],
                 ),
             ),
             parameters = Wflow.LandParameters(;
@@ -791,8 +791,8 @@ end
             network = Wflow.NetworkLand(;
                 river_indices = [0, 0, 1],
                 edge_indices = Wflow.EdgeConnectivity(;
-                    x_downstream = [4, 1, 2],
-                    y_downstream = [4, 4, 4],
+                    idx_left = [4, 1, 2],
+                    idx_down = [4, 4, 4],
                 ),
             ),
             parameters = Wflow.LandParameters(;
@@ -969,7 +969,7 @@ end
         zs_src = zeros(_ne),
         zs_dst = zeros(_ne),
         water_depth_at_edge = zeros(_ne),
-        cross_sectional_area = zeros(_ne),
+        flow_area = zeros(_ne),
         hydraulic_radius = zeros(_ne),
         storage = fill(0.0, n),
         error = zeros(n),

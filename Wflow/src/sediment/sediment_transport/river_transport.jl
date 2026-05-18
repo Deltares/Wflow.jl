@@ -1011,9 +1011,9 @@ function update_river_sediment_concentration_model!(
             dsuspf = 1e3 * sqrt(1.2 * common_term)
 
             # Rouse with diameter
-            SSclay = suspended_solid(median_diameter_clay[i], dsuspf, dbedf, clay[i])
-            SSsilt = suspended_solid(median_diameter_silt[i], dsuspf, dbedf, silt[i])
-            SSsand = suspended_solid(median_diameter_sand[i], dsuspf, dbedf, sand[i])
+            ss_clay = suspended_solid(median_diameter_clay[i], dsuspf, dbedf, clay[i])
+            ss_silt = suspended_solid(median_diameter_silt[i], dsuspf, dbedf, silt[i])
+            ss_sand = suspended_solid(median_diameter_sand[i], dsuspf, dbedf, sand[i])
             ss_small_aggregates = suspended_solid(
                 median_diameter_small_aggregates[i],
                 dsuspf,
@@ -1026,7 +1026,7 @@ function update_river_sediment_concentration_model!(
                 dbedf,
                 large_aggregates[i],
             )
-            SSgrav = suspended_solid(median_diameter_gravel[i], dsuspf, dbedf, gravel[i])
+            ss_grav = suspended_solid(median_diameter_gravel[i], dsuspf, dbedf, gravel[i])
 
             to_conc = 1e6 / (q[i] * dt)
             total_ =
@@ -1038,15 +1038,15 @@ function update_river_sediment_concentration_model!(
                 gravel[i]
             total[i] = total_ * to_conc
 
-            SS =
-                SSclay +
-                SSsilt +
-                SSsand +
+            ss =
+                ss_clay +
+                ss_silt +
+                ss_sand +
                 ss_small_aggregates +
                 ss_large_aggregates +
-                SSgrav
-            suspended[i] = SS * to_conc
-            bed[i] = (total_ - SS) * to_conc
+                ss_grav
+            suspended[i] = ss * to_conc
+            bed[i] = (total_ - ss) * to_conc
         else
             suspended[i] = 0.0
             bed[i] = 0.0

@@ -90,7 +90,7 @@ end
     bottom::Vector{Float64}             # bottom of groundwater layer [m]
     area::Vector{Float64}               # area of cell [m²]
     specific_yield::Vector{Float64}     # specific yield (theta_s - theta_fc) [m m⁻¹]
-    conductivity_decay_factor::Vector{Float64}  # factor controlling the reduction of reference horizontal conductivity [-]
+    hydraulic_conductivity_scale_parameter::Vector{Float64}  # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
 end
@@ -112,7 +112,7 @@ function GroundwaterFlowParameters(
         sel = indices,
     )
     if config.model.conductivity_profile == GwfConductivityProfileType.exponential
-        conductivity_decay_factor = ncread(
+        hydraulic_conductivity_scale_parameter = ncread(
             dataset,
             config,
             "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
@@ -120,7 +120,7 @@ function GroundwaterFlowParameters(
             sel = indices,
         )
     else
-        conductivity_decay_factor = Float64[]
+        hydraulic_conductivity_scale_parameter = Float64[]
     end
     parameters = GroundwaterFlowParameters(;
         hydraulic_conductivity,
@@ -128,7 +128,7 @@ function GroundwaterFlowParameters(
         bottom,
         area,
         specific_yield,
-        conductivity_decay_factor,
+        hydraulic_conductivity_scale_parameter,
     )
     return parameters
 end
@@ -445,18 +445,18 @@ function conductance(
         k1 =
             (
                 gwf.parameters.hydraulic_conductivity[i] /
-                gwf.parameters.conductivity_decay_factor[i]
+                gwf.parameters.hydraulic_conductivity_scale_parameter[i]
             ) * (
-                exp(-gwf.parameters.conductivity_decay_factor[i] * zi1) -
-                exp(-gwf.parameters.conductivity_decay_factor[i] * thickness1)
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * zi1) -
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * thickness1)
             )
         k2 =
             (
                 gwf.parameters.hydraulic_conductivity[j] /
-                gwf.parameters.conductivity_decay_factor[j]
+                gwf.parameters.hydraulic_conductivity_scale_parameter[j]
             ) * (
-                exp(-gwf.parameters.conductivity_decay_factor[j] * zi2) -
-                exp(-gwf.parameters.conductivity_decay_factor[j] * thickness2)
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * zi2) -
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * thickness2)
             )
         return harmonicmean_conductance(
             k1,
@@ -526,10 +526,15 @@ function stable_timestep(
             value =
                 (
                     gwf.parameters.hydraulic_conductivity[i] /
-                    gwf.parameters.conductivity_decay_factor[i]
+                    gwf.parameters.hydraulic_conductivity_scale_parameter[i]
                 ) * (
-                    exp(-gwf.parameters.conductivity_decay_factor[i] * water_table_depth) -
-                    exp(-gwf.parameters.conductivity_decay_factor[i] * thickness)
+                    exp(
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[i] *
+                        water_table_depth,
+                    ) - exp(
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[i] *
+                        thickness,
+                    )
                 )
         elseif conductivity_profile == GwfConductivityProfileType.uniform
             value = gwf.parameters.hydraulic_conductivity[i] * saturated_thickness(gwf, i)

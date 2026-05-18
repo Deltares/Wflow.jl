@@ -242,13 +242,13 @@ function compute_demand_gross(
     irri_dem_gross::Float64,
     i::Int,
 )
-    (; compacted_area_fraction, infiltration_capacity_soil) = soil_model.parameters
+    (; compacted_soil_area_fraction, infiltration_capacity_soil) = soil_model.parameters
     (; f_infiltration_reduction) = soil_model.variables
     (; irrigation_efficiency, maximum_irrigation_rate) = nonpaddy_model.parameters
 
     infiltration_capacity =
         f_infiltration_reduction[i] *
-        (1.0 - compacted_area_fraction[i]) *
+        (1.0 - compacted_soil_area_fraction[i]) *
         infiltration_capacity_soil[i]
     irri_dem_gross = min(irri_dem_gross, infiltration_capacity)
     irri_dem_gross /= irrigation_efficiency[i]
@@ -547,7 +547,7 @@ get_nonirrigation_returnflow(allocation_model::NoAllocationRiverModel) =
 
 "Struct to store land allocation allocation model parameters"
 @with_kw struct AllocationLandParameters
-    surface_water_fraction::Vector{Float64}     # fraction surface water used [-]
+    fraction_surface_water_user::Vector{Float64}     # fraction surface water used [-]
     areas::Vector{Int}          # allocation areas [-]
 end
 
@@ -578,7 +578,7 @@ function AllocationLandModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    surface_water_fraction = ncread(
+    fraction_surface_water_user = ncread(
         dataset,
         config,
         "land_surface_water__withdrawal_fraction",
@@ -595,7 +595,7 @@ function AllocationLandModel(
 
     n = length(indices)
 
-    parameters = AllocationLandParameters(; areas, surface_water_fraction)
+    parameters = AllocationLandParameters(; areas, fraction_surface_water_user)
     allocation = AllocationLandModel(; n, parameters)
     return allocation
 end
@@ -788,7 +788,7 @@ function available_surface_water!(
 end
 
 "Update water allocation for land domain based on local groundwater availability."
-function groundwater_allocationation_local!(
+function groundwater_allocation_local!(
     allocation_model::AllocationLandModel,
     demand_variables::DemandVariables,
     groundwater_storage::Vector{Float64},
@@ -831,7 +831,7 @@ Update water allocation for land domain based on groundwater availability for al
 areas.
 
 """
-function groundwater_allocationation_area!(
+function groundwater_allocation_area!(
     allocation_model::AllocationLandModel,
     demand_variables::DemandVariables,
     domain::Domain,
@@ -949,7 +949,7 @@ function update_water_allocation_model!(
         total_gross_demand,
     ) = demand_model.variables
 
-    (; surface_water_fraction) = allocation_model.parameters
+    (; fraction_surface_water_user) = allocation_model.parameters
     (; actual_surfacewater_abstraction, actual_surfacewater_abstraction_volume) =
         river.allocation.variables
     (; abstraction, reservoir) = river.boundary_conditions
@@ -959,8 +959,8 @@ function update_water_allocation_model!(
     actual_surfacewater_abstraction_volume .= 0.0
     # total surface water demand for each land cell
     @. surfacewater_demand =
-        surface_water_fraction * non_irrigation_demand_gross +
-        surface_water_fraction * irrigation_demand_gross
+        fraction_surface_water_user * non_irrigation_demand_gross +
+        fraction_surface_water_user * irrigation_demand_gross
 
     # local surface water demand and allocation (river, excluding reservoirs)
     surface_water_allocation_local!(
@@ -991,7 +991,7 @@ function update_water_allocation_model!(
             reservoir.parameters.storage_curve_type,
             reservoir.parameters.area,
             reservoir.variables.storage,
-            reservoir.parameters.storage_height_curve,
+            reservoir.parameters.storage_waterlevel_curve,
         )
     end
 
@@ -999,14 +999,14 @@ function update_water_allocation_model!(
     actual_groundwater_abstraction_volume .= 0.0
     actual_groundwater_abstraction .= 0.0
     # local groundwater demand and allocation
-    groundwater_allocationation_local!(
+    groundwater_allocation_local!(
         allocation_model,
         demand_model.variables,
         routing.subsurface_flow.variables.storage,
         domain.land.parameters,
     )
     # groundwater demand and allocation for areas
-    groundwater_allocationation_area!(allocation_model, demand_model.variables, domain)
+    groundwater_allocation_area!(allocation_model, demand_model.variables, domain)
 
     # irrigation allocation
     for i in eachindex(total_alloc)

@@ -252,14 +252,14 @@ function transportability_yalin_differentiation(
     delta_small_aggregates = max(delta / median_diameter_small_aggregates - 1, 0.0)
     delta_large_aggregates = max(delta / median_diameter_large_aggregates - 1, 0.0)
     # Total transportability
-    dtot =
+    delta_total =
         delta_clay +
         delta_silt +
         delta_sand +
         delta_small_aggregates +
         delta_large_aggregates
 
-    return dtot
+    return delta_total
 end
 
 """

@@ -239,7 +239,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "river__slope" => ParameterMetadata(;
         lens = @optic(_.domain.river.parameters.slope),
-        unit = Unit(; m = 1 // 1),
+        unit = Unit(; m = (1, 1)),
         description = "River slope",
         tags = [:kinematic_wave_river_flow_input],
     ),
@@ -344,7 +344,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio" =>
         ParameterMetadata(;
             lens = @optic(
-                _.routing.subsurface_flow.parameters.horizontal_conductivity_fraction
+                _.routing.subsurface_flow.parameters.horizontal_to_vertical_hydraulic_conductivity_ratio
             ),
             description = "A multiplication factor applied to vertical hydraulic conductivity",
             tags = [:kinematic_lateral_subsurface_input],
@@ -501,7 +501,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.conductivity_decay_factor),
+            lens = @optic(
+                _.routing.subsurface_flow.parameters.hydraulic_conductivity_scale_parameter
+            ),
             unit = Unit(; m = -1),
             description = "Factor controlling the reduction of horizontal conductivity with depth",
             tags = [:groundwater_unconfined_aquifer_input],

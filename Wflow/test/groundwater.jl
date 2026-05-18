@@ -307,7 +307,7 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
-        conductivity_decay_factor = fill(gwf_f, ncell),
+        hydraulic_conductivity_scale_parameter = fill(gwf_f, ncell),
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)
@@ -400,7 +400,7 @@ end
         bottom = fill(bottom, ncell),
         area = fill(cellsize * cellsize, ncell),
         specific_yield = fill(specific_yield, ncell),
-        conductivity_decay_factor = fill(gwf_f, ncell),
+        hydraulic_conductivity_scale_parameter = fill(gwf_f, ncell),
     )
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.25)

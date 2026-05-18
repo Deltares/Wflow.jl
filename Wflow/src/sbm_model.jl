@@ -181,7 +181,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
                 reservoirs.parameters.storage_curve_type,
                 reservoirs.parameters.area,
                 reservoirs.variables.waterlevel,
-                reservoirs.parameters.storage_height_curve,
+                reservoirs.parameters.storage_waterlevel_curve,
             )
         end
     else

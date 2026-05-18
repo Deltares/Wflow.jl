@@ -34,14 +34,14 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:atmospheric_forcing],
     ),
     "compacted_soil_surface_water__infiltration_capacity" => ParameterMetadata(;
-        lens = @optic(_.land.soil.parameters.infiltration_capacity_path),
+        lens = @optic(_.land.soil.parameters.infiltration_capacity_compacted_soil),
         unit = Unit(; mm = 1, d = -1),
         default = 10.0,
         description = "Infiltration capacity of compacted areas",
         tags = [:soil_input],
     ),
     "compacted_soil__area_fraction" => ParameterMetadata(;
-        lens = @optic(_.land.soil.parameters.compacted_area_fraction),
+        lens = @optic(_.land.soil.parameters.compacted_soil_area_fraction),
         description = "Fraction of compacted soil area",
         tags = [:soil_input],
     ),
@@ -69,7 +69,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "glacier_firn_accumulation__snowpack_dry_snow_leq_depth_fraction" =>
         ParameterMetadata(;
-            lens = @optic(_.land.glacier.parameters.glacier_snow_to_ice_fraction),
+            lens = @optic(_.land.glacier.parameters.snow_to_ice_fraction),
             unit = Unit(; d = -1),
             default = 0.001,
             fill = 0.0,
@@ -77,14 +77,14 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
             tags = [:glacier_input],
         ),
     "glacier_surface__area_fraction" => ParameterMetadata(;
-        lens = @optic(_.land.glacier.parameters.glacier_frac),
+        lens = @optic(_.land.glacier.parameters.glacier_fraction),
         default = 0.0,
         fill = 0.0,
         description = "Fraction covered by a glacier",
         tags = [:glacier_input],
     ),
     "glacier_ice__degree_day_coefficient" => ParameterMetadata(;
-        lens = @optic(_.land.glacier.parameters.glacier_degree_day_factor),
+        lens = @optic(_.land.glacier.parameters.degree_day_factor),
         unit = Unit(; mm = 1, degC = -1, d = -1),
         default = 3.0,
         fill = 0.0,
@@ -99,11 +99,11 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:glacier_input],
     ),
     "glacier_ice__melting_temperature_threshold" => ParameterMetadata(;
-        lens = @optic(_.land.glacier.parameters.glacier_temperature_threshold_melt),
+        lens = @optic(_.land.glacier.parameters.temperature_threshold_melt),
         unit = Unit(; degC = 1, absolute_temperature = true),
         default = 0.0,
         fill = 0.0,
-        description = "Threshold temperature for glacier melt ",
+        description = "Threshold temperature for glacier melt",
         tags = [:glacier_input],
     ),
     "glacier_ice__leq_depth" => ParameterMetadata(;
@@ -229,7 +229,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:atmospheric_forcing],
     ),
     "land_surface_water__withdrawal_fraction" => ParameterMetadata(;
-        lens = @optic(_.land.allocation.parameters.surface_water_fraction),
+        lens = @optic(_.land.allocation.parameters.fraction_surface_water_user),
         default = 1.0,
         description = "Fraction surface water used",
         tags = [:demand_allocation_input],
@@ -260,7 +260,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "land__non_irrigation_return_flow_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.allocation.variables.non_irrigation_returnflow),
         unit = Unit(; mm = 1, dt = -1),
-        description = "Return flow from non-irrgation sectors",
+        description = "Return flow from non-irrigation sectors",
         tags = [:demand_allocation_output],
     ),
     "land_surface__evapotranspiration_volume_flux" => ParameterMetadata(;
@@ -313,7 +313,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:demand_non_irrigation_static_cyclic_forcing_input],
     ),
     "non_compacted_soil_surface_water__excess_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.land.soil.variables.excess_water_path),
+        lens = @optic(_.land.soil.variables.excess_water_compacted_soil),
         unit = Unit(; mm = 1, dt = -1),
         description = "Excess water for non-compacted soil fraction",
         tags = [:soil_output],
@@ -415,7 +415,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor" =>
         ParameterMetadata(;
-            lens = @optic(_.land.soil.parameters.vertical_conductivity_factor),
+            lens = @optic(_.land.soil.parameters.vertical_hydraulic_conductivity_factor),
             default = 1.0,
             description = "Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer",
             dimname = :layer,
@@ -442,7 +442,9 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(_.land.soil.parameters.kv_profile.decay_factor),
+            lens = @optic(
+                _.land.soil.parameters.kv_profile.hydraulic_conductivity_scale_parameter
+            ),
             unit = Unit(; mm = -1),
             description = "Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth",
             tags = [:soil_input],
@@ -487,13 +489,13 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
             tags = [:soil_input],
         ),
     "soil_wet_root__sigmoid_function_shape_parameter" => ParameterMetadata(;
-        lens = @optic(_.land.soil.parameters.root_distribution_parameter),
+        lens = @optic(_.land.soil.parameters.wet_root_distribution_parameter),
         default = -500.0,
         description = "Controls sharpness of transition between fully wet and fully dry roots",
         tags = [:soil_input],
     ),
     "soil_layer_water__volume_percentage" => ParameterMetadata(;
-        lens = @optic(_.land.soil.variables.volumetric_water_content_percent),
+        lens = @optic(_.land.soil.variables.relative_volumetric_water_content),
         unit = Unit(; percentage = 1),
         description = "Volumetric water content per soil layer (including residual water content and saturated zone)",
         tags = [:soil_output],
@@ -505,7 +507,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:soil_state, :soil_output],
     ),
     "soil_surface__temperature" => ParameterMetadata(;
-        lens = @optic(_.land.soil.variables.top_soil_temperature),
+        lens = @optic(_.land.soil.variables.soil_surface_temperature),
         unit = Unit(; degC = 1, absolute_temperature = true),
         description = "Soil surface temperature, only when snow is modelled",
         tags = [:soil_state, :soil_output],
@@ -560,7 +562,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:soil_output],
     ),
     "soil_water_root_zone__volume_percentage" => ParameterMetadata(;
-        lens = @optic(_.land.soil.variables.volumetric_water_content_percent_root_zone),
+        lens = @optic(_.land.soil.variables.relative_volumetric_water_content_root_zone),
         unit = Unit(; percentage = 1),
         description = "Volumetric water content in root zone (including residual water content and saturated zone)",
         tags = [:soil_output],

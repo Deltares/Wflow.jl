@@ -163,23 +163,23 @@ end
 end
 
 @testitem "unit: glacier_hbv" begin
-    glacier_frac = 0.35
+    glacier_fraction = 0.35
     glacier_store = 500.0
     snow_storage = 9.5
     temperature = 5.0
     ttm = 0.0
     cfmax = 3.4
-    glacier_snow_to_ice_fraction = 0.2
-    max_snow_to_glacier = 8.0
+    snow_to_ice_fraction = 0.2
+    max_snow_to_ice_rate = 8.0
     snow_storage, snow_to_glacier, glacier_storage, glacier_melt = Wflow.glacier_hbv(
-        glacier_frac,
+        glacier_fraction,
         glacier_store,
         snow_storage,
         temperature,
         ttm,
         cfmax,
-        glacier_snow_to_ice_fraction,
-        max_snow_to_glacier,
+        snow_to_ice_fraction,
+        max_snow_to_ice_rate,
     )
     @test snow_storage ≈ 8.835
     @test snow_to_glacier ≈ 1.9
@@ -189,21 +189,21 @@ end
 
 @testitem "unit: infiltration" begin
     potential_infiltration = 27.5
-    compacted_area_fraction = 0.2
+    compacted_soil_area_fraction = 0.2
     infiltration_capacity_soil = 50.0
-    infiltration_capacity_path = 5.0
+    infiltration_capacity_compacted_soil = 5.0
     unsaturated_store_capacity = 23.5
     f_infilt_reduction = 1.0
 
-    infiltration_soil_and_path, infiltration_excess = Wflow.infiltration(
+    infiltration, infiltration_excess = Wflow.infiltration(
         potential_infiltration,
-        compacted_area_fraction,
+        compacted_soil_area_fraction,
         infiltration_capacity_soil,
-        infiltration_capacity_path,
+        infiltration_capacity_compacted_soil,
         unsaturated_store_capacity,
         f_infilt_reduction,
     )
-    @test infiltration_soil_and_path == unsaturated_store_capacity
+    @test infiltration == unsaturated_store_capacity
     @test infiltration_excess ≈ 0.5
 end
 
@@ -321,14 +321,14 @@ end
 end
 
 @testitem "unit: infiltration_reduction_factor" begin
-    top_soil_temperature = 0.1
+    soil_surface_temperature = 0.1
     cf_soil = 0.3
 
     # Case model_snow && soil_infiltration_reduction
     modelsnow = true
     soil_infiltration_reduction = true
     @test Wflow.infiltration_reduction_factor(
-        top_soil_temperature,
+        soil_surface_temperature,
         cf_soil;
         modelsnow,
         soil_infiltration_reduction,
@@ -337,7 +337,7 @@ end
     # Case !(model_snow && soil_infiltration_reduction)
     soil_infiltration_reduction = false
     @test Wflow.infiltration_reduction_factor(
-        top_soil_temperature,
+        soil_surface_temperature,
         cf_soil;
         modelsnow,
         soil_infiltration_reduction,
@@ -385,7 +385,7 @@ end
     ) ≈ 0.015413278008298757
 end
 
-@testitem "unit: soil_evaporation_saturated_store" begin
+@testitem "unit: soil_evaporation_saturated_zone_store" begin
     potential_soilevaporation = 0.125
     layerthickness = 100.0
     water_table_depth = 300.0
@@ -415,36 +415,36 @@ end
 @testitem "unit: actual_infiltration_soil_path" begin
     potential_infiltration = 1.627
     actual_infiltration = 1.627
-    compacted_area_fraction = 0.1
+    compacted_soil_area_fraction = 0.1
     infiltration_capacity_soil = 228.596
-    infiltration_capacity_path = 5.0
+    infiltration_capacity_compacted_soil = 5.0
     f_infiltration_reduction = 0.9
 
     # Case actual_infiltration > 0
     actual_infiltration = 1.627
-    actual_infiltration_soil, actual_infiltration_path =
+    actual_infiltration_soil, actual_infiltration_compacted_soil =
         Wflow.actual_infiltration_soil_path(
             potential_infiltration,
             actual_infiltration,
-            compacted_area_fraction,
+            compacted_soil_area_fraction,
             infiltration_capacity_soil,
-            infiltration_capacity_path,
+            infiltration_capacity_compacted_soil,
             f_infiltration_reduction,
         )
     @test actual_infiltration_soil ≈ 1.4643
-    @test actual_infiltration_path ≈ 0.1627
+    @test actual_infiltration_compacted_soil ≈ 0.1627
 
     # Case actual_infiltration == 0
     actual_infiltration = 0
-    actual_infiltration_soil, actual_infiltration_path =
+    actual_infiltration_soil, actual_infiltration_compacted_soil =
         Wflow.actual_infiltration_soil_path(
             potential_infiltration,
             actual_infiltration,
-            compacted_area_fraction,
+            compacted_soil_area_fraction,
             infiltration_capacity_soil,
-            infiltration_capacity_path,
+            infiltration_capacity_compacted_soil,
             f_infiltration_reduction,
         )
     @test actual_infiltration_soil == 0.0
-    @test actual_infiltration_path == 0.0
+    @test actual_infiltration_compacted_soil == 0.0
 end
