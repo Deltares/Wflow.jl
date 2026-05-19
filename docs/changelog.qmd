@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### Fixed
+- Fix deriving active indices for output variable `to_river`. Also, the mapping of standard
+  name (or model path) to active indices is now more strict (comparing prefix of these
+  strings instead of substring matching).
+
 ## v1.0.2 - 2026-03-05
 
 ### Fixed
