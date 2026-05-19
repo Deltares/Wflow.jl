@@ -377,28 +377,19 @@ function update_reservoir_simple(
     res_v = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
-    # [m³] = [m³] + ([m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]) * [s]
     storage = res_v.storage[i] + (inflow + precipitation - evaporation) * dt
     storage = max(storage, 0.0)
 
-    # [-] = [m³] / [m³]
     fill_fraction = storage / maxstorage[i]
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = scurve(fill_fraction, targetminfrac[i], 1.0, 30.0)
-    # [m³ s⁻¹] = min([-] * [m³ s⁻¹], [m³] / [s])
     demand_release = min(fac * demand[i], storage / dt)
-    # [m³] -= [m³ s⁻¹] * [s]
     storage -= demand_release * dt
-    # [m³ s⁻¹] = max([m³ s⁻¹], ([m³] - [m³] * [-]) / [s])
     release_wanted = max(0.0, (storage - maxstorage[i] * targetfullfrac[i]) / dt)
     # Assume extra maximum Q if spilling
-    # [m³ s⁻¹] = max([m³ s⁻¹], ([m³] - [m³]) / [s])
     overflow_q = max(0.0, (storage - maxstorage[i]) / dt)
-    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹] + [m³ s⁻¹] - [m³ s⁻¹])
     release_realized = min(release_wanted, overflow_q + maxrelease[i] - demand_release)
-    # [m³] -= [m³ s⁻¹] * [s]
     storage -= release_realized * dt
-    # [m³ s⁻¹] = [m³ s⁻¹] + [m³ s⁻¹]
     outflow = release_realized + demand_release
 
     return outflow, storage
@@ -418,19 +409,14 @@ function update_reservoir_modified_puls(
     (; storage) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
-    # [m³ᐟ² s⁻¹ᐟ²] = [m²] / ([s] * sqrt([m s⁻¹]))
     res_factor = area[i] / (dt * sqrt(b[i]))
-    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
     si_factor = storage[i] / dt + precipitation - evaporation + inflow
     # Adjust si_factor for reservoir threshold != 0
-    # [m³ s⁻¹] = [m³ s⁻¹] - [m²] * [m] / [s]
     si_factor_adj = si_factor - area[i] * threshold[i] / dt
     # Calculate the new reservoir outflow/waterlevel/storage
     if si_factor_adj > 0.0
-        # [m³ᐟ² s⁻¹ᐟ²] = -[m³ᐟ² s⁻¹ᐟ²] + sqrt([m³ᐟ² s⁻¹ᐟ²]^2 + [-] * [m³ s⁻¹])
         quadratic_sol_term = -res_factor + sqrt((res_factor^2 + 4 * si_factor_adj))
         if quadratic_sol_term > 0.0
-            # [m³ s⁻¹] = [-] * [m³ᐟ² s⁻¹ᐟ²]^2
             outflow = 0.25 * quadratic_sol_term^2
         else
             outflow = 0.0
@@ -438,7 +424,6 @@ function update_reservoir_modified_puls(
     else
         outflow = 0.0
     end
-    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
     outflow = min(outflow, si_factor)
     # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * dt
     storage = (si_factor - outflow) * dt
@@ -456,16 +441,11 @@ function update_reservoir_hq(
     (; storage, waterlevel) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
 
-    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
     storage_input = storage[i] / dt + precipitation - evaporation + inflow
-    # [m³ s⁻¹]
     outflow = interpolate_linear(waterlevel[i], hq[i].H, hq[i].Q[:, col_index_hq[1]])
-    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
     outflow = min(outflow, storage_input)
-    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
     storage = (storage_input - outflow) * dt
 
-    # [m³ s⁻¹] = max([m³ s⁻¹], ([m³] - [m³]) / [s])
     overflow = max(0.0, (storage - maxstorage[i]) / dt)
     storage = min(storage, maxstorage[i])
     outflow += overflow
@@ -486,52 +466,39 @@ function update_reservoir_free_weir(
     (; waterlevel) = res_v
     (; precipitation, evaporation, inflow) = boundary_vars
 
-    # [-]
     lo = lower_reservoir_ind[i]
     has_lower_res = (lo != 0)
-    # [m]
     diff_wl = has_lower_res ? waterlevel[i] - waterlevel[lo] : 0.0
 
-    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
     storage_input = max(res_v.storage[i] / dt + precipitation - evaporation + inflow, 0.0)
 
     if diff_wl >= 0.0
         if res_v.waterlevel[i] > threshold[i]
-            # [m]
             dh = waterlevel[i] - threshold[i]
             # [m³ s⁻¹] = [m³⁻ᵉ s⁻¹] * [m]ᵉ
             outflow = b[i] * pow(dh, e[i])
-            # [m³ s⁻¹] = [m] * [m²] / [s]
             maxflow = dh * area[i] / dt
-            # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
             outflow = min(outflow, maxflow)
         else
             outflow = 0.0
         end
     else
         if waterlevel[lo] > threshold[i]
-            # [m]
             dh = waterlevel[lo] - threshold[i]
             # [m³ s⁻¹] = -[m³⁻ᵉ s⁻¹] * [m]ᵉ
             outflow = -b[i] * pow(dh, e[i])
-            # [m³ s⁻¹] = [m] * [m²] / [s]
             maxflow = dh * area[lo] / dt
-            # [m³ s⁻¹] = max([m³ s⁻¹], [m³ s⁻¹])
             outflow = max(outflow, -maxflow)
         else
             outflow = 0.0
         end
     end
-    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
     storage = (storage_input - outflow) * dt
 
     # update lower reservoir (linked reservoirs) in case flow from lower reservoir to upper reservoir occurs
     if diff_wl < 0.0
-        # [m³] = [m³] + [m³ s⁻¹] * [s]
         lower_res_storage = res_v.storage[lo] + outflow * dt
-        # [m]
         lower_res_waterlevel = if storfunc[lo] == ReservoirProfileType.linear
-            # [m] + ([m³] - [m³]) / [m²]
             waterlevel[lo] + (lower_res_storage - storage[lo]) / area[lo]
         else # ReservoirProfileType.interpolation
             interpolate_linear(lower_res_storage, sh[lo].S, sh[lo].H)
@@ -555,11 +522,8 @@ function update_reservoir_outflow_obs(
 )
     (; storage, outflow_obs) = reservoir_model.variables
     (; precipitation, evaporation, inflow) = boundary_vars
-    # [m³ s⁻¹] = [m³] / [s] + [m³ s⁻¹] - [m³ s⁻¹] + [m³ s⁻¹]
     storage_input = max(storage[i] / dt + precipitation - evaporation + inflow, 0.0)
-    # [m³ s⁻¹] = min([m³ s⁻¹], [m³ s⁻¹])
     outflow = min(outflow_obs[i], storage_input)
-    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * [s]
     storage = (storage_input - outflow) * dt
     return outflow, storage
 end
@@ -581,13 +545,9 @@ function update_reservoir_model!(
     res_v = reservoir_model.variables
 
     # limit reservoir evaporation based on total available volume [m³]
-    # [m³ s⁻¹] = [m s⁻¹] * [m²]
     precipitation = res_bc.precipitation[i] * res_p.area[i]
-    # [m³] = [m³] + ([m³ s⁻¹] + [m³ s⁻¹]) * [s]
     available_storage = res_v.storage[i] + (inflow + precipitation) * dt
-    # [m³ s⁻¹] = [m s⁻¹] * [m²]
     potential_evaporation = res_bc.evaporation[i] * res_p.area[i]
-    # [m³ s⁻¹] = min([m³] / [s], [m³ s⁻¹])
     evaporation = min(available_storage / dt, potential_evaporation)
 
     boundary_vars = (; precipitation, evaporation, inflow)

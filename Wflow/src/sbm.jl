@@ -127,7 +127,6 @@ function update_land_hydrology_model!(
     )
 
     update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
-    # [m s⁻¹] += [m s⁻¹]
     @. soil.variables.actevap += interception.variables.interception_rate
     return nothing
 end
@@ -158,7 +157,6 @@ function update_total_water_storage!(
 
     # Burn the river routing values
     for (i, index_river) in enumerate(domain.river.network.land_indices)
-        # [m] = [m] * [m] * [m] / [m²]
         total_storage[index_river] = (
             (river_flow.variables.h[i] * flow_width[i] * flow_length[i]) /
             (area[index_river])
@@ -174,13 +172,10 @@ function update_total_water_storage!(
     # Chunk the data for parallel computing
     n = length(ustoredepth)
     threaded_foreach(1:n; basesize = 1000) do i
-        # [m] = [m] + [m]
         sub_surface = ustoredepth[i] + satwaterdepth[i]
-        # [m] = [m] * [-]
         lateral = overland_flow.variables.h[i] * (1 - river_fraction[i])
 
         # Add everything to the total water storage
-        # [m] += [m] + [m]
         total_storage[i] += sub_surface + lateral
     end
     return nothing

@@ -86,16 +86,11 @@ function accucapacityflux!(flux, material, network, capacity, dt)
         to_pit = iszero(n)
 
         # Let [u] be the unit of material
-        # [u s⁻¹] = min([u] / [s], [u s⁻¹])
         flux_val = min(material[v] / dt, capacity[v])
-        # [u] = [u s⁻¹] * [s]
         material_update = flux_val * dt
-        # [u] -= [u]
         material[v] -= material_update
-        # [u s⁻¹]
         flux[v] = flux_val
         if !to_pit
-            # [u] += [u]
             material[only(downstream_nodes)] += material_update
         end
     end
@@ -125,14 +120,10 @@ function accucapacityflux_rate!(flux, remaining, material, network, capacity)
         # cannot add the material anywhere
         to_pit = iszero(n)
 
-        # [u s⁻¹] = min([u s⁻¹], [u s⁻¹])
         flux_val = min(remaining[v], capacity[v])
-        # [u s⁻¹] -= [u s⁻¹]
         remaining[v] -= flux_val
-        # [u s⁻¹]
         flux[v] = flux_val
         if !to_pit
-            # [u s⁻¹] += [u s⁻¹]
             remaining[only(downstream_nodes)] += flux_val
         end
     end

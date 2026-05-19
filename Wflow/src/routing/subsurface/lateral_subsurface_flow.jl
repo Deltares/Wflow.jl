@@ -106,13 +106,11 @@ function LateralSsfParameters(
 
     if kh_profile_type == VerticalConductivityProfile.exponential
         (; kv_0, f) = soil.kv_profile
-        # [m s⁻¹] = [-] * [m s⁻¹]
         kh_0 = khfrac .* kv_0
         kh_profile = KhExponential(kh_0, f)
     elseif kh_profile_type == VerticalConductivityProfile.exponential_constant
         (; z_exp) = soil.kv_profile
         (; kv_0, f) = soil.kv_profile.exponential
-        # [m s⁻¹] = [-] * [m s⁻¹]
         kh_0 = khfrac .* kv_0
         exp_profile = KhExponential(kh_0, f)
         kh_profile = KhExponentialConstant(exp_profile, z_exp)
@@ -262,13 +260,9 @@ function kinwave_subsurface_update!(
                     soil_model,
                     v,
                 )
-                # [m³] += [m³ s⁻¹] * [s]
                 q_in_cumulative[v] += q_in[v] * dt
-                # [m³] += [m³ s⁻¹] * [s]
                 q_cumulative[v] += q[v] * dt
-                # [m] += [m s⁻¹] * [s]
                 exfiltwater_cumulative[v] += _exfiltwater * dt
-                # [m³] += [m s⁻¹] * [s]
                 q_net_cumulative[v] += netflux * area[v] * dt
                 head[v] = top[v] - zi[v]
                 storage[v] = specific_yield[v] * (soilthickness[v] - zi[v]) * area[v]
@@ -328,7 +322,6 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
     for i in 1:n
         if zi[i] > 0.0
             k += 1
-            # [m s⁻¹]
             c = ssf_celerity(zi[i], slope[i], specific_yield[i], kh_profile, i)
             stable_timesteps[k] = (flow_length[i] / c)
         end
@@ -340,7 +333,6 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
         0.5
     end
 
-    # [s] = [s] * [-]
     return dt_min * alpha_coefficient
 end
 

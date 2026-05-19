@@ -9,13 +9,9 @@ a `snow` model.
 function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt::Float64)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
-    # [m]
     snow_storage_max = 10.0
-    # [-] = min([-], [-]) * min([-], [m] / [m])
     snowflux_frac = @. min(0.5, slope / TAN80) * min(1.0, snow_storage / snow_storage_max)
-    # [m s⁻¹] = [-] * [m] / [s]
     maxflux = snowflux_frac .* snow_storage / dt
-    # [m s⁻¹]
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux, dt)
     snow_out .+=
         accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac / dt, dt)
@@ -26,16 +22,13 @@ lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Float64) = no
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
-    # [m³ s⁻¹] + [m³ s⁻¹] + [m³ s⁻¹]
     if q_in + q_prev + q_lat ≈ 0.0
         return 0.0, 0.0
     else
-        # [s m⁻¹] = [s] / [m]
         dt_dx = dt / dx
         # constant_term = (dt/dx)*q_in + alpha*q_prev³ᐟ⁵) + dt*q_lat
         # Use q_prev^(3/5) = (q_prev¹ᐟ⁵)^3
         # Let [U] = [m³ s⁻¹]¹ᐟ⁵
-        # [U]
         u_prev = q_prev >= 0.0 ? Wflow.pow(q_prev, 0.2) : 0.0
 
         # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [U]³ + [s] * [m² s⁻¹]

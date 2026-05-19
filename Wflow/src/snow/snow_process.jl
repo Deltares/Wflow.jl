@@ -36,43 +36,30 @@ function snowpack_hbv(
     cfr = 0.05,
 )
     if temperature > ttm
-        # [m s⁻¹] = [m K⁻¹ s⁻¹] * ([K] - [K])
         potential_snow_melt = cfmax * (temperature - ttm)
-        # [m s⁻¹] = min([m s⁻¹], [m] / [s])
         snow_melt = min(potential_snow_melt, snow_storage / dt)
-        # [m] -= [m s⁻¹] * [s]
         snow_storage -= snow_melt * dt
-        # [m] += [m s⁻¹] * [s]
         snow_water += snow_melt * dt
     else
         snow_melt = 0.0
 
-        # [m s⁻¹] = [m K⁻¹ s⁻¹] * [-] * ([K] - [K])
         potential_refreezing = cfmax * cfr * (ttm - temperature)
-        # [m] = min([m s⁻¹] * [s], [m])
         refreezing = min(potential_refreezing * dt, snow_water)
-        # [m] += [m]
         snow_storage += refreezing
-        # [m] -= [m]
         snow_water -= refreezing
     end
 
-    # [m] += [m s⁻¹] * [s]
     snow_storage += snow_precip * dt # dry snow content
-    # [m] += [m s⁻¹] * [s]
     snow_water += liquid_precip * dt # free water content in snow
 
-    # [m] = [m] * [-]
     max_snow_water = snow_storage * whc  # max water in the snow
 
     if snow_water > max_snow_water
-        # [m s⁻¹] = ([m] - [m]) / [s]
         runoff = (snow_water - max_snow_water) / dt
         snow_water = max_snow_water
     else
         runoff = 0.0
     end
-    # [m] = [m] + [m]
     snow_water_equivalent = snow_water + snow_storage
 
     return snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff
@@ -98,11 +85,9 @@ All correction factors (RFCF and SFCF) are set to 1.
 """
 function precipitation_hbv(precipitation, temperature, tti, tt; rfcf = 1.0, sfcf = 1.0)
     # fraction of precipitation which falls as rain
-    # [-]
     rainfrac = if iszero(tti)
         Float64(temperature > tt)
     else
-        # [-] = ([K] - ([K] - [K] / [-])) / [K]
         frac = (temperature - (tt - tti / 2.0)) / tti
         clamp(frac, 0.0, 1.0)
     end
@@ -110,7 +95,6 @@ function precipitation_hbv(precipitation, temperature, tti, tt; rfcf = 1.0, sfcf
     # fraction of precipitation which falls as snow
     snowfrac = 1.0 - rainfrac
     # different correction for liquid_precip and snow_precip
-    # [m s⁻¹] = [-] * [-] * [m s⁻¹]
     snow_precip = snowfrac * sfcf * precipitation
     liquid_precip = rainfrac * rfcf * precipitation
     return snow_precip, liquid_precip

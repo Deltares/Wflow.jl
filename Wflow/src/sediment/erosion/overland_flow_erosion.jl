@@ -72,9 +72,7 @@ function update_bc_overland_flow_erosion_model!(
     overland_flow_erosion_model::AbstractOverlandFlowErosionModel,
     hydrological_forcing::HydrologicalForcing,
 )
-    # [m³ s⁻¹]
     (; q) = overland_flow_erosion_model.boundary_conditions
-    # [m³ s⁻¹]
     (; q_land) = hydrological_forcing
     @. q = q_land
 end

@@ -1,5 +1,4 @@
 # From Eq. 7:2.2.24 in https://swat.tamu.edu/media/99192/swat2009-theory.pdf
-# [m s⁻¹ mm⁻²]
 const STOKES_FACTOR = 411 / 3600
 
 """
@@ -44,14 +43,11 @@ function reservoir_deposition_camp(
     slope::Float64,
 )
     # Compute critical velocity
-    # [m s⁻¹] = [m³ s⁻¹] / [m²]
     reservoir_critical_velocity = q / reservoir_area
     # Natural deposition
-    # [kg s⁻¹] = [kg s⁻¹] * [-]
     deposition = input * min(1.0, fall_velocity(dm) / reservoir_critical_velocity)
 
     # Check if particles are traveling in suspension or bed load using Rouse number
-    # [m]
     dsuspf =
         1e-3 * sqrt(
             1.2 * 0.41 * sqrt(GRAVITATIONAL_ACCELERATION * waterlevel * slope) /

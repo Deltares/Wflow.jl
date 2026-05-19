@@ -64,9 +64,7 @@ function update_interception_model!(
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
         threaded_foreach(1:n; basesize = 1000) do i
-            # [-] = [-] - [-]
             canopyfraction = 1.0 - canopygapfraction[i]
-            # [m s⁻¹] = [-] * [m s⁻¹] * [-]
             ewet = canopyfraction * potential_evaporation[i] * kc[i]
             e_r[i] =
                 precipitation[i] > 0.0 ?

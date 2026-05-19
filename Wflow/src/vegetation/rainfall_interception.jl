@@ -20,9 +20,7 @@ function rainfall_interception_gash(
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
     if cmax > 0.0
         if canopy_gap_fraction < inv(1.1)
-            # [-] = [-] * [-]
             fraction_stemflow = 0.1 * canopy_gap_fraction
-            # [-] = [-] - [-] * [-]
             fraction_interception = 1.0 - 1.1 * canopy_gap_fraction # > 0
 
             # [m s⁻¹] (from cmax / dt)
@@ -41,36 +39,24 @@ function rainfall_interception_gash(
         large_storms = precipitation > precipitation_saturation
 
         if large_storms
-            # [m s⁻¹] = [-] * [m s⁻¹] - [m] / [s]
             iwet = fraction_interception * precipitation_saturation - cmax / dt
-            # [m s⁻¹] = [-] * ([m s⁻¹] - [m s⁻¹])
             isat = e_r * (precipitation - precipitation_saturation)
-            # [m s⁻¹] = [m] / [s]
             idry = cmax / dt
-            # [m s⁻¹] = [m s⁻¹] + [m s⁻¹] + [m s⁻¹]
             interception = iwet + isat + idry
         else
-            # [m s⁻¹] = [-] * [m s⁻¹]
             iwet = fraction_interception * precipitation
-            # [m s⁻¹] = [m s⁻¹]
             interception = iwet
         end
 
-        # [m s⁻¹] = [-] * [m s⁻¹]
         stem_flow = fraction_stemflow * precipitation
-        # [m s⁻¹] = [m s⁻¹] - [m s⁻¹] - [m s⁻¹]
         throughfall = precipitation - interception - stem_flow
 
         if interception > max_evaporation
-            # [m s⁻¹] = [m s⁻¹] - [m s⁻¹]
             canopy_drainage = interception - max_evaporation
-            # [m s⁻¹] = [m s⁻¹]
             interception = max_evaporation
-            # [m s⁻¹] += [m s⁻¹]
             throughfall += canopy_drainage
         end
     else
-        # [m s⁻¹] = [m s⁻¹]
         throughfall = precipitation
         interception = 0.0
         stem_flow = 0.0
@@ -94,59 +80,44 @@ function rainfall_interception_modrut(
 )
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
     if canopy_gap_fraction < inv(1.1)
-        # [-] = [-] * [-]
         fraction_stemflow = 0.1 * canopy_gap_fraction
-        # [m s⁻¹] = [-] * [m s⁻¹]
         precipitation_canopy =
             (1.0 - canopy_gap_fraction - fraction_stemflow) * precipitation
     else
-        # [-] = [-] - [-]
         fraction_stemflow = 1.0 - canopy_gap_fraction
         precipitation_canopy = 0.0
     end
 
-    # [m s⁻¹] = [-] * [m s⁻¹]
     stemflow = fraction_stemflow * precipitation
     throughfall = canopy_gap_fraction * precipitation
 
     # Canopystorage cannot be larger than cmax, no gravity drainage below that. This check
     # is required because cmax can change over time
     if canopy_storage > cmax
-        # [m] = [m] - [m]
         canopy_drainage = canopy_storage - cmax
-        # [m] = [m]
         canopy_storage = cmax
 
-        # [m s⁻¹] += [m] / [s]
         throughfall += canopy_drainage / dt
     end
 
     # Add the precipitation that falls on the canopy to the store
-    # [m] += [m s⁻¹] * [s]
     canopy_storage += precipitation_canopy * dt
 
     # Evaporation, make sure the store does not get negative
-    # [m s⁻¹] = [m] / [s]
     max_evaporation = canopy_storage / dt
     if potential_evaporation > max_evaporation
-        # [m s⁻¹] [m s⁻¹]
         canopy_evaporation = max_evaporation
         canopy_storage = 0.0
     else
-        # [m s⁻¹] = [m s⁻¹]
         canopy_evaporation = potential_evaporation
-        # [m] -= [m s⁻¹] * [s]
         canopy_storage -= canopy_evaporation * dt
     end
 
     # Drain the canopy_storage again if needed
     if canopy_storage > cmax
-        # [m] = [m] - [m]
         canopy_drainage = canopy_storage - cmax
-        # [m] = [m]
         canopy_storage = cmax
 
-        # [m s⁻¹] += [m] / [s]
         throughfall += canopy_drainage / dt
     end
 

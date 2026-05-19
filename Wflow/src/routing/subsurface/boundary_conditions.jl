@@ -1,10 +1,8 @@
 function check_flux(flux::Float64, subsurface_flow_model::GroundwaterFlowModel, index::Int)
     # Check if cell is dry
-    #  [m] <= [m]
     if subsurface_flow_model.variables.head[index] <=
        subsurface_flow_model.parameters.bottom[index]
         # If cell is dry, no negative flux is allowed
-        # max([m³ s⁻¹], [m³ s⁻¹])
         return max(0, flux)
     else
         return flux
@@ -13,11 +11,9 @@ end
 
 function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index::Int)
     # Check if cell is dry
-    # [m] > [m]
     if subsurface_flow_model.variables.zi[index] >=
        subsurface_flow_model.parameters.soilthickness[index]
         # If cell is dry, no negative flux is allowed
-        # max([m³ s⁻¹], [m³ s⁻¹])
         return max(0, flux)
     else
         return flux
@@ -87,34 +83,21 @@ function flux!(
     dt::Float64,
 )
     for (i, index) in enumerate(indices)
-        # [m]
         head = subsurface_flow_model.variables.head[index]
-        # [m]
         stage = gwf_river_model.variables.stage[i]
-        # [m] > [m]
         if stage > head
-            # [m³ s⁻¹] = [m³] / [s]
             max_infiltration_flux = gwf_river_model.variables.storage[i] / dt
-            # [m² s⁻¹]
             cond = gwf_river_model.parameters.infiltration_conductance[i]
-            # [m] = min([m] - [m], [m] - [m])
             delta_head = min(stage - gwf_river_model.parameters.bottom[i], stage - head)
-            # [m³ s⁻¹] = min([m² s⁻¹] * [m], [m³ s⁻¹])
             flux = min(cond * delta_head, max_infiltration_flux)
         else
-            # [m² s⁻¹]
             cond = gwf_river_model.parameters.exfiltration_conductance[i]
-            # [m] = [m] - [m]
             delta_head = stage - head
-            # [m³ s⁻¹] = [m² s⁻¹] * [m]
             flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         end
         gwf_river_model.variables.flux[i] = flux
-        # [m³ s⁻¹] += [m³ s⁻¹]
         subsurface_flow_model.variables.q_net_bnds[index] += flux
-        # [m³] -= [s] * [m³ s⁻¹]
         gwf_river_model.variables.storage[i] -= dt * flux
-        # [m³] += [s] * [m³ s⁻¹]
         gwf_river_model.variables.flux_cumulative[i] += dt * flux
     end
     return nothing
@@ -164,20 +147,15 @@ function flux!(
     dt::Float64,
 )
     for (i, index) in enumerate(indices)
-        # [m² s⁻¹]
         cond = drainage_model.parameters.conductance[i]
-        # [m] = [m] - [m]
         delta_head = min(
             0,
             drainage_model.parameters.elevation[i] -
             subsurface_flow_model.variables.head[index],
         )
-        # [m³ s⁻¹] = [m² s⁻¹] * [m]
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         drainage_model.variables.flux[i] = flux
-        # [m³] += [m³ s⁻¹] * [s]
         drainage_model.variables.flux_cumulative[i] += flux * dt
-        # [m³ s⁻¹] += [m³ s⁻¹]
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -211,17 +189,12 @@ function flux!(
     dt::Float64,
 )
     for (i, index) in enumerate(indices)
-        # [m² s⁻¹]
         cond = headboundary.parameters.conductance[i]
-        # [m] = [m] - [m]
         delta_head =
             headboundary.variables.head[i] - subsurface_flow_model.variables.head[index]
-        # [m³ s⁻¹] = [m² s⁻¹] * [m]
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         headboundary.variables.flux[i] = flux
-        # [m³] += [m³ s⁻¹] * [s]
         headboundary.variables.flux_cumulative[i] += flux * dt
-        # [m³ s⁻¹] += [m³ s⁻¹]
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -250,16 +223,13 @@ function flux!(
     dt::Float64,
 )
     for (i, index) in enumerate(indices)
-        # [m³ s⁻¹] = [m s⁻¹] * [m²]
         flux = check_flux(
             recharge_model.variables.rate[i] * subsurface_flow_model.parameters.area[index],
             subsurface_flow_model,
             index,
         )
         recharge_model.variables.flux[i] = flux
-        # [m³] += [m³ s⁻¹] * [s]
         recharge_model.variables.flux_cumulative[i] += flux * dt
-        # [m³ s⁻¹] += [m³ s⁻¹]
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -287,7 +257,6 @@ function flux!(
     dt::Float64,
 )
     for (i, index) in enumerate(indices)
-        # [m³ s⁻¹]
         flux = check_flux(
             well_model.variables.volumetric_rate[i],
             subsurface_flow_model,
@@ -295,7 +264,6 @@ function flux!(
         )
         well_model.variables.flux[i] = flux
         well_model.variables.flux_cumulative[i] += flux * dt
-        # [m³ s⁻¹] += [m³ s⁻¹]
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -306,7 +274,6 @@ function update_river_storage_stage!(
     river_flow_model::AbstractRiverFlowModel,
 )
     for i in eachindex(gwf_river_model.variables.stage)
-        # [m] = [m] + [m]
         gwf_river_model.variables.stage[i] =
             river_flow_model.variables.h[i] + gwf_river_model.parameters.bottom[i]
         gwf_river_model.variables.storage[i] = river_flow_model.variables.storage[i]

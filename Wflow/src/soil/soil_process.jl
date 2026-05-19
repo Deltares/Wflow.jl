@@ -24,20 +24,15 @@ function infiltration(
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and paved areas (path).
-    # [m s⁻¹] = [m s⁻¹] * [-]
     soilinf = potential_infiltration * (1.0 - pathfrac)
     pathinf = potential_infiltration * pathfrac
 
-    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
     max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
 
-    # [m s⁻¹] = min([m s⁻¹] * [-], [m s⁻¹])
     max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
 
-    # [m s⁻¹] = min([m s⁻¹] + [m s⁻¹], max(0.0, [m] / [s]))
     infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity / dt))
 
-    # [m s⁻¹] = ([m s⁻¹] - [m s⁻¹]) + ([m s⁻¹] - [m s⁻¹])
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
     return infiltsoilpath, infiltexcess
@@ -59,37 +54,25 @@ function unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, c, dt)
     # first transfer soil water > maximum soil water capacity layer (iteration is not
     # required because of steady theta (ustorelayerdepth))
 
-    # [m] = max(0, [m] - [m])
     st_sat = max(0.0, ustorelayerdepth - l_sat)
 
-    # [m s⁻¹] = [m s⁻¹] * [-]
     st = kv_z * bounded_power(ustorelayerdepth / l_sat, c)
-    # [m s⁻¹] = min([m s⁻¹], [m] / [s])
     sum_ast = min(st, st_sat / dt)
-    # [m] -= [m s⁻¹] * [s]
     ustorelayerdepth -= sum_ast * dt
 
     # number of iterations (to reduce "overshooting") based on fixed maximum change in soil
     # water per iteration step (0.2 mm / model timestep)
-    # [m] = min([m s⁻¹] * [s], [m])
     remainder = min((st - sum_ast) * dt, ustorelayerdepth)
-    # [-]
     its = Int(cld(remainder, 2e-4))
     for _ in 1:its
-        # [m s⁻¹] = ([m s⁻¹] / [-]) * [-]
         st = (kv_z / its) * bounded_power(ustorelayerdepth / l_sat, c)
-        # [m s⁻¹] = [m] / [s]
         st_max = ustorelayerdepth / dt
 
         if st < st_max
-            # [m] -= [m s⁻¹] * [s]
             ustorelayerdepth -= st * dt
-            # [m s⁻¹] += [m s⁻¹]
             sum_ast += st
         else
-            # [m]
             ustorelayerdepth = 0
-            # [m s⁻¹] += [m s⁻¹]
             sum_ast += st_max
             break
         end
@@ -105,12 +88,9 @@ Return volumetric water content based on the Brooks-Corey soil hydraulic model.
 """
 function vwc_brooks_corey(h, hb, theta_s, theta_r, c)
     return if h < hb
-        # [-] = [-] / [-]
         par_lambda = 2.0 / (c - 3.0)
-        # [-] = [-] * ([-] / [-])^[-] + [-]
         (theta_s - theta_r) * pow(hb / h, par_lambda) + theta_r
     else
-        # [-]
         theta_s
     end
 end
@@ -121,12 +101,10 @@ end
 Return soil water pressure head based on the Brooks-Corey soil hydraulic model.
 """
 function head_brooks_corey(vwc, theta_s, theta_r, c, hb)
-    # [-]
     par_lambda = 2 / (c - 3.0)
     h = if par_lambda > 0
         # Note that in the original formula, theta_r is extracted from vwc, but theta_r is not
         # part of the numerical vwc calculation
-        # [m] = [m] / (([-] / [-])^inv([-]))
         hb / pow(vwc / (theta_s - theta_r), inv(par_lambda))
     else
         hb
@@ -246,12 +224,10 @@ function soil_evaporation_unsaturated_store(
         soilevapunsat = 0.0
     elseif n_unsatlayers == 1
         # Check if groundwater level lies below the surface
-        # [m s⁻¹] = [m s⁻¹] * min([-], [m] / ([m] * [-]))
         soilevapunsat =
             potential_soilevaporation * min(1.0, ustorelayerdepth / (zi * theta_effective))
     else
         # In case first layer contains no saturated storage
-        # [m s⁻¹] = [m s⁻¹] * min([-], [m] / ([m] * [-]))
         soilevapunsat =
             potential_soilevaporation *
             min(1.0, ustorelayerdepth / (ustorelayerthickness * theta_effective))
@@ -269,10 +245,8 @@ function soil_evaporation_saturated_store(
     dt,
 )
     if n_unsatlayers in (0, 1)
-        # [m s⁻¹] = [m s⁻¹] * min([-], ([m] - [m])/[m])
         soilevapsat =
             potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
-        # [m s⁻¹] = min([m s⁻¹], ([m] - [m]) * [-] / [s])
         soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable / dt)
     else
         soilevapsat = 0.0

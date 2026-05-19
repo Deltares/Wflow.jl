@@ -42,37 +42,27 @@ function rainfall_erosion_eurosem(
     dt::Float64,
 )
     # Precipitation expressed in unit expected by model
-    # [mm h⁻¹]
     rainfall_intensity = from_SI(precip, MM_PER_HOUR)
     # Kinetic energy of direct throughfall
     # E_kin_direct = max(11.87 + 8.73 * log10(max(1e-4, rainfall_intensity)),0.0) #basis used in USLE
-    # [J m⁻² mm⁻¹]
     E_kin_direct = max(8.95 + 8.44 * log10(max(1e-4, rainfall_intensity)), 0.0) #variant used in most distributed models
     # Kinetic energy of leaf drainage
     pheff = 0.5 * canopyheight
-    # [J m⁻² mm⁻¹]
     E_kin_leaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
 
     # Depths of rainfall (total, leaf drainage, direct)
-    # [mm] = [mm h⁻¹] * [h]
     rainfall_depth_total = rainfall_intensity * from_SI(dt, HOUR)
-    # [mm] = [mm] * [-] * [-]
     rainfall_depth_leaf = rainfall_depth_total * 0.1 * canopygapfraction # stemflow
-    # [mm]
     intercepted = from_SI(interception * dt, MM)
-    # [mm]
     rainfall_depth_direct =
         max(rainfall_depth_total - rainfall_depth_leaf - intercepted, 0.0) # throughfall
 
     # Total kinetic energy by rainfall
-    # [J m⁻²] = [mm] * [J m⁻² mm⁻¹] + [mm] * [J m⁻² mm⁻¹]
     E_kin_tot = rainfall_depth_direct * E_kin_direct + rainfall_depth_leaf * E_kin_leaf
-    # [kg s⁻¹] = [m²] * [kg J⁻¹] * [J m⁻²] * exp([m⁻¹] * [m]) / [s]
     rainfall_erosion =
         area * soil_detachability * E_kin_tot * exp(-eurosem_exponent * waterlevel) / dt
 
     # Remove the impervious area
-    # [kg s⁻¹] = [kg s⁻¹] * [-]
     rainfall_erosion *= 1.0 - soilcover_fraction
     # TODO: Explain this factor 1e3 needed to pass the tests
     return rainfall_erosion / 1e3
@@ -201,10 +191,8 @@ function total_soil_erosion(
     lagg_fraction,
 )
     # Total soil erosion
-    # [kg s⁻¹] = [kg s⁻¹] + [kg s⁻¹]
     soil_erosion = rainfall_erosion + overland_flow_erosion
     # Particle differentiation
-    # [kg s⁻¹] = # [kg s⁻¹] * [-]
     clay_erosion = soil_erosion * clay_fraction
     silt_erosion = soil_erosion * silt_fraction
     sand_erosion = soil_erosion * sand_fraction
@@ -328,19 +316,15 @@ function river_erosion_store!(
     dt::Float64,
     v::Int,
 )
-    # [kg]
     store = store_vec[v]
 
     if store > 0
         # River erosion of the previously deposited sediment
-        # [kg s⁻¹] = min([kg] / [s], [kg s⁻¹])
         erosion = min(store / dt, excess_sediment)
         # Update the excess sediment and the sediment store
-        # [kg s⁻¹] -= [kg s⁻¹]
         excess_sediment -= erosion
         store_vec[v] = store - erosion * dt
     else
-        # [kg s⁻¹]
         erosion = 0.0
     end
 

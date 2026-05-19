@@ -298,7 +298,6 @@ function kinwave_land_update!(
                 # goes to the river (flow_fraction_to_river) and part goes to the surface
                 # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
                 # reservoir are excluded
-                # [m³] += (∑ [m³ s⁻¹] * [-]) * [s]
                 to_river_cumulative[v] +=
                     sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt
 
@@ -402,17 +401,12 @@ function update_reservoir_model!(
     # If the external inflow is negative, the abstraction is limited
     inflow_ext = external_inflow[i]
     if inflow_ext < 0.0
-        # [m³ s⁻¹] = min([m³ s⁻¹], ([m³] / [s]) * [-])
         abstraction = min(-inflow_ext, (storage[i] / dt) * 0.98)
-        # [m³] += [m³ s⁻¹] * [s]
         actual_external_abstraction_cumulative[i] += abstraction * dt
-        # [m³ s⁻¹] -= [m³ s⁻¹]
         inflow = -abstraction
     else
-        # [m³ s⁻¹] = [m³ s⁻¹]
         inflow = inflow_ext
     end
-    # [m³ s⁻¹] = ∑ [m³ s⁻¹]
     net_inflow = q[v] + inflow_overland[i] + inflow_subsurface[i] + inflow
     update_reservoir_model!(reservoir_model, i, net_inflow, dt)
 
@@ -460,19 +454,14 @@ function kinwave_river_update!(
                 # Inflow supply/abstraction is added to qlat (divide by flow length)
                 # If external_inflow < 0, abstraction is limited
                 if external_inflow[v] < 0.0
-                    # [m³ s⁻¹] = min([m³ s⁻¹], ([m³] / [s]) * [-])
                     _abstraction = min(-external_inflow[v], (storage[v] / dt) * 0.80)
-                    # [m³] += [m³ s⁻¹] * [s]
                     actual_external_abstraction_cumulative[v] += _abstraction * dt
-                    # [m² s⁻¹] = [m³ s⁻¹] / [m]
                     _inflow = -_abstraction / flow_length[v]
                 else
-                    # [m² s⁻¹] = [m³ s⁻¹] / [m]
                     _inflow = external_inflow[v] / flow_length[v]
                 end
                 # internal abstraction (water demand) is limited by river storage and
                 # negative external inflow as part of water allocation computations.
-                # [m² s⁻¹] = [m³ s⁻¹] / [m]
                 _inflow -= abstraction[v] / flow_length[v]
 
                 q[v], crossarea = kinematic_wave(

@@ -109,9 +109,7 @@ function update_bc_soil_erosion_model!(
     rainfall_erosion::AbstractRainfallErosionModel,
     overland_flow_erosion::OverlandFlowErosionAnswersModel,
 )
-    # [kg s⁻¹]
     re = rainfall_erosion.variables.soil_erosion_rate
-    # [kg s⁻¹]
     ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
     @. rainfall_erosion = re

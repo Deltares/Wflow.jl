@@ -65,10 +65,8 @@ function limit_and_convert_transport_capacity(
     dt,
 )
     # 1285 g/L: boundary between streamflow and debris flow (Costa, 1988)
-    # [kg m⁻³] = min([kg m⁻³], [kg m⁻³])
     transport_capacity_vol = min(transport_capacity_density, to_SI(1285, GRAM_PER_L))
     # Transport capacity
-    # [kg s⁻¹] = [kg m⁻³]  * ([m] * [m] * [m] / [s] + [m³ s⁻¹])
     transport_capacity = transport_capacity_vol * (waterlevel * width * length / dt + q)
 
     return transport_capacity
@@ -120,14 +118,10 @@ function transport_capacity_govers(
     # Transport capacity from govers 1990
     sinslope = sin_slope(slope)
     if waterlevel > 0
-        # [m s⁻¹] = [m³ s⁻¹] / ([m] * [m])
         velocity = q / (width * waterlevel)
-        # [cm s⁻¹]
         omega = from_SI(10 * sinslope * velocity, CM_PER_S)
         if omega > 0.4
-            # [kg m⁻³]
             TCf = c_govers * (omega - 0.4)^n_govers * density
-            # [kg s⁻¹]
             transport_capacity = TCf * q
         else
             transport_capacity = 0.0
@@ -187,7 +181,6 @@ function transport_capacity_yalin(
         max((waterlevel * sinslope / (d50 * (density / WATER_DENSITY - 1)) / 0.06 - 1), 0.0)
     alphay = delta * 2.45 / (1e-3 * density)^(2 // 5) * sqrt(0.06)
     if q > 0.0 && alphay != 0.0
-        # [kg m⁻³]
         TC = (
             width / q *
             (density - 1000) *
@@ -197,7 +190,6 @@ function transport_capacity_yalin(
             delta *
             (1 - log(1 + alphay) / (alphay))
         )
-        # [kg s⁻¹] = [kg m⁻³] * [m³ s⁻¹]
         transport_capacity = TC * q
     else
         transport_capacity = 0.0
@@ -325,13 +317,11 @@ function transport_capacity_yalin_differentiation(
     TCb = 2.45 * sqrt(0.06) / (density / 1e3)^(2 // 5)
 
     if dtot != 0.0 && d_part != 0.0
-        # [kg m⁻³]
         TC =
             TCa * dm * d_part / dtot *
             0.635e6 *
             d_part *
             (1 - log(1 + d_part * TCb) / d_part * TCb)
-        # [kg s⁻¹] = [kg m⁻³] * [m³ s⁻¹]
         transport_capacity = TC * q
     else
         transport_capacity = 0.0
@@ -437,17 +427,13 @@ function transport_capacity_engelund(
     # Transport capacity from Engelund and Hansen
     if waterlevel > 0.0
         # Hydraulic radius of the river [m] (rectangular channel)
-        # [m] = [m] * [m] / ([m] + [-] * [m])
         hydrad = waterlevel * width / (width + 2 * waterlevel)
-        # [m s⁻¹] = sqrt([m s⁻²] * [m] * [-])
         vshear = sqrt(GRAVITATIONAL_ACCELERATION * hydrad * slope)
 
         # Flow velocity
-        # [m s⁻¹] = [m³ s⁻¹] / ([m] * [m])
         velocity = q / (waterlevel * width)
 
         # Concentration by weight
-        # [-] = [kg m⁻³] / [kg m⁻³]
         cw_ = density / WATER_DENSITY
         # [-] = [-] * [s²] * [m s⁻¹] * [m s⁻¹]³ / (([-] - [-])^2 * [m s⁻²]^2 * [m] * [m])
         cw =
@@ -456,9 +442,7 @@ function transport_capacity_engelund(
         cw = min(1.0, cw)
 
         # Transport capacity [kg m⁻³]
-        # [-] = [-] / ([-] + ([-] - [-]) * [-]) * [kg m⁻³]
         transport_capacity_density = cw / (cw + (1 - cw) * cw_) * density
-        # [kg m⁻³] = max([kg m⁻³], [kg m⁻³])
         transport_capacity_density = max(transport_capacity_density, 0.0)
         # Transport capacity [kg s⁻¹]
         transport_capacity = limit_and_convert_transport_capacity(
@@ -522,20 +506,16 @@ function transport_capacity_kodatie(
 )
     # Transport capacity from Kodatie
     if waterlevel > 0.0
-        # [m s⁻¹] = [m³ s⁻¹] / ([m] * [m])
         velocity = q / (waterlevel * width)
 
         # Concentration
-        # [kg m⁻¹]
         transport_capacity_concentration = to_SI(
             a_kodatie * velocity^b_kodatie * waterlevel^c_kodatie * slope^d_kodatie,
             TON_PER_M,
         )
 
         # Transport capacity
-        # [kg m⁻³] = [kg m⁻¹] * [m] / ([m³ s⁻¹] * [s])
         transport_capacity_density = transport_capacity_concentration * width / (q * dt)
-        # [kg s⁻¹]
         transport_capacity = limit_and_convert_transport_capacity(
             transport_capacity_density,
             q,
@@ -590,17 +570,12 @@ function transport_capacity_yang(
     dt::Float64,
 )
     # Transport capacity from Yang
-    # [m s⁻¹]
     omegas = fall_velocity(d50)
     # Hydraulic radius of the river [m] (rectangular channel)
-    # [m] = [m] * [m] / ([m] + [-] * [m])
     hydrad = waterlevel * width / (width + 2 * waterlevel)
     # Critical shear stress velocity
-    # [m s⁻¹] = sqrt([m s⁻²] * [m] * [-])
     vshear = sqrt(GRAVITATIONAL_ACCELERATION * hydrad * slope)
-    # [-] = [m s⁻¹] * [m] / [m² s⁻¹]
     var1 = vshear * d50 / WATER_KINEMATIC_VISCOSITY
-    # [-] = [m s⁻¹] * [m] / [m² s⁻¹]
     var2 = omegas * d50 / WATER_KINEMATIC_VISCOSITY
     vcr = ifelse(var1 >= 70.0, 2.05 * omegas, omegas * (2.5 / (log10(var1) - 0.06) + 0.66))
     vcr = min(vcr, 0.0)
@@ -630,13 +605,10 @@ function transport_capacity_yang(
     end
 
     # Sediment concentration by weight from parts per million
-    # [-]
     cw = to_SI(10^logcppm, PPM)
     # Transport capacity
-    # [kg m⁻³] = [-] / ([-] + ([-] - [-]) * [kg m⁻³] / [kg m⁻³]) * [kg m⁻³]
     transport_capacity_density = cw / (cw + (1 - cw) * density / WATER_DENSITY) * density
     transport_capacity_density = max(transport_capacity_density, 0.0)
-    # [kg s⁻¹]
     transport_capacity = limit_and_convert_transport_capacity(
         transport_capacity_density,
         q,
@@ -680,9 +652,7 @@ function transport_capacity_molinas(q, waterlevel, density, d50, width, length, 
     # Transport capacity from Molinas and Wu
     if waterlevel > 0.0
         # Flow velocity
-        # [m s⁻¹] = ([m³ s⁻¹] / ([m] * [m]))
         velocity = (q / (waterlevel * width))
-        # [m s⁻¹]
         omegas = fall_velocity(d50)
 
         # PSI parameter
@@ -696,14 +666,11 @@ function transport_capacity_molinas(q, waterlevel, density, d50, width, length, 
             )
         )
         # Concentration by weight from parts per million
-        # [-]
         cw = to_SI(1430 * (0.86 + sqrt(psi)) * psi^(3 // 2) / (0.016 + psi), PPM)
         # Transport capacity
-        # [kg m⁻³] = [-] / ([-] + ([-] - [-]) * [kg m⁻³] / [kg m⁻³]) * [kg m⁻³]
         transport_capacity_density =
             cw / (cw + (1 - cw) * density / WATER_DENSITY) * density
         transport_capacity_density = max(transport_capacity_density, 0.0)
-        # [kg s⁻¹]
         transport_capacity = limit_and_convert_transport_capacity(
             transport_capacity_density,
             q,

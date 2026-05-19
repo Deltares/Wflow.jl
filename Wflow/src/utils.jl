@@ -722,7 +722,6 @@ Return vertical hydraulic conductivity `kv_z` at depth `z` for index `i` using m
 factor `kv_frac` at soil layer `n` and vertical hydraulic conductivity profile `p`.
 """
 function hydraulic_conductivity_at_depth(p::KvExponential, kvfrac, z, i, n)
-    # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * [m])
     kv_z = kvfrac[i][n] * p.kv_0[i] * exp(-p.f[i] * z)
     return kv_z
 end
@@ -730,28 +729,23 @@ end
 function hydraulic_conductivity_at_depth(p::KvExponentialConstant, kvfrac, z, i, n)
     (; kv_0, f) = p.exponential
     if z < p.z_exp[i]
-        # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * [m])
         kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * z)
     else
-        # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * [m])
         kv_z = kvfrac[i][n] * kv_0[i] * exp(-f[i] * p.z_exp[i])
     end
     return kv_z
 end
 
 function hydraulic_conductivity_at_depth(p::KvLayered, kvfrac, z, i, n)
-    # [m s⁻¹] = [-] * [m s⁻¹]
     kv_z = kvfrac[i][n] * p.kv[i][n]
     return kv_z
 end
 
 function hydraulic_conductivity_at_depth(p::KvLayeredExponential, kvfrac, z, i, n)
     return if z < p.z_layered[i]
-        # [-] * [m s⁻¹]
         kvfrac[i][n] * p.kv[i][n]
     else
         n = p.nlayers_kv[i]
-        # [m s⁻¹] = [-] * [m s⁻¹] * exp([m⁻¹] * ([m] - [m]))
         kvfrac[i][n] * p.kv[i][n] * exp(-p.f[i] * (z - p.z_layered[i]))
     end
 end
@@ -777,16 +771,12 @@ function kh_layered_profile!(
         m = nlayers[i]
 
         if soilthickness[i] > zi[i]
-            # [m² s⁻¹]
             transmissivity = 0.0
-            # [m]
             _sumlayers = @view sumlayers[i][2:end]
             n = max(n_unsatlayers[i], 1)
-            # [m² s⁻¹] += ([m] - [m]) * [m s⁻¹]
             transmissivity += (_sumlayers[n] - zi[i]) * kv_profile.kv[i][n]
             n += 1
             while n <= m
-                # [m² s⁻¹] += [m] * [m s⁻¹]
                 transmissivity += act_thickl[i][n] * kv_profile.kv[i][n]
                 n += 1
             end
@@ -813,35 +803,27 @@ function kh_layered_profile!(
         m = nlayers[i]
 
         if soilthickness[i] > zi[i]
-            # [m² s⁻¹]
             transmissivity = 0.0
             n = max(n_unsatlayers[i], 1)
             if zi[i] >= z_layered[i]
-                # [m] = [m] - [m]
                 zt = soilthickness[i] - z_layered[i]
                 j = nlayers_kv[i]
-                # [m² s⁻¹] += [m s⁻¹] / [m⁻¹] * [-]
                 transmissivity +=
                     kv[i][j] / f[i] *
                     (exp(-f[i] * (zi[i] - z_layered[i])) - exp(-f[i] * zt))
                 n = m
             else
-                # [m]
                 _sumlayers = @view sumlayers[i][2:end]
-                # [m² s⁻¹] += ([m] - [m]) * [m s⁻¹]
                 transmissivity += (_sumlayers[n] - zi[i]) * kv[i][n]
             end
             n += 1
             while n <= m
                 if n > nlayers_kv[i]
-                    # [m] = [m] - [m]
                     zt = soilthickness[i] - z_layered[i]
                     j = nlayers_kv[i]
-                    # [m² s⁻¹] += [m s⁻¹] / [m⁻¹] * [-]
                     transmissivity += kv[i][j] / f[i] * (1.0 - exp(-f[i] * zt))
                     n = m
                 else
-                    # [m² s⁻¹] += [m] * [m s⁻¹]
                     transmissivity += act_thickl[i][n] * kv[i][n]
                 end
                 n += 1
@@ -882,7 +864,6 @@ function initialize_lateral_ssf_model!(
     (; soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
-    # [m² s⁻¹] = (([m s⁻¹] * [-]) / [m⁻¹]) * [-]
     @. q_max = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
     @. q = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
@@ -899,7 +880,6 @@ function initialize_lateral_ssf_model!(
     (; soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
-    # [m² s⁻¹] = [m s⁻¹] * [-] * [-] * ([m] - [m])
     q_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(q)
         q_max[i] =
@@ -945,13 +925,10 @@ function initialize_lateral_ssf_model!(
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
     for i in eachindex(q)
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
-        # [m² s⁻¹]
         kh_max = 0.0
         for j in 1:nlayers[i]
-            # [m² s⁻¹] += [m s⁻¹] * [m]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
-        # [m² s⁻¹] *= [-]
         kh_max *= khfrac[i]
         q_max[i] = kh_max * slope[i]
     end
@@ -975,22 +952,17 @@ function initialize_lateral_ssf_model!(
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
     for i in eachindex(q)
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
-        # [m² s⁻¹]
         kh_max = 0.0
         for j in 1:nlayers[i]
             if j <= nlayers_kv[i]
-                # [m² s⁻¹] +=  # [m s⁻¹] * [m]
                 kh_max += kv[i][j] * act_thickl[i][j]
             else
-                # [m] = [m] - [m]
                 zt = soil_model.parameters.soilthickness[i] - z_layered[i]
                 k = max(j - 1, 1)
-                # [m² s⁻¹] += [m s⁻¹] / [m⁻¹] * [-]
                 kh_max += kv[i][k] / f[i] * (1.0 - exp(-f[i] * zt))
                 break
             end
         end
-        # [m² s⁻¹] = [m² s⁻¹] * [-]
         kh_max = kh_max * khfrac[i]
         q_max[i] = kh_max * slope[i]
     end
@@ -1046,36 +1018,27 @@ function water_table_change(
     (; theta_s, theta_r) = soil_model.parameters
 
     # effective porosity (difference between saturated and residual water content)
-    # [-] = [-] - [-]
     theta_e = theta_s[i] - theta_r[i]
 
     if net_flux <= 0.0
-        # [m] = [m s⁻¹] * [s] / [-]
         dh = net_flux * dt / specific_yield
     else
-        # [m]
         dh = 0.0
         for k in n_unsatlayers[i]:-1:1
-            # [m s⁻¹] = max([m] * [-] - [m], [m]) / [s]
             capacity =
                 max(ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k], 0.0) / dt
-            # [m s⁻¹] = min([m s⁻¹], [m s⁻¹])
             flux_layer = min(net_flux, capacity)
             if capacity <= net_flux
                 # if unsaturated layer is fully saturated dh equals layer thickness
-                # [m] += [m]
                 dh += ustorelayerthickness[i][k]
             else
-                # [-] = [-] - [m] / [m]
                 sy = theta_e - (ustorelayerdepth[i][k] / ustorelayerthickness[i][k])
-                # [m] += [m s⁻¹] * [s] / [-]
                 dh += flux_layer * dt / sy
             end
             net_flux -= flux_layer
             net_flux == 0.0 && break
         end
     end
-    # [m s⁻¹] = max([m s⁻¹], [m s⁻¹])
     exfilt = max(net_flux, 0.0)
     return dh, exfilt
 end

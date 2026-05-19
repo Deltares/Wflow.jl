@@ -117,7 +117,6 @@ end
 function update_bc_snow_model!(snow_model::AbstractSnowModel, external_models::NamedTuple)
     (; effective_precip) = snow_model.boundary_conditions
     (; interception) = external_models
-    # [m s⁻¹] = [m s⁻¹] + [m s⁻¹]
     @. effective_precip =
         interception.variables.throughfall + interception.variables.stemflow
     return nothing

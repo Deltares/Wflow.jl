@@ -73,7 +73,6 @@ function update_model!(model::AbstractModel{<:SbmModel})
     # exchange of recharge [m s⁻¹] between SBM soil model and subsurface flow domain
     boundary_conditions.recharge.variables.rate .= land.soil.variables.recharge
     if do_water_demand(config)
-        # [m² s⁻¹] -= [m² s⁻¹]
         @. boundary_conditions.recharge.variables.rate -=
             land.allocation.variables.act_groundwater_abst
     end
@@ -126,7 +125,6 @@ function set_states!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
                     land_v.h[i] = 0.0
                 end
             end
-            # [m³] = [m] * [m] * [m]
             land_v.storage .= land_v.h .* surface_flow_width .* flow_length
         elseif land_routing == RoutingType.local_inertial
             (; river_location, x_length, y_length) = domain.land.parameters
@@ -136,15 +134,12 @@ function set_states!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
                 if river_location[i]
                     j = domain.land.network.river_indices[i]
                     if land_v.h[i] > 0.0
-                        # [m³] = [m] * [m] * [m] + [m³]
                         land_v.storage[i] =
                             land_v.h[i] * x_length[i] * y_length[i] + bankfull_storage[j]
                     else
-                        # [m³] = [m] * [m] * [m]
                         land_v.storage[i] = river_v.h[j] * flow_width[j] * flow_length[j]
                     end
                 else
-                    # [m³] = [m] * [m] * [m]
                     land_v.storage[i] = land_v.h[i] * x_length[i] * y_length[i]
                 end
             end
@@ -153,20 +148,16 @@ function set_states!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
             (; zi, storage, head) = routing.subsurface_flow.variables
             (; specific_yield, soilthickness, top) = routing.subsurface_flow.parameters
             @. zi = land.soil.variables.zi
-            # [m] = [m] - [m]
             @. head = top - zi
-            # [m³] = [-] * ([m] - [m]) * [m²]
             @. storage = specific_yield * (soilthickness - zi) * domain.land.parameters.area
         elseif config.model.type == ModelType.sbm_gwf
             (; subsurface_flow) = routing
-            # [m³] = [m] * [m²] * [-]
             subsurface_flow.variables.storage .=
                 saturated_thickness(subsurface_flow) .* subsurface_flow.parameters.area .*
                 storativity(subsurface_flow)
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
         (; flow_width, flow_length) = domain.river.parameters
-        # [m³] = [m] * [m] * [m]
         river_v.storage[1:nriv] .=
             river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
 
