@@ -15,7 +15,7 @@ NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Access
 
 ## Internal systems (do not reimplement)
 - **Unit system** (`units.jl`): `Unit` struct for dimensional analysis, `to_SI`/`from_SI`, timestep-dependent `dt` units
-- **Standard name metadata** (`standard_name/`): `OrderedDict` mapping standard names → `ParameterMetadata` (lens, unit, default, type, flags). Used for NetCDF I/O, TOML binding, docs
+- **Standard name metadata** (`standard_name/`): `OrderedDict` mapping standard names → `ParameterMetadata`. Used for NetCDF I/O, TOML binding, docs
 - **Config system** (`config_structure.jl`, `config_init.jl`, `config_utils.jl`): `Config` wraps TOML as typed `AbstractConfigSection` structs. `InputEntry` handles netCDF ref / uniform value / external name
 - **NetCDF I/O** (`io.jl`): `NCReader`/`Writer`; `ncread` combines config lookup + reading + defaults + unit conversion
 - **Network/graph** (`network.jl`, `routing/utils.jl`, `subdomains.jl`): `flowgraph` converts LDD → DiGraph; `NetworkLand`/`NetworkRiver` store 1D↔2D index maps, edge connectivity, subdomain decomposition
