@@ -39,7 +39,7 @@ function snowpack_hbv(
         snow_storage -= snow_melt
         snow_water += snow_melt
     else
-        snow_melt = 0.0
+        snow_melt = ZERO
         potential_refreezing = cfmax * cfr * (ttm - temperature)
         refreezing = min(potential_refreezing, snow_water)
         snow_storage += refreezing
@@ -50,7 +50,7 @@ function snowpack_hbv(
     snow_water += liquid_precip
 
     max_snow_water = snow_storage * whc
-    runoff = max(snow_water - max_snow_water, 0)
+    runoff = max(snow_water - max_snow_water, ZERO)
     snow_water -= runoff
     snow_water_equivalent = snow_water + snow_storage
 
@@ -58,7 +58,7 @@ function snowpack_hbv(
 end
 
 """
-    precipitation_hbv(precipitation, temperature, tti, tt; rfcf = 1.0, sfcf = 1.0)
+    precipitation_hbv(precipitation, temperature, tti, tt; rfcf = ONE, sfcf = ONE)
 
 HBV type precipitation routine to separate precipitation in snow precipitation and liquid precipitation.
 All correction factors (RFCF and SFCF) are set to 1.
@@ -75,18 +75,18 @@ All correction factors (RFCF and SFCF) are set to 1.
 - `snow_precip`
 - `liquid_precip`
 """
-function precipitation_hbv(precipitation, temperature, tti, tt; rfcf = 1.0, sfcf = 1.0)
+function precipitation_hbv(precipitation, temperature, tti, tt; rfcf = ONE, sfcf = ONE)
     # fraction of precipitation which falls as rain
     rainfrac = if iszero(tti)
-        Float64(temperature > tt)
+        PRECISION(temperature > tt)
     else
-        frac = (temperature - (tt - tti / 2.0)) / tti
-        min(frac, 1.0)
+        frac = (temperature - (tt - tti / 2)) / tti
+        min(frac, ONE)
     end
-    rainfrac = max(rainfrac, 0.0)
+    rainfrac = max(rainfrac, ZERO)
 
     # fraction of precipitation which falls as snow
-    snowfrac = 1.0 - rainfrac
+    snowfrac = ONE - rainfrac
     # different correction for liquid_precip and snow_precip
     snow_precip = snowfrac * sfcf * precipitation  # snow_precip depth
     liquid_precip = rainfrac * rfcf * precipitation  # liquid_precip depth

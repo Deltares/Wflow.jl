@@ -4,24 +4,24 @@ abstract type AbstractOverlandFlowErosionModel end
 @with_kw struct OverlandFlowErosionVariables
     n::Int
     # Total soil erosion rate [t dt-1] from overland flow
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
     n::Int
     # Overland flow [m3 s-1]
-    q::Vector{Float64} = fill(MISSING_VALUE, n)
+    q::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
 @with_kw struct OverlandFlowErosionAnswersParameters
     # Soil erodibility factor [-]
-    usle_k::Vector{Float64}
+    usle_k::Vector{PRECISION}
     # Crop management factor [-]
-    usle_c::Vector{Float64}
+    usle_c::Vector{PRECISION}
     # ANSWERS overland flow erosion factor [-]
-    answers_overland_flow_factor::Vector{Float64}
+    answers_overland_flow_factor::Vector{PRECISION}
 end
 
 "Initialize ANSWERS overland flow erosion model parameters"
@@ -81,7 +81,7 @@ end
 function update_overland_flow_erosion_model!(
     overland_flow_erosion_model::OverlandFlowErosionAnswersModel,
     geometry::LandParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q) = overland_flow_erosion_model.boundary_conditions
     (; usle_k, usle_c, answers_overland_flow_factor) =

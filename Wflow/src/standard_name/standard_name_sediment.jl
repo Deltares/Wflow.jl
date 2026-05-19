@@ -368,7 +368,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         lens = @optic(
             _.routing.river_flow.sediment_flux.parameters.reservoir_trapping_efficiency
         ),
-        default = 1.0,
+        default = ONE,
         fill = 0.0,
         description = "Reservoir sediment bedload trapping efficiency",
         tags = [:sediment_river_transport_input],

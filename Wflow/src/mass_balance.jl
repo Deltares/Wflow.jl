@@ -7,9 +7,9 @@ time step `storage_prev` required for mass balance computation.
 """
 @with_kw struct MassBalance <: AbstractMassBalance
     n::Int # number of cells/nodes
-    storage_prev::Vector{Float64} = zeros(n)
-    error::Vector{Float64} = zeros(n)
-    relative_error::Vector{Float64} = zeros(n)
+    storage_prev::Vector{PRECISION} = zeros(n)
+    error::Vector{PRECISION} = zeros(n)
+    relative_error::Vector{PRECISION} = zeros(n)
 end
 
 function MassBalance(::AbstractSubsurfaceFlowModel, n::Int)
@@ -82,13 +82,13 @@ end
 
 "Compute mass balance error and relative error."
 function compute_mass_balance_error(
-    total_in::Float64,
-    total_out::Float64,
-    storage_rate::Float64,
+    total_in::PRECISION,
+    total_out::PRECISION,
+    storage_rate::PRECISION,
 )
     error = total_in - total_out - storage_rate
-    average_flow_rate = (total_in + total_out) / 2.0
-    relative_error = iszero(average_flow_rate) ? 0.0 : error / average_flow_rate
+    average_flow_rate = (total_in + total_out) / 2
+    relative_error = iszero(average_flow_rate) ? ZERO : error / average_flow_rate
     return error, relative_error
 end
 
@@ -258,15 +258,15 @@ function compute_land_hydrology_balance!(
 end
 
 """
-    compute_flow_balance!(reservoir_model::ReservoirModel, water_balance::MassBalance, dt::Float64)
-    compute_flow_balance!(reservoir_model::Nothing, water_balance::NoMassBalance, dt::Float64)
+    compute_flow_balance!(reservoir_model::ReservoirModel, water_balance::MassBalance, dt::PRECISION)
+    compute_flow_balance!(reservoir_model::Nothing, water_balance::NoMassBalance, dt::PRECISION)
 
 Compute reservoir water mass balance error and relative error if reservoirs are included.
 """
 function compute_flow_balance!(
     reservoir_model::ReservoirModel,
     water_balance::MassBalance,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; storage_prev, error, relative_error) = water_balance
     (; storage, outflow_av, actevap) = reservoir_model.variables
@@ -283,15 +283,18 @@ function compute_flow_balance!(
     return nothing
 end
 
-compute_flow_balance!(reservoir_model::Nothing, water_balance::NoMassBalance, dt::Float64) =
-    nothing
+compute_flow_balance!(
+    reservoir_model::Nothing,
+    water_balance::NoMassBalance,
+    dt::PRECISION,
+) = nothing
 
 "Compute water mass balance error and relative error for river kinematic wave routing."
 function compute_flow_balance!(
     river_flow_model::KinWaveRiverFlowModel,
     water_balance::MassBalance,
     network::NetworkRiver,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; storage_prev, error, relative_error) = water_balance
     (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
@@ -316,7 +319,7 @@ function compute_flow_balance!(
     river_flow_model::LocalInertialRiverFlowModel,
     water_balance::MassBalance,
     network::NetworkRiver,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; storage_prev, error, relative_error) = water_balance
     (; inwater, external_inflow, actual_external_abstraction_av, abstraction) =
@@ -324,11 +327,11 @@ function compute_flow_balance!(
     (; edges_at_node) = network
 
     for i in river_flow_model.parameters.active_n
-        total_in = 0.0
-        total_out = 0.0
+        total_in = ZERO
+        total_out = ZERO
         q_src = sum_at(river_flow_model.variables.q_av, edges_at_node.src[i])
         total_in, total_out = add_inflow(total_in, total_out, [q_src, inwater[i]])
-        total_in += max(0.0, external_inflow[i])
+        total_in += max(ZERO, external_inflow[i])
         q_dst = sum_at(river_flow_model.variables.q_av, edges_at_node.dst[i])
         total_in, total_out = add_outflow(total_in, total_out, q_dst)
         total_out += actual_external_abstraction_av[i] + abstraction[i]
@@ -346,7 +349,7 @@ end
 "Helper function to add `inflow` to incoming flow `qin` or outgoing flow `qout`"
 function add_inflow(qin, qout, inflow)
     for q in inflow
-        if q > 0.0
+        if q > ZERO
             qin += q
         else
             qout -= q
@@ -358,7 +361,7 @@ end
 "Helper function to add `outflow` to incoming flow `qin` or outgoing flow `qout`"
 function add_outflow(qin, qout, outflow)
     for q in outflow
-        if q > 0.0
+        if q > ZERO
             qout += q
         else
             qin -= q
@@ -374,7 +377,7 @@ routing.
 function compute_flow_balance!(
     overland_flow_model::KinWaveOverlandFlowModel,
     water_balance::MassBalance,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; storage_prev, error, relative_error) = water_balance
     (; inwater) = overland_flow_model.boundary_conditions
@@ -400,7 +403,7 @@ function compute_flow_balance!(
     overland_flow_model::LocalInertialOverlandFlowModel,
     water_balance::MassBalance,
     domain::Domain,
-    dt::Float64,
+    dt::PRECISION,
 )
     indices = domain.land.network.edge_indices
     inds_river = domain.land.network.river_indices
@@ -415,8 +418,8 @@ function compute_flow_balance!(
     for i in 1:(overland_flow_model.parameters.n)
         yd = indices.yd[i]
         xd = indices.xd[i]
-        total_in = 0.0
-        total_out = 0.0
+        total_in = ZERO
+        total_out = ZERO
         total_in, total_out =
             add_inflow(total_in, total_out, [qx_av[xd], qy_av[yd], runoff[i]])
         total_in, total_out = add_outflow(total_in, total_out, [qx_av[i], qy_av[i]])
@@ -425,7 +428,7 @@ function compute_flow_balance!(
             k = inds_river[i]
             q_src = sum_at(river_flow_model.variables.q_av, edges_at_node.src[k])
             total_in, total_out = add_inflow(total_in, total_out, q_src)
-            total_in += max(0.0, external_inflow[k])
+            total_in += max(ZERO, external_inflow[k])
             q_dst = sum_at(river_flow_model.variables.q_av, edges_at_node.dst[k])
             total_in, total_out = add_outflow(total_in, total_out, q_dst)
             total_out += actual_external_abstraction_av[k] + abstraction[k]
@@ -443,8 +446,8 @@ function constant_head_boundary_error!(
     (; error, relative_error) = water_balance
 
     index_const_head = model.constanthead.index
-    error[index_const_head] .= 0.0
-    relative_error[index_const_head] .= 0.0
+    error[index_const_head] .= ZERO
+    relative_error[index_const_head] .= ZERO
     return nothing
 end
 
@@ -455,7 +458,7 @@ function compute_flow_balance!(
     subsurface_flow_model::AbstractSubsurfaceFlowModel,
     water_balance::MassBalance,
     domain::Domain,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; error, relative_error) = water_balance
     (; q_in_av, q_av, q_net_av) = subsurface_flow_model.variables

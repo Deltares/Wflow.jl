@@ -36,7 +36,7 @@ Return kinematic wave subsurface flow `q` for a single cell and timestep using t
 Raphson method.
 """
 function kw_ssf_newton_raphson(q, constant_term, celerity, dt, dx)
-    epsilon = 1.0e-12
+    epsilon = 1e-12
     max_iters = 3000
     count = 0
     dt_dx = dt / dx
@@ -46,7 +46,7 @@ function kw_ssf_newton_raphson(q, constant_term, celerity, dt, dx)
         df = dt_dx + celerity_inv
         q -= (f / df)
         if isnan(q)
-            q = 0.0
+            q = ZERO
         end
         q = max(q, KIN_WAVE_MIN_FLOW)
         if (abs(f) <= epsilon) || (count >= max_iters)
@@ -82,15 +82,15 @@ function kinematic_wave_ssf(
     soil::SbmSoilModel,
     i,
 )
-    if q_in + q_prev ≈ 0.0 && r <= 0.0
-        return 0.0, d, 0.0
+    if q_in + q_prev ≈ ZERO && r <= ZERO
+        return ZERO, d, ZERO
     else
         # initial estimate
         q = (q_prev + q_in) / 2.0
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
         constant_term =
-            (dt / dx) * q_in + (1.0 / celerity) * q_prev + q_net_bnds * (dt / dx)
+            (dt / dx) * q_in + (ONE / celerity) * q_prev + q_net_bnds * (dt / dx)
         q = kw_ssf_newton_raphson(q, constant_term, celerity, dt, dx)
 
         # constrain maximum lateral subsurface flow rate q
@@ -104,16 +104,16 @@ function kinematic_wave_ssf(
             q_excess = (dw * dx) * sy * (zi - d) / dt
             q = max(q - q_excess, KIN_WAVE_MIN_FLOW)
         end
-        zi = clamp(zi, 0.0, d)
+        zi = clamp(zi, ZERO, d)
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
         # computation
         max_delta_zi = 0.1
-        its = Int(cld(abs(max(zi, 0.0) - zi_prev), max_delta_zi))
+        its = Int(cld(abs(max(zi, ZERO) - zi_prev), max_delta_zi))
         if its > 1
             dt_s = dt / its
-            q_sum = 0.0
-            exfilt_sum = 0.0
-            net_flux_sum = 0.0
+            q_sum = ZERO
+            exfilt_sum = ZERO
+            net_flux_sum = ZERO
             zi_start = zi_prev
             for _ in 1:its
                 celerity = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
@@ -131,7 +131,7 @@ function kinematic_wave_ssf(
                     q_excess = (dw * dx) * sy * (zi - d) / dt_s
                     q = max(q - q_excess, KIN_WAVE_MIN_FLOW)
                 end
-                zi = clamp(zi, 0.0, d)
+                zi = clamp(zi, ZERO, d)
                 # update unsaturated zone
                 zi_prev_mm = zi_prev * 1000.0
                 zi_mm = zi * 1000.0
@@ -180,11 +180,11 @@ function kinematic_wave_ssf(
     soil::SbmSoilModel,
     i,
 )
-    if q_in + q_prev ≈ 0.0 && r <= 0.0
-        return 0.0, d, 0.0
+    if q_in + q_prev ≈ ZERO && r <= ZERO
+        return ZERO, d, ZERO
     else
         # initial estimate
-        q_ini = (q_prev + q_in) / 2.0
+        q_ini = (q_prev + q_in) / 2
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
         constant_term = (dt / dx) * q_in + q_prev / celerity + q_net_bnds * (dt / dx)
@@ -197,12 +197,12 @@ function kinematic_wave_ssf(
         net_flux = (q_in * dt + q_net_bnds * dt - q * dt) / (dw * dx)
         dh, exfilt = water_table_change(soil, net_flux, sy, i)
         zi = zi_prev - dh
-        sy_d = dh > 0.0 ? (net_flux - exfilt) / dh : sy
+        sy_d = dh > ZERO ? (net_flux - exfilt) / dh : sy
         if zi > d
             q_excess = (dw * dx) * sy_d * (zi - d) / dt
             q = max(q - q_excess, KIN_WAVE_MIN_FLOW)
         end
-        zi = clamp(zi, 0.0, d)
+        zi = clamp(zi, ZERO, d)
 
         # update unsaturated zone
         zi_prev_mm = zi_prev * 1000.0

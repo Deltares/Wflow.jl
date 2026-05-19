@@ -79,7 +79,7 @@ function update_overland_flow_model!(
     overland_flow_model::OverlandFlowSedimentModel,
     erosion_model::SoilErosionModel,
     domain::DomainLand,
-    dt::Float64,
+    dt::PRECISION,
 )
     # Transport capacity
     update_bc_transport_capacity_model!(
@@ -179,7 +179,7 @@ function update_river_sediment_model!(
     river_flow_model::RiverSedimentModel,
     sediment_to_river_model::SedimentToRiverDifferentiationModel,
     domain::DomainRiver,
-    dt::Float64,
+    dt::PRECISION,
 )
     # Transport capacity
     update_bc_transport_capacity_model!(

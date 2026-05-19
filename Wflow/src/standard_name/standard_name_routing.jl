@@ -214,7 +214,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "river_bank_water__depth" => ParameterMetadata(;
         lens = @optic(_.routing.river_flow.parameters.bankfull_depth),
         unit = Unit(; m = 1),
-        default = 1.0,
+        default = ONE,
         fill = 0.0,
         description = "Bankfull river depth",
         tags = [:kinematic_wave_river_flow_input, :local_inertial_river_input],
@@ -378,7 +378,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Input
     "model_boundary_condition_river__length" => ParameterMetadata(;
         unit = Unit(; m = 1),
-        default = 1.0e4,
+        default = 1e4,
         description = "Boundary condition river length downstream river outlets",
         tags = [:local_inertial_river_input],
     ),

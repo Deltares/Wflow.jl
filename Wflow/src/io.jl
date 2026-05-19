@@ -246,7 +246,7 @@ function setup_scalar_netcdf(
     defVar(
         ds,
         "time",
-        Float64,
+        PRECISION,
         ("time",);
         attrib = ["units" => time_units, "calendar" => convert(String, calendar)],
     )
@@ -307,10 +307,10 @@ function set_extradim_netcdf(
     extra_dim::NamedTuple{
         (:name, :value),
         Tuple{String, Vector{T}},
-    } where {T <: Union{String, Float64}},
+    } where {T <: Union{String, PRECISION}},
 )
     # the axis attribute `Z` is required to import this type of 3D data by Delft-FEWS the
-    # values of this dimension `extra_dim.value` should be of type Float64
+    # values of this dimension `extra_dim.value` should be of type PRECISION
     if extra_dim.name == "layer"
         attributes =
             ["long_name" => "layer_index", "standard_name" => "layer_index", "axis" => "Z"]
@@ -395,7 +395,7 @@ function setup_grid_netcdf(
     defVar(
         ds,
         "time",
-        Float64,
+        PRECISION,
         ("time",);
         attrib = ["units" => time_units, "calendar" => convert(String, calendar)],
         deflatelevel,
@@ -742,7 +742,7 @@ function Writer(config, modelmap, domain, nc_static; extra_dim = nothing)
             config.time.time_units,
             extra_dim,
             config.model.cell_length_in_meter__flag;
-            float_type = Float64,
+            float_type = PRECISION,
         )
     else
         ds_outstate = nothing
@@ -856,7 +856,7 @@ function write_netcdf_timestep(model, dataset, parameters)
 
     time_index = add_time(dataset, clock.time)
 
-    buffer = zeros(Union{Float64, Missing}, domain.land.network.modelsize)
+    buffer = zeros(Union{PRECISION, Missing}, domain.land.network.modelsize)
     for (key, val) in parameters
         (; par, vector) = val
         sel = active_indices(domain, par)
@@ -1118,7 +1118,7 @@ end
 
 "Read a rating curve from CSV into a NamedTuple of vectors"
 function read_sh_csv(path)
-    data, header = readdlm(path, ',', Float64; header = true)
+    data, header = readdlm(path, ',', PRECISION; header = true)
     names = vec(uppercase.(header))
     idx_h = findfirst(==("H"), names)
     idx_s = findfirst(==("S"), names)
@@ -1132,14 +1132,14 @@ end
 
 "Read a specific storage curve from CSV into a NamedTuple of vectors"
 function read_hq_csv(path)
-    data = readdlm(path, ',', Float64; skipstart = 1)
+    data = readdlm(path, ',', PRECISION; skipstart = 1)
     # Q is a matrix with 365 columns, one for each day in the year
     return (H = data[:, 1], Q = data[:, 2:366])
 end
 
 # these represent the type of the rating curve and specific storage data
-const SH = NamedTuple{(:H, :S), Tuple{Vector{Float64}, Vector{Float64}}}
-const HQ = NamedTuple{(:H, :Q), Tuple{Vector{Float64}, Matrix{Float64}}}
+const SH = NamedTuple{(:H, :S), Tuple{Vector{PRECISION}, Vector{PRECISION}}}
+const HQ = NamedTuple{(:H, :Q), Tuple{Vector{PRECISION}, Matrix{PRECISION}}}
 
 is_increasing(v) = last(v) > first(v)
 
@@ -1345,14 +1345,14 @@ end
 """
     read_x_axis(ds::CFDataset)
 
-Return the x coordinate Vector{Float64}, whether it is called x, lon or longitude.
+Return the x coordinate Vector{PRECISION}, whether it is called x, lon or longitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_x_axis(ds::CFDataset)::Vector{Float64}
+function read_x_axis(ds::CFDataset)::Vector{PRECISION}
     candidates = ("x", "lon", "longitude")
     for candidate in candidates
         if haskey(ds.dim, candidate)
-            return sort!(Float64.(ds[candidate][:]))
+            return sort!(PRECISION.(ds[candidate][:]))
         end
     end
     return error("no x axis found in $(path(ds))")
@@ -1361,14 +1361,14 @@ end
 """
     read_y_axis(ds::CFDataset)
 
-Return the y coordinate Vector{Float64}, whether it is called y, lat or latitude.
+Return the y coordinate Vector{PRECISION}, whether it is called y, lat or latitude.
 Also sorts the vector to be increasing, to match `read_standardized`.
 """
-function read_y_axis(ds::CFDataset)::Vector{Float64}
+function read_y_axis(ds::CFDataset)::Vector{PRECISION}
     candidates = ("y", "lat", "latitude")
     for candidate in candidates
         if haskey(ds.dim, candidate)
-            return sort!(Float64.(ds[candidate][:]))
+            return sort!(PRECISION.(ds[candidate][:]))
         end
     end
     return error("no y axis found in $(path(ds))")

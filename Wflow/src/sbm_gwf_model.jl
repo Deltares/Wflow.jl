@@ -39,7 +39,7 @@ function Model(config::Config, type::SbmGwfModel)
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim = (name = "layer", value = PRECISION.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -73,15 +73,15 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     # set river stage and storage (groundwater boundary)
     update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
     # determine stable time step for groundwater flow
-    dt_gwf = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
+    dt_gwf = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (PRECISION)
 
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
     @. boundary_conditions.recharge.variables.rate =
-        soil.variables.recharge / 1000.0 * (1.0 / dt_gwf)
+        soil.variables.recharge / 1000.0 * (ONE / dt_gwf)
     if do_water_demand(config)
         @. boundary_conditions.recharge.variables.rate -=
-            land.allocation.variables.act_groundwater_abst / 1000.0 * (1.0 / dt_gwf)
+            land.allocation.variables.act_groundwater_abst / 1000.0 * (ONE / dt_gwf)
     end
     # update groundwater domain
     update_subsurface_flow_model!(

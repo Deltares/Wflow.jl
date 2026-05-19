@@ -1,5 +1,5 @@
-const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
-const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^0.2
+const KIN_WAVE_MIN_FLOW = to_precision(1e-30) # [m³ s⁻¹]
+const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^to_precision(0.2)
 
 "Convert a gridded drainage direction to a directed graph"
 function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)

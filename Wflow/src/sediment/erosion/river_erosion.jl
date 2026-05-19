@@ -4,22 +4,22 @@ abstract type AbstractRiverErosionModel end
 @with_kw struct RiverErosionModelVariables
     n::Int
     # Potential river bed erosion rate [t dt-1]
-    bed::Vector{Float64} = fill(MISSING_VALUE, n)
+    bed::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Potential river bank erosion rate [t dt-1]
-    bank::Vector{Float64} = fill(MISSING_VALUE, n)
+    bank::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing river erosion model boundary conditions"
 @with_kw struct RiverErosionBC
     n::Int
     # Waterlevel [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing river erosion model parameters"
 @with_kw struct RiverErosionParameters
     # Mean diameter [mm] in the river bed/bank
-    d50::Vector{Float64}
+    d50::Vector{PRECISION}
 end
 
 "Julian and Torres river erosion model"
@@ -74,7 +74,7 @@ end
 function update_river_erosion_model!(
     river_erosion_model::RiverErosionJulianTorresModel,
     parameters_river::RiverParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; boundary_conditions, parameters, variables) = river_erosion_model
     (; waterlevel) = boundary_conditions

@@ -19,7 +19,7 @@ Mask transport capacity values for         reservoirs,
 function mask_transport_capacity(transport_capacity, reservoirs, rivers)
     # Full deposition in rivers to switch to river concept
     if rivers
-        tc = 0.0
+        tc = ZERO
         # Sediment flux in reservoirs will all reach the river
     elseif reservoirs
         tc = 1e9
@@ -115,16 +115,16 @@ function transport_capacity_govers(
     # Transport capacity from govers 1990
     sinslope = sin_slope(slope) #slope in radians
     # Unit stream power
-    if waterlevel > 0.0
+    if waterlevel > ZERO
         velocity = q / (width * waterlevel) #m/s
     else
-        velocity = 0.0
+        velocity = ZERO
     end
     omega = 10 * sinslope * 100 * velocity #cm/s
     if omega > 0.4
         TCf = c_govers * (omega - 0.4)^(n_govers) * density #kg/m3
     else
-        TCf = 0.0
+        TCf = ZERO
     end
     transport_capacity = TCf * q * dt * 1e-3 #[ton/cell]
 
@@ -164,24 +164,24 @@ Total sediment transport capacity based on Yalin.
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
 function transport_capacity_yalin(
-    q::Float64,
-    waterlevel::Float64,
-    density::Float64,
-    d50::Float64,
-    slope::Float64,
-    width::Float64,
+    q::PRECISION,
+    waterlevel::PRECISION,
+    density::PRECISION,
+    d50::PRECISION,
+    slope::PRECISION,
+    width::PRECISION,
     reservoirs::Bool,
     rivers::Bool,
-    dt::Float64,
+    dt::PRECISION,
 )
     sinslope = sin_slope(slope) #slope in radians
     # Transport capacity from Yalin without particle differentiation
     delta = max(
         (waterlevel * sinslope / (d50 * 0.001 * (density / WATER_DENSITY - 1)) / 0.06 - 1),
-        0.0,
+        ZERO,
     )
     alphay = delta * 2.45 / (0.001 * density)^0.4 * 0.06^(0.5)
-    if q > 0.0 && alphay != 0.0
+    if q > ZERO && !iszero(alphay)
         TC = (
             width / q *
             (density - 1000) *
@@ -194,7 +194,7 @@ function transport_capacity_yalin(
         ) # [kg/m3]
         transport_capacity = TC * q * dt * 1e-3 #[ton]
     else
-        transport_capacity = 0.0
+        transport_capacity = ZERO
     end
 
     # Mask transport capacity values for reservoirs and rivers
@@ -234,23 +234,23 @@ Total flow transportability based on Yalin with particle differentiation.
 - `dtot` (total transportability of the flow [-])
 """
 function transportability_yalin_differentiation(
-    waterlevel::Float64,
-    density::Float64,
-    dm_clay::Float64,
-    dm_silt::Float64,
-    dm_sand::Float64,
-    dm_sagg::Float64,
-    dm_lagg::Float64,
-    slope::Float64,
+    waterlevel::PRECISION,
+    density::PRECISION,
+    dm_clay::PRECISION,
+    dm_silt::PRECISION,
+    dm_sand::PRECISION,
+    dm_sagg::PRECISION,
+    dm_lagg::PRECISION,
+    slope::PRECISION,
 )
     sinslope = sin_slope(slope) #slope in radians
     # Delta parameter of Yalin for each particle class
     delta = waterlevel * sinslope / (1e-6 * (density / WATER_DENSITY - 1)) / 0.06
-    dclay = max(delta / dm_clay - 1, 0.0)
-    dsilt = max(delta / dm_silt - 1, 0.0)
-    dsand = max(delta / dm_sand - 1, 0.0)
-    dsagg = max(delta / dm_sagg - 1, 0.0)
-    dlagg = max(delta / dm_lagg - 1, 0.0)
+    dclay = max(delta / dm_clay - 1, ZERO)
+    dsilt = max(delta / dm_silt - 1, ZERO)
+    dsand = max(delta / dm_sand - 1, ZERO)
+    dsagg = max(delta / dm_sagg - 1, ZERO)
+    dlagg = max(delta / dm_lagg - 1, ZERO)
     # Total transportability
     dtot = dclay + dsilt + dsand + dsagg + dlagg
 
@@ -289,36 +289,36 @@ Transport capacity for a specific grain size based on Yalin with particle differ
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
 function transport_capacity_yalin_differentiation(
-    q::Float64,
-    waterlevel::Float64,
-    density::Float64,
-    dm::Float64,
-    slope::Float64,
-    width::Float64,
+    q::PRECISION,
+    waterlevel::PRECISION,
+    density::PRECISION,
+    dm::PRECISION,
+    slope::PRECISION,
+    width::PRECISION,
     reservoirs::Bool,
     rivers::Bool,
-    dtot::Float64,
-    dt::Float64,
+    dtot::PRECISION,
+    dt::PRECISION,
 )
     sinslope = sin_slope(slope) #slope in radians
     # Transport capacity from Yalin with particle differentiation
     # Delta parameter of Yalin for the specific particle class
     delta = waterlevel * sinslope / (1e-6 * (density / WATER_DENSITY - 1)) / 0.06
-    d_part = max(1 / dm * delta - 1, 0.0)
+    d_part = max(1 / dm * delta - 1, ZERO)
 
-    if q > 0.0
+    if q > ZERO
         TCa =
             width / q *
             (density - 1000) *
             1e-6 *
             (GRAVITATIONAL_ACCELERATION * waterlevel * sinslope)
     else
-        TCa = 0.0
+        TCa = ZERO
     end
 
-    TCb = 2.45 / (0.001 * density)^0.4 * 0.06^0.5
+    TCb = 2.45 / (0.001 * density)^0.4 * sqrt(0.06)
 
-    if dtot != 0.0 && d_part != 0.0
+    if dtot != ZERO && d_part != ZERO
         TC =
             TCa * dm * d_part / dtot *
             0.635 *
@@ -326,7 +326,7 @@ function transport_capacity_yalin_differentiation(
             (1 - log(1 + d_part * TCb) / d_part * TCb) # [kg/m3]
         transport_capacity = TC * q * dt * 1e-3 #[ton]
     else
-        transport_capacity = 0.0
+        transport_capacity = ZERO
     end
 
     # Mask transport capacity values for reservoirs and rivers
@@ -361,16 +361,16 @@ Total sediment transport capacity based on Bagnold.
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
 function transport_capacity_bagnold(
-    q::Float64,
-    waterlevel::Float64,
-    c_bagnold::Float64,
-    e_bagnold::Float64,
-    width::Float64,
-    length::Float64,
-    dt::Float64,
+    q::PRECISION,
+    waterlevel::PRECISION,
+    c_bagnold::PRECISION,
+    e_bagnold::PRECISION,
+    width::PRECISION,
+    length::PRECISION,
+    dt::PRECISION,
 )
     # Transport capacity from Bagnold
-    if waterlevel > 0.0
+    if waterlevel > ZERO
         # Transport capacity [tons/m3]
         transport_capacity = c_bagnold * (q / (waterlevel * width))^e_bagnold
         transport_capacity = limit_and_convert_transport_capacity(
@@ -382,7 +382,7 @@ function transport_capacity_bagnold(
             dt,
         )
     else
-        transport_capacity = 0.0
+        transport_capacity = ZERO
     end
 
     return transport_capacity
@@ -416,17 +416,17 @@ Total sediment transport capacity based on Engelund and Hansen.
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
 function transport_capacity_engelund(
-    q::Float64,
-    waterlevel::Float64,
-    density::Float64,
-    d50::Float64,
-    width::Float64,
-    length::Float64,
-    slope::Float64,
-    dt::Float64,
+    q::PRECISION,
+    waterlevel::PRECISION,
+    density::PRECISION,
+    d50::PRECISION,
+    width::PRECISION,
+    length::PRECISION,
+    slope::PRECISION,
+    dt::PRECISION,
 )
     # Transport capacity from Engelund and Hansen
-    if waterlevel > 0.0
+    if waterlevel > ZERO
         # Hydraulic radius of the river [m] (rectangular channel)
         hydrad = waterlevel * width / (width + 2 * waterlevel)
         vshear = sqrt(GRAVITATIONAL_ACCELERATION * hydrad * slope)
@@ -438,12 +438,12 @@ function transport_capacity_engelund(
         cw =
             density / WATER_DENSITY * 0.05 * velocity * vshear^3 /
             ((density / WATER_DENSITY - 1)^2 * GRAVITATIONAL_ACCELERATION^2 * d50 * hydrad)
-        cw = min(1.0, cw)
+        cw = min(ONE, cw)
 
         # Transport capacity [tons/m3]
         transport_capacity =
             cw / (cw + (1 - cw) * density / WATER_DENSITY) * density / WATER_DENSITY
-        transport_capacity = max(transport_capacity, 0.0)
+        transport_capacity = max(transport_capacity, ZERO)
         # Transport capacity [tons]
         transport_capacity = limit_and_convert_transport_capacity(
             transport_capacity,
@@ -455,7 +455,7 @@ function transport_capacity_engelund(
         )
 
     else
-        transport_capacity = 0.0
+        transport_capacity = ZERO
     end
 
     return transport_capacity
@@ -505,7 +505,7 @@ function transport_capacity_kodatie(
     dt,
 )
     # Transport capacity from Kodatie
-    if waterlevel > 0.0
+    if waterlevel > ZERO
         # Flow velocity [m/s]
         velocity = (q / (waterlevel * width))
 
@@ -525,7 +525,7 @@ function transport_capacity_kodatie(
         )
 
     else
-        transport_capacity = 0.0
+        transport_capacity = ZERO
     end
 
     return transport_capacity
@@ -559,14 +559,14 @@ Total sediment transport capacity based on Yang sand and gravel equations.
 - `transport_capacity` (total sediment transport capacity [t dt-1])
 """
 function transport_capacity_yang(
-    q::Float64,
-    waterlevel::Float64,
-    density::Float64,
-    d50::Float64,
-    width::Float64,
-    length::Float64,
-    slope::Float64,
-    dt::Float64,
+    q::PRECISION,
+    waterlevel::PRECISION,
+    density::PRECISION,
+    d50::PRECISION,
+    width::PRECISION,
+    length::PRECISION,
+    slope::PRECISION,
+    dt::PRECISION,
 )
     # Transport capacity from Yang
     omegas = STOKES_FACTOR * d50^2
@@ -577,7 +577,7 @@ function transport_capacity_yang(
     var1 = vshear * d50 / 1000 / WATER_KINEMATIC_VISCOSITY
     var2 = omegas * d50 / 1000 / WATER_KINEMATIC_VISCOSITY
     vcr = ifelse(var1 >= 70.0, 2.05 * omegas, omegas * (2.5 / (log10(var1) - 0.06) + 0.66))
-    vcr = min(vcr, 0.0)
+    vcr = min(vcr, ZERO)
 
     # Sand equation
     if width * waterlevel > vcr
@@ -601,7 +601,7 @@ function transport_capacity_yang(
             )
         end
     else
-        logcppm = 0.0
+        logcppm = ZERO
     end
 
     # Sediment concentration by weight
@@ -609,7 +609,7 @@ function transport_capacity_yang(
     # Transport capacity [tons/m3]
     transport_capacity =
         cw / (cw + (1 - cw) * density / WATER_DENSITY) * density / WATER_DENSITY
-    transport_capacity = max(transport_capacity, 0.0)
+    transport_capacity = max(transport_capacity, ZERO)
     # Transport capacity [tons]
     transport_capacity = limit_and_convert_transport_capacity(
         transport_capacity,
@@ -652,7 +652,7 @@ Total sediment transport capacity based on Molinas and Wu.
 """
 function transport_capacity_molinas(q, waterlevel, density, d50, width, length, slope, dt)
     # Transport capacity from Molinas and Wu
-    if waterlevel > 0.0
+    if waterlevel > ZERO
         # Flow velocity [m/s]
         velocity = (q / (waterlevel * width))
         omegas = STOKES_FACTOR * d50^2

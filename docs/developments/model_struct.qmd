@@ -7,10 +7,10 @@ such as the domain and shared parameters, routing concepts, land model, clock, m
 configuration and input and output.
 
 ```julia
-struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType} <:
+struct Model{R <: Routing, L <: AbstractLandModel, T <: AbstractModelType, F <: AbstractFloat} <:
        AbstractModel{T}
     config::Config                  # all configuration options
-    domain::Domain                  # domain connectivity (network) and shared parameters
+    domain::Domain{F}               # domain connectivity (network) and shared parameters
     routing::R                      # routing model (horizontal fluxes), moves along network
     land::L                         # land model simulating vertical fluxes, independent of each other
     clock::Clock                    # to keep track of simulation time

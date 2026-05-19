@@ -7,7 +7,7 @@ a `snow` model.
 function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
-    snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow_storage ./ 10000.0)
+    snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(ONE, snow_storage ./ 10000.0)
     maxflux = snowflux_frac .* snow_storage
     snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
     snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)
@@ -18,19 +18,19 @@ lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
-    if q_in + q_prev + q_lat ≈ 0.0
-        return 0.0, 0.0
+    if q_in + q_prev + q_lat ≈ ZERO
+        return ZERO, ZERO
     else
         dt_dx = dt / dx
         # constant_term = (dt/dx)*q_in + alpha*q_prev^(3/5) + dt*q_lat
         # Use q_prev^(3/5) = (q_prev^(1/5))^3
-        u_prev = q_prev >= 0.0 ? Wflow.pow(q_prev, 0.2) : 0.0
+        u_prev = q_prev >= ZERO ? Wflow.pow(q_prev, 1 // 5) : ZERO
         constant_term = dt_dx * q_in + alpha * u_prev * u_prev * u_prev + dt * q_lat
 
         # Initial estimate: use u_prev as starting point (cheap, no pow calls)
         # Since q changes smoothly between timesteps, u_prev is already close to the root.
         # For the case q_prev == 0, use C/alpha as a rough estimate for u^3, so u ≈ cbrt(C/alpha)
-        u = if u_prev > 0.0
+        u = if u_prev > ZERO
             u_prev
         else
             cbrt(constant_term / alpha)
@@ -40,12 +40,12 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
         # f'(u)  = 5*dt_dx * u^4 + 3*alpha * u^2
         # f''(u) = 20*dt_dx * u^3 + 6*alpha * u
         max_iters = 3000
-        epsilon = 1.0e-12
+        epsilon = to_precision(1e-12)
 
-        const_1 = 5.0 * dt_dx
-        const_2 = 3.0 * alpha
-        const_3 = 20.0 * dt_dx
-        const_4 = 6.0 * alpha
+        const_1 = 5 * dt_dx
+        const_2 = 3 * alpha
+        const_3 = 20 * dt_dx
+        const_4 = 6 * alpha
 
         for _ in 1:max_iters
             u2 = u * u
@@ -55,7 +55,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
             d2f_u = u * (const_3 * u2 + const_4)
             # Halley's correction: u -= f*f' / (f'^2 - f*f''/2)
             u -= (f_u * df_u) / (df_u * df_u - f_u * d2f_u / 2)
-            if isnan(u) || u <= 0.0
+            if isnan(u) || u <= ZERO
                 u = KIN_WAVE_MIN_FLOW_QROOT
             end
             if (abs(f_u) <= epsilon)
@@ -107,10 +107,10 @@ function local_inertial_flow(
         )
     )
 
-    # if froude number > 1.0, limit flow
+    # if froude number > ONE, limit flow
     fr = ((q / A) / sqrt(GRAVITATIONAL_ACCELERATION * hf)) * froude_limit
-    q = ifelse((abs(fr) > 1.0) * (q > 0.0), sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
-    q = ifelse((abs(fr) > 1.0) * (q < 0.0), -sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
+    q = ifelse((abs(fr) > ONE) * (q > ZERO), sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
+    q = ifelse((abs(fr) > ONE) * (q < ZERO), -sqrt(GRAVITATIONAL_ACCELERATION * hf) * A, q)
 
     return q
 end
@@ -150,12 +150,12 @@ function local_inertial_flow(
             GRAVITATIONAL_ACCELERATION * dt * mannings_n_sq * abs(q0) / (pow_hf * width)
         )
     )
-    # if froude number > 1.0, limit flow
+    # if froude number > ONE, limit flow
     if froude_limit
         fr = (q / width / hf) / sqrt(GRAVITATIONAL_ACCELERATION * hf)
-        if abs(fr) > 1.0 && q > 0.0
+        if abs(fr) > ONE && q > ZERO
             q = hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
-        elseif abs(fr) > 1.0 && q < 0.0
+        elseif abs(fr) > ONE && q < ZERO
             q = -hf * sqrt(GRAVITATIONAL_ACCELERATION * hf) * width
         end
     end

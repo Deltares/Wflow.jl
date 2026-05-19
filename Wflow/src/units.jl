@@ -45,7 +45,7 @@ struct Unit
     percentage::PowersType # percentage, converted to unitless fraction in the SI standard
     ppm::PowersType # parts per million, converted to unitless fraction in the SI standard
     # Factor for converting a value in this unit to the above mentioned standard SI units (apart from dt)
-    to_SI_factor_without_dt::Float64 # Expected to be last field!
+    to_SI_factor_without_dt::PRECISION # Expected to be last field!
 end
 
 const Units = fieldnames(Unit)[2:(end - 1)]
@@ -53,7 +53,7 @@ const N_UNITS = length(Units)
 const STANDARD_UNITS = [:K, :s, :m, :kg]
 
 function Unit(absolute_temperature, powers_all...)
-    to_SI_factor_without_dt = 1.0
+    to_SI_factor_without_dt = ONE
     for (i, powers) in enumerate(powers_all)
         unit = Units[i]
         (unit == :dt) && continue
@@ -74,48 +74,45 @@ end
 end
 
 function Unit(; absolute_temperature = false, kwargs...)
-    powers = ntuple(
-        i -> begin
-            unit = Units[i]
-            powers = return if unit in keys(kwargs)
-                val = kwargs[unit]
+    powers = ntuple(i -> begin
+        unit = Units[i]
+        powers = if unit in keys(kwargs)
+            val = kwargs[unit]
 
-                if val isa Number
-                    val > 0 ? (0, val) : (-val, 0)
-                else
-                    val
-                end
+            if val isa Number
+                val > 0 ? (0, val) : (-val, 0)
             else
-                (0 // 1, 0 // 1)
+                val
             end
-            PowersType(powers)
-        end,
-        N_UNITS,
-    )
+        else
+            (0 // 1, 0 // 1)
+        end
+        PowersType(powers)
+    end, N_UNITS)
     for unit in keys(kwargs)
         (unit ∉ Units) && argument_error("Unrecognized unit $unit.")
     end
     return Unit(absolute_temperature, powers...)
 end
 
-const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
-    (factor = 1.0, unit_SI = Unit(; K = 1)), # K
-    (factor = 1.0, unit_SI = Unit(; K = 1)), # degC
-    (factor = 1.0, unit_SI = Unit(; s = 1)), # s
+const to_SI_data = @NamedTuple{factor::PRECISION, unit_SI::Unit}[
+    (factor = ONE, unit_SI = Unit(; K = 1)), # K
+    (factor = ONE, unit_SI = Unit(; K = 1)), # degC
+    (factor = ONE, unit_SI = Unit(; s = 1)), # s
     (factor = 1e-3, unit_SI = Unit(; s = 1)), # ms
     (factor = 60.0, unit_SI = Unit(; s = 1)), # min
     (factor = 3600, unit_SI = Unit(; s = 1)), # h
     (factor = 86400.0, unit_SI = Unit(; s = 1)), # d
     (factor = NaN, unit_SI = Unit(; s = 1)), # dt
-    (factor = 1.0, unit_SI = Unit(; m = 1)), # m
+    (factor = ONE, unit_SI = Unit(; m = 1)), # m
     (factor = 1e-2, unit_SI = Unit(; m = 1)), # cm
     (factor = 1e-3, unit_SI = Unit(; m = 1)), # mm
     (factor = 1e-6, unit_SI = Unit(; m = 1)), # μm
     (factor = 1e-3, unit_SI = Unit(; m = 3)), # L
-    (factor = 1.0, unit_SI = Unit(; kg = 1)), # kg
+    (factor = ONE, unit_SI = Unit(; kg = 1)), # kg
     (factor = 1e-3, unit_SI = Unit(; kg = 1)), # g
     (factor = 1e3, unit_SI = Unit(; kg = 1)), # t
-    (factor = 1.0, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # J
+    (factor = ONE, unit_SI = Unit(; kg = 1, m = 2, s = -2)), # J
     (factor = 1e-2, unit_SI = Unit()), # percentage
     (factor = 1e-6, unit_SI = Unit()), # ppm
 ]

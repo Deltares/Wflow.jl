@@ -4,32 +4,32 @@ abstract type AbstractRainfallErosionModel end
 @with_kw struct RainfallErosionModelVariables
     n::Int
     # Total soil erosion rate [t dt-1] from rainfall (splash)
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionEurosemBC
     n::Int
     # precipitation [mm dt-1]
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
+    precipitation::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Interception [mm dt-1]
-    interception::Vector{Float64} = fill(MISSING_VALUE, n)
+    interception::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Waterlevel on land [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
 @with_kw struct RainfallErosionEurosemParameters
     # Soil detachability factor [g J-1]
-    soil_detachability::Vector{Float64}
+    soil_detachability::Vector{PRECISION}
     # Exponent EUROSEM [-]
-    eurosem_exponent::Vector{Float64}
+    eurosem_exponent::Vector{PRECISION}
     # Canopy height [m]
-    canopyheight::Vector{Float64}
+    canopyheight::Vector{PRECISION}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{Float64}
+    canopygapfraction::Vector{PRECISION}
     # Fraction of the soil that is covered (eg paved, snow, etc) [-]
-    soilcover_fraction::Vector{Float64}
+    soilcover_fraction::Vector{PRECISION}
 end
 
 "Initialize EUROSEM rainfall erosion model parameters"
@@ -115,7 +115,7 @@ end
 function update_rainfall_erosion_model!(
     rainfall_erosion_model::RainfallErosionEurosemModel,
     parameters::LandParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; precipitation, interception, waterlevel) = rainfall_erosion_model.boundary_conditions
     (;
@@ -148,17 +148,17 @@ end
 @with_kw struct RainfallErosionAnswersBC
     n::Int
     # precipitation [mm dt-1]
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
+    precipitation::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
 @with_kw struct RainfallErosionAnswersParameters
     # Soil erodibility factor [-]
-    usle_k::Vector{Float64}
+    usle_k::Vector{PRECISION}
     # Crop management factor [-]
-    usle_c::Vector{Float64}
+    usle_c::Vector{PRECISION}
     # ANSWERS rainfall erosion factor [-]
-    answers_rainfall_factor::Vector{Float64}
+    answers_rainfall_factor::Vector{PRECISION}
 end
 
 "Initialize ANSWERS rainfall erosion model parameters"
@@ -218,7 +218,7 @@ end
 function update_rainfall_erosion_model!(
     rainfall_erosion_model::RainfallErosionAnswersModel,
     parameters::LandParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; precipitation) = rainfall_erosion_model.boundary_conditions
     (; usle_k, usle_c, answers_rainfall_factor) = rainfall_erosion_model.parameters

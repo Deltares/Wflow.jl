@@ -1,4 +1,8 @@
-function check_flux(flux::Float64, subsurface_flow_model::GroundwaterFlowModel, index::Int)
+function check_flux(
+    flux::PRECISION,
+    subsurface_flow_model::GroundwaterFlowModel,
+    index::Int,
+)
     # Check if cell is dry
     if subsurface_flow_model.variables.head[index] <=
        subsurface_flow_model.parameters.bottom[index]
@@ -9,7 +13,7 @@ function check_flux(flux::Float64, subsurface_flow_model::GroundwaterFlowModel, 
     end
 end
 
-function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index::Int)
+function check_flux(flux::PRECISION, subsurface_flow_model::LateralSSFModel, index::Int)
     # Check if cell is dry
     if subsurface_flow_model.variables.zi[index] >=
        subsurface_flow_model.parameters.soilthickness[index]
@@ -21,17 +25,17 @@ function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index
 end
 
 @with_kw struct GwfRiverParameters
-    infiltration_conductance::Vector{Float64} # [m² d⁻¹]
-    exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
-    bottom::Vector{Float64} # [m]
+    infiltration_conductance::Vector{PRECISION} # [m² d⁻¹]
+    exfiltration_conductance::Vector{PRECISION} # [m² d⁻¹]
+    bottom::Vector{PRECISION} # [m]
 end
 
 @with_kw struct GwfRiverVariables
     n::Int
-    stage::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
-    storage::Vector{Float64} = fill(MISSING_VALUE, n) # [m³]
-    flux::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
-    flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
+    stage::Vector{PRECISION} = fill(MISSING_VALUE, n) # [m]
+    storage::Vector{PRECISION} = fill(MISSING_VALUE, n) # [m³]
+    flux::Vector{PRECISION} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
+    flux_av::Vector{PRECISION} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
 end
 
 @with_kw struct GwfRiverModel <: AbstractSubsurfaceFlowBC
@@ -49,22 +53,16 @@ function GwfRiverModel(
         config,
         "river_water__infiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     exfiltration_conductance = ncread(
         dataset,
         config,
         "river_water__exfiltration_conductance",
         Routing;
-        sel=indices,
+        sel = indices,
     )
-    bottom = ncread(
-        dataset,
-        config,
-        "river_bottom__elevation",
-        Routing;
-        sel=indices,
-    )
+    bottom = ncread(dataset, config, "river_bottom__elevation", Routing; sel = indices)
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
@@ -78,7 +76,7 @@ function flux!(
     gwf_river_model::GwfRiverModel,
     subsurface_flow_model::AbstractSubsurfaceFlowModel,
     indices::Vector{Int},
-    dt::Float64,
+    dt::PRECISION,
 )
     for (i, index) in enumerate(indices)
         head = subsurface_flow_model.variables.head[index]
@@ -102,14 +100,14 @@ function flux!(
 end
 
 @with_kw struct DrainageParameters
-    elevation::Vector{Float64} # [m]
-    conductance::Vector{Float64} # [m² d⁻¹]
+    elevation::Vector{PRECISION} # [m]
+    conductance::Vector{PRECISION} # [m² d⁻¹]
 end
 
 @with_kw struct DrainageVariables
     n::Int
-    flux::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
-    flux_av::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
+    flux::Vector{PRECISION} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
+    flux_av::Vector{PRECISION} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
 end
 
 @with_kw struct DrainageModel <: AbstractSubsurfaceFlowBC
@@ -122,20 +120,8 @@ function DrainageModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    elevation = ncread(
-        dataset,
-        config,
-        "land_drain__elevation",
-        Routing;
-        sel=indices,
-    )
-    conductance = ncread(
-        dataset,
-        config,
-        "land_drain__conductance",
-        Routing;
-        sel=indices,
-    )
+    elevation = ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
+    conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
     parameters = DrainageParameters(; elevation, conductance)
     n = length(indices)
     variables = DrainageVariables(; n)
@@ -148,7 +134,7 @@ function flux!(
     drainage_model::DrainageModel,
     subsurface_flow_model::AbstractSubsurfaceFlowModel,
     indices::Vector{Int},
-    dt::Float64,
+    dt::PRECISION,
 )
     for (i, index) in enumerate(indices)
         cond = drainage_model.parameters.conductance[i]
@@ -166,13 +152,13 @@ function flux!(
 end
 
 @with_kw struct HeadBoundaryParameters
-    conductance::Vector{Float64} # [m² d⁻¹]
+    conductance::Vector{PRECISION} # [m² d⁻¹]
 end
 
 @with_kw struct HeadBoundaryVariables
-    head::Vector{Float64} # [m]
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    head::Vector{PRECISION} # [m]
+    flux::Vector{PRECISION} # [m³ d⁻¹]
+    flux_av::Vector{PRECISION} # [m³ d⁻¹]
 end
 
 @with_kw struct HeadBoundary <: AbstractSubsurfaceFlowBC
@@ -184,7 +170,7 @@ function flux!(
     headboundary::HeadBoundary,
     subsurface_flow_model::GroundwaterFlowModel,
     indices::Vector{Int},
-    dt::Float64,
+    dt::PRECISION,
 )
     for (i, index) in enumerate(indices)
         cond = headboundary.parameters.conductance[i]
@@ -200,9 +186,9 @@ end
 
 @with_kw struct RechargeVariables
     n::Int
-    rate::Vector{Float64} = fill(MISSING_VALUE, n) # [m d⁻¹]
-    flux::Vector{Float64} = zeros(n) # [m³ d⁻¹]
-    flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹]
+    rate::Vector{PRECISION} = fill(MISSING_VALUE, n) # [m d⁻¹]
+    flux::Vector{PRECISION} = zeros(n) # [m³ d⁻¹]
+    flux_av::Vector{PRECISION} = zeros(n) # [m³ d⁻¹]
 end
 
 @with_kw struct RechargeModel <: AbstractSubsurfaceFlowBC
@@ -214,7 +200,7 @@ function flux!(
     recharge_model::RechargeModel,
     subsurface_flow_model::AbstractSubsurfaceFlowModel,
     indices::Vector{Int},
-    dt::Float64,
+    dt::PRECISION,
 )
     for (i, index) in enumerate(indices)
         flux = check_flux(
@@ -230,9 +216,9 @@ function flux!(
 end
 
 @with_kw struct WellVariables
-    volumetric_rate::Vector{Float64} # [m³ d⁻¹]
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    volumetric_rate::Vector{PRECISION} # [m³ d⁻¹]
+    flux::Vector{PRECISION} # [m³ d⁻¹]
+    flux_av::Vector{PRECISION} # [m³ d⁻¹]
 end
 
 @with_kw struct WellModel <: AbstractSubsurfaceFlowBC
@@ -243,7 +229,7 @@ function flux!(
     well_model::WellModel,
     subsurface_flow_model::GroundwaterFlowModel,
     indices::Vector{Int},
-    dt::Float64,
+    dt::PRECISION,
 )
     for (i, index) in enumerate(indices)
         flux = check_flux(
@@ -275,7 +261,7 @@ update_river_storage_stage!(
     river_flow_model::AbstractRiverFlowModel,
 ) = nothing
 
-flux!(::Nothing, ::AbstractSubsurfaceFlowModel, ::Vector{Int}, ::Float64) = nothing
+flux!(::Nothing, ::AbstractSubsurfaceFlowModel, ::Vector{Int}, ::PRECISION) = nothing
 
 get_boundary_index(::RechargeModel, domain::Domain) = domain.land.network.land_indices
 get_boundary_index(::GwfRiverModel, domain::Domain) = domain.river.network.land_indices

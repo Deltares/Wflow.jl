@@ -4,9 +4,9 @@ abstract type AbstractGlacierModel end
 @with_kw struct GlacierVariables
     n::Int
     # Water within the glacier [mm]
-    glacier_store::Vector{Float64}
+    glacier_store::Vector{PRECISION}
     # Glacier melt [mm Δt⁻¹]
-    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n)
+    glacier_melt::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Initialize glacier model variables"
@@ -30,21 +30,21 @@ end
 "Struct for storing boundary condition (snow storage from a snow model) of a glacier model"
 @with_kw struct SnowStateBC
     # Snow storage [mm]
-    snow_storage::Vector{Float64}
+    snow_storage::Vector{PRECISION}
 end
 
 "Struct for storing glacier HBV model parameters"
 @with_kw struct GlacierHbvParameters
     # Threshold temperature for glacier melt [ᵒC]
-    g_ttm::Vector{Float64}
+    g_ttm::Vector{PRECISION}
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹] for glacier
-    g_cfmax::Vector{Float64}
+    g_cfmax::Vector{PRECISION}
     # Fraction of the snowpack on top of the glacier converted into ice [Δt⁻¹]
-    g_sifrac::Vector{Float64}
+    g_sifrac::Vector{PRECISION}
     # Fraction covered by a glacier [-]
-    glacier_frac::Vector{Float64}
+    glacier_frac::Vector{PRECISION}
     # Maximum snow to glacier conversion rate [mm Δt⁻¹]
-    max_snow_to_glacier::Float64
+    max_snow_to_glacier::PRECISION
 end
 
 "Glacier HBV model"

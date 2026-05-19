@@ -4,16 +4,16 @@ abstract type AbstractTransportCapacityModel end
 @with_kw struct TransportCapacityModelVariables
     n::Int
     # Total sediment transport capacity [t dt-1]
-    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_transport_capacity::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total transport capacity model boundary conditions"
 @with_kw struct TransportCapacityBC
     n::Int
     # Discharge [m³ s⁻¹]
-    q::Vector{Float64} = fill(MISSING_VALUE, n)
+    q::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Flow depth [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Update total transport capacity model boundary conditions"
@@ -39,11 +39,11 @@ end
 "Struct to store Govers overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityGoversParameters
     # Particle density [kg m-3]
-    density::Vector{Float64}
+    density::Vector{PRECISION}
     # Govers transport capacity coefficient [-]
-    c_govers::Vector{Float64}
+    c_govers::Vector{PRECISION}
     # Govers transport capacity exponent [-]
-    n_govers::Vector{Float64}
+    n_govers::Vector{PRECISION}
 end
 
 "Initialize Govers overland flow transport capacity model parameters"
@@ -97,7 +97,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityGoversModel,
     parameters::LandParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; density, c_govers, n_govers) = transport_capacity_model.parameters
@@ -125,9 +125,9 @@ end
 "Struct to store Yalin overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityYalinParameters
     # Particle density [kg m-3]
-    density::Vector{Float64}
+    density::Vector{PRECISION}
     # Particle mean diameter [mm]
-    d50::Vector{Float64}
+    d50::Vector{PRECISION}
 end
 
 "Initialize Yalin overland flow transport capacity model parameters"
@@ -175,7 +175,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityYalinModel,
     parameters::LandParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; density, d50) = transport_capacity_model.parameters
@@ -203,33 +203,33 @@ end
 @with_kw struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
     # Total sediment transport capacity [t dt-1]
-    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_transport_capacity::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Transport capacity clay [t dt-1]
-    clay::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Transport capacity silt [t dt-1]
-    silt::Vector{Float64} = fill(MISSING_VALUE, n)
+    silt::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Transport capacity sand [t dt-1]
-    sand::Vector{Float64} = fill(MISSING_VALUE, n)
+    sand::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Transport capacity small aggregates [t dt-1]
-    sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    sagg::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Transport capacity large aggregates [t dt-1]
-    lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    lagg::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityYalinDifferentiationParameters
     # Particle density [kg m-3]
-    density::Vector{Float64}
+    density::Vector{PRECISION}
     # Clay mean diameter [μm]
-    dm_clay::Vector{Float64}
+    dm_clay::Vector{PRECISION}
     # Silt mean diameter [μm]
-    dm_silt::Vector{Float64}
+    dm_silt::Vector{PRECISION}
     # Sand mean diameter [μm]
-    dm_sand::Vector{Float64}
+    dm_sand::Vector{PRECISION}
     # Small aggregates mean diameter [μm]
-    dm_sagg::Vector{Float64}
+    dm_sagg::Vector{PRECISION}
     # Large aggregates mean diameter [μm]
-    dm_lagg::Vector{Float64}
+    dm_lagg::Vector{PRECISION}
 end
 
 "Initialize Yalin differentiated overland flow transport capacity model parameters"
@@ -295,7 +295,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityYalinDifferentiationModel,
     parameters::LandParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; density, dm_clay, dm_silt, dm_sand, dm_sagg, dm_lagg) =
@@ -384,9 +384,9 @@ end
 "Struct to store common river transport capacity model parameters"
 @with_kw struct TransportCapacityRiverParameters
     # Particle density [kg m-3]
-    density::Vector{Float64}
+    density::Vector{PRECISION}
     # Particle mean diameter [mm]
-    d50::Vector{Float64}
+    d50::Vector{PRECISION}
 end
 
 "Initialize common river transport capacity model parameters"
@@ -413,9 +413,9 @@ end
 "Struct to store Bagnold transport capacity model parameters"
 @with_kw struct TransportCapacityBagnoldParameters
     # Bagnold transport capacity coefficient [-]
-    c_bagnold::Vector{Float64}
+    c_bagnold::Vector{PRECISION}
     # Bagnold transport capacity exponent [-]
-    e_bagnold::Vector{Float64}
+    e_bagnold::Vector{PRECISION}
 end
 
 "Initialize Bagnold transport capacity model parameters"
@@ -468,7 +468,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityBagnoldModel,
     parameters::RiverParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; c_bagnold, e_bagnold) = transport_capacity_model.parameters
@@ -514,7 +514,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityEngelundModel,
     parameters::RiverParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; density, d50) = transport_capacity_model.parameters
@@ -538,13 +538,13 @@ end
 "Struct to store Kodatie river transport capacity model parameters"
 @with_kw struct TransportCapacityKodatieParameters
     # Kodatie transport capacity coefficient a [-]
-    a_kodatie::Vector{Float64}
+    a_kodatie::Vector{PRECISION}
     # Kodatie transport capacity coefficient b [-]
-    b_kodatie::Vector{Float64}
+    b_kodatie::Vector{PRECISION}
     # Kodatie transport capacity coefficient c [-]
-    c_kodatie::Vector{Float64}
+    c_kodatie::Vector{PRECISION}
     # Kodatie transport capacity coefficient d [-]
-    d_kodatie::Vector{Float64}
+    d_kodatie::Vector{PRECISION}
 end
 
 "Initialize Kodatie river transport capacity model parameters"
@@ -612,7 +612,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityKodatieModel,
     parameters::RiverParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; a_kodatie, b_kodatie, c_kodatie, d_kodatie) = transport_capacity_model.parameters
@@ -659,7 +659,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityYangModel,
     parameters::RiverParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; density, d50) = transport_capacity_model.parameters
@@ -704,7 +704,7 @@ end
 function update_transport_capacity_model!(
     transport_capacity_model::TransportCapacityMolinasModel,
     parameters::RiverParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
     (; density, d50) = transport_capacity_model.parameters

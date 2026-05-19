@@ -113,18 +113,18 @@ function active_indices(domain::Domain, key::AbstractString)::Vector{CartesianIn
     end
 end
 
-function lattometres(lat::Real)::Tuple{Float64, Float64}
-    m1 = 111132.92     # latitude calculation term 1
-    m2 = -559.82       # latitude calculation term 2
-    m3 = 1.175         # latitude calculation term 3
-    m4 = -0.0023       # latitude calculation term 4
-    p1 = 111412.84     # longitude calculation term 1
-    p2 = -93.5         # longitude calculation term 2
-    p3 = 0.118         # longitude calculation term 3
+function lattometres(lat::Real)::Tuple{PRECISION, PRECISION}
+    m1 = to_precision(111132.92)     # latitude calculation term 1
+    m2 = to_precision(-559.82)       # latitude calculation term 2
+    m3 = to_precision(1.175)         # latitude calculation term 3
+    m4 = to_precision(-0.0023)       # latitude calculation term 4
+    p1 = to_precision(111412.84)     # longitude calculation term 1
+    p2 = to_precision(-93.5)         # longitude calculation term 2
+    p3 = to_precision(0.118)         # longitude calculation term 3
 
     # Calculate the length of a degree of latitude and longitude in meters
-    latlen = m1 + (m2 * cosd(2.0 * lat)) + (m3 * cosd(4.0 * lat)) + (m4 * cosd(6.0 * lat))
-    longlen = (p1 * cosd(lat)) + (p2 * cosd(3.0 * lat)) + (p3 * cosd(5.0 * lat))
+    latlen = m1 + (m2 * cosd(2 * lat)) + (m3 * cosd(4 * lat)) + (m4 * cosd(6 * lat))
+    longlen = (p1 * cosd(lat)) + (p2 * cosd(3 * lat)) + (p3 * cosd(5 * lat))
 
     return longlen, latlen
 end
@@ -133,7 +133,7 @@ function cell_lengths(
     y::AbstractVector{<:Real},
     celllength::Real,
     cell_length_in_meter::Bool,
-)::Tuple{Vector{Float64}, Vector{Float64}}
+)::Tuple{Vector{PRECISION}, Vector{PRECISION}}
     n = length(y)
     xl = fill(MISSING_VALUE, n)
     yl = fill(MISSING_VALUE, n)
@@ -404,7 +404,7 @@ function set_layerthickness(
     for i in 1:length(thicknesslayers)
         if reference_depth > cum_depth[i + 1]
             thicknesslayers = setindex(thicknesslayers, thickness[i], i)
-        elseif reference_depth - cum_depth[i] > 0.0
+        elseif reference_depth - cum_depth[i] > ZERO
             thicknesslayers = setindex(thicknesslayers, reference_depth - cum_depth[i], i)
         end
     end
@@ -481,7 +481,7 @@ function sum_at(A::AbstractVector{T}, inds::AbstractVector{Int})::T where {T}
     mapreduce(i -> A[i], +, inds; init = zero(T))
 end
 
-sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = Float64) =
+sum_at(f::Function, inds::AbstractVector{Int}; T::Type{<:Number} = PRECISION) =
     mapreduce(f, +, inds; init = zero(T))
 
 # https://juliaarrays.github.io/StaticArrays.jl/latest/pages/api/#Arrays-of-static-arrays-1
@@ -503,7 +503,7 @@ function get_flow_fraction_to_river(
     ldd::Vector{UInt8},
     inds_river::Vector{Int},
     slope::Vector{<:Real},
-)::Vector{Float64}
+)::Vector{PRECISION}
     n = length(slope)
     fraction = zeros(n)
     for i in inds_river
@@ -543,7 +543,7 @@ end
 """
     tosecond(x::Period)
 
-Convert a Period into a Float64, which represents the number of seconds. Will fail if this
+Convert a Period into a PRECISION, which represents the number of seconds. Will fail if this
 is not well defined, such as for Month.
 
 # Examples
@@ -552,9 +552,9 @@ julia> tosecond(Day(1))
 86400.0
 ```
 """
-tosecond(x::Hour) = Float64(Dates.value(Second(x)))
-tosecond(x::Minute) = Float64(Dates.value(Second(x)))
-tosecond(x::T) where {T <: DatePeriod} = Float64(Dates.value(Second(x)))
+tosecond(x::Hour) = PRECISION(Dates.value(Second(x)))
+tosecond(x::Minute) = PRECISION(Dates.value(Second(x)))
+tosecond(x::T) where {T <: DatePeriod} = PRECISION(Dates.value(Second(x)))
 tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
 
 """
@@ -599,7 +599,7 @@ function add_vertex_edge_graph!(graph::SimpleDiGraph{Int}, pits::Vector{Int})::N
 end
 
 """
-    set_effective_flowwidth!(we_x::Vector{Float64}, we_y::Vector{Float64}, domain::Domain)
+    set_effective_flowwidth!(we_x::Vector{PRECISION}, we_y::Vector{PRECISION}, domain::Domain)
 
 For river cells (D8 flow direction) in a staggered grid the effective flow width at cell
 edges (floodplain) `we_x` in the x-direction and `we_y` in the y-direction is corrected by
@@ -610,8 +610,8 @@ x and (+ CartesianIndex(0, 1)) for y. For cells that contain a `reservoir_outlet
 (reservoir), the effective flow width is set to zero.
 """
 function set_effective_flowwidth!(
-    we_x::Vector{Float64},
-    we_y::Vector{Float64},
+    we_x::Vector{PRECISION},
+    we_y::Vector{PRECISION},
     domain::Domain,
 )::Nothing
     (; local_drain_direction, indices) = domain.river.network
@@ -630,47 +630,47 @@ function set_effective_flowwidth!(
         idx = reverse_indices[v]
         # loop over river D8 directions
         if dir == CartesianIndex(1, 1)
-            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
-            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - 0.5 * w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? ZERO : max(we_x[idx] - w / 2, ZERO)
+            we_y[idx] = reservoir_outlet[v] ? ZERO : max(we_y[idx] - w / 2, ZERO)
         elseif dir == CartesianIndex(-1, -1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
+                    reservoir_outlet[v] ? ZERO :
+                    max(we_y[edge_indices.xd[idx]] - w / 2, ZERO)
             end
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
+                    reservoir_outlet[v] ? ZERO :
+                    max(we_x[edge_indices.yd[idx]] - w / 2, ZERO)
             end
         elseif dir == CartesianIndex(1, 0)
-            we_y[idx] = reservoir_outlet[v] ? 0.0 : max(we_y[idx] - w, 0.0)
+            we_y[idx] = reservoir_outlet[v] ? ZERO : max(we_y[idx] - w, ZERO)
         elseif dir == CartesianIndex(0, 1)
-            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? ZERO : max(we_x[idx] - w, ZERO)
         elseif dir == CartesianIndex(-1, 0)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    reservoir_outlet[v] ? 0.0 : max(we_y[edge_indices.xd[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? ZERO : max(we_y[edge_indices.xd[idx]] - w, ZERO)
             end
         elseif dir == CartesianIndex(0, -1)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    reservoir_outlet[v] ? 0.0 : max(we_x[edge_indices.yd[idx]] - w, 0.0)
+                    reservoir_outlet[v] ? ZERO : max(we_x[edge_indices.yd[idx]] - w, ZERO)
             end
         elseif dir == CartesianIndex(1, -1)
-            we_y[idx] = max(we_y[idx] - 0.5 * w, 0.0)
+            we_y[idx] = max(we_y[idx] - 0.5 * w, ZERO)
             if edge_indices.yd[idx] <= n
                 we_x[edge_indices.yd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_x[edge_indices.yd[idx]] - 0.5 * w, 0.0)
+                    reservoir_outlet[v] ? ZERO :
+                    max(we_x[edge_indices.yd[idx]] - w / 2, ZERO)
             end
         elseif dir == CartesianIndex(-1, 1)
             if edge_indices.xd[idx] <= n
                 we_y[edge_indices.xd[idx]] =
-                    reservoir_outlet[v] ? 0.0 :
-                    max(we_y[edge_indices.xd[idx]] - 0.5 * w, 0.0)
+                    reservoir_outlet[v] ? ZERO :
+                    max(we_y[edge_indices.xd[idx]] - w / 2, ZERO)
             end
-            we_x[idx] = reservoir_outlet[v] ? 0.0 : max(we_x[idx] - 0.5 * w, 0.0)
+            we_x[idx] = reservoir_outlet[v] ? ZERO : max(we_x[idx] - w / 2, ZERO)
         end
     end
     return nothing
@@ -782,7 +782,7 @@ function kh_layered_profile!(
         m = nlayers[i]
 
         if soilthickness[i] > zi[i]
-            transmissivity = 0.0
+            transmissivity = ZERO
             _sumlayers = @view sumlayers[i][2:end]
             n = max(n_unsatlayers[i], 1)
             transmissivity += (_sumlayers[n] - zi[i]) * kv_profile.kv[i][n]
@@ -819,7 +819,7 @@ function kh_layered_profile!(
         m = nlayers[i]
 
         if soilthickness[i] > zi[i]
-            transmissivity = 0.0
+            transmissivity = ZERO
             n = max(n_unsatlayers[i], 1)
             if zi[i] >= z_layered[i]
                 zt = soilthickness[i] - z_layered[i]
@@ -837,7 +837,7 @@ function kh_layered_profile!(
                 if n > nlayers_kv[i]
                     zt = soilthickness[i] - z_layered[i]
                     j = nlayers_kv[i]
-                    transmissivity += kv[i][j] / f[i] * (1.0 - exp(-f[i] * zt))
+                    transmissivity += kv[i][j] / f[i] * (ONE - exp(-f[i] * zt))
                     n = m
                 else
                     transmissivity += act_thickl[i][n] * kv[i][n]
@@ -889,7 +889,7 @@ function initialize_lateral_ssf_model!(
     (; soilthickness) = subsurface_flow_model.parameters
     (; slope, flow_width) = parameters
 
-    @. q_max = ((kh_0 * slope) / f) * (1.0 - exp(-f * soilthickness))
+    @. q_max = ((kh_0 * slope) / f) * (ONE - exp(-f * soilthickness))
     @. q = ((kh_0 * slope) / f) * (exp(-f * zi) - exp(-f * soilthickness)) * flow_width
     return nothing
 end
@@ -908,7 +908,7 @@ function initialize_lateral_ssf_model!(
     q_constant = @. kh_0 * exp(-f * z_exp) * slope * (soilthickness - z_exp)
     for i in eachindex(q)
         q_max[i] =
-            ((kh_0[i] * slope[i]) / f[i]) * (1.0 - exp(-f[i] * z_exp[i])) + q_constant[i]
+            ((kh_0[i] * slope[i]) / f[i]) * (ONE - exp(-f[i] * z_exp[i])) + q_constant[i]
         if zi[i] < z_exp[i]
             q[i] =
                 (
@@ -950,7 +950,7 @@ function initialize_lateral_ssf_model!(
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
     for i in eachindex(q)
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
-        kh_max = 0.0
+        kh_max = ZERO
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
@@ -984,7 +984,7 @@ function initialize_lateral_ssf_model!(
             else
                 zt = soil_model.parameters.soilthickness[i] - z_layered[i]
                 k = max(j - 1, 1)
-                kh_max += kv[i][k] / f[i] * (1.0 - exp(-f[i] * zt))
+                kh_max += kv[i][k] / f[i] * (ONE - exp(-f[i] * zt))
                 break
             end
         end
@@ -995,13 +995,13 @@ function initialize_lateral_ssf_model!(
 end
 
 """
-    bounded_divide(x, y; max = 1.0, default = 0.0)
+    bounded_divide(x, y; max = ONE, default = ZERO)
 
-Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > 0.0.
+Return the division of `x` by `y`, bounded by a maximum value `max`, when `y` > ZERO.
 Otherwise return a `default` value.
 """
-function bounded_divide(x::Real, y::Real; max::Real = 1.0, default::Real = 0.0)::Real
-    z = y > 0.0 ? min(x / y, max) : default
+function bounded_divide(x::Real, y::Real; max::Real = ONE, default::Real = ZERO)::Real
+    z = y > ZERO ? min(x / y, max) : default
     return z
 end
 
@@ -1019,8 +1019,8 @@ layer). For a rising water table a dynamic specific yield is computed.
 """
 function water_table_change(
     soil_model::SbmSoilModel,
-    net_flux::Float64,
-    specific_yield::Float64,
+    net_flux::PRECISION,
+    specific_yield::PRECISION,
     i::Int,
 )
     (; n_unsatlayers, ustorelayerthickness, ustorelayerdepth) = soil_model.variables
@@ -1029,15 +1029,15 @@ function water_table_change(
     # effective porosity (difference between saturated and residual water content)
     theta_e = theta_s[i] - theta_r[i]
 
-    if net_flux <= 0.0
+    if net_flux <= ZERO
         dh = net_flux / specific_yield
     else
-        dh = 0.0
+        dh = ZERO
         f_conv = 0.001 # convert units from [mm] to [m]
         for k in n_unsatlayers[i]:-1:1
             capacity = max(
                 f_conv * (ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k]),
-                0.0,
+                ZERO,
             )
             flux_layer = min(net_flux, capacity)
             if capacity <= net_flux
@@ -1048,10 +1048,10 @@ function water_table_change(
                 dh += flux_layer / sy
             end
             net_flux -= flux_layer
-            net_flux == 0.0 && break
+            iszero(net_flux) && break
         end
     end
-    exfilt = max(net_flux, 0.0)
+    exfilt = max(net_flux, ZERO)
     return dh, exfilt
 end
 

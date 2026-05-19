@@ -1,21 +1,21 @@
 "Struct to store (shared) vegetation parameters"
 @with_kw struct VegetationParameters
     # Leaf area index [m² m⁻²]
-    leaf_area_index::Union{Vector{Float64}, Nothing}
+    leaf_area_index::Union{Vector{PRECISION}, Nothing}
     # Storage woody part of vegetation [mm]
-    storage_wood::Union{Vector{Float64}, Nothing}
+    storage_wood::Union{Vector{PRECISION}, Nothing}
     # Extinction coefficient [-] (to calculate canopy gap fraction)
-    kext::Union{Vector{Float64}, Nothing}
+    kext::Union{Vector{PRECISION}, Nothing}
     # Specific leaf storage [mm]
-    storage_specific_leaf::Union{Vector{Float64}, Nothing}
+    storage_specific_leaf::Union{Vector{PRECISION}, Nothing}
     # Canopy gap fraction [-]
-    canopygapfraction::Vector{Float64}
+    canopygapfraction::Vector{PRECISION}
     # Maximum canopy storage [mm]
-    cmax::Vector{Float64}
+    cmax::Vector{PRECISION}
     # Rooting depth [mm]
-    rootingdepth::Vector{Float64}
+    rootingdepth::Vector{PRECISION}
     # Crop coefficient Kc [-]
-    kc::Vector{Float64}
+    kc::Vector{PRECISION}
 end
 
 "Initialize (shared) vegetation parameters"

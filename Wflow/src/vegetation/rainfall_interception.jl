@@ -20,15 +20,15 @@ function rainfall_interception_gash(
     if cmax > 0.0
         if canopy_gap_fraction < inv(1.1)
             pt = 0.1 * canopy_gap_fraction
-            pfrac = 1.0 - 1.1 * canopy_gap_fraction # > 0
+            pfrac = ONE - 1.1 * canopy_gap_fraction # > 0
 
             if e_r > pfrac
                 p_sat = 0.0
             else
-                p_sat = -cmax / e_r * log(1.0 - e_r / pfrac)
+                p_sat = -cmax / e_r * log(ONE - e_r / pfrac)
             end
         else
-            pt = 1.0 - canopy_gap_fraction
+            pt = ONE - canopy_gap_fraction
             pfrac = 0
             p_sat = 0
         end
@@ -78,9 +78,9 @@ function rainfall_interception_modrut(
     # TODO: improve computation of stemflow partitioning coefficient pt (0.1 * canopy_gap_fraction)
     if canopy_gap_fraction < inv(1.1)
         pt = 0.1 * canopy_gap_fraction
-        precip_canopy = (1.0 - canopy_gap_fraction - pt) * precipitation
+        precip_canopy = (ONE - canopy_gap_fraction - pt) * precipitation
     else
-        pt = 1.0 - canopy_gap_fraction
+        pt = ONE - canopy_gap_fraction
         precip_canopy = 0.0
     end
 
