@@ -2,8 +2,8 @@ abstract type AbstractFloodPlainModel end
 
 "Struct for storing local inertial river flow model parameters"
 @with_kw struct LocalInertialRiverFlowParameters
-    n_river_cells::Int                      # number of cells [-]
-    n_river_edges::Int                      # number of edges [-]
+    n_cells::Int                      # number of cells [-]
+    n_edges::Int                      # number of edges [-]
     active_n::Vector{Int}                   # active nodes [-]
     active_e::Vector{Int}                   # active edges [-]
     froude_limit::Bool                      # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
@@ -56,7 +56,7 @@ function LocalInertialRiverFlowParameters(
         sel = river_indices_2d,
     )
 
-    n_river_cells = length(river_indices_2d)
+    n_cells = length(river_indices_2d)
     index_pit = findall(x -> x == 5, local_drain_direction)
     # set ghost points for boundary condition (downstream river outlet): river width, bed
     # elevation, manning n is copied from the upstream cell.
@@ -67,12 +67,12 @@ function LocalInertialRiverFlowParameters(
     append!(bankfull_depth, bankfull_depth[index_pit])
 
     # determine z, width, length and manning's n at edges
-    n_river_edges = ne(graph)
-    zb_max = zeros(n_river_edges)
-    width_at_edge = zeros(n_river_edges)
-    length_at_edge = zeros(n_river_edges)
-    mannings_n_sq = zeros(n_river_edges)
-    for river_edge_idx in 1:n_river_edges
+    n_edges = ne(graph)
+    zb_max = zeros(n_edges)
+    width_at_edge = zeros(n_edges)
+    length_at_edge = zeros(n_edges)
+    mannings_n_sq = zeros(n_edges)
+    for river_edge_idx in 1:n_edges
         src_node = nodes_at_edge.src[river_edge_idx]
         dst_node = nodes_at_edge.dst[river_edge_idx]
         zb_max[river_edge_idx] = max(zb[src_node], zb[dst_node])
@@ -89,8 +89,8 @@ function LocalInertialRiverFlowParameters(
     active_index = findall(x -> x == 0, reservoir_outlet)
 
     parameters = LocalInertialRiverFlowParameters(;
-        n_river_cells,
-        n_river_edges,
+        n_cells,
+        n_edges,
         active_n = active_index,
         active_e = active_index,
         froude_limit,
@@ -109,21 +109,21 @@ end
 
 "Struct for storing local inertial river flow model variables"
 @with_kw struct LocalInertialRiverFlowVariables
-    n_river_cells::Int
-    n_river_edges::Int
-    q::Vector{Float64} = zeros(n_river_edges)   # river discharge at edge (subgrid channel) [m³ s⁻¹]
-    q0::Vector{Float64} = zeros(n_river_edges) # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
+    n_cells::Int
+    n_edges::Int
+    q::Vector{Float64} = zeros(n_edges)   # river discharge at edge (subgrid channel) [m³ s⁻¹]
+    q0::Vector{Float64} = zeros(n_edges) # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
     q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
     q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
     h::Vector{Float64}                        # water depth [m]
-    zs_max::Vector{Float64} = zeros(n_river_edges)  # maximum water elevation at edge [m]
-    zs_src::Vector{Float64} = zeros(n_river_edges)  # water elevation of source node of edge [m]
-    zs_dst::Vector{Float64} = zeros(n_river_edges)  # water elevation of downstream node of edge [m]
-    hf::Vector{Float64} = zeros(n_river_edges)       # water depth at edge [m]
-    a::Vector{Float64} = zeros(n_river_edges)        # flow area at edge [m²]
-    r::Vector{Float64} = zeros(n_river_edges)        # wetted perimeter at edge [m]
-    storage::Vector{Float64} = zeros(n_river_cells)        # river storage [m³]
-    error::Vector{Float64} = zeros(n_river_cells)          # error storage [m³]
+    zs_max::Vector{Float64} = zeros(n_edges)  # maximum water elevation at edge [m]
+    zs_src::Vector{Float64} = zeros(n_edges)  # water elevation of source node of edge [m]
+    zs_dst::Vector{Float64} = zeros(n_edges)  # water elevation of downstream node of edge [m]
+    hf::Vector{Float64} = zeros(n_edges)       # water depth at edge [m]
+    a::Vector{Float64} = zeros(n_edges)        # flow area at edge [m²]
+    r::Vector{Float64} = zeros(n_edges)        # wetted perimeter at edge [m]
+    storage::Vector{Float64} = zeros(n_cells)        # river storage [m³]
+    error::Vector{Float64} = zeros(n_cells)          # error storage [m³]
 end
 
 "Initialize shallow water river flow model variables"
@@ -142,18 +142,18 @@ function LocalInertialRiverFlowVariables(
         sel = pit_indices,
     )
 
-    n_river_cells = length(river_indices_2d)
-    n_river_edges = ne(graph)
+    n_cells = length(river_indices_2d)
+    n_edges = ne(graph)
     # set river depth h to zero (including reservoir locations)
-    h = zeros(n_river_cells)
-    q_av = zeros(n_river_edges)
+    h = zeros(n_cells)
+    q_av = zeros(n_edges)
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
     append!(h, riverdepth_bc)
     variables = LocalInertialRiverFlowVariables(;
-        n_river_cells,
-        n_river_edges,
+        n_cells,
+        n_edges,
         q_av,
-        q_channel_av = config.model.floodplain_1d__flag ? zeros(n_river_edges) : q_av,
+        q_channel_av = config.model.floodplain_1d__flag ? zeros(n_edges) : q_av,
         h,
     )
     return variables
@@ -206,15 +206,15 @@ function LocalInertialRiverFlowModel(
         floodplain = nothing
     end
 
-    n_river_cells = length(domain.network.river_indices_2d)
+    n_cells = length(domain.network.river_indices_2d)
     river_flow = LocalInertialRiverFlowModel(;
         timestepping,
         boundary_conditions,
         parameters,
         variables,
         floodplain,
-        allocation = do_water_demand(config) ? AllocationRiverModel(n_river_cells) :
-                     NoAllocationRiverModel(n_river_cells),
+        allocation = do_water_demand(config) ? AllocationRiverModel(n_cells) :
+                     NoAllocationRiverModel(n_cells),
     )
     return river_flow
 end
@@ -266,12 +266,12 @@ function update_river_channel_flow!(
         river_flow_model.floodplain.variables.q0 .= river_flow_model.floodplain.variables.q
     end
     @batch per = thread minbatch = 1000 for river_edge_idx in river_p.active_e
-        river_cell_idx_src = nodes_at_edge.src[river_edge_idx]
-        river_cell_idx_dst = nodes_at_edge.dst[river_edge_idx]
+        cell_idx_src = nodes_at_edge.src[river_edge_idx]
+        cell_idx_dst = nodes_at_edge.dst[river_edge_idx]
         river_v.zs_src[river_edge_idx] =
-            river_p.zb[river_cell_idx_src] + river_v.h[river_cell_idx_src]
+            river_p.zb[cell_idx_src] + river_v.h[cell_idx_src]
         river_v.zs_dst[river_edge_idx] =
-            river_p.zb[river_cell_idx_dst] + river_v.h[river_cell_idx_dst]
+            river_p.zb[cell_idx_dst] + river_v.h[cell_idx_dst]
 
         river_v.zs_max[river_edge_idx] =
             max(river_v.zs_src[river_edge_idx], river_v.zs_dst[river_edge_idx])
@@ -303,12 +303,12 @@ function update_river_channel_flow!(
 
         # limit q in case water is not available
         river_v.q[river_edge_idx] = ifelse(
-            river_v.h[river_cell_idx_src] <= 0.0,
+            river_v.h[cell_idx_src] <= 0.0,
             min(river_v.q[river_edge_idx], 0.0),
             river_v.q[river_edge_idx],
         )
         river_v.q[river_edge_idx] = ifelse(
-            river_v.h[river_cell_idx_dst] <= 0.0,
+            river_v.h[cell_idx_dst] <= 0.0,
             max(river_v.q[river_edge_idx], 0.0),
             river_v.q[river_edge_idx],
         )
@@ -334,7 +334,7 @@ function update_floodplain_flow!(
     floodplain_p = river_flow_model.floodplain.parameters
     floodplain_v = river_flow_model.floodplain.variables
 
-    @batch per = thread minbatch = 1000 for river_edge_idx in 1:(river_p.n_river_edges)
+    @batch per = thread minbatch = 1000 for river_edge_idx in 1:(river_p.n_edges)
         floodplain_v.hf[river_edge_idx] =
             max(river_v.zs_max[river_edge_idx] - floodplain_p.zb_max[river_edge_idx], 0.0)
     end
@@ -349,23 +349,23 @@ function update_floodplain_flow!(
         end
     end
 
-    get_area(river_edge_idx, lower_idx, upper_idx, river_cell_idx) = flow_area(
-        floodplain_p.profile.width[upper_idx, river_cell_idx],
-        floodplain_p.profile.a[lower_idx, river_cell_idx],
+    get_area(river_edge_idx, lower_idx, upper_idx, cell_idx) = flow_area(
+        floodplain_p.profile.width[upper_idx, cell_idx],
+        floodplain_p.profile.a[lower_idx, cell_idx],
         floodplain_p.profile.depth[lower_idx],
         floodplain_v.hf[river_edge_idx],
     )
 
-    get_wetted_perimeter(river_edge_idx, lower_idx, river_cell_idx) = wetted_perimeter(
-        floodplain_p.profile.p[lower_idx, river_cell_idx],
+    get_wetted_perimeter(river_edge_idx, lower_idx, cell_idx) = wetted_perimeter(
+        floodplain_p.profile.p[lower_idx, cell_idx],
         floodplain_p.profile.depth[lower_idx],
         floodplain_v.hf[river_edge_idx],
     )
 
     @batch per = thread minbatch = 1000 for flood_edge_idx in 1:n_active_flood_edges
         river_edge_idx = floodplain_v.hf_index[flood_edge_idx]
-        river_cell_idx_src = nodes_at_edge.src[river_edge_idx]
-        river_cell_idx_dst = nodes_at_edge.dst[river_edge_idx]
+        cell_idx_src = nodes_at_edge.src[river_edge_idx]
+        cell_idx_dst = nodes_at_edge.dst[river_edge_idx]
 
         depth_count = 0
         for depth_idx in eachindex(floodplain_p.profile.depth)
@@ -380,24 +380,24 @@ function update_floodplain_flow!(
             lower_idx + 1,
         )
 
-        a_src = get_area(river_edge_idx, lower_idx, upper_idx, river_cell_idx_src)
+        a_src = get_area(river_edge_idx, lower_idx, upper_idx, cell_idx_src)
         a_src = max(
-            a_src - (floodplain_v.hf[river_edge_idx] * flow_width[river_cell_idx_src]),
+            a_src - (floodplain_v.hf[river_edge_idx] * flow_width[cell_idx_src]),
             0.0,
         )
 
-        a_dst = get_area(river_edge_idx, lower_idx, upper_idx, river_cell_idx_dst)
+        a_dst = get_area(river_edge_idx, lower_idx, upper_idx, cell_idx_dst)
         a_dst = max(
-            a_dst - (floodplain_v.hf[river_edge_idx] * flow_width[river_cell_idx_dst]),
+            a_dst - (floodplain_v.hf[river_edge_idx] * flow_width[cell_idx_dst]),
             0.0,
         )
 
         floodplain_v.a[river_edge_idx] = min(a_src, a_dst)
 
         floodplain_v.r[river_edge_idx] = if a_src < a_dst
-            a_src / get_wetted_perimeter(river_edge_idx, lower_idx, river_cell_idx_src)
+            a_src / get_wetted_perimeter(river_edge_idx, lower_idx, cell_idx_src)
         else
-            a_dst / get_wetted_perimeter(river_edge_idx, lower_idx, river_cell_idx_dst)
+            a_dst / get_wetted_perimeter(river_edge_idx, lower_idx, cell_idx_dst)
         end
 
         floodplain_v.q[river_edge_idx] = if floodplain_v.a[river_edge_idx] > 1.0e-05
@@ -418,11 +418,11 @@ function update_floodplain_flow!(
         end
 
         # limit floodplain q in case water is not available
-        if floodplain_v.h[river_cell_idx_src] <= 0.0
+        if floodplain_v.h[cell_idx_src] <= 0.0
             floodplain_v.q[river_edge_idx] = min(floodplain_v.q[river_edge_idx], 0.0)
         end
 
-        if floodplain_v.h[river_cell_idx_dst] <= 0.0
+        if floodplain_v.h[cell_idx_dst] <= 0.0
             floodplain_v.q[river_edge_idx] = max(floodplain_v.q[river_edge_idx], 0.0)
         end
 
@@ -458,8 +458,8 @@ function update_bc_reservoir_model!(
     river_v = river_flow_model.variables
     res_bc = reservoir_model.boundary_conditions
 
-    for (reservoir_idx, river_cell_idx) in enumerate(inds_reservoir)
-        q_in = get_inflow_reservoir(river_flow_model, edges_at_node.src[river_cell_idx])
+    for (reservoir_idx, cell_idx) in enumerate(inds_reservoir)
+        q_in = get_inflow_reservoir(river_flow_model, edges_at_node.src[cell_idx])
         # If external_inflow < 0, abstraction is limited
         if res_bc.external_inflow[reservoir_idx] < 0.0
             _abstraction = min(
@@ -477,9 +477,9 @@ function update_bc_reservoir_model!(
             res_bc.inflow_subsurface[reservoir_idx] +
             _inflow
         update_reservoir_model!(reservoir_model, reservoir_idx, net_inflow, dt, dt_forcing)
-        river_v.q[river_cell_idx] = reservoir_model.variables.outflow[reservoir_idx]
+        river_v.q[cell_idx] = reservoir_model.variables.outflow[reservoir_idx]
         # average river discharge (here accumulated for model timestep Δt)
-        river_v.q_av[river_cell_idx] += river_v.q[river_cell_idx] * dt
+        river_v.q_av[cell_idx] += river_v.q[cell_idx] * dt
     end
     return nothing
 end
@@ -508,40 +508,40 @@ function update_water_depth_and_storage!(
     floodplain_v = floodplain_model.variables
     floodplain_p = floodplain_model.parameters
 
-    @batch per = thread minbatch = 1000 for river_cell_idx in river_p.active_n
-        q_src = sum_at(floodplain_v.q, edges_at_node.src[river_cell_idx])
-        q_dst = sum_at(floodplain_v.q, edges_at_node.dst[river_cell_idx])
-        floodplain_v.storage[river_cell_idx] =
-            floodplain_v.storage[river_cell_idx] + (q_src - q_dst) * dt
-        if floodplain_v.storage[river_cell_idx] < 0.0
-            floodplain_v.error[river_cell_idx] += abs(floodplain_v.storage[river_cell_idx])
-            floodplain_v.storage[river_cell_idx] = 0.0
+    @batch per = thread minbatch = 1000 for cell_idx in river_p.active_n
+        q_src = sum_at(floodplain_v.q, edges_at_node.src[cell_idx])
+        q_dst = sum_at(floodplain_v.q, edges_at_node.dst[cell_idx])
+        floodplain_v.storage[cell_idx] =
+            floodplain_v.storage[cell_idx] + (q_src - q_dst) * dt
+        if floodplain_v.storage[cell_idx] < 0.0
+            floodplain_v.error[cell_idx] += abs(floodplain_v.storage[cell_idx])
+            floodplain_v.storage[cell_idx] = 0.0
         end
         storage_total =
-            river_v.storage[river_cell_idx] + floodplain_v.storage[river_cell_idx]
-        if storage_total > river_p.bankfull_storage[river_cell_idx]
-            flood_storage = storage_total - river_p.bankfull_storage[river_cell_idx]
+            river_v.storage[cell_idx] + floodplain_v.storage[cell_idx]
+        if storage_total > river_p.bankfull_storage[cell_idx]
+            flood_storage = storage_total - river_p.bankfull_storage[cell_idx]
             h = flood_depth(
                 floodplain_p.profile,
                 flood_storage,
-                flow_length[river_cell_idx],
-                river_cell_idx,
+                flow_length[cell_idx],
+                cell_idx,
             )
-            river_v.h[river_cell_idx] = river_p.bankfull_depth[river_cell_idx] + h
-            river_v.storage[river_cell_idx] =
-                river_v.h[river_cell_idx] *
-                flow_width[river_cell_idx] *
-                flow_length[river_cell_idx]
-            floodplain_v.storage[river_cell_idx] =
-                max(storage_total - river_v.storage[river_cell_idx], 0.0)
-            floodplain_v.h[river_cell_idx] =
-                floodplain_v.storage[river_cell_idx] > 0.0 ? h : 0.0
+            river_v.h[cell_idx] = river_p.bankfull_depth[cell_idx] + h
+            river_v.storage[cell_idx] =
+                river_v.h[cell_idx] *
+                flow_width[cell_idx] *
+                flow_length[cell_idx]
+            floodplain_v.storage[cell_idx] =
+                max(storage_total - river_v.storage[cell_idx], 0.0)
+            floodplain_v.h[cell_idx] =
+                floodplain_v.storage[cell_idx] > 0.0 ? h : 0.0
         else
-            river_v.h[river_cell_idx] =
-                storage_total / (flow_length[river_cell_idx] * flow_width[river_cell_idx])
-            river_v.storage[river_cell_idx] = storage_total
-            floodplain_v.h[river_cell_idx] = 0.0
-            floodplain_v.storage[river_cell_idx] = 0.0
+            river_v.h[cell_idx] =
+                storage_total / (flow_length[cell_idx] * flow_width[cell_idx])
+            river_v.storage[cell_idx] = storage_total
+            floodplain_v.h[cell_idx] = 0.0
+            floodplain_v.storage[cell_idx] = 0.0
         end
     end
     return nothing
@@ -573,35 +573,35 @@ function update_water_depth_and_storage!(
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
 
-    @batch per = thread minbatch = 1000 for river_cell_idx in river_p.active_n
-        q_src = sum_at(river_v.q, edges_at_node.src[river_cell_idx])
-        q_dst = sum_at(river_v.q, edges_at_node.dst[river_cell_idx])
+    @batch per = thread minbatch = 1000 for cell_idx in river_p.active_n
+        q_src = sum_at(river_v.q, edges_at_node.src[cell_idx])
+        q_dst = sum_at(river_v.q, edges_at_node.dst[cell_idx])
         # internal abstraction (water demand) is limited by river storage and negative
         # external inflow as part of water allocation computations.
-        river_v.storage[river_cell_idx] =
-            river_v.storage[river_cell_idx] +
-            (q_src - q_dst + inwater[river_cell_idx] - abstraction[river_cell_idx]) * dt
+        river_v.storage[cell_idx] =
+            river_v.storage[cell_idx] +
+            (q_src - q_dst + inwater[cell_idx] - abstraction[cell_idx]) * dt
 
-        if river_v.storage[river_cell_idx] < 0.0
-            river_v.error[river_cell_idx] =
-                river_v.error[river_cell_idx] + abs(river_v.storage[river_cell_idx])
-            river_v.storage[river_cell_idx] = 0.0 # set storage to zero
+        if river_v.storage[cell_idx] < 0.0
+            river_v.error[cell_idx] =
+                river_v.error[cell_idx] + abs(river_v.storage[cell_idx])
+            river_v.storage[cell_idx] = 0.0 # set storage to zero
         end
         # limit negative external inflow
-        if external_inflow[river_cell_idx] < 0.0
+        if external_inflow[cell_idx] < 0.0
             _abstraction = min(
-                -external_inflow[river_cell_idx],
-                river_v.storage[river_cell_idx] / dt * 0.80,
+                -external_inflow[cell_idx],
+                river_v.storage[cell_idx] / dt * 0.80,
             )
-            actual_external_abstraction_av[river_cell_idx] += _abstraction * dt
+            actual_external_abstraction_av[cell_idx] += _abstraction * dt
             _inflow = -_abstraction
         else
-            _inflow = external_inflow[river_cell_idx]
+            _inflow = external_inflow[cell_idx]
         end
-        river_v.storage[river_cell_idx] += _inflow * dt # add external inflow
-        river_v.h[river_cell_idx] =
-            river_v.storage[river_cell_idx] /
-            (flow_length[river_cell_idx] * flow_width[river_cell_idx])
+        river_v.storage[cell_idx] += _inflow * dt # add external inflow
+        river_v.h[cell_idx] =
+            river_v.storage[cell_idx] /
+            (flow_length[cell_idx] * flow_width[cell_idx])
     end
     return nothing
 end
@@ -833,12 +833,12 @@ function stable_timestep(
 )
     dt_min = Inf
     (; alpha_coefficient) = river_flow_model.timestepping
-    (; n_river_cells) = river_flow_model.parameters
+    (; n_cells) = river_flow_model.parameters
     (; h) = river_flow_model.variables
-    @batch per = thread reduction = ((min, dt_min),) for river_cell_idx in 1:n_river_cells
+    @batch per = thread reduction = ((min, dt_min),) for cell_idx in 1:n_cells
         @fastmath @inbounds dt =
-            alpha_coefficient * flow_length[river_cell_idx] /
-            sqrt(GRAVITATIONAL_ACCELERATION * h[river_cell_idx])
+            alpha_coefficient * flow_length[cell_idx] /
+            sqrt(GRAVITATIONAL_ACCELERATION * h[cell_idx])
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
@@ -1390,89 +1390,89 @@ function FloodPlainProfile(
         Routing;
         sel = river_indices_2d,
     )
-    n_river_cells = length(river_indices_2d)
+    n_cells = length(river_indices_2d)
 
     # for convenience (interpolation) flood depth 0.0 m is added, with associated area (a),
     # storage, width (river width) and wetted perimeter (p).
-    storage = vcat(zeros(n_river_cells)', storage)
+    storage = vcat(zeros(n_cells)', storage)
     start_storage = storage
     flood_depths = Float64.(dataset["flood_depth"][:])
     pushfirst!(flood_depths, 0.0)
     n_depths = length(flood_depths)
 
-    p = zeros(n_depths, n_river_cells)
-    a = zeros(n_depths, n_river_cells)
-    segment_storage = zeros(n_depths, n_river_cells)
-    width = zeros(n_depths, n_river_cells)
-    width[1, :] = flow_width[1:n_river_cells]
+    p = zeros(n_depths, n_cells)
+    a = zeros(n_depths, n_cells)
+    segment_storage = zeros(n_depths, n_cells)
+    width = zeros(n_depths, n_cells)
+    width[1, :] = flow_width[1:n_cells]
 
     # determine flow area (a), width and wetted perimeter (p) FloodPlainModel
     h = diff(flood_depths)
     incorrect_vol = 0
     riv_cells = 0
     error_vol = 0
-    for river_cell_idx in 1:n_river_cells
+    for cell_idx in 1:n_cells
         riv_cell = 0
-        diff_storage = diff(storage[:, river_cell_idx])
+        diff_storage = diff(storage[:, cell_idx])
 
         for flood_depth_idx in 1:(n_depths - 1)
             # assume rectangular shape of flood depth segment
-            width[flood_depth_idx + 1, river_cell_idx] =
+            width[flood_depth_idx + 1, cell_idx] =
                 diff_storage[flood_depth_idx] /
-                (h[flood_depth_idx] * flow_length[river_cell_idx])
+                (h[flood_depth_idx] * flow_length[cell_idx])
             # check provided flood storage (floodplain width should be constant or increasing
             # as a function of flood depth)
-            if width[flood_depth_idx + 1, river_cell_idx] <
-               width[flood_depth_idx, river_cell_idx]
+            if width[flood_depth_idx + 1, cell_idx] <
+               width[flood_depth_idx, cell_idx]
                 # raise warning only if difference is larger than rounding error of 0.01 m³
                 if (
                     (
-                        width[flood_depth_idx, river_cell_idx] -
-                        width[flood_depth_idx + 1, river_cell_idx]
+                        width[flood_depth_idx, cell_idx] -
+                        width[flood_depth_idx + 1, cell_idx]
                     ) *
                     h[flood_depth_idx] *
-                    flow_length[river_cell_idx]
+                    flow_length[cell_idx]
                 ) > 0.01
                     incorrect_vol += 1
                     riv_cell = 1
                     error_vol =
                         error_vol + (
                             (
-                                width[flood_depth_idx, river_cell_idx] -
-                                width[flood_depth_idx + 1, river_cell_idx]
+                                width[flood_depth_idx, cell_idx] -
+                                width[flood_depth_idx + 1, cell_idx]
                             ) *
                             h[flood_depth_idx] *
-                            flow_length[river_cell_idx]
+                            flow_length[cell_idx]
                         )
                 end
-                width[flood_depth_idx + 1, river_cell_idx] =
-                    width[flood_depth_idx, river_cell_idx]
+                width[flood_depth_idx + 1, cell_idx] =
+                    width[flood_depth_idx, cell_idx]
             end
-            a[flood_depth_idx + 1, river_cell_idx] =
-                width[flood_depth_idx + 1, river_cell_idx] * h[flood_depth_idx]
-            p[flood_depth_idx + 1, river_cell_idx] =
+            a[flood_depth_idx + 1, cell_idx] =
+                width[flood_depth_idx + 1, cell_idx] * h[flood_depth_idx]
+            p[flood_depth_idx + 1, cell_idx] =
                 (
-                    width[flood_depth_idx + 1, river_cell_idx] -
-                    width[flood_depth_idx, river_cell_idx]
+                    width[flood_depth_idx + 1, cell_idx] -
+                    width[flood_depth_idx, cell_idx]
                 ) + 2.0 * h[flood_depth_idx]
-            segment_storage[flood_depth_idx + 1, river_cell_idx] =
-                a[flood_depth_idx + 1, river_cell_idx] * flow_length[river_cell_idx]
+            segment_storage[flood_depth_idx + 1, cell_idx] =
+                a[flood_depth_idx + 1, cell_idx] * flow_length[cell_idx]
             if flood_depth_idx == 1
                 # for interpolation wetted perimeter at flood depth 0.0 is required
-                p[flood_depth_idx, river_cell_idx] =
-                    p[flood_depth_idx + 1, river_cell_idx] - 2.0 * h[flood_depth_idx]
+                p[flood_depth_idx, cell_idx] =
+                    p[flood_depth_idx + 1, cell_idx] - 2.0 * h[flood_depth_idx]
             end
         end
 
-        p[2:end, river_cell_idx] = cumsum(p[2:end, river_cell_idx])
-        a[:, river_cell_idx] = cumsum(a[:, river_cell_idx])
-        storage[:, river_cell_idx] = cumsum(segment_storage[:, river_cell_idx])
+        p[2:end, cell_idx] = cumsum(p[2:end, cell_idx])
+        a[:, cell_idx] = cumsum(a[:, cell_idx])
+        storage[:, cell_idx] = cumsum(segment_storage[:, cell_idx])
 
         riv_cells += riv_cell
     end
 
     if incorrect_vol > 0
-        perc_riv_cells = round(100.0 * (riv_cells / n_river_cells); digits = 2)
+        perc_riv_cells = round(100.0 * (riv_cells / n_cells); digits = 2)
         perc_error_vol = round(100.0 * (error_vol / sum(start_storage[end, :])); digits = 2)
         @warn string(
             "The provided storage of $incorrect_vol rectangular floodplain schematization",
@@ -1510,7 +1510,7 @@ function FloodPlainParameters(
 )
     (; river_indices_2d, nodes_at_edge, graph) = domain.network
     (; flow_length) = domain.parameters
-    n_river_edges = ne(graph)
+    n_edges = ne(graph)
     profile = FloodPlainProfile(dataset, config, domain, index_pit)
 
     mannings_n = ncread(
@@ -1522,9 +1522,9 @@ function FloodPlainParameters(
     )
     # manning roughness at edges
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes
-    mannings_n_sq = zeros(n_river_edges)
-    zb_max = zeros(n_river_edges)
-    for river_edge_idx in 1:n_river_edges
+    mannings_n_sq = zeros(n_edges)
+    zb_max = zeros(n_edges)
+    for river_edge_idx in 1:n_edges
         src_node = nodes_at_edge.src[river_edge_idx]
         dst_node = nodes_at_edge.dst[river_edge_idx]
         mannings_n_i =
@@ -1541,26 +1541,26 @@ end
 
 "Struct to store floodplain flow model variables"
 @with_kw struct FloodPlainVariables
-    n_river_cells::Int
-    n_river_edges::Int
-    storage::Vector{Float64} = zeros(n_river_cells)    # storage [m³]
+    n_cells::Int
+    n_edges::Int
+    storage::Vector{Float64} = zeros(n_cells)    # storage [m³]
     h::Vector{Float64}                     # water depth [m]
-    error::Vector{Float64} = zeros(n_river_cells)      # error storage [m³]
-    a::Vector{Float64} = zeros(n_river_edges)    # flow area at edge [m²]
-    r::Vector{Float64} = zeros(n_river_edges)    # hydraulic radius at edge [m]
-    hf::Vector{Float64} = zeros(n_river_edges)   # water depth at edge [m]
-    q0::Vector{Float64} = zeros(n_river_edges)   # discharge at edge at previous time step
-    q::Vector{Float64} = zeros(n_river_edges)    # discharge at edge  [m³ s⁻¹]
-    q_av::Vector{Float64} = zeros(n_river_edges) # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
-    hf_index::Vector{Int} = zeros(Int, n_river_edges) # edge index with `hf` [-] above depth threshold
+    error::Vector{Float64} = zeros(n_cells)      # error storage [m³]
+    a::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
+    r::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
+    hf::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
+    q0::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step
+    q::Vector{Float64} = zeros(n_edges)    # discharge at edge  [m³ s⁻¹]
+    q_av::Vector{Float64} = zeros(n_edges) # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
+    hf_index::Vector{Int} = zeros(Int, n_edges) # edge index with `hf` [-] above depth threshold
 end
 
 "Initialize floodplain flow model variables"
-function FloodPlainVariables(n_river_cells::Int, n_river_edges::Int, index_pit::Vector{Int})
+function FloodPlainVariables(n_cells::Int, n_edges::Int, index_pit::Vector{Int})
     variables = FloodPlainVariables(;
-        n_river_cells,
-        n_river_edges,
-        h = zeros(n_river_cells + length(index_pit)),
+        n_cells,
+        n_edges,
+        h = zeros(n_cells + length(index_pit)),
     )
     return variables
 end
@@ -1572,24 +1572,24 @@ end
 end
 
 "Determine the initial floodplain storage"
-function initialize_storage!(river, domain::Domain, n_river_cells::Int)
+function initialize_storage!(river, domain::Domain, n_cells::Int)
     (; flow_width, flow_length) = domain.river.parameters
     (; floodplain) = river
     (; profile) = floodplain.parameters
-    for river_cell_idx in 1:n_river_cells
+    for cell_idx in 1:n_cells
         lower_idx, upper_idx =
-            interpolation_indices(floodplain.variables.h[river_cell_idx], profile.depth)
+            interpolation_indices(floodplain.variables.h[cell_idx], profile.depth)
         a = flow_area(
-            profile.width[upper_idx, river_cell_idx],
-            profile.a[lower_idx, river_cell_idx],
+            profile.width[upper_idx, cell_idx],
+            profile.a[lower_idx, cell_idx],
             profile.depth[lower_idx],
-            floodplain.variables.h[river_cell_idx],
+            floodplain.variables.h[cell_idx],
         )
         a = max(
-            a - (flow_width[river_cell_idx] * floodplain.variables.h[river_cell_idx]),
+            a - (flow_width[cell_idx] * floodplain.variables.h[cell_idx]),
             0.0,
         )
-        floodplain.variables.storage[river_cell_idx] = flow_length[river_cell_idx] * a
+        floodplain.variables.storage[cell_idx] = flow_length[cell_idx] * a
     end
     return nothing
 end
@@ -1639,12 +1639,12 @@ function flood_depth(
     profile::FloodPlainProfile,
     flood_storage::Float64,
     flow_length::Float64,
-    river_cell_idx::Int,
+    cell_idx::Int,
 )
     lower_idx, upper_idx =
-        interpolation_indices(flood_storage, @view profile.storage[:, river_cell_idx])
-    ΔA = (flood_storage - profile.storage[lower_idx, river_cell_idx]) / flow_length
-    dh = ΔA / profile.width[upper_idx, river_cell_idx]
+        interpolation_indices(flood_storage, @view profile.storage[:, cell_idx])
+    ΔA = (flood_storage - profile.storage[lower_idx, cell_idx]) / flow_length
+    dh = ΔA / profile.width[upper_idx, cell_idx]
     flood_depth = profile.depth[lower_idx] + dh
     return flood_depth
 end
@@ -1657,11 +1657,11 @@ function FloodPlainModel(
     zb_floodplain::Vector{Float64},
 )
     (; river_indices_2d, local_drain_direction, graph) = domain.network
-    n_river_cells = length(river_indices_2d)
+    n_cells = length(river_indices_2d)
     index_pit = findall(x -> x == 5, local_drain_direction)
     parameters = FloodPlainParameters(dataset, config, domain, zb_floodplain, index_pit)
     n_edges = ne(graph)
-    variables = FloodPlainVariables(n_river_cells, n_edges, index_pit)
+    variables = FloodPlainVariables(n_cells, n_edges, index_pit)
 
     floodplain = FloodPlainModel(; parameters, variables)
     return floodplain

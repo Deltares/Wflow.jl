@@ -51,7 +51,7 @@ function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config
     (; river_routing, land_routing, water_mass_balance__flag) = config.model
     if water_mass_balance__flag
         n_cells = length(domain.land.network.land_indices_2d)
-        n_river_cells = length(domain.river.network.river_indices_2d)
+        n_cells = length(domain.river.network.river_indices_2d)
         if config.model.reservoir__flag
             n_reservoir = length(domain.reservoir.network.outlet_indices_2d)
             reservoir_water_balance = MassBalance(; n = n_reservoir)
@@ -62,7 +62,7 @@ function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config
            river_routing == RoutingType.local_inertial
             river_water_balance = NoMassBalance()
         else
-            river_water_balance = MassBalance(; n = n_river_cells)
+            river_water_balance = MassBalance(; n = n_cells)
         end
         routing = FlowRoutingMassBalance(;
             river_water_balance,
@@ -126,25 +126,24 @@ function compute_total_storage!(
 end
 
 """
-    get_storage(river_flow_model::LocalInertialRiverFlowModel, river_cell_idx)
-    get_storage(river_flow_model::KinWaveRiverFlowModel, river_cell_idx)
+    get_storage(river_flow_model::LocalInertialRiverFlowModel, cell_idx)
+    get_storage(river_flow_model::KinWaveRiverFlowModel, cell_idx)
 
-Return storage of a river flow model at `river_cell_idx`. For `LocalInertialRiverFlowModel` floodplain
+Return storage of a river flow model at `cell_idx`. For `LocalInertialRiverFlowModel` floodplain
 storage is added to river storage if an optional floodplain is included.
 """
-function get_storage(river_flow_model::LocalInertialRiverFlowModel, river_cell_idx::Int)
+function get_storage(river_flow_model::LocalInertialRiverFlowModel, cell_idx::Int)
     (; storage) = river_flow_model.variables
     if isnothing(river_flow_model.floodplain)
-        return storage[river_cell_idx]
+        return storage[cell_idx]
     else
         total_storage =
-            storage[river_cell_idx] +
-            river_flow_model.floodplain.variables.storage[river_cell_idx]
+            storage[cell_idx] + river_flow_model.floodplain.variables.storage[cell_idx]
         return total_storage
     end
 end
-get_storage(river_flow_model::KinWaveRiverFlowModel, river_cell_idx) =
-    river_flow_model.variables.storage[river_cell_idx]
+get_storage(river_flow_model::KinWaveRiverFlowModel, cell_idx) =
+    river_flow_model.variables.storage[cell_idx]
 
 """
 Save river (+ floodplain) storage at previous time step as `storage_prev` of river
@@ -152,8 +151,8 @@ Save river (+ floodplain) storage at previous time step as `storage_prev` of riv
 """
 function storage_prev!(river_flow_model::AbstractRiverFlowModel, water_balance::MassBalance)
     (; storage_prev) = water_balance
-    for river_cell_idx in eachindex(storage_prev)
-        storage_prev[river_cell_idx] = get_storage(river_flow_model, river_cell_idx)
+    for cell_idx in eachindex(storage_prev)
+        storage_prev[cell_idx] = get_storage(river_flow_model, cell_idx)
     end
     return nothing
 end
@@ -306,17 +305,15 @@ function compute_flow_balance!(
         river_flow_model.boundary_conditions
     (; qin_av, q_av, storage, n_cells) = river_flow_model.variables
 
-    for river_cell_idx in 1:n_cells
+    for cell_idx in 1:n_cells
         total_in =
-            inwater[river_cell_idx] +
-            qin_av[river_cell_idx] +
-            max(0.0, external_inflow[river_cell_idx])
+            inwater[cell_idx] + qin_av[cell_idx] + max(0.0, external_inflow[cell_idx])
         total_out =
-            q_av[river_cell_idx] +
-            actual_external_abstraction_av[river_cell_idx] +
-            abstraction[river_cell_idx]
-        storage_rate = (storage[river_cell_idx] - storage_prev[river_cell_idx]) / dt
-        error[river_cell_idx], relative_error[river_cell_idx] =
+            q_av[cell_idx] +
+            actual_external_abstraction_av[cell_idx] +
+            abstraction[cell_idx]
+        storage_rate = (storage[cell_idx] - storage_prev[cell_idx]) / dt
+        error[cell_idx], relative_error[cell_idx] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
     return nothing
@@ -337,23 +334,21 @@ function compute_flow_balance!(
         river_flow_model.boundary_conditions
     (; edges_at_node) = network
 
-    for river_cell_idx in river_flow_model.parameters.active_n
+    for cell_idx in river_flow_model.parameters.active_n
         total_in = 0.0
         total_out = 0.0
-        q_src = sum_at(river_flow_model.variables.q_av, edges_at_node.src[river_cell_idx])
-        total_in, total_out =
-            add_inflow(total_in, total_out, [q_src, inwater[river_cell_idx]])
-        total_in += max(0.0, external_inflow[river_cell_idx])
-        q_dst = sum_at(river_flow_model.variables.q_av, edges_at_node.dst[river_cell_idx])
+        q_src = sum_at(river_flow_model.variables.q_av, edges_at_node.src[cell_idx])
+        total_in, total_out = add_inflow(total_in, total_out, [q_src, inwater[cell_idx]])
+        total_in += max(0.0, external_inflow[cell_idx])
+        q_dst = sum_at(river_flow_model.variables.q_av, edges_at_node.dst[cell_idx])
         total_in, total_out = add_outflow(total_in, total_out, q_dst)
-        total_out +=
-            actual_external_abstraction_av[river_cell_idx] + abstraction[river_cell_idx]
-        storage = river_flow_model.variables.storage[river_cell_idx]
+        total_out += actual_external_abstraction_av[cell_idx] + abstraction[cell_idx]
+        storage = river_flow_model.variables.storage[cell_idx]
         if !isnothing(river_flow_model.floodplain)
-            storage += river_flow_model.floodplain.variables.storage[river_cell_idx]
+            storage += river_flow_model.floodplain.variables.storage[cell_idx]
         end
-        storage_rate = (storage - storage_prev[river_cell_idx]) / dt
-        error[river_cell_idx], relative_error[river_cell_idx] =
+        storage_rate = (storage - storage_prev[cell_idx]) / dt
+        error[cell_idx], relative_error[cell_idx] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
     end
     return nothing

@@ -141,8 +141,8 @@ const river_transport_method =
 "Initialize the river sediment transport model"
 function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; river_indices_2d) = domain.network
-    n_river_cells = length(river_indices_2d)
-    hydrological_forcing = HydrologicalForcing(; n_cells = n_river_cells)
+    n_cells = length(river_indices_2d)
+    hydrological_forcing = HydrologicalForcing(; n_cells)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]

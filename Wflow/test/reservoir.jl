@@ -159,7 +159,7 @@ end
     add_edge!(graph, 1, 2)
     network = Wflow.NetworkRiver(; graph, reservoir_indices = [1])
 
-    river_cell_idx = 1
+    cell_idx = 1
     dt = 1000.0
     dt_forcing = 86400.0
 
@@ -167,7 +167,7 @@ end
         reservoir_model,
         river_flow_vars,
         network,
-        river_cell_idx,
+        cell_idx,
         dt,
         dt_forcing,
     )

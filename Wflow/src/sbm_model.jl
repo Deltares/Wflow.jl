@@ -113,7 +113,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
 
     # read and set states in model object if cold_start=false
     if !cold_start__flag
-        n_river_cells = length(domain.river.network.river_indices_2d)
+        n_cells = length(domain.river.network.river_indices_2d)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float64, dimname = :layer)
@@ -167,12 +167,12 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
         (; flow_width, flow_length) = domain.river.parameters
-        river_v.storage[1:n_river_cells] .=
-            river_v.h[1:n_river_cells] .* flow_width[1:n_river_cells] .*
-            flow_length[1:n_river_cells]
+        river_v.storage[1:n_cells] .=
+            river_v.h[1:n_cells] .* flow_width[1:n_cells] .*
+            flow_length[1:n_cells]
 
         if floodplain_1d__flag
-            initialize_storage!(routing.river_flow, domain, n_river_cells)
+            initialize_storage!(routing.river_flow, domain, n_cells)
         end
 
         if reservoir__flag

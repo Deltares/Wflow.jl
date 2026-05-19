@@ -318,12 +318,12 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
     inds_map2river = fill(0, length(river_indices_2d))
     inds = CartesianIndex{2}[]
     counter = 0
-    for (river_cell_idx, cartesian_idx) in enumerate(river_indices_2d)
-        id = locs[river_cell_idx]
+    for (cell_idx, cartesian_idx) in enumerate(river_indices_2d)
+        id = locs[cell_idx]
         if id > 0
             push!(inds, cartesian_idx)
             counter += 1
-            inds_map2river[river_cell_idx] = counter
+            inds_map2river[cell_idx] = counter
             rev_inds[cartesian_idx] = counter
 
             # get all indices related to this reservoir outlet

@@ -175,14 +175,14 @@ end
 
     @testset "river" begin
         dt = 1.0
-        n_river_cells = 2
+        n_cells = 2
         parameters = Wflow.GwfRiverParameters(;
             infiltration_conductance = [100.0, 100.0],
             exfiltration_conductance = [200.0, 200.0],
             bottom = [1.0, 1.0],
         )
         variables = Wflow.GwfRiverVariables(;
-            n_river_cells,
+            n_cells,
             stage = [2.0, 2.0],
             storage = [20.0, 20.0],
             flux = [0.0, 0.0],

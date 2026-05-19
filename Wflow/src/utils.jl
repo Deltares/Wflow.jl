@@ -499,7 +499,7 @@ end
 
 Return flow `fraction` to a river cell (at `neighbor_idx`) based on the ratio of the land surface
 `slope` at `neighbor_idx` to the sum of the land surface `slope` at `neighbor_idx` and at river cell
-`river_cell_idx`.
+`cell_idx`.
 """
 function get_flow_fraction_to_river(
     graph::SimpleDiGraph{Int},
@@ -509,12 +509,12 @@ function get_flow_fraction_to_river(
 )::Vector{Float64}
     n_cells = length(slope)
     fraction = zeros(n_cells)
-    for river_cell_idx in inds_river
-        nbs = inneighbors(graph, river_cell_idx)
+    for cell_idx in inds_river
+        nbs = inneighbors(graph, cell_idx)
         for neighbor_idx in nbs
-            if ldd[neighbor_idx] != ldd[river_cell_idx]
+            if ldd[neighbor_idx] != ldd[cell_idx]
                 fraction[neighbor_idx] =
-                    slope[neighbor_idx] / (slope[river_cell_idx] + slope[neighbor_idx])
+                    slope[neighbor_idx] / (slope[cell_idx] + slope[neighbor_idx])
             end
         end
     end

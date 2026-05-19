@@ -31,11 +31,11 @@ end
 end
 
 @with_kw struct GwfRiverVariables
-    n_river_cells::Int
-    stage::Vector{Float64} = fill(MISSING_VALUE, n_river_cells) # [m]
-    storage::Vector{Float64} = fill(MISSING_VALUE, n_river_cells) # [m³]
-    flux::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)  # [m³ d⁻¹]
-    flux_av::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)  # [m³ d⁻¹]
+    n_cells::Int
+    stage::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [m]
+    storage::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [m³]
+    flux::Vector{Float64} = fill(MISSING_VALUE, n_cells)  # [m³ d⁻¹]
+    flux_av::Vector{Float64} = fill(MISSING_VALUE, n_cells)  # [m³ d⁻¹]
 end
 
 @with_kw struct GwfRiverModel <: AbstractSubsurfaceFlowBC
@@ -67,8 +67,8 @@ function GwfRiverModel(
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
-    n_river_cells = length(river_indices_2d)
-    variables = GwfRiverVariables(; n_river_cells)
+    n_cells = length(river_indices_2d)
+    variables = GwfRiverVariables(; n_cells)
     river_model = GwfRiverModel(parameters, variables)
     return river_model
 end
@@ -254,12 +254,12 @@ function update_river_storage_stage!(
     gwf_river_model::GwfRiverModel,
     river_flow_model::AbstractRiverFlowModel,
 )
-    for river_cell_idx in eachindex(gwf_river_model.variables.stage)
-        gwf_river_model.variables.stage[river_cell_idx] =
-            river_flow_model.variables.h[river_cell_idx] +
-            gwf_river_model.parameters.bottom[river_cell_idx]
-        gwf_river_model.variables.storage[river_cell_idx] =
-            river_flow_model.variables.storage[river_cell_idx]
+    for cell_idx in eachindex(gwf_river_model.variables.stage)
+        gwf_river_model.variables.stage[cell_idx] =
+            river_flow_model.variables.h[cell_idx] +
+            gwf_river_model.parameters.bottom[cell_idx]
+        gwf_river_model.variables.storage[cell_idx] =
+            river_flow_model.variables.storage[cell_idx]
     end
     return nothing
 end

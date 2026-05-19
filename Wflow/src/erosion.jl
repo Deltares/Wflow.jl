@@ -21,7 +21,7 @@ function SoilLossModel(
     n_cells = length(land_indices_2d)
 
     atmospheric_forcing = AtmosphericForcing(; n_cells)
-    hydrological_forcing = HydrologicalForcing(; n_cells = n_cells)
+    hydrological_forcing = HydrologicalForcing(; n_cells)
 
     # Rainfall erosion
     if rainfall_erosion == RainfallErosionType.answers

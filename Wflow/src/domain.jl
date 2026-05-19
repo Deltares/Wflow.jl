@@ -93,14 +93,14 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     end
 
     pits = zeros(Bool, network_land.modelsize)
-    n_river_cells = length(network_river.river_indices_2d)
+    n_cells = length(network_river.river_indices_2d)
     if config.model.reservoir__flag
         network_reservoir, inds_reservoir_map2river =
             NetworkReservoir(dataset, config, network_river)
         pits[network_reservoir.outlet_indices_2d] .= true
     else
         network_reservoir = NetworkReservoir()
-        inds_reservoir_map2river = zeros(Int, n_river_cells)
+        inds_reservoir_map2river = zeros(Int, n_cells)
     end
     @reset network_river.reservoir_indices = inds_reservoir_map2river
 
