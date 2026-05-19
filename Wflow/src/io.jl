@@ -46,11 +46,13 @@ const mover_params = (
     "land_surface_water__potential_evaporation_volume_flux",
 )
 
+# Map domain name to regular expression for matching with standard name or model path
 const domain_parameter_map = Dict{String, Regex}(
     "reservoir" => r"reservoir|routing.river_flow.boundary_conditions.reservoir",
     "river" => r"river|floodplain|routing.river_flow",
     "drain" => r"land_drain|routing.subsurface_flow.boundaries.drain",
 )
+
 function get_param(model, parameter::AbstractString)
     (; land) = model
     lens = get_lens(parameter, land)
