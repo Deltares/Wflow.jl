@@ -50,8 +50,8 @@ end
 function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config)
     (; river_routing, land_routing, water_mass_balance__flag) = config.model
     if water_mass_balance__flag
-        n_cells = length(domain.land.network.land_indices_2d)
-        n_cells = length(domain.river.network.river_indices_2d)
+        n_land_cells = length(domain.land.network.land_indices_2d)
+        n_river_cells = length(domain.river.network.river_indices_2d)
         if config.model.reservoir__flag
             n_reservoir = length(domain.reservoir.network.outlet_indices_2d)
             reservoir_water_balance = MassBalance(; n = n_reservoir)
@@ -62,16 +62,16 @@ function HydrologicalMassBalance(domain::Domain, subsurface_flow, config::Config
            river_routing == RoutingType.local_inertial
             river_water_balance = NoMassBalance()
         else
-            river_water_balance = MassBalance(; n = n_cells)
+            river_water_balance = MassBalance(; n = n_river_cells)
         end
         routing = FlowRoutingMassBalance(;
             river_water_balance,
             reservoir_water_balance,
-            overland_water_balance = MassBalance(; n = n_cells),
-            subsurface_water_balance = MassBalance(subsurface_flow, n_cells),
+            overland_water_balance = MassBalance(; n = n_land_cells),
+            subsurface_water_balance = MassBalance(subsurface_flow, n_land_cells),
         )
         mass_balance = HydrologicalMassBalance(;
-            land_water_balance = MassBalance(; n = n_cells),
+            land_water_balance = MassBalance(; n = n_land_cells),
             routing,
         )
     else
