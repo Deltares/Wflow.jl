@@ -139,8 +139,8 @@ end
 
     @testset "conductance" begin
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
-        @test Wflow.conductance(gwf_model, 2, 3, 3, conductivity_profile) == 100.0  # upstream sat. thickness
-        @test Wflow.conductance(gwf_model, 1, 2, 1, conductivity_profile) == 75.0  # upstream sat. thickness
+        @test Wflow.conductance(gwf_model, 2, 3, 3, conductivity_profile) == 100.0 / 86400.0 # upstream sat. thickness
+        @test Wflow.conductance(gwf_model, 1, 2, 1, conductivity_profile) == 75.0 / 86400.0 # upstream sat. thickness
     end
 
     @testset "minimum_head-unconfined" begin
@@ -155,7 +155,7 @@ end
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         alpha_coefficient = 0.25
         @test Wflow.stable_timestep(gwf_model, conductivity_profile, alpha_coefficient) ==
-              0.0375
+              0.0375 * 86400.0
     end
 
     # Parametrization in setup is as follows:
@@ -164,21 +164,21 @@ end
     # fill(10.0, ncell),  # top
     # fill(0.0, ncell),  # bottom
 
+    dt = 86400.0
+
     @testset "flux-unconfined" begin
-        dt = 1.0
         gwf_model.variables.q_net .= 0.0
         conductivity_profile = Wflow.GwfConductivityProfileType.uniform
         Wflow.flux!(gwf_model, conductivity_profile, dt)
         # KD is based on upstream saturated thickness, i.e. 7.5 m and 20.0 m (which is capped to 10.0)
-        @test gwf_model.variables.q_net ≈ [562.5, 687.5, -1250.0]
+        @test gwf_model.variables.q_net ≈ [562.5, 687.5, -1250.0] / 86400.0
     end
 
     @testset "river" begin
-        dt = 1.0
         n = 2
         parameters = Wflow.GwfRiverParameters(;
-            infiltration_conductance = fill(100.0, n),
-            exfiltration_conductance = fill(200.0, n),
+            infiltration_conductance = fill(100.0 / 86400.0, n),
+            exfiltration_conductance = fill(200.0 / 86400.0, n),
             bottom = fill(1.0, n),
         )
         variables =
@@ -189,28 +189,28 @@ end
         Wflow.flux!(gwf_river_model, gwf_model, index, dt)
         # infiltration, below bottom, flux is (stage - bottom) * inf_cond, limited by
         # river storage (20.0)
-        @test gwf_model.variables.q_net_bnds[1] == 20.0
+        @test gwf_model.variables.q_net_bnds[1] == 20.0 / 86400.0
         # drainage, flux is (stage - head) * exf_cond
-        @test gwf_model.variables.q_net_bnds[3] == (2.0 - 20.0) * 200.0
+        @test gwf_model.variables.q_net_bnds[3] == (2.0 - 20.0) * 200.0 / 86400.0
     end
 
     @testset "drainage" begin
-        dt = 1.0
         n = 2
-        parameters =
-            Wflow.DrainageParameters(; elevation = [2.0, 2.0], conductance = [100.0, 100.0])
+        parameters = Wflow.DrainageParameters(;
+            elevation = [2.0, 2.0],
+            conductance = [100.0, 100.0] / 86400.0,
+        )
         variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0])
         drainage_model = Wflow.DrainageModel(; parameters, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2]
         Wflow.flux!(drainage_model, gwf_model, index, dt)
         @test gwf_model.variables.q_net_bnds[1] == 0.0
-        @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
+        @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5) / 86400.0
     end
 
     @testset "headboundary" begin
-        dt = 1.0
-        parameters = Wflow.HeadBoundaryParameters(; conductance = [100.0, 100.0])
+        parameters = Wflow.HeadBoundaryParameters(; conductance = [100.0, 100.0] / 86400.0)
         variables = Wflow.HeadBoundaryVariables(;
             head = [2.0, 2.0],
             flux = [0.0, 0.0],
@@ -222,26 +222,24 @@ end
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2]
         Wflow.flux!(headboundary, gwf_model, index, dt)
-        @test gwf_model.variables.q_net_bnds[1] == 100.0 * (2.0 - 0.0)
-        @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5)
+        @test gwf_model.variables.q_net_bnds[1] == 100.0 * (2.0 - 0.0) / 86400.0
+        @test gwf_model.variables.q_net_bnds[2] == 100.0 * (2.0 - 7.5) / 86400.0
     end
 
     @testset "recharge" begin
-        dt = 1.0
         n = 3
 
-        variables = Wflow.RechargeVariables(; n, rate = fill(1e-3, n))
+        variables = Wflow.RechargeVariables(; n, rate = fill(1e-3 / 86400.0, n))
         recharge_model = Wflow.RechargeModel(; n, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2, 3]
         Wflow.flux!(recharge_model, gwf_model, index, dt)
-        @test all(gwf_model.variables.q_net_bnds .== 1.0e-3 * 100.0)
+        @test all(gwf_model.variables.q_net_bnds .== 1.0e-3 * 100.0 / 86400.0)
     end
 
     @testset "well" begin
-        dt = 1.0
         variables = Wflow.WellVariables(;
-            volumetric_rate = [-1000.0],
+            volumetric_rate = [-1000.0 / 86400.0],
             flux = [0.0],
             flux_average = [0.0],
             flux_cumulative = [0.0],
@@ -250,7 +248,7 @@ end
         gwf_model.variables.q_net_bnds .= 0.0
         index = [2]
         Wflow.flux!(well_model, gwf_model, index, dt)
-        @test gwf_model.variables.q_net_bnds[2] == -1000.0
+        @test gwf_model.variables.q_net_bnds[2] == -1000.0 / 86400.0
     end
 end
 

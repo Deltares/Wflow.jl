@@ -68,7 +68,7 @@ function homogenous_aquifer(nrow, ncol)
     timestepping = Wflow.TimeStepping()
 
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(10.0, ncell),
+        k = fill(10.0 / 86400.0, ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
