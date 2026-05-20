@@ -69,7 +69,7 @@ function NonIrrigationDemandModel(
     demand = PrescribedDemand(; demand_gross, demand_net)
     vars = NonIrrigationDemandVariables(;
         returnflow_fraction = returnflow_f,
-        returnflow = fill(PRECISION(0), n),
+        returnflow = zeros(PRECISION, n),
     )
     non_irrigation_demand = NonIrrigationDemandModel(; demand, variables = vars)
 
@@ -651,13 +651,13 @@ function surface_water_allocation_local!(
                 available_volume = max(available_volume - max_river_abstraction, ZERO)
             end
             # satisfy surface water demand with available local river volume
-            surfacewater_demand_vol = surfacewater_demand[i] * 0.001 * area[i]
+            surfacewater_demand_vol = surfacewater_demand[i] * area[i] / 1000
             abstraction_vol = min(surfacewater_demand_vol, available_volume)
             act_surfacewater_abst_vol[index_river] = abstraction_vol
             # remaining available surface water and demand
             available_surfacewater[index_river] =
                 max(available_volume - abstraction_vol, ZERO)
-            abstraction = (abstraction_vol / area[i]) * 1000.0
+            abstraction = (abstraction_vol / area[i]) * 1000
             surfacewater_demand[i] = max(surfacewater_demand[i] - abstraction, ZERO)
             # update actual abstraction from river and surface water allocation (land cell)
             act_surfacewater_abst[index_river] = abstraction
@@ -718,8 +718,7 @@ function surface_water_allocation_area!(
         for j in inds_river[i]
             act_surfacewater_abst_vol[j] += frac_abstract_sw * available_surfacewater[j]
             act_surfacewater_abst[j] =
-                (act_surfacewater_abst_vol[j] / domain.river.parameters.cell_area[j]) *
-                1000.0
+                (act_surfacewater_abst_vol[j] / domain.river.parameters.cell_area[j]) * 1000
         end
 
         # water allocated to each land cell.
@@ -790,7 +789,7 @@ function groundwater_allocation_local!(
             act_groundwater_abst_vol[i] = abstraction_vol
             # remaining available groundwater and demand
             available_groundwater[i] = max(available_volume - abstraction_vol, ZERO)
-            abstraction = (abstraction_vol / area[i]) * 1000.0
+            abstraction = (abstraction_vol / area[i]) * 1000
             groundwater_demand[i] = max(groundwater_demand[i] - abstraction, ZERO)
             # update actual abstraction from groundwater and groundwater allocation (land cell)
             act_groundwater_abst[i] = abstraction

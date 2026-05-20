@@ -329,7 +329,8 @@ function update_overland_flow_model!(
     t = ZERO
     while t < dt
         dt_s =
-            adaptive ? stable_timestep(overland_flow_model, flow_length, 0.02) :
+            adaptive ?
+            stable_timestep(overland_flow_model, flow_length, to_precision(0.02)) :
             overland_flow_model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_land_update!(overland_flow_model, domain, dt_s)
@@ -493,7 +494,7 @@ function update_river_flow_model!(
     t = ZERO
     while t < dt
         dt_s =
-            adaptive ? stable_timestep(river_flow_model, flow_length, 0.05) :
+            adaptive ? stable_timestep(river_flow_model, flow_length, to_precision(0.05)) :
             river_flow_model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         kinwave_river_update!(river_flow_model, domain.river, dt_s, dt)
@@ -532,7 +533,7 @@ function stable_timestep(
     stable_timesteps .= Inf
     k = 0
     for i in 1:n
-        if q[i] > 0.0
+        if q[i] > ZERO
             k += 1
             c = ONE / (alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - ONE)))
             stable_timesteps[k] = (flow_length[i] / c)
@@ -544,7 +545,7 @@ function stable_timestep(
     elseif k > 0
         quantile!(@view(stable_timesteps[1:k]), p)
     else
-        600.0
+        to_precision(600.0)
     end
 
     return dt_min

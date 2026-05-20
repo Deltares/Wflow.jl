@@ -86,6 +86,8 @@ const PRECISION = begin
 end
 
 to_precision(x::AbstractFloat) = PRECISION(x)
+to_precision(x::AbstractVector{<:AbstractFloat}) = PRECISION.(x)
+to_precision(x::Any) = x
 
 const ZERO = to_precision(0.0)
 const ONE = to_precision(1.0)

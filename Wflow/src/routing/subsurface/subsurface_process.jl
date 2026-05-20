@@ -86,7 +86,7 @@ function kinematic_wave_ssf(
         return ZERO, d, ZERO
     else
         # initial estimate
-        q = (q_prev + q_in) / 2.0
+        q = (q_prev + q_in) / 2
         # newton-raphson
         celerity = ssf_celerity(zi_prev, slope, sy, kh_profile, i)
         constant_term =
@@ -107,7 +107,7 @@ function kinematic_wave_ssf(
         zi = clamp(zi, ZERO, d)
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
         # computation
-        max_delta_zi = 0.1
+        max_delta_zi = to_precision(0.1)
         its = Int(cld(abs(max(zi, ZERO) - zi_prev), max_delta_zi))
         if its > 1
             dt_s = dt / its
@@ -133,8 +133,8 @@ function kinematic_wave_ssf(
                 end
                 zi = clamp(zi, ZERO, d)
                 # update unsaturated zone
-                zi_prev_mm = zi_prev * 1000.0
-                zi_mm = zi * 1000.0
+                zi_prev_mm = zi_prev * 1000
+                zi_mm = zi * 1000
                 update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
                 exfilt_sum += exfilt
                 net_flux_sum += net_flux
@@ -147,8 +147,8 @@ function kinematic_wave_ssf(
             net_flux = net_flux_sum
             dh = zi_start - zi
         else
-            zi_prev_mm = zi_prev * 1000.0
-            zi_mm = zi * 1000.0
+            zi_prev_mm = zi_prev * 1000
+            zi_mm = zi * 1000
             update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
         end
         return q, zi, exfilt, net_flux
@@ -205,8 +205,8 @@ function kinematic_wave_ssf(
         zi = clamp(zi, ZERO, d)
 
         # update unsaturated zone
-        zi_prev_mm = zi_prev * 1000.0
-        zi_mm = zi * 1000.0
+        zi_prev_mm = zi_prev * 1000
+        zi_mm = zi * 1000
         update_ustorelayerdepth!(soil, zi_prev_mm, zi_mm, i)
 
         return q, zi, exfilt, net_flux

@@ -73,20 +73,20 @@ function LateralSsfParameters(
     )
 
     (; theta_s, theta_fc, soilthickness) = soil
-    soilthickness = soilthickness .* 0.001
+    soilthickness = soilthickness / 1000
 
     kh_profile_type = config.model.saturated_hydraulic_conductivity_profile
     factor_dt = BASETIMESTEP / Second(config.time.timestepsecs)
     if kh_profile_type == VerticalConductivityProfile.exponential
         (; kv_0, f) = soil.kv_profile
-        kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        kh_profile = KhExponential(kh_0, f .* 1000.0)
+        kh_0 = khfrac .* kv_0 .* factor_dt / 1000
+        kh_profile = KhExponential(kh_0, f .* 1000)
     elseif kh_profile_type == VerticalConductivityProfile.exponential_constant
         (; z_exp) = soil.kv_profile
         (; kv_0, f) = soil.kv_profile.exponential
         kh_0 = khfrac .* kv_0 .* 0.001 .* factor_dt
-        exp_profile = KhExponential(kh_0, f .* 1000.0)
-        kh_profile = KhExponentialConstant(exp_profile, z_exp .* 0.001)
+        exp_profile = KhExponential(kh_0, f .* 1000)
+        kh_profile = KhExponentialConstant(exp_profile, z_exp ./ 1000)
     elseif kh_profile_type == VerticalConductivityProfile.layered ||
            kh_profile_type == VerticalConductivityProfile.layered_exponential
         n_cells = length(khfrac)
@@ -126,7 +126,7 @@ function LateralSSFModel(
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
-    zi = 0.001 * soil.variables.zi
+    zi = soil.variables.zi / 1000
     variables = LateralSsfVariables(parameters, zi)
     recharge = RechargeModel(; n)
     if config.model.river_subsurface_exchange_head_based__flag

@@ -238,8 +238,8 @@ function sbm_kv_profiles(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    kv_0::Vector{PRECISION},
-    f::Vector{PRECISION},
+    kv_0::Vector{<:AbstractFloat},
+    f::Vector{<:AbstractFloat},
     maxlayers::Int,
     nlayers::Vector{Int},
     sumlayers::Vector,
@@ -525,7 +525,7 @@ function SbmSoilParameters(
         n = length(indices)
         (; rootingdepth) = vegetation_parameter_set
         # default root fraction
-        rootfraction = zeros(maxlayers, n)
+        rootfraction = zeros(PRECISION, maxlayers, n)
         for i in 1:n
             if rootingdepth[i] > ZERO
                 for k in 1:maxlayers

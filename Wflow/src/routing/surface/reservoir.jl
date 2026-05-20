@@ -570,7 +570,7 @@ function update_reservoir_model!(
     # average variables (here accumulated for model timestep Δt)
     res_bc.inflow[i] += inflow * dt
     res_v.outflow_av[i] += outflow * dt
-    res_v.actevap[i] += 1000.0 * (actevap / res_p.area[i])
+    res_v.actevap[i] += 1000 * (actevap / res_p.area[i])
 
     return nothing
 end

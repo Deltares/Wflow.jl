@@ -321,7 +321,7 @@ function get_river_fraction(
         river_fraction[i] = if river_location[i]
             min((river_length[i] * river_width[i]) / (area[i]), ONE)
         else
-            0.0
+            ZERO
         end
     end
     return river_fraction

@@ -78,10 +78,10 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     # exchange of recharge between SBM soil model and groundwater flow domain
     # recharge rate groundwater is required in units [m d⁻¹]
     @. boundary_conditions.recharge.variables.rate =
-        soil.variables.recharge / 1000.0 * (ONE / dt_gwf)
+        soil.variables.recharge / 1000 * (ONE / dt_gwf)
     if do_water_demand(config)
         @. boundary_conditions.recharge.variables.rate -=
-            land.allocation.variables.act_groundwater_abst / 1000.0 * (ONE / dt_gwf)
+            land.allocation.variables.act_groundwater_abst / 1000 * (ONE / dt_gwf)
     end
     # update groundwater domain
     update_subsurface_flow_model!(

@@ -230,7 +230,7 @@ function GroundwaterFlowModel(
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
 
     # cold state for groundwater head based on water table depth zi
-    initial_head = elevation .- soil.variables.zi / 1000.0
+    initial_head = elevation .- soil.variables.zi / 1000
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if config.model.constanthead__flag
         initial_head[constanthead.index] = constanthead.variables.head
@@ -248,7 +248,7 @@ function GroundwaterFlowModel(
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
             soil.parameters
 
-        @. zi = (elevation - min(elevation, initial_head)) * 1000.0
+        @. zi = (elevation - min(elevation, initial_head)) * 1000
         @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
         @. ustorecapacity = soilwatercapacity - satwaterdepth
         @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
@@ -256,10 +256,10 @@ function GroundwaterFlowModel(
         @. total_soilwater_storage = satwaterdepth
     end
 
-    bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
+    bottom = elevation .- soil.parameters.soilthickness ./ 1000
     specific_yield =
         @. lower_bound_drainable_porosity(soil.parameters.theta_s, soil.parameters.theta_fc)
-    conductance = zeros(connectivity.nconnection)
+    conductance = zeros(PRECISION, connectivity.nconnection)
     parameters = GroundwaterFlowParameters(
         dataset,
         config,

@@ -321,6 +321,9 @@ function ncread(
 
     var = convert(InputEntry, var)
     (; value, layer, scale, offset) = var
+    value = to_precision(value)
+    scale = to_precision(scale)
+    offset = to_precision(offset)
     variable_info(var)
 
     if !isnothing(value)
@@ -555,7 +558,7 @@ julia> tosecond(Day(1))
 tosecond(x::Hour) = PRECISION(Dates.value(Second(x)))
 tosecond(x::Minute) = PRECISION(Dates.value(Second(x)))
 tosecond(x::T) where {T <: DatePeriod} = PRECISION(Dates.value(Second(x)))
-tosecond(x::T) where {T <: TimePeriod} = x / convert(T, Second(1))
+tosecond(x::T) where {T <: TimePeriod} = PRECISION(x / convert(T, Second(1)))
 
 """
     adjacent_nodes_at_edge(graph)
@@ -977,7 +980,7 @@ function initialize_lateral_ssf_model!(
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile, dt)
     for i in eachindex(q)
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
-        kh_max = 0.0
+        kh_max = ZERO
         for j in 1:nlayers[i]
             if j <= nlayers_kv[i]
                 kh_max += kv[i][j] * act_thickl[i][j]
@@ -1033,7 +1036,7 @@ function water_table_change(
         dh = net_flux / specific_yield
     else
         dh = ZERO
-        f_conv = 0.001 # convert units from [mm] to [m]
+        f_conv = to_precision(0.001) # convert units from [mm] to [m]
         for k in n_unsatlayers[i]:-1:1
             capacity = max(
                 f_conv * (ustorelayerthickness[i][k] * theta_e - ustorelayerdepth[i][k]),
@@ -1056,6 +1059,6 @@ function water_table_change(
 end
 
 "Set lower bound for drainable porosity"
-function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = 0.02)
+function lower_bound_drainable_porosity(theta_s, theta_fc; lower_bound = to_precision(0.02))
     return max(theta_s - theta_fc, lower_bound)
 end
