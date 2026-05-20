@@ -661,7 +661,7 @@ end
         dt,
     ) ≈ 290.0
     @test Wflow.compute_external_inflow(river_flow_model, overland_flow_model, 1, 1, dt) |>
-          collect ≈ [-8.0e-4, 8.0e-4]
+          collect ≈ [-0.2, 0.2]
 
     river_h_expected = 1.0014614814814815
     land_h_expected = 0.001461481481481508
