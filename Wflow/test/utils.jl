@@ -94,6 +94,7 @@ end
 
 @testitem "Lenses and writing config" begin
     using Accessors: @optic
+    using TOML: TOML
     configs = Wflow.Config[]
 
     for file_name in [
