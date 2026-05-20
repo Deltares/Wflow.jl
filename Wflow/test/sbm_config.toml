@@ -144,6 +144,8 @@ subsurface_water__volume_flow_rate = "ssf"
 land_surface_water__volume_flow_rate = "q_av_land"
 land_surface_water__depth = "h_land"
 land.interception.variables.canopy_storage = "canopystorage"
+land_surface_water__to_river_volume_flow_rate = "q_land_to_river"
+subsurface_water__to_river_volume_flow_rate = "ssf_to_river"
 
 [output.netcdf_scalar]
 path = "output_scalar_moselle.nc"
