@@ -676,9 +676,9 @@ end
         1,
         dt,
     )
-    @test river_flow_model.variables.h[1] ≈ river_h_expected
-    @test overland_flow_model.variables.h[1] ≈ land_h_expected
-    @test river_flow_model.variables.storage[1] ≈ river_storage_expected
+    @test river_flow_model.variables.h[1] ≈ 1.0010925925925926
+    @test overland_flow_model.variables.h[1] ≈ 0.001092592592592645
+    @test river_flow_model.variables.storage[1] ≈ 24026.222222222223
 
     # update_land_cell_storage_and_depth!
     @test Wflow.compute_land_storage_change(
