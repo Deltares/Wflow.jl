@@ -1014,7 +1014,7 @@ function local_inertial_update_water_depth!(
             if river_bc.external_inflow[inds_river[i]] < 0.0
                 available_volume =
                     if land_v.storage[i] >= river_p.bankfull_storage[inds_river[i]]
-                        river_p.bankfull_depth[inds_river[i]]
+                        river_p.bankfull_storage[inds_river[i]]
                     else
                         river_v.storage[inds_river[i]]
                     end
