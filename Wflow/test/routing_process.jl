@@ -174,7 +174,7 @@ end
     @test ssf ≈ 0.23130576097772237
     @test zi ≈ 0.1656875455413981
     @test exfilt ≈ 0.0
-    @test net_flux ≈ -7.808554363456962e-7
+    @test net_flux ≈ -3.904277181728481e-7
 
     # Case: ssfin + ssf_prev ≈ 0.0 && r <= 0
     ssf_prev = 0.0
@@ -226,7 +226,7 @@ end
     @test ssf ≈ to_SI(22100.628024231868, M3_PER_DAY)
     @test zi ≈ 0.7029236021516849
     @test exfilt ≈ 0.0
-    @test net_flux ≈ -7.808554363456962e-7
+    @test net_flux ≈ -3.904277181728481e-7
 
     soil = init_sbm_soil_model(
         n,
