@@ -474,6 +474,8 @@ window.Quarto = {
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
+<li>Fix unit external inflow for local inertial river (1D) and land (2D) routing. For the computation of available river volume (to limit negative external inflow) the <code>bankfull_depth</code> was assigned to this volume, this should be <code>bankfull_storage</code>.</li>
+<li>Maximum subsurface flow was not adjusted for sub-daily timestep for <code>layered</code> and <code>layered_exponential</code> profiles.</li>
 <li>Fix deriving active indices for output variable <code>to_river</code>. Also, the mapping of standard name (or model path) to active indices is now more strict (comparing prefix of these strings instead of substring matching).</li>
 </ul>
 </section>
