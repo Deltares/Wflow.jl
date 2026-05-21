@@ -11,6 +11,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fix unit external inflow for local inertial river (1D) and land (2D) routing. For the
   computation of available river volume (to limit negative external inflow) the
   `bankfull_depth` was assigned to this volume, this should be `bankfull_storage`.
+- Maximum subsurface flow was not adjusted for sub-daily timestep for `layered` and
+  `layered_exponential` profiles.
 
 ## v1.0.2 - 2026-03-05
 
