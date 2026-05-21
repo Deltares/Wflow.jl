@@ -961,6 +961,7 @@ function initialize_lateral_ssf!(
     (; khfrac, soilthickness) = subsurface.parameters
     (; slope, flow_width) = parameters
 
+    t_factor = tosecond(BASETIMESTEP) / dt
     kh_layered_profile!(soil, subsurface, kv_profile, dt)
     for i in eachindex(ssf)
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
@@ -968,7 +969,7 @@ function initialize_lateral_ssf!(
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
-        kh_max *= khfrac[i] * 0.001 * 0.001
+        kh_max *= khfrac[i] * 0.001 * 0.001 * t_factor
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
@@ -988,6 +989,7 @@ function initialize_lateral_ssf!(
     (; kh) = subsurface.parameters.kh_profile
     (; kv, f, nlayers_kv, z_layered) = kv_profile
 
+    t_factor = tosecond(BASETIMESTEP) / dt
     kh_layered_profile!(soil, subsurface, kv_profile, dt)
     for i in eachindex(ssf)
         ssf[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
@@ -1002,7 +1004,7 @@ function initialize_lateral_ssf!(
                 break
             end
         end
-        kh_max = kh_max * khfrac[i] * 0.001 * 0.001
+        kh_max = kh_max * khfrac[i] * 0.001 * 0.001 * t_factor
         ssfmax[i] = kh_max * slope[i]
     end
     return nothing
