@@ -1,25 +1,29 @@
 abstract type AbstractSoilModel end
 
 "Struct for storing SBM soil model variables"
-@with_kw struct SbmSoilVariables{N}
+@with_data_lookup struct SbmSoilVariables{N}
     n::Int
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
     h3::Vector{Float64} = fill(MISSING_VALUE, n)
     # Unsaturated store capacity [mm]
     ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm]
+    "soil_layer_water_unsaturated_zone__depth"
     ustorelayerdepth::Vector{SVector{N, Float64}}
     # Thickness of unsaturated zone, per layer [mm]
     ustorelayerthickness::Vector{SVector{N, Float64}}
     # Saturated store [mm]
+    "soil_water_saturated_zone__depth"
     satwaterdepth::Vector{Float64}
     # Drainable water store [mm]
     drainable_waterdepth::Vector{Float64}
     # Pseudo-water table depth [mm] (top of the saturated zone)
+    "soil_water_saturated_zone_top__depth"
     zi::Vector{Float64}
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int}
     # Transpiration [mm Δt⁻¹]
+    "soil_water__transpiration_volume_flux"
     transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
     ae_ustore::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -28,12 +32,15 @@ abstract type AbstractSoilModel end
     # Soil evaporation from saturated store [mm Δt⁻¹]
     soilevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual capillary rise [mm Δt⁻¹]
+    "soil_water_saturated_zone_top__capillary_volume_flux"
     actcapflux::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual transpiration from saturated store [mm Δt⁻¹]
     actevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total actual evapotranspiration [mm Δt⁻¹]
+    "land_surface__evapotranspiration_volume_flux"
     actevap::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
+    "soil_water__infiltration_volume_flux"
     actinfilt::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual infiltration non-compacted fraction [mm Δt⁻¹]
     actinfiltsoil::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -46,100 +53,137 @@ abstract type AbstractSoilModel end
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
     excesswater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
+    "soil_surface_water_saturated_zone__exfiltration_volume_flux"
     exfiltsatwater::Vector{Float64} = fill(MISSING_VALUE, n)
     # Excess water for non-compacted fraction [mm Δt⁻¹]
+    "compacted_soil_surface_water__excess_volume_flux"
     excesswatersoil::Vector{Float64} = fill(MISSING_VALUE, n)
     # Excess water for compacted fraction [mm Δt⁻¹]
+    "non_compacted_soil_surface_water__excess_volume_flux"
     excesswaterpath::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
+    "soil_surface_water__runoff_volume_flux"
     runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
+    "soil_surface_water__net_runoff_volume_flux"
     net_runoff::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
+    "soil_layer_water__volume_fraction"
     vwc::Vector{SVector{N, Float64}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
+    "soil_layer_water__volume_percentage"
     vwc_perc::Vector{SVector{N, Float64}}
     # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
+    "soil_water_root_zone__depth"
     rootstore::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
+    "soil_water_root_zone__volume_fraction"
     vwc_root::Vector{Float64} = fill(MISSING_VALUE, n)
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
+    "soil_water_root_zone__volume_percentage"
     vwc_percroot::Vector{Float64} = fill(MISSING_VALUE, n)
     # Amount of available water in the unsaturated zone [mm]
+    "soil_water_unsaturated_zone__depth"
     ustoredepth::Vector{Float64} = zeros(n)
     # Downward flux from unsaturated to saturated zone [mm Δt⁻¹]
+    "soil_water_saturated_zone_top__recharge_volume_flux"
     transfer::Vector{Float64} = fill(MISSING_VALUE, n)
     # Net recharge to saturated store [mm Δt⁻¹]
+    "soil_water_saturated_zone_top__net_recharge_volume_flux"
     recharge::Vector{Float64} = fill(MISSING_VALUE, n)
     # Actual leakage from saturated store [mm Δt⁻¹]
+    "soil_water_saturated_zone_bottom__leakage_volume_flux"
     actleakage::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total water storage (excluding floodplain volume and reservoirs) [mm]
+    "land_water_storage__total_depth"
     total_storage::Vector{Float64} = zeros(n)
     # Total soil water storage [mm]
     total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
+    "soil_surface__temperature"
     tsoil::Vector{Float64} = fill(10.0, n)
     # Soil infiltration reduction factor (when soil is frozen) [-]
     f_infiltration_reduction::Vector{Float64} = ones(n)
 end
 
 "Struct for storing SBM soil model parameters"
-@with_kw struct SbmSoilParameters{N, M, Kv}
+@with_data_lookup struct SbmSoilParameters{N, M, Kv}
     # Maximum number of soil layers [-]
     maxlayers::Int
     # Number of soil layers [-]
     nlayers::Vector{Int}
     # Saturated water content (porosity) [-]
+    "soil_water__saturated_volume_fraction"
     theta_s::Vector{Float64}
     # Residual water content [-]
+    "soil_water__residual_volume_fraction"
     theta_r::Vector{Float64}
     # Field capacity water content [-]
     theta_fc::Vector{Float64}
     # Soilwater capacity [mm]
     soilwatercapacity::Vector{Float64}
     # Multiplication factor [-] applied to kv_z (vertical flow)
+    "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor"
     kvfrac::Vector{SVector{N, Float64}}
     # Air entry pressure [cm] of soil (Brooks-Corey)
+    "soil_water__air_entry_pressure_head"
     hb::Vector{Float64}
     # Soil thickness [mm]
+    "soil__thickness"
     soilthickness::Vector{Float64}
     # Thickness of soil layers [mm]
     act_thickl::Vector{SVector{N, Float64}}
     # Cumulative sum of soil layers [mm], starting at soil surface (0)
     sumlayers::Vector{SVector{M, Float64}}
     # Infiltration capacity of the compacted areas [mm Δt⁻¹]
+    "compacted_soil_surface_water__infiltration_capacity"
     infiltcappath::Vector{Float64}
     # Soil infiltration capacity [mm Δt⁻¹]
     infiltcapsoil::Vector{Float64}
     # Maximum leakage [mm Δt⁻¹] from saturated zone
+    "soil_water_saturated_zone_bottom__max_leakage_volume_flux"
     maxleakage::Vector{Float64}
     # Parameter [mm] controlling capillary rise
+    "soil_water_saturated_zone_top__capillary_rise_max_water_table_depth"
     cap_hmax::Vector{Float64}
     # Coefficient [-] controlling capillary rise
+    "soil_water_saturated_zone_top__capillary_rise_averianov_exponent"
     cap_n::Vector{Float64}
     # Brooks-Corey power coefﬁcient [-] for each soil layer
+    "soil_layer_water__brooks_corey_exponent"
     c::Vector{SVector{N, Float64}}
     # Soil temperature smooth factor [-]
+    "soil_surface_temperature__weight_coefficient"
     w_soil::Vector{Float64}
     # Controls soil infiltration reduction factor when soil is frozen [-]
+    "soil_surface_water__infiltration_reduction_parameter"
     cf_soil::Vector{Float64}
     # Fraction of compacted area  [-]
+    "compacted_soil__area_fraction"
     pathfrac::Vector{Float64}
     # Controls how roots are linked to water table [-]
+    "soil_wet_root__sigmoid_function_shape_parameter"
     rootdistpar::Vector{Float64}
     # Fraction of the root length density in each soil layer [-]
+    "soil_root__length_density_fraction"
     rootfraction::Vector{SVector{N, Float64}}
     # Soil water pressure head h1 of the root water uptake reduction function (Feddes) [cm]
+    "vegetation_root__feddes_critical_pressure_head_h1"
     h1::Vector{Float64}
     # Soil water pressure head h2 of the root water uptake reduction function (Feddes) [cm]
+    "vegetation_root__feddes_critical_pressure_head_h2"
     h2::Vector{Float64}
     # Soil water pressure head h3_high of the root water uptake reduction function (Feddes) [cm]
+    "vegetation_root__feddes_critical_pressure_head_h3_high"
     h3_high::Vector{Float64}
     # Soil water pressure head h3_low of the root water uptake reduction function (Feddes) [cm]
+    "vegetation_root__feddes_critical_pressure_head_h3_low"
     h3_low::Vector{Float64}
     # Soil water pressure head h4 of the root water uptake reduction function (Feddes) [cm]
+    "vegetation_root__feddes_critical_pressure_head_h4"
     h4::Vector{Float64}
     # Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0) [-]
+    "vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient"
     alpha_h1::Vector{Float64}
     # Soil fraction [-]
     soil_fraction::Vector{Float64}
@@ -150,7 +194,11 @@ end
 end
 
 "Initialize SBM soil model variables"
-function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
+function SbmSoilVariables(
+    n::Int,
+    parameters::SbmSoilParameters;
+    data_lookup::DataLookup = DataLookup(),
+)
     (;
         soilthickness,
         maxlayers,
@@ -173,7 +221,8 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
     vwc_perc = fill(MISSING_VALUE, maxlayers, n)
     total_soilwater_storage = satwaterdepth .+ ustoredepth
 
-    vars = SbmSoilVariables(;
+    vars = SbmSoilVariables(
+        data_lookup;
         n,
         ustorelayerdepth = zero(act_thickl),
         ustorecapacity = soilwatercapacity .- satwaterdepth,
@@ -190,7 +239,7 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
 end
 
 "Struct for storing SBM soil model boundary conditions"
-@with_kw struct SbmSoilBC
+@kwdef struct SbmSoilBC
     n::Int
     # Water flux at the soil surface [mm Δt⁻¹]
     water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -311,7 +360,8 @@ function SbmSoilParameters(
     config::Config,
     vegetation_parameter_set::VegetationParameters,
     indices::Vector{CartesianIndex{2}},
-    dt::Second,
+    dt::Second;
+    data_lookup::DataLookup = DataLookup(),
 )
     config_soil_layer_thickness = config.model.soil_layer__thickness
 
@@ -555,7 +605,8 @@ function SbmSoilParameters(
     soilwatercapacity = @. soilthickness * (theta_s - theta_r)
 
     n = length(indices)
-    sbm_params = SbmSoilParameters(;
+    sbm_params = SbmSoilParameters(
+        data_lookup;
         maxlayers,
         nlayers,
         soilwatercapacity,
@@ -592,7 +643,7 @@ function SbmSoilParameters(
 end
 
 "SBM soil model"
-@with_kw struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
+@kwdef struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
     n::Int
     boundary_conditions::SbmSoilBC = SbmSoilBC(; n)
     parameters::SbmSoilParameters{N, M, Kv}
@@ -605,11 +656,19 @@ function SbmSoilModel(
     config::Config,
     vegetation_parameter_set::VegetationParameters,
     indices::Vector{CartesianIndex{2}},
-    dt::Second,
+    dt::Second;
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
-    variables = SbmSoilVariables(n, parameters)
+    parameters = SbmSoilParameters(
+        dataset,
+        config,
+        vegetation_parameter_set,
+        indices,
+        dt;
+        data_lookup,
+    )
+    variables = SbmSoilVariables(n, parameters; data_lookup)
     soil_model = SbmSoilModel(; n, parameters, variables)
     return soil_model
 end
@@ -647,12 +706,13 @@ function update_bc_soil_model!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .= max.(
-        runoff.boundary_conditions.water_flux_surface .+
-        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-        0.0,
-    )
+    water_flux_surface .=
+        max.(
+            runoff.boundary_conditions.water_flux_surface .+
+            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+            0.0,
+        )
     return nothing
 end
 

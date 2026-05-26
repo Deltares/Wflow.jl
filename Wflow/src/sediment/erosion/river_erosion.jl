@@ -1,7 +1,7 @@
 abstract type AbstractRiverErosionModel end
 
 "Struct for storing river bed and bank erosion model variables"
-@with_kw struct RiverErosionModelVariables
+@kwdef struct RiverErosionModelVariables
     n::Int
     # Potential river bed erosion rate [t dt-1]
     bed::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -10,20 +10,21 @@ abstract type AbstractRiverErosionModel end
 end
 
 "Struct for storing river erosion model boundary conditions"
-@with_kw struct RiverErosionBC
+@kwdef struct RiverErosionBC
     n::Int
     # Waterlevel [m]
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing river erosion model parameters"
-@with_kw struct RiverErosionParameters
+@with_data_lookup struct RiverErosionParameters
     # Mean diameter [mm] in the river bed/bank
+    "river_bottom_and_bank_sediment__median_diameter"
     d50::Vector{Float64}
 end
 
 "Julian and Torres river erosion model"
-@with_kw struct RiverErosionJulianTorresModel <: AbstractRiverErosionModel
+@kwdef struct RiverErosionJulianTorresModel <: AbstractRiverErosionModel
     n::Int
     boundary_conditions::RiverErosionBC = RiverErosionBC(; n)
     parameters::RiverErosionParameters
@@ -34,7 +35,8 @@ end
 function RiverErosionParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     d50 = ncread(
         dataset,
@@ -43,7 +45,7 @@ function RiverErosionParameters(
         SoilLossModel;
         sel = indices,
     )
-    river_parameters = RiverErosionParameters(; d50)
+    river_parameters = RiverErosionParameters(data_lookup; d50)
 
     return river_parameters
 end
@@ -52,10 +54,11 @@ end
 function RiverErosionJulianTorresModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = RiverErosionParameters(dataset, config, indices)
+    parameters = RiverErosionParameters(dataset, config, indices; data_lookup)
     river_erosion_model = RiverErosionJulianTorresModel(; n, parameters)
     return river_erosion_model
 end

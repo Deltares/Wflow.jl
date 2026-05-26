@@ -22,7 +22,7 @@ The edges are defined as follows:
 - `yd` is the edge between node `yd` in the `CartesianIndex(0,-1)` direction and the
   neighboring node (`CartesianIndex(0,-2)` direction).
 """
-@with_kw struct EdgeConnectivity
+@kwdef struct EdgeConnectivity
     xu::Vector{Int} = Int[]
     xd::Vector{Int} = Int[]
     yu::Vector{Int} = Int[]

@@ -2,7 +2,7 @@ module Wflow
 
 import BasicModelInterface as BMI
 
-using Accessors: @optic, @reset, PropertyLens
+using Accessors: @reset, PropertyLens
 using Base.Threads: nthreads
 using CFTime: CFTime, monthday, dayofyear
 using CompositionsBase: decompose
@@ -60,7 +60,6 @@ using LoggingExtras:
     with_logger
 using NCDatasets: NCDatasets, NCDataset, dimnames, dimsize, nomissing, defDim, defVar, path
 using OrderedCollections: OrderedDict
-using Parameters: @with_kw
 using Polyester: @batch
 using ProgressLogging: @progress
 using PropertyDicts: PropertyDict
@@ -136,6 +135,7 @@ include("config_init.jl")
 include("io.jl")
 include("network.jl")
 include("routing/routing.jl")
+include("data_lookup.jl")
 include("domain.jl")
 
 """
@@ -149,6 +149,7 @@ struct Model{
     L<:AbstractLandModel,
     M<:AbstractMassBalance,
     T<:AbstractModelType,
+    N,
 } <: AbstractModel{T}
     config::Config                  # all configuration options
     domain::Domain                  # domain connectivity (network) and shared parameters
@@ -158,6 +159,7 @@ struct Model{
     clock::Clock                    # to keep track of simulation time
     reader::NCReader                # provides the model with dynamic input
     writer::Writer                  # writes model output
+    data_lookup::DataLookup{N}      # Lookup dicts for variable and parameter vectors
     type::T                         # model type
 end
 

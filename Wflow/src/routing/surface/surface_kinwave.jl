@@ -1,5 +1,5 @@
 "Struct for storing (shared) variables for river and overland flow models"
-@with_kw struct FlowVariables
+@kwdef struct FlowVariables
     n::Int
     q::Vector{Float64} = zeros(n)            # Discharge [m³ s⁻¹]
     qlat::Vector{Float64} = zeros(n)         # Lateral inflow per unit length [m² s⁻¹]
@@ -11,7 +11,7 @@
 end
 
 "Struct for storing Manning flow parameters"
-@with_kw struct ManningFlowParameters
+@kwdef struct ManningFlowParameters
     n::Int
     slope::Vector{Float64}        # Slope [m m⁻¹]
     mannings_n::Vector{Float64}   # Manning's roughness [s m⁻⅓]
@@ -33,8 +33,9 @@ function ManningFlowParameters(mannings_n::Vector{Float64}, slope::Vector{Float6
 end
 
 "Struct for storing river flow model parameters"
-@with_kw struct RiverFlowParameters
+@with_data_lookup struct RiverFlowParameters
     flow::ManningFlowParameters
+    "river_bank_water__depth"
     bankfull_depth::Vector{Float64} # Bankfull water level [m]
 end
 
@@ -50,7 +51,12 @@ function Base.getproperty(v::RiverFlowParameters, s::Symbol)
 end
 
 "Initialize river flow model parameters"
-function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainRiver)
+function RiverFlowParameters(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainRiver;
+    data_lookup::DataLookup = DataLookup(),
+)
     (; indices) = domain.network
     (; slope) = domain.parameters
     mannings_n = ncread(
@@ -64,14 +70,15 @@ function RiverFlowParameters(dataset::NCDataset, config::Config, domain::DomainR
         ncread(dataset, config, "river_bank_water__depth", Routing; sel = indices)
 
     flow_params = ManningFlowParameters(mannings_n, slope)
-    parameters = RiverFlowParameters(; flow = flow_params, bankfull_depth)
+    parameters = RiverFlowParameters(data_lookup; flow = flow_params, bankfull_depth)
     return parameters
 end
 
 "Struct for storing river flow model boundary conditions"
-@with_kw struct RiverFlowBC{R <: Union{ReservoirModel, Nothing}}
+@with_data_lookup struct RiverFlowBC{R <: Union{ReservoirModel, Nothing}}
     n::Int
     inwater::Vector{Float64} = zeros(n)                         # Lateral inflow [m³ s⁻¹]
+    "river_water__external_inflow_volume_flow_rate"
     external_inflow::Vector{Float64} = zeros(n)                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     actual_external_abstraction_av::Vector{Float64} = zeros(n)  # Actual abstraction from external negative inflow [m³ s⁻¹]
     abstraction::Vector{Float64} = zeros(n)                     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
@@ -83,7 +90,8 @@ function RiverFlowBC(
     dataset::NCDataset,
     config::Config,
     network::NetworkRiver,
-    reservoir::Union{ReservoirModel, Nothing},
+    reservoir::Union{ReservoirModel, Nothing};
+    data_lookup::DataLookup = DataLookup(),
 )
     (; indices) = network
     external_inflow = ncread(
@@ -94,13 +102,13 @@ function RiverFlowBC(
         sel = indices,
     )
     n = length(indices)
-    bc = RiverFlowBC(; n, external_inflow, reservoir)
+    bc = RiverFlowBC(data_lookup; n, external_inflow, reservoir)
     return bc
 end
 
 "River flow model using the kinematic wave method and the Manning flow equation"
-@with_kw struct KinWaveRiverFlowModel{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
-                AbstractRiverFlowModel
+@kwdef struct KinWaveRiverFlowModel{R <: RiverFlowBC, A <: AbstractAllocationModel} <:
+              AbstractRiverFlowModel
     timestepping::TimeStepping
     boundary_conditions::R
     parameters::RiverFlowParameters
@@ -113,7 +121,8 @@ function KinWaveRiverFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::DomainRiver,
-    reservoir::Union{ReservoirModel, Nothing},
+    reservoir::Union{ReservoirModel, Nothing};
+    data_lookup::DataLookup = DataLookup(),
 )
     (; indices) = domain.network
     n = length(indices)
@@ -124,8 +133,13 @@ function KinWaveRiverFlowModel(
         do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
     variables = FlowVariables(; n)
-    parameters = RiverFlowParameters(dataset, config, domain)
-    boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
+    data_lookup["river_water__instantaneous_volume_flow_rate"] = variables.q
+    data_lookup["river_water__volume_flow_rate"] = variables.q_av
+    data_lookup["river_water__volume"] = variables.storage
+    data_lookup["river_water__depth"] = variables.h
+    parameters = RiverFlowParameters(dataset, config, domain; data_lookup)
+    boundary_conditions =
+        RiverFlowBC(dataset, config, domain.network, reservoir; data_lookup)
 
     river_flow = KinWaveRiverFlowModel(;
         timestepping,
@@ -139,9 +153,10 @@ function KinWaveRiverFlowModel(
 end
 
 "Struct for storing overland flow model variables"
-@with_kw struct OverLandFlowVariables
+@with_data_lookup struct OverLandFlowVariables
     n::Int
     flow::FlowVariables = FlowVariables(; n)
+    "land_surface_water__to_river_volume_flow_rate"
     to_river::Vector{Float64} = zeros(n) # Part of overland flow [m³ s⁻¹] that flows to the river
 end
 
@@ -157,13 +172,13 @@ function Base.getproperty(v::OverLandFlowVariables, s::Symbol)
 end
 
 "Struct for storing overland flow model boundary conditions"
-@with_kw struct LandFlowBC
+@kwdef struct LandFlowBC
     n::Int
     inwater::Vector{Float64} = zeros(n) # Lateral inflow [m³ s⁻¹]
 end
 
 "Overland flow model using the kinematic wave method and the Manning flow{ equation"
-@with_kw struct KinWaveOverlandFlowModel <: AbstractOverlandFlowModel
+@kwdef struct KinWaveOverlandFlowModel <: AbstractOverlandFlowModel
     timestepping::TimeStepping
     boundary_conditions::LandFlowBC
     parameters::ManningFlowParameters
@@ -171,7 +186,12 @@ end
 end
 
 "Initialize Overland flow model `KinWaveOverlandFlowModel`"
-function KinWaveOverlandFlowModel(dataset::NCDataset, config::Config, domain::DomainLand)
+function KinWaveOverlandFlowModel(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainLand;
+    data_lookup::DataLookup = DataLookup(),
+)
     (; indices) = domain.network
     (; slope) = domain.parameters
     mannings_n = ncread(
@@ -185,7 +205,14 @@ function KinWaveOverlandFlowModel(dataset::NCDataset, config::Config, domain::Do
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
 
-    variables = OverLandFlowVariables(; n)
+    variables = OverLandFlowVariables(data_lookup; n, flow = FlowVariables(; n))
+    # Register overland-specific standard names for fields inherited from FlowVariables.
+    # FlowVariables annotates these with river_water__* names; the overland flow uses
+    # different standard names for the same fields.
+    data_lookup["land_surface_water__instantaneous_volume_flow_rate"] = variables.q
+    data_lookup["land_surface_water__volume_flow_rate"] = variables.q_av
+    data_lookup["land_surface_water__volume"] = variables.storage
+    data_lookup["land_surface_water__depth"] = variables.h
     parameters = ManningFlowParameters(mannings_n, slope)
     boundary_conditions = LandFlowBC(; n)
 

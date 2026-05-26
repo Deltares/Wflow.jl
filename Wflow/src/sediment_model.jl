@@ -11,18 +11,19 @@ function Model(config::Config, type::SedimentModel)
     # unpack the paths to the netCDF files
     static_path = input_path(config, config.input.path_static)
     dataset = NCDataset(static_path)
+    data_lookup = DataLookup(config)
 
     reader = NCReader(config)
     clock = Clock(config, reader)
 
     @info "General model settings." reservoirs = config.model.reservoir__flag
 
-    domain = Domain(dataset, config, type)
-    soilloss = SoilLossModel(dataset, config, domain.land.network.indices)
-    routing = Routing(dataset, config, domain, soilloss)
+    domain = Domain(dataset, config, type; data_lookup)
+    soilloss = SoilLossModel(dataset, config, domain.land.network.indices; data_lookup)
+    routing = Routing(dataset, config, domain, soilloss; data_lookup)
     mass_balance = NoMassBalance()
 
-    modelmap = (land = soilloss, routing, mass_balance)
+    modelmap = (land=soilloss, routing, mass_balance, data_lookup)
     writer = Writer(config, modelmap, domain, dataset)
     close(dataset)
 
@@ -35,6 +36,7 @@ function Model(config::Config, type::SedimentModel)
         clock,
         reader,
         writer,
+        data_lookup,
         SedimentModel(),
     )
 
@@ -75,7 +77,7 @@ function set_states!(model::AbstractModel{<:SedimentModel})
     if !config.model.cold_start__flag
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float64)
+        set_states!(instate_path, model; type=Float64)
     else
         @info "Set initial conditions from default values."
     end

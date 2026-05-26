@@ -71,8 +71,9 @@ cannot (easily) be implemented via the flux, but the head is set directly
 instead.
 """
 
-@with_kw struct GroundwaterFlowVariables
+@with_data_lookup struct GroundwaterFlowVariables
     n::Int
+    "subsurface_water__hydraulic_head"
     head::Vector{Float64}                          # hydraulic head [m]
     conductance::Vector{Float64}                   # conductance [m² d⁻¹]
     storage::Vector{Float64}                       # total storage of water that can be released [m³]
@@ -84,12 +85,15 @@ instead.
     exfiltwater::Vector{Float64} = zeros(n)        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
 end
 
-@with_kw struct GroundwaterFlowParameters
+@with_data_lookup struct GroundwaterFlowParameters
+    "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity"
     k::Vector{Float64}                  # reference horizontal conductivity [m d⁻¹]
     top::Vector{Float64}                # top of groundwater layer [m]
     bottom::Vector{Float64}             # bottom of groundwater layer [m]
     area::Vector{Float64}               # area of cell [m²]
+    "subsurface_water__specific_yield"
     specific_yield::Vector{Float64}     # specific yield (theta_s - theta_fc) [m m⁻¹]
+    "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter"
     f::Vector{Float64}                  # factor controlling the reduction of reference horizontal conductivity [-]
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
@@ -102,7 +106,8 @@ function GroundwaterFlowParameters(
     top::Vector{Float64},
     bottom::Vector{Float64},
     area::Vector{Float64},
-    specific_yield::Vector{Float64},
+    specific_yield::Vector{Float64};
+    data_lookup::DataLookup=DataLookup(),
 )
     k = ncread(
         dataset,
@@ -122,15 +127,17 @@ function GroundwaterFlowParameters(
     else
         f = Float64[]
     end
-    parameters = GroundwaterFlowParameters(; k, top, bottom, area, specific_yield, f)
+    parameters =
+        GroundwaterFlowParameters(data_lookup; k, top, bottom, area, specific_yield, f)
     return parameters
 end
 
-@with_kw struct ConstantHeadVariables
+@with_data_lookup struct ConstantHeadVariables
+    "model_constant_boundary_condition__hydraulic_head"
     head::Vector{Float64} # [m]
 end
 
-@with_kw struct ConstantHead
+@kwdef struct ConstantHead
     variables::ConstantHeadVariables
     index::Vector{Int} # [-]
 end
@@ -138,7 +145,8 @@ end
 function ConstantHead(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup=DataLookup(),
 )
     constanthead = ncread(
         dataset,
@@ -150,7 +158,7 @@ function ConstantHead(
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]
-    variables = ConstantHeadVariables(head)
+    variables = ConstantHeadVariables(data_lookup; head)
     constant_head = ConstantHead(; variables, index=index_constanthead)
     return constant_head
 end
@@ -208,7 +216,8 @@ function GroundwaterFlowModel(
     dataset::NCDataset,
     config::Config,
     domain::Domain,
-    soil::SbmSoilModel,
+    soil::SbmSoilModel;
+    data_lookup::DataLookup=DataLookup(),
 )
     (; land, river, drain) = domain
 
@@ -217,19 +226,13 @@ function GroundwaterFlowModel(
 
     n_cells = length(indices)
 
-    elevation = ncread(
-        dataset,
-        config,
-        "land_surface__elevation",
-        Routing;
-        sel=indices,
-    )
+    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel=indices)
 
     # unconfined aquifer
     if config.model.constanthead__flag
-        constanthead = ConstantHead(dataset, config, indices)
+        constanthead = ConstantHead(dataset, config, indices; data_lookup)
     else
-        variables = ConstantHeadVariables(; head=Float64[])
+        variables = ConstantHeadVariables(data_lookup; head=Float64[])
         constanthead = ConstantHead(; variables, index=Int64[])
     end
 
@@ -277,24 +280,26 @@ function GroundwaterFlowModel(
     )
     storage = @. (min(elevation, initial_head) - bottom) * area * parameters.specific_yield
     n = length(storage)
-    variables = GroundwaterFlowVariables(; n, head=initial_head, conductance, storage)
+    variables =
+        GroundwaterFlowVariables(data_lookup; n, head=initial_head, conductance, storage)
 
     # river boundary of unconfined aquifer
-    gwf_river_model = GwfRiverModel(dataset, config, river.network.indices)
+    gwf_river_model = GwfRiverModel(dataset, config, river.network.indices; data_lookup)
 
     # recharge boundary of unconfined aquifer
-    recharge_model = RechargeModel(; n=n_cells)
+    recharge_model = RechargeModel(; n=n_cells, variables=RechargeVariables(data_lookup; n))
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
-        drainage_model = DrainageModel(dataset, config, drain.network.indices)
+        drainage_model = DrainageModel(dataset, config, drain.network.indices; data_lookup)
         boundary_conditions = SubsurfaceFlowBC(;
             recharge=recharge_model,
             river=gwf_river_model,
             drain=drainage_model,
         )
     else
-        boundary_conditions = SubsurfaceFlowBC(; recharge=recharge_model, river=gwf_river_model)
+        boundary_conditions =
+            SubsurfaceFlowBC(; recharge=recharge_model, river=gwf_river_model)
     end
 
     alpha_coefficient = config.model.subsurface_water_flow__alpha_coefficient

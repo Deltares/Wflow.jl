@@ -70,6 +70,10 @@
             "allow_dynamic_input": {
                 "type": "boolean",
                 "description": "Whether the parameter can be updated from forcing/cyclic input each timestep."
+            },
+            "allow_output": {
+                "type": "boolean",
+                "description": "Whether the parameter/variable is allowed as model output"
             }
         }
     }

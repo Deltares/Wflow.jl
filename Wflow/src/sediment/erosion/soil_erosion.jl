@@ -1,24 +1,30 @@
 abstract type AbstractSoilErosionModel end
 
 "Struct for storing total soil erosion with differentiation model variables"
-@with_kw struct SoilErosionModelVariables
+@with_data_lookup struct SoilErosionModelVariables
     n::Int
     # Total soil erosion rate [t dt-1]
+    "soil_erosion__mass_flow_rate"
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total clay erosion rate [t dt-1]
+    "soil_erosion_clay__mass_flow_rate"
     clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total silt erosion rate [t dt-1]
+    "soil_erosion_silt__mass_flow_rate"
     silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total sand erosion rate [t dt-1]
+    "soil_erosion_sand__mass_flow_rate"
     sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total small aggregates erosion rate [t dt-1]
+    "soil_erosion_small_aggregates__mass_flow_rate"
     sagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Total large aggregates erosion rate [t dt-1]
+    "soil_erosion_large_aggregates__mass_flow_rate"
     lagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
-@with_kw struct SoilErosionBC
+@kwdef struct SoilErosionBC
     n::Int
     # Rainfall erosion rate [t dt-1]
     rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -27,16 +33,21 @@ end
 end
 
 "Struct for storing soil erosion model parameters"
-@with_kw struct SoilErosionParameters
+@with_data_lookup struct SoilErosionParameters
     # Soil content clay [-]
+    "soil_clay__mass_fraction"
     clay_fraction::Vector{Float64}
     # Soil content silt [-]
+    "soil_silt__mass_fraction"
     silt_fraction::Vector{Float64}
     # Soil content sand [-]
+    "soil_sand__mass_fraction"
     sand_fraction::Vector{Float64}
     # Soil content small aggregates [-]
+    "soil_small_aggregates__mass_fraction"
     sagg_fraction::Vector{Float64}
     # Soil content large aggregates [-]
+    "soil_large_aggregates__mass_fraction"
     lagg_fraction::Vector{Float64}
 end
 
@@ -44,7 +55,8 @@ end
 function SoilErosionParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     clay_fraction =
         ncread(dataset, config, "soil_clay__mass_fraction", SoilLossModel; sel = indices)
@@ -72,7 +84,8 @@ function SoilErosionParameters(
     if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
         error("Particle fractions in the soil must sum to 1")
     end
-    soil_parameters = SoilErosionParameters(;
+    soil_parameters = SoilErosionParameters(
+        data_lookup;
         clay_fraction,
         silt_fraction,
         sand_fraction,
@@ -84,7 +97,7 @@ function SoilErosionParameters(
 end
 
 "Total soil erosion with differentiation model"
-@with_kw struct SoilErosionModel <: AbstractSoilErosionModel
+@kwdef struct SoilErosionModel <: AbstractSoilErosionModel
     n::Int
     boundary_conditions::SoilErosionBC = SoilErosionBC(; n)
     parameters::SoilErosionParameters
@@ -95,11 +108,13 @@ end
 function SoilErosionModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = SoilErosionParameters(dataset, config, indices)
-    soil_erosion_model = SoilErosionModel(; n, parameters)
+    parameters = SoilErosionParameters(dataset, config, indices; data_lookup)
+    variables = SoilErosionModelVariables(data_lookup; n)
+    soil_erosion_model = SoilErosionModel(; n, parameters, variables)
     return soil_erosion_model
 end
 

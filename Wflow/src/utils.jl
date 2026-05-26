@@ -213,8 +213,7 @@ function set_states!(
                     end
                 end
                 # set state in model object, only set active cells ([1:n]) (ignore boundary conditions/ghost points)
-                lens = get_metadata(state, typeof(land), Routing; model).lens
-                lens(model)[1:n] .= A
+                get_field_in_model(model, state)[1][1:n] .= A
             else
                 error(
                     "Number of state dims should be 3 or 4, number of dims = ",

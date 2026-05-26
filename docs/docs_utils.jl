@@ -33,7 +33,7 @@ function generate_table(
     isempty(data) && error("No data for table.")
     data_pretty = Vector{String}[]
     for (standard_name, metadata) in data
-        (; description, unit, default, lens) = metadata
+        (; description, unit, default, allow_output) = metadata
         push!(
             data_pretty,
             [
@@ -41,7 +41,7 @@ function generate_table(
                 replace(description, r"`([^`]+)`" => s"<code>\1</code>"), # description
                 string(unit), # unit input/output
                 string(Wflow.to_SI(unit)), # unit internal
-                isnothing(lens) ? "✗" : "✓", # possible output
+                allow_output ? "✓" : "✗", # possible output
                 isnothing(default) ? "-" : string(default), # default
             ],
         )

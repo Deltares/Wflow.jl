@@ -1,30 +1,35 @@
 abstract type AbstractSedimentToRiverModel end
 
 "Struct to store total sediment reaching the river model variables"
-@with_kw struct SedimentToRiverVariables
+@with_data_lookup struct SedimentToRiverVariables
     n::Int
     # Total sediment rate to the river [t dt-1]
+    "land_surface_water_sediment__to_river_mass_flow_rate"
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
-@with_kw struct SedimentToRiverBC
+@kwdef struct SedimentToRiverBC
     n::Int
     # Deposition material rate [t dt-1]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model"
-@with_kw struct SedimentToRiverModel <: AbstractSedimentToRiverModel
+@kwdef struct SedimentToRiverModel <: AbstractSedimentToRiverModel
     n::Int
     boundary_conditions::SedimentToRiverBC = SedimentToRiverBC(; n)
     variables::SedimentToRiverVariables = SedimentToRiverVariables(; n)
 end
 
 "Initialize total sediment reaching the river model"
-function SedimentToRiverModel(indices::Vector{CartesianIndex{2}})
+function SedimentToRiverModel(
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
+)
     n = length(indices)
-    sediment_to_river_model = SedimentToRiverModel(; n)
+    variables = SedimentToRiverVariables(data_lookup; n)
+    sediment_to_river_model = SedimentToRiverModel(; n, variables)
     return sediment_to_river_model
 end
 
@@ -50,24 +55,30 @@ function update_sediment_to_river_model!(
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
-@with_kw struct SedimentToRiverDifferentiationVariables
+@with_data_lookup struct SedimentToRiverDifferentiationVariables
     n::Int
     # Total sediment rate [t dt-1]
+    "land_surface_water_sediment__to_river_mass_flow_rate"
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Clay rate [t dt-1]
+    "land_surface_water_clay__to_river_mass_flow_rate"
     clay_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Silt rate [t dt-1]
+    "land_surface_water_silt__to_river_mass_flow_rate"
     silt_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Sand rate [t dt-1]
+    "land_surface_water_sand__to_river_mass_flow_rate"
     sand_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Small aggregates rate [t dt-1]
+    "land_surface_water_small_aggregates__to_river_mass_flow_rate"
     sagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
     # Large aggregates rate [t dt-1]
+    "land_surface_water_large_aggregates__to_river_mass_flow_rate"
     lagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
-@with_kw struct SedimentToRiverDifferentiationBC
+@kwdef struct SedimentToRiverDifferentiationBC
     n::Int
     # Clay deposition rate [t dt-1]
     deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -82,7 +93,7 @@ end
 end
 
 "Struct to store differentiated sediment reaching the river model"
-@with_kw struct SedimentToRiverDifferentiationModel <: AbstractSedimentToRiverModel
+@kwdef struct SedimentToRiverDifferentiationModel <: AbstractSedimentToRiverModel
     n::Int
     boundary_conditions::SedimentToRiverDifferentiationBC =
         SedimentToRiverDifferentiationBC(; n)
@@ -91,9 +102,13 @@ end
 end
 
 "Initialize differentiated sediment reaching the river model"
-function SedimentToRiverDifferentiationModel(indices::Vector{CartesianIndex{2}})
+function SedimentToRiverDifferentiationModel(
+    indices::Vector{CartesianIndex{2}};
+    data_lookup::DataLookup = DataLookup(),
+)
     n = length(indices)
-    sediment_to_river_model = SedimentToRiverDifferentiationModel(; n)
+    variables = SedimentToRiverDifferentiationVariables(data_lookup; n)
+    sediment_to_river_model = SedimentToRiverDifferentiationModel(; n, variables)
     return sediment_to_river_model
 end
 

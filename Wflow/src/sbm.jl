@@ -2,8 +2,8 @@ abstract type AbstractDemandModel end
 abstract type AbstractAllocationModel end
 
 "Land hydrology model with SBM soil model"
-@with_kw struct LandHydrologySBM{D<:AbstractDemandModel,A<:AbstractAllocationModel} <:
-                AbstractLandModel
+@kwdef struct LandHydrologySBM{D <: AbstractDemandModel, A <: AbstractAllocationModel} <:
+              AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     vegetation_parameters::VegetationParameters
     interception::AbstractInterceptionModel
@@ -16,32 +16,42 @@ abstract type AbstractAllocationModel end
 end
 
 "Initialize land hydrology model with SBM soil model"
-function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand)
+function LandHydrologySBM(
+    dataset::NCDataset,
+    config::Config,
+    domain::DomainLand;
+    data_lookup::DataLookup = DataLookup(),
+)
     (; indices) = domain.network
     dt = Second(config.time.timestepsecs)
     n = length(indices)
 
-    atmospheric_forcing = AtmosphericForcing(; n)
-    vegetation_parameters = VegetationParameters(dataset, config, indices)
+    atmospheric_forcing = AtmosphericForcing(data_lookup; n)
+    vegetation_parameters = VegetationParameters(dataset, config, indices; data_lookup)
     if dt >= Hour(23)
-        interception =
-            GashInterceptionModel(dataset, config, indices, vegetation_parameters)
+        interception = GashInterceptionModel(
+            dataset,
+            config,
+            indices,
+            vegetation_parameters;
+            data_lookup,
+        )
         @info "Using the Gash interception model since dt >= 23 hours."
     else
-        interception = RutterInterceptionModel(vegetation_parameters, n)
+        interception = RutterInterceptionModel(vegetation_parameters, n; data_lookup)
         @info "Using the modified Rutter interception model since dt < 23 hours."
     end
 
     do_snow = config.model.snow__flag
     do_glacier = config.model.glacier__flag
     if do_snow
-        snow = SnowHbvModel(dataset, config, indices, dt)
+        snow = SnowHbvModel(dataset, config, indices, dt; data_lookup)
     else
         snow = NoSnowModel(n)
     end
     if do_snow && do_glacier
-        glacier_bc = SnowStateBC(; snow_storage=snow.variables.snow_storage)
-        glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc)
+        glacier_bc = SnowStateBC(; snow_storage = snow.variables.snow_storage)
+        glacier = GlacierHbvModel(dataset, config, indices, dt, glacier_bc; data_lookup)
     elseif !do_snow && do_glacier
         @warn string(
             "Glacier processes can be modelled when snow modelling is enabled. To include ",
@@ -53,13 +63,13 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     end
     runoff = OpenWaterRunoff(; n)
 
-    soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt)
+    soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt; data_lookup)
     @. vegetation_parameters.rootingdepth =
         min(soil.parameters.soilthickness * 0.99, vegetation_parameters.rootingdepth)
 
     if do_water_demand(config)
-        allocation = AllocationLandModel(dataset, config, indices)
-        demand = DemandModel(dataset, config, indices, dt)
+        allocation = AllocationLandModel(dataset, config, indices; data_lookup)
+        demand = DemandModel(dataset, config, indices, dt; data_lookup)
     else
         allocation = NoAllocationLandModel(n)
         demand = NoDemandModel(; n)
@@ -170,7 +180,7 @@ function update_total_water_storage!(
 
     # Chunk the data for parallel computing
     n = length(ustoredepth)
-    threaded_foreach(1:n; basesize=1000) do i
+    threaded_foreach(1:n; basesize = 1000) do i
         sub_surface = ustoredepth[i] + satwaterdepth[i]
         lateral = (
             overland_flow.variables.h[i] * (1 - river_fraction[i]) * 1000 # convert to mm
