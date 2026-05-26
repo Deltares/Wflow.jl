@@ -269,6 +269,14 @@ function to_dict(input_entry::InputEntry)
     return dict
 end
 
+function to_dict(index::IndexSection)
+    # Return compact integer form when only `i` is set
+    if !isnothing(index.i) && isnothing(index.x) && isnothing(index.y)
+        return index.i
+    end
+    return invoke(to_dict, Tuple{AbstractConfigSection}, index)
+end
+
 to_dict(data::Vector) = to_dict.(data)
 
 to_dict(x::Any) = x
