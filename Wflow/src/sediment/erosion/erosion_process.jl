@@ -30,30 +30,30 @@ Rainfall erosion model based on EUROSEM.
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
 function rainfall_erosion_eurosem(
-    precip::Float64,
-    interception::Float64,
-    waterlevel::Float64,
-    soil_detachability::Float64,
-    eurosem_exponent::Float64,
-    canopyheight::Float64,
-    canopygapfraction::Float64,
-    soilcover_fraction::Float64,
-    area::Float64,
-    dt::Float64,
+    precip::PRECISION,
+    interception::PRECISION,
+    waterlevel::PRECISION,
+    soil_detachability::PRECISION,
+    eurosem_exponent::PRECISION,
+    canopyheight::PRECISION,
+    canopygapfraction::PRECISION,
+    soilcover_fraction::PRECISION,
+    area::PRECISION,
+    dt::PRECISION,
 )
     # calculate rainfall intensity [mm/h]
     rintnsty = precip / (dt / 3600)
     # Kinetic energy of direct throughfall [J/m2/mm]
     # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
-    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed models
+    kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), ZERO) #variant used in most distributed models
     # Kinetic energy of leaf drainage [J/m2/mm]
     pheff = 0.5 * canopyheight
-    keleaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
+    keleaf = max((15.8 * sqrt(pheff)) - 5.87, ZERO)
 
     #Depths of rainfall (total, leaf drianage, direct) [mm]
     rdtot = precip
     rdleaf = rdtot * 0.1 * canopygapfraction #stemflow
-    rddir = max(rdtot - rdleaf - interception, 0.0) #throughfall
+    rddir = max(rdtot - rdleaf - interception, ZERO) #throughfall
 
     #Total kinetic energy by rainfall [J/m2]
     ketot = (rddir * kedir + rdleaf * keleaf) * 0.001
@@ -62,7 +62,7 @@ function rainfall_erosion_eurosem(
     rainfall_erosion *= area * 1e-6 # ton/cell
 
     # Remove the impervious area
-    rainfall_erosion *= 1.0 - soilcover_fraction
+    rainfall_erosion *= ONE - soilcover_fraction
     return rainfall_erosion
 end
 
@@ -90,12 +90,12 @@ Rainfall erosion model based on ANSWERS.
 - `rainfall_erosion` (soil loss [t Δt⁻¹])
 """
 function rainfall_erosion_answers(
-    precip::Float64,
-    usle_k::Float64,
-    usle_c::Float64,
-    answers_rainfall_factor::Float64,
-    area::Float64,
-    dt::Float64,
+    precip::PRECISION,
+    usle_k::PRECISION,
+    usle_c::PRECISION,
+    answers_rainfall_factor::PRECISION,
+    area::PRECISION,
+    dt::PRECISION,
 )
     # calculate rainfall intensity [mm/min]
     rintnsty = precip / (dt / 60)
@@ -132,13 +132,13 @@ Overland flow erosion model based on ANSWERS.
 - `overland_flow_erosion` (soil loss [t Δt⁻¹])
 """
 function overland_flow_erosion_answers(
-    overland_flow::Float64,
-    usle_k::Float64,
-    usle_c::Float64,
-    answers_overland_flow_factor::Float64,
-    slope::Float64,
-    area::Float64,
-    dt::Float64,
+    overland_flow::PRECISION,
+    usle_k::PRECISION,
+    usle_c::PRECISION,
+    answers_overland_flow_factor::PRECISION,
+    slope::PRECISION,
+    area::PRECISION,
+    dt::PRECISION,
 )
     # Overland flow rate [m2/min]
     qr_land = overland_flow * 60 / sqrt(area)
@@ -234,14 +234,14 @@ Repartition of the effective shear stress between the bank and the bed from Knig
 - `bank` (potential bank erosion [t Δt⁻¹])
 """
 function river_erosion_julian_torres(
-    waterlevel::Float64,
-    d50::Float64,
-    width::Float64,
-    length::Float64,
-    slope::Float64,
-    dt::Float64,
+    waterlevel::PRECISION,
+    d50::PRECISION,
+    width::PRECISION,
+    length::PRECISION,
+    slope::PRECISION,
+    dt::PRECISION,
 )
-    if waterlevel > 0.0
+    if waterlevel > ZERO
         # Bed and Bank from Shields diagram, Da Silva & Yalin (2017)
         E_ = (2.65 - 1) * GRAVITATIONAL_ACCELERATION
         E = 10 * d50 * cbrt(E_)
@@ -273,19 +273,19 @@ function river_erosion_julian_torres(
 
         # Potential erosion rates of the bed and bank [t/cell/timestep]
         #(assuming only one bank is eroding)
-        Tex = max(TEffbank - TCrbank, 0.0)
+        Tex = max(TEffbank - TCrbank, ZERO)
         # 1.4 is bank default bulk density
         ERbank = kdbank * Tex * length * waterlevel * 1.4 * dt
         # 1.5 is bed default bulk density
         ERbed = kdbed * (TEffbed - TCrbed) * length * width * 1.5 * dt
 
         # Potential maximum bed/bank erosion
-        bed = max(ERbed, 0.0)
-        bank = max(ERbank, 0.0)
+        bed = max(ERbed, ZERO)
+        bank = max(ERbank, ZERO)
 
     else
-        bed = 0.0
-        bank = 0.0
+        bed = ZERO
+        bank = ZERO
     end
 
     return bed, bank
@@ -293,8 +293,8 @@ end
 
 """
     function river_erosion_store!(
-        store_vec::Vector{Float64}
-        excess_sediment::Float64,
+        store_vec::Vector{PRECISION}
+        excess_sediment::PRECISION,
         v::Int,
     )
 
@@ -309,7 +309,11 @@ River erosion of the previously deposited sediment.
 - `erosion` (river erosion [t Δt⁻¹])
 - `excess_sediment` (updated excess sediment [t Δt⁻¹])
 """
-function river_erosion_store!(store_vec::Vector{Float64}, excess_sediment::Float64, v::Int)
+function river_erosion_store!(
+    store_vec::Vector{PRECISION},
+    excess_sediment::PRECISION,
+    v::Int,
+)
     store = store_vec[v]
     if store > 0
         # River erosion of the previously deposited sediment
@@ -318,7 +322,7 @@ function river_erosion_store!(store_vec::Vector{Float64}, excess_sediment::Float
         excess_sediment -= erosion
         store_vec[v] = store - erosion
     else
-        erosion = 0.0
+        erosion = ZERO
     end
     return erosion, excess_sediment
 end

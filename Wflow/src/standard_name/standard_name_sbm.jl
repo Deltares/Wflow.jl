@@ -8,7 +8,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "atmosphere_air__snowfall_temperature_interval" => ParameterMetadata(;
         lens = @optic(_.land.snow.parameters.tti),
         unit = Unit(; degC = 1),
-        default = 1.0,
+        default = ONE,
         description = "Threshold temperature interval length",
         tags = [:snow_input],
     ),
@@ -136,7 +136,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "irrigated_non_paddy__irrigation_efficiency" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.parameters.irrigation_efficiency),
-        default = 1.0,
+        default = ONE,
         description = "Irrigation efficiency",
         tags = [:demand_non_paddy_irrigation_input],
     ),
@@ -162,7 +162,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "irrigated_paddy__irrigation_efficiency" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.parameters.irrigation_efficiency),
-        default = 1.0,
+        default = ONE,
         description = "Irrigation efficiency",
         tags = [:demand_paddy_irrigation_input],
     ),
@@ -230,7 +230,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "land_surface_water__withdrawal_fraction" => ParameterMetadata(;
         lens = @optic(_.land.allocation.parameters.frac_sw_used),
-        default = 1.0,
+        default = ONE,
         description = "Fraction surface water used",
         tags = [:demand_allocation_input],
     ),
@@ -414,7 +414,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor" =>
         ParameterMetadata(;
             lens = @optic(_.land.soil.parameters.kvfrac),
-            default = 1.0,
+            default = ONE,
             description = "Multiplication factor applied to vertical saturated hydraulic conductivity per soil layer",
             dimname = :layer,
             tags = [:soil_input],
@@ -613,7 +613,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "vegetation__crop_factor" => ParameterMetadata(;
         lens = @optic(_.land.vegetation_parameters.kc),
-        default = 1.0,
+        default = ONE,
         description = "Crop coefficient",
         tags = [:vegetation_input],
     ),
@@ -663,7 +663,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient" =>
         ParameterMetadata(;
             lens = @optic(_.land.soil.parameters.alpha_h1),
-            default = 1.0,
+            default = ONE,
             description = "Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)",
             tags = [:soil_input],
         ),
@@ -698,7 +698,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "vegetation_water__storage_capacity" => ParameterMetadata(;
         lens = @optic(_.land.vegetation_parameters.cmax),
         unit = Unit(; mm = 1),
-        default = 1.0,
+        default = ONE,
         description = "Maximum canopy storage",
         tags = [:vegetation_input],
     ),

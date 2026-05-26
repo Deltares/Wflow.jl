@@ -49,7 +49,7 @@ end
 function Base.show(io::IO, input_entry::InputEntry)
     (; netcdf_variable_name, scale, offset, value, external_name) = input_entry
     if !isnothing(netcdf_variable_name)
-        if scale == [1.0] && offset == [0.0]
+        if scale == [ONE] && offset == [0.0]
             print(io, netcdf_variable_name)
         else
             print(io, netcdf_variable_name * " (scale = $scale, offset = $offset)")

@@ -50,7 +50,7 @@ end
 function update_soil_loss_model!(
     soil_loss_model::SoilLossModel,
     parameters::LandParameters,
-    dt::Float64,
+    dt::PRECISION,
 )
     (;
         atmospheric_forcing,

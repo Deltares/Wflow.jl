@@ -23,12 +23,12 @@ function infiltration(
 )
     # First determine if the soil infiltration capacity can deal with the amount of water
     # split between infiltration in undisturbed soil and paved areas (path).
-    soilinf = potential_infiltration * (1.0 - pathfrac)
+    soilinf = potential_infiltration * (ONE - pathfrac)
     pathinf = potential_infiltration * pathfrac
 
     max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
     max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
-    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(0.0, ustorecapacity))
+    infiltsoilpath = min(max_infiltpath + max_infiltsoil, max(ZERO, ustorecapacity))
 
     infiltexcess = (soilinf - max_infiltsoil) + (pathinf - max_infiltpath)
 
@@ -44,14 +44,14 @@ table), the effective saturation degree of the layer (ratio `usd` and `l_sat`), 
 Brooks-Corey power coefficient `c`.
 """
 function unsatzone_flow_layer(usd, kv_z, l_sat, c)
-    if usd <= 0.0
-        return 0.0, 0.0
+    if usd <= ZERO
+        return ZERO, ZERO
     end
     # Excess soil water:
     # first transfer soil water > maximum soil water capacity layer (iteration is not
     # required because of steady theta (usd))
-    st_sat = max(0.0, usd - l_sat)
-    st = kv_z * min(pow(usd / l_sat, c), 1.0)
+    st_sat = max(ZERO, usd - l_sat)
+    st = kv_z * min(pow(usd / l_sat, c), ONE)
     sum_ast = min(st, st_sat)
     usd -= sum_ast
 
@@ -60,7 +60,7 @@ function unsatzone_flow_layer(usd, kv_z, l_sat, c)
     remainder = min(st - sum_ast, usd)
     its = Int(cld(remainder, 0.2))
     for _ in 1:its
-        st = (kv_z / its) * min(pow(usd / l_sat, c), 1.0)
+        st = (kv_z / its) * min(pow(usd / l_sat, c), ONE)
         ast = min(st, usd)
         usd -= ast
         sum_ast += ast
@@ -107,8 +107,8 @@ end
 Return water content at field capacity based on the Brooks-Corey soil hydraulic model.
 """
 function field_capacity(layer_thickness, n_layers, theta_s, theta_r, c, hb)
-    theta_fc = 0.0
-    total_depth = 0.0
+    theta_fc = ZERO
+    total_depth = ZERO
     for i in 1:n_layers
         theta_fc +=
             vwc_brooks_corey(-100.0, hb, theta_s, theta_r, c[i]) * layer_thickness[i]
@@ -125,10 +125,10 @@ Return soil water pressure head `h3` of Feddes root water uptake reduction funct
 function feddes_h3(h3_high, h3_low, tpot, Δt)
     # value of h3 is a function of potential transpiration [mm d⁻¹]
     tpot_daily = tpot * (tosecond(BASETIMESTEP) / Δt)
-    return if tpot_daily <= 1.0
+    return if tpot_daily <= ONE
         h3_low
     elseif tpot_daily < 5.0
-        h3_low + (h3_high - h3_low) * (tpot_daily - 1.0) / (5.0 - 1.0)
+        h3_low + (h3_high - h3_low) * (tpot_daily - ONE) / (5.0 - ONE)
     else
         h3_high
     end
@@ -142,19 +142,19 @@ Root water uptake reduction factor based on Feddes.
 function rwu_reduction_feddes(h, h1, h2, h3, h4, alpha_h1)
     # root water uptake reduction coefficient alpha (see also Feddes et al., 1978)
     return if h < h4
-        0.0
+        ZERO
     elseif h < h3
         (h - h4) / (h3 - h4)
     elseif iszero(alpha_h1)
         if h < h2
-            1.0
+            ONE
         elseif h < h1
             (h1 - h) / (h1 - h2)
         else
-            0.0
+            ZERO
         end
     else
-        1.0
+        ONE
     end
 end
 
@@ -183,7 +183,7 @@ When both `modelsnow` and `soil_infiltration_reduction` are `true` an infiltrati
 factor `f_infiltration_reduction` is computed. The infiltration reduction factor is based on
 the near surface soil temperature `tsoil`, parameter `cf_soil` and a s-curve to make a
 smooth transition of `f_infiltration_reduction` as a function of `tsoil` and `cf_soil`.
-Otherwise, `f_infiltration_reduction` is set to 1.0.
+Otherwise, `f_infiltration_reduction` is set to ONE.
 """
 function infiltration_reduction_factor(
     tsoil,
@@ -192,10 +192,10 @@ function infiltration_reduction_factor(
     soil_infiltration_reduction = false,
 )
     if modelsnow && soil_infiltration_reduction
-        bb = 1.0 / (1.0 - cf_soil)
-        f_infiltration_reduction = scurve(tsoil, 0.0, bb, 8.0) + cf_soil
+        bb = ONE / (ONE - cf_soil)
+        f_infiltration_reduction = scurve(tsoil, ZERO, bb, 8.0) + cf_soil
     else
-        f_infiltration_reduction = 1.0
+        f_infiltration_reduction = ONE
     end
     return f_infiltration_reduction
 end
@@ -210,16 +210,16 @@ function soil_evaporation_unsatured_store(
     theta_effective,
 )
     if n_unsatlayers == 0
-        soilevapunsat = 0.0
+        soilevapunsat = ZERO
     elseif n_unsatlayers == 1
         # Check if groundwater level lies below the surface
         soilevapunsat =
-            potential_soilevaporation * min(1.0, ustorelayerdepth / (zi * theta_effective))
+            potential_soilevaporation * min(ONE, ustorelayerdepth / (zi * theta_effective))
     else
         # In case first layer contains no saturated storage
         soilevapunsat =
             potential_soilevaporation *
-            min(1.0, ustorelayerdepth / (ustorelayerthickness * (theta_effective)))
+            min(ONE, ustorelayerdepth / (ustorelayerthickness * (theta_effective)))
     end
     return soilevapunsat
 end
@@ -234,10 +234,10 @@ function soil_evaporation_satured_store(
 )
     if n_unsatlayers in (0, 1)
         soilevapsat =
-            potential_soilevaporation * min(1.0, (layerthickness - zi) / layerthickness)
+            potential_soilevaporation * min(ONE, (layerthickness - zi) / layerthickness)
         soilevapsat = min(soilevapsat, (layerthickness - zi) * theta_drainable)
     else
-        soilevapsat = 0.0
+        soilevapsat = ZERO
     end
     return soilevapsat
 end
@@ -251,9 +251,9 @@ function actual_infiltration_soil_path(
     infiltcappath,
     f_infiltration_reduction,
 )
-    soilinf = potential_infiltration * (1.0 - pathfrac)
+    soilinf = potential_infiltration * (ONE - pathfrac)
     pathinf = potential_infiltration * pathfrac
-    if actinfilt > 0.0
+    if actinfilt > ZERO
         max_infiltsoil = min(infiltcapsoil * f_infiltration_reduction, soilinf)
         max_infiltpath = min(infiltcappath * f_infiltration_reduction, pathinf)
 
@@ -261,8 +261,8 @@ function actual_infiltration_soil_path(
         actinfiltpath = actinfilt * max_infiltpath / (max_infiltpath + max_infiltsoil)
 
     else
-        actinfiltsoil = 0.0
-        actinfiltpath = 0.0
+        actinfiltsoil = ZERO
+        actinfiltpath = ZERO
     end
 
     return actinfiltsoil, actinfiltpath

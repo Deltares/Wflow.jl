@@ -4,44 +4,44 @@ abstract type AbstractSnowModel end
 @with_kw struct SnowVariables
     n::Int
     # Snow storage [mm]
-    snow_storage::Vector{Float64} = zeros(n)
+    snow_storage::Vector{PRECISION} = zeros(n)
     # Liquid water content in the snow pack [mm]
-    snow_water::Vector{Float64} = zeros(n)
+    snow_water::Vector{PRECISION} = zeros(n)
     # Snow water equivalent (SWE) [mm]
-    swe::Vector{Float64} = fill(MISSING_VALUE, n)
+    swe::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Snow melt [mm Δt⁻¹]
-    snow_melt::Vector{Float64} = fill(MISSING_VALUE, n)
+    snow_melt::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Runoff from snowpack [mm Δt⁻¹]
-    runoff::Vector{Float64} = fill(MISSING_VALUE, n)
+    runoff::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Lateral snow (SWE) transport from upstreams cells [mm Δt⁻¹]
-    snow_in::Vector{Float64} = zeros(n)
+    snow_in::Vector{PRECISION} = zeros(n)
     # Lateral snow (SWE) transport out of a cell [mm Δt⁻¹]
-    snow_out::Vector{Float64} = zeros(n)
+    snow_out::Vector{PRECISION} = zeros(n)
 end
 
 "Struct for storing snow model boundary conditions"
 @with_kw struct SnowBC
     n::Int
     # Effective precipitation [mm Δt⁻¹]
-    effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
+    effective_precip::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Snow precipitation [mm Δt⁻¹]
-    snow_precip::Vector{Float64} = fill(MISSING_VALUE, n)
+    snow_precip::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Liquid precipitation [mm Δt⁻¹]
-    liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n)
+    liquid_precip::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing snow HBV model parameters"
 @with_kw struct SnowHbvParameters
     # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
-    cfmax::Vector{Float64}
+    cfmax::Vector{PRECISION}
     # Threshold temperature for snowfall [ᵒC]
-    tt::Vector{Float64}
+    tt::Vector{PRECISION}
     # Threshold temperature interval length [ᵒC]
-    tti::Vector{Float64}
+    tti::Vector{PRECISION}
     # Threshold temperature for snowmelt [ᵒC]
-    ttm::Vector{Float64}
+    ttm::Vector{PRECISION}
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{Float64}
+    whc::Vector{PRECISION}
 end
 
 "Snow HBV model"

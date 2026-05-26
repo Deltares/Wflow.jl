@@ -48,7 +48,7 @@ function BMI.update(model::Model)
     return nothing
 end
 
-function BMI.update_until(model::Model, time::Float64)
+function BMI.update_until(model::Model, time::PRECISION)
     t = BMI.get_current_time(model)
     _div, _rem = divrem(time - t, model.clock.dt.value)
     steps = Int(_div)
@@ -175,18 +175,18 @@ function BMI.get_current_time(model::Model)
     (; config, clock) = model
     (; starttime, calendar) = config.time
     starttime = cftime(starttime, calendar)
-    return 0.001 * Dates.value(clock.time - starttime)
+    return Dates.value(clock.time - starttime) / 1000
 end
 
 function BMI.get_start_time(::Model)
-    return 0.0
+    return ZERO
 end
 
 function BMI.get_end_time(model::Model)
     (; starttime, endtime, calendar) = model.config.time
     starttime_ = cftime(starttime, calendar)
     endtime_ = cftime(endtime, calendar)
-    return 0.001 * Dates.value(endtime_ - starttime_)
+    return Dates.value(endtime_ - starttime_) / 1000
 end
 
 function BMI.get_time_units(model::Model)
@@ -197,7 +197,7 @@ function BMI.get_time_step(model::Model)
     return model.config.time.timestepsecs
 end
 
-function BMI.get_value(model::Model, name::String, dest::Vector{Float64})
+function BMI.get_value(model::Model, name::String, dest::Vector{PRECISION})
     dest .= copy(BMI.get_value_ptr(model, name))
     return dest
 end
@@ -226,7 +226,7 @@ end
 function BMI.get_value_at_indices(
     model::Model,
     name::String,
-    dest::Vector{Float64},
+    dest::Vector{PRECISION},
     inds::Vector{Int},
 )
     dest .= BMI.get_value_ptr(model, name)[inds]
@@ -234,17 +234,17 @@ function BMI.get_value_at_indices(
 end
 
 """
-    BMI.set_value(model::Model, name::String, src::Vector{Float64})
+    BMI.set_value(model::Model, name::String, src::Vector{PRECISION})
 
 Set a model variable `name` to the values in vector `src`, overwriting the current contents.
 The type and size of `src` must match the model's internal array.
 """
-function BMI.set_value(model::Model, name::String, src::Vector{Float64})
+function BMI.set_value(model::Model, name::String, src::Vector{PRECISION})
     return BMI.get_value_ptr(model, name) .= src
 end
 
 """
-    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{Float64})
+    BMI.set_value_at_indices(model::Model, name::String, inds::Vector{Int}, src::Vector{PRECISION})
 
     Set a model variable `name` to the values in vector `src`, at indices `inds`.
 """
@@ -252,7 +252,7 @@ function BMI.set_value_at_indices(
     model::Model,
     name::String,
     inds::Vector{Int},
-    src::Vector{Float64},
+    src::Vector{PRECISION},
 )
     return BMI.get_value_ptr(model, name)[inds] .= src
 end
@@ -275,7 +275,7 @@ function BMI.get_grid_rank(model::Model, grid::Int)
     end
 end
 
-function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
+function BMI.get_grid_x(model::Model, grid::Int, x::Vector{PRECISION})
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])
@@ -285,7 +285,7 @@ function BMI.get_grid_x(model::Model, grid::Int, x::Vector{Float64})
     return x
 end
 
-function BMI.get_grid_y(model::Model, grid::Int, y::Vector{Float64})
+function BMI.get_grid_y(model::Model, grid::Int, y::Vector{PRECISION})
     (; reader, domain) = model
     (; dataset) = reader
     sel = active_indices(domain, GRIDS[grid])

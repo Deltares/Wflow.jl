@@ -5,7 +5,7 @@ get_standard_name_map(::Type{<:SoilLossModel}) = sediment_standard_name_map
 get_standard_name_map(::Type{<:Domain}) = domain_standard_name_map
 get_standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
-const PARAMETER_TYPES = Union{Float64, Int, Bool, Nothing}
+const PARAMETER_TYPES = Union{PRECISION, Int, Bool, Nothing}
 
 """
 Metadata associated with parameters and variables.
@@ -15,7 +15,7 @@ Metadata associated with parameters and variables.
 - `unit`: The unit of the parameter/variable in the Wflow input
 - `default`: The default (initial) value of the parameter/variable if it exists
 - `fill`: Missing input values are replaced by this value if allow_missing == false
-- `type`: The output type of the data. Assumed to be `Float64` if it is not provided and cannot be derived
+- `type`: The output type of the data. Assumed to be `PRECISION` if it is not provided and cannot be derived
     from `default` or `fill`
 - `description`: The description of the parameter/variable provided in the Wflow docs
 - `allow_missing`: Whether the parameter/variable is allowed to have missing entries
@@ -58,12 +58,18 @@ Metadata associated with parameters and variables.
             elseif !isnothing(fill)
                 F
             else
-                # Assume the type is Float64 if it is not provided and cannot be derived
+                # Assume the type is PRECISION if it is not provided and cannot be derived
                 # from the default or fill
-                Float64
+                PRECISION
             end
         end
-        return new{L, D, F, type, N}(
+
+        if type <: AbstractFloat
+            type = PRECISION
+            default = (default isa AbstractFloat) ? PRECISION(default) : default
+            fill = (fill isa AbstractFloat) ? PRECISION(fill) : fill
+        end
+        return new{L, typeof(default), typeof(fill), type, N}(
             lens,
             unit,
             default,

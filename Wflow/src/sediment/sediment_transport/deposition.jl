@@ -28,19 +28,19 @@ Deposition of sediment in reservoirs from Camp 1945.
 - `deposition` (deposition [t Δt⁻¹])
 """
 function reservoir_deposition_camp(
-    input::Float64,
-    q::Float64,
-    waterlevel::Float64,
-    res_area::Float64,
-    res_trapping_efficiency::Float64,
-    dm::Float64,
-    slope::Float64,
+    input::PRECISION,
+    q::PRECISION,
+    waterlevel::PRECISION,
+    res_area::PRECISION,
+    res_trapping_efficiency::PRECISION,
+    dm::PRECISION,
+    slope::PRECISION,
 )
     # Compute critical velocity
     vcres = q / res_area
     DCres = STOKES_FACTOR / vcres
     # Natural deposition
-    deposition = input * min(1.0, (DCres * (dm / 1000)^2))
+    deposition = input * min(ONE, (DCres * (dm / 1000)^2))
 
     # Check if particles are travelling in suspension or bed load using Rouse number
     dsuspf =

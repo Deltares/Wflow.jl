@@ -350,7 +350,7 @@ function NetworkDrain(
     dataset::NCDataset,
     config::Config,
     indices::Vector{CartesianIndex{2}},
-    surface_flow_width::Vector{Float64},
+    surface_flow_width::Vector{PRECISION},
 )
     n_cells = length(indices)
     drain_2d = ncread(dataset, config, "land_drain_location__mask", Routing)
@@ -359,7 +359,7 @@ function NetworkDrain(
     # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)
     # and correct if this is the case
     false_drain =
-        filter(i -> !isequal(drain[i], 0) && surface_flow_width[i] == 0.0, 1:n_cells)
+        filter(i -> !isequal(drain[i], 0) && iszero(surface_flow_width[i]), 1:n_cells)
     n_false_drain = length(false_drain)
     if n_false_drain > 0
         drain_2d[indices[false_drain]] .= 0

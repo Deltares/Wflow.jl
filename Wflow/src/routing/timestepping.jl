@@ -1,10 +1,10 @@
 
 "Timestepping for river, overland and subsurface flow routing."
 @with_kw struct TimeStepping
-    stable_timesteps::Vector{Float64} = Float64[]
-    dt_fixed::Float64 = 0.0
+    stable_timesteps::Vector{PRECISION} = PRECISION[]
+    dt_fixed::PRECISION = ZERO
     adaptive::Bool = true
-    alpha_coefficient::Float64 = 1.0
+    alpha_coefficient::PRECISION = ONE
 end
 
 "Check timestep size"

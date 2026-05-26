@@ -4,40 +4,40 @@ abstract type AbstractSoilErosionModel end
 @with_kw struct SoilErosionModelVariables
     n::Int
     # Total soil erosion rate [t dt-1]
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Total clay erosion rate [t dt-1]
-    clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Total silt erosion rate [t dt-1]
-    silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    silt_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Total sand erosion rate [t dt-1]
-    sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    sand_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Total small aggregates erosion rate [t dt-1]
-    sagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    sagg_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Total large aggregates erosion rate [t dt-1]
-    lagg_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    lagg_erosion_rate::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
     n::Int
     # Rainfall erosion rate [t dt-1]
-    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
+    rainfall_erosion::Vector{PRECISION} = fill(MISSING_VALUE, n)
     # Overland flow erosion rate [t dt-1]
-    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
+    overland_flow_erosion::Vector{PRECISION} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model parameters"
 @with_kw struct SoilErosionParameters
     # Soil content clay [-]
-    clay_fraction::Vector{Float64}
+    clay_fraction::Vector{PRECISION}
     # Soil content silt [-]
-    silt_fraction::Vector{Float64}
+    silt_fraction::Vector{PRECISION}
     # Soil content sand [-]
-    sand_fraction::Vector{Float64}
+    sand_fraction::Vector{PRECISION}
     # Soil content small aggregates [-]
-    sagg_fraction::Vector{Float64}
+    sagg_fraction::Vector{PRECISION}
     # Soil content large aggregates [-]
-    lagg_fraction::Vector{Float64}
+    lagg_fraction::Vector{PRECISION}
 end
 
 "Initialize soil erosion model parameters"
@@ -69,7 +69,7 @@ function SoilErosionParameters(
     # Check that soil fractions sum to 1
     soil_fractions =
         clay_fraction + silt_fraction + sand_fraction + sagg_fraction + lagg_fraction
-    if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
+    if !all(f -> isapprox(f, ONE; rtol = 1e-3), soil_fractions)
         error("Particle fractions in the soil must sum to 1")
     end
     soil_parameters = SoilErosionParameters(;

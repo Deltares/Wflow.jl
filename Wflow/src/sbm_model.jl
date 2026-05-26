@@ -34,7 +34,7 @@ function Model(config::Config, type::SbmModel)
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maxlayers))),
+        extra_dim = (name = "layer", value = PRECISION.(1:(maxlayers))),
     )
     close(dataset)
 
@@ -75,15 +75,15 @@ function update_model!(model::AbstractModel{<:SbmModel})
             land.allocation.variables.act_groundwater_abst
     end
     # unit conversions
-    boundary_conditions.recharge.variables.rate .*= 0.001 * (tosecond(BASETIMESTEP) / dt)
-    routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000.0
+    boundary_conditions.recharge.variables.rate .*= (tosecond(BASETIMESTEP) / dt) / 1000
+    routing.subsurface_flow.variables.zi .= land.soil.variables.zi ./ 1000
     # update lateral subsurface flow domain (kinematic wave)
     kh_layered_profile!(land.soil, routing.subsurface_flow, kv_profile, dt)
     update_subsurface_flow_model!(
         routing.subsurface_flow,
         land.soil,
         domain,
-        clock.dt / BASETIMESTEP,
+        to_precision(clock.dt / BASETIMESTEP),
     )
     # update SBM soil model (runoff, ustorelayerdepth and satwaterdepth)
     update_soil_water_storage!(soil, (; runoff, demand, routing.subsurface_flow))
@@ -116,7 +116,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         nriv = length(domain.river.network.indices)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
-        set_states!(instate_path, model; type = Float64, dimname = :layer)
+        set_states!(instate_path, model; type = PRECISION, dimname = :layer)
 
         update_diagnostic_vars!(land.soil)
 
@@ -124,9 +124,9 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             (; surface_flow_width, flow_length) = domain.land.parameters
             # make sure land cells with zero flow width are set to zero q and h
             for i in eachindex(surface_flow_width)
-                if surface_flow_width[i] <= 0.0
-                    land_v.q[i] = 0.0
-                    land_v.h[i] = 0.0
+                if surface_flow_width[i] <= ZERO
+                    land_v.q[i] = ZERO
+                    land_v.h[i] = ZERO
                 end
             end
             land_v.storage .= land_v.h .* surface_flow_width .* flow_length
@@ -137,7 +137,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             for i in eachindex(land_v.storage)
                 if river_location[i]
                     j = domain.land.network.river_indices[i]
-                    if land_v.h[i] > 0.0
+                    if land_v.h[i] > ZERO
                         land_v.storage[i] =
                             land_v.h[i] * x_length[i] * y_length[i] + bankfull_storage[j]
                     else
