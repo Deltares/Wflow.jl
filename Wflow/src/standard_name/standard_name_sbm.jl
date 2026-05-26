@@ -664,7 +664,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ParameterMetadata(;
             lens = @optic(_.land.soil.parameters.alpha_h1),
             default = ONE,
-            description = "Root water uptake reduction at soil water pressure head h1 (0.0 or ONE)",
+            description = "Root water uptake reduction at soil water pressure head h1 (0.0 or 1.0)",
             tags = [:soil_input],
         ),
     "vegetation_root__feddes_critical_pressure_head_h2" => ParameterMetadata(;
