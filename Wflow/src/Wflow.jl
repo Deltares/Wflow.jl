@@ -359,7 +359,7 @@ function run!(model::Model; close_files = true)
         else
             @debug "Writing configuration." dst
             open(dst, "w") do io
-                TOML.print(io, to_dict(config))
+                TOML.print(io, to_dict(config); sorted = true)
             end
         end
     end
