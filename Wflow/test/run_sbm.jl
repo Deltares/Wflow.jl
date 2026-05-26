@@ -72,6 +72,22 @@
               ["time", "layer", "river_gauge__count", "temp_bycoord", "temp_byindex"]
     end
 
+    @testset "NetCDF grid output" begin
+        ds = model.writer.dataset
+        land_inds = model.domain.land.network.indices
+        river_inds = model.domain.river.network.indices
+        reservoir_inds = model.domain.reservoir.network.indices_outlet
+        @test ds["time"][1] == DateTime("2000-01-02T00:00:00")
+        @test mean(ds["ustorelayerdepth"][land_inds, 1, 1]) ≈ 1.6233163
+        @test mean(ds["satwaterdepth"][land_inds, 1]) ≈ 429.66742
+        @test mean(ds["snow"][land_inds, 1]) ≈ 0.038019713
+        @test mean(ds["q_av_land"][land_inds, 1]) ≈ 0.0009209641
+        @test mean(ds["q_land_to_river"][land_inds, 1]) ≈ 0.00010729332
+        @test mean(ds["ssf_to_river"][land_inds, 1]) ≈ 83.955956
+        @test mean(ds["storage_reservoir"][reservoir_inds, 1]) ≈ 3.700436e7
+        @test mean(ds["q_av_river"][river_inds, 1]) ≈ 0.16033845
+    end
+
     @testset "first timestep" begin
         sbm = model.land.soil
         snow = model.land.snow

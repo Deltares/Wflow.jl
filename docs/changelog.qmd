@@ -13,6 +13,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `bankfull_depth` was assigned to this volume, this should be `bankfull_storage`.
 - Maximum subsurface flow was not adjusted for sub-daily timestep for `layered` and
   `layered_exponential` profiles.
+- Fix deriving active indices for output variable `to_river`. Also, the mapping of standard
+  name (or model path) to active indices is now more strict (comparing prefix of these
+  strings instead of substring matching).
 
 ## v1.0.2 - 2026-03-05
 
