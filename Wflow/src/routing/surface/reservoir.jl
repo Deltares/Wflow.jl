@@ -425,7 +425,6 @@ function update_reservoir_modified_puls(
         outflow = 0.0
     end
     outflow = min(outflow, si_factor)
-    # [m³] = ([m³ s⁻¹] - [m³ s⁻¹]) * dt
     storage = (si_factor - outflow) * dt
     return outflow, storage
 end
@@ -475,7 +474,6 @@ function update_reservoir_free_weir(
     if diff_wl >= 0.0
         if res_v.waterlevel[i] > threshold[i]
             dh = waterlevel[i] - threshold[i]
-            # [m³ s⁻¹] = [m³⁻ᵉ s⁻¹] * [m]ᵉ
             outflow = b[i] * pow(dh, e[i])
             maxflow = dh * area[i] / dt
             outflow = min(outflow, maxflow)
@@ -485,7 +483,6 @@ function update_reservoir_free_weir(
     else
         if waterlevel[lo] > threshold[i]
             dh = waterlevel[lo] - threshold[i]
-            # [m³ s⁻¹] = -[m³⁻ᵉ s⁻¹] * [m]ᵉ
             outflow = -b[i] * pow(dh, e[i])
             maxflow = dh * area[lo] / dt
             outflow = max(outflow, -maxflow)

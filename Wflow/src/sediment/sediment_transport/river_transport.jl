@@ -619,7 +619,6 @@ function update_variables!(
         gravel_rate[v]
 
     # Sediment left in the cell
-    # [kg] = ([kg s⁻¹] + [kg s⁻¹] - [kg s⁻¹] - [kg s⁻¹]) * dt
     leftover_clay[v] = (input_clay + erosion_clay - deposition_clay - clay_rate[v]) * dt
     leftover_silt[v] = (input_silt + erosion_silt - deposition_silt - silt_rate[v]) * dt
     leftover_sand[v] = (input_sand + erosion_sand - deposition_sand - sand_rate[v]) * dt
@@ -647,7 +646,7 @@ function update_sediment_river_transport_model!(
 
     # Sediment transport - water balance in the river
     for v in order
-        ### Sediment input in the cell (left from prevoous time step + from land + from upstream outflux) ###
+        ### Sediment input in the cell (left from previous time step + from land + from upstream outflux) ###
         input_particles = compute_sediment_input(sediment_transport_model, graph, dt, v)
         input_sediment = sum(input_particles)
 

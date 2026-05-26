@@ -23,7 +23,6 @@ function rainfall_interception_gash(
             fraction_stemflow = 0.1 * canopy_gap_fraction
             fraction_interception = 1.0 - 1.1 * canopy_gap_fraction # > 0
 
-            # [m s⁻¹] (from cmax / dt)
             precipitation_saturation = if e_r > fraction_interception
                 0.0
             else

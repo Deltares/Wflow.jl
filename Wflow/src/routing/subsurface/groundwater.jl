@@ -377,23 +377,14 @@ function horizontal_conductance(
     parameters::GroundwaterFlowParameters,
     connectivity::Connectivity,
 )
-    # [m s⁻¹]
     k1 = parameters.k[i]
-    # [m s⁻¹]
     k2 = parameters.k[j]
-    # [m] = [m] - [m]
     H1 = parameters.top[i] - parameters.bottom[i]
-    # [m] = [m] - [m]
     H2 = parameters.top[j] - parameters.bottom[j]
-    # [m]
     length1 = connectivity.length1[nzi]
-    # [m]
     length2 = connectivity.length2[nzi]
-    # [m]
     width = connectivity.width[nzi]
-    # [m² s⁻¹]
     kH1 = k1 * H1
-    # [m² s⁻¹]
     kH2 = k2 * H2
     return harmonicmean_conductance(kH1, kH2, length1, length2, width)
 end

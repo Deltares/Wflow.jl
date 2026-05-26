@@ -44,9 +44,9 @@ function rainfall_erosion_eurosem(
     # Precipitation expressed in unit expected by model
     rainfall_intensity = from_SI(precip, MM_PER_HOUR)
     # Kinetic energy of direct throughfall
-    # E_kin_direct = max(11.87 + 8.73 * log10(max(1e-4, rainfall_intensity)),0.0) #basis used in USLE
+    # E_kin_direct = max(11.87 + 8.73 * log10(max(1e-4, rainfall_intensity)),0.0) [J m⁻² mm⁻¹] #basis used in USLE
     E_kin_direct = max(8.95 + 8.44 * log10(max(1e-4, rainfall_intensity)), 0.0) #variant used in most distributed models
-    # Kinetic energy of leaf drainage
+    # Kinetic energy of leaf drainage [J m⁻² mm⁻¹]
     pheff = 0.5 * canopyheight
     E_kin_leaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
 
@@ -57,7 +57,7 @@ function rainfall_erosion_eurosem(
     rainfall_depth_direct =
         max(rainfall_depth_total - rainfall_depth_leaf - intercepted, 0.0) # throughfall
 
-    # Total kinetic energy by rainfall
+    # Total kinetic energy by rainfall [J m⁻² mm⁻¹]
     E_kin_tot = rainfall_depth_direct * E_kin_direct + rainfall_depth_leaf * E_kin_leaf
     rainfall_erosion =
         area * soil_detachability * E_kin_tot * exp(-eurosem_exponent * waterlevel) / dt

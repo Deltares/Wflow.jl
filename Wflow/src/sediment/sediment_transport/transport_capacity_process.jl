@@ -435,7 +435,6 @@ function transport_capacity_engelund(
 
         # Concentration by weight
         cw_ = density / WATER_DENSITY
-        # [-] = [-] * [s²] * [m s⁻¹] * [m s⁻¹]³ / (([-] - [-])^2 * [m s⁻²]^2 * [m] * [m])
         cw =
             cw_ * 0.05 * velocity * vshear^3 /
             ((cw_ - 1)^2 * GRAVITATIONAL_ACCELERATION^2 * from_SI(d50, MM) * hydrad)
