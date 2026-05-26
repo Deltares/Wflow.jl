@@ -189,7 +189,7 @@ end
             TOML.print(io, Wflow.to_dict(model.config))
         end
         config_read = Wflow.Config(path)
-        !(model.config == config_read) && push(invalids, path)
+        !(model.config == config_read) && push!(invalids, model.config.path)
     end
     @test isempty(invalids)
 end
