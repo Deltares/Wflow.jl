@@ -117,7 +117,7 @@ end
     # [m³ s⁻¹]
     flux_average::Vector{Float64} = zeros(n)
     # [m³]
-    flux_cumulative::Vector{Float64} = fill(MISSING_VALUE, n)
+    flux_cumulative::Vector{Float64} = zeros(n)
 end
 
 @with_kw struct DrainageModel <: AbstractSubsurfaceFlowBC

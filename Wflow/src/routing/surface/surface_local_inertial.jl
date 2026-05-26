@@ -132,9 +132,9 @@ end
     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model time step dt)
     q_average::Vector{Float64} = zeros(n_edges)
     # cumulative river channel discharge at edge [m³] (for model time step dt)
-    q_channel_cumulative::Vector{Float64} = zeros(n_edges)
+    q_channel_cumulative::Vector{Float64} = q_cumulative
     # average river channel discharge at edge [m³ s⁻¹] (for model time step dt)
-    q_channel_average::Vector{Float64} = zeros(n_edges)
+    q_channel_average::Vector{Float64} = q_average
     # water depth [m]
     h::Vector{Float64}
     # maximum water elevation at edge [m]
@@ -176,7 +176,20 @@ function LocalInertialRiverFlowVariables(
     # set ghost points for boundary condition (downstream river outlet): river depth `h`
     h = zeros(n_cells)
     append!(h, riverdepth_bc)
-    variables = LocalInertialRiverFlowVariables(; n_cells, n_edges, h)
+    variables = if config.model.floodplain_1d__flag
+        # When floodplain is enabled, q_channel fields must be separate from q fields
+        # because q_average will hold channel + floodplain combined discharge.
+        LocalInertialRiverFlowVariables(;
+            n_cells,
+            n_edges,
+            h,
+            q_channel_cumulative = zeros(n_edges),
+            q_channel_average = zeros(n_edges),
+        )
+    else
+        # When floodplain is disabled, q_channel aliases q (they are identical)
+        LocalInertialRiverFlowVariables(; n_cells, n_edges, h)
+    end
     return variables
 end
 

@@ -123,7 +123,7 @@ function LateralSsfParameters(
     ssf_parameters = LateralSsfParameters(;
         kh_profile,
         khfrac,
-        soilthickness,
+        soilthickness = copy(soilthickness),
         specific_yield,
         area,
         top = elevation,
@@ -153,7 +153,7 @@ function LateralSSFModel(
     n = length(indices)
     timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
-    zi = soil.variables.zi
+    zi = copy(soil.variables.zi)
     variables = LateralSsfVariables(parameters, zi)
     recharge = RechargeModel(; n)
     if config.model.river_subsurface_exchange_head_based__flag
