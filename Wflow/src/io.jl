@@ -523,7 +523,7 @@ function NCReader(config)
         variable_info(var)
         metadata = get_metadata(par, land_type)
         unit_str = isnothing(metadata) ? "<unit not found>" : string(metadata.unit)
-        @info "Set `$par` [$unit_str] using netCDF variable `$ncname` as forcing parameter."
+        @info "Set `$par [$unit_str]` using netCDF variable `$ncname` as forcing parameter."
     end
 
     # create map from internal location to netCDF variable name for cyclic parameters and
@@ -540,7 +540,7 @@ function NCReader(config)
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[par] = timecycles(cyclic_nc_times)
             variable_info(var)
-            @info "Set `$par` [$(get_metadata(par).unit)] using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
+            @info "Set `$par [$(get_metadata(par).unit)]`` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
         cyclic_dataset = nothing
