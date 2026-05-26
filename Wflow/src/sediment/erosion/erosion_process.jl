@@ -5,8 +5,8 @@
         waterlevel,
         soil_detachability,
         eurosem_exponent,
-        canopyheight,
-        canopygapfraction,
+        canopy_height,
+        canopy_gap_fraction,
         soilcover_fraction,
         area,
         dt,
@@ -20,8 +20,8 @@ Rainfall erosion model based on EUROSEM.
 - `waterlevel` (water level [m])
 - `soil_detachability` (soil detachability [-])
 - `eurosem_exponent` (EUROSEM exponent [-])
-- `canopyheight` (canopy height [m])
-- `canopygapfraction` (canopy gap fraction [-])
+- `canopy_height` (canopy height [m])
+- `canopy_gap_fraction` (canopy gap fraction [-])
 - `soilcover_fraction` (soil cover fraction [-])
 - `area` (area [m2])
 - `dt` (timestep [seconds])
@@ -35,8 +35,8 @@ function rainfall_erosion_eurosem(
     waterlevel::Float64,
     soil_detachability::Float64,
     eurosem_exponent::Float64,
-    canopyheight::Float64,
-    canopygapfraction::Float64,
+    canopy_height::Float64,
+    canopy_gap_fraction::Float64,
     soilcover_fraction::Float64,
     area::Float64,
     dt::Float64,
@@ -47,12 +47,12 @@ function rainfall_erosion_eurosem(
     # kedir = max(11.87 + 8.73 * log10(max(0.0001, rintnsty)),0.0) #basis used in USLE
     kedir = max(8.95 + 8.44 * log10(max(0.0001, rintnsty)), 0.0) #variant used in most distributed models
     # Kinetic energy of leaf drainage [J/m2/mm]
-    pheff = 0.5 * canopyheight
+    pheff = 0.5 * canopy_height
     keleaf = max((15.8 * sqrt(pheff)) - 5.87, 0.0)
 
     #Depths of rainfall (total, leaf drianage, direct) [mm]
     rdtot = precip
-    rdleaf = rdtot * 0.1 * canopygapfraction #stemflow
+    rdleaf = rdtot * 0.1 * canopy_gap_fraction #stemflow
     rddir = max(rdtot - rdleaf - interception, 0.0) #throughfall
 
     #Total kinetic energy by rainfall [J/m2]
@@ -160,8 +160,8 @@ end
         clay_fraction,
         silt_fraction,
         sand_fraction,
-        sagg_fraction,
-        lagg_fraction,
+        small_aggregates_fraction,
+        large_aggregates_fraction,
     )
 
 Calculate total soil erosion and particle differentiation.
@@ -172,8 +172,8 @@ Calculate total soil erosion and particle differentiation.
 - `clay_fraction` (clay fraction [-])
 - `silt_fraction` (silt fraction [-])
 - `sand_fraction` (sand fraction [-])
-- `sagg_fraction` (small aggregates fraction [-])
-- `lagg_fraction` (large aggregates fraction [-])
+- `small_aggregates_fraction` (small aggregates fraction [-])
+- `large_aggregates_fraction` (large aggregates fraction [-])
 
 # Output
 - `soil_erosion` (total soil loss [t Δt⁻¹])
@@ -189,8 +189,8 @@ function total_soil_erosion(
     clay_fraction,
     silt_fraction,
     sand_fraction,
-    sagg_fraction,
-    lagg_fraction,
+    small_aggregates_fraction,
+    large_aggregates_fraction,
 )
     # Total soil erosion
     soil_erosion = rainfall_erosion + overland_flow_erosion
@@ -198,8 +198,8 @@ function total_soil_erosion(
     clay_erosion = soil_erosion * clay_fraction
     silt_erosion = soil_erosion * silt_fraction
     sand_erosion = soil_erosion * sand_fraction
-    sagg_erosion = soil_erosion * sagg_fraction
-    lagg_erosion = soil_erosion * lagg_fraction
+    sagg_erosion = soil_erosion * small_aggregates_fraction
+    lagg_erosion = soil_erosion * large_aggregates_fraction
     return soil_erosion,
     clay_erosion,
     silt_erosion,

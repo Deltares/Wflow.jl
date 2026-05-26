@@ -95,7 +95,7 @@ end
 "Compute total storage of land hydrolology model `LandHydrologySBM` at index `i`."
 function compute_total_storage(land_hydrology_model::LandHydrologySBM, i::Int)
     (; soil, interception, snow, glacier, demand) = land_hydrology_model
-    (; total_soilwater_storage) = soil.variables
+    (; total_soil_water_storage) = soil.variables
     (; canopy_storage) = interception.variables
 
     snow_storage = get_snow_storage(snow)[i] + get_snow_water(snow)[i]
@@ -103,7 +103,7 @@ function compute_total_storage(land_hydrology_model::LandHydrologySBM, i::Int)
     paddy_storage = get_water_depth(demand.paddy)[i]
 
     total_storage =
-        total_soilwater_storage[i] +
+        total_soil_water_storage[i] +
         canopy_storage[i] +
         snow_storage +
         glacier_storage +
@@ -204,13 +204,13 @@ end
 "Compute total outgoing vertical flux of land hydrology `SBM` at index `i`."
 function vertical_out(land_hydrology_model::LandHydrologySBM, i::Int)
     (; allocation, soil, runoff) = land_hydrology_model
-    (; net_runoff, actevap, actleakage) = soil.variables
+    (; net_runoff, actual_evapotranspiration, actual_leakage) = soil.variables
     (; net_runoff_river) = runoff.variables
     total_out =
         net_runoff[i] +
-        actevap[i] +
+        actual_evapotranspiration[i] +
         net_runoff_river[i] +
-        actleakage[i] +
+        actual_leakage[i] +
         get_groundwater_abstraction_flux(allocation)[i]
     return total_out
 end
@@ -269,13 +269,13 @@ function compute_flow_balance!(
     dt::Float64,
 )
     (; storage_prev, error, relative_error) = water_balance
-    (; storage, outflow_av, actevap) = reservoir_model.variables
+    (; storage, outflow_av, actual_evaporation) = reservoir_model.variables
     (; precipitation, inflow) = reservoir_model.boundary_conditions
     (; area) = reservoir_model.parameters
 
     for i in eachindex(storage_prev)
         total_in = inflow[i] + (precipitation[i] * 0.001 * area[i]) / dt
-        total_out = outflow_av[i] + (actevap[i] * 0.001 * area[i]) / dt
+        total_out = outflow_av[i] + (actual_evaporation[i] * 0.001 * area[i]) / dt
         storage_rate = (storage[i] - storage_prev[i]) / dt
         error[i], relative_error[i] =
             compute_mass_balance_error(total_in, total_out, storage_rate)
@@ -413,12 +413,12 @@ function compute_flow_balance!(
         river_flow_model.boundary_conditions
 
     for i in 1:(overland_flow_model.parameters.n)
-        yd = indices.yd[i]
-        xd = indices.xd[i]
+        idx_down = indices.idx_down[i]
+        idx_left = indices.idx_left[i]
         total_in = 0.0
         total_out = 0.0
         total_in, total_out =
-            add_inflow(total_in, total_out, [qx_av[xd], qy_av[yd], runoff[i]])
+            add_inflow(total_in, total_out, [qx_av[idx_left], qy_av[idx_down], runoff[i]])
         total_in, total_out = add_outflow(total_in, total_out, [qx_av[i], qy_av[i]])
         if river_location[i]
             reservoir_outlet[i] && continue

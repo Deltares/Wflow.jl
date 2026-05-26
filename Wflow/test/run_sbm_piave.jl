@@ -99,17 +99,22 @@ end
     Wflow.run_timestep!(model)
 
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
-    (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-        model.land.allocation.variables
+    (;
+        total_alloc,
+        irrigation_allocation,
+        non_irrigation_allocation,
+        surfacewater_allocation,
+        actual_groundwater_abstraction,
+    ) = model.land.allocation.variables
     (; soil) = model.land
     (; river_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
 
     @testset "First timestep" begin
         sum_total_alloc = sum(total_alloc)
-        @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1706.10764866567
-        @test sum(act_groundwater_abst) ≈ 388.08837400239827
+        @test sum(irrigation_allocation) + sum(non_irrigation_allocation) ≈ sum_total_alloc
+        @test sum(surfacewater_allocation) ≈ 1706.10764866567
+        @test sum(actual_groundwater_abstraction) ≈ 388.08837400239827
         @test paddy.variables.h[[25, 42, 45]] ≈
               [43.181590971577364, 51.20409409088053, 34.473513683211834]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
@@ -136,14 +141,14 @@ end
         @test reservoir.variables.storage ≈ [1.8959925656023118e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [4.839249448770597, 9.70890592273304, 57.64196655435958]
-        @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
+        @test soil.variables.exfiltration_saturated_water[[937, 939, 979, 1020, 1158]] ≈ [
             2.9401361588857626,
             5.54461271947943,
             3.76716736049869,
             5.766529601726355,
             14.050058868842683,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 234.1526270577704
+        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 234.1526270577704
         @test mean(river_flow.variables.q_av) ≈ 60.35958015226597
         @test maximum(river_flow.variables.q_av) ≈ 235.44682290212157
     end
@@ -152,9 +157,9 @@ end
 
     @testset "Second timestep" begin
         sum_total_alloc = sum(total_alloc)
-        @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1591.415961657279
-        @test sum(act_groundwater_abst) ≈ 337.68291766185564
+        @test sum(irrigation_allocation) + sum(non_irrigation_allocation) ≈ sum_total_alloc
+        @test sum(surfacewater_allocation) ≈ 1591.415961657279
+        @test sum(actual_groundwater_abstraction) ≈ 337.68291766185564
         @test paddy.variables.h[[25, 42, 45]] ≈
               [39.22741049173483, 48.04241913069636, 28.96957318918968]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
@@ -167,14 +172,14 @@ end
         @test reservoir.variables.storage ≈ [1.8954714734036595e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_av ≈
               [4.841325917420907, 9.278008188175482, 53.34402066559018]
-        @test soil.variables.exfiltsatwater[[937, 939, 979, 1020, 1158]] ≈ [
+        @test soil.variables.exfiltration_saturated_water[[937, 939, 979, 1020, 1158]] ≈ [
             3.1186475152972895,
             6.073982628186992,
             4.288301138492518,
             6.054701391567255,
             14.57870735626147,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 215.88061474014935
+        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 215.88061474014935
         @test mean(river_flow.variables.q_av) ≈ 56.22490708883267
         @test maximum(river_flow.variables.q_av) ≈ 227.21143082238987
     end
@@ -189,15 +194,20 @@ end
     model = Wflow.Model(config)
     Wflow.run_timestep!(model)
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
-    (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-        model.land.allocation.variables
+    (;
+        total_alloc,
+        irrigation_allocation,
+        non_irrigation_allocation,
+        surfacewater_allocation,
+        actual_groundwater_abstraction,
+    ) = model.land.allocation.variables
     @test typeof(paddy) == Wflow.NoIrrigationPaddyModel
     @test typeof(nonpaddy) == Wflow.NoIrrigationNonPaddyModel
     @test typeof(livestock) == Wflow.NoNonIrrigationDemandModel
     sum_total_alloc = sum(total_alloc)
-    @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-    @test sum(surfacewater_alloc) ≈ 824.8974139426691
-    @test sum(act_groundwater_abst) ≈ 115.97004946871232
+    @test sum(irrigation_allocation) + sum(non_irrigation_allocation) ≈ sum_total_alloc
+    @test sum(surfacewater_allocation) ≈ 824.8974139426691
+    @test sum(actual_groundwater_abstraction) ≈ 115.97004946871232
     @test industry.demand.demand_gross[[1, end]] ≈ [0.2105557769536972, 0.0485190823674202]
     @test industry.demand.demand_net[[1, end]] ≈ [0.05265098437666893, 0.012132546864449978]
     @test industry.variables.returnflow[[1, end]] ≈
@@ -228,8 +238,9 @@ end
     @testset "First timestep" begin
         @test subsurface_flow.variables.head[1] ≈ 1.5649019759969596
         @test mean(subsurface_flow.variables.head) ≈ 1106.4948788348809
-        @test subsurface_flow.variables.zi[1] ≈ 0.05409810125066005
-        @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
+        @test subsurface_flow.variables.water_table_depth[1] ≈ 0.05409810125066005
+        @test subsurface_flow.parameters.top[1] -
+              subsurface_flow.variables.water_table_depth[1] ==
               subsurface_flow.variables.head[1]
         @test river.variables.flux_av[1] ≈ 37872.287583718644
         @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
@@ -244,8 +255,9 @@ end
     @testset "Second timestep" begin
         @test subsurface_flow.variables.head[1] ≈ 1.563147470676254
         @test mean(subsurface_flow.variables.head) ≈ 1106.4867249666993
-        @test subsurface_flow.variables.zi[1] ≈ 0.05585260657136559
-        @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
+        @test subsurface_flow.variables.water_table_depth[1] ≈ 0.05585260657136559
+        @test subsurface_flow.parameters.top[1] -
+              subsurface_flow.variables.water_table_depth[1] ==
               subsurface_flow.variables.head[1]
         @test river.variables.flux_av[1] ≈ 45231.725584511034
         @test river.variables.flux[1] == river.variables.flux_av[1]

@@ -210,11 +210,11 @@ const WATER_KINEMATIC_VISCOSITY = 1.16e-6 # [m² s⁻¹]
     transportability_yalin_differentiation(
         waterlevel,
         density,
-        dm_clay,
-        dm_silt,
-        dm_sand,
-        dm_sagg,
-        dm_lagg,
+        median_diameter_clay,
+        median_diameter_silt,
+        median_diameter_sand,
+        median_diameter_small_aggregates,
+        median_diameter_large_aggregates,
         slope,
     )
 
@@ -223,11 +223,11 @@ Total flow transportability based on Yalin with particle differentiation.
 # Arguments
 - `waterlevel` (water level [m])
 - `density` (sediment density [kg m-3])
-- `dm_clay` (clay median grain size [m])
-- `dm_silt` (silt median grain size [m])
-- `dm_sand` (sand median grain size [m])
-- `dm_sagg` (small aggregates median grain size [m])
-- `dm_lagg` (large aggregates median grain size [m])
+- `median_diameter_clay` (clay median grain size [m])
+- `median_diameter_silt` (silt median grain size [m])
+- `median_diameter_sand` (sand median grain size [m])
+- `median_diameter_small_aggregates` (small aggregates median grain size [m])
+- `median_diameter_large_aggregates` (large aggregates median grain size [m])
 - `slope` (slope [-])
 
 # Output
@@ -236,25 +236,30 @@ Total flow transportability based on Yalin with particle differentiation.
 function transportability_yalin_differentiation(
     waterlevel::Float64,
     density::Float64,
-    dm_clay::Float64,
-    dm_silt::Float64,
-    dm_sand::Float64,
-    dm_sagg::Float64,
-    dm_lagg::Float64,
+    median_diameter_clay::Float64,
+    median_diameter_silt::Float64,
+    median_diameter_sand::Float64,
+    median_diameter_small_aggregates::Float64,
+    median_diameter_large_aggregates::Float64,
     slope::Float64,
 )
     sinslope = sin_slope(slope) #slope in radians
     # Delta parameter of Yalin for each particle class
     delta = waterlevel * sinslope / (1e-6 * (density / WATER_DENSITY - 1)) / 0.06
-    dclay = max(delta / dm_clay - 1, 0.0)
-    dsilt = max(delta / dm_silt - 1, 0.0)
-    dsand = max(delta / dm_sand - 1, 0.0)
-    dsagg = max(delta / dm_sagg - 1, 0.0)
-    dlagg = max(delta / dm_lagg - 1, 0.0)
+    delta_clay = max(delta / median_diameter_clay - 1, 0.0)
+    delta_silt = max(delta / median_diameter_silt - 1, 0.0)
+    delta_sand = max(delta / median_diameter_sand - 1, 0.0)
+    delta_small_aggregates = max(delta / median_diameter_small_aggregates - 1, 0.0)
+    delta_large_aggregates = max(delta / median_diameter_large_aggregates - 1, 0.0)
     # Total transportability
-    dtot = dclay + dsilt + dsand + dsagg + dlagg
+    delta_total =
+        delta_clay +
+        delta_silt +
+        delta_sand +
+        delta_small_aggregates +
+        delta_large_aggregates
 
-    return dtot
+    return delta_total
 end
 
 """

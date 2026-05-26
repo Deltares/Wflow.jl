@@ -68,11 +68,30 @@ NCDatasets, BasicModelInterface, Graphs, Polyester, StaticArrays, CFTime, Access
 - `load_dynamic_input!` = `update_forcing!` + `update_cyclic!`
 - Reservoir: precip/evap averaged over coverage cells, zeroed in land model
 
+## Running Wflow
+
+All commands use `pixi run` which activates the correct Julia environment.
+
+**Loading/compiling the package** (verifies no errors):
+```
+pixi run julia --project=Wflow -e 'using Wflow; println(\"Wflow loaded successfully\")'
+```
+
+**Shell quoting (Windows PowerShell)**: Use outer single quotes with inner escaped
+double quotes (`\"`). PowerShell mangles nested double quotes; triple-quotes and
+`raw""` strings do not work reliably.
+
 ## Testing
-- To run a subset of test items filtered by name use e.g. for unit tests
+- To run all tests:
 
 ```
-pixi run julia --project=Wflow --eval='using Pkg; Pkg.test(test_args=[\"unit\"])'
+pixi run julia --project=Wflow -e 'using Pkg; Pkg.test()'
+```
+
+- To run a subset of test items filtered by name (e.g. unit tests only):
+
+```
+pixi run julia --project=Wflow -e 'using Pkg; Pkg.test(test_args=[\"unit\"])'
 ```
 
 - `TestItemRunner.jl` with `@testitem` (not `@testset`); unit tests prefixed `"unit: "`

@@ -308,9 +308,9 @@ function BMI.get_grid_edge_count(model::Model, grid::Int)
     if grid == 3
         return ne(domain.river.network.graph)
     elseif grid == 4
-        return length(domain.land.network.edge_indices.xu)
+        return length(domain.land.network.edge_indices.idx_right)
     elseif grid == 5
-        return length(domain.land.network.edge_indices.yu)
+        return length(domain.land.network.edge_indices.idx_up)
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")
     else
@@ -330,16 +330,16 @@ function BMI.get_grid_edge_nodes(model::Model, grid::Int, edge_nodes::Vector{Int
         edge_nodes[range(2, n; step = 2)] = nodes_at_edge.dst
         return edge_nodes
     elseif grid == 4
-        xu = domain.land.network.edge_indices.xu
+        idx_right = domain.land.network.edge_indices.idx_right
         edge_nodes[range(1, n; step = 2)] = 1:m
-        xu[xu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = xu
+        idx_right[idx_right .== m + 1] .= -999
+        edge_nodes[range(2, n; step = 2)] = idx_right
         return edge_nodes
     elseif grid == 5
-        yu = domain.land.network.edge_indices.yu
+        idx_up = domain.land.network.edge_indices.idx_up
         edge_nodes[range(1, n; step = 2)] = 1:m
-        yu[yu .== m + 1] .= -999
-        edge_nodes[range(2, n; step = 2)] = yu
+        idx_up[idx_up .== m + 1] .= -999
+        edge_nodes[range(2, n; step = 2)] = idx_up
         return edge_nodes
     elseif grid in 0:2 || grid == 6
         @warn("edges are not provided for grid type $grid (variables are located at nodes)")

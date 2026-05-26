@@ -1,4 +1,4 @@
-﻿# NOTE: The order of the entries determines the order in the docs tables
+# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to model variables and units for models with a land model
 of type `SoilLossModel`. The `lens` allows access to a nested model variable.
@@ -23,13 +23,13 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:soil_erosion_input],
     ),
     "soil_small_aggregates__mass_fraction" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.parameters.sagg_fraction),
+        lens = @optic(_.land.soil_erosion.parameters.small_aggregates_fraction),
         default = 0.0,
         description = "Soil content small aggregates",
         tags = [:soil_erosion_input],
     ),
     "soil_large_aggregates__mass_fraction" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.parameters.lagg_fraction),
+        lens = @optic(_.land.soil_erosion.parameters.large_aggregates_fraction),
         default = 0.0,
         description = "Soil content large aggregates",
         tags = [:soil_erosion_input],
@@ -55,14 +55,14 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:rainfall_erosion_input],
     ),
     "vegetation_canopy__height" => ParameterMetadata(;
-        lens = @optic(_.land.rainfall_erosion.parameters.canopyheight),
+        lens = @optic(_.land.rainfall_erosion.parameters.canopy_height),
         unit = Unit(; m = 1),
         default = 0.5,
         description = "Canopy height",
         tags = [:rainfall_erosion_input],
     ),
     "vegetation_canopy__gap_fraction" => ParameterMetadata(;
-        lens = @optic(_.land.rainfall_erosion.parameters.canopygapfraction),
+        lens = @optic(_.land.rainfall_erosion.parameters.canopy_gap_fraction),
         default = 0.1,
         description = "Canopy gap fraction",
         tags = [:rainfall_erosion_input],
@@ -169,13 +169,13 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:soil_erosion_output],
     ),
     "soil_erosion_small_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.sagg_erosion_rate),
+        lens = @optic(_.land.soil_erosion.variables.small_aggregates_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total small aggregates erosion",
         tags = [:soil_erosion_output],
     ),
     "soil_erosion_large_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.land.soil_erosion.variables.lagg_erosion_rate),
+        lens = @optic(_.land.soil_erosion.variables.large_aggregates_erosion_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Total large aggregates erosion",
         tags = [:soil_erosion_output],
@@ -199,35 +199,39 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:sediment_transport_cap_overland_input],
     ),
     "clay__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_clay),
+        lens = @optic(_.routing.river_flow.concentrations.parameters.median_diameter_clay),
         unit = Unit(; μm = 1),
         default = 2.0,
         description = "Clay mean diameter",
         tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
     ),
     "silt__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_silt),
+        lens = @optic(_.routing.river_flow.concentrations.parameters.median_diameter_silt),
         unit = Unit(; μm = 1),
         default = 10.0,
         description = "Silt mean diameter",
         tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
     ),
     "sand__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_sand),
+        lens = @optic(_.routing.river_flow.concentrations.parameters.median_diameter_sand),
         unit = Unit(; μm = 1),
         default = 200.0,
         description = "Sand mean diameter",
         tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
     ),
     "sediment_small_aggregates__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_sagg),
+        lens = @optic(
+            _.routing.river_flow.concentrations.parameters.median_diameter_small_aggregates
+        ),
         unit = Unit(; μm = 1),
         default = 30.0,
         description = "Small aggregates mean diameter",
         tags = [:sediment_transport_cap_overland_input, :sediment_river_transport_input],
     ),
     "sediment_large_aggregates__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_lagg),
+        lens = @optic(
+            _.routing.river_flow.concentrations.parameters.median_diameter_large_aggregates
+        ),
         unit = Unit(; μm = 1),
         default = 500.0,
         description = "Large aggregates mean diameter",
@@ -328,14 +332,14 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "land_surface_water_small_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.to_river.variables.sagg_rate),
+            lens = @optic(_.routing.overland_flow.to_river.variables.small_aggregates_rate),
             unit = Unit(; t = 1, dt = -1),
             description = "Small aggregates flux flowing into the river",
             tags = [:sediment_transport_overland_output],
         ),
     "land_surface_water_large_aggregates__to_river_mass_flow_rate" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.overland_flow.to_river.variables.lagg_rate),
+            lens = @optic(_.routing.overland_flow.to_river.variables.large_aggregates_rate),
             unit = Unit(; t = 1, dt = -1),
             description = "Large aggregates flux flowing into the river",
             tags = [:sediment_transport_overland_output],
@@ -398,7 +402,9 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:sediment_river_transport_input],
     ),
     "gravel__mean_diameter" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.concentrations.parameters.dm_gravel),
+        lens = @optic(
+            _.routing.river_flow.concentrations.parameters.median_diameter_gravel
+        ),
         unit = Unit(; μm = 1),
         default = 2000.0,
         description = "Gravel mean diameter",
@@ -424,13 +430,13 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
     ),
     "river_bed_small_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_sagg),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_small_aggregates),
         unit = Unit(; t = 1),
         description = "Small aggregates stored on the river bed after deposition",
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
     ),
     "river_bed_large_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_lagg),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.store_large_aggregates),
         unit = Unit(; t = 1),
         description = "Large aggregates stored on the river bed after deposition",
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
@@ -460,13 +466,17 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
     ),
     "river_water_small_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_sagg),
+        lens = @optic(
+            _.routing.river_flow.sediment_flux.variables.leftover_small_aggregates
+        ),
         unit = Unit(; t = 1),
         description = "Small aggregates left in cell",
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
     ),
     "river_water_large_aggregates__mass" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.leftover_lagg),
+        lens = @optic(
+            _.routing.river_flow.sediment_flux.variables.leftover_large_aggregates
+        ),
         unit = Unit(; t = 1),
         description = "Large aggregates left in cell",
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
@@ -496,13 +506,13 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
     ),
     "river_water_small_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.sagg_rate),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.small_aggregates_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Sediment flux (small aggregates)",
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],
     ),
     "river_water_large_aggregates__mass_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.sediment_flux.variables.lagg_rate),
+        lens = @optic(_.routing.river_flow.sediment_flux.variables.large_aggregates_rate),
         unit = Unit(; t = 1, dt = -1),
         description = "Sediment flux (large aggregates)",
         tags = [:sediment_river_transport_state, :sediment_river_transport_output],

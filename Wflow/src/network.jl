@@ -1,6 +1,6 @@
 # maps the fields of struct `EdgeConnectivity` to the defined Wflow cartesian indices of
 # const `neighbors`.
-const DIRS = (:yd, :xd, :xu, :yu)
+const DIRS = (:idx_down, :idx_left, :idx_right, :idx_up)
 
 """
 Struct for storing 2D staggered grid edge connectivity in `x` and `y` directions. For
@@ -15,18 +15,18 @@ Edges without neighbors are handled by an extra index (at `n + 1`, with `n` edge
 linear index `i` of the `EdgeConnectivity` fields represents the edge between node index `i`
 and the neighboring nodes in the CartesianIndex(-1,0) and CartesianIndex(0,-1) directions.
 The edges are defined as follows:
-- `xu` is the edge between node `i` and node `xu` in the `CartesianIndex(1,0)` direction.
-- `xd` is the edge between node `xd` in the `CartesianIndex(-1,0)` direction and the
+- `idx_right` is the edge between node `i` and node `idx_right` in the `CartesianIndex(1,0)` direction.
+- `idx_left` is the edge between node `idx_left` in the `CartesianIndex(-1,0)` direction and the
   neighboring node (CartesianIndex(-2,0) direction).
-- `yu` is the edge between node `i` and node `yu` in the `CartesianIndex(0,1)` direction.
-- `yd` is the edge between node `yd` in the `CartesianIndex(0,-1)` direction and the
+- `idx_up` is the edge between node `i` and node `idx_up` in the `CartesianIndex(0,1)` direction.
+- `idx_down` is the edge between node `idx_down` in the `CartesianIndex(0,-1)` direction and the
   neighboring node (`CartesianIndex(0,-2)` direction).
 """
 @with_kw struct EdgeConnectivity
-    xu::Vector{Int} = Int[]
-    xd::Vector{Int} = Int[]
-    yu::Vector{Int} = Int[]
-    yd::Vector{Int} = Int[]
+    idx_right::Vector{Int} = Int[]
+    idx_left::Vector{Int} = Int[]
+    idx_up::Vector{Int} = Int[]
+    idx_down::Vector{Int} = Int[]
 end
 
 "Struct for storing source `src` node and destination `dst` node of an edge."
@@ -127,8 +127,12 @@ end
 function EdgeConnectivity(network::NetworkLand)
     (; modelsize, indices, reverse_indices) = network
     n = length(indices)
-    edge_indices =
-        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+    edge_indices = EdgeConnectivity(;
+        idx_right = zeros(n),
+        idx_left = zeros(n),
+        idx_up = zeros(n),
+        idx_down = zeros(n),
+    )
 
     nrow, ncol = modelsize
     for (v, i) in enumerate(indices)

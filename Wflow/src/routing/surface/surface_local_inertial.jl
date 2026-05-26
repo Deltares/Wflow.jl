@@ -110,16 +110,16 @@ end
     n::Int
     n_edges::Int
     q::Vector{Float64} = zeros(n_edges)                        # river discharge at edge (subgrid channel) [m³ s⁻¹]
-    q0::Vector{Float64} = zeros(n_edges)                       # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
+    q_previous::Vector{Float64} = zeros(n_edges)                       # river discharge at edge (subgrid channel) at previous time step [m³ s⁻¹]
     q_av::Vector{Float64}                     # average river channel (+ floodplain) discharge at edge [m³ s⁻¹] (model timestep Δt)
     q_channel_av::Vector{Float64}             # average river channel discharge at edge [m³ s⁻¹] (for model timestep Δt)
     h::Vector{Float64}                        # water depth [m]
     zs_max::Vector{Float64} = zeros(n_edges)  # maximum water elevation at edge [m]
     zs_src::Vector{Float64} = zeros(n_edges)  # water elevation of source node of edge [m]
     zs_dst::Vector{Float64} = zeros(n_edges)  # water elevation of downstream node of edge [m]
-    hf::Vector{Float64} = zeros(n_edges)       # water depth at edge [m]
-    a::Vector{Float64} = zeros(n_edges)        # flow area at edge [m²]
-    r::Vector{Float64} = zeros(n_edges)        # wetted perimeter at edge [m]
+    water_depth_at_edge::Vector{Float64} = zeros(n_edges)       # water depth at edge [m]
+    flow_area::Vector{Float64} = zeros(n_edges)      # flow area at edge [m²]
+    hydraulic_radius::Vector{Float64} = zeros(n_edges)          # hydraulic radius at edge [m]
     storage::Vector{Float64} = zeros(n)        # river storage [m³]
     error::Vector{Float64} = zeros(n)          # error storage [m³]
 end
@@ -259,9 +259,10 @@ function update_river_channel_flow!(
     river_v = river_flow_model.variables
     river_p = river_flow_model.parameters
 
-    river_v.q0 .= river_v.q
+    river_v.q_previous .= river_v.q
     if !isnothing(river_flow_model.floodplain)
-        river_flow_model.floodplain.variables.q0 .= river_flow_model.floodplain.variables.q
+        river_flow_model.floodplain.variables.q_previous .=
+            river_flow_model.floodplain.variables.q
     end
 
     @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
@@ -272,20 +273,23 @@ function update_river_channel_flow!(
         river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
         river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
-        river_v.hf[i] = (river_v.zs_max[i] - river_p.zb_max[i])
+        river_v.water_depth_at_edge[i] = (river_v.zs_max[i] - river_p.zb_max[i])
 
-        river_v.a[i] = river_p.flow_width_at_edge[i] * river_v.hf[i] # flow area (rectangular channel)
-        river_v.r[i] = river_v.a[i] / (river_p.flow_width_at_edge[i] + 2.0 * river_v.hf[i]) # hydraulic radius (rectangular channel)
+        river_v.flow_area[i] =
+            river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
+        river_v.hydraulic_radius[i] =
+            river_v.flow_area[i] /
+            (river_p.flow_width_at_edge[i] + 2.0 * river_v.water_depth_at_edge[i]) # hydraulic radius (rectangular channel)
 
         river_v.q[i] = ifelse(
-            river_v.hf[i] > river_p.h_thresh,
+            river_v.water_depth_at_edge[i] > river_p.h_thresh,
             local_inertial_flow(
-                river_v.q0[i],
+                river_v.q_previous[i],
                 river_v.zs_src[i],
                 river_v.zs_dst[i],
-                river_v.hf[i],
-                river_v.a[i],
-                river_v.r[i],
+                river_v.water_depth_at_edge[i],
+                river_v.flow_area[i],
+                river_v.hydraulic_radius[i],
                 river_p.flow_length_at_edge[i],
                 river_p.mannings_n_sq[i],
                 river_p.froude_limit,
@@ -319,13 +323,14 @@ function update_floodplain_flow!(
     floodplain_p = river_flow_model.floodplain.parameters
     floodplain_v = river_flow_model.floodplain.variables
 
-    @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.hf)
-        floodplain_v.hf[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
+    @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.water_depth_at_edge)
+        floodplain_v.water_depth_at_edge[i] =
+            max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
     end
 
     n = 0
     @inbounds for i in river_p.active_e
-        @inbounds if river_v.hf[i] > river_p.h_thresh
+        @inbounds if river_v.water_depth_at_edge[i] > river_p.h_thresh
             n += 1
             floodplain_v.hf_index[n] = i
         else
@@ -335,15 +340,15 @@ function update_floodplain_flow!(
 
     get_area(i, i1, i2, idx) = flow_area(
         floodplain_p.profile.width[i2, idx],
-        floodplain_p.profile.a[i1, idx],
+        floodplain_p.profile.flow_area[i1, idx],
         floodplain_p.profile.depth[i1],
-        floodplain_v.hf[i],
+        floodplain_v.water_depth_at_edge[i],
     )
 
     get_wetted_perimeter(i, i1, idx) = wetted_perimeter(
-        floodplain_p.profile.p[i1, idx],
+        floodplain_p.profile.wetted_perimeter[i1, idx],
         floodplain_p.profile.depth[i1],
-        floodplain_v.hf[i],
+        floodplain_v.water_depth_at_edge[i],
     )
 
     @batch per = thread minbatch = 1000 for j in 1:n
@@ -353,33 +358,33 @@ function update_floodplain_flow!(
 
         i0 = 0
         for k in eachindex(floodplain_p.profile.depth)
-            i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.hf[i])
+            i0 += 1 * (floodplain_p.profile.depth[k] <= floodplain_v.water_depth_at_edge[i])
         end
         i1 = max(i0, 1)
         i2 = ifelse(i1 == length(floodplain_p.profile.depth), i1, i1 + 1)
 
         a_src = get_area(i, i1, i2, i_src)
-        a_src = max(a_src - (floodplain_v.hf[i] * flow_width[i_src]), 0.0)
+        a_src = max(a_src - (floodplain_v.water_depth_at_edge[i] * flow_width[i_src]), 0.0)
 
         a_dst = get_area(i, i1, i2, i_dst)
-        a_dst = max(a_dst - (floodplain_v.hf[i] * flow_width[i_dst]), 0.0)
+        a_dst = max(a_dst - (floodplain_v.water_depth_at_edge[i] * flow_width[i_dst]), 0.0)
 
-        floodplain_v.a[i] = min(a_src, a_dst)
+        floodplain_v.flow_area[i] = min(a_src, a_dst)
 
-        floodplain_v.r[i] = if a_src < a_dst
+        floodplain_v.hydraulic_radius[i] = if a_src < a_dst
             a_src / get_wetted_perimeter(i, i1, i_src)
         else
             a_dst / get_wetted_perimeter(i, i1, i_dst)
         end
 
-        floodplain_v.q[i] = if floodplain_v.a[i] > 1.0e-05
+        floodplain_v.q[i] = if floodplain_v.flow_area[i] > 1.0e-05
             local_inertial_flow(
-                floodplain_v.q0[i],
+                floodplain_v.q_previous[i],
                 river_v.zs_src[i],
                 river_v.zs_dst[i],
-                floodplain_v.hf[i],
-                floodplain_v.a[i],
-                floodplain_v.r[i],
+                floodplain_v.water_depth_at_edge[i],
+                floodplain_v.flow_area[i],
+                floodplain_v.hydraulic_radius[i],
                 river_p.flow_length_at_edge[i],
                 floodplain_p.mannings_n_sq[i],
                 river_p.froude_limit,
@@ -704,13 +709,13 @@ function LocalInertialOverlandFlowParameters(
     zx_max = fill(Float64(0), n)
     zy_max = fill(Float64(0), n)
     for i in 1:n
-        xu = edge_indices.xu[i]
-        if xu <= n
-            zx_max[i] = max(elevation[i], elevation[xu])
+        idx_right = edge_indices.idx_right[i]
+        if idx_right <= n
+            zx_max[i] = max(elevation[i], elevation[idx_right])
         end
-        yu = edge_indices.yu[i]
-        if yu <= n
-            zy_max[i] = max(elevation[i], elevation[yu])
+        idx_up = edge_indices.idx_up[i]
+        if idx_up <= n
+            zy_max[i] = max(elevation[i], elevation[idx_up])
         end
     end
 
@@ -938,7 +943,7 @@ end
 
 """
 Update flow for a single direction in the local inertial overland flow model.
-`is_x_direction`: true for x-direction (xu/xd), false for y-direction (yu/yd)
+`is_x_direction`: true for x-direction (idx_right/idx_left), false for y-direction (idx_up/idx_down)
 """
 @inline function update_directional_flow!(
     overland_flow_model::LocalInertialOverlandFlowModel,
@@ -954,8 +959,8 @@ Update flow for a single direction in the local inertial overland flow model.
 
     # Select direction-specific parameters based on the boolean flag
     if is_x_direction
-        upstream_idx = indices.xu[i]
-        downstream_idx = indices.xd[i]
+        upstream_idx = indices.idx_right[i]
+        downstream_idx = indices.idx_left[i]
         width = land_p.ywidth[i]
         z_max = land_p.zx_max[i]
         length_vec = x_length
@@ -963,8 +968,8 @@ Update flow for a single direction in the local inertial overland flow model.
         q_prev = land_v.qx0
         q_av = land_v.qx_av
     else
-        upstream_idx = indices.yu[i]
-        downstream_idx = indices.yd[i]
+        upstream_idx = indices.idx_up[i]
+        downstream_idx = indices.idx_down[i]
         width = land_p.xwidth[i]
         z_max = land_p.zy_max[i]
         length_vec = y_length
@@ -1053,11 +1058,11 @@ function update_inflow_reservoir!(
     land_v = overland_flow_model.variables
 
     for (i, j) in enumerate(reservoir_indices)
-        yd = indices.yd[j]
-        xd = indices.xd[j]
+        idx_down = indices.idx_down[j]
+        idx_left = indices.idx_left[j]
         reservoir_model.boundary_conditions.inflow_overland[i] =
             land_bc.runoff[j] +
-            (land_v.qx[xd] - land_v.qx[j] + land_v.qy[yd] - land_v.qy[j])
+            (land_v.qx[idx_left] - land_v.qx[j] + land_v.qy[idx_down] - land_v.qy[j])
     end
     return nothing
 end
@@ -1077,15 +1082,15 @@ Compute storage change for a river cell from fluxes.
     edges_at_node = domain.river.network.edges_at_node
     river_idx = inds_river[i]
 
-    yd = indices.yd[i]
-    xd = indices.xd[i]
+    idx_down = indices.idx_down[i]
+    idx_left = indices.idx_left[i]
 
     net_river_flow =
         sum_at(river_flow_model.variables.q, edges_at_node.src[river_idx]) -
         sum_at(river_flow_model.variables.q, edges_at_node.dst[river_idx])
     net_land_flow =
-        overland_flow_model.variables.qx[xd] - overland_flow_model.variables.qx[i] +
-        overland_flow_model.variables.qy[yd] - overland_flow_model.variables.qy[i]
+        overland_flow_model.variables.qx[idx_left] - overland_flow_model.variables.qx[i] +
+        overland_flow_model.variables.qy[idx_down] - overland_flow_model.variables.qy[i]
     net_flow =
         net_river_flow + net_land_flow + overland_flow_model.boundary_conditions.runoff[i] -
         river_flow_model.boundary_conditions.abstraction[river_idx]
@@ -1167,12 +1172,12 @@ Compute storage change for a land cell from horizontal fluxes and runoff.
     dt::Float64,
 )
     indices = network.edge_indices
-    yd = indices.yd[i]
-    xd = indices.xd[i]
+    idx_down = indices.idx_down[i]
+    idx_left = indices.idx_left[i]
 
     return (
-        overland_flow_model.variables.qx[xd] - overland_flow_model.variables.qx[i] +
-        overland_flow_model.variables.qy[yd] - overland_flow_model.variables.qy[i] +
+        overland_flow_model.variables.qx[idx_left] - overland_flow_model.variables.qx[i] +
+        overland_flow_model.variables.qy[idx_down] - overland_flow_model.variables.qy[i] +
         overland_flow_model.boundary_conditions.runoff[i]
     ) * dt
 end
@@ -1289,14 +1294,14 @@ end
 
 Floodplain `storage` is a function of `depth` (flood depth intervals). Based on the
 cumulative floodplain `storage` a floodplain profile as a function of `flood_depth` is
-derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
+derived with floodplain area `flow_area` (cumulative) and wetted perimeter `wetted_perimeter` (cumulative).
 """
 @with_kw struct FloodPlainProfile
     depth::Vector{Float64}        # Flood depth [m]
     storage::Matrix{Float64}      # Flood storage (cumulative) [m³]
     width::Matrix{Float64}        # Flood width [m]
-    a::Matrix{Float64}            # Flow area (cumulative) [m²]
-    p::Matrix{Float64}            # Wetted perimeter (cumulative) [m]
+    flow_area::Matrix{Float64}            # Flow area (cumulative) [m²]
+    wetted_perimeter::Matrix{Float64}            # Wetted perimeter (cumulative) [m]
 end
 
 "Initialize floodplain profile `FloodPlainProfile`"
@@ -1331,7 +1336,7 @@ function FloodPlainProfile(
     width = zeros(n_depths, n)
     width[1, :] = flow_width[1:n]
 
-    # determine flow area (a), width and wetted perimeter (p) FloodPlainModel
+    # determine flow area, width and wetted perimeter for FloodPlainModel
     h = diff(flood_depths)
     incorrect_vol = 0
     riv_cells = 0
@@ -1389,7 +1394,13 @@ function FloodPlainProfile(
     p = hcat(p, p[:, index_pit])
 
     # initialize floodplain profile parameters
-    profile = FloodPlainProfile(; storage, width, depth = flood_depths, a, p)
+    profile = FloodPlainProfile(;
+        storage,
+        width,
+        depth = flood_depths,
+        flow_area = a,
+        wetted_perimeter = p,
+    )
     return profile
 end
 
@@ -1447,10 +1458,10 @@ end
     storage::Vector{Float64} = zeros(n)    # storage [m³]
     h::Vector{Float64}                     # water depth [m]
     error::Vector{Float64} = zeros(n)      # error storage [m³]
-    a::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
-    r::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
-    hf::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
-    q0::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step
+    flow_area::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
+    hydraulic_radius::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
+    water_depth_at_edge::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
+    q_previous::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step
     q::Vector{Float64} = zeros(n_edges)    # discharge at edge  [m³ s⁻¹]
     q_av::Vector{Float64} = zeros(n_edges) # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
     hf_index::Vector{Int} = zeros(Int, n_edges) # edge index with `hf` [-] above depth threshold
@@ -1477,7 +1488,7 @@ function initialize_storage!(river, domain::Domain, nriv::Int)
         i1, i2 = interpolation_indices(floodplain.variables.h[i], profile.depth)
         a = flow_area(
             profile.width[i2, i],
-            profile.a[i1, i],
+            profile.flow_area[i1, i],
             profile.depth[i1],
             floodplain.variables.h[i],
         )
