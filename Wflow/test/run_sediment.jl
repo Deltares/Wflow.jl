@@ -1,5 +1,4 @@
 @testitem "Run sediment" begin
-    using Wflow: to_SI, Unit, TON_PER_DT, MM_PER_DT
     using Statistics: mean
     dt = 86400.0
     tomlpath = joinpath(@__DIR__, "sediment_config.toml")
@@ -515,7 +514,6 @@ end
 
 @testitem "Run sediment land only" begin
     using Statistics: mean
-    using Wflow: to_SI, TON_PER_DT
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -548,7 +546,6 @@ end
 
 @testitem "Run sediment yalin transport capacity" begin
     using Statistics: mean
-    using Wflow: to_SI, TON_PER_DT, MM
     tomlpath = joinpath(@__DIR__, "sediment_eurosem_engelund_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()

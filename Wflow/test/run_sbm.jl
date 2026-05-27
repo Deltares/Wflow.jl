@@ -1,9 +1,4 @@
 @testitem "Run SBM" begin
-    using Wflow: to_SI, ABSOLUTE_DEGREES, MM_PER_DT, M3_PER_DAY, MM, Unit
-    CM = Unit(; cm = 1)
-    M_PER_DT = Unit(; m = 1, dt = -1)
-    M_PER_DAY = Unit(; m = 1, d = -1)
-    M2_PER_DAY = Unit(; m = 2, d = -1)
     using Dates
     using Statistics: mean
     include("testing_utils.jl")
@@ -637,7 +632,6 @@ end
 end
 
 @testitem "Changing forcing and cyclic LAI parameter" begin
-    using Wflow: to_SI, MM_PER_DT
     # Run unchanged
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
@@ -753,7 +747,6 @@ end
 end
 
 @testitem "Fixed forcing (precipitation = 2.5)" begin
-    using Wflow: to_SI, MM_PER_DT
     tomlpath = joinpath(@__DIR__, "sbm_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()
@@ -867,9 +860,6 @@ end
 end
 
 @testitem "Local-inertial option for river flow including 1D floodplain schematization" begin
-    using Wflow: to_SI, M3_PER_DAY, MM, Unit
-    M_PER_DAY = Unit(; m = 1, d = -1)
-    M2_PER_DAY = Unit(; m = 2, d = -1)
     tomlpath = joinpath(@__DIR__, "sbm_river-floodplain-local-inertial_config.toml")
     config = Wflow.Config(tomlpath)
     config.dir_output = mktempdir()

@@ -1,6 +1,5 @@
 using Statistics: mean
 using SpecialFunctions: expint
-using Wflow: to_SI, Unit
 using StaticArrays: SVector
 
 "Return the first row of a Wflow output CSV file as a NamedTuple"
@@ -198,9 +197,6 @@ data required in certain functions has to be supplied (e.g. in the form of Named
     boundary_conditions::B = nothing
     variables::V = nothing
 end
-
-Wflow.to_SI(x::Union{Float64, Vector{Float64}}, name::AbstractString; kwargs...) =
-    to_SI(x, Wflow.get_metadata(name).unit; kwargs...)
 
 no_nan(x::Float64) = isnan(x) ? 0.0 : x
 get_mean(f::Vector{Float64}) = mean(filter(!isnan, f)) |> no_nan
