@@ -564,7 +564,7 @@ function stable_timestep(
     stable_timesteps .= Inf
     k = 0
     for i in 1:n
-        if q[i] > 0.0
+        if q[i] > KIN_WAVE_MIN_FLOW
             k += 1
             c = inv(alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
             stable_timesteps[k] = (flow_length[i] / c)

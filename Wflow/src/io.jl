@@ -540,7 +540,7 @@ function NCReader(config)
             cyclic_nc_times = collect(cyclic_dataset[dimname])
             cyclic_times[par] = timecycles(cyclic_nc_times)
             variable_info(var)
-            @info "Set `$par [$(get_metadata(par).unit)]`` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
+            @info "Set `$par [$(get_metadata(par).unit)]` using netCDF variable `$ncname` as cyclic parameter, with `$(length(cyclic_nc_times))` timesteps."
         end
     else
         cyclic_dataset = nothing

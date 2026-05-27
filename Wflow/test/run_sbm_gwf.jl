@@ -1,8 +1,6 @@
 
 @testitem "Run model sbm_gwf (kinematic wave routing)" begin
     using Dates: DateTime
-    using Wflow: to_SI, Unit, MM_PER_DT, M3_PER_DAY, MM
-    M_PER_DAY = Unit(; m = 1, d = -1)
     include("testing_utils.jl")
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
     config = Wflow.Config(tomlpath)
@@ -49,10 +47,9 @@
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test soil.variables.runoff[1] == 0.0
         @test soil.variables.soilevap[1] == 0.0
-        @test soil.variables.transpiration[1] ≈
-              to_SI(0.30587632831650247, MM_PER_DT; dt_val = dt)
-        @test soil.variables.total_storage[1] ≈ to_SI(594.859200902034, MM)
-        @test soil.variables.total_storage[6] ≈ to_SI(665.0260781409222, MM) # river cell
+        @test soil.variables.transpiration[1] ≈ 3.5402352814410006e-9
+        @test soil.variables.total_storage[1] ≈ 0.594859200902034
+        @test soil.variables.total_storage[6] ≈ 0.6650260781409222 # river cell
     end
 
     # run the second timestep
@@ -63,10 +60,9 @@
         @test soil.parameters.theta_s[1] ≈ 0.44999998807907104
         @test soil.variables.runoff[1] == 0.0
         @test soil.variables.soilevap[1] == 0.0
-        @test soil.variables.transpiration[4] ≈
-              to_SI(0.9545461724219301, MM_PER_DT; dt_val = dt)
-        @test soil.variables.total_storage[1] ≈ to_SI(594.6412481941371, MM)
-        @test soil.variables.total_storage[6] ≈ to_SI(646.8344274025224, MM) # river cell
+        @test soil.variables.transpiration[4] ≈ 1.1047988106735302e-8
+        @test soil.variables.total_storage[1] ≈ 0.5946412481941371
+        @test soil.variables.total_storage[6] ≈ 0.6468344274025224 # river cell
     end
 
     @testset "overland flow (kinematic wave)" begin
@@ -95,11 +91,9 @@
             1.6201330681295285,
             1.3726090475101977,
         ]
-        @test gwf.boundary_conditions.river.variables.flux[1] ≈
-              to_SI(-44.36320056565769, M3_PER_DAY)
+        @test gwf.boundary_conditions.river.variables.flux[1] ≈ -0.000513462969509927
         @test gwf.boundary_conditions.drain.variables.flux[1] ≈ 0.0
-        @test gwf.boundary_conditions.recharge.variables.rate[19] ≈
-              to_SI(-0.0014241196552847502, M_PER_DAY)
+        @test gwf.boundary_conditions.recharge.variables.rate[19] ≈ -1.6482866380610536e-8
     end
 
     @testset "no drains" begin
@@ -118,9 +112,6 @@
 end
 
 @testitem "Run sbm_gwf (local inertial routing)" begin
-    using Wflow: to_SI, Unit, MM_PER_DT, M3_PER_DAY
-    M_PER_DAY = Unit(; m = 1, d = -1)
-
     # test complete run including logging entry TOML file (not set)
     tomlpath = joinpath(@__DIR__, "sbm_gwf_config.toml")
 
@@ -201,10 +192,8 @@ end
     @testset "second timestep warm start" begin
         sbm = model.land
         @test sbm.soil.variables.runoff[1] == 0.0
-        @test sbm.soil.variables.soilevap[1] ≈
-              to_SI(0.28488618656022874, MM_PER_DT; dt_val = dt)
-        @test sbm.soil.variables.transpiration[1] ≈
-              to_SI(1.0122634204681036, MM_PER_DT; dt_val = dt)
+        @test sbm.soil.variables.soilevap[1] ≈ 3.2972938259285734e-9
+        @test sbm.soil.variables.transpiration[1] ≈ 1.171601181097342e-8
     end
 
     @testset "river domain warm start (kinematic wave)" begin
@@ -230,10 +219,10 @@ end
             1.2068931431179248,
         ]
         @test subsurface_flow.boundary_conditions.river.variables.flux[1] ≈
-              to_SI(-6.472282449944586, M3_PER_DAY)
+              -7.491067650398826e-5
         @test subsurface_flow.boundary_conditions.drain.variables.flux[1] ≈ 0.0
         @test subsurface_flow.boundary_conditions.recharge.variables.rate[19] ≈
-              to_SI(-0.0014241196552847502, M_PER_DAY)
+              -1.6482866380610536e-8
     end
 
     Wflow.close_files(model; delete_output = false)

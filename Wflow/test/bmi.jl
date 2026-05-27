@@ -66,7 +66,7 @@
         ) ≈ getindex.(model.land.soil.variables.vwc, 2)[1:3]
         var_name = "river_water__instantaneous_volume_flow_rate"
         @test BMI.get_value_at_indices(model, var_name, zeros(3), [1, 100, 5617]) ≈
-              [0.6061460608597447, 7.474882551045692, 0.02313783328532491]
+              [0.5295678995697858, 7.185077029190254, 0.023139147404872613]
         BMI.set_value(
             model,
             "soil_water_saturated_zone_top__depth",
@@ -123,7 +123,7 @@
         time = BMI.get_current_time(model) + 2 * BMI.get_time_step(model)
         BMI.update_until(model, time)
         @test model.clock.iteration == 3
-        time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-06
+        time_off = BMI.get_current_time(model) + 1 * BMI.get_time_step(model) + 1e-6
         @test_throws ErrorException BMI.update_until(model, time_off)
         @test_throws ErrorException BMI.update_until(model, time - BMI.get_time_step(model))
         BMI.finalize(model)

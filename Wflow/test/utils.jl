@@ -226,10 +226,8 @@ end
     soil = init_sbm_soil_model(
         n,
         N;
-        ustorelayerdepth = [to_SI.(SVector(100.0, 125.0, 150.0, 175.0, 200.0), Ref(MM))],
-        ustorelayerthickness = [
-            to_SI.(SVector(110.0, 145.0, 170.0, 205.0, 240.0), Ref(MM)),
-        ],
+        ustorelayerdepth = [SVector(0.1, 0.125, 0.15, 0.17500000000000002, 0.2)],
+        ustorelayerthickness = [SVector(0.11, 0.145, 0.17, 0.20500000000000002, 0.24)],
         maxlayers = 5,
         theta_s = [0.98],
         theta_r = [0.02],
@@ -237,14 +235,14 @@ end
     )
 
     # Case: (net_flux ≤ 0.0)
-    net_flux = to_SI(-1.0, M_PER_DAY)
+    net_flux = -1.1574074074074073e-5
     dh, exfilt = Wflow.water_table_change(soil, net_flux, specific_yield, i, dt)
     @test dh ≈ -2.3255813953488373
     @test iszero(exfilt)
 
     # Case: !(net_flux ≤ 0.0)
     # Hitting both (capacity <= net_flux) and !(capacity <= net_flux)
-    net_flux = to_SI(0.05, M_PER_DAY)
+    net_flux = 5.787037037037037e-7
     dh, exfilt = Wflow.water_table_change(soil, net_flux, specific_yield, i, dt)
     @test dh ≈ 0.4243119266055048
     @test iszero(exfilt)

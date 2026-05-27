@@ -96,18 +96,14 @@ end
 end
 
 @testitem "unit: kinematic_wave_ssf" begin
-    using Wflow: to_SI, MM, M3_PER_DAY, Unit
     using StaticArrays: SVector
     include("testing_utils.jl")
-    DAY = Unit(; d = 1)
-    M_PER_DAY = Unit(; m = 1, d = -1)
-    M2_PER_DAY = Unit(; m = 2, d = -1)
 
     ### Shared values
     n = 1
     N = 4
-    act_thickl = [to_SI.(SVector(100.0, 300.0, 800.0, 800.0), Ref(MM))]
-    sumlayers = [to_SI.(SVector(0.0, 100.0, 400.0, 1200.0, 2000.0), Ref(MM))]
+    act_thickl = [SVector(0.1, 0.3, 0.8, 0.8)]
+    sumlayers = [SVector(0.0, 0.1, 0.4, 1.2, 2.0)]
     maxlayers = 4
     nlayers = [4]
     n_unsatlayers = [3]
@@ -116,35 +112,29 @@ end
     theta_fc = [0.28219206182657536]
     ssfin = 0.0
 
-    ssf_prev = to_SI(25953.147860945584, M3_PER_DAY)
-    zi_prev = to_SI(0.5198340870375974, MM)
-    q_net = to_SI(485.4666924404467, M3_PER_DAY)
+    ssf_prev = 0.30038365579798126
+    zi_prev = 0.0005198340870375973
+    q_net = 0.005618827458801466
     slope = 0.4522336721420288
     sy = 0.20423455984891598
     d = 2.0
-    dt = to_SI(1.0, DAY)
+    dt = 86400.0
     dx = 1117.0150713112287
     dw = 517.495693771673
-    ssfmax = to_SI(79.62016166711079, M2_PER_DAY)
-    kh_profile =
-        Wflow.KhExponential([to_SI(205.5965576171875, M_PER_DAY)], [1.0141291422769427])
+    ssfmax = 0.0009215296489248933
+    kh_profile = Wflow.KhExponential([0.002379589787235966], [1.0141291422769427])
     i = 1
 
     soil_model = init_sbm_soil_model(
         n,
         N;
         # Variables
-        ustorelayerthickness = [
-            to_SI.(SVector(100.0, 300.0, 119.83408703759733, NaN), Ref(MM)),
-        ],
+        ustorelayerthickness = [SVector(0.1, 0.3, 0.11983408703759733, NaN)],
         ustorelayerdepth = [
-            to_SI.(
-                SVector(0.1909439890049523, 16.27933934181815, 19.508197676020185, 0.0),
-                Ref(MM),
-            ),
+            SVector(0.0001909439890049523, 0.01627933934181815, 0.019508197676020186, 0.0),
         ],
         n_unsatlayers,
-        zi = [to_SI(519.8340870375973, MM)],
+        zi = [0.5198340870375974],
         # Parameters
         maxlayers,
         sumlayers,
@@ -180,9 +170,8 @@ end
     ssf_prev = 0.0
     r = 0.0
     zi_prev = 0.5198340870375974
-    ssfmax = to_SI(79.62016166711079, M3_PER_DAY)
-    kh_profile =
-        Wflow.KhExponential([to_SI(205.5965576171875, M3_PER_DAY)], [1.0141291422769427])
+    ssfmax = 0.0009215296489248933
+    kh_profile = Wflow.KhExponential([0.002379589787235966], [1.0141291422769427])
     ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
@@ -206,7 +195,7 @@ end
 
     # Case: !(ssfin + ssf_prev ≈ 0.0 && r <= 0)
     # Case: !(zi > d)
-    ssf_prev = to_SI(25953.147860945584, M3_PER_DAY)
+    ssf_prev = 0.30038365579798126
     ssf, zi, exfilt, sy_d = Wflow.kinematic_wave_ssf(
         ssfin,
         ssf_prev,
@@ -223,7 +212,7 @@ end
         soil_model,
         i,
     )
-    @test ssf ≈ to_SI(22100.628024231868, M3_PER_DAY)
+    @test ssf ≈ 0.255794305836017
     @test zi ≈ 0.7029236021516849
     @test exfilt ≈ 0.0
     @test net_flux ≈ -3.904277181728481e-7
@@ -232,17 +221,12 @@ end
         n,
         N;
         # Variables
-        ustorelayerthickness = [
-            to_SI.(SVector(100.0, 300.0, 348.31246153148595, NaN), Ref(MM)),
-        ],
+        ustorelayerthickness = [SVector(0.1, 0.3, 0.348312461531486, NaN)],
         ustorelayerdepth = [
-            to_SI.(
-                SVector(0.1909439890049523, 16.27933934181815, 58.42501219303608, 0.0),
-                Ref(MM),
-            ),
+            SVector(0.0001909439890049523, 0.01627933934181815, 0.058425012193036086, 0.0),
         ],
         n_unsatlayers,
-        zi = [to_SI(758.8905603985703, MM)],
+        zi = [0.7588905603985703],
         # Parameters
         maxlayers,
         sumlayers,
@@ -253,7 +237,7 @@ end
         act_thickl,
     )
 
-    ssf_prev = to_SI(54175.65003911068, M3_PER_DAY)
+    ssf_prev = 0.627032986563781
     zi_prev = 0.7588905603985703
     q_net = 773.9150244657355
     slope = 0.4522336721420288
@@ -1358,7 +1342,7 @@ end
     domain_river = Wflow.DomainRiver(; network = river_network, parameters = params_river)
     domain = Wflow.Domain(; river = domain_river)
 
-    h_thresh = 1.0e-03
+    h_thresh = 1.0e-3
     froude_limit = true
     h_init = zeros(n - 1)
     push!(h_init, h_a[n])
