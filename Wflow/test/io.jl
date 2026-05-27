@@ -498,18 +498,24 @@ end
         @test Wflow.convert_value(LogLevel, 0) == Logging.Info
 
         tomlpath = joinpath(@__DIR__, "sbm_simple.toml")
-        config = Wflow.Config(tomlpath)
-        config.dir_output = mktempdir()
-        Wflow.run(config)
+        config_dict = TOML.parsefile(tomlpath)
+        config_dict["dir_output"] = mktempdir()
 
+        tomlpath_temp = joinpath(@__DIR__, "sbm_simple_temp.toml")
+        open(tomlpath_temp, "w") do io
+            TOML.print(io, config_dict)
+        end
+
+        Wflow.run(tomlpath_temp)
         config = Wflow.Config(tomlpath)
-        output = normpath(abspath(abspath(config.dir_output)))
-        toml_archive = Wflow.output_path(config, "sbm_simple.toml")
+        config.dir_output = config_dict["dir_output"]
+        toml_archive = Wflow.output_path(config, "sbm_simple_temp.toml")
         path_log = Wflow.output_path(config, "log.txt")
         @test isfile(toml_archive)
         @test isfile(path_log)
+        rm(tomlpath_temp)
         lines = readlines(path_log)
-        @test count(startswith(line, "[ Info: ") for line in lines) == 67
+        @test count(startswith(line, "[ Info: ") for line in lines) == 62
         @test count(startswith(line, "┌ Debug: ") for line in lines) == 0
 
         # Another run with debug log level and a non-default path_log.
