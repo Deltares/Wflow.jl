@@ -56,7 +56,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "soil_erosion__eurosem_exponent" => ParameterMetadata(;
         lens = @optic(_.land.rainfall_erosion.parameters.eurosem_exponent),
-        unit = Unit(; m = -1),
+        unit = Unit(; mm = -1),
         default = 2.0,
         description = "Exponent EUROSEM",
         tags = [:rainfall_erosion_input],

@@ -169,9 +169,8 @@ end
     @testset "First timestep: rainfall erosion" begin
         (; rainfall_erosion) = model.land
 
-        @test rainfall_erosion.parameters.eurosem_exponent[1] ≈ 2.0
-        @test rainfall_erosion.variables.soil_erosion_rate[1] ≈ 0.00014262747385223806
-        @test mean(rainfall_erosion.variables.soil_erosion_rate) ≈ 1.7044403277912093e-5
+        @test rainfall_erosion.variables.soil_erosion_rate[1] ≈ 0.1426274738522381
+        @test mean(rainfall_erosion.variables.soil_erosion_rate) ≈ 0.01659596342237728
 
         @test test_means(
             rainfall_erosion.boundary_conditions,
@@ -188,25 +187,23 @@ end
                 :canopyheight => 10.246395046934293,
                 :soil_detachability => 0.0019100919738700582,
                 :soilcover_fraction => 0.013012199593097453,
-                :eurosem_exponent => 2.0,
+                :eurosem_exponent => 2000.0,
             ),
         )
         @test test_means(
             rainfall_erosion.variables,
-            Dict(:soil_erosion_rate => 1.7044403277912093e-5),
+            Dict(:soil_erosion_rate => 0.01659596342237728),
         )
     end
 
     @testset "First timestep: soil erosion" begin
         (; soil_erosion) = model.land
 
-        @test mean(soil_erosion.variables.soil_erosion_rate) ≈ 0.00011670633345031822
-
         @test test_means(
             soil_erosion.boundary_conditions,
             Dict(
                 :overland_flow_erosion => 9.966193017240612e-5,
-                :rainfall_erosion => 1.7044403277912093e-5,
+                :rainfall_erosion => 0.01659596342237728,
             ),
         )
         @test test_means(
@@ -222,12 +219,12 @@ end
         @test test_means(
             soil_erosion.variables,
             Dict(
-                :lagg_erosion_rate => 3.401781185687422e-5,
-                :sand_erosion_rate => 3.913126488559666e-5,
-                :soil_erosion_rate => 0.00011670633345031824,
-                :silt_erosion_rate => 5.509212657233483e-6,
-                :clay_erosion_rate => 3.4635082509624603e-6,
-                :sagg_erosion_rate => 3.458453571269738e-5,
+                :lagg_erosion_rate => 0.004917999180253473,
+                :sand_erosion_rate => 0.00427611093783281,
+                :soil_erosion_rate => 0.01669562535254969,
+                :silt_erosion_rate => 0.0009091033581761446,
+                :clay_erosion_rate => 0.0006038299771647817,
+                :sagg_erosion_rate => 0.005988581897554994,
             ),
         )
     end
@@ -303,33 +300,33 @@ end
         @test test_means(
             overland_flow.sediment_flux.boundary_conditions,
             Dict(
-                :erosion_clay => 3.46350825096246e-6,
+                :erosion_clay => 0.0006038299771647817,
                 :transport_capacity_clay => 12714.316406971457,
-                :erosion_silt => 5.509212657233483e-6,
-                :erosion_lagg => 3.4017811856874225e-5,
+                :erosion_silt => 0.0009091033581761446,
+                :erosion_lagg => 0.004917999180253473,
                 :transport_capacity_silt => 12713.808955655715,
-                :erosion_sagg => 3.458453571269738e-5,
+                :erosion_sagg => 0.005988581897554994,
                 :transport_capacity_sand => 12713.688492720412,
                 :transport_capacity_sagg => 12713.724398208968,
                 :transport_capacity_lagg => 12713.68470719566,
-                :erosion_sand => 3.913126488559666e-5,
+                :erosion_sand => 0.00427611093783281,
             ),
         )
         @test test_means(
             overland_flow.sediment_flux.variables,
             Dict(
-                :silt => 1.3929340336677336e-5,
-                :sediment_rate => 0.0003063635802931295,
-                :deposition_silt => 5.509212657233483e-6,
-                :deposition_lagg => 3.4017811856874225e-5,
-                :deposition_sand => 3.913126488559666e-5,
-                :sagg => 8.701802333723823e-5,
-                :lagg => 8.779632070055166e-5,
-                :clay => 8.771741406134715e-6,
-                :deposition => 0.0001167063333633642,
-                :deposition_clay => 3.46350825096246e-6,
-                :deposition_sagg => 3.458453571269738e-5,
-                :sand => 0.00010884815451252768,
+                :silt => 2.4005496245140833e-5,
+                :sediment_rate => 0.00040047351477098884,
+                :deposition_silt => 0.0009091033581761447,
+                :deposition_lagg => 0.004917999180253473,
+                :deposition_sand => 0.00427611093783281,
+                :sagg => 0.00012229895178867518,
+                :lagg => 0.00010422878536180842,
+                :clay => 1.8798050245173526e-5,
+                :deposition => 0.016695625350982204,
+                :deposition_clay => 0.0006038299771647818,
+                :deposition_sagg => 0.0059885818975549945,
+                :sand => 0.00013114223113019097,
             ),
         )
 
@@ -337,22 +334,22 @@ end
         @test test_means(
             overland_flow.to_river.boundary_conditions,
             Dict(
-                :deposition_sand => 3.913126488559666e-5,
-                :deposition_sagg => 3.458453571269738e-5,
-                :deposition_silt => 5.509212657233483e-6,
-                :deposition_lagg => 3.4017811856874225e-5,
-                :deposition_clay => 3.46350825096246e-6,
+                :deposition_sand => 0.00427611093783281,
+                :deposition_sagg => 0.0059885818975549945,
+                :deposition_silt => 0.0009091033581761447,
+                :deposition_lagg => 0.004917999180253473,
+                :deposition_clay => 0.0006038299771647818,
             ),
         )
         @test test_means(
             overland_flow.to_river.variables,
             Dict(
-                :sagg_rate => 2.8893430878564412e-5,
-                :lagg_rate => 2.910125752615814e-5,
-                :sand_rate => 3.491356425429223e-5,
-                :sediment_rate => 0.00010045351037913171,
-                :clay_rate => 2.895528492414304e-6,
-                :silt_rate => 4.649729227702621e-6,
+                :sagg_rate => 0.000649151785940205,
+                :lagg_rate => 0.0005168185844448506,
+                :sand_rate => 0.00042180961215772613,
+                :sediment_rate => 0.0017542224635858756,
+                :clay_rate => 6.688821117271656e-5,
+                :silt_rate => 9.955426987037696e-5,
             ),
         )
     end
@@ -406,13 +403,13 @@ end
             Dict(
                 :q => 0.1528727680637441,
                 :waterlevel => 0.05777413367369656,
-                :erosion_land_sagg => 0.000255825655895618,
-                :erosion_land_lagg => 0.0002576657761865142,
-                :erosion_land_sand => 0.000309128587482301,
+                :erosion_land_sagg => 0.005747662232011684,
+                :erosion_land_lagg => 0.004575969323280933,
+                :erosion_land_sand => 0.00373474929809679,
                 :potential_erosion_river_bank => 0.021936887334262873,
                 :transport_capacity => 0.00028865756033258057,
-                :erosion_land_silt => 4.116922058904866e-5,
-                :erosion_land_clay => 2.5637331850607295e-5,
+                :erosion_land_silt => 0.0008814645963589342,
+                :erosion_land_clay => 0.0005922356734602861,
                 :potential_erosion_river_bed => 1.613938333854238,
             ),
         )
@@ -436,27 +433,27 @@ end
         @test test_means(
             river_flow.sediment_flux.variables,
             Dict(
-                :deposition => 0.0009204350874843538,
-                :erosion => 3.1008560815713806e-5,
+                :deposition => 0.015539610938657309,
+                :erosion => 7.529860784132161e-6,
                 :leftover_gravel => 0.0,
                 :leftover_clay => 3.916043968626082e-6,
                 :leftover_lagg => 1.9500782501449444e-12,
                 :leftover_sagg => 3.741274625469958e-12,
                 :leftover_sand => 8.753169499245311e-13,
                 :leftover_silt => 4.643328043695461e-13,
-                :sagg_rate => 1.3279650822056091e-5,
-                :sand_rate => 3.2815978684007007e-6,
-                :sediment_rate => 0.00027668604048794676,
-                :silt_rate => 0.00011697422451263947,
-                :lagg_rate => 1.2393223742490294e-6,
-                :clay_rate => 0.00014191124491060145,
+                :sagg_rate => 1.2796702580071101e-5,
+                :sand_rate => 1.0713110703154987e-6,
+                :sediment_rate => 0.0002812198523148606,
+                :silt_rate => 7.567864551321369e-5,
+                :lagg_rate => 1.377556978587296e-7,
+                :clay_rate => 0.0001915354374534016,
                 :gravel_rate => 0.0,
-                :store_clay => 2.6169325235485176,
-                :store_gravel => 0.13395698621708418,
-                :store_lagg => 22.262323062512886,
-                :store_sagg => 22.103336669377652,
-                :store_sand => 27.135750167760686,
-                :store_silt => 5.27329214923135,
+                :store_clay => 51.26674527072368,
+                :store_gravel => 0.03252899943571069,
+                :store_lagg => 395.36374953147066,
+                :store_sagg => 496.5980168458057,
+                :store_sand => 322.77996911494876,
+                :store_silt => 76.5813753376071,
             ),
         )
 
@@ -466,11 +463,11 @@ end
             Dict(
                 :waterlevel => 0.05777413367369656,
                 :q => 0.1528727680637441,
-                :silt => 0.00011697422451263947,
-                :clay => 0.00014191124491060145,
-                :sagg => 1.3279650822056091e-5,
-                :sand => 3.2815978684007007e-6,
-                :lagg => 1.2393223742490294e-6,
+                :silt => 7.567864551321369e-5,
+                :clay => 0.0001915354374534016,
+                :sagg => 1.2796702580071101e-5,
+                :sand => 1.0713110703154987e-6,
+                :lagg => 1.377556978587296e-7,
                 :gravel => 0.0,
             ),
         )
@@ -488,9 +485,9 @@ end
         @test test_means(
             river_flow.concentrations.variables,
             Dict(
-                :suspended => 0.00014755963695059,
-                :bed => 1.145940858844025e-7,
-                :total => 0.00014767423103647439,
+                :suspended => 0.0001563141343612164,
+                :bed => 1.1188707120088609e-13,
+                :total => 0.00015631413447310348,
             ),
         )
     end
@@ -506,7 +503,7 @@ end
         @test mean(river_flow.transport_capacity.variables.sediment_transport_capacity) ≈
               0.001642046490684183
 
-        @test mean(river_flow.concentrations.variables.suspended) ≈ 0.00024791810261189963
+        @test mean(river_flow.concentrations.variables.suspended) ≈ 0.000276598816325157
     end
 
     Wflow.close_files(model)
@@ -533,12 +530,12 @@ end
         (; land, routing) = model
         (; overland_flow) = routing
 
-        @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈ 0.0008992868604631915
+        @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈ 0.0013652659345724893
         @test mean(overland_flow.transport_capacity.parameters.c_govers) ≈
               0.16393911236592437
         @test mean(overland_flow.transport_capacity.variables.sediment_transport_capacity) ≈
               12720.908224939538
-        @test mean(overland_flow.to_river.variables.sediment_rate) ≈ 0.0008921799722128373
+        @test mean(overland_flow.to_river.variables.sediment_rate) ≈ 0.0009306672286819593
     end
 
     Wflow.close_files(model)
@@ -567,11 +564,11 @@ end
         (; land, routing) = model
         (; overland_flow) = routing
 
-        @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈ 0.0008992868604631915
+        @test mean(land.soil_erosion.variables.soil_erosion_rate) ≈ 0.0013652659345724893
         @test mean(overland_flow.transport_capacity.parameters.d50) ≈ 1.534350291334408e-6
         @test mean(overland_flow.transport_capacity.variables.sediment_transport_capacity) ≈
               Float32(12717.775884668434)
-        @test mean(overland_flow.to_river.variables.sediment_rate) ≈ 0.0008980767762197222
+        @test mean(overland_flow.to_river.variables.sediment_rate) ≈ 0.0009377521191159138
     end
 
     Wflow.close_files(model)
@@ -600,7 +597,7 @@ end
         @test mean(river.transport_capacity.boundary_conditions.q) ≈ 0.6975180562953642
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
               0.46244641188775404
-        @test mean(river.concentrations.variables.suspended) ≈ 0.000004036949009419181
+        @test mean(river.concentrations.variables.suspended) ≈ 0.0037597697024228617
     end
 
     Wflow.close_files(model)
@@ -630,7 +627,7 @@ end
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
               0.35107162814004217
 
-        @test mean(river.concentrations.variables.suspended) ≈ 0.0547559835316139
+        @test mean(river.concentrations.variables.suspended) ≈ 0.054748501397664226
     end
 
     Wflow.close_files(model)
@@ -659,9 +656,8 @@ end
         @test mean(river.transport_capacity.variables.sediment_transport_capacity) ≈
               4.059651115936618
 
-        @test mean(river.concentrations.variables.suspended) ≈ 0.8847497982628241
+        @test mean(river.concentrations.variables.suspended) ≈ 0.871274558152215
     end
-
     Wflow.close_files(model)
 end
 

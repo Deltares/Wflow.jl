@@ -64,8 +64,7 @@ function rainfall_erosion_eurosem(
 
     # Remove the impervious area
     rainfall_erosion *= 1.0 - soilcover_fraction
-    # TODO: Explain this factor 1e3 needed to pass the tests
-    return rainfall_erosion / 1e3
+    return rainfall_erosion
 end
 
 """
