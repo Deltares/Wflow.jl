@@ -33,8 +33,16 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ```
 
 ### Fixed
+- Fixed a bug in EUROSEM rainfall erosion calculation where the exponent was incorrectly
+  specified in units of mm⁻¹ instead of m⁻¹, causing the protective effect of water depth
+  to be overestimated by a factor of 1000. This significantly changes EUROSEM rainfall
+  erosion results.
 
 ### Changed
+- All internal computations now use standardized SI units (m, s, kg, J, K) consistently
+  throughout the codebase. Units are converted to/from the old units at I/O
+  boundaries. This generally does not change model results (units are converted back before
+  writing outputs), though small numerical differences may occur in some cases.
 - Improved kinematic wave solver performance by replacing Newton-Raphson with
   Halley's method, substituting `pow` calls with direct arithmetic on the 5th
   root of discharge, and computing cross-sectional area as a byproduct of the
