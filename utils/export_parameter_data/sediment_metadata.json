@@ -603,7 +603,7 @@
     "allow_dynamic_input": false
   },
   "soil_erosion__eurosem_exponent": {
-    "unit": "m-1",
+    "unit": "mm-1",
     "default": 2.0,
     "fill": null,
     "type": "Float64",
