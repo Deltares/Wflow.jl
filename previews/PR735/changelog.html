@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-e8ea5e5fbf32fd5daff37faa71168903.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-f747bbadbf4409a90d6c080b9a14f73f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-e8ea5e5fbf32fd5daff37faa71168903.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-2c58d53b24add42715e2f3fc0f1a4a60.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -520,10 +520,14 @@ window.Quarto = {
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">subsurface_water__instantaneous_volume_flow_rate</span> <span class="op">=</span> <span class="st">"ssf"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
+<ul>
+<li>Fixed a bug in EUROSEM rainfall erosion calculation where the exponent was incorrectly specified in units of mm⁻¹ instead of m⁻¹, causing the protective effect of water depth to be overestimated by a factor of 1000. This significantly changes EUROSEM rainfall erosion results.</li>
+</ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
+<li>All internal computations now use standardized SI units (m, s, kg, J, K) consistently throughout the codebase. Units are converted to/from the old units at I/O boundaries. This generally does not change model results (units are converted back before writing outputs), though small numerical differences may occur in some cases.</li>
 <li>Improved kinematic wave solver performance by replacing Newton-Raphson with Halley’s method, substituting <code>pow</code> calls with direct arithmetic on the 5th root of discharge, and computing cross-sectional area as a byproduct of the solve instead of a separate <code>pow</code> call. The <code>beta</code> parameter has been removed from <code>ManningFlowParameters</code> and is now a module-level constant <code>BETA_KINWAVE</code> (#898).</li>
 <li>Drainable porosity or specific yield, defined as the difference between <code>theta_s</code> (saturated water content) and <code>theta_fc</code> (water content at field capacity) is now used to compute the change of a falling water table for subsurface flow concepts <code>LateralSSF</code> and <code>UnconfinedAquifer</code>. For the change of a rising water table of these concepts a dynamic fillable porosity (based on <code>theta_s</code> and the water content of unsaturated soil layers) is used. This results in a better integration of the <code>SBM</code> soil model (unsaturated zone) with these subsurface flow concepts as specific yield is typically represented by drainable porosity for these concepts and not by the effective porosity (difference between saturated and residual water content) of the previous implementation. Water content at field capacity <code>theta_fc</code> is a new optional input parameter, when this parameter is not provided <code>theta_fc</code> is computed as the water content at a pressure head of -100 cm using the Brooks and Corey water retention model.</li>
 </ul>
