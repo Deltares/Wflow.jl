@@ -329,8 +329,8 @@ function run!(model::Model; close_files=true)
 
     @info "Run information" model_type = String(Symbol(model_type)) starttime dt endtime nthreads()
     runstart_time = now()
-    @progress for (i, time) in enumerate(times)
-        @debug "Starting timestep." time i now()
+    @progress for (timestep_idx, time) in enumerate(times)
+        @debug "Starting timestep." time timestep_idx now()
         run_timestep!(model)
     end
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
@@ -363,8 +363,8 @@ end
 
 function run()
     usage = "Usage: julia -e 'using Wflow; Wflow.run()' 'path/to/config.toml'"
-    n = length(ARGS)
-    if n != 1
+    num_args = length(ARGS)
+    if num_args != 1
         throw(ArgumentError(usage))
     end
     toml_path = only(ARGS)

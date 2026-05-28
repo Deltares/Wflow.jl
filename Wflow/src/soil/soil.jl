@@ -2,9 +2,9 @@ abstract type AbstractSoilModel end
 
 "Struct for storing SBM soil model variables"
 @with_kw struct SbmSoilVariables{N}
-    n::Int
+    n_cells::Int
     # Calculated soil water pressure head h3 of the root water uptake reduction function (Feddes) [cm]
-    h3::Vector{Float64} = fill(MISSING_VALUE, n)
+    h3::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Unsaturated store capacity [mm]
     ustorecapacity::Vector{Float64}
     # Amount of water in the unsaturated store, per layer [mm]
@@ -20,67 +20,67 @@ abstract type AbstractSoilModel end
     # Number of unsaturated soil layers
     n_unsatlayers::Vector{Int}
     # Transpiration [mm Δt⁻¹]
-    transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
+    transpiration::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual evaporation from unsaturated store [mm Δt⁻¹]
-    ae_ustore::Vector{Float64} = fill(MISSING_VALUE, n)
+    ae_ustore::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Soil evaporation from unsaturated and saturated store [mm Δt⁻¹]
-    soilevap::Vector{Float64} = fill(MISSING_VALUE, n)
+    soilevap::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Soil evaporation from saturated store [mm Δt⁻¹]
-    soilevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
+    soilevapsat::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual capillary rise [mm Δt⁻¹]
-    actcapflux::Vector{Float64} = fill(MISSING_VALUE, n)
+    actcapflux::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual transpiration from saturated store [mm Δt⁻¹]
-    actevapsat::Vector{Float64} = fill(MISSING_VALUE, n)
+    actevapsat::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total actual evapotranspiration [mm Δt⁻¹]
-    actevap::Vector{Float64} = fill(MISSING_VALUE, n)
+    actevap::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual infiltration into the unsaturated zone [mm Δt⁻¹]
-    actinfilt::Vector{Float64} = fill(MISSING_VALUE, n)
+    actinfilt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual infiltration non-compacted fraction [mm Δt⁻¹]
-    actinfiltsoil::Vector{Float64} = fill(MISSING_VALUE, n)
+    actinfiltsoil::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual infiltration compacted fraction [mm Δt⁻¹]
-    actinfiltpath::Vector{Float64} = fill(MISSING_VALUE, n)
+    actinfiltpath::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual infiltration (compacted and the non-compacted areas) [mm Δt⁻¹]
-    infiltsoilpath::Vector{Float64} = fill(MISSING_VALUE, n)
+    infiltsoilpath::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Infiltration excess water [mm Δt⁻¹]
-    infiltexcess::Vector{Float64} = fill(MISSING_VALUE, n)
+    infiltexcess::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Water that cannot infiltrate due to saturated soil (saturation excess) [mm Δt⁻¹]
-    excesswater::Vector{Float64} = fill(MISSING_VALUE, n)
+    excesswater::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Water exfiltrating during saturation excess conditions [mm Δt⁻¹]
-    exfiltsatwater::Vector{Float64} = fill(MISSING_VALUE, n)
+    exfiltsatwater::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Excess water for non-compacted fraction [mm Δt⁻¹]
-    excesswatersoil::Vector{Float64} = fill(MISSING_VALUE, n)
+    excesswatersoil::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Excess water for compacted fraction [mm Δt⁻¹]
-    excesswaterpath::Vector{Float64} = fill(MISSING_VALUE, n)
+    excesswaterpath::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total surface runoff from infiltration and saturation excess (excluding actual open water evaporation) [mm Δt⁻¹]
-    runoff::Vector{Float64} = fill(MISSING_VALUE, n)
+    runoff::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Net surface runoff (surface runoff - actual open water evaporation) [mm Δt⁻¹]
-    net_runoff::Vector{Float64} = fill(MISSING_VALUE, n)
+    net_runoff::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Volumetric water content [-] per soil layer (including theta_r and saturated zone)
     vwc::Vector{SVector{N, Float64}}
     # Volumetric water content [%] per soil layer (including theta_r and saturated zone)
     vwc_perc::Vector{SVector{N, Float64}}
     # Root water storage [mm] in unsaturated and saturated zone (excluding theta_r)
-    rootstore::Vector{Float64} = fill(MISSING_VALUE, n)
+    rootstore::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Volumetric water content [-] in root zone (including theta_r and saturated zone)
-    vwc_root::Vector{Float64} = fill(MISSING_VALUE, n)
+    vwc_root::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Volumetric water content [%] in root zone (including theta_r and saturated zone)
-    vwc_percroot::Vector{Float64} = fill(MISSING_VALUE, n)
+    vwc_percroot::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Amount of available water in the unsaturated zone [mm]
-    ustoredepth::Vector{Float64} = zeros(n)
+    ustoredepth::Vector{Float64} = zeros(n_cells)
     # Downward flux from unsaturated to saturated zone [mm Δt⁻¹]
-    transfer::Vector{Float64} = fill(MISSING_VALUE, n)
+    transfer::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Net recharge to saturated store [mm Δt⁻¹]
-    recharge::Vector{Float64} = fill(MISSING_VALUE, n)
+    recharge::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Actual leakage from saturated store [mm Δt⁻¹]
-    actleakage::Vector{Float64} = fill(MISSING_VALUE, n)
+    actleakage::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total water storage (excluding floodplain volume and reservoirs) [mm]
-    total_storage::Vector{Float64} = zeros(n)
+    total_storage::Vector{Float64} = zeros(n_cells)
     # Total soil water storage [mm]
     total_soilwater_storage::Vector{Float64}
     # Top soil temperature [ᵒC]
-    tsoil::Vector{Float64} = fill(10.0, n)
+    tsoil::Vector{Float64} = fill(10.0, n_cells)
     # Soil infiltration reduction factor (when soil is frozen) [-]
-    f_infiltration_reduction::Vector{Float64} = ones(n)
+    f_infiltration_reduction::Vector{Float64} = ones(n_cells)
 end
 
 "Struct for storing SBM soil model parameters"
@@ -150,7 +150,7 @@ end
 end
 
 "Initialize SBM soil model variables"
-function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
+function SbmSoilVariables(n_cells::Int, parameters::SbmSoilParameters)
     (;
         soilthickness,
         maxlayers,
@@ -162,19 +162,19 @@ function SbmSoilVariables(n::Int, parameters::SbmSoilParameters)
         theta_fc,
     ) = parameters
     satwaterdepth = 0.85 .* soilwatercapacity # cold state value for satwaterdepth
-    ustoredepth = zeros(n)
+    ustoredepth = zeros(n_cells)
     zi = @. max(0.0, soilthickness - satwaterdepth / (theta_s - theta_r))
     drainable_waterdepth =
         @. (soilthickness - zi) * lower_bound_drainable_porosity(theta_s, theta_fc)
     ustorelayerthickness = set_layerthickness.(zi, sumlayers, act_thickl)
     n_unsatlayers = number_of_active_layers.(ustorelayerthickness)
 
-    vwc = fill(MISSING_VALUE, maxlayers, n)
-    vwc_perc = fill(MISSING_VALUE, maxlayers, n)
+    vwc = fill(MISSING_VALUE, maxlayers, n_cells)
+    vwc_perc = fill(MISSING_VALUE, maxlayers, n_cells)
     total_soilwater_storage = satwaterdepth .+ ustoredepth
 
     vars = SbmSoilVariables(;
-        n,
+        n_cells,
         ustorelayerdepth = zero(act_thickl),
         ustorecapacity = soilwatercapacity .- satwaterdepth,
         ustorelayerthickness,
@@ -191,13 +191,13 @@ end
 
 "Struct for storing SBM soil model boundary conditions"
 @with_kw struct SbmSoilBC
-    n::Int
+    n_cells::Int
     # Water flux at the soil surface [mm Δt⁻¹]
-    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n)
+    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Potential transpiration rate [mm Δt⁻¹]
-    potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n)
+    potential_transpiration::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Potential soil evaporation rate [mm Δt⁻¹]
-    potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n)
+    potential_soilevaporation::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Exponential depth profile of vertical hydraulic conductivity at the soil surface"
@@ -237,7 +237,7 @@ end
 function sbm_kv_profiles(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    land_indices_2d::Vector{CartesianIndex{2}},
     kv_0::Vector{Float64},
     f::Vector{Float64},
     maxlayers::Int,
@@ -246,7 +246,7 @@ function sbm_kv_profiles(
     dt::Second,
 )
     kv_profile_type = config.model.saturated_hydraulic_conductivity_profile
-    n = length(indices)
+    n_cells = length(land_indices_2d)
     if kv_profile_type == VerticalConductivityProfile.exponential
         kv_profile = KvExponential(kv_0, f)
     elseif kv_profile_type == VerticalConductivityProfile.exponential_constant
@@ -255,7 +255,7 @@ function sbm_kv_profiles(
             config,
             "soil_exponential_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         )
         exp_profile = KvExponential(kv_0, f)
         kv_profile = KvExponentialConstant(exp_profile, z_exp)
@@ -267,7 +267,7 @@ function sbm_kv_profiles(
                 config,
                 "soil_layer_water__vertical_saturated_hydraulic_conductivity",
                 LandHydrologySBM;
-                sel = indices,
+                sel = land_indices_2d,
             ) .* (dt / BASETIMESTEP)
         if size(kv, 1) != maxlayers
             parname = param(
@@ -285,14 +285,14 @@ function sbm_kv_profiles(
                 config,
                 "soil_layered_vertical_saturated_hydraulic_conductivity_profile_below_surface__depth",
                 LandHydrologySBM;
-                sel = indices,
+                sel = land_indices_2d,
             )
-            nlayers_kv = fill(0, n)
-            for i in eachindex(nlayers_kv)
-                layers = @view sumlayers[i][2:nlayers[i]]
-                _, k = findmin(abs.(z_layered[i] .- layers))
-                nlayers_kv[i] = k
-                z_layered[i] = layers[k]
+            nlayers_kv = zeros(Int, n_cells)
+            for cell_idx in 1:n_cells
+                layers = @view sumlayers[cell_idx][2:nlayers[cell_idx]]
+                _, n_soil_layers = findmin(abs.(z_layered[cell_idx] .- layers))
+                nlayers_kv[cell_idx] = n_soil_layers
+                z_layered[cell_idx] = layers[n_soil_layers]
             end
             kv_profile = KvLayeredExponential(
                 f,
@@ -310,7 +310,7 @@ function SbmSoilParameters(
     dataset::NCDataset,
     config::Config,
     vegetation_parameter_set::VegetationParameters,
-    indices::Vector{CartesianIndex{2}},
+    land_indices_2d::Vector{CartesianIndex{2}},
     dt::Second,
 )
     config_soil_layer_thickness = config.model.soil_layer__thickness
@@ -328,14 +328,14 @@ function SbmSoilParameters(
             config,
             "soil_surface_temperature__weight_coefficient",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         ) .* (dt / BASETIMESTEP)
     cf_soil = ncread(
         dataset,
         config,
         "soil_surface_water__infiltration_reduction_parameter",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
 
     # soil parameters
@@ -344,14 +344,14 @@ function SbmSoilParameters(
         config,
         "soil_water__saturated_volume_fraction",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     theta_r = ncread(
         dataset,
         config,
         "soil_water__residual_volume_fraction",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     kv_0 =
         ncread(
@@ -359,73 +359,73 @@ function SbmSoilParameters(
             config,
             "soil_surface_water__vertical_saturated_hydraulic_conductivity",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         ) .* (dt / BASETIMESTEP)
     f = ncread(
         dataset,
         config,
         "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     hb = ncread(
         dataset,
         config,
         "soil_water__air_entry_pressure_head",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     h1 = ncread(
         dataset,
         config,
         "vegetation_root__feddes_critical_pressure_head_h1",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     h2 = ncread(
         dataset,
         config,
         "vegetation_root__feddes_critical_pressure_head_h2",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     h3_high = ncread(
         dataset,
         config,
         "vegetation_root__feddes_critical_pressure_head_h3_high",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     h3_low = ncread(
         dataset,
         config,
         "vegetation_root__feddes_critical_pressure_head_h3_low",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     h4 = ncread(
         dataset,
         config,
         "vegetation_root__feddes_critical_pressure_head_h4",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     alpha_h1 = ncread(
         dataset,
         config,
         "vegetation_root__feddes_critical_pressure_head_h1_reduction_coefficient",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     soilthickness =
-        ncread(dataset, config, "soil__thickness", LandHydrologySBM; sel = indices)
+        ncread(dataset, config, "soil__thickness", LandHydrologySBM; sel = land_indices_2d)
     infiltcappath =
         ncread(
             dataset,
             config,
             "compacted_soil_surface_water__infiltration_capacity",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         ) .* (dt / BASETIMESTEP)
     maxleakage =
         ncread(
@@ -433,14 +433,14 @@ function SbmSoilParameters(
             config,
             "soil_water_saturated_zone_bottom__max_leakage_volume_flux",
             LandHydrologySBM;
-            sel = indices,
+            sel = land_indices_2d,
         ) .* (dt / BASETIMESTEP)
     c = ncread(
         dataset,
         config,
         "soil_layer_water__brooks_corey_exponent",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     if size(c, 1) != maxlayers
         parname = param(config.input.static, "soil_layer_water__brooks_corey_exponent")
@@ -453,7 +453,7 @@ function SbmSoilParameters(
         config,
         "soil_layer_water__vertical_saturated_hydraulic_conductivity_factor",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     if size(kvfrac, 1) != maxlayers
         parname = param(
@@ -472,7 +472,7 @@ function SbmSoilParameters(
         config,
         "compacted_soil__area_fraction",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
 
     # vegetation parameters
@@ -481,21 +481,21 @@ function SbmSoilParameters(
         config,
         "soil_wet_root__sigmoid_function_shape_parameter",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     cap_hmax = ncread(
         dataset,
         config,
         "soil_water_saturated_zone_top__capillary_rise_max_water_table_depth",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
     cap_n = ncread(
         dataset,
         config,
         "soil_water_saturated_zone_top__capillary_rise_averianov_exponent",
         LandHydrologySBM;
-        sel = indices,
+        sel = land_indices_2d,
     )
 
     act_thickl =
@@ -509,31 +509,43 @@ function SbmSoilParameters(
             config,
             "soil_water__field_capacity_volume_fraction";
             optional = false,
-            sel = indices,
+            sel = land_indices_2d,
             type = Float64,
         )
     else
         theta_fc = field_capacity.(act_thickl, nlayers, theta_s, theta_r, c, hb)
     end
 
+    n_cells = length(land_indices_2d)
+
     # optional root fraction
     rootfraction_name = "soil_root__length_density_fraction"
     if haskey(config.input.static, rootfraction_name)
-        rootfraction =
-            ncread(dataset, config, rootfraction_name, LandHydrologySBM; sel = indices)
+        rootfraction = ncread(
+            dataset,
+            config,
+            rootfraction_name,
+            LandHydrologySBM;
+            sel = land_indices_2d,
+        )
     else
-        n = length(indices)
         (; rootingdepth) = vegetation_parameter_set
         # default root fraction
-        rootfraction = zeros(maxlayers, n)
-        for i in 1:n
-            if rootingdepth[i] > 0.0
-                for k in 1:maxlayers
-                    if (rootingdepth[i] - sumlayers[i][k]) >= act_thickl[i][k]
-                        rootfraction[k, i] = act_thickl[i][k] / rootingdepth[i]
+        rootfraction = zeros(maxlayers, n_cells)
+        for cell_idx in 1:n_cells
+            if rootingdepth[cell_idx] > 0.0
+                for soil_layer_idx in 1:maxlayers
+                    if (rootingdepth[cell_idx] - sumlayers[cell_idx][soil_layer_idx]) >=
+                       act_thickl[cell_idx][soil_layer_idx]
+                        rootfraction[soil_layer_idx, cell_idx] =
+                            act_thickl[cell_idx][soil_layer_idx] / rootingdepth[cell_idx]
                     else
-                        rootfraction[k, i] =
-                            max(rootingdepth[i] - sumlayers[i][k], 0.0) / rootingdepth[i]
+                        rootfraction[soil_layer_idx, cell_idx] =
+                            max(
+                                rootingdepth[cell_idx] -
+                                sumlayers[cell_idx][soil_layer_idx],
+                                0.0,
+                            ) / rootingdepth[cell_idx]
                     end
                 end
             end
@@ -543,7 +555,7 @@ function SbmSoilParameters(
     kv_profile = sbm_kv_profiles(
         dataset,
         config,
-        indices,
+        land_indices_2d,
         kv_0,
         f,
         maxlayers,
@@ -554,7 +566,6 @@ function SbmSoilParameters(
 
     soilwatercapacity = @. soilthickness * (theta_s - theta_r)
 
-    n = length(indices)
     sbm_params = SbmSoilParameters(;
         maxlayers,
         nlayers,
@@ -584,7 +595,7 @@ function SbmSoilParameters(
         c,
         w_soil,
         cf_soil,
-        soil_fraction = fill(MISSING_VALUE, n),
+        soil_fraction = fill(MISSING_VALUE, n_cells),
         kv_profile,
         vegetation_parameter_set,
     )
@@ -593,8 +604,8 @@ end
 
 "SBM soil model"
 @with_kw struct SbmSoilModel{N, M, Kv} <: AbstractSoilModel
-    n::Int
-    boundary_conditions::SbmSoilBC = SbmSoilBC(; n)
+    n_cells::Int
+    boundary_conditions::SbmSoilBC = SbmSoilBC(; n_cells)
     parameters::SbmSoilParameters{N, M, Kv}
     variables::SbmSoilVariables{N}
 end
@@ -604,13 +615,14 @@ function SbmSoilModel(
     dataset::NCDataset,
     config::Config,
     vegetation_parameter_set::VegetationParameters,
-    indices::Vector{CartesianIndex{2}},
+    land_indices_2d::Vector{CartesianIndex{2}},
     dt::Second,
 )
-    n = length(indices)
-    parameters = SbmSoilParameters(dataset, config, vegetation_parameter_set, indices, dt)
-    variables = SbmSoilVariables(n, parameters)
-    soil_model = SbmSoilModel(; n, parameters, variables)
+    n_cells = length(land_indices_2d)
+    parameters =
+        SbmSoilParameters(dataset, config, vegetation_parameter_set, land_indices_2d, dt)
+    variables = SbmSoilVariables(n_cells, parameters)
+    soil_model = SbmSoilModel(; n_cells, parameters, variables)
     return soil_model
 end
 
@@ -647,12 +659,13 @@ function update_bc_soil_model!(
     evaporation!(demand.paddy, potential_soilevaporation)
     potential_soilevaporation .= potential_soilevaporation .- get_evaporation(demand.paddy)
 
-    water_flux_surface .= max.(
-        runoff.boundary_conditions.water_flux_surface .+
-        get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
-        runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
-        0.0,
-    )
+    water_flux_surface .=
+        max.(
+            runoff.boundary_conditions.water_flux_surface .+
+            get_irrigation_allocated(allocation) .- runoff.variables.runoff_river .-
+            runoff.variables.runoff_land .+ get_water_depth(demand.paddy),
+            0.0,
+        )
     return nothing
 end
 
@@ -672,10 +685,12 @@ soil_temperature!(::SbmSoilModel, ::NoSnowModel, ::Vector{Float64}) = nothing
 
 "Update total available water in the unsaturated zone of the SBM soil model for a single timestep"
 function ustoredepth!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
     v = soil_model.variables
     p = soil_model.parameters
-    for i in eachindex(v.ustorelayerdepth)
-        v.ustoredepth[i] = sum(@view v.ustorelayerdepth[i][1:p.nlayers[i]])
+    for cell_idx in 1:n_cells
+        v.ustoredepth[cell_idx] =
+            sum(@view v.ustorelayerdepth[cell_idx][1:p.nlayers[cell_idx]])
     end
     return nothing
 end
@@ -686,14 +701,14 @@ function infiltration_reduction_factor!(
     modelsnow = false,
     soil_infiltration_reduction = false,
 )
+    (; n_cells) = soil_model
     v = soil_model.variables
     p = soil_model.parameters
 
-    n = length(v.tsoil)
-    threaded_foreach(1:n; basesize = 1000) do i
-        v.f_infiltration_reduction[i] = infiltration_reduction_factor(
-            v.tsoil[i],
-            p.cf_soil[i];
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        v.f_infiltration_reduction[cell_idx] = infiltration_reduction_factor(
+            v.tsoil[cell_idx],
+            p.cf_soil[cell_idx];
             modelsnow,
             soil_infiltration_reduction,
         )
@@ -708,19 +723,19 @@ Update the infiltration rate `infiltsoilpath` and infiltration excess water rate
 `infiltexcess` of the SBM soil model for a single timestep.
 """
 function infiltration!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
+
     v = soil_model.variables
     p = soil_model.parameters
     (; water_flux_surface) = soil_model.boundary_conditions
-
-    n = length(v.infiltsoilpath)
-    threaded_foreach(1:n; basesize = 1000) do i
-        v.infiltsoilpath[i], v.infiltexcess[i] = infiltration(
-            water_flux_surface[i],
-            p.pathfrac[i],
-            p.infiltcapsoil[i],
-            p.infiltcappath[i],
-            v.ustorecapacity[i],
-            v.f_infiltration_reduction[i],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        v.infiltsoilpath[cell_idx], v.infiltexcess[cell_idx] = infiltration(
+            water_flux_surface[cell_idx],
+            p.pathfrac[cell_idx],
+            p.infiltcapsoil[cell_idx],
+            p.infiltcappath[cell_idx],
+            v.ustorecapacity[cell_idx],
+            v.f_infiltration_reduction[cell_idx],
         )
     end
     return nothing
@@ -734,30 +749,43 @@ to the saturated store of the SBM soil model for a single timestep, based on the
 approach.
 """
 function unsaturated_zone_flow!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
     v = soil_model.variables
     p = soil_model.parameters
 
-    n = length(v.transfer)
-    threaded_foreach(1:n; basesize = 250) do i
-        if v.n_unsatlayers[i] > 0
+    threaded_foreach(1:n_cells; basesize = 250) do cell_idx
+        if v.n_unsatlayers[cell_idx] > 0
             # Brooks-Corey approach
-            z = cumsum(v.ustorelayerthickness[i])
+            z = cumsum(v.ustorelayerthickness[cell_idx])
             flow_rate = 0.0
-            for m in 1:v.n_unsatlayers[i]
-                l_sat = v.ustorelayerthickness[i][m] * (p.theta_s[i] - p.theta_r[i])
-                kv_z = hydraulic_conductivity_at_depth(p.kv_profile, p.kvfrac, z[m], i, m)
-                ustorelayerdepth = if m == 1
-                    v.ustorelayerdepth[i][m] + v.infiltsoilpath[i]
+            for soil_layer_idx in 1:v.n_unsatlayers[cell_idx]
+                l_sat =
+                    v.ustorelayerthickness[cell_idx][soil_layer_idx] *
+                    (p.theta_s[cell_idx] - p.theta_r[cell_idx])
+                kv_z = hydraulic_conductivity_at_depth(
+                    p.kv_profile,
+                    p.kvfrac,
+                    z[soil_layer_idx],
+                    cell_idx,
+                    soil_layer_idx,
+                )
+                ustorelayerdepth = if isone(soil_layer_idx)
+                    v.ustorelayerdepth[cell_idx][soil_layer_idx] + v.infiltsoilpath[cell_idx]
                 else
-                    v.ustorelayerdepth[i][m] + flow_rate
+                    v.ustorelayerdepth[cell_idx][soil_layer_idx] + flow_rate
                 end
-                ustorelayerdepth, flow_rate =
-                    unsatzone_flow_layer(ustorelayerdepth, kv_z, l_sat, p.c[i][m])
-                v.ustorelayerdepth[i] = setindex(v.ustorelayerdepth[i], ustorelayerdepth, m)
+                ustorelayerdepth, flow_rate = unsatzone_flow_layer(
+                    ustorelayerdepth,
+                    kv_z,
+                    l_sat,
+                    p.c[cell_idx][soil_layer_idx],
+                )
+                v.ustorelayerdepth[cell_idx] =
+                    setindex(v.ustorelayerdepth[cell_idx], ustorelayerdepth, soil_layer_idx)
             end
-            v.transfer[i] = flow_rate
+            v.transfer[cell_idx] = flow_rate
         else
-            v.transfer[i] = 0.0
+            v.transfer[cell_idx] = 0.0
         end
     end
     return nothing
@@ -772,43 +800,47 @@ single timestep. Also unsaturated storage `ustorelayerdepth` and the saturated s
 `satwaterdepth` are updated.
 """
 function soil_evaporation!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
     (; potential_soilevaporation) = soil_model.boundary_conditions
     v = soil_model.variables
     p = soil_model.parameters
 
-    n = length(potential_soilevaporation)
-    threaded_foreach(1:n; basesize = 1000) do i
-        potsoilevap = potential_soilevaporation[i]
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        potsoilevap = potential_soilevaporation[cell_idx]
         # First calculate the evaporation of unsaturated storage into the
         # atmosphere from the upper layer.
         soilevapunsat = soil_evaporation_unsatured_store(
             potsoilevap,
-            v.ustorelayerdepth[i][1],
-            v.ustorelayerthickness[i][1],
-            v.n_unsatlayers[i],
-            v.zi[i],
-            p.theta_s[i] - p.theta_r[i],
+            v.ustorelayerdepth[cell_idx][1],
+            v.ustorelayerthickness[cell_idx][1],
+            v.n_unsatlayers[cell_idx],
+            v.zi[cell_idx],
+            p.theta_s[cell_idx] - p.theta_r[cell_idx],
         )
         # Ensure that the unsaturated evaporation rate does not exceed the
         # available unsaturated moisture
-        soilevapunsat = min(soilevapunsat, v.ustorelayerdepth[i][1])
+        soilevapunsat = min(soilevapunsat, v.ustorelayerdepth[cell_idx][1])
         # Update the additional atmospheric demand
         potsoilevap -= soilevapunsat
-        v.ustorelayerdepth[i] =
-            setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][1] - soilevapunsat, 1)
+        v.ustorelayerdepth[cell_idx] = setindex(
+            v.ustorelayerdepth[cell_idx],
+            v.ustorelayerdepth[cell_idx][1] - soilevapunsat,
+            1,
+        )
 
-        theta_drainable = lower_bound_drainable_porosity(p.theta_s[i], p.theta_fc[i])
+        theta_drainable =
+            lower_bound_drainable_porosity(p.theta_s[cell_idx], p.theta_fc[cell_idx])
         soilevapsat = soil_evaporation_satured_store(
             potsoilevap,
-            v.n_unsatlayers[i],
-            p.act_thickl[i][1],
-            v.zi[i],
+            v.n_unsatlayers[cell_idx],
+            p.act_thickl[cell_idx][1],
+            v.zi[cell_idx],
             theta_drainable,
         )
 
-        v.soilevapsat[i] = soilevapsat
-        v.soilevap[i] = soilevapunsat + soilevapsat
-        v.drainable_waterdepth[i] = v.drainable_waterdepth[i] - soilevapsat
+        v.soilevapsat[cell_idx] = soilevapsat
+        v.soilevap[cell_idx] = soilevapunsat + soilevapsat
+        v.drainable_waterdepth[cell_idx] = v.drainable_waterdepth[cell_idx] - soilevapsat
     end
     return nothing
 end
@@ -821,31 +853,41 @@ saturated store `actevapsat` of the SBM soil model for a single timestep. Also u
 storage `ustorelayerdepth` and the saturated store `satwaterdepth` are updated.
 """
 function transpiration!(soil_model::SbmSoilModel, dt::Float64)
+    (; n_cells) = soil_model
     (; potential_transpiration) = soil_model.boundary_conditions
     v = soil_model.variables
     p = soil_model.parameters
 
     rootingdepth = get_rootingdepth(soil_model)
-    n = length(rootingdepth)
 
-    threaded_foreach(1:n; basesize = 250) do i
-        v.h3[i] = feddes_h3(p.h3_high[i], p.h3_low[i], potential_transpiration[i], dt)
+    threaded_foreach(1:n_cells; basesize = 250) do cell_idx
+        v.h3[cell_idx] = feddes_h3(
+            p.h3_high[cell_idx],
+            p.h3_low[cell_idx],
+            potential_transpiration[cell_idx],
+            dt,
+        )
 
         # compute sum of root fraction in unsaturated soil layers and adapt root fraction
         # lowest unsaturated soil layer if water table depth intersects the unsaturated root
         # zone
         sum_rootfraction_unsat = 0.0
         rootfraction_unsat_lowest = 0.0
-        for k in 1:v.n_unsatlayers[i]
+        for soil_layer_idx in 1:v.n_unsatlayers[cell_idx]
             # the root fraction is valid for the root length in a soil layer, if zi decreases
             # the root length the root fraction needs to be adapted
-            if k == v.n_unsatlayers[i] && v.zi[i] < rootingdepth[i]
-                rootlength = min(p.act_thickl[i][k], rootingdepth[i] - p.sumlayers[i][k])
+            if soil_layer_idx == v.n_unsatlayers[cell_idx] &&
+               v.zi[cell_idx] < rootingdepth[cell_idx]
+                rootlength = min(
+                    p.act_thickl[cell_idx][soil_layer_idx],
+                    rootingdepth[cell_idx] - p.sumlayers[cell_idx][soil_layer_idx],
+                )
                 rootfraction_unsat =
-                    p.rootfraction[i][k] * (v.ustorelayerthickness[i][k] / rootlength)
+                    p.rootfraction[cell_idx][soil_layer_idx] *
+                    (v.ustorelayerthickness[cell_idx][soil_layer_idx] / rootlength)
                 sum_rootfraction_unsat += rootfraction_unsat
             else
-                rootfraction_unsat = p.rootfraction[i][k]
+                rootfraction_unsat = p.rootfraction[cell_idx][soil_layer_idx]
                 sum_rootfraction_unsat += rootfraction_unsat
             end
             # rootfraction lowest unsaturated layer
@@ -853,64 +895,81 @@ function transpiration!(soil_model::SbmSoilModel, dt::Float64)
         end
 
         actevapustore = 0.0
-        for k in 1:v.n_unsatlayers[i]
+        for soil_layer_idx in 1:v.n_unsatlayers[cell_idx]
             # scale rootfraction soil layer unsaturated zone based on sum of rootfraction in
             # unsaturated zone
-            if k < v.n_unsatlayers[i]
-                rootfraction_unsat = p.rootfraction[i][k]
+            if soil_layer_idx < v.n_unsatlayers[cell_idx]
+                rootfraction_unsat = p.rootfraction[cell_idx][soil_layer_idx]
             else
                 rootfraction_unsat = rootfraction_unsat_lowest
             end
             rootfraction_unsat_scaled =
-                rootingdepth[i] > 0.0 ?
+                rootingdepth[cell_idx] > 0.0 ?
                 max((1.0 / sum_rootfraction_unsat), 1.0) * rootfraction_unsat : 0.0
 
             vwc = max(
-                v.ustorelayerdepth[i][k] / v.ustorelayerthickness[i][k],
+                v.ustorelayerdepth[cell_idx][soil_layer_idx] /
+                v.ustorelayerthickness[cell_idx][soil_layer_idx],
                 Float64(0.0000001),
             )
-            head = head_brooks_corey(vwc, p.theta_s[i], p.theta_r[i], p.c[i][k], p.hb[i])
+            head = head_brooks_corey(
+                vwc,
+                p.theta_s[cell_idx],
+                p.theta_r[cell_idx],
+                p.c[cell_idx][soil_layer_idx],
+                p.hb[cell_idx],
+            )
             alpha = rwu_reduction_feddes(
                 head,
-                p.h1[i],
-                p.h2[i],
-                v.h3[i],
-                p.h4[i],
-                p.alpha_h1[i],
+                p.h1[cell_idx],
+                p.h2[cell_idx],
+                v.h3[cell_idx],
+                p.h4[cell_idx],
+                p.alpha_h1[cell_idx],
             )
 
             availcap = min(
                 1.0,
                 max(
                     0.0,
-                    (rootingdepth[i] - p.sumlayers[i][k]) / v.ustorelayerthickness[i][k],
+                    (rootingdepth[cell_idx] - p.sumlayers[cell_idx][soil_layer_idx]) /
+                    v.ustorelayerthickness[cell_idx][soil_layer_idx],
                 ),
             )
-            maxextr = v.ustorelayerdepth[i][k] * availcap
-            actevapustore_layer =
-                min(alpha * rootfraction_unsat_scaled * potential_transpiration[i], maxextr)
-            ustorelayerdepth = v.ustorelayerdepth[i][k] - actevapustore_layer
+            maxextr = v.ustorelayerdepth[cell_idx][soil_layer_idx] * availcap
+            actevapustore_layer = min(
+                alpha * rootfraction_unsat_scaled * potential_transpiration[cell_idx],
+                maxextr,
+            )
+            ustorelayerdepth =
+                v.ustorelayerdepth[cell_idx][soil_layer_idx] - actevapustore_layer
             actevapustore += actevapustore_layer
-            v.ustorelayerdepth[i] = setindex(v.ustorelayerdepth[i], ustorelayerdepth, k)
+            v.ustorelayerdepth[cell_idx] =
+                setindex(v.ustorelayerdepth[cell_idx], ustorelayerdepth, soil_layer_idx)
         end
 
         # transpiration from saturated store
-        wetroots = scurve(v.zi[i], rootingdepth[i], Float64(1.0), p.rootdistpar[i])
+        wetroots = scurve(
+            v.zi[cell_idx],
+            rootingdepth[cell_idx],
+            Float64(1.0),
+            p.rootdistpar[cell_idx],
+        )
         alpha = rwu_reduction_feddes(
             Float64(0.0),
-            p.h1[i],
-            p.h2[i],
-            v.h3[i],
-            p.h4[i],
-            p.alpha_h1[i],
+            p.h1[cell_idx],
+            p.h2[cell_idx],
+            v.h3[cell_idx],
+            p.h4[cell_idx],
+            p.alpha_h1[cell_idx],
         )
-        restpottrans = potential_transpiration[i] - actevapustore
-        actevapsat = min(restpottrans * wetroots * alpha, v.drainable_waterdepth[i])
+        restpottrans = potential_transpiration[cell_idx] - actevapustore
+        actevapsat = min(restpottrans * wetroots * alpha, v.drainable_waterdepth[cell_idx])
 
-        v.ae_ustore[i] = actevapustore
-        v.actevapsat[i] = actevapsat
-        v.drainable_waterdepth[i] = v.drainable_waterdepth[i] - actevapsat
-        v.transpiration[i] = actevapustore + actevapsat
+        v.ae_ustore[cell_idx] = actevapustore
+        v.actevapsat[cell_idx] = actevapsat
+        v.drainable_waterdepth[cell_idx] = v.drainable_waterdepth[cell_idx] - actevapsat
+        v.transpiration[cell_idx] = actevapustore + actevapsat
     end
     return nothing
 end
@@ -926,34 +985,35 @@ bottom to the top unsaturated soil layer. The resulting excess water `ustoredept
 subtracted from the infiltration rate `infiltsoilpath`.
 """
 function actual_infiltration!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
     v = soil_model.variables
     p = soil_model.parameters
 
-    n = length(v.actinfilt)
-    threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
         # check soil moisture balance per layer
         ustoredepth_excess = 0.0
-        for k in v.n_unsatlayers[i]:-1:1
+        for soil_layer_idx in v.n_unsatlayers[cell_idx]:-1:1
             ustoredepth_excess = max(
                 0.0,
-                v.ustorelayerdepth[i][k] -
-                v.ustorelayerthickness[i][k] * (p.theta_s[i] - p.theta_r[i]),
+                v.ustorelayerdepth[cell_idx][soil_layer_idx] -
+                v.ustorelayerthickness[cell_idx][soil_layer_idx] *
+                (p.theta_s[cell_idx] - p.theta_r[cell_idx]),
             )
-            v.ustorelayerdepth[i] = setindex(
-                v.ustorelayerdepth[i],
-                v.ustorelayerdepth[i][k] - ustoredepth_excess,
-                k,
+            v.ustorelayerdepth[cell_idx] = setindex(
+                v.ustorelayerdepth[cell_idx],
+                v.ustorelayerdepth[cell_idx][soil_layer_idx] - ustoredepth_excess,
+                soil_layer_idx,
             )
-            if k > 1
-                v.ustorelayerdepth[i] = setindex(
-                    v.ustorelayerdepth[i],
-                    v.ustorelayerdepth[i][k - 1] + ustoredepth_excess,
-                    k - 1,
+            if soil_layer_idx > 1
+                v.ustorelayerdepth[cell_idx] = setindex(
+                    v.ustorelayerdepth[cell_idx],
+                    v.ustorelayerdepth[cell_idx][soil_layer_idx - 1] + ustoredepth_excess,
+                    soil_layer_idx - 1,
                 )
             end
         end
 
-        v.actinfilt[i] = v.infiltsoilpath[i] - ustoredepth_excess
+        v.actinfilt[cell_idx] = v.infiltsoilpath[cell_idx] - ustoredepth_excess
     end
     return nothing
 end
@@ -965,20 +1025,21 @@ Update the actual infiltration rate for soil `actinfiltsoil` and paved area `act
 of the SBM soil model for a single timestep.
 """
 function actual_infiltration_soil_path!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
     v = soil_model.variables
     p = soil_model.parameters
     (; water_flux_surface) = soil_model.boundary_conditions
 
-    n = length(water_flux_surface)
-    threaded_foreach(1:n; basesize = 1000) do i
-        v.actinfiltsoil[i], v.actinfiltpath[i] = actual_infiltration_soil_path(
-            water_flux_surface[i],
-            v.actinfilt[i],
-            p.pathfrac[i],
-            p.infiltcapsoil[i],
-            p.infiltcappath[i],
-            v.f_infiltration_reduction[i],
-        )
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        v.actinfiltsoil[cell_idx], v.actinfiltpath[cell_idx] =
+            actual_infiltration_soil_path(
+                water_flux_surface[cell_idx],
+                v.actinfilt[cell_idx],
+                p.pathfrac[cell_idx],
+                p.infiltcapsoil[cell_idx],
+                p.infiltcappath[cell_idx],
+                v.f_infiltration_reduction[cell_idx],
+            )
     end
     return nothing
 end
@@ -989,52 +1050,64 @@ end
 Update the capillary flux `actcapflux` of the SBM soil model for a single timestep.
 """
 function capillary_flux!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
     v = soil_model.variables
     p = soil_model.parameters
     rootingdepth = get_rootingdepth(soil_model)
 
-    n = length(rootingdepth)
-    threaded_foreach(1:n; basesize = 1000) do i
-        if v.n_unsatlayers[i] > 0
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        if v.n_unsatlayers[cell_idx] > 0
             ksat = hydraulic_conductivity_at_depth(
                 p.kv_profile,
                 p.kvfrac,
-                v.zi[i],
-                i,
-                v.n_unsatlayers[i],
+                v.zi[cell_idx],
+                cell_idx,
+                v.n_unsatlayers[cell_idx],
             )
             maxcapflux = max(
                 0.0,
-                min(ksat, v.ae_ustore[i], v.ustorecapacity[i], v.drainable_waterdepth[i]),
+                min(
+                    ksat,
+                    v.ae_ustore[cell_idx],
+                    v.ustorecapacity[cell_idx],
+                    v.drainable_waterdepth[cell_idx],
+                ),
             )
 
-            if v.zi[i] > rootingdepth[i]
+            if v.zi[cell_idx] > rootingdepth[cell_idx]
                 capflux =
-                    maxcapflux *
-                    pow(1.0 - min(v.zi[i], p.cap_hmax[i]) / (p.cap_hmax[i]), p.cap_n[i])
+                    maxcapflux * pow(
+                        1.0 -
+                        min(v.zi[cell_idx], p.cap_hmax[cell_idx]) / (p.cap_hmax[cell_idx]),
+                        p.cap_n[cell_idx],
+                    )
             else
                 capflux = 0.0
             end
 
             netcapflux = capflux
             actcapflux = 0.0
-            for k in v.n_unsatlayers[i]:-1:1
+            for soil_layer_idx in v.n_unsatlayers[cell_idx]:-1:1
                 toadd = min(
                     netcapflux,
                     max(
-                        v.ustorelayerthickness[i][k] * (p.theta_s[i] - p.theta_r[i]) -
-                        v.ustorelayerdepth[i][k],
+                        v.ustorelayerthickness[cell_idx][soil_layer_idx] *
+                        (p.theta_s[cell_idx] - p.theta_r[cell_idx]) -
+                        v.ustorelayerdepth[cell_idx][soil_layer_idx],
                         0.0,
                     ),
                 )
-                v.ustorelayerdepth[i] =
-                    setindex(v.ustorelayerdepth[i], v.ustorelayerdepth[i][k] + toadd, k)
+                v.ustorelayerdepth[cell_idx] = setindex(
+                    v.ustorelayerdepth[cell_idx],
+                    v.ustorelayerdepth[cell_idx][soil_layer_idx] + toadd,
+                    soil_layer_idx,
+                )
                 netcapflux -= toadd
                 actcapflux += toadd
             end
-            v.actcapflux[i] = actcapflux
+            v.actcapflux[cell_idx] = actcapflux
         else
-            v.actcapflux[i] = 0.0
+            v.actcapflux[cell_idx] = 0.0
         end
     end
     return nothing
@@ -1046,20 +1119,20 @@ end
 Update the actual leakage rate `actleakage` of the SBM soil model for a single timestep.
 """
 function leakage!(soil_model::SbmSoilModel)
+    (; n_cells) = soil_model
     v = soil_model.variables
     p = soil_model.parameters
 
-    n = length(v.actleakage)
-    threaded_foreach(1:n; basesize = 1000) do i
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
         deepksat = hydraulic_conductivity_at_depth(
             p.kv_profile,
             p.kvfrac,
-            p.soilthickness[i],
-            i,
-            p.nlayers[i],
+            p.soilthickness[cell_idx],
+            cell_idx,
+            p.nlayers[cell_idx],
         )
-        deeptransfer = min(v.drainable_waterdepth[i], deepksat)
-        v.actleakage[i] = max(0.0, min(p.maxleakage[i], deeptransfer))
+        deeptransfer = min(v.drainable_waterdepth[cell_idx], deepksat)
+        v.actleakage[cell_idx] = max(0.0, min(p.maxleakage[cell_idx], deeptransfer))
     end
     return nothing
 end
@@ -1127,42 +1200,51 @@ function update_soil_water_flow!(
     return nothing
 end
 
-function update_ustorelayerdepth!(soil, zi_prev, zi, i)
+function update_ustorelayerdepth!(soil, zi_prev, zi, cell_idx)
     v = soil.variables
     p = soil.parameters
 
-    n_unsatlayers_prev = v.n_unsatlayers[i]
-    ustorelayerthickness_prev = v.ustorelayerthickness[i]
-    ustorelayerthickness = set_layerthickness(zi, p.sumlayers[i], p.act_thickl[i])
+    n_unsatlayers_prev = v.n_unsatlayers[cell_idx]
+    ustorelayerthickness_prev = v.ustorelayerthickness[cell_idx]
+    ustorelayerthickness =
+        set_layerthickness(zi, p.sumlayers[cell_idx], p.act_thickl[cell_idx])
     n_unsatlayers = number_of_active_layers(ustorelayerthickness)
-    ustorelayerdepth = v.ustorelayerdepth[i]
+    ustorelayerdepth = v.ustorelayerdepth[cell_idx]
     if zi < zi_prev
-        for k in n_unsatlayers:n_unsatlayers_prev
-            k == 0 && continue
-            if isnan(ustorelayerthickness[k])
-                ustorelayerdepth = setindex(ustorelayerdepth, 0.0, k)
+        for soil_layer_idx in n_unsatlayers:n_unsatlayers_prev
+            iszero(soil_layer_idx) && continue
+            if isnan(ustorelayerthickness[soil_layer_idx])
+                ustorelayerdepth = setindex(ustorelayerdepth, 0.0, soil_layer_idx)
             else
-                f = ustorelayerthickness[k] / ustorelayerthickness_prev[k]
-                ustorelayerdepth = setindex(ustorelayerdepth, f * ustorelayerdepth[k], k)
+                f =
+                    ustorelayerthickness[soil_layer_idx] /
+                    ustorelayerthickness_prev[soil_layer_idx]
+                ustorelayerdepth = setindex(
+                    ustorelayerdepth,
+                    f * ustorelayerdepth[soil_layer_idx],
+                    soil_layer_idx,
+                )
             end
         end
     else
-        for k in n_unsatlayers_prev:n_unsatlayers
-            k == 0 && continue
+        for soil_layer_idx in n_unsatlayers_prev:n_unsatlayers
+            iszero(soil_layer_idx) && continue
             thickness_prev =
-                isnan(ustorelayerthickness_prev[k]) ? 0.0 : ustorelayerthickness_prev[k]
-            delta_thickness = ustorelayerthickness[k] - thickness_prev
+                isnan(ustorelayerthickness_prev[soil_layer_idx]) ? 0.0 :
+                ustorelayerthickness_prev[soil_layer_idx]
+            delta_thickness = ustorelayerthickness[soil_layer_idx] - thickness_prev
             ustorelayerdepth = setindex(
                 ustorelayerdepth,
-                ustorelayerdepth[k] + delta_thickness * (p.theta_fc[i] - p.theta_r[i]),
-                k,
+                ustorelayerdepth[soil_layer_idx] +
+                delta_thickness * (p.theta_fc[cell_idx] - p.theta_r[cell_idx]),
+                soil_layer_idx,
             )
         end
     end
-    v.n_unsatlayers[i] = n_unsatlayers
-    v.ustorelayerdepth[i] = ustorelayerdepth
-    v.ustorelayerthickness[i] = ustorelayerthickness
-    v.zi[i] = zi
+    v.n_unsatlayers[cell_idx] = n_unsatlayers
+    v.ustorelayerdepth[cell_idx] = ustorelayerdepth
+    v.ustorelayerthickness[cell_idx] = ustorelayerthickness
+    v.zi[cell_idx] = zi
 end
 
 """
@@ -1174,15 +1256,15 @@ unsaturated zone soil layers `ustorelayerthickness` and water table depth `zi`, 
 water table change computed by a subsurface flow model.
 """
 function update_ustorelayerdepth!(soil_model::SbmSoilModel, subsurface_flow)
+    (; n_cells) = soil_model
     p = soil_model.parameters
     v = soil_model.variables
 
     zi = get_water_depth(subsurface_flow) * 1000.0 # convert from [m] to [mm]
 
-    n = length(v.zi)
-    threaded_foreach(1:n; basesize = 1000) do i
-        zi_prev = v.zi[i]
-        update_ustorelayerdepth!(soil_model, zi_prev, zi[i], i)
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        zi_prev = v.zi[cell_idx]
+        update_ustorelayerdepth!(soil_model, zi_prev, zi[cell_idx], cell_idx)
     end
 end
 
@@ -1199,6 +1281,7 @@ store `satwaterdepth` and the water exfiltrating during saturation excess condit
 the root zone are updated.
 """
 function update_soil_water_storage!(soil_model::SbmSoilModel, external_models::NamedTuple)
+    (; n_cells) = soil_model
     (; runoff, demand, subsurface_flow) = external_models
     (; runoff_land, ae_openw_l) = runoff.variables
     p = soil_model.parameters
@@ -1207,73 +1290,87 @@ function update_soil_water_storage!(soil_model::SbmSoilModel, external_models::N
     exfiltsatwater = subsurface_flow.variables.exfiltwater * 1000.0 # convert from [m] to [mm]
     rootingdepth = get_rootingdepth(soil_model)
 
-    n = length(v.zi)
-    threaded_foreach(1:n; basesize = 1000) do i
-        ustorelayerdepth = v.ustorelayerdepth[i]
-        ustorelayerthickness = v.ustorelayerthickness[i]
-        ustoredepth = sum(@view ustorelayerdepth[1:(v.n_unsatlayers[i])])
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        ustorelayerdepth = v.ustorelayerdepth[cell_idx]
+        ustorelayerthickness = v.ustorelayerthickness[cell_idx]
+        ustoredepth = sum(@view ustorelayerdepth[1:(v.n_unsatlayers[cell_idx])])
         sbm_runoff = max(
             0.0,
-            exfiltsatwater[i] + v.excesswater[i] + runoff_land[i] + v.infiltexcess[i],
+            exfiltsatwater[cell_idx] +
+            v.excesswater[cell_idx] +
+            runoff_land[cell_idx] +
+            v.infiltexcess[cell_idx],
         )
 
         # volumetric water content per soil layer and root zone
-        vwc = v.vwc[i]
-        vwc_perc = v.vwc_perc[i]
-        for k in 1:p.nlayers[i]
-            if k <= v.n_unsatlayers[i]
+        vwc = v.vwc[cell_idx]
+        vwc_perc = v.vwc_perc[cell_idx]
+        for soil_layer_idx in 1:p.nlayers[cell_idx]
+            if soil_layer_idx <= v.n_unsatlayers[cell_idx]
                 vwc = setindex(
                     vwc,
                     (
-                        ustorelayerdepth[k] +
-                        (p.act_thickl[i][k] - ustorelayerthickness[k]) *
-                        (p.theta_s[i] - p.theta_r[i])
-                    ) / p.act_thickl[i][k] + p.theta_r[i],
-                    k,
+                        ustorelayerdepth[soil_layer_idx] +
+                        (
+                            p.act_thickl[cell_idx][soil_layer_idx] -
+                            ustorelayerthickness[soil_layer_idx]
+                        ) * (p.theta_s[cell_idx] - p.theta_r[cell_idx])
+                    ) / p.act_thickl[cell_idx][soil_layer_idx] + p.theta_r[cell_idx],
+                    soil_layer_idx,
                 )
             else
-                vwc = setindex(vwc, p.theta_s[i], k)
+                vwc = setindex(vwc, p.theta_s[cell_idx], soil_layer_idx)
             end
-            vwc_perc = setindex(vwc_perc, (vwc[k] / p.theta_s[i]) * 100.0, k)
+            vwc_perc = setindex(
+                vwc_perc,
+                (vwc[soil_layer_idx] / p.theta_s[cell_idx]) * 100.0,
+                soil_layer_idx,
+            )
         end
 
         rootstore_unsat = 0
-        for k in 1:(v.n_unsatlayers[i])
+        for soil_layer_idx in 1:(v.n_unsatlayers[cell_idx])
             rootstore_unsat =
                 rootstore_unsat +
                 min(
                     1.0,
                     (
-                        max(0.0, rootingdepth[i] - p.sumlayers[i][k]) /
-                        ustorelayerthickness[k]
+                        max(
+                            0.0,
+                            rootingdepth[cell_idx] - p.sumlayers[cell_idx][soil_layer_idx],
+                        ) / ustorelayerthickness[soil_layer_idx]
                     ),
-                ) * ustorelayerdepth[k]
+                ) * ustorelayerdepth[soil_layer_idx]
         end
 
-        rootstore_sat = max(0.0, rootingdepth[i] - v.zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        rootstore_sat =
+            max(0.0, rootingdepth[cell_idx] - v.zi[cell_idx]) *
+            (p.theta_s[cell_idx] - p.theta_r[cell_idx])
         rootstore = rootstore_sat + rootstore_unsat
-        vwc_root = rootstore / rootingdepth[i] + p.theta_r[i]
-        vwc_percroot = (vwc_root / p.theta_s[i]) * 100.0
+        vwc_root = rootstore / rootingdepth[cell_idx] + p.theta_r[cell_idx]
+        vwc_percroot = (vwc_root / p.theta_s[cell_idx]) * 100.0
 
-        satwaterdepth = (p.soilthickness[i] - v.zi[i]) * (p.theta_s[i] - p.theta_r[i])
+        satwaterdepth =
+            (p.soilthickness[cell_idx] - v.zi[cell_idx]) *
+            (p.theta_s[cell_idx] - p.theta_r[cell_idx])
         drainable_waterdepth =
-            (p.soilthickness[i] - v.zi[i]) *
-            lower_bound_drainable_porosity(p.theta_s[i], p.theta_fc[i])
-        ustorecapacity = p.soilwatercapacity[i] - satwaterdepth - ustoredepth
+            (p.soilthickness[cell_idx] - v.zi[cell_idx]) *
+            lower_bound_drainable_porosity(p.theta_s[cell_idx], p.theta_fc[cell_idx])
+        ustorecapacity = p.soilwatercapacity[cell_idx] - satwaterdepth - ustoredepth
 
         # update the outputs and states
-        v.ustorecapacity[i] = ustorecapacity
-        v.ustoredepth[i] = ustoredepth
-        v.satwaterdepth[i] = satwaterdepth
-        v.drainable_waterdepth[i] = drainable_waterdepth
-        v.exfiltsatwater[i] = exfiltsatwater[i]
-        v.runoff[i] = sbm_runoff
-        v.vwc[i] = vwc
-        v.vwc_perc[i] = vwc_perc
-        v.rootstore[i] = rootstore
-        v.vwc_root[i] = vwc_root
-        v.vwc_percroot[i] = vwc_percroot
-        v.total_soilwater_storage[i] = satwaterdepth + ustoredepth
+        v.ustorecapacity[cell_idx] = ustorecapacity
+        v.ustoredepth[cell_idx] = ustoredepth
+        v.satwaterdepth[cell_idx] = satwaterdepth
+        v.drainable_waterdepth[cell_idx] = drainable_waterdepth
+        v.exfiltsatwater[cell_idx] = exfiltsatwater[cell_idx]
+        v.runoff[cell_idx] = sbm_runoff
+        v.vwc[cell_idx] = vwc
+        v.vwc_perc[cell_idx] = vwc_perc
+        v.rootstore[cell_idx] = rootstore
+        v.vwc_root[cell_idx] = vwc_root
+        v.vwc_percroot[cell_idx] = vwc_percroot
+        v.total_soilwater_storage[cell_idx] = satwaterdepth + ustoredepth
     end
     # update runoff and net_runoff (the runoff rate depends on the presence of paddy fields
     # and the h_max parameter of a paddy field)

@@ -14,16 +14,16 @@
         # flow models
         (; subsurface_flow) = model.routing
         (; zi, ustorecapacity) = model.land.soil.variables
-        (; land_indices) = model.domain.river.network
+        (; cell_indices_containing_river) = model.domain.river.network
         @test all(
             0.001 * zi .==
             subsurface_flow.parameters.top .-
             min.(subsurface_flow.variables.head, subsurface_flow.parameters.top),
         )
-        @test all(ustorecapacity[land_indices] .== 0.0)
+        @test all(ustorecapacity[cell_indices_containing_river] .== 0.0)
         @test all(
-            subsurface_flow.variables.head[land_indices] .==
-            subsurface_flow.parameters.top[land_indices],
+            subsurface_flow.variables.head[cell_indices_containing_river] .==
+            subsurface_flow.parameters.top[cell_indices_containing_river],
         )
     end
 
@@ -77,7 +77,7 @@
         @test river.variables.storage[6] ≈ 4.037102927161714
         @test river.boundary_conditions.inwater[6] ≈ 0.0001323377399268941
         @test q[13] ≈ 0.0005348254420989118
-        @test q[domain.river.network.order[end]] ≈ 0.006956110669004074
+        @test q[domain.river.network.cell_order[end]] ≈ 0.006956110669004074
     end
 
     @testset "groundwater" begin
@@ -201,7 +201,7 @@ end
         @test river_flow.variables.storage[6] ≈ 2.2297897880708595
         @test river_flow.boundary_conditions.inwater[6] ≈ -1.4361419680049275e-5
         @test q[13] ≈ 6.915367636708339e-5
-        @test q[domain.river.network.order[end]] ≈ 0.0024769176125029905
+        @test q[domain.river.network.cell_order[end]] ≈ 0.0024769176125029905
     end
 
     @testset "groundwater warm start" begin

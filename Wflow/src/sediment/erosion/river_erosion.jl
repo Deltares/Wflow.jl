@@ -2,18 +2,18 @@ abstract type AbstractRiverErosionModel end
 
 "Struct for storing river bed and bank erosion model variables"
 @with_kw struct RiverErosionModelVariables
-    n::Int
+    n_cells::Int
     # Potential river bed erosion rate [t dt-1]
-    bed::Vector{Float64} = fill(MISSING_VALUE, n)
+    bed::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Potential river bank erosion rate [t dt-1]
-    bank::Vector{Float64} = fill(MISSING_VALUE, n)
+    bank::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing river erosion model boundary conditions"
 @with_kw struct RiverErosionBC
-    n::Int
+    n_cells::Int
     # Waterlevel [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing river erosion model parameters"
@@ -24,24 +24,24 @@ end
 
 "Julian and Torres river erosion model"
 @with_kw struct RiverErosionJulianTorresModel <: AbstractRiverErosionModel
-    n::Int
-    boundary_conditions::RiverErosionBC = RiverErosionBC(; n)
+    n_cells::Int
+    boundary_conditions::RiverErosionBC = RiverErosionBC(; n_cells)
     parameters::RiverErosionParameters
-    variables::RiverErosionModelVariables = RiverErosionModelVariables(; n)
+    variables::RiverErosionModelVariables = RiverErosionModelVariables(; n_cells)
 end
 
 "Initialize Julian and Torres river erosion parameters"
 function RiverErosionParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    river_indices_2d::Vector{CartesianIndex{2}},
 )
     d50 = ncread(
         dataset,
         config,
         "river_bottom_and_bank_sediment__median_diameter",
         SoilLossModel;
-        sel = indices,
+        sel = river_indices_2d,
     )
     river_parameters = RiverErosionParameters(; d50)
 
@@ -52,11 +52,11 @@ end
 function RiverErosionJulianTorresModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
+    river_indices_2d::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
-    parameters = RiverErosionParameters(dataset, config, indices)
-    river_erosion_model = RiverErosionJulianTorresModel(; n, parameters)
+    n_cells = length(river_indices_2d)
+    parameters = RiverErosionParameters(dataset, config, river_indices_2d)
+    river_erosion_model = RiverErosionJulianTorresModel(; n_cells, parameters)
     return river_erosion_model
 end
 
@@ -76,19 +76,18 @@ function update_river_erosion_model!(
     parameters_river::RiverParameters,
     dt::Float64,
 )
-    (; boundary_conditions, parameters, variables) = river_erosion_model
+    (; boundary_conditions, parameters, variables, n_cells) = river_erosion_model
     (; waterlevel) = boundary_conditions
     (; d50) = parameters
     (; bed, bank) = variables
 
-    n = length(waterlevel)
-    threaded_foreach(1:n; basesize = 1000) do i
-        bed[i], bank[i] = river_erosion_julian_torres(
-            waterlevel[i],
-            d50[i],
-            parameters_river.flow_width[i],
-            parameters_river.flow_length[i],
-            parameters_river.slope[i],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        bed[cell_idx], bank[cell_idx] = river_erosion_julian_torres(
+            waterlevel[cell_idx],
+            d50[cell_idx],
+            parameters_river.flow_width[cell_idx],
+            parameters_river.flow_length[cell_idx],
+            parameters_river.slope[cell_idx],
             dt,
         )
     end

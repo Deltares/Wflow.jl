@@ -112,9 +112,9 @@
     @testset "subsurface flow" begin
         q_av = model.routing.subsurface_flow.variables.q_av
         @test sum(q_av) ≈ 6.250079949202134e7
-        @test q_av[domain.land.network.order[1]] ≈ 699.3636285243076
-        @test q_av[domain.land.network.order[end - 100]] ≈ 2395.6159482448143
-        @test q_av[domain.land.network.order[end]] ≈ 287.61501877867994
+        @test q_av[domain.land.network.cell_order[1]] ≈ 699.3636285243076
+        @test q_av[domain.land.network.cell_order[end - 100]] ≈ 2395.6159482448143
+        @test q_av[domain.land.network.cell_order[end]] ≈ 287.61501877867994
     end
 
     @testset "overland flow" begin
@@ -122,7 +122,7 @@
         @test sum(q_av) ≈ 264.6944359620204
         @test q_av[26625] ≈ 0.0
         @test q_av[39308] ≈ 0.0
-        @test q_av[domain.land.network.order[end]] ≈ 1.0e-30
+        @test q_av[domain.land.network.cell_order[end]] ≈ 1.0e-30
     end
 
     @testset "river flow" begin
@@ -130,7 +130,7 @@
         @test sum(q_av) ≈ 3696.5789619579173
         @test q_av[1622] ≈ 0.0007502850311515928
         @test q_av[43] ≈ 11.458528971675033
-        @test q_av[domain.river.network.order[end]] ≈ 0.04397648668235761
+        @test q_av[domain.river.network.cell_order[end]] ≈ 0.04397648668235761
     end
 
     @testset "reservoir simple" begin
@@ -487,91 +487,94 @@ end
         flood_vol = 8000.0
         river_flow.variables.storage[3] =
             flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
-        @test (i1, i2) == (1, 2)
+        lower_idx, upper_idx = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        @test (lower_idx, upper_idx) == (1, 2)
         flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
         @test flood_depth ≈ 0.46290938548779076
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[lower_idx]) *
+              profile.width[upper_idx, 3] *
+              flow_length[3] + profile.storage[lower_idx, 3] ≈ flood_vol
         # flood depth from flood storage (12000.0)
         flood_vol = 12000.0
         river_flow.variables.storage[3] =
             flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
-        @test (i1, i2) == (2, 3)
+        lower_idx, upper_idx = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        @test (lower_idx, upper_idx) == (2, 3)
         flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
         @test flood_depth ≈ 0.6619575699132112
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[lower_idx]) *
+              profile.width[upper_idx, 3] *
+              flow_length[3] + profile.storage[lower_idx, 3] ≈ flood_vol
         # test extrapolation of segment
         flood_vol = 95000.0
         river_flow.variables.storage[3] =
             flood_vol + river_flow.parameters.bankfull_storage[3]
-        i1, i2 = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
-        @test (i1, i2) == (6, 6)
+        lower_idx, upper_idx = Wflow.interpolation_indices(flood_vol, profile.storage[:, 3])
+        @test (lower_idx, upper_idx) == (6, 6)
         flood_depth = Wflow.flood_depth(profile, flood_vol, flow_length[3], 3)
         @test flood_depth ≈ 2.749036625585836
-        @test (flood_depth - profile.depth[i1]) * profile.width[i2, 3] * flow_length[3] +
-              profile.storage[i1, 3] ≈ flood_vol
+        @test (flood_depth - profile.depth[lower_idx]) *
+              profile.width[upper_idx, 3] *
+              flow_length[3] + profile.storage[lower_idx, 3] ≈ flood_vol
         river_flow.variables.storage[3] = 0.0 # reset storage
         # flow area and wetted perimeter based on hf
         h = 0.5
-        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        lower_idx, upper_idx = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
+            profile.width[upper_idx, 3],
+            profile.a[lower_idx, 3],
+            profile.depth[lower_idx],
             h,
         ) ≈ 49.64308797127469
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+        @test Wflow.wetted_perimeter(profile.p[lower_idx, 3], profile.depth[lower_idx], h) ≈
               70.28617594254938
         h = 1.5
-        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        lower_idx, upper_idx = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
+            profile.width[upper_idx, 3],
+            profile.a[lower_idx, 3],
+            profile.depth[lower_idx],
             h,
         ) ≈ 182.032315978456
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+        @test Wflow.wetted_perimeter(profile.p[lower_idx, 3], profile.depth[lower_idx], h) ≈
               118.62585278276481
         h = 1.7
-        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        lower_idx, upper_idx = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
+            profile.width[upper_idx, 3],
+            profile.a[lower_idx, 3],
+            profile.depth[lower_idx],
             h,
         ) ≈ 228.36739676840216
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+        @test Wflow.wetted_perimeter(profile.p[lower_idx, 3], profile.depth[lower_idx], h) ≈
               119.02585278276482
         h = 3.2
-        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        lower_idx, upper_idx = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
+            profile.width[upper_idx, 3],
+            profile.a[lower_idx, 3],
+            profile.depth[lower_idx],
             h,
         ) ≈ 695.0377019748654
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+        @test Wflow.wetted_perimeter(profile.p[lower_idx, 3], profile.depth[lower_idx], h) ≈
               307.3730700179533
         h = 4.0
-        i1, i2 = Wflow.interpolation_indices(h, profile.depth)
+        lower_idx, upper_idx = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
-            profile.width[i2, 3],
-            profile.a[i1, 3],
-            profile.depth[i1],
+            profile.width[upper_idx, 3],
+            profile.a[lower_idx, 3],
+            profile.depth[lower_idx],
             h,
         ) ≈ 959.816157989228
-        @test Wflow.wetted_perimeter(profile.p[i1, 3], profile.depth[i1], h) ≈
+        @test Wflow.wetted_perimeter(profile.p[lower_idx, 3], profile.depth[lower_idx], h) ≈
               308.9730700179533
         @test Wflow.flow_area(
-            profile.width[i2, 4],
-            profile.a[i1, 4],
-            profile.depth[i1],
+            profile.width[upper_idx, 4],
+            profile.a[lower_idx, 4],
+            profile.depth[lower_idx],
             h,
         ) ≈ 407.6395313908081
-        @test Wflow.wetted_perimeter(profile.p[i1, 4], profile.depth[i1], h) ≈
+        @test Wflow.wetted_perimeter(profile.p[lower_idx, 4], profile.depth[lower_idx], h) ≈
               90.11775307900271
     end
 
@@ -629,7 +632,7 @@ end
             config
         end
 
-        i = 100
+        cell_idx = 100
 
         @testset "exponential profile" begin
             config = get_config(Wflow.VerticalConductivityProfile.exponential)
@@ -638,12 +641,15 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[cell_idx]
             kvfrac = soil.parameters.kvfrac
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
-            @test kv_z ≈ kvfrac[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.f[i] * z)
-            @test subsurface_flow.variables.q_max[i] ≈ 28.32720603576582
-            @test subsurface_flow.variables.q[i] ≈ 11683.330684556406
+            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, cell_idx, 2)
+            @test kv_z ≈
+                  kvfrac[cell_idx][2] *
+                  kv_profile.kv_0[cell_idx] *
+                  exp(-kv_profile.f[cell_idx] * z)
+            @test subsurface_flow.variables.q_max[cell_idx] ≈ 28.32720603576582
+            @test subsurface_flow.variables.q[cell_idx] ≈ 11683.330684556406
         end
 
         @testset "exponential constant profile" begin
@@ -653,20 +659,31 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[cell_idx]
             kvfrac = soil.parameters.kvfrac
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2)
+            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, cell_idx, 2)
             @test kv_z ≈
-                  kvfrac[i][2] *
-                  kv_profile.exponential.kv_0[i] *
-                  exp(-kv_profile.exponential.f[i] * z)
-            kv_400 = Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 400.0, i, 2)
-            kv_1000 =
-                Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, 1000.0, i, 3)
+                  kvfrac[cell_idx][2] *
+                  kv_profile.exponential.kv_0[cell_idx] *
+                  exp(-kv_profile.exponential.f[cell_idx] * z)
+            kv_400 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                400.0,
+                cell_idx,
+                2,
+            )
+            kv_1000 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                1000.0,
+                cell_idx,
+                3,
+            )
             @test kv_400 ≈ kv_1000
             @test all(kv_profile.z_exp .== 400.0)
-            @test subsurface_flow.variables.q_max[i] ≈ 49.38558575188426
-            @test subsurface_flow.variables.q[i] ≈ 24810.460986497365
+            @test subsurface_flow.variables.q_max[cell_idx] ≈ 49.38558575188426
+            @test subsurface_flow.variables.q[cell_idx] ≈ 24810.460986497365
         end
 
         @testset "layered profile" begin
@@ -676,14 +693,19 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[cell_idx]
             kvfrac = soil.parameters.kvfrac
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
-                  kv_profile.kv[i][2]
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                z,
+                cell_idx,
+                2,
+            ) ≈ kv_profile.kv[cell_idx][2]
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile, 86400.0)
-            @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 47.508932674632355
-            @test subsurface_flow.variables.q_max[i] ≈ 30.237094380100316
-            @test subsurface_flow.variables.q[i] ≈ 14546.518932613191
+            @test subsurface_flow.parameters.kh_profile.kh[cell_idx] ≈ 47.508932674632355
+            @test subsurface_flow.variables.q_max[cell_idx] ≈ 30.237094380100316
+            @test subsurface_flow.variables.q[cell_idx] ≈ 14546.518932613191
         end
 
         config = get_config(Wflow.VerticalConductivityProfile.layered_exponential)
@@ -694,16 +716,21 @@ end
             (; soil) = model.land
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
-            z = soil.variables.zi[i]
+            z = soil.variables.zi[cell_idx]
             kvfrac = soil.parameters.kvfrac
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, kvfrac, z, i, 2) ≈
-                  kv_profile.kv[i][2]
-            @test kv_profile.nlayers_kv[i] == 2
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                kvfrac,
+                z,
+                cell_idx,
+                2,
+            ) ≈ kv_profile.kv[cell_idx][2]
+            @test kv_profile.nlayers_kv[cell_idx] == 2
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile, 86400.0)
-            @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 33.76026208801769
+            @test subsurface_flow.parameters.kh_profile.kh[cell_idx] ≈ 33.76026208801769
             @test all(kv_profile.z_layered[1:10] .== 400.0)
-            @test subsurface_flow.variables.q_max[i] ≈ 23.4840490395906
-            @test subsurface_flow.variables.q[i] ≈ 10336.88327617503
+            @test subsurface_flow.variables.q_max[cell_idx] ≈ 23.4840490395906
+            @test subsurface_flow.variables.q[cell_idx] ≈ 10336.88327617503
         end
 
         @testset "river flow layered exponential profile" begin

@@ -14,8 +14,8 @@
     q_, riv_storage, ssf_storage = run_piave(model, 30)
     Wflow.close_files(model; delete_output = false)
 
-    idx = 1:3:28
-    @test q_demand[idx] ≈ [
+    timestep_range = 1:3:28
+    @test q_demand[timestep_range] ≈ [
         227.38262076140597,
         197.77826932854217,
         267.02912980712193,
@@ -27,7 +27,7 @@
         166.27201893591504,
         103.1045884698738,
     ]
-    @test q_[idx] ≈ [
+    @test q_[timestep_range] ≈ [
         230.50830652411622,
         204.71391716296807,
         274.93940253146957,
@@ -39,7 +39,7 @@
         169.1977308700292,
         108.08518587596184,
     ]
-    @test riv_storage_demand[idx] ≈ [
+    @test riv_storage_demand[timestep_range] ≈ [
         61262.15586688514,
         56031.22324367828,
         61373.56490076488,
@@ -51,7 +51,7 @@
         43466.61231827235,
         38558.90224961908,
     ]
-    @test riv_storage[idx] ≈ [
+    @test riv_storage[timestep_range] ≈ [
         61902.31987942963,
         56612.07374434918,
         61588.27339754675,
@@ -63,7 +63,7 @@
         43354.39861956778,
         38512.97533866192,
     ]
-    @test ssf_storage_demand[idx] ≈ [
+    @test ssf_storage_demand[timestep_range] ≈ [
         148920.45317987585,
         145035.32705296585,
         143981.91015223257,
@@ -75,7 +75,7 @@
         129529.58758586958,
         127504.02426822705,
     ]
-    @test ssf_storage[idx] ≈ [
+    @test ssf_storage[timestep_range] ≈ [
         148907.47777948846,
         145003.35842325471,
         143918.60784373066,
@@ -220,8 +220,8 @@ end
     model = Wflow.Model(config)
     (; subsurface_flow) = model.routing
     (; river, recharge) = subsurface_flow.boundary_conditions
-    (; land_indices) = model.domain.river.network
-    idx = land_indices[1]
+    (; cell_indices_containing_river) = model.domain.river.network
+    cell_idx = cell_indices_containing_river[1]
 
     Wflow.run_timestep!(model)
 
@@ -232,9 +232,10 @@ end
         @test subsurface_flow.parameters.top[1] - subsurface_flow.variables.zi[1] ==
               subsurface_flow.variables.head[1]
         @test river.variables.flux_av[1] ≈ 37872.287583718644
-        @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
+        @test subsurface_flow.variables.to_river[cell_idx] == -river.variables.flux_av[1]
         @test mean(river.variables.flux_av) ≈ -39618.370151473195
-        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ 39618.3701514732
+        @test mean(subsurface_flow.variables.to_river[cell_indices_containing_river]) ≈
+              39618.3701514732
         @test recharge.variables.rate[1] ≈ -0.0002922905062717429
         @test mean(recharge.variables.rate) ≈ 0.0009271689030318317
     end
@@ -249,9 +250,10 @@ end
               subsurface_flow.variables.head[1]
         @test river.variables.flux_av[1] ≈ 45231.725584511034
         @test river.variables.flux[1] == river.variables.flux_av[1]
-        @test subsurface_flow.variables.to_river[idx] == -river.variables.flux_av[1]
+        @test subsurface_flow.variables.to_river[cell_idx] == -river.variables.flux_av[1]
         @test mean(river.variables.flux_av) ≈ 129.0006905680265
-        @test mean(subsurface_flow.variables.to_river[land_indices]) ≈ -129.0006905680318
+        @test mean(subsurface_flow.variables.to_river[cell_indices_containing_river]) ≈
+              -129.0006905680318
         @test recharge.variables.rate[1] ≈ -0.00021663702639498745
         @test mean(recharge.variables.rate) ≈ 0.0010751049777759111
     end

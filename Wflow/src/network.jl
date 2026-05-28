@@ -54,25 +54,27 @@ end
     # Strahler stream order
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal land domain to the 2D model (external) domain
-    indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # land indices
-    land_indices::Vector{Int} = 1:length(indices)
+    land_indices_2d::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    # land cell indices
+    cell_indices::Vector{Int} = eachindex(land_indices_2d)
     # traversion order of land domain
-    order::Vector{Int} = Int[]
+    cell_order::Vector{Int} = Int[]
     # execution order of sub-domains for kinematic wave routing (land domain)
+    # multiple sub-domains are computed in parallel
     order_of_subdomains::Vector{Vector{Int}} = Vector{Int}[]
     # traversion order per sub-domain
     order_subdomain::Vector{Vector{Int}} = Vector{Int}[]
     # maps from the 2D model (external) domain to the 1D internal land domain
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     # maps from the land domain to the river domain (zero value represents no river)
-    river_indices::Vector{Int} = Int[]
+    river_cell_indices::Vector{Int} = Int[]
     # maps from the land domain to the river domain excluding reservoir locations
-    river_inds_excl_reservoir::Vector{Int} = Int[]
+    river_cell_indices_excl_reservoir::Vector{Int} = Int[]
     # 2D staggered grid edge indices
     edge_indices::EdgeConnectivity = EdgeConnectivity()
-    # maps `order_subdomain` to traversion order of the complete domain
-    subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
+    # In the traversion order of a subdomain the traversion index in the
+    # global domain
+    subdomain_global_order::Vector{Vector{Int}} = Vector{Int}[]
     # upstream nodes (directed graph)
     upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
 end
@@ -83,20 +85,24 @@ drainage network.
 """
 function NetworkLand(dataset::NCDataset, config::Config)
     subcatch_2d = ncread(dataset, config, "subbasin_location__count", Domain)
-    indices, reverse_indices = active_indices(subcatch_2d, missing)
+    land_indices_2d, reverse_indices = active_indices(subcatch_2d, missing)
     modelsize = size(subcatch_2d)
-    graph, local_drain_direction =
-        get_drainage_network(dataset, config, indices; do_pits = config.model.pit__flag)
-    order = topological_sort_by_dfs(graph)
-    streamorder = stream_order(graph, order)
+    graph, local_drain_direction = get_drainage_network(
+        dataset,
+        config,
+        land_indices_2d;
+        do_pits = config.model.pit__flag,
+    )
+    cell_order = topological_sort_by_dfs(graph)
+    streamorder = stream_order(graph, cell_order)
 
     network = NetworkLand(;
         modelsize,
-        indices,
+        land_indices_2d,
         reverse_indices,
         local_drain_direction,
         graph,
-        order,
+        cell_order,
         streamorder,
     )
     return network
@@ -111,34 +117,38 @@ function network_subdomains(config::Config, network::NetworkLand)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
-        network.order,
+        network.cell_order,
         pit_inds,
         network.streamorder,
         config.model.land_streamorder__min_count,
     )
     @reset network.order_of_subdomains = order_of_subdomains
     @reset network.order_subdomain = toposort_subdomain
-    @reset network.subdomain_indices = subdomain_inds
+    @reset network.subdomain_global_order = subdomain_inds
 
     return network
 end
 
 "Initialize `EdgeConnectivity`"
 function EdgeConnectivity(network::NetworkLand)
-    (; modelsize, indices, reverse_indices) = network
-    n = length(indices)
-    edge_indices =
-        EdgeConnectivity(; xu = zeros(n), xd = zeros(n), yu = zeros(n), yd = zeros(n))
+    (; modelsize, land_indices_2d, reverse_indices) = network
+    n_cells = length(land_indices_2d)
+    edge_indices = EdgeConnectivity(;
+        xu = zeros(n_cells),
+        xd = zeros(n_cells),
+        yu = zeros(n_cells),
+        yd = zeros(n_cells),
+    )
 
     nrow, ncol = modelsize
-    for (v, i) in enumerate(indices)
-        for (m, neighbor) in enumerate(NEIGHBORS)
-            j = i + neighbor
-            dir = DIRS[m]
+    for (cell_idx, cartesian_idx) in enumerate(land_indices_2d)
+        for (neighbor_idx, neighbor) in enumerate(NEIGHBORS)
+            j = cartesian_idx + neighbor
+            dir = DIRS[neighbor_idx]
             if (1 <= j[1] <= nrow) && (1 <= j[2] <= ncol) && (reverse_indices[j] != 0)
-                getfield(edge_indices, dir)[v] = reverse_indices[j]
+                getfield(edge_indices, dir)[cell_idx] = reverse_indices[j]
             else
-                getfield(edge_indices, dir)[v] = n + 1
+                getfield(edge_indices, dir)[cell_idx] = n_cells + 1
             end
         end
     end
@@ -176,15 +186,15 @@ end
     # Strahler stream order
     streamorder::Vector{Int} = Int[]
     # maps from the 1D internal river domain to the 2D model (external) domain
-    indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
-    # land domain indices masked by river domain (zero value represents no river)
-    land_indices::Vector{Int} = Int[]
+    river_indices_2d::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    # land domain indices containing rivers
+    cell_indices_containing_river::Vector{Int} = Int[]
     # maps 1D pits (local drain direction) to the 2D model (external) domain
     pit_indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     # source and destination node of an edge
     nodes_at_edge::NodesAtEdge = NodesAtEdge()
     # traversion order of river domain
-    order::Vector{Int} = Int[]
+    cell_order::Vector{Int} = Int[]
     # execution order of sub-domains for kinematic wave river flow routing
     order_of_subdomains::Vector{Vector{Int}} = Vector{Int}[]
     # traversion order per sub-domain
@@ -194,7 +204,7 @@ end
     # maps from the 2D model (external) domain to the 1D internal river domain
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     # maps `order_subdomain` to traversion order of the complete domain
-    subdomain_indices::Vector{Vector{Int}} = Vector{Int}[]
+    subdomain_global_order::Vector{Vector{Int}} = Vector{Int}[]
     # upstream nodes (directed graph)
     upstream_nodes::Vector{Vector{Int}} = Vector{Int}[]
 end
@@ -211,22 +221,22 @@ function NetworkRiver(
 )
     river_location_2d =
         ncread(dataset, config, "river_location__mask", Domain; logging = false)
-    indices, reverse_indices = active_indices(river_location_2d, 0)
+    river_indices_2d, reverse_indices = active_indices(river_location_2d, 0)
     graph, local_drain_direction =
-        get_drainage_network(dataset, config, indices; do_pits, logging = false)
-    order = topological_sort_by_dfs(graph)
-    river_location = river_location_2d[network.indices]
-    land_indices = filter(i -> !isequal(river_location[i], 0), 1:length(network.indices))
-    streamorder = network.streamorder[land_indices]
+        get_drainage_network(dataset, config, river_indices_2d; do_pits, logging = false)
+    cell_order = topological_sort_by_dfs(graph)
+    river_location = river_location_2d[network.land_indices_2d]
+    cell_indices_containing_river = findall(!iszero, river_location)
+    streamorder = network.streamorder[cell_indices_containing_river]
 
     network = NetworkRiver(;
-        indices,
+        river_indices_2d,
         reverse_indices,
         local_drain_direction,
         graph,
-        order,
+        cell_order,
         streamorder,
-        land_indices,
+        cell_indices_containing_river,
     )
 
     return network
@@ -239,16 +249,17 @@ domain.
 """
 function network_subdomains(config::Config, network::NetworkRiver)
     pit_inds = findall(x -> x == 5, network.local_drain_direction)
-    order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
-        network.graph,
-        network.order,
-        pit_inds,
-        network.streamorder,
-        config.model.river_streamorder__min_count,
-    )
+    order_of_subdomains, subdomain_global_order, toposort_subdomain =
+        kinwave_set_subdomains(
+            network.graph,
+            network.cell_order,
+            pit_inds,
+            network.streamorder,
+            config.model.river_streamorder__min_count,
+        )
     @reset network.order_of_subdomains = order_of_subdomains
     @reset network.order_subdomain = toposort_subdomain
-    @reset network.subdomain_indices = subdomain_inds
+    @reset network.subdomain_global_order = subdomain_global_order
     return network
 end
 
@@ -272,27 +283,27 @@ end
     # list of 2D indices representing reservoir area (coverage)
     indices_coverage::Vector{Vector{CartesianIndex{2}}} = Vector{CartesianIndex{2}}[]
     # list of 2D indices representing reservoir outlet
-    indices_outlet::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    outlet_indices_2d::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     # maps from the 2D model (external) domain to a list of reservoirs
     reverse_indices::Matrix{Int} = zeros(Int, 0, 0)
     # maps from the 1D land domain to a list of reservoirs
-    land_indices::Vector{Int} = Int[]
+    cell_indices_containing_reservoir::Vector{Int} = Int[]
     # maps from the 1D river domain to a list of reservoirs
-    river_indices::Vector{Int} = Int[]
+    river_cell_indices_containing_reservoir::Vector{Int} = Int[]
 end
 
 "Initialize `NetworkReservoir`"
 function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRiver)
-    (; indices) = network
+    (; river_indices_2d) = network
     logging = false
     # allow reservoir only in river cells
-    # note that these locations are only the reservoir outlet pixels
+    # note that these locations are only the reservoir outlet cells
     locs = ncread(
         dataset,
         config,
         "reservoir_location__count",
         Routing;
-        sel = indices,
+        sel = river_indices_2d,
         logging,
     )
 
@@ -304,16 +315,16 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
 
     # construct a map from the rivers to the reservoir and
     # a map of the reservoir to the 2D model grid
-    inds_map2river = fill(0, length(indices))
+    inds_map2river = fill(0, length(river_indices_2d))
     inds = CartesianIndex{2}[]
     counter = 0
-    for (i, ind) in enumerate(indices)
-        id = locs[i]
+    for (cell_idx, cartesian_idx) in enumerate(river_indices_2d)
+        id = locs[cell_idx]
         if id > 0
-            push!(inds, ind)
+            push!(inds, cartesian_idx)
             counter += 1
-            inds_map2river[i] = counter
-            rev_inds[ind] = counter
+            inds_map2river[cell_idx] = counter
+            rev_inds[cartesian_idx] = counter
 
             # get all indices related to this reservoir outlet
             # done in this loop to ensure that the order is equal to the order in the
@@ -322,14 +333,15 @@ function NetworkReservoir(dataset::NCDataset, config::Config, network::NetworkRi
             push!(inds_coverage, cov)
         end
     end
-    river_indices = findall(x -> x ≠ 0, inds_map2river)
-    land_indices = network.land_indices[river_indices]
+    river_cell_indices_containing_reservoir = findall(x -> x ≠ 0, inds_map2river)
+    cell_indices_containing_reservoir =
+        network.cell_indices_containing_river[river_cell_indices_containing_reservoir]
     network = NetworkReservoir(;
-        indices_outlet = inds,
+        outlet_indices_2d = inds,
         indices_coverage = inds_coverage,
         reverse_indices = rev_inds,
-        river_indices,
-        land_indices,
+        river_cell_indices_containing_reservoir,
+        cell_indices_containing_reservoir,
     )
     return network, inds_map2river
 end
@@ -340,9 +352,9 @@ external model domain, and 1D land domain indices `land_indices` of `DrainageMod
 (boundary condition groundwater flow).
 """
 @kwdef struct NetworkDrain
-    indices::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
+    drain_indices_2d::Vector{CartesianIndex{2}} = CartesianIndex{2}[]
     reverse_indices::Matrix{Int64} = zeros(Int, 0, 0)
-    land_indices::Vector{Int} = Int[]
+    cell_indices_containing_drainage::Vector{Int} = Int[]
 end
 
 "Initialize `NetworkDrain`"
@@ -367,8 +379,9 @@ function NetworkDrain(
         @info "$n_false_drain drain locations are removed that occur where overland flow
          is not possible (overland flow width is zero)"
     end
-    land_indices = filter(i -> !isequal(drain[i], 0), 1:n_cells)
-    indices, reverse_indices = active_indices(drain_2d, 0)
-    network = NetworkDrain(; indices, reverse_indices, land_indices)
+    cell_indices_containing_drainage = filter(i -> !isequal(drain[i], 0), 1:n_cells)
+    drain_indices_2d, reverse_indices = active_indices(drain_2d, 0)
+    network =
+        NetworkDrain(; drain_indices_2d, reverse_indices, cell_indices_containing_drainage)
     return network
 end

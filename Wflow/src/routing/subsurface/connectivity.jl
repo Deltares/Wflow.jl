@@ -84,25 +84,25 @@ function Connectivity(
     length2 = similar(rowval, Float64)
     width = similar(rowval, Float64)
 
-    i = 1  # column index of sparse matrix
-    j = 1  # row index of sparse matrix
-    for I in indices # loop over active indices
-        colptr[j] = i
+    nnz_idx = 1  # column index of sparse matrix
+    col_idx = 1  # row index of sparse matrix
+    for cartesian_idx in indices # loop over active indices
+        colptr[col_idx] = nnz_idx
         # Strictly increasing numbering for any row
         # (Required by a CSCSparseMatrix, if you want to convert)
         for neighbor in NEIGHBORS
-            J = I + neighbor
+            J = cartesian_idx + neighbor
             if (1 <= J[1] <= nrow) && (1 <= J[2] <= ncol && reverse_indices[J] != 0) # Check if it's inbounds and neighbor is active
-                rowval[i] = reverse_indices[J]
-                length1[i], length2[i], width[i] = connection_geometry(I, J, dx, dy)
-                i += 1
+                rowval[nnz_idx] = reverse_indices[J]
+                length1[nnz_idx], length2[nnz_idx], width[nnz_idx] = connection_geometry(cartesian_idx, J, dx, dy)
+                nnz_idx += 1
             end
         end
-        j += 1
+        col_idx += 1
     end
-    colptr[j] = i
+    colptr[col_idx] = nnz_idx
 
-    nconnection = i - 1
+    nconnection = nnz_idx - 1
     return Connectivity(
         ncell,
         nconnection,

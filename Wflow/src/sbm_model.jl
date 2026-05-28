@@ -113,7 +113,7 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
 
     # read and set states in model object if cold_start=false
     if !cold_start__flag
-        nriv = length(domain.river.network.indices)
+        n_cells = length(domain.river.network.river_indices_2d)
         instate_path = input_path(config, config.state.path_input)
         @info "Set initial conditions from state file `$instate_path`."
         set_states!(instate_path, model; type = Float64, dimname = :layer)
@@ -123,10 +123,10 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         if land_routing == RoutingType.kinematic_wave
             (; surface_flow_width, flow_length) = domain.land.parameters
             # make sure land cells with zero flow width are set to zero q and h
-            for i in eachindex(surface_flow_width)
-                if surface_flow_width[i] <= 0.0
-                    land_v.q[i] = 0.0
-                    land_v.h[i] = 0.0
+            for cell_idx in eachindex(surface_flow_width)
+                if surface_flow_width[cell_idx] <= 0.0
+                    land_v.q[cell_idx] = 0.0
+                    land_v.h[cell_idx] = 0.0
                 end
             end
             land_v.storage .= land_v.h .* surface_flow_width .* flow_length
@@ -134,17 +134,22 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
             (; river_location, x_length, y_length) = domain.land.parameters
             (; flow_width, flow_length) = domain.river.parameters
             (; bankfull_storage) = routing.river_flow.parameters
-            for i in eachindex(land_v.storage)
-                if river_location[i]
-                    j = domain.land.network.river_indices[i]
-                    if land_v.h[i] > 0.0
-                        land_v.storage[i] =
-                            land_v.h[i] * x_length[i] * y_length[i] + bankfull_storage[j]
+            for cell_idx in eachindex(land_v.storage)
+                if river_location[cell_idx]
+                    river_cell_idx = domain.land.network.river_cell_indices[cell_idx]
+                    if land_v.h[cell_idx] > 0.0
+                        land_v.storage[cell_idx] =
+                            land_v.h[cell_idx] * x_length[cell_idx] * y_length[cell_idx] +
+                            bankfull_storage[river_cell_idx]
                     else
-                        land_v.storage[i] = river_v.h[j] * flow_width[j] * flow_length[j]
+                        land_v.storage[cell_idx] =
+                            river_v.h[river_cell_idx] *
+                            flow_width[river_cell_idx] *
+                            flow_length[river_cell_idx]
                     end
                 else
-                    land_v.storage[i] = land_v.h[i] * x_length[i] * y_length[i]
+                    land_v.storage[cell_idx] =
+                        land_v.h[cell_idx] * x_length[cell_idx] * y_length[cell_idx]
                 end
             end
         end
@@ -162,11 +167,12 @@ function set_states!(model::AbstractModel{<:Union{SbmModel, SbmGwfModel}})
         end
         # only set active cells for river (ignore boundary conditions/ghost points)
         (; flow_width, flow_length) = domain.river.parameters
-        river_v.storage[1:nriv] .=
-            river_v.h[1:nriv] .* flow_width[1:nriv] .* flow_length[1:nriv]
+        river_v.storage[1:n_cells] .=
+            river_v.h[1:n_cells] .* flow_width[1:n_cells] .*
+            flow_length[1:n_cells]
 
         if floodplain_1d__flag
-            initialize_storage!(routing.river_flow, domain, nriv)
+            initialize_storage!(routing.river_flow, domain, n_cells)
         end
 
         if reservoir__flag

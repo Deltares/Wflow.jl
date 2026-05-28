@@ -26,11 +26,11 @@ function run_piave(model, steps)
     q = zeros(steps)
     ssf_storage = zeros(steps)
     riv_storage = zeros(steps)
-    for i in 1:steps
+    for timestep_idx in 1:steps
         Wflow.run_timestep!(model)
-        ssf_storage[i] = mean(model.routing.subsurface_flow.variables.storage)
-        riv_storage[i] = mean(model.routing.river_flow.variables.storage)
-        q[i] = model.routing.river_flow.variables.q_av[1]
+        ssf_storage[timestep_idx] = mean(model.routing.subsurface_flow.variables.storage)
+        riv_storage[timestep_idx] = mean(model.routing.river_flow.variables.storage)
+        q[timestep_idx] = model.routing.river_flow.variables.q_av[1]
     end
     return q, riv_storage, ssf_storage
 end
@@ -59,7 +59,7 @@ function homogenous_aquifer(nrow, ncol)
     dy = fill(10.0, nrow)
     indices, reverse_indices = Wflow.active_indices(domain, false)
     connectivity = Wflow.Connectivity(indices, reverse_indices, dx, dy)
-    ncell = connectivity.ncell
+    n_cells = connectivity.ncell
 
     variables = Wflow.ConstantHeadVariables(; head = Float64[])
     constanthead = Wflow.ConstantHead(; variables, index = Int64[])
@@ -67,22 +67,22 @@ function homogenous_aquifer(nrow, ncol)
     timestepping = Wflow.TimeStepping()
 
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(10.0, ncell),
-        top = fill(10.0, ncell),
-        bottom = fill(0.0, ncell),
-        area = fill(100.0, ncell),
-        specific_yield = fill(0.15, ncell),
-        f = fill(3.0, ncell),
+        k = fill(10.0, n_cells),
+        top = fill(10.0, n_cells),
+        bottom = fill(0.0, n_cells),
+        area = fill(100.0, n_cells),
+        specific_yield = fill(0.15, n_cells),
+        f = fill(3.0, n_cells),
     )
     variables = Wflow.GroundwaterFlowVariables(;
-        n = ncell,
+        n_cells,
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
-        storage = fill(0.0, ncell),
-        q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_av = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
+        storage = fill(0.0, n_cells),
+        q_net = fill(0.0, n_cells),
+        q_in_av = fill(0.0, n_cells),
+        q_av = fill(0.0, n_cells),
+        exfiltwater = fill(0.0, n_cells),
     )
 
     gwf_model = Wflow.GroundwaterFlowModel(;
@@ -95,9 +95,9 @@ function homogenous_aquifer(nrow, ncol)
     return gwf_model
 end
 
-function init_sbm_soil_model(n, N; kwargs...)
+function init_sbm_soil_model(n_cells, N; kwargs...)
     kwargs = Dict{Symbol, Any}(kwargs)
-    kwargs[:n] = n
+    kwargs[:n_cells] = n_cells
 
     if !haskey(kwargs, :kv_profile)
         kwargs[:kv_profile] = nothing
@@ -187,7 +187,7 @@ function init_sbm_soil_model(n, N; kwargs...)
     kwargs_bc = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilBC), kwargs)
     boundary_conditions = Wflow.SbmSoilBC(; kwargs_bc...)
 
-    return Wflow.SbmSoilModel(; n, variables, parameters, boundary_conditions)
+    return Wflow.SbmSoilModel(; n_cells, variables, parameters, boundary_conditions)
 end
 
 """

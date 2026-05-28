@@ -1,10 +1,10 @@
 @testitem "unit: update_bc_soil_model!" begin
     using StaticArrays: SVector
     include("testing_utils.jl")
-    n = 1
+    n_cells = 1
     soil_model = init_sbm_soil_model(1, 1; soil_fraction = [0.2397957498236932])
     atmospheric_forcing =
-        Wflow.AtmosphericForcing(; n, potential_evaporation = [0.5799999833106995])
+        Wflow.AtmosphericForcing(; n_cells, potential_evaporation = [0.5799999833106995])
 
     interception = Wflow.GashInterceptionModel(;
         parameters = Wflow.GashParameters(;
@@ -21,33 +21,33 @@
             ),
         ),
         variables = Wflow.InterceptionVariables(;
-            n = 1,
+            n_cells,
             canopy_potevap = [0.44091845241498073],
             interception_rate = [0.029448986349521342],
         ),
     )
     runoff = Wflow.OpenWaterRunoff(;
-        n,
+        n_cells,
         variables = Wflow.OpenWaterRunoffVariables(;
-            n,
+            n_cells,
             runoff_land = [0.0],
             runoff_river = [0.0],
         ),
         boundary_conditions = Wflow.OpenWaterRunoffBC(;
-            n,
+            n_cells,
             water_flux_surface = [0.24686226660437197],
         ),
     )
     demand = Wflow.DemandModel(;
-        domestic = Wflow.NoDemandModel(; n),
-        industry = Wflow.NoDemandModel(; n),
-        livestock = Wflow.NoDemandModel(; n),
-        paddy = Wflow.NoIrrigationPaddyModel(n),
-        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
-        variables = Wflow.DemandVariables(; n),
+        domestic = Wflow.NoDemandModel(; n_cells),
+        industry = Wflow.NoDemandModel(; n_cells),
+        livestock = Wflow.NoDemandModel(; n_cells),
+        paddy = Wflow.NoIrrigationPaddyModel(n_cells),
+        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n_cells),
+        variables = Wflow.DemandVariables(; n_cells),
     )
 
-    allocation = Wflow.NoAllocationLandModel(n)
+    allocation = Wflow.NoAllocationLandModel(n_cells)
 
     external_models = (; interception, runoff, demand, allocation)
 
@@ -61,10 +61,10 @@ end
 @testitem "unit: unsaturated_zone_flow!" begin
     using StaticArrays: SVector
     include("testing_utils.jl")
-    n = 1
+    n_cells = 1
     N = 6
     soil_model = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         ustorelayerthickness = [SVector((50.0, 5.081648613929929, NaN, NaN, NaN, NaN))],
         ustorelayerdepth = [
@@ -96,10 +96,10 @@ end
 
 @testitem "unit: soil_evaporation!" begin
     include("testing_utils.jl")
-    n = 1
+    n_cells = 1
     N = 6
     soil_model = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         potential_soilevaporation = [2.8],
         ustorelayerthickness = [SVector((50.0, 21.472680450878443, NaN, NaN, NaN, NaN))],
@@ -124,10 +124,10 @@ end
 
 @testitem "unit: transpiration!" begin
     include("testing_utils.jl")
-    n = 1
+    n_cells = 1
     N = 4
     soil_model = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         h3_high = [-400.0],
         h3_low = [-1000.0],
@@ -173,10 +173,10 @@ end
 
 @testitem "unit: capillary_flux!" begin
     include("testing_utils.jl")
-    n = 1
+    n_cells = 1
     N = 6
     soil_model = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         rootingdepth = [384.1],
         n_unsatlayers = [6],
@@ -211,10 +211,10 @@ end
 @testitem "unit: update_soil_water_storage! SbmSoilModel" begin
     using StaticArrays: SVector
     include("testing_utils.jl")
-    n = 1
+    n_cells = 1
     N = 4
     soil_model = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         runoff = [0.0],
         zi = [1244.5135404970033],
@@ -258,12 +258,12 @@ end
 
     runoff = (; variables = (; runoff_land = [0.0], ae_openw_l = [0.0]))
     demand = Wflow.DemandModel(;
-        domestic = Wflow.NoDemandModel(; n),
-        industry = Wflow.NoDemandModel(; n),
-        livestock = Wflow.NoDemandModel(; n),
-        paddy = Wflow.NoIrrigationPaddyModel(n),
-        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n),
-        variables = Wflow.DemandVariables(; n),
+        domestic = Wflow.NoDemandModel(; n_cells),
+        industry = Wflow.NoDemandModel(; n_cells),
+        livestock = Wflow.NoDemandModel(; n_cells),
+        paddy = Wflow.NoIrrigationPaddyModel(n_cells),
+        nonpaddy = Wflow.NoIrrigationNonPaddyModel(n_cells),
+        variables = Wflow.DemandVariables(; n_cells),
     )
 
     subsurface_flow = (; variables = (; exfiltwater = [0.0]))

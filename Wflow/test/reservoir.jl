@@ -1,9 +1,9 @@
 @testitem "unit: update reservoir simple" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # Simple reservoir (outflowfunc = 4)
-    n = 1
+    n_reservoirs = 1
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],
@@ -63,9 +63,9 @@ end
 @testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     # ReservoirModel Modified Puls approach (outflowfunc = 3)
-    n = 1
+    n_reservoirs = 1
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],
@@ -122,10 +122,10 @@ end
 @testitem "unit: update_reservoir_model!" begin
     using Graphs: DiGraph, add_edge!
 
-    n = 1
+    n_reservoirs = 1
     reservoir_model = Wflow.ReservoirModel(;
         boundary_conditions = Wflow.ReservoirBC(;
-            n,
+            n_reservoirs,
             external_inflow = [-1.0],
             inflow_overland = [0.0],
             inflow_subsurface = [0.00041241066945499203],
@@ -150,14 +150,16 @@ end
         ),
     )
 
-    river_flow_vars =
-        Wflow.FlowVariables(; n = 2, q = [0.00012002923701686638, 0.21747539140212965])
+    river_flow_vars = Wflow.FlowVariables(;
+        n_cells = 2,
+        q = [0.00012002923701686638, 0.21747539140212965],
+    )
 
     graph = DiGraph(2)
     add_edge!(graph, 1, 2)
     network = Wflow.NetworkRiver(; graph, reservoir_indices = [1])
 
-    v = 1
+    cell_idx = 1
     dt = 1000.0
     dt_forcing = 86400.0
 
@@ -165,7 +167,7 @@ end
         reservoir_model,
         river_flow_vars,
         network,
-        v,
+        cell_idx,
         dt,
         dt_forcing,
     )
@@ -216,9 +218,9 @@ end
             sh,
         ),
     )
-    n = 2
+    n_reservoirs = 2
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0, 0.0],
         external_inflow = [0.0, 0.0],
         actual_external_abstraction_av = [0.0, 0.0],
@@ -259,9 +261,9 @@ end
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     using Accessors: @reset
     datadir = joinpath(@__DIR__, "data")
-    n = 1
+    n_reservoirs = 1
     res_bc = Wflow.ReservoirBC(;
-        n,
+        n_reservoirs,
         inflow = [0.0],
         external_inflow = [0.0],
         actual_external_abstraction_av = [0.0],
