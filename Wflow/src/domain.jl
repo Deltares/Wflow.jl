@@ -139,9 +139,10 @@ function Domain(dataset::NCDataset, config::Config, ::Union{SbmModel, SbmGwfMode
     @reset domain.river.parameters = river_params
 
     if config.model.drain__flag
-        (; indices) = domain.land.network
+        (; indices, modelsize) = domain.land.network
         (; surface_flow_width) = domain.land.parameters
-        drain_network = NetworkDrain(dataset, config, indices, surface_flow_width)
+        drain_network =
+            NetworkDrain(dataset, config, indices, surface_flow_width, modelsize)
         if length(drain_network.indices) > 0
             @reset domain.drain.network = drain_network
         else

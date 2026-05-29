@@ -1023,32 +1023,31 @@ function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
         # integers indicating the points or zones that are to be aggregated
         # if no reducer is given, pick "only", this is the only safe reducer,
         # and makes sense in the case of a gauge map
-        map_2d = ncread(
+        map_1d = ncread(
             dataset,
             config,
             map,
             Writer;
+            sel = indices,
             logging = false,
             metadata = ParameterMetadata(; allow_missing = true, type = Int),
         )
-        # update 2d map to only include active cells, and convert to missing for inactive cells
-        map_2d = mask_to_indices(map_2d, indices; fill_value = missing)
         @info "Adding scalar output for a map with a reducer function." fileformat param =
             parameter mapname = map reducer_name = String(nameof(f))
-        ids = unique(skipmissing(map_2d))
-        # from id to list of internal indices
+        ids = unique(skipmissing(map_1d))
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
-        for i in eachindex(map_2d)
-            v = map_2d[i]
+
+        for i in eachindex(map_1d)
+            v = map_1d[i]
             ismissing(v) && continue
             v::Int
-            vector = inds[v]
-            ind = rev_inds[i]
+            # translate from land-domain position -> target-domain position
+            ind = rev_inds[indices[i]]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
                     map `$map` value $v for parameter $param""")
             end
-            push!(vector, ind)
+            push!(inds[v], ind)
         end
         return A -> (f(A[inds[id]]) for id in ids)
     elseif !isnothing(reducer)
