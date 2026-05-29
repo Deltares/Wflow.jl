@@ -363,6 +363,7 @@ function NetworkDrain(
 )
     n_cells = length(indices)
     drain_2d = ncread(dataset, config, "land_drain_location__mask", Routing)
+    drain_2d = mask_to_indices(drain_2d, indices)
     drain = drain_2d[indices]
 
     # check if drain occurs where overland flow is not possible (surface_flow_width = 0.0)

@@ -41,10 +41,11 @@ function LocalInertialRiverFlowParameters(
         Routing;
         sel = pit_indices,
     )
-    bankfull_elevation_2d = ncread(dataset, config, "river_bank_water__elevation", Routing)
-    bankfull_depth_2d = ncread(dataset, config, "river_bank_water__depth", Routing)
-    bankfull_depth = bankfull_depth_2d[indices]
-    zb = bankfull_elevation_2d[indices] - bankfull_depth # river bed elevation
+    bankfull_elevation =
+        ncread(dataset, config, "river_bank_water__elevation", Routing; sel = indices)
+    bankfull_depth =
+        ncread(dataset, config, "river_bank_water__depth", Routing; sel = indices)
+    zb = bankfull_elevation - bankfull_depth # river bed elevation
 
     bankfull_storage = bankfull_depth .* flow_width .* flow_length
     mannings_n = ncread(
@@ -588,9 +589,13 @@ function LocalInertialOverlandFlowParameters(
         Routing;
         sel = indices,
     )
-    elevation_2d =
-        ncread(dataset, config, "land_surface_water_flow__ground_elevation", Routing)
-    elevation = elevation_2d[indices]
+    elevation = ncread(
+        dataset,
+        config,
+        "land_surface_water_flow__ground_elevation",
+        Routing;
+        sel = indices,
+    )
     n = length(domain.land.network.indices)
 
     zx_max = fill(Float64(0), n)
