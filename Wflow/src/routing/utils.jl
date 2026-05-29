@@ -1,4 +1,5 @@
 const KIN_WAVE_MIN_FLOW = 1e-30 # [m³ s⁻¹]
+const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^0.2
 
 "Convert a gridded drainage direction to a directed graph. Also returns the possibly modified
 drainage direction, where invalid values are set to 5 (pit)."
