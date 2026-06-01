@@ -162,3 +162,8 @@ function local_inertial_flow(
 
     return q
 end
+
+function manning_flow(mannings_n, hydraulic_radius, slope, area)
+    q = 1.0 / mannings_n * pow(hydraulic_radius, 2.0 / 3.0) * sqrt(slope) * area
+    return q
+end

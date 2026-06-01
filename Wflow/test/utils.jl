@@ -99,7 +99,7 @@ end
 
     for file_name in [
         "sbm_gwf_config.toml",
-        "sbm_river-floodplain-local-inertial_config.toml",
+        "sbm_river-floodplain-staggered-scheme_config.toml",
         "sbm_river-land-local-inertial_config.toml",
         "sbm_gwf_piave_demand_config.toml",
         "sediment_config.toml",
