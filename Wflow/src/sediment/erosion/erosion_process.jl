@@ -81,7 +81,7 @@ Rainfall erosion model based on ANSWERS.
 
 # Arguments
 - `precip` (precipitation [m s⁻¹])
-- `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha-1 h-1 MJ-1 mm-1])
+- `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha h ha-1 MJ-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
 - `answers_rainfall_factor` (ANSWERS rainfall erosion factor [-], treated as unitless but could have units)
 - `area` (area [m²])
@@ -122,7 +122,7 @@ Overland flow erosion model based on ANSWERS.
 
 # Arguments
 - `overland_flow` (overland flow [m³ s⁻¹])
-- `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha-1 h-1 MJ-1 mm-1])
+- `usle_k` (USLE soil erodibility [-], treated as unitless but is actually [t ha h ha-1 MJ-1 mm-1])
 - `usle_c` (USLE cover and management factor [-])
 - `answers_overland_flow_factor` (ANSWERS overland flow factor [-], treated as unitless but could have units)
 - `slope` (slope [-])

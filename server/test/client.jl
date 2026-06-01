@@ -98,9 +98,9 @@
             name = "soil_water_saturated_zone_top__depth",
             dest = fill(0.0, zi_size),
         )
-        @test mean(request(msg)["value"]) ≈ to_SI(283.17139935351275, MM)
+        @test mean(request(msg)["value"]) ≈ 0.2831713993535127
         msg = (fn = "get_value_ptr", name = "soil_water_root_zone__depth")
-        @test mean(request(msg)["value_ptr"]) ≈ to_SI(29.196404187600344, MM)
+        @test mean(request(msg)["value_ptr"]) ≈ 0.029196404187600344
         msg = (
             fn = "get_value_at_indices",
             name = "river_water__instantaneous_volume_flow_rate",
