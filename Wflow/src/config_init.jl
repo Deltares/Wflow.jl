@@ -135,8 +135,16 @@ function init_config_section(::Type{InputEntry}, dict::AbstractDict{String})
             end
         end
 
+        # Add a proper amount of the default values
+        len = coalesce(len, 0)
+        !haskey(dict, "scale") && (dict["scale"] = ones(len))
+        !haskey(dict, "offset") && (dict["offset"] = zeros(len))
+
         # Invoke default method
         return init_config_section_default(InputEntry, dict)
+    elseif value isa String
+        # Option 3
+        return InputEntry(; external_name = value)
     elseif !isnothing(value)
         # Option 2
         return InputEntry(; value)

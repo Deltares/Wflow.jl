@@ -210,14 +210,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "irrigated_non_paddy__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.variables.demand_gross),
         unit = Unit(; mm = 1, dt = -1),
-        default = 0.0,
         description = "Irrigation (non-paddy) gross demand",
         tags = [:demand_non_paddy_irrigation_output],
     ),
     "irrigated_paddy__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.variables.demand_gross),
-        unit = Unit(; mm = 1, d = -1),
-        default = 0.0,
+        unit = Unit(; mm = 1, dt = -1),
         description = "Irrigation (paddy) gross demand",
         tags = [:demand_paddy_irrigation_output],
     ),
@@ -486,6 +484,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "soil_wet_root__sigmoid_function_shape_parameter" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.rootdistpar),
+        unit = Unit(; mm = -1),
         default = -500.0,
         description = "Controls sharpness of transition between fully wet and fully dry roots",
         tags = [:soil_input],

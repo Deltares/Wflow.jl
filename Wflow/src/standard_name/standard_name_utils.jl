@@ -14,6 +14,7 @@ Metadata associated with parameters and variables.
 - `lens`: The path in the model data structure to the parameter/variable if it exists
 - `unit`: The unit of the parameter/variable in the Wflow input
 - `default`: The default (initial) value of the parameter/variable if it exists
+    Note: the defaults are NOT in SI units!
 - `fill`: Missing input values are replaced by this value if allow_missing == false
 - `type`: The output type of the data. Assumed to be `Float64` if it is not provided and cannot be derived
     from `default` or `fill`
@@ -78,6 +79,10 @@ Metadata associated with parameters and variables.
     end
 end
 
+function Base.:(==)(a::ParameterMetadata, b::ParameterMetadata)
+    all(getfield(a, f) == getfield(b, f) for f in fieldnames(ParameterMetadata))
+end
+
 function metadata_from_lens_string(
     lens_string::AbstractString,
     standard_name_map::OrderedDict{String, ParameterMetadata},
@@ -107,7 +112,7 @@ function get_metadata(
             metadata_candidate = metadata_from_lens_string(name, standard_name_map)
         end
 
-        if !isnothing(metadata_candidate)
+        if !isnothing(metadata_candidate) && (metadata != metadata_candidate)
             # Metadata was found; if a model was provided check whether
             # the lens matches
             if !isnothing(model) && !isnothing(metadata_candidate.lens)
@@ -135,13 +140,16 @@ function get_metadata(
     return metadata
 end
 
+get_metadata(name::AbstractString, land::L; kwargs...) where {L <: AbstractLandModel} =
+    get_metadata(name, L; kwargs...)
+
 function get_metadata(
     name::AbstractString,
-    land::AbstractLandModel;
+    land_type::Type{<:AbstractLandModel};
     kwargs...,
 )::Union{ParameterMetadata, Nothing}
     # Check whether it is a land variable first
-    metadata = get(get_standard_name_map(land), name, nothing)
+    metadata = get(get_standard_name_map(land_type), name, nothing)
 
     if isnothing(metadata)
         # Then check other variable types
@@ -164,7 +172,7 @@ get_metadata(name::AbstractString; kwargs...) =
 function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
     metadata = get_metadata(name; model)
 
-    return if !isnothing(metadata) && !isnothing(metadata.lens)
+    return if !isnothing(metadata)
         # If metadata was found, `str` is a standard name or a path in the model object which matches a lens
         if check_allow_dynamic_input && !metadata.allow_dynamic_input
             error(
@@ -181,3 +189,31 @@ function get_field_in_model(model, name::AbstractString; check_allow_dynamic_inp
         end
     end
 end
+
+to_proper_number_type(x::Missing, ::Type) = x
+to_proper_number_type(x::Bool, ::Type) = x
+to_proper_number_type(x::T, ::Type{T}) where {T} = x
+to_proper_number_type(x::Number, ::Type{T}) where {T <: Number} = T(x)
+# This method is only to avoid ambiguities
+to_proper_number_type(::Bool, ::Type{T}) where {T <: Number} = nothing
+
+"""
+NOTE: This function is only in-place if A already has the correct type
+"""
+function apply_unit_and_type_transform!(
+    A::AbstractArray,
+    metadata::ParameterMetadata;
+    dt_val = nothing,
+)
+    (; type, unit) = metadata
+    if eltype(A) != type
+        A = to_proper_number_type.(A, type)
+    end
+    return to_SI!(A, unit; dt_val)
+end
+
+unit_and_type_transform(x::Number, metadata::ParameterMetadata; dt_val = nothing) =
+    to_SI(metadata.type(x), metadata.unit; dt_val)
+
+apply_unit_and_type_transform!(x::Number, metadata::ParameterMetadata; kwargs...) =
+    unit_and_type_transform(x, metadata; kwargs...)

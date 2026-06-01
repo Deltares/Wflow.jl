@@ -73,24 +73,47 @@ instead.
 
 @with_kw struct GroundwaterFlowVariables
     n::Int
-    head::Vector{Float64}                          # hydraulic head [m]
-    conductance::Vector{Float64}                   # conductance [m² d⁻¹]
-    storage::Vector{Float64}                       # total storage of water that can be released [m³]
-    q_net::Vector{Float64} = zeros(n)              # net flow (groundwater and boundaries) [m³ d⁻¹]
-    q_net_av::Vector{Float64} = zeros(n)           # average net flow (groundwater and boundaries) [m³ d⁻¹]
-    q_net_bnds::Vector{Float64} = zeros(n)         # net flow boundaries [m³ d⁻¹]
-    q_in_av::Vector{Float64} = zeros(n)            # average groundwater (lateral) inflow for model timestep Δt [m³ d⁻¹]
-    q_av::Vector{Float64} = zeros(n)               # average groundwater (lateral) outflow for model timestep Δt [m³ d⁻¹]
-    exfiltwater::Vector{Float64} = zeros(n)        # Exfiltration [m Δt⁻¹] (groundwater above surface level, saturated excess conditions)
+    # hydraulic head [m]
+    head::Vector{Float64}
+    # conductance [m² s⁻¹]
+    conductance::Vector{Float64}
+    # total storage of water that can be released [m³]
+    storage::Vector{Float64}
+    # net flow (groundwater and boundaries) [m³ s⁻¹]
+    q_net::Vector{Float64} = zeros(n)
+    # cumulative net flow (groundwater and boundaries) [m³]
+    q_net_cumulative::Vector{Float64} = zeros(n)
+    # average net flow (groundwater and boundaries) [m³ s⁻¹]
+    q_net_average::Vector{Float64} = zeros(n)
+    # net flow boundaries [m³ s⁻¹]
+    q_net_bnds::Vector{Float64} = zeros(n)
+    # cumulative groundwater (lateral) inflow for model timestep dt [m³]
+    q_in_cumulative::Vector{Float64} = zeros(n)
+    # average groundwater (lateral) inflow for model timestep dt [m³ s⁻¹]
+    q_in_average::Vector{Float64} = zeros(n)
+    # cumulative groundwater (lateral) outflow for model timestep dt [m³]
+    q_cumulative::Vector{Float64} = zeros(n)
+    # average groundwater (lateral) outflow for model timestep dt [m³ s⁻¹]
+    q_average::Vector{Float64} = zeros(n)
+    # Cumulative exfiltration [m] (groundwater above surface level, saturated excess conditions)
+    exfiltwater_cumulative::Vector{Float64} = zeros(n)
+    # Average exfiltration [m s⁻¹] (groundwater above surface level, saturated excess conditions)
+    exfiltwater_average::Vector{Float64} = zeros(n)
 end
 
 @with_kw struct GroundwaterFlowParameters
-    k::Vector{Float64}                  # reference horizontal conductivity [m d⁻¹]
-    top::Vector{Float64}                # top of groundwater layer [m]
-    bottom::Vector{Float64}             # bottom of groundwater layer [m]
-    area::Vector{Float64}               # area of cell [m²]
-    specific_yield::Vector{Float64}     # specific yield (theta_s - theta_fc) [m m⁻¹]
-    f::Vector{Float64}                  # factor controlling the reduction of reference horizontal conductivity [-]
+    # reference horizontal conductivity [m s⁻¹]
+    k::Vector{Float64}
+    # top of groundwater layer [m]
+    top::Vector{Float64}
+    # bottom of groundwater layer [m]
+    bottom::Vector{Float64}
+    # area of cell [m²]
+    area::Vector{Float64}
+    # specific yield (theta_s - theta_fc) [m m⁻¹]
+    specific_yield::Vector{Float64}
+    # factor controlling the reduction of reference horizontal conductivity [-]
+    f::Vector{Float64}
     # Unconfined aquifer conductance is computed with degree of saturation (only when
     # conductivity_profile is set to "exponential")
 end
@@ -109,7 +132,7 @@ function GroundwaterFlowParameters(
         config,
         "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     if config.model.conductivity_profile == GwfConductivityProfileType.exponential
         f = ncread(
@@ -117,7 +140,7 @@ function GroundwaterFlowParameters(
             config,
             "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter",
             Routing;
-            sel=indices,
+            sel = indices,
         )
     else
         f = Float64[]
@@ -127,12 +150,14 @@ function GroundwaterFlowParameters(
 end
 
 @with_kw struct ConstantHeadVariables
-    head::Vector{Float64} # [m]
+    # [m]
+    head::Vector{Float64}
 end
 
 @with_kw struct ConstantHead
     variables::ConstantHeadVariables
-    index::Vector{Int} # [-]
+    # [-]
+    index::Vector{Int}
 end
 
 function ConstantHead(
@@ -145,21 +170,21 @@ function ConstantHead(
         config,
         "model_constant_boundary_condition__hydraulic_head",
         Routing;
-        sel=indices,
+        sel = indices,
     )
     n = length(indices)
     index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
     head = constanthead[index_constanthead]
     variables = ConstantHeadVariables(head)
-    constant_head = ConstantHead(; variables, index=index_constanthead)
+    constant_head = ConstantHead(; variables, index = index_constanthead)
     return constant_head
 end
 
 @kwdef struct SubsurfaceFlowBC{
-    Re<:Union{Nothing,AbstractSubsurfaceFlowBC},
-    Ri<:Union{Nothing,AbstractSubsurfaceFlowBC},
-    D<:Union{Nothing,AbstractSubsurfaceFlowBC},
-    W<:Union{Nothing,AbstractSubsurfaceFlowBC},
+    Re <: Union{Nothing, AbstractSubsurfaceFlowBC},
+    Ri <: Union{Nothing, AbstractSubsurfaceFlowBC},
+    D <: Union{Nothing, AbstractSubsurfaceFlowBC},
+    W <: Union{Nothing, AbstractSubsurfaceFlowBC},
 }
     recharge::Re = nothing
     river::Ri = nothing
@@ -174,7 +199,7 @@ get_boundaries(boundary_conditions::SubsurfaceFlowBC) = (
     boundary_conditions.well,
 )
 
-@kwdef struct GroundwaterFlowModel{B<:SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
+@kwdef struct GroundwaterFlowModel{B <: SubsurfaceFlowBC} <: AbstractSubsurfaceFlowModel
     timestepping::TimeStepping
     parameters::GroundwaterFlowParameters
     variables::GroundwaterFlowVariables
@@ -188,7 +213,7 @@ get_boundaries(boundary_conditions::SubsurfaceFlowBC) = (
         connectivity::Connectivity,
         constanthead::ConstantHead,
         boundary_conditions::B,
-    ) where {B<:SubsurfaceFlowBC}
+    ) where {B <: SubsurfaceFlowBC}
         initialize_conductance!(parameters, variables, connectivity)
         new{B}(
             timestepping,
@@ -217,26 +242,20 @@ function GroundwaterFlowModel(
 
     n_cells = length(indices)
 
-    elevation = ncread(
-        dataset,
-        config,
-        "land_surface__elevation",
-        Routing;
-        sel=indices,
-    )
+    elevation = ncread(dataset, config, "land_surface__elevation", Routing; sel = indices)
 
     # unconfined aquifer
     if config.model.constanthead__flag
         constanthead = ConstantHead(dataset, config, indices)
     else
-        variables = ConstantHeadVariables(; head=Float64[])
-        constanthead = ConstantHead(; variables, index=Int64[])
+        variables = ConstantHeadVariables(; head = Float64[])
+        constanthead = ConstantHead(; variables, index = Int64[])
     end
 
     connectivity = Connectivity(indices, reverse_indices, x_length, y_length)
 
     # cold state for groundwater head based on water table depth zi
-    initial_head = elevation .- soil.variables.zi / 1000.0
+    initial_head = elevation .- soil.variables.zi
     initial_head[river.network.land_indices] = elevation[river.network.land_indices]
     if config.model.constanthead__flag
         initial_head[constanthead.index] = constanthead.variables.head
@@ -254,7 +273,7 @@ function GroundwaterFlowModel(
         (; theta_s, theta_r, soilthickness, soilwatercapacity, sumlayers, act_thickl) =
             soil.parameters
 
-        @. zi = (elevation - min(elevation, initial_head)) * 1000.0
+        @. zi = elevation - min(elevation, initial_head)
         @. satwaterdepth = (soilthickness - zi) * (theta_s - theta_r)
         @. ustorecapacity = soilwatercapacity - satwaterdepth
         @. ustorelayerthickness = set_layerthickness(zi, sumlayers, act_thickl)
@@ -262,7 +281,7 @@ function GroundwaterFlowModel(
         @. total_soilwater_storage = satwaterdepth
     end
 
-    bottom = elevation .- soil.parameters.soilthickness ./ 1000.0
+    bottom = elevation - soil.parameters.soilthickness
     specific_yield =
         @. lower_bound_drainable_porosity(soil.parameters.theta_s, soil.parameters.theta_fc)
     conductance = zeros(connectivity.nconnection)
@@ -277,24 +296,25 @@ function GroundwaterFlowModel(
     )
     storage = @. (min(elevation, initial_head) - bottom) * area * parameters.specific_yield
     n = length(storage)
-    variables = GroundwaterFlowVariables(; n, head=initial_head, conductance, storage)
+    variables = GroundwaterFlowVariables(; n, head = initial_head, conductance, storage)
 
     # river boundary of unconfined aquifer
     gwf_river_model = GwfRiverModel(dataset, config, river.network.indices)
 
     # recharge boundary of unconfined aquifer
-    recharge_model = RechargeModel(; n=n_cells)
+    recharge_model = RechargeModel(; n = n_cells)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag
         drainage_model = DrainageModel(dataset, config, drain.network.indices)
         boundary_conditions = SubsurfaceFlowBC(;
-            recharge=recharge_model,
-            river=gwf_river_model,
-            drain=drainage_model,
+            recharge = recharge_model,
+            river = gwf_river_model,
+            drain = drainage_model,
         )
     else
-        boundary_conditions = SubsurfaceFlowBC(; recharge=recharge_model, river=gwf_river_model)
+        boundary_conditions =
+            SubsurfaceFlowBC(; recharge = recharge_model, river = gwf_river_model)
     end
 
     alpha_coefficient = config.model.subsurface_water_flow__alpha_coefficient
@@ -429,15 +449,15 @@ function conductance(
         thickness1 = gwf.parameters.top[i] - gwf.parameters.bottom[i]
         thickness2 = gwf.parameters.top[j] - gwf.parameters.bottom[j]
         # calculate conductivity values corrected for depth of water table
-        k1 =
+        kH1 =
             (gwf.parameters.k[i] / gwf.parameters.f[i]) *
             (exp(-gwf.parameters.f[i] * zi1) - exp(-gwf.parameters.f[i] * thickness1))
-        k2 =
+        kH2 =
             (gwf.parameters.k[j] / gwf.parameters.f[j]) *
             (exp(-gwf.parameters.f[j] * zi2) - exp(-gwf.parameters.f[j] * thickness2))
         return harmonicmean_conductance(
-            k1,
-            k2,
+            kH1,
+            kH2,
             gwf.connectivity.length1[nzi],
             gwf.connectivity.length2[nzi],
             gwf.connectivity.width[nzi],
@@ -473,9 +493,9 @@ function flux!(
             flow = cond * delta_head
             gwf.variables.q_net[i] -= flow
             if flow > 0.0
-                gwf.variables.q_av[i] += flow * dt
+                gwf.variables.q_cumulative[i] += flow * dt
             else
-                gwf.variables.q_in_av[i] -= flow * dt
+                gwf.variables.q_in_cumulative[i] -= flow * dt
             end
         end
     end
@@ -506,12 +526,10 @@ function stable_timestep(
         elseif conductivity_profile == GwfConductivityProfileType.uniform
             value = gwf.parameters.k[i] * saturated_thickness(gwf, i)
         end
-
         dt = gwf.parameters.area[i] * storativity(gwf)[i] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
-    dt_min = alpha_coefficient * dt_min
-    return dt_min
+    return dt_min * alpha_coefficient
 end
 
 minimum_head(gwf::GroundwaterFlowModel) = max.(gwf.variables.head, gwf.parameters.bottom)
@@ -529,26 +547,26 @@ function update_fluxes!(
         flux!(bc, gwf, indices, dt)
     end
     gwf.variables.q_net .+= gwf.variables.q_net_bnds
-    gwf.variables.q_net_av .+= gwf.variables.q_net * dt
+    @. gwf.variables.q_net_cumulative += gwf.variables.q_net * dt
     return nothing
 end
 
 function update_head!(gwf::GroundwaterFlowModel, soil::SbmSoilModel, dt::Float64)
-    (; head, exfiltwater, q_net) = gwf.variables
+    (; head, exfiltwater_cumulative, q_net) = gwf.variables
     (; area, specific_yield) = gwf.parameters
 
     for i in eachindex(head)
-        net_flux = q_net[i] / area[i] * dt
-        dh, exfilt = water_table_change(soil, net_flux, specific_yield[i], i)
+        net_flux = q_net[i] / area[i]
+        dh, exfilt = water_table_change(soil, net_flux, specific_yield[i], i, dt)
         head[i] += dh
-        exfiltwater[i] += exfilt
+        exfiltwater_cumulative[i] += exfilt * dt
     end
     # Set constant head (dirichlet) boundaries
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
     # Make sure no heads ends up below an unconfined aquifer bottom
     gwf.variables.head .= minimum_head(gwf)
     # Adjust exfiltration rate for constant head boundaries
-    exfiltwater[gwf.constanthead.index] .= 0.0
+    exfiltwater_cumulative[gwf.constanthead.index] .= 0.0
     gwf.variables.storage .=
         saturated_thickness(gwf) .* gwf.parameters.area .* storativity(gwf)
     return nothing
@@ -556,31 +574,35 @@ end
 
 function set_flux_vars_bc!(gwf::AbstractSubsurfaceFlowModel)
     for bc in get_boundaries(gwf.boundary_conditions)
-        !isnothing(bc) && (bc.variables.flux_av .= 0.0)
+        !isnothing(bc) && (bc.variables.flux_cumulative .= 0.0)
     end
     return nothing
 end
 
 function set_flux_vars!(gwf::AbstractSubsurfaceFlowModel)
     set_flux_vars_bc!(gwf)
-    gwf.variables.exfiltwater .= 0.0
-    gwf.variables.q_in_av .= 0.0
-    gwf.variables.q_av .= 0.0
-    gwf.variables.q_net_av .= 0.0
+    gwf.variables.exfiltwater_cumulative .= 0.0
+    gwf.variables.q_in_cumulative .= 0.0
+    gwf.variables.q_cumulative .= 0.0
+    gwf.variables.q_net_cumulative .= 0.0
     return nothing
 end
 
 function average_flux_vars_bc!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
     for bc in get_boundaries(gwf.boundary_conditions)
-        !isnothing(bc) && (bc.variables.flux_av ./= dt)
+        if !isnothing(bc)
+            @. bc.variables.flux_average = bc.variables.flux_cumulative / dt
+        end
     end
 end
 
 function average_flux_vars!(gwf::AbstractSubsurfaceFlowModel, dt::Float64)
     average_flux_vars_bc!(gwf, dt)
-    gwf.variables.q_in_av ./= dt
-    gwf.variables.q_av ./= dt
-    gwf.variables.q_net_av ./= dt
+
+    @. gwf.variables.q_in_average = gwf.variables.q_in_cumulative / dt
+    @. gwf.variables.q_average = gwf.variables.q_cumulative / dt
+    @. gwf.variables.q_net_average = gwf.variables.q_net_cumulative / dt
+    @. gwf.variables.exfiltwater_average = gwf.variables.exfiltwater_cumulative / dt
     return nothing
 end
 
@@ -612,16 +634,13 @@ end
 get_water_depth(gwf_model::GroundwaterFlowModel) =
     gwf_model.parameters.top .- gwf_model.variables.head
 
-function get_flux_to_river(subsurface_flow_model::GroundwaterFlowModel, inds::Vector{Int})
-    (; river) = subsurface_flow_model.boundary_conditions
-    flux = -river.variables.flux_av ./ tosecond(BASETIMESTEP) # [m³ s⁻¹]
-    return flux
-end
+get_flux_to_river(subsurface_flow_model::GroundwaterFlowModel, inds::Vector{Int}) =
+    -subsurface_flow_model.boundary_conditions.river.variables.flux_average
 
 function sum_boundary_fluxes(
     gwf_model::AbstractSubsurfaceFlowModel,
     domain::Domain;
-    exclude=nothing,
+    exclude = nothing,
 )
     (; boundary_conditions) = gwf_model
     n = length(gwf_model.variables.storage)
@@ -630,9 +649,10 @@ function sum_boundary_fluxes(
     for bc in get_boundaries(boundary_conditions)
         isnothing(bc) && continue
         typeof(bc) == exclude && continue
+        flux_av_average = bc.variables.flux_average
         indices = get_boundary_index(bc, domain)
         for (i, index) in enumerate(indices)
-            flux = bc.variables.flux_av[i]
+            flux = flux_av_average[i]
             if flux > 0.0
                 flux_in[index] += flux
             else
