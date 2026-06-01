@@ -573,7 +573,7 @@ function NCReader(config)
 end
 
 "Get a Vector of all unique location ids from a 2D map"
-function locations_map(ds, mapname, config, indices = nothing)
+function locations_map(ds, mapname, config, indices)
     map_2d = ncread(
         ds,
         config,

@@ -139,6 +139,10 @@ When using this functionality, please take the following points into account:
 - Ensure that all upstream regions are included (unless you make use of external inflows)
 - When using water demand and allocation: ensure that there are no allocation areas with the
   same ID outside your active domain (a warning is shown in the logging)
+- When writing output at specific cells (`index`): note that the targeted cell (or e.g.
+  reservoir) might no longer be at the same (active) index when using a different domain. If
+  you need output at specific locations, please connect to a layer in the staticmaps, or
+  provide coordinates.
 - When using local_inertial for routing: a ghost node will be added at the end of each river
   section (with a set distance and water level). This might cause some difference in the
   results, as it no longer contains the "real" downstream boundary condition. If this is
@@ -150,5 +154,4 @@ When using this functionality, please take the following points into account:
   please be aware that your active model domain covers the full relevant hydrologically
   active area, as this can be slightly different than e.g. typical subcatchment (elevation
   derived) maps.
--
 :::
