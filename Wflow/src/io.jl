@@ -772,6 +772,7 @@ function Writer(
         output_path_scalar = output_path(config, config.output.netcdf_scalar.path)
         # get netCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
+        indices = domain.land.network.indices
         output_dataset = setup_scalar_netcdf(
             output_path_scalar,
             nc_static,

@@ -923,14 +923,12 @@ function initialize_lateral_ssf_model!(
     (; slope, flow_width) = parameters
 
     kh_layered_profile!(soil_model, subsurface_flow_model, kv_profile)
-
     for i in eachindex(q)
         q[i] = kh[i] * (soilthickness[i] - zi[i]) * slope[i] * flow_width[i]
         kh_max = 0.0
         for j in 1:nlayers[i]
             kh_max += kv_profile.kv[i][j] * act_thickl[i][j]
         end
-
         kh_max *= khfrac[i]
         q_max[i] = kh_max * slope[i]
     end
@@ -965,7 +963,6 @@ function initialize_lateral_ssf_model!(
                 break
             end
         end
-
         kh_max = kh_max * khfrac[i]
         q_max[i] = kh_max * slope[i]
     end
