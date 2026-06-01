@@ -3,14 +3,14 @@ abstract type AbstractSedimentToRiverModel end
 "Struct to store total sediment reaching the river model variables"
 @with_kw struct SedimentToRiverVariables
     n::Int
-    # Total sediment rate to the river [t dt-1]
+    # Total sediment rate to the river [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store total sediment reaching the river model boundary conditions"
 @with_kw struct SedimentToRiverBC
     n::Int
-    # Deposition material rate [t dt-1]
+    # Deposition material rate [kg s⁻¹]
     deposition::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -41,43 +41,45 @@ end
 function update_sediment_to_river_model!(
     sediment_to_river_model::SedimentToRiverModel,
     rivers::Vector{Bool},
+    dt::Float64,
 )
     (; deposition) = sediment_to_river_model.boundary_conditions
     (; sediment_rate) = sediment_to_river_model.variables
 
-    zeros = fill(0.0, length(sediment_rate))
-    sediment_rate .= ifelse.(rivers, deposition, zeros)
+    for (i, river) in enumerate(rivers)
+        sediment_rate[i] = river ? deposition[i] : 0.0
+    end
 end
 
 "Struct to store differentiated sediment reaching the river model variables"
 @with_kw struct SedimentToRiverDifferentiationVariables
     n::Int
-    # Total sediment rate [t dt-1]
+    # Total sediment rate [kg s⁻¹]
     sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Clay rate [t dt-1]
+    # Clay rate [kg s⁻¹]
     clay_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt rate [t dt-1]
+    # Silt rate [kg s⁻¹]
     silt_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand rate [t dt-1]
+    # Sand rate [kg s⁻¹]
     sand_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates rate [t dt-1]
+    # Small aggregates rate [kg s⁻¹]
     sagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates rate [t dt-1]
+    # Large aggregates rate [kg s⁻¹]
     lagg_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment reaching the river model boundary conditions"
 @with_kw struct SedimentToRiverDifferentiationBC
     n::Int
-    # Clay deposition rate [t dt-1]
+    # Clay deposition rate [kg s⁻¹]
     deposition_clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Silt deposition rate [t dt-1]
+    # Silt deposition rate [kg s⁻¹]
     deposition_silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Sand deposition rate [t dt-1]
+    # Sand deposition rate [kg s⁻¹]
     deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Small aggregates deposition rate [t dt-1]
+    # Small aggregates deposition rate [kg s⁻¹]
     deposition_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Large aggregates deposition rate [t dt-1]
+    # Large aggregates deposition rate [kg s⁻¹]
     deposition_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -120,6 +122,7 @@ end
 function update_sediment_to_river_model!(
     sediment_to_river_model::SedimentToRiverDifferentiationModel,
     rivers::Vector{Bool},
+    dt::Float64,
 )
     (;
         deposition_clay,

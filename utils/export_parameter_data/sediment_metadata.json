@@ -1,4 +1,13 @@
 {
+  "atmosphere_water__precipitation_volume_flux": {
+    "unit": "mm Δt-1",
+    "default": null,
+    "fill": null,
+    "type": "Float64",
+    "description": "Precipitation",
+    "allow_missing": false,
+    "allow_dynamic_input": true
+  },
   "clay__mean_diameter": {
     "unit": "μm",
     "default": 2.0,
@@ -594,7 +603,7 @@
     "allow_dynamic_input": false
   },
   "soil_erosion__eurosem_exponent": {
-    "unit": "m-1",
+    "unit": "mm-1",
     "default": 2.0,
     "fill": null,
     "type": "Float64",

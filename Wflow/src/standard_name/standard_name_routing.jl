@@ -150,7 +150,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "reservoir_water__outgoing_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_av
+            _.routing.river_flow.boundary_conditions.reservoir.variables.outflow_average
         ),
         unit = Unit(; m = 3, s = -1),
         description = "Outflow of the reservoir",
@@ -158,14 +158,16 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "reservoir_water__incoming_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow
+            _.routing.river_flow.boundary_conditions.reservoir.boundary_conditions.inflow_average
         ),
         unit = Unit(; m = 3, s = -1),
         description = "Inflow into the reservoir",
         tags = [:reservoir_output],
     ),
     "reservoir_water__evaporation_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.variables.actevap),
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.variables.actevap_average
+        ),
         unit = Unit(; mm = 1, dt = -1),
         description = "Average actual evaporation over the reservoir area",
         tags = [:reservoir_output],
@@ -262,7 +264,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     #### Output
     "river_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.variables.q_av),
+        lens = @optic(_.routing.river_flow.variables.q_average),
         unit = Unit(; m = 3, s = -1),
         description = "River (+ floodplain for local inertial routing) discharge",
         tags = [:kinematic_wave_river_output, :local_inertial_river_output],
@@ -281,7 +283,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "river_water__external_abstraction_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.actual_external_abstraction_av
+            _.routing.river_flow.boundary_conditions.actual_external_abstraction_average
         ),
         unit = Unit(; m = 3, s = -1),
         description = "Actual abstraction based on external negative inflow",
@@ -316,13 +318,13 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     #### Output
     "land_surface_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.variables.q_av),
+        lens = @optic(_.routing.overland_flow.variables.q_average),
         unit = Unit(; m = 3, s = -1),
         description = "Discharge overland flow",
         tags = [:kinematic_wave_overland_output],
     ),
     "land_surface_water__to_river_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.overland_flow.variables.to_river),
+        lens = @optic(_.routing.overland_flow.variables.to_river_average),
         unit = Unit(; m = 3, s = -1),
         description = "Discharge overland flow that flows to the river",
         tags = [:kinematic_wave_overland_output],
@@ -350,7 +352,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     #### Output
     "subsurface_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.q_av),
+        lens = @optic(_.routing.subsurface_flow.variables.q_average),
         unit = Unit(; m = 3, d = -1),
         description = "Average subsurface flow",
         tags = [:kinematic_lateral_subsurface_output],
@@ -362,13 +364,13 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:kinematic_lateral_subsurface_output],
     ),
     "subsurface_water__exfiltration_volume_flux" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.exfiltwater),
+        lens = @optic(_.routing.subsurface_flow.variables.exfiltwater_average),
         unit = Unit(; m = 1, dt = -1),
         description = "Exfiltration (groundwater above surface level, saturated excess conditions)",
         tags = [:kinematic_lateral_subsurface_output],
     ),
     "subsurface_water__to_river_volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.to_river),
+        lens = @optic(_.routing.subsurface_flow.variables.to_river_average),
         unit = Unit(; m = 3, d = -1),
         description = "Part of subsurface flow that flows to the river",
         tags = [:kinematic_lateral_subsurface_output],
@@ -436,7 +438,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:local_inertial_floodplain_1D_flow_output],
     ),
     "floodplain_water__volume_flow_rate" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.floodplain.variables.q_av),
+        lens = @optic(_.routing.river_flow.floodplain.variables.q_average),
         unit = Unit(; m = 3, s = -1),
         description = "Floodplain discharge",
         tags = [:local_inertial_floodplain_1D_flow_output],
@@ -537,7 +539,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Output
     "river_water__to_subsurface_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
-            _.routing.subsurface_flow.boundary_conditions.river.variables.flux_av
+            _.routing.subsurface_flow.boundary_conditions.river.variables.flux_average
         ),
         unit = Unit(; m = 3, d = -1),
         description = "Exchange flux (river to aquifer)",
@@ -571,7 +573,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Output
     "land_drain_water__to_subsurface_volume_flow_rate" => ParameterMetadata(;
         lens = @optic(
-            _.routing.subsurface_flow.boundary_conditions.drain.variables.flux_av
+            _.routing.subsurface_flow.boundary_conditions.drain.variables.flux_average
         ),
         unit = Unit(; m = 3, d = -1),
         description = "Exchange flux (drain to aquifer)",
@@ -582,7 +584,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "subsurface_water_saturated_zone_top__net_recharge_volume_flow_rate" =>
         ParameterMetadata(;
             lens = @optic(
-                _.routing.subsurface_flow.boundary_conditions.recharge.variables.flux_av
+                _.routing.subsurface_flow.boundary_conditions.recharge.variables.flux_average
             ),
             unit = Unit(; m = 3, d = -1),
             description = "Net recharge flux",
