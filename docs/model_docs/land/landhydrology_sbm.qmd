@@ -846,6 +846,13 @@ the figure below:
 
 ![Overview of available `saturated_hydraulic_conductivity_profile` options, for a soil column with five layers](../../images/sbm_ksat_profiles.png)
 
+::: {.callout-important}
+When using the "layered_exponential" profile setting, please note that the depth you provide
+for $z_\mathrm{layered}$ is being snapped to the closest soil layer, as this profile needs
+to be applied to an entire soil layer. If the specific depth is important for your
+simulation, please ensure that you have a soil layer present at/near this depth.
+:::
+
 The potential transfer of water from the unsaturated store to the saturated store is in that
 case controlled by the vertical saturated hydraulic conductivity at the water table depth
 $\SIb{z_\mathrm{watertable}}{mm}$, an optional multiplication factor $\SIb{f_\mathrm{Kv,

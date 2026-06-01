@@ -460,6 +460,11 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         description = "Saturated water content",
         tags = [:soil_input],
     ),
+    "soil_water__field_capacity_volume_fraction" => ParameterMetadata(;
+        lens = @optic(_.land.soil.parameters.theta_fc),
+        description = "Field capacity",
+        tags = [:soil_input],
+    ),
     "soil_water_saturated_zone_bottom__max_leakage_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.maxleakage),
         unit = Unit(; mm = 1, d = -1),

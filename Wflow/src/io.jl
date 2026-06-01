@@ -256,6 +256,7 @@ function setup_scalar_netcdf(
     time_units,
     extra_dim,
     config,
+    indices;
     float_type = Float32,
 )
     (; land) = modelmap
@@ -277,7 +278,8 @@ function setup_scalar_netcdf(
         # contains more than one location list
         if _location_dim ∉ keys(ds.dim)
             locations =
-                isnothing(map) ? [location] : string.(locations_map(dataset, map, config))
+                isnothing(map) ? [location] :
+                string.(locations_map(dataset, map, config, indices))
             defVar(
                 ds,
                 _location_dim,
@@ -558,12 +560,13 @@ function NCReader(config)
 end
 
 "Get a Vector of all unique location ids from a 2D map"
-function locations_map(ds, mapname, config)
+function locations_map(ds, mapname, config, indices)
     map_2d = ncread(
         ds,
         config,
         mapname,
         Writer;
+        sel = indices,
         metadata = ParameterMetadata(; type = Int, allow_missing = true),
     )
     ids = unique(skipmissing(map_2d))
@@ -571,12 +574,12 @@ function locations_map(ds, mapname, config)
 end
 
 "Get a Vector{String} of all columns names for the CSV header, except the first, time"
-function csv_header(cols, dataset, config)
+function csv_header(cols, dataset, config, indices)
     out = String[]
     for col in cols
         (; header, map) = col
         if !isnothing(map)
-            ids = locations_map(dataset, map, config)
+            ids = locations_map(dataset, map, config, indices)
             hvec = [string(header, '_', id) for id in ids]
             append!(out, hvec)
         else
@@ -673,13 +676,33 @@ end
 function get_reducer_func(col, domain, args...)
     (; parameter) = col
     if occursin("reservoir", parameter)
-        reducer_func = reducer(col, domain.reservoir.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.reservoir.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     elseif occursin("river", parameter)
-        reducer_func = reducer(col, domain.river.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.river.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     elseif occursin("drain", parameter)
-        reducer_func = reducer(col, domain.drain.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.drain.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     else
-        reducer_func = reducer(col, domain.land.network.reverse_indices, args...)
+        reducer_func = reducer(
+            col,
+            domain.land.network.reverse_indices,
+            domain.land.network.indices,
+            args...,
+        )
     end
 end
 
@@ -749,6 +772,7 @@ function Writer(
         output_path_scalar = output_path(config, config.output.netcdf_scalar.path)
         # get netCDF info for scalar data (variable name, locationset (dim) and
         # location ids)
+        indices = domain.land.network.indices
         output_dataset = setup_scalar_netcdf(
             output_path_scalar,
             nc_static,
@@ -757,6 +781,7 @@ function Writer(
             config.time.time_units,
             extra_dim,
             config,
+            indices,
         )
         output_ncnames =
             (var.parameter => var.name for var in config.output.netcdf_scalar.variable)
@@ -778,7 +803,8 @@ function Writer(
         output_io = open(output_path_csv, "w")
         # Add header
         print(output_io, "time,")
-        header = csv_header(config.output.csv.column, nc_static, config)
+        indices = domain.land.network.indices
+        header = csv_header(config.output.csv.column, nc_static, config, indices)
         println(output_io, join(header, ','))
         flush(output_io)
         output_csvnames =
@@ -967,7 +993,7 @@ reducer_func(::Nothing) = only
 reducer_func(reducer_type::ReducerType.T) = function_map[reducer_type]
 
 "Get a reducer function based on output settings for scalar data defined in a dictionary"
-function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
+function reducer(col, rev_inds, indices, x_nc, y_nc, config, dataset)
     (; parameter, map, reducer, index, coordinate) = col
     fileformat = col isa CSVColumn ? "CSV" : "NetCDF"
     f = reducer_func(reducer)
@@ -976,30 +1002,31 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         # integers indicating the points or zones that are to be aggregated
         # if no reducer is given, pick "only", this is the only safe reducer,
         # and makes sense in the case of a gauge map
-        map_2d = ncread(
+        map_1d = ncread(
             dataset,
             config,
             map,
             Writer;
+            sel = indices,
             logging = false,
             metadata = ParameterMetadata(; allow_missing = true, type = Int),
         )
         @info "Adding scalar output for a map with a reducer function." fileformat param =
             parameter mapname = map reducer_name = String(nameof(f))
-        ids = unique(skipmissing(map_2d))
-        # from id to list of internal indices
+        ids = unique(skipmissing(map_1d))
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
-        for i in eachindex(map_2d)
-            v = map_2d[i]
+
+        for i in eachindex(map_1d)
+            v = map_1d[i]
             ismissing(v) && continue
             v::Int
-            vector = inds[v]
-            ind = rev_inds[i]
+            # translate from land-domain position -> target-domain position
+            ind = rev_inds[indices[i]]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
                     map `$map` value $v for parameter $param""")
             end
-            push!(vector, ind)
+            push!(inds[v], ind)
         end
         return A -> (f(A[inds[id]]) for id in ids)
     elseif !isnothing(reducer)
@@ -1019,8 +1046,12 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
             # the first always corresponds to the x dimension, then the y dimension
             # this is 1-based
             ind = rev_inds[index.x, index.y]
+            if iszero(ind)
+                @warn "Inactive index specified for output, skipping" fileformat param =
+                    parameter index
+                return _ -> missing
+            end
             @info "Adding scalar output for linear index." fileformat param = parameter index
-            iszero(ind) && error("inactive loc specified for output")
             return A -> getindex(A, ind)
         end
     elseif !isnothing(coordinate)
@@ -1030,8 +1061,12 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         _, ix = findmin(abs.(x_nc .- x))
         I = CartesianIndex(ix, iy)
         i = rev_inds[I]
+        if iszero(i)
+            @warn "Inactive coordinate specified for output, skipping" fileformat param =
+                parameter x y
+            return _ -> missing
+        end
         @info "Adding scalar output for coordinate." fileformat param = parameter x y
-        iszero(i) && error("inactive coordinate specified for output")
         return A -> getindex(A, i)
     else
         error("unknown reducer")

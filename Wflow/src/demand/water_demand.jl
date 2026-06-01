@@ -576,6 +576,25 @@ function AllocationLandModel(
         sel = indices,
     )
 
+    # Check for allocation area ids that appear both inside and outside the active indices
+    areas_full = ncread(
+        dataset,
+        config,
+        "land_water_allocation_area__count",
+        LandHydrologySBM;
+        metadata = ParameterMetadata(; type = Int, allow_missing = true),
+        logging = false,
+    )
+    ids_inside = Set(skipmissing(areas))
+    mask_outside = trues(size(areas_full))
+    mask_outside[indices] .= false
+    ids_outside = Set(skipmissing(areas_full[mask_outside]))
+    shared_ids = intersect(ids_inside, ids_outside)
+    if !isempty(shared_ids)
+        @warn "Allocation area ids `$(sort!(collect(shared_ids)))` are present both inside " *
+              "and outside the active model domain. This may lead to incorrect water allocation."
+    end
+
     n = length(indices)
     parameters = AllocationLandParameters(; areas, frac_sw_used)
     return AllocationLandModel(; n, parameters)

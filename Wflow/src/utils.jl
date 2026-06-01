@@ -610,7 +610,7 @@ function set_effective_flowwidth!(
     (; flow_width, reservoir_outlet) = domain.river.parameters
     reverse_indices = reverse_indices[indices]
 
-    graph = flowgraph(local_drain_direction, indices, PCR_DIR)
+    graph, local_drain_direction = flowgraph(local_drain_direction, indices, PCR_DIR)
     toposort = topological_sort_by_dfs(graph)
     n = length(we_x)
     for v in toposort
