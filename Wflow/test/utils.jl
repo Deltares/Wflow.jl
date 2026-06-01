@@ -212,8 +212,6 @@ end
     end
     @test duplicates == Set([@optic(_.land.atmospheric_forcing.precipitation)])
 
-    @test isempty(duplicates)
-
     # Write and read the config and check equality
     function Base.:(==)(a::T, b::T) where {T <: Wflow.AbstractConfigSection}
         equality = true
