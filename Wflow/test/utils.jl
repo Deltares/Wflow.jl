@@ -130,8 +130,9 @@ end
     end
 end
 
-@testitem "integration: lenses" begin
+@testitem "Lenses and writing config" begin
     using Accessors: @optic
+    using TOML: TOML
     configs = Wflow.Config[]
 
     for file_name in [
@@ -210,6 +211,30 @@ end
         end
     end
     @test duplicates == Set([@optic(_.land.atmospheric_forcing.precipitation)])
+
+    @test isempty(duplicates)
+
+    # Write and read the config and check equality
+    function Base.:(==)(a::T, b::T) where {T <: Wflow.AbstractConfigSection}
+        equality = true
+        for f in fieldnames(T)
+            f == :path && continue # Check all fields except path
+            field_equality = (getfield(a, f) == getfield(b, f))
+            equality &= field_equality
+        end
+        return equality
+    end
+
+    invalids = String[]
+    for model in models
+        path = normpath(model.config.dir_output, "config.toml")
+        open(path, "w") do io
+            TOML.print(io, Wflow.to_dict(model.config))
+        end
+        config_read = Wflow.Config(path)
+        !(model.config == config_read) && push!(invalids, model.config.path)
+    end
+    @test isempty(invalids)
 end
 
 @testitem "unit: water_table_change" begin

@@ -214,8 +214,8 @@ end
 function get_var(config::Config, parameter::AbstractString; optional = true)
     if hasfield(InputSection, Symbol(parameter))
         var = getfield(config.input, Symbol(parameter))
-    elseif haskey(config.input.location_maps, parameter)
-        var = config.input.location_maps[parameter]
+    elseif haskey(config.input._location_maps, parameter)
+        var = config.input._location_maps[parameter]
     elseif haskey(config.input.static, parameter)
         var = config.input.static[parameter]
     elseif haskey(config.input.cyclic, parameter)
@@ -236,16 +236,16 @@ The affine transform consists of a scaling by `scale` and a translation by `offs
 These operations are only applied when non-trivial.
 """
 function apply_affine_transform!(A::AbstractArray, var::InputEntry)
-    (; do_scaling, scale_scalar, scale, do_offsetting, offset_scalar, offset) = var
-    if do_scaling
-        if scale_scalar
+    (; _do_scaling, _scale_scalar, scale, _do_offsetting, _offset_scalar, offset) = var
+    if _do_scaling
+        if _scale_scalar
             A .*= only(scale)
         else
             A .*= scale
         end
     end
-    if do_offsetting
-        if offset_scalar
+    if _do_offsetting
+        if _offset_scalar
             A .+= only(offset)
         else
             A .+= offset

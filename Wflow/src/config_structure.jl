@@ -131,11 +131,11 @@ end
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
-    do_scaling::Bool = !all(isone, scale)
-    scale_scalar = isone(length(scale))
+    _do_scaling::Bool = !all(isone, scale)
+    _scale_scalar = isone(length(scale))
     offset::Vector{Float64} = [0.0]
-    do_offsetting::Bool = !all(iszero, offset)
-    offset_scalar = isone(length(offset))
+    _do_offsetting::Bool = !all(iszero, offset)
+    _offset_scalar = isone(length(offset))
     layer::Union{Nothing, Vector{Int}} = nothing
     # Option 2
     value::Any = nothing
@@ -174,7 +174,7 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     forcing::InputEntries
     static::InputEntries
     cyclic::InputEntries = InputEntries()
-    location_maps::PropertyDictType
+    _location_maps::PropertyDictType
 end
 
 const input_field_names = String.(fieldnames(Wflow.InputSection))
