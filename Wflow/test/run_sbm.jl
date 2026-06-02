@@ -79,7 +79,10 @@
 
         @test model.clock.iteration == 1
 
-        @test test_means(interception.parameters, Dict(:evaporation_to_precipitation_ratio => 0.2381398056521972))
+        @test test_means(
+            interception.parameters,
+            Dict(:evaporation_to_precipitation_ratio => 0.2381398056521972),
+        )
         @test test_means(
             interception.parameters.vegetation_parameter_set,
             Dict(
@@ -188,7 +191,7 @@
                     1.1566640303676966,
                     1.9842496012545644,
                 )),
-                :c => SVector((
+                :brooks_corey_exponent => SVector((
                     9.428788533549843,
                     9.821687673542042,
                     10.240060684266773,
@@ -298,7 +301,10 @@
         )
         @test test_means(
             subsurface_flow.parameters.kh_profile,
-            Dict(:hydraulic_conductivity_scale_parameter => 3.303715296489842, :kh_0 => 0.00048456216809760719),
+            Dict(
+                :hydraulic_conductivity_scale_parameter => 3.303715296489842,
+                :kh_0 => 0.00048456216809760719,
+            ),
         )
         @test test_means(
             subsurface_flow.variables,
@@ -941,8 +947,11 @@ end
             profile.depth[i1],
             h,
         ) ≈ 49.64308797127469
-        @test Wflow.wetted_perimeter(profile.wetted_perimeter[i1, 3], profile.depth[i1], h) ≈
-              70.28617594254938
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 70.28617594254938
         h = 1.5
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
@@ -951,8 +960,11 @@ end
             profile.depth[i1],
             h,
         ) ≈ 182.032315978456
-        @test Wflow.wetted_perimeter(profile.wetted_perimeter[i1, 3], profile.depth[i1], h) ≈
-              118.62585278276481
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 118.62585278276481
         h = 1.7
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
@@ -961,8 +973,11 @@ end
             profile.depth[i1],
             h,
         ) ≈ 228.36739676840216
-        @test Wflow.wetted_perimeter(profile.wetted_perimeter[i1, 3], profile.depth[i1], h) ≈
-              119.02585278276482
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 119.02585278276482
         h = 3.2
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
@@ -971,8 +986,11 @@ end
             profile.depth[i1],
             h,
         ) ≈ 695.0377019748654
-        @test Wflow.wetted_perimeter(profile.wetted_perimeter[i1, 3], profile.depth[i1], h) ≈
-              307.3730700179533
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 307.3730700179533
         h = 4.0
         i1, i2 = Wflow.interpolation_indices(h, profile.depth)
         @test Wflow.flow_area(
@@ -981,16 +999,22 @@ end
             profile.depth[i1],
             h,
         ) ≈ 959.816157989228
-        @test Wflow.wetted_perimeter(profile.wetted_perimeter[i1, 3], profile.depth[i1], h) ≈
-              308.9730700179533
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 3],
+            profile.depth[i1],
+            h,
+        ) ≈ 308.9730700179533
         @test Wflow.flow_area(
             profile.width[i2, 4],
             profile.flow_area[i1, 4],
             profile.depth[i1],
             h,
         ) ≈ 407.6395313908081
-        @test Wflow.wetted_perimeter(profile.wetted_perimeter[i1, 4], profile.depth[i1], h) ≈
-              90.11775307900271
+        @test Wflow.wetted_perimeter(
+            profile.wetted_perimeter[i1, 4],
+            profile.depth[i1],
+            h,
+        ) ≈ 90.11775307900271
     end
 
     Wflow.run_timestep!(model)
@@ -1057,9 +1081,19 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_hydraulic_conductivity_factor = soil.parameters.vertical_hydraulic_conductivity_factor
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, vertical_hydraulic_conductivity_factor, z, i, 2)
-            @test kv_z ≈ vertical_hydraulic_conductivity_factor[i][2] * kv_profile.kv_0[i] * exp(-kv_profile.hydraulic_conductivity_scale_parameter[i] * z)
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            kv_z = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            )
+            @test kv_z ≈
+                  vertical_hydraulic_conductivity_factor[i][2] *
+                  kv_profile.kv_0[i] *
+                  exp(-kv_profile.hydraulic_conductivity_scale_parameter[i] * z)
             @test subsurface_flow.variables.q_max[i] ≈ 0.00032786118096951182
             @test subsurface_flow.variables.q[i] ≈ 0.13522373477495839
         end
@@ -1072,14 +1106,33 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_hydraulic_conductivity_factor = soil.parameters.vertical_hydraulic_conductivity_factor
-            kv_z = Wflow.hydraulic_conductivity_at_depth(kv_profile, vertical_hydraulic_conductivity_factor, z, i, 2)
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            kv_z = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            )
             @test kv_z ≈
                   vertical_hydraulic_conductivity_factor[i][2] *
                   kv_profile.exponential.kv_0[i] *
                   exp(-kv_profile.exponential.hydraulic_conductivity_scale_parameter[i] * z)
-            kv_400 = Wflow.hydraulic_conductivity_at_depth(kv_profile, vertical_hydraulic_conductivity_factor, 0.4, i, 2)
-            kv_1000 = Wflow.hydraulic_conductivity_at_depth(kv_profile, vertical_hydraulic_conductivity_factor, 1.0, i, 3)
+            kv_400 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                0.4,
+                i,
+                2,
+            )
+            kv_1000 = Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                1.0,
+                i,
+                3,
+            )
             @test kv_400 ≈ kv_1000
             @test all(kv_profile.z_exp .== 0.4)
             @test subsurface_flow.variables.q_max[i] ≈ 0.00057159242768384559
@@ -1094,9 +1147,15 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_hydraulic_conductivity_factor = soil.parameters.vertical_hydraulic_conductivity_factor
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, vertical_hydraulic_conductivity_factor, z, i, 2) ≈
-                  kv_profile.kv[i][2]
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            ) ≈ kv_profile.kv[i][2]
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile)
             @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 0.00054987190595639297
             @test subsurface_flow.variables.q_max[i] ≈ 0.00034996637014004996
@@ -1112,9 +1171,15 @@ end
             (; kv_profile) = soil.parameters
             (; subsurface_flow) = model.routing
             z = soil.variables.water_table_depth[i]
-            vertical_hydraulic_conductivity_factor = soil.parameters.vertical_hydraulic_conductivity_factor
-            @test Wflow.hydraulic_conductivity_at_depth(kv_profile, vertical_hydraulic_conductivity_factor, z, i, 2) ≈
-                  kv_profile.kv[i][2]
+            vertical_hydraulic_conductivity_factor =
+                soil.parameters.vertical_hydraulic_conductivity_factor
+            @test Wflow.hydraulic_conductivity_at_depth(
+                kv_profile,
+                vertical_hydraulic_conductivity_factor,
+                z,
+                i,
+                2,
+            ) ≈ kv_profile.kv[i][2]
             @test kv_profile.nlayers_kv[i] == 2
             Wflow.kh_layered_profile!(soil, subsurface_flow, kv_profile)
             @test subsurface_flow.parameters.kh_profile.kh[i] ≈ 0.00039074377416687143
@@ -1156,30 +1221,30 @@ end
     (; overland_water_balance, river_water_balance, subsurface_water_balance) = routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, land_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, overland_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, overland_water_balance.error)
         @test all(re -> abs(re) < 6.6e11, overland_water_balance.relative_error)
         inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_average)
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1.rating_curve_exponent-9, river_water_balance.error)
+        @test all(e -> abs(e) < 1.e-9, river_water_balance.error)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, subsurface_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
         @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, land_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, land_water_balance.error)
         @test all(re -> abs(re) < 1e-9, land_water_balance.relative_error)
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1.rating_curve_exponent-9, routing.overland_water_balance.error)
+        @test all(e -> abs(e) < 1.e-9, routing.overland_water_balance.error)
         @test all(re -> abs(re) < 5.4e11, routing.overland_water_balance.relative_error)
         inds = findall(x -> x > 1e-3, model.routing.overland_flow.variables.q_average)
         @test all(re -> abs(re) < 1e-9, routing.overland_water_balance.relative_error[inds])
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 2e-4, river_water_balance.error)
+        @test all(e -> abs(e) < 2e-4, river_water_balance.error)
         @test all(re -> abs(re) < 24.0, river_water_balance.relative_error)
         inds = findall(x -> x > 1e-3, model.routing.river_flow.variables.q_average)
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error[inds])
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, subsurface_water_balance.error)
+        @test all(e -> abs(e) < 1e-9, subsurface_water_balance.error)
         @test all(re -> abs(re) < 1e-9, subsurface_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
@@ -1194,12 +1259,18 @@ end
     (; river_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
@@ -1214,12 +1285,18 @@ end
     (; river_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, river_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            river_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, river_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)
@@ -1234,12 +1311,18 @@ end
     (; overland_water_balance) = model.mass_balance.routing
     Wflow.run_timestep!(model)
     @testset "water balance first timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, overland_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            overland_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
     end
     Wflow.run_timestep!(model)
     @testset "water balance second timestep" begin
-        @test all(rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9, overland_water_balance.error)
+        @test all(
+            rating_curve_exponent -> abs(rating_curve_exponent) < 1e-9,
+            overland_water_balance.error,
+        )
         @test all(re -> abs(re) < 1e-9, overland_water_balance.relative_error)
     end
     Wflow.close_files(model; delete_output = false)

@@ -34,12 +34,16 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:reservoir_input],
     ),
     "reservoir_water__rating_curve_coefficient" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.b),
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.rating_curve_coefficient
+        ),
         description = "Rating curve coefficient",
         tags = [:reservoir_input],
     ),
     "reservoir_water__rating_curve_exponent" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.e),
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.rating_curve_exponent
+        ),
         description = "Rating curve exponent",
         tags = [:reservoir_input],
     ),
@@ -339,7 +343,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Input
     "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.horizontal_to_vertical_hydraulic_conductivity_ratio),
+            lens = @optic(
+                _.routing.subsurface_flow.parameters.horizontal_to_vertical_hydraulic_conductivity_ratio
+            ),
             description = "A multiplication factor applied to vertical hydraulic conductivity",
             tags = [:kinematic_lateral_subsurface_input],
         ),
@@ -495,7 +501,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.hydraulic_conductivity_scale_parameter),
+            lens = @optic(
+                _.routing.subsurface_flow.parameters.hydraulic_conductivity_scale_parameter
+            ),
             unit = Unit(; m = -1),
             description = "Factor controlling the reduction of horizontal conductivity with depth",
             tags = [:groundwater_unconfined_aquifer_input],

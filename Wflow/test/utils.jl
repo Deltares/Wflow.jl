@@ -250,7 +250,9 @@ end
         n,
         N;
         unsaturated_layer_depth = [SVector(0.1, 0.125, 0.15, 0.17500000000000002, 0.2)],
-        unsaturated_layer_thickness = [SVector(0.11, 0.145, 0.17, 0.20500000000000002, 0.24)],
+        unsaturated_layer_thickness = [
+            SVector(0.11, 0.145, 0.17, 0.20500000000000002, 0.24),
+        ],
         maximum_number_of_layers = 5,
         theta_s = [0.98],
         theta_r = [0.02],

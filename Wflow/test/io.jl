@@ -291,7 +291,7 @@ end
         (; output_dataset) = writer.grid_writer
         (; output_map) = writer.endstate_writer
         ncdims = ("lon", "lat", "layer", "time")
-        @test dimnames(output_dataset["unsaturated_layer_depth"]) == ncdims
+        @test dimnames(output_dataset["ustorelayerdepth"]) == ncdims
         ncvars = [k for k in keys(output_dataset) if !in(k, ncdims)]
         @test "snow" in ncvars
         @test "q_av_river" in ncvars
