@@ -316,24 +316,12 @@ function local_inertial_river_update!(
         floodplain_p = model.floodplain.parameters
         floodplain_v = model.floodplain.variables
 
-        @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.hf)
-            floodplain_v.hf[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
-        end
-
-        n = 0
-        @inbounds for i in river_p.active_e
-            @inbounds if river_v.hf[i] > river_p.h_thresh
-                n += 1
-                floodplain_v.hf_index[n] = i
-            else
-                floodplain_v.q[i] = 0.0
-            end
-        end
-
-        @batch per = thread minbatch = 1000 for j in 1:n
-            i = floodplain_v.hf_index[j]
+        @batch per = thread minbatch = 1000 for j in eachindex(river_p.active_e)
+            i = river_p.active_e[j]
             i_src = nodes_at_edge.src[i]
             i_dst = nodes_at_edge.dst[i]
+
+            floodplain_v.hf[i] = max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
 
             i0 = 0
             for k in eachindex(floodplain_p.profile.depth)
@@ -1232,7 +1220,6 @@ end
     q0::Vector{Float64}             # discharge at edge at previous time step
     q::Vector{Float64}              # discharge at edge  [m³ s⁻¹]
     q_av::Vector{Float64}           # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
-    hf_index::Vector{Int}           # edge index with `hf` [-] above depth threshold
 end
 
 "Initialize floodplain flow model variables"
@@ -1247,7 +1234,6 @@ function FloodPlainVariables(n::Int, n_edges::Int, index_pit::Vector{Int})
         q = zeros(n_edges),
         q_av = zeros(n_edges),
         q0 = zeros(n_edges),
-        hf_index = zeros(Int, n_edges),
     )
     return variables
 end
