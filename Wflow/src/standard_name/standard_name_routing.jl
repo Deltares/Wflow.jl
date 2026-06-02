@@ -27,19 +27,23 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "reservoir_water__max_volume" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.parameters.maxstorage
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.maximum_storage
         ),
         unit = Unit(; m = 3),
         description = "Maximum volume (above which water is spilled)",
         tags = [:reservoir_input],
     ),
     "reservoir_water__rating_curve_coefficient" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.b),
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.rating_curve_coefficient
+        ),
         description = "Rating curve coefficient",
         tags = [:reservoir_input],
     ),
     "reservoir_water__rating_curve_exponent" => ParameterMetadata(;
-        lens = @optic(_.routing.river_flow.boundary_conditions.reservoir.parameters.e),
+        lens = @optic(
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.rating_curve_exponent
+        ),
         description = "Rating curve exponent",
         tags = [:reservoir_input],
     ),
@@ -56,7 +60,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "reservoir_water__storage_curve_type_count" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.parameters.storfunc
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.storage_curve_type
         ),
         type = Int,
         description = "Type of reservoir storage curve",
@@ -64,7 +68,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "reservoir_water__rating_curve_type_count" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.parameters.outflowfunc
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.outflow_curve_type
         ),
         type = Int,
         description = "Type of reservoir rating curve",
@@ -89,7 +93,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "reservoir_water_release_below_spillway__max_volume_flow_rate" =>
         ParameterMetadata(;
             lens = @optic(
-                _.routing.river_flow.boundary_conditions.reservoir.parameters.maxrelease
+                _.routing.river_flow.boundary_conditions.reservoir.parameters.maximum_release
             ),
             unit = Unit(; m = 3, s = -1),
             description = "Maximum amount that can be released if below spillway",
@@ -98,7 +102,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "reservoir_water__target_full_volume_fraction" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetfullfrac
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.target_full_fraction
         ),
         description = "Target fraction full (of max storage)",
         allow_dynamic_input = true,
@@ -106,7 +110,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "reservoir_water__target_min_volume_fraction" => ParameterMetadata(;
         lens = @optic(
-            _.routing.river_flow.boundary_conditions.reservoir.parameters.targetminfrac
+            _.routing.river_flow.boundary_conditions.reservoir.parameters.target_minimum_fraction
         ),
         description = "Target minimum full fraction (of max storage)",
         allow_dynamic_input = true,
@@ -339,7 +343,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     #### Input
     "subsurface_water__horizontal_to_vertical_saturated_hydraulic_conductivity_ratio" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.khfrac),
+            lens = @optic(
+                _.routing.subsurface_flow.parameters.horizontal_to_vertical_hydraulic_conductivity_ratio
+            ),
             description = "A multiplication factor applied to vertical hydraulic conductivity",
             tags = [:kinematic_lateral_subsurface_input],
         ),
@@ -358,7 +364,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:kinematic_lateral_subsurface_output],
     ),
     "subsurface_water_saturated_zone_top__depth" => ParameterMetadata(;
-        lens = @optic(_.routing.subsurface_flow.variables.zi),
+        lens = @optic(_.routing.subsurface_flow.variables.water_table_depth),
         unit = Unit(; m = 1),
         description = "Pseudo-water table depth (top of the saturated zone)",
         tags = [:kinematic_lateral_subsurface_output],
@@ -483,7 +489,7 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "subsurface_surface_water__horizontal_saturated_hydraulic_conductivity" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.k),
+            lens = @optic(_.routing.subsurface_flow.parameters.hydraulic_conductivity),
             unit = Unit(; m = 1, d = -1),
             description = "Horizontal conductivity",
             tags = [:groundwater_unconfined_aquifer_input],
@@ -495,7 +501,9 @@ const routing_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "subsurface__horizontal_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(_.routing.subsurface_flow.parameters.f),
+            lens = @optic(
+                _.routing.subsurface_flow.parameters.hydraulic_conductivity_scale_parameter
+            ),
             unit = Unit(; m = -1),
             description = "Factor controlling the reduction of horizontal conductivity with depth",
             tags = [:groundwater_unconfined_aquifer_input],

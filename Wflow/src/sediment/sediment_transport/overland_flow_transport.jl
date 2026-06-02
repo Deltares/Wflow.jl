@@ -85,13 +85,13 @@ end
     # Deposition sand rate [kg s⁻¹]
     deposition_sand::Vector{Float64} = fill(MISSING_VALUE, n)
     # Small aggregates rate [kg s⁻¹]
-    sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Deposition rate small aggregates [kg s⁻¹]
-    deposition_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Large aggregates rate [kg s⁻¹]
-    lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Deposition rate large aggregates [kg s⁻¹]
-    deposition_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment flux in overland flow model boundary conditions"
@@ -104,9 +104,9 @@ end
     # Erosion rate sand [kg s⁻¹]
     erosion_sand::Vector{Float64} = fill(MISSING_VALUE, n)
     # Erosion rate small aggregates [kg s⁻¹]
-    erosion_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    erosion_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Erosion large aggregates [kg s⁻¹]
-    erosion_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    erosion_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Transport capacity clay [kg s⁻¹]
     transport_capacity_clay::Vector{Float64} = fill(MISSING_VALUE, n)
     # Transport capacity silt [kg s⁻¹]
@@ -114,9 +114,9 @@ end
     # Transport capacity sand [kg s⁻¹]
     transport_capacity_sand::Vector{Float64} = fill(MISSING_VALUE, n)
     # Transport capacity small aggregates [kg s⁻¹]
-    transport_capacity_sagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    transport_capacity_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
     # Transport capacity large aggregates [kg s⁻¹]
-    transport_capacity_lagg::Vector{Float64} = fill(MISSING_VALUE, n)
+    transport_capacity_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store differentiated sediment flux in overland flow model"
@@ -146,33 +146,33 @@ function update_bc_sediment_land_transport_model!(
         erosion_clay,
         erosion_silt,
         erosion_sand,
-        erosion_sagg,
-        erosion_lagg,
+        erosion_small_aggregates,
+        erosion_large_aggregates,
         transport_capacity_clay,
         transport_capacity_silt,
         transport_capacity_sand,
-        transport_capacity_sagg,
-        transport_capacity_lagg,
+        transport_capacity_small_aggregates,
+        transport_capacity_large_aggregates,
     ) = sediment_transport_model.boundary_conditions
     (;
         clay_erosion_rate,
         silt_erosion_rate,
         sand_erosion_rate,
-        sagg_erosion_rate,
-        lagg_erosion_rate,
+        small_aggregates_erosion_rate,
+        large_aggregates_erosion_rate,
     ) = erosion_model.variables
     @. erosion_clay = clay_erosion_rate
     @. erosion_silt = silt_erosion_rate
     @. erosion_sand = sand_erosion_rate
-    @. erosion_sagg = sagg_erosion_rate
-    @. erosion_lagg = lagg_erosion_rate
+    @. erosion_small_aggregates = small_aggregates_erosion_rate
+    @. erosion_large_aggregates = large_aggregates_erosion_rate
 
-    (; clay, silt, sand, sagg, lagg) = transport_capacity_model.variables
+    (; clay, silt, sand, small_aggregates, large_aggregates) = transport_capacity_model.variables
     @. transport_capacity_clay = clay
     @. transport_capacity_silt = silt
     @. transport_capacity_sand = sand
-    @. transport_capacity_sagg = sagg
-    @. transport_capacity_lagg = lagg
+    @. transport_capacity_small_aggregates = small_aggregates
+    @. transport_capacity_large_aggregates = large_aggregates
 end
 
 "Update differentiated sediment flux in overland flow model for a single timestep"
@@ -185,13 +185,13 @@ function update_sediment_overland_model!(
         erosion_clay,
         erosion_silt,
         erosion_sand,
-        erosion_sagg,
-        erosion_lagg,
+        erosion_small_aggregates,
+        erosion_large_aggregates,
         transport_capacity_clay,
         transport_capacity_silt,
         transport_capacity_sand,
-        transport_capacity_sagg,
-        transport_capacity_lagg,
+        transport_capacity_small_aggregates,
+        transport_capacity_large_aggregates,
     ) = sediment_transport_model.boundary_conditions
     (;
         sediment_rate,
@@ -202,10 +202,10 @@ function update_sediment_overland_model!(
         deposition_silt,
         sand,
         deposition_sand,
-        sagg,
-        deposition_sagg,
-        lagg,
-        deposition_lagg,
+        small_aggregates,
+        deposition_small_aggregates,
+        large_aggregates,
+        deposition_large_aggregates,
     ) = sediment_transport_model.variables
 
     # All inputs and outputs are rates [kg s⁻¹]
@@ -215,14 +215,14 @@ function update_sediment_overland_model!(
     do_accucapacityflux!(clay, deposition_clay, erosion_clay, transport_capacity_clay)
     do_accucapacityflux!(silt, deposition_silt, erosion_silt, transport_capacity_silt)
     do_accucapacityflux!(sand, deposition_sand, erosion_sand, transport_capacity_sand)
-    do_accucapacityflux!(sagg, deposition_sagg, erosion_sagg, transport_capacity_sagg)
-    do_accucapacityflux!(lagg, deposition_lagg, erosion_lagg, transport_capacity_lagg)
+    do_accucapacityflux!(small_aggregates, deposition_small_aggregates, erosion_small_aggregates, transport_capacity_small_aggregates)
+    do_accucapacityflux!(large_aggregates, deposition_large_aggregates, erosion_large_aggregates, transport_capacity_large_aggregates)
 
-    @. sediment_rate = clay + silt + sand + sagg + lagg
+    @. sediment_rate = clay + silt + sand + small_aggregates + large_aggregates
     @. deposition =
         deposition_clay +
         deposition_silt +
         deposition_sand +
-        deposition_sagg +
-        deposition_lagg
+        deposition_small_aggregates +
+        deposition_large_aggregates
 end

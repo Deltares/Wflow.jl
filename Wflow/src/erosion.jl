@@ -60,7 +60,7 @@ function update_soil_loss_model!(
         soil_erosion,
     ) = soil_loss_model
 
-    #TODO add interception/canopygapfraction calculation here for eurosem
+    #TODO add interception/canopy_gap_fraction calculation here for eurosem
     #need SBM refactor
 
     # Rainfall erosion

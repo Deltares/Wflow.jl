@@ -2,7 +2,7 @@
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     include("testing_utils.jl")
     dt = 86400.0
-    # Simple reservoir (outflowfunc = 4)
+    # Simple reservoir (outflow_curve_type = 4)
     n = 1
     res_bc = Wflow.ReservoirBC(;
         n,
@@ -12,13 +12,13 @@
     res_params = Wflow.ReservoirParameters(;
         id = [1],
         demand = [52.523],
-        maxrelease = [420.184],
-        maxstorage = [25_000_000.0],
+        maximum_release = [420.184],
+        maximum_storage = [25_000_000.0],
         area = [1885665.353626924],
-        targetfullfrac = [0.8],
-        targetminfrac = [0.2425554726620697],
-        storfunc = [ReservoirProfileType.linear],
-        outflowfunc = [ReservoirOutflowType.simple],
+        target_full_fraction = [0.8],
+        target_minimum_fraction = [0.2425554726620697],
+        storage_curve_type = [ReservoirProfileType.linear],
+        outflow_curve_type = [ReservoirOutflowType.simple],
     )
     res_vars = Wflow.ReservoirVariables(;
         outflow_obs = [Wflow.MISSING_VALUE],
@@ -31,7 +31,7 @@
         parameters = res_params,
         variables = res_vars,
     )
-    @testset "Update reservoir simple (outflowfunc = 4)" begin
+    @testset "Update reservoir simple (outflow_curve_type = 4)" begin
         Wflow.set_reservoir_vars!(res)
         Wflow.update_reservoir_model!(res, 1, 100.0, dt)
         Wflow.average_reservoir_vars!(res, dt)
@@ -47,7 +47,7 @@
     res.variables.outflow_obs[1] = 80.0
     res.variables.storage[1] = 1.925e7
     res.variables.waterlevel[1] = 10.208598234556407
-    @testset "Update reservoir simple (outflowfunc = 4) with observed outflow" begin
+    @testset "Update reservoir simple (outflow_curve_type = 4) with observed outflow" begin
         Wflow.set_reservoir_vars!(res)
         Wflow.update_reservoir_model!(res, 1, 100.0, dt)
         Wflow.average_reservoir_vars!(res, 86400.0)
@@ -57,10 +57,10 @@
     end
 end
 
-@testitem "unit: update reservoir Modified Puls approach (outflowfunc = 3)" begin
+@testitem "unit: update reservoir Modified Puls approach (outflow_curve_type = 3)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     include("testing_utils.jl")
-    # ReservoirModel Modified Puls approach (outflowfunc = 3)
+    # ReservoirModel Modified Puls approach (outflow_curve_type = 3)
     n = 1
     dt = 86400.0
     res_bc = Wflow.ReservoirBC(;
@@ -72,18 +72,18 @@ end
         id = [1],
         area = [180510409.0],
         threshold = [0.0],
-        storfunc = [ReservoirProfileType.linear],
-        outflowfunc = [ReservoirOutflowType.modified_puls],
-        b = [0.22],
-        e = [2.0],
+        storage_curve_type = [ReservoirProfileType.linear],
+        outflow_curve_type = [ReservoirOutflowType.modified_puls],
+        rating_curve_coefficient = [0.22],
+        rating_curve_exponent = [2.0],
     )
     waterlevel = [18.5]
     res_vars = Wflow.ReservoirVariables(;
         storage = Wflow.initialize_storage(
-            res_params.storfunc,
+            res_params.storage_curve_type,
             res_params.area,
             waterlevel,
-            res_params.sh,
+            res_params.storage_waterlevel_curve,
         ),
         waterlevel,
     )
@@ -100,10 +100,10 @@ end
     Wflow.update_reservoir_model!(res, 1, 2500.0, dt)
     Wflow.average_reservoir_vars!(res, dt)
     @test Wflow.waterlevel(
-        res_p.storfunc[1],
+        res_p.storage_curve_type[1],
         res_p.area[1],
         res_v.storage[1],
-        res_p.sh[1],
+        res_p.storage_waterlevel_curve[1],
     ) ≈ 19.672653848925634
     @test res_v.outflow[1] ≈ 85.14292808113598
     @test res_v.outflow_average ≈ res_v.outflow
@@ -132,12 +132,12 @@ end
         ),
         parameters = Wflow.ReservoirParameters(;
             id = [1],
-            storfunc = [Wflow.ReservoirProfileType.linear],
-            outflowfunc = [Wflow.ReservoirOutflowType.simple],
+            storage_curve_type = [Wflow.ReservoirProfileType.linear],
+            outflow_curve_type = [Wflow.ReservoirOutflowType.simple],
             area = [6.0e4],
             threshold = [0.0],
-            b = [0.0],
-            e = [0.0],
+            rating_curve_coefficient = [0.0],
+            rating_curve_exponent = [0.0],
         ),
         variables = Wflow.ReservoirVariables(;
             waterlevel = [1.0],
@@ -183,14 +183,14 @@ end
         ),
         parameters = Wflow.ReservoirParameters(;
             id = [1],
-            storfunc = [Wflow.ReservoirProfileType.linear],
-            outflowfunc = [Wflow.ReservoirOutflowType.simple],
+            storage_curve_type = [Wflow.ReservoirProfileType.linear],
+            outflow_curve_type = [Wflow.ReservoirOutflowType.simple],
             area = [9.069779e4],
-            maxrelease = [1.74],
+            maximum_release = [1.74],
             demand = [0.2175],
-            targetminfrac = [0.358469158],
-            targetfullfrac = [0.83492106199],
-            maxstorage = [3.3e7],
+            target_minimum_fraction = [0.358469158],
+            target_full_fraction = [0.83492106199],
+            maximum_storage = [3.3e7],
         ),
         variables = Wflow.ReservoirVariables(;
             waterlevel = [3.0266425035195113],
@@ -217,47 +217,47 @@ end
     @test reservoir_model.variables.outflow[1] ≈ 0.21749985206208133
 end
 
-@testitem "Linked reservoirs with free weir (outflowfunc = 2)" begin
+@testitem "Linked reservoirs with free weir (outflow_curve_type = 2)" begin
     using Wflow: ReservoirProfileType, ReservoirOutflowType
     include("testing_utils.jl")
     dt = 86400.0
-    # Linked reservoirs with free weir (outflowfunc = 1)
+    # Linked reservoirs with free weir (outflow_curve_type = 1)
     datadir = joinpath(@__DIR__, "data")
-    sh = Vector{Union{Wflow.SH, Missing}}([
+    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}([
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_1.csv")),
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
     ])
-    hq = Vector{Union{Wflow.HQ, Missing}}([
+    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
         missing,
         Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
 
-    @test keys(sh[1]) == (:H, :S)
-    @test typeof(values(sh[1])) == Tuple{Vector{Float64}, Vector{Float64}}
+    @test keys(storage_waterlevel_curve[1]) == (:H, :S)
+    @test typeof(values(storage_waterlevel_curve[1])) == Tuple{Vector{Float64}, Vector{Float64}}
 
     res_params = Wflow.ReservoirParameters(;
         id = [1, 2],
         lower_reservoir_ind = [2, 0],
         area = [472461536.0, 60851088.0],
         threshold = [393.7, NaN],
-        storfunc = fill(ReservoirProfileType.interpolation, 2),
-        outflowfunc = [ReservoirOutflowType.free_weir, ReservoirOutflowType.rating_curve],
-        b = [140.0, NaN],
-        e = [1.5, NaN],
-        sh,
-        hq,
+        storage_curve_type = fill(ReservoirProfileType.interpolation, 2),
+        outflow_curve_type = [ReservoirOutflowType.free_weir, ReservoirOutflowType.rating_curve],
+        rating_curve_coefficient = [140.0, NaN],
+        rating_curve_exponent = [1.5, NaN],
+        storage_waterlevel_curve,
+        waterlevel_discharge_curve,
         col_index_hq = [15],
     )
-    res_params.maxstorage[2] = Wflow.maximum_storage(res_params, 2)
+    res_params.maximum_storage[2] = Wflow.maximum_storage(res_params, 2)
 
     waterlevel = [395.03027, 394.87833]
     res_vars = Wflow.ReservoirVariables(;
         waterlevel,
         storage = Wflow.initialize_storage(
-            res_params.storfunc,
+            res_params.storage_curve_type,
             [472461536.0, 60851088.0],
             waterlevel,
-            sh,
+            storage_waterlevel_curve,
         ),
     )
     n = 2
@@ -292,7 +292,7 @@ end
     @test res_v.actevap_cumulative ≈ [0.002, 0.002]
 end
 
-# Overflowing reservoir with SH and HQ (outflowfunc = 1)
+# Overflowing reservoir with SH and HQ (outflow_curve_type = 1)
 @testitem "Overflowing reservoir with SH and HQ" begin
     include("testing_utils.jl")
     using Wflow: ReservoirProfileType, ReservoirOutflowType
@@ -304,22 +304,22 @@ end
         precipitation = [1.1574074074074074e-7],
         evaporation = [2.3148148148148148e-8],
     )
-    sh = Vector{Union{Wflow.SH, Missing}}([
+    storage_waterlevel_curve = Vector{Union{Wflow.SH, Missing}}([
         Wflow.read_sh_csv(joinpath(datadir, "input", "reservoir_sh_2.csv")),
     ])
-    hq = Vector{Union{Wflow.HQ, Missing}}([
+    waterlevel_discharge_curve = Vector{Union{Wflow.HQ, Missing}}([
         Wflow.read_hq_csv(joinpath(datadir, "input", "reservoir_hq_2.csv")),
     ])
     res_params = Wflow.ReservoirParameters(;
         id = [1],
         area = [200_000_000],
-        storfunc = [ReservoirProfileType.interpolation],
-        outflowfunc = [ReservoirOutflowType.rating_curve],
-        sh,
-        hq,
+        storage_curve_type = [ReservoirProfileType.interpolation],
+        outflow_curve_type = [ReservoirOutflowType.rating_curve],
+        storage_waterlevel_curve,
+        waterlevel_discharge_curve,
         col_index_hq = [15],
     )
-    res_params.maxstorage[1] = Wflow.maximum_storage(res_params, 1)
+    res_params.maximum_storage[1] = Wflow.maximum_storage(res_params, 1)
     res_vars = Wflow.ReservoirVariables(; waterlevel = [397.75], storage = [410_760_000])
     res = Wflow.ReservoirModel(;
         boundary_conditions = res_bc,
@@ -332,10 +332,10 @@ end
     res_p = res.parameters
     res_v = res.variables
     @test Wflow.waterlevel(
-        res_p.storfunc[1],
+        res_p.storage_curve_type[1],
         res_p.area[1],
         res_v.storage[1],
-        res_p.sh[1],
+        res_p.storage_waterlevel_curve[1],
     ) ≈ 398.0 atol = 1e-2
     @test res_v.outflow ≈ [1303.67476852]
     @test res_v.outflow_average ≈ res_v.outflow

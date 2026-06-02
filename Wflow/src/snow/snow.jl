@@ -8,7 +8,7 @@ abstract type AbstractSnowModel end
     # Liquid water content in the snow pack [m]
     snow_water::Vector{Float64} = zeros(n)
     # Snow water equivalent (SWE) [m]
-    swe::Vector{Float64} = fill(MISSING_VALUE, n)
+    snow_water_equivalent::Vector{Float64} = fill(MISSING_VALUE, n)
     # Snow melt [m s⁻¹]
     snow_melt::Vector{Float64} = fill(MISSING_VALUE, n)
     # Runoff from snowpack [m s⁻¹]
@@ -33,15 +33,15 @@ end
 "Struct for storing snow HBV model parameters"
 @with_kw struct SnowHbvParameters
     # Degree-day factor [m K⁻¹ s⁻¹]
-    cfmax::Vector{Float64}
+    degree_day_factor::Vector{Float64}
     # Threshold temperature for snowfall [K]
-    tt::Vector{Float64}
+    temperature_threshold_snowfall::Vector{Float64}
     # Threshold temperature interval length [K]
-    tti::Vector{Float64}
+    temperature_interval_snowfall::Vector{Float64}
     # Threshold temperature for snowmelt [K]
-    ttm::Vector{Float64}
+    temperature_threshold_melt::Vector{Float64}
     # Water holding capacity as fraction of current snow pack [-]
-    whc::Vector{Float64}
+    water_holding_capacity::Vector{Float64}
 end
 
 "Snow HBV model"
@@ -62,42 +62,42 @@ function SnowHbvParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    cfmax = ncread(
+    degree_day_factor = ncread(
         dataset,
         config,
         "snowpack__degree_day_coefficient",
         LandHydrologySBM;
         sel = indices,
     )
-    tt = ncread(
+    temperature_threshold_snowfall = ncread(
         dataset,
         config,
         "atmosphere_air__snowfall_temperature_threshold",
         LandHydrologySBM;
         sel = indices,
     )
-    tti = ncread(
+    temperature_interval_snowfall = ncread(
         dataset,
         config,
         "atmosphere_air__snowfall_temperature_interval",
         LandHydrologySBM;
         sel = indices,
     )
-    ttm = ncread(
+    temperature_threshold_melt = ncread(
         dataset,
         config,
         "snowpack__melting_temperature_threshold",
         LandHydrologySBM;
         sel = indices,
     )
-    whc = ncread(
+    water_holding_capacity = ncread(
         dataset,
         config,
         "snowpack__liquid_water_holding_capacity",
         LandHydrologySBM;
         sel = indices,
     )
-    snow_hbv_params = SnowHbvParameters(; cfmax, tt, tti, ttm, whc)
+    snow_hbv_params = SnowHbvParameters(; degree_day_factor, temperature_threshold_snowfall, temperature_interval_snowfall, temperature_threshold_melt, water_holding_capacity)
     return snow_hbv_params
 end
 
@@ -133,25 +133,25 @@ function update_snow_model!(
     dt::Float64,
 )
     (; temperature) = atmospheric_forcing
-    (; snow_storage, snow_water, swe, snow_melt, runoff) = snow_model.variables
+    (; snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff) = snow_model.variables
     (; effective_precip, snow_precip, liquid_precip) = snow_model.boundary_conditions
-    (; tt, tti, ttm, cfmax, whc) = snow_model.parameters
+    (; temperature_threshold_snowfall, temperature_interval_snowfall, temperature_threshold_melt, degree_day_factor, water_holding_capacity) = snow_model.parameters
 
     n = length(temperature)
     threaded_foreach(1:n; basesize = 1000) do i
         snow_precip[i], liquid_precip[i] =
-            precipitation_hbv(effective_precip[i], temperature[i], tti[i], tt[i])
+            precipitation_hbv(effective_precip[i], temperature[i], temperature_interval_snowfall[i], temperature_threshold_snowfall[i])
     end
     threaded_foreach(1:n; basesize = 1000) do i
-        snow_storage[i], snow_water[i], swe[i], snow_melt[i], runoff[i] = snowpack_hbv(
+        snow_storage[i], snow_water[i], snow_water_equivalent[i], snow_melt[i], runoff[i] = snowpack_hbv(
             snow_storage[i],
             snow_water[i],
             snow_precip[i],
             liquid_precip[i],
             temperature[i],
-            ttm[i],
-            cfmax[i],
-            whc[i],
+            temperature_threshold_melt[i],
+            degree_day_factor[i],
+            water_holding_capacity[i],
             dt,
         )
     end

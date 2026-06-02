@@ -54,8 +54,8 @@ function LandHydrologySBM(dataset::NCDataset, config::Config, domain::DomainLand
     runoff = OpenWaterRunoff(; n)
 
     soil = SbmSoilModel(dataset, config, vegetation_parameters, indices, dt)
-    @. vegetation_parameters.rootingdepth =
-        min(soil.parameters.soilthickness * 0.99, vegetation_parameters.rootingdepth)
+    @. vegetation_parameters.rooting_depth =
+        min(soil.parameters.soil_thickness * 0.99, vegetation_parameters.rooting_depth)
 
     if do_water_demand(config)
         allocation = AllocationLandModel(dataset, config, indices)
@@ -127,7 +127,7 @@ function update_land_hydrology_model!(
     )
 
     update_soil_water_flow!(soil, atmospheric_forcing, (; snow, runoff, demand), config, dt)
-    @. soil.variables.actevap += interception.variables.interception_rate
+    @. soil.variables.actual_evapotranspiration += interception.variables.interception_rate
     return nothing
 end
 
@@ -147,7 +147,7 @@ function update_total_water_storage!(
 )
     (; overland_flow, river_flow) = routing
     (; interception, snow, glacier, soil, demand) = land_hydrology_model
-    (; total_storage, ustoredepth, satwaterdepth) = soil.variables
+    (; total_storage, unsaturated_store_depth, saturated_water_depth) = soil.variables
 
     (; river_fraction, area) = domain.land.parameters
     (; flow_width, flow_length) = domain.river.parameters
@@ -170,9 +170,9 @@ function update_total_water_storage!(
         interception.variables.canopy_storage .+ get_water_depth(demand.paddy)
 
     # Chunk the data for parallel computing
-    n = length(ustoredepth)
+    n = length(unsaturated_store_depth)
     threaded_foreach(1:n; basesize = 1000) do i
-        sub_surface = ustoredepth[i] + satwaterdepth[i]
+        sub_surface = unsaturated_store_depth[i] + saturated_water_depth[i]
         lateral = overland_flow.variables.h[i] * (1 - river_fraction[i])
 
         # Add everything to the total water storage

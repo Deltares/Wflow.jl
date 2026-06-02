@@ -7,18 +7,23 @@
     Wflow.run_timestep!(model)
 
     (; paddy, nonpaddy, industry, livestock, domestic) = model.land.demand
-    (; total_alloc, irri_alloc, nonirri_alloc, surfacewater_alloc, act_groundwater_abst) =
-        model.land.allocation.variables
+    (;
+        total_alloc,
+        irrigation_allocation,
+        non_irrigation_allocation,
+        surfacewater_allocation,
+        actual_groundwater_abstraction,
+    ) = model.land.allocation.variables
     (; soil) = model.land
     (; river_flow) = model.routing
     (; reservoir) = river_flow.boundary_conditions
 
     @testset "piave water demand and allocation first timestep" begin
         sum_total_alloc = sum(total_alloc)
-        @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
+        @test sum(irrigation_allocation) + sum(non_irrigation_allocation) ≈ sum_total_alloc
 
-        @test sum(surfacewater_alloc) ≈ 2.0713528219684277e-5
-        @test sum(act_groundwater_abst) ≈ 4.71169680999897e-6
+        @test sum(surfacewater_allocation) ≈ 2.0713528219684277e-5
+        @test sum(actual_groundwater_abstraction) ≈ 4.71169680999897e-6
         @test paddy.variables.h[[25, 42, 45]] ≈
               [0.0429685848787047, 0.0, 0.0332318007065323]
 
@@ -46,15 +51,15 @@
         @test reservoir.variables.storage ≈ [1.5532942832524955e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
               [3.2489121397532985, 8.556416216129914, 28.17032166161074]
-        @test soil.variables.exfiltsatwater[27:31] ≈ [
+        @test soil.variables.exfiltration_saturated_water[27:31] ≈ [
             2.915452802472663e-7,
             5.847113515629848e-9,
             1.1744022745366517e-7,
             8.048163630421586e-8,
             2.249792843617095e-7,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 2.5641140612390893e-6
-        @test soil.variables.exfiltsatwater[17] == 0.0
+        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 2.5641140612390893e-6
+        @test soil.variables.exfiltration_saturated_water[17] == 0.0
         @test mean(river_flow.variables.q_average) ≈ 30.071991490895094
         @test maximum(river_flow.variables.q_average) ≈ 117.48258852034441
         @test soil.variables.total_storage[7503] ≈ 0.4729217078886107
@@ -65,9 +70,9 @@
 
     @testset "piave water demand and allocation second timestep" begin
         sum_total_alloc = sum(total_alloc)
-        @test sum(irri_alloc) + sum(nonirri_alloc) ≈ sum_total_alloc
-        @test sum(surfacewater_alloc) ≈ 1.9051757689751745e-5
-        @test sum(act_groundwater_abst) ≈ 4.0518489887643695e-6
+        @test sum(irrigation_allocation) + sum(non_irrigation_allocation) ≈ sum_total_alloc
+        @test sum(surfacewater_allocation) ≈ 1.9051757689751745e-5
+        @test sum(actual_groundwater_abstraction) ≈ 4.0518489887643695e-6
         @test paddy.variables.h[[25, 42, 45]] ≈
               [0.03899646776591514, 0.0, 0.02760963170377481]
         @test paddy.parameters.irrigation_trigger[[25, 42, 45]] == [1, 1, 1]
@@ -80,7 +85,7 @@
         @test reservoir.variables.storage ≈ [1.5529127318256468e8, 4.28e7, 7.16e7]
         @test reservoir.variables.outflow_average ≈
               [3.2489840968665207, 9.467087432483991, 38.61905891069846]
-        @test soil.variables.exfiltsatwater[27:33] ≈ [
+        @test soil.variables.exfiltration_saturated_water[27:33] ≈ [
             4.450632579987645e-7,
             2.1330559140556994e-8,
             1.9144110026163764e-7,
@@ -89,8 +94,8 @@
             2.107184034329379e-7,
             2.2676935706227792e-7,
         ]
-        @test maximum(soil.variables.exfiltsatwater) ≈ 3.877067765823678e-6
-        @test soil.variables.exfiltsatwater[17] == 0.0
+        @test maximum(soil.variables.exfiltration_saturated_water) ≈ 3.877067765823678e-6
+        @test soil.variables.exfiltration_saturated_water[17] == 0.0
         @test mean(river_flow.variables.q_average) ≈ 36.80765857144827
         @test maximum(river_flow.variables.q_average) ≈ 141.84332548772514
         @test soil.variables.total_storage[7503] ≈ 0.4634074094243159
