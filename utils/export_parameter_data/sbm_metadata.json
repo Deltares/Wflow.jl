@@ -181,7 +181,7 @@
   },
   "irrigated_non_paddy__gross_water_demand_volume_flux": {
     "unit": "mm Δt-1",
-    "default": 0.0,
+    "default": null,
     "fill": null,
     "type": "Float64",
     "description": "Irrigation (non-paddy) gross demand",
@@ -230,8 +230,8 @@
     "allow_output": true
   },
   "irrigated_paddy__gross_water_demand_volume_flux": {
-    "unit": "mm day-1",
-    "default": 0.0,
+    "unit": "mm Δt-1",
+    "default": null,
     "fill": null,
     "type": "Float64",
     "description": "Irrigation (paddy) gross demand",
@@ -910,7 +910,7 @@
     "allow_output": true
   },
   "soil_wet_root__sigmoid_function_shape_parameter": {
-    "unit": "-",
+    "unit": "mm-1",
     "default": -500.0,
     "fill": null,
     "type": "Float64",

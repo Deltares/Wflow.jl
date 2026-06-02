@@ -5,7 +5,7 @@ get_standard_name_map(::Type{<:SoilLossModel}) = sediment_standard_name_map
 get_standard_name_map(::Type{<:Domain}) = domain_standard_name_map
 get_standard_name_map(::Type{<:Routing}) = routing_standard_name_map
 
-const PARAMETER_TYPES = Union{Float64, Int, Bool, Nothing}
+const PARAMETER_TYPES = Union{Float64,Int,Bool,Nothing}
 
 """
 Metadata associated with parameters and variables.
@@ -13,6 +13,7 @@ Metadata associated with parameters and variables.
 # Arguments
 - `unit`: The unit of the parameter/variable in the Wflow input
 - `default`: The default (initial) value of the parameter/variable if it exists
+    Note: the defaults are NOT in SI units!
 - `fill`: Missing input values are replaced by this value if allow_missing == false
 - `type`: The output type of the data. Assumed to be `Float64` if it is not provided and cannot be derived
     from `default` or `fill`
@@ -24,10 +25,10 @@ Metadata associated with parameters and variables.
 - `tags`: Identifiers to filter parameters/variables for specific tables in the docs
 """
 @kwdef struct ParameterMetadata{
-    D <: PARAMETER_TYPES,
-    F <: PARAMETER_TYPES,
-    T <: PARAMETER_TYPES,
-    N <: Union{Symbol, Nothing},
+    D<:PARAMETER_TYPES,
+    F<:PARAMETER_TYPES,
+    T<:PARAMETER_TYPES,
+    N<:Union{Symbol,Nothing},
 }
     unit::Unit = EMPTY_UNIT
     default::D = nothing
@@ -50,7 +51,7 @@ Metadata associated with parameters and variables.
         allow_output,
         dimname::N,
         flags,
-    ) where {D, F, N}
+    ) where {D,F,N}
         if isnothing(type)
             type = if !isnothing(default)
                 D
@@ -62,7 +63,7 @@ Metadata associated with parameters and variables.
                 Float64
             end
         end
-        return new{D, F, type, N}(
+        return new{D,F,type,N}(
             unit,
             default,
             fill,
@@ -81,7 +82,7 @@ function get_metadata(
     name::AbstractString,
     types::Vararg{Type};
     kwargs...,
-)::Union{ParameterMetadata, Nothing}
+)::Union{ParameterMetadata,Nothing}
     metadata = nothing
     for type in types
         standard_name_map = get_standard_name_map(type)
@@ -97,13 +98,16 @@ function get_metadata(
     return metadata
 end
 
+get_metadata(name::AbstractString, land::L; kwargs...) where {L<:AbstractLandModel} =
+    get_metadata(name, L; kwargs...)
+
 function get_metadata(
     name::AbstractString,
-    land::AbstractLandModel;
+    land_type::Type{<:AbstractLandModel};
     kwargs...,
-)::Union{ParameterMetadata, Nothing}
+)::Union{ParameterMetadata,Nothing}
     # Check whether it is a land variable first
-    metadata = get(get_standard_name_map(land), name, nothing)
+    metadata = get(get_standard_name_map(land_type), name, nothing)
 
     if isnothing(metadata)
         # Then check other variable types
@@ -123,7 +127,7 @@ get_metadata(name::AbstractString, L::Type) = get_standard_name_map(L)[name]
 get_metadata(name::AbstractString) =
     get_metadata(name, map(d -> d[3], Wflow.STANDARD_NAME_MAPS)...)
 
-function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input = false)
+function get_field_in_model(model, name::AbstractString; check_allow_dynamic_input=false)
     # Scope metadata lookup to the model's land type to avoid ambiguity
     # between standard name maps (e.g. routing vs sediment)
     land = hasproperty(model, :land) ? model.land : nothing
@@ -148,6 +152,34 @@ function get_field_in_model(model, name::AbstractString; check_allow_dynamic_inp
     try
         return param(model, name), metadata
     catch
-        error("Couldn't obtain a field from this model specified by '$name'.")
+        error("Couldn't obtain a field from this model specified by `$name``.")
     end
 end
+
+to_proper_number_type(x::Missing, ::Type) = x
+to_proper_number_type(x::Bool, ::Type) = x
+to_proper_number_type(x::T, ::Type{T}) where {T} = x
+to_proper_number_type(x::Number, ::Type{T}) where {T<:Number} = T(x)
+# This method is only to avoid ambiguities
+to_proper_number_type(::Bool, ::Type{T}) where {T<:Number} = nothing
+
+"""
+NOTE: This function is only in-place if A already has the correct type
+"""
+function apply_unit_and_type_transform!(
+    A::AbstractArray,
+    metadata::ParameterMetadata;
+    dt_val=nothing,
+)
+    (; type, unit) = metadata
+    if eltype(A) != type
+        A = to_proper_number_type.(A, type)
+    end
+    return to_SI!(A, unit; dt_val)
+end
+
+unit_and_type_transform(x::Number, metadata::ParameterMetadata; dt_val=nothing) =
+    to_SI(metadata.type(x), metadata.unit; dt_val)
+
+apply_unit_and_type_transform!(x::Number, metadata::ParameterMetadata; kwargs...) =
+    unit_and_type_transform(x, metadata; kwargs...)

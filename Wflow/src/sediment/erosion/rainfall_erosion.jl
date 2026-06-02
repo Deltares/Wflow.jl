@@ -3,7 +3,7 @@ abstract type AbstractRainfallErosionModel end
 "Struct for storing rainfall erosion model variables"
 @with_data_lookup struct RainfallErosionModelVariables
     n::Int
-    # Total soil erosion rate [t dt-1] from rainfall (splash)
+    # Total soil erosion rate [kg s⁻¹] from rainfall (splash)
     "rainfall_soil_erosion__mass_flow_rate"
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
@@ -11,9 +11,9 @@ end
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
 @kwdef struct RainfallErosionEurosemBC
     n::Int
-    # precipitation [mm dt-1]
+    # precipitation [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Interception [mm dt-1]
+    # Interception [m s⁻¹]
     interception::Vector{Float64} = fill(MISSING_VALUE, n)
     # Waterlevel on land [m]
     waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
@@ -21,10 +21,10 @@ end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
 @with_data_lookup struct RainfallErosionEurosemParameters
-    # Soil detachability factor [g J-1]
+    # Soil detachability factor [kg (kg m² s⁻²)⁻¹]
     "soil_erosion__rainfall_soil_detachability_factor"
     soil_detachability::Vector{Float64}
-    # Exponent EUROSEM [-]
+    # Exponent EUROSEM [m⁻¹]
     "soil_erosion__eurosem_exponent"
     eurosem_exponent::Vector{Float64}
     # Canopy height [m]
@@ -157,7 +157,7 @@ end
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
 @kwdef struct RainfallErosionAnswersBC
     n::Int
-    # precipitation [mm dt-1]
+    # precipitation [m s⁻¹]
     precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -250,7 +250,6 @@ function update_rainfall_erosion_model!(
             usle_c[i],
             answers_rainfall_factor[i],
             parameters.area[i],
-            dt,
         )
     end
 end

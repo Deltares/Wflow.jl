@@ -4,6 +4,12 @@ Mapping of (CSDMS) standard names to model variables and units for models with a
 of type `SoilLossModel`.
 """
 const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
+    "atmosphere_water__precipitation_volume_flux" => ParameterMetadata(;
+        unit = Unit(; mm = 1, dt = -1),
+        description = "Precipitation",
+        allow_dynamic_input = true,
+        tags = [:atmospheric_forcing],
+    ),
     "soil_clay__mass_fraction" => ParameterMetadata(;
         default = 0.4,
         description = "Soil content clay",
@@ -41,7 +47,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:rainfall_erosion_input],
     ),
     "soil_erosion__eurosem_exponent" => ParameterMetadata(;
-        unit = Unit(; m = -1),
+        unit = Unit(; mm = -1),
         default = 2.0,
         description = "Exponent EUROSEM",
         tags = [:rainfall_erosion_input],

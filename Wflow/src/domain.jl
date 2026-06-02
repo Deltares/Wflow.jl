@@ -385,7 +385,7 @@ function get_landsurface_slope(dataset::NCDataset, config::Config, network::Netw
 end
 
 "Return river mask"
-function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)
+function river_mask(dataset::NCDataset, config::Config, network::NetworkLand)::Vector{Bool}
     river_2d = ncread(dataset, config, "river_location__mask", Domain)
     river_location = river_2d[network.indices]
     return river_location

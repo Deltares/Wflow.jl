@@ -30,7 +30,7 @@ function run_piave(model, steps)
         Wflow.run_timestep!(model)
         ssf_storage[i] = mean(model.routing.subsurface_flow.variables.storage)
         riv_storage[i] = mean(model.routing.river_flow.variables.storage)
-        q[i] = model.routing.river_flow.variables.q_av[1]
+        q[i] = model.routing.river_flow.variables.q_average[1]
     end
     return q, riv_storage, ssf_storage
 end
@@ -67,7 +67,7 @@ function homogenous_aquifer(nrow, ncol)
     timestepping = Wflow.TimeStepping()
 
     parameters = Wflow.GroundwaterFlowParameters(;
-        k = fill(10.0, ncell),
+        k = fill(10.0 / 86400.0, ncell),
         top = fill(10.0, ncell),
         bottom = fill(0.0, ncell),
         area = fill(100.0, ncell),
@@ -80,9 +80,7 @@ function homogenous_aquifer(nrow, ncol)
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
         q_net = fill(0.0, ncell),
-        q_in_av = fill(0.0, ncell),
-        q_av = fill(0.0, ncell),
-        exfiltwater = fill(0.0, ncell),
+        exfiltwater_cumulative = fill(0.0, ncell),
     )
 
     gwf_model = Wflow.GroundwaterFlowModel(;
@@ -206,4 +204,38 @@ data required in certain functions has to be supplied (e.g. in the form of Named
     allocation::A = nothing
     boundary_conditions::B = nothing
     variables::V = nothing
+end
+
+no_nan(x::Float64) = isnan(x) ? 0.0 : x
+get_mean(f::Vector{Float64}) = mean(filter(!isnan, f)) |> no_nan
+get_mean(f::Vector{SVector{N, Float64}}) where {N} =
+    no_nan.(
+        SVector{N}([mean(filter(!isnan, [v[i] for v in f])) for i in 1:length(first(f))])
+    )
+
+function get_means(obj)
+    d = Dict{Symbol, Union{Float64, SVector{N, Float64} where N}}()
+    for s in propertynames(obj)
+        f = getfield(obj, s)
+        if f isa Union{Vector{Float64}, Vector{SVector{N, Float64}} where {N}}
+            d[s] = get_mean(f)
+        end
+    end
+    return d
+end
+
+function test_means(obj::Any, means::Dict{Symbol})
+    failed = Symbol[]
+    for (s, v) in means
+        v_obj = get_mean(getfield(obj, s))
+        if !(v_obj ≈ v)
+            push!(failed, s)
+            err = v - v_obj
+            fac = v ./ v_obj
+            println("-"^50)
+            println("$s: err = (v_expected - v_actual) = ($v - $v_obj) = $err")
+            @show fac
+        end
+    end
+    return isempty(failed)
 end

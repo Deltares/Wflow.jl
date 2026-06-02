@@ -56,6 +56,8 @@ function OverlandFlowSedimentModel(
         data_lookup,
     )
 
+    n = length(indices)
+
     if do_river || land_transport == LandTransportType.yalinpart
         sediment_flux = SedimentLandTransportDifferentiationModel(indices; data_lookup)
         to_river = SedimentToRiverDifferentiationModel(indices; data_lookup)
@@ -64,11 +66,7 @@ function OverlandFlowSedimentModel(
         to_river = SedimentToRiverModel(indices; data_lookup)
     end
 
-    overland_flow_sediment = OverlandFlowSedimentModel{
-        typeof(transport_capacity),
-        typeof(sediment_flux),
-        typeof(to_river),
-    }(;
+    overland_flow_sediment = OverlandFlowSedimentModel(;
         hydrological_forcing,
         transport_capacity,
         sediment_flux,
@@ -103,7 +101,7 @@ function update_overland_flow_model!(
         overland_flow_model.transport_capacity,
     )
     # Compute transport
-    update_sediment_overland_model!(overland_flow_model.sediment_flux, domain.network)
+    update_sediment_overland_model!(overland_flow_model.sediment_flux, domain.network, dt)
 
     # Update boundary conditions before computing sediment reaching the river
     update_bc_sediment_to_river_model!(
@@ -114,6 +112,7 @@ function update_overland_flow_model!(
     update_sediment_to_river_model!(
         overland_flow_model.to_river,
         domain.parameters.river_location,
+        dt,
     )
 end
 
@@ -178,7 +177,7 @@ function RiverSedimentModel(
     # Concentrations
     concentrations = SedimentConcentrationsRiverModel(dataset, config, indices; data_lookup)
 
-    river_sediment = RiverSedimentModel(;
+    river_sediment = RiverSedimentModel(
         hydrological_forcing,
         transport_capacity,
         potential_erosion,

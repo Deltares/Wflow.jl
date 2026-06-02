@@ -3,50 +3,49 @@ abstract type AbstractSnowModel end
 "Struct for storing snow model variables"
 @with_data_lookup struct SnowVariables
     n::Int
-    # Snow storage [mm]
+    # Snow storage [m]
     "snowpack_dry_snow__leq_depth"
     snow_storage::Vector{Float64} = zeros(n)
-    # Liquid water content in the snow pack [mm]
+    # Liquid water content in the snow pack [m]
     "snowpack_liquid_water__depth"
     snow_water::Vector{Float64} = zeros(n)
-    # Snow water equivalent (SWE) [mm]
+    # Snow water equivalent (SWE) [m]
     "snowpack__leq_depth"
     swe::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Snow melt [mm Δt⁻¹]
+    # Snow melt [m s⁻¹]
     "snowpack_meltwater__volume_flux"
     snow_melt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Runoff from snowpack [mm Δt⁻¹]
-    "snowpack_water__runoff_volume_flux"
+    # Runoff from snowpack [m s⁻¹]
     runoff::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Lateral snow (SWE) transport from upstreams cells [mm Δt⁻¹]
+    # Lateral snow (SWE) transport from upstreams cells [m s⁻¹]
     snow_in::Vector{Float64} = zeros(n)
-    # Lateral snow (SWE) transport out of a cell [mm Δt⁻¹]
+    # Lateral snow (SWE) transport out of a cell [m s⁻¹]
     snow_out::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing snow model boundary conditions"
 @kwdef struct SnowBC
     n::Int
-    # Effective precipitation [mm Δt⁻¹]
+    # Effective precipitation [m s⁻¹]
     effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Snow precipitation [mm Δt⁻¹]
+    # Snow precipitation [m s⁻¹]
     snow_precip::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Liquid precipitation [mm Δt⁻¹]
+    # Liquid precipitation [m s⁻¹]
     liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing snow HBV model parameters"
 @with_data_lookup struct SnowHbvParameters
-    # Degree-day factor [mm ᵒC⁻¹ Δt⁻¹]
+    # Degree-day factor [m K⁻¹ s⁻¹]
     "snowpack__degree_day_coefficient"
     cfmax::Vector{Float64}
-    # Threshold temperature for snowfall [ᵒC]
+    # Threshold temperature for snowfall [K]
     "atmosphere_air__snowfall_temperature_threshold"
     tt::Vector{Float64}
-    # Threshold temperature interval length [ᵒC]
+    # Threshold temperature interval length [K]
     "atmosphere_air__snowfall_temperature_interval"
     tti::Vector{Float64}
-    # Threshold temperature for snowmelt [ᵒC]
+    # Threshold temperature for snowmelt [K]
     "snowpack__melting_temperature_threshold"
     ttm::Vector{Float64}
     # Water holding capacity as fraction of current snow pack [-]
@@ -70,18 +69,16 @@ end
 function SnowHbvParameters(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second;
+    indices::Vector{CartesianIndex{2}};
     data_lookup::DataLookup = DataLookup(),
 )
-    cfmax =
-        ncread(
-            dataset,
-            config,
-            "snowpack__degree_day_coefficient",
-            LandHydrologySBM;
-            sel = indices,
-        ) .* (dt / BASETIMESTEP)
+    cfmax = ncread(
+        dataset,
+        config,
+        "snowpack__degree_day_coefficient",
+        LandHydrologySBM;
+        sel = indices,
+    )
     tt = ncread(
         dataset,
         config,
@@ -118,12 +115,11 @@ end
 function SnowHbvModel(
     dataset::NCDataset,
     config::Config,
-    indices::Vector{CartesianIndex{2}},
-    dt::Second;
+    indices::Vector{CartesianIndex{2}};
     data_lookup::DataLookup = DataLookup(),
 )
     n = length(indices)
-    parameters = SnowHbvParameters(dataset, config, indices, dt; data_lookup)
+    parameters = SnowHbvParameters(dataset, config, indices; data_lookup)
     variables = SnowVariables(data_lookup; n)
     snow_model = SnowHbvModel(; n, parameters, variables)
     return snow_model
@@ -146,12 +142,12 @@ end
 function update_snow_model!(
     snow_model::SnowHbvModel,
     atmospheric_forcing::AtmosphericForcing,
+    dt::Float64,
 )
-    (; boundary_conditions, parameters, variables) = snow_model
-    (; snow_storage, snow_water, swe, snow_melt, runoff) = variables
-    (; effective_precip, snow_precip, liquid_precip) = boundary_conditions
-    (; tt, tti, ttm, cfmax, whc) = parameters
     (; temperature) = atmospheric_forcing
+    (; snow_storage, snow_water, swe, snow_melt, runoff) = snow_model.variables
+    (; effective_precip, snow_precip, liquid_precip) = snow_model.boundary_conditions
+    (; tt, tti, ttm, cfmax, whc) = snow_model.parameters
 
     n = length(temperature)
     threaded_foreach(1:n; basesize = 1000) do i
@@ -168,14 +164,16 @@ function update_snow_model!(
             ttm[i],
             cfmax[i],
             whc[i],
+            dt,
         )
     end
     return nothing
 end
 
 function update_snow_model!(
-    snow_model::NoSnowModel,
+    model::NoSnowModel,
     atmospheric_forcing::AtmosphericForcing,
+    dt::Float64,
 )
     return nothing
 end
