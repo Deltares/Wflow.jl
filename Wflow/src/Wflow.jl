@@ -336,10 +336,10 @@ function run!(model::Model; close_files = true)
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
     # write output state netCDF
-    if !isnothing(writer.state_nc_path)
-        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
+    if !isnothing(writer.endstate_writer.output_path)
+        @info "Write output states to netCDF file `$(writer.endstate_writer.output_path)`."
     end
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    write_netcdf_timestep(model, writer.endstate_writer)
 
     reset_clock!(model.clock, config)
 
@@ -349,13 +349,18 @@ function run!(model::Model; close_files = true)
         Wflow.close_files(model; delete_output = false)
     end
 
-    # copy TOML to dir_output, to archive what settings were used
+    # Write config to dir_output, to archive what settings were used
     if !isnothing(config.dir_output)
         src = normpath(config.path)
         dst = output_path(config, basename(src))
-        if src != dst
-            @debug "Copying TOML file." src dst
-            cp(src, dst; force = true)
+
+        if src == dst
+            @debug "Not writing config as the input path is equal to the output path."
+        else
+            @debug "Writing configuration." dst
+            open(dst, "w") do io
+                TOML.print(io, to_dict(config); sorted = true)
+            end
         end
     end
     return nothing

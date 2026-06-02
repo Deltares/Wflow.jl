@@ -103,7 +103,7 @@ pixi run julia --project=Wflow -e 'using Pkg; Pkg.test(test_args=[\"unit\"])'
 ## Code style (mandatory)
 - Multiple dispatch; prefer immutable structs; `@kwdef` for defaults
 - Precise argument types in signatures
-- Docstrings on all computational code specifying units of all variables
+- Docstrings on all computational code specifying units of all variables only if the units are not clear from structs
 - No single-symbol iteration variables — use descriptive `*_idx` names
 - Minimize function arguments; pass structs, unpack only at lowest level; no `NamedTuple` wrappers
 - Code must be clear from hydrological, mathematical, and CS perspectives
@@ -117,3 +117,6 @@ pixi run julia --project=Wflow -e 'using Pkg; Pkg.test(test_args=[\"unit\"])'
 ## Documentation
 - Quarto-based; Julia code blocks execute during render using `docs/docs_utils.jl`
 - Keep non-executed example code in sync with actual source files
+
+## This file
+- When making changes to the code, make sure this file remains up to date

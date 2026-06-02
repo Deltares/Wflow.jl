@@ -3,7 +3,7 @@ abstract type AbstractTransportCapacityModel end
 "Struct to store total transport capacity model variables"
 @with_kw struct TransportCapacityModelVariables
     n::Int
-    # Total sediment transport capacity [t dt-1]
+    # Total sediment transport capacity [kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -38,7 +38,7 @@ end
 
 "Struct to store Govers overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityGoversParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
     # Govers transport capacity coefficient [-]
     c_govers::Vector{Float64}
@@ -124,9 +124,9 @@ end
 
 "Struct to store Yalin overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityYalinParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Particle mean diameter [mm]
+    # Particle mean diameter [m]
     d50::Vector{Float64}
 end
 
@@ -146,7 +146,7 @@ function TransportCapacityYalinParameters(
         sel = indices,
     )
 
-    tc_parameters = TransportCapacityYalinParameters(; density = density, d50 = d50)
+    tc_parameters = TransportCapacityYalinParameters(; density, d50)
 
     return tc_parameters
 end
@@ -202,33 +202,33 @@ end
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
 @with_kw struct TransportCapacityYalinDifferentiationModelVariables
     n::Int
-    # Total sediment transport capacity [t dt-1]
+    # Total sediment transport capacity [kg s⁻¹]
     sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity clay [t dt-1]
+    # Transport capacity clay [kg s⁻¹]
     clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity silt [t dt-1]
+    # Transport capacity silt [kg s⁻¹]
     silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity sand [t dt-1]
+    # Transport capacity sand [kg s⁻¹]
     sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity small aggregates [t dt-1]
+    # Transport capacity small aggregates [kg s⁻¹]
     small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Transport capacity large aggregates [t dt-1]
+    # Transport capacity large aggregates [kg s⁻¹]
     large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
 @with_kw struct TransportCapacityYalinDifferentiationParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Clay mean diameter [μm]
+    # Clay mean diameter [m]
     median_diameter_clay::Vector{Float64}
-    # Silt mean diameter [μm]
+    # Silt mean diameter [m]
     median_diameter_silt::Vector{Float64}
-    # Sand mean diameter [μm]
+    # Sand mean diameter [m]
     median_diameter_sand::Vector{Float64}
-    # Small aggregates mean diameter [μm]
+    # Small aggregates mean diameter [m]
     median_diameter_small_aggregates::Vector{Float64}
-    # Large aggregates mean diameter [μm]
+    # Large aggregates mean diameter [m]
     median_diameter_large_aggregates::Vector{Float64}
 end
 
@@ -240,12 +240,9 @@ function TransportCapacityYalinDifferentiationParameters(
 )
     density =
         ncread(dataset, config, "sediment__particle_density", SoilLossModel; sel = indices)
-    median_diameter_clay =
-        ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
-    median_diameter_silt =
-        ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
-    median_diameter_sand =
-        ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_clay = ncread(dataset, config, "clay__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_silt = ncread(dataset, config, "silt__mean_diameter", SoilLossModel; sel = indices)
+    median_diameter_sand = ncread(dataset, config, "sand__mean_diameter", SoilLossModel; sel = indices)
     median_diameter_small_aggregates = ncread(
         dataset,
         config,
@@ -301,14 +298,8 @@ function update_transport_capacity_model!(
     dt::Float64,
 )
     (; q, waterlevel) = transport_capacity_model.boundary_conditions
-    (;
-        density,
-        median_diameter_clay,
-        median_diameter_silt,
-        median_diameter_sand,
-        median_diameter_small_aggregates,
-        median_diameter_large_aggregates,
-    ) = transport_capacity_model.parameters
+    (; density, median_diameter_clay, median_diameter_silt, median_diameter_sand, median_diameter_small_aggregates, median_diameter_large_aggregates) =
+        transport_capacity_model.parameters
     (; sediment_transport_capacity, clay, silt, sand, small_aggregates, large_aggregates) =
         transport_capacity_model.variables
 
@@ -386,16 +377,15 @@ function update_transport_capacity_model!(
             dtot,
             dt,
         )
-        sediment_transport_capacity[i] =
-            clay[i] + silt[i] + sand[i] + small_aggregates[i] + large_aggregates[i]
+        sediment_transport_capacity[i] = clay[i] + silt[i] + sand[i] + small_aggregates[i] + large_aggregates[i]
     end
 end
 
 "Struct to store common river transport capacity model parameters"
 @with_kw struct TransportCapacityRiverParameters
-    # Particle density [kg m-3]
+    # Particle density [kg m⁻³]
     density::Vector{Float64}
-    # Particle mean diameter [mm]
+    # Particle mean diameter [m]
     d50::Vector{Float64}
 end
 

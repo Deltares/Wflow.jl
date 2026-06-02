@@ -1,4 +1,4 @@
-# NOTE: The order of the entries determines the order in the docs tables
+﻿# NOTE: The order of the entries determines the order in the docs tables
 """
 Mapping of (CSDMS) standard names to the metadata associated with the corresponding
 variable or parameter, for models of type `LandHydrologySBM`. For more details and
@@ -210,14 +210,12 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     "irrigated_non_paddy__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.nonpaddy.variables.demand_gross),
         unit = Unit(; mm = 1, dt = -1),
-        default = 0.0,
         description = "Irrigation (non-paddy) gross demand",
         tags = [:demand_non_paddy_irrigation_output],
     ),
     "irrigated_paddy__gross_water_demand_volume_flux" => ParameterMetadata(;
         lens = @optic(_.land.demand.paddy.variables.demand_gross),
-        unit = Unit(; mm = 1, d = -1),
-        default = 0.0,
+        unit = Unit(; mm = 1, dt = -1),
         description = "Irrigation (paddy) gross demand",
         tags = [:demand_paddy_irrigation_output],
     ),
@@ -270,9 +268,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         tags = [:soil_output],
     ),
     "land_surface_water__abstraction_volume_flux" => ParameterMetadata(;
-        lens = @optic(
-            _.routing.river_flow.allocation.variables.actual_surfacewater_abstraction
-        ),
+        lens = @optic(_.routing.river_flow.allocation.variables.actual_surfacewater_abstraction),
         unit = Unit(; mm = 1, dt = -1),
         description = "Actual surface water abstraction",
         tags = [:demand_allocation_output],
@@ -442,9 +438,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "soil_water__vertical_saturated_hydraulic_conductivity_scale_parameter" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.land.soil.parameters.kv_profile.hydraulic_conductivity_scale_parameter
-            ),
+            lens = @optic(_.land.soil.parameters.kv_profile.hydraulic_conductivity_scale_parameter),
             unit = Unit(; mm = -1),
             description = "Scaling parameter controlling decline of vertical saturated hydraulic conductivity with depth",
             tags = [:soil_input],
@@ -490,6 +484,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
         ),
     "soil_wet_root__sigmoid_function_shape_parameter" => ParameterMetadata(;
         lens = @optic(_.land.soil.parameters.wet_root_distribution_parameter),
+        unit = Unit(; mm = -1),
         default = -500.0,
         description = "Controls sharpness of transition between fully wet and fully dry roots",
         tags = [:soil_input],
@@ -641,9 +636,7 @@ const sbm_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "vegetation_canopy_water__mean_evaporation_to_mean_precipitation_ratio" =>
         ParameterMetadata(;
-            lens = @optic(
-                _.land.interception.parameters.evaporation_to_precipitation_ratio
-            ),
+            lens = @optic(_.land.interception.parameters.evaporation_to_precipitation_ratio),
             default = 0.1,
             description = "Gash interception model parameter",
             tags = [:vegetation_input],

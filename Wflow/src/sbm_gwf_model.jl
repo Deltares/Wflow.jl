@@ -17,13 +17,13 @@ function Model(config::Config, type::SbmGwfModel)
     clock = Clock(config, reader)
 
     @info "General model settings." (;
-        snow = config.model.snow__flag,
-        gravitational_snow_transport = config.model.snow_gravitational_transport__flag,
-        glacier = config.model.glacier__flag,
-        reservoirs = config.model.reservoir__flag,
-        drains = config.model.drain__flag,
-        constanthead = config.model.constanthead__flag,
-        water_demand = do_water_demand(config),
+        snow=config.model.snow__flag,
+        gravitational_snow_transport=config.model.snow_gravitational_transport__flag,
+        glacier=config.model.glacier__flag,
+        reservoirs=config.model.reservoir__flag,
+        drains=config.model.drain__flag,
+        constanthead=config.model.constanthead__flag,
+        water_demand=do_water_demand(config),
     )...
 
     domain = Domain(dataset, config, type)
@@ -32,14 +32,14 @@ function Model(config::Config, type::SbmGwfModel)
     routing = Routing(dataset, config, domain, land_hydrology.soil, type)
     mass_balance = HydrologicalMassBalance(domain, routing.subsurface_flow, config)
 
-    modelmap = (land = land_hydrology, routing, mass_balance)
+    modelmap = (land=land_hydrology, routing, mass_balance)
     (; maximum_number_of_layers) = land_hydrology.soil.parameters
     writer = Writer(
         config,
         modelmap,
         domain,
         dataset;
-        extra_dim = (name = "layer", value = Float64.(1:(maximum_number_of_layers))),
+        extra_dim=(name="layer", value=Float64.(1:(maximum_number_of_layers))),
     )
     close(dataset)
 
@@ -61,7 +61,7 @@ function Model(config::Config, type::SbmGwfModel)
 end
 
 "update the `sbm_gwf` model type for a single timestep"
-function update_model!(model::AbstractModel{<:SbmGwfModel})
+function update_model!(model::AbstractModel{<:Union{SbmModel,SbmGwfModel}})
     (; routing, land, domain, clock, config) = model
     (; soil, runoff, demand) = land
     (; boundary_conditions) = routing.subsurface_flow
@@ -73,29 +73,28 @@ function update_model!(model::AbstractModel{<:SbmGwfModel})
     # set river stage and storage (groundwater boundary)
     update_river_storage_stage!(boundary_conditions.river, routing.river_flow)
     # determine stable time step for groundwater flow
-    dt_gwf = (dt / tosecond(BASETIMESTEP)) # dt is in seconds (Float64)
 
     # exchange of recharge between SBM soil model and groundwater flow domain
-    # recharge rate groundwater is required in units [m d⁻¹]
-    @. boundary_conditions.recharge.variables.rate =
-        soil.variables.recharge / 1000.0 * (1.0 / dt_gwf)
+    # recharge rate groundwater is required in units [m s⁻¹]
+    @. boundary_conditions.recharge.variables.rate = soil.variables.recharge
+
     if do_water_demand(config)
         @. boundary_conditions.recharge.variables.rate -=
-            land.allocation.variables.actual_groundwater_abstraction / 1000.0 *
-            (1.0 / dt_gwf)
+            land.allocation.variables.actual_groundwater_abstraction
     end
     # update groundwater domain
     update_subsurface_flow_model!(
         routing.subsurface_flow,
         soil,
         domain,
-        dt_gwf,
+        dt,
         config.model.conductivity_profile,
     )
     # update SBM soil model (runoff, unsaturated_layer_depth and saturated_water_depth)
     update_soil_water_storage!(
         soil,
-        (; runoff, demand, subsurface_flow = routing.subsurface_flow),
+        (; runoff, demand, subsurface_flow=routing.subsurface_flow),
+        dt,
     )
 
     surface_routing!(model)

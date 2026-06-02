@@ -50,7 +50,7 @@ end
 
 const Units = fieldnames(Unit)[2:(end - 1)]
 const N_UNITS = length(Units)
-const STANDARD_UNITS = [:K, :s, :m, :kg]
+const STANDARD_UNITS = [:K, :s, :m, :kg, :J]
 
 function Unit(absolute_temperature, powers_all...)
     to_SI_factor_without_dt = 1.0
@@ -118,8 +118,26 @@ const to_SI_data = @NamedTuple{factor::Float64, unit_SI::Unit}[
 ]
 
 # Predefined units used within the code
-const EMPTY_UNIT = Unit()
 const ABSOLUTE_DEGREES = Unit(; degC = 1, absolute_temperature = true)
+const EMPTY_UNIT = Unit()
+const MM_PER_MIN = Unit(; mm = 1, min = -1)
+const MM_PER_DAY = Unit(; mm = 1, d = -1)
+const MM_PER_HOUR = Unit(; mm = 1, h = -1)
+const MM_PER_DT = Unit(; mm = 1, dt = -1)
+const DAY = Unit(; d = 1)
+const HOUR = Unit(; h = 1)
+const MM = Unit(; mm = 1)
+const KG_PER_MIN = Unit(; kg = 1, min = -1)
+const M3_PER_MIN = Unit(; m = 3, min = -1)
+const TON_PER_DT = Unit(; t = 1, dt = -1)
+const GRAM_PER_L = Unit(; g = 1, L = -1)
+const CM_PER_S = Unit(; cm = 1, s = -1)
+const TON_PER_M = Unit(; t = 1, m = -1)
+const TON_PER_M3 = Unit(; t = 1, m = -3)
+const PPM = Unit(; ppm = 1)
+const M3_PER_DAY = Unit(; m = 3, d = -1)
+const PERCENTAGE = Unit(; percentage = 1)
+const MS = Unit(; ms = 1)
 
 function Base.:*(u1::Unit, u2::Unit)
     absolute_temperature_new = u1.absolute_temperature || u2.absolute_temperature
@@ -192,9 +210,6 @@ function to_string(unit::Unit; BMI_standard = false)
 
     # Positive powers
     for (symbol, powers_) in zip(symbols, powers)
-        if (symbol == :dt) && !BMI_standard
-            symbol = :Δt
-        end
         power = powers_[2]
         if !iszero(power)
             term = isone(power) ? symbol : "$symbol$(power_string(power, BMI_standard))"
@@ -277,12 +292,20 @@ end
 """
 Convert a value in SI unit to the given unit
 """
-function from_SI(x::AbstractFloat, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
+function to_SI(x::AbstractArray, unit::Unit; dt_val::Union{Nothing, Number} = nothing)
+    out = copy(x)
+    return to_SI!(out, unit; dt_val)
+end
+
+"""
+Convert a value in SI unit to the given unit
+"""
+function from_SI(x::AbstractFloat, unit::Unit; kwargs...)
     return if unit == ABSOLUTE_DEGREES
         # Special case for absolute temperatures in °C
         x - 273.15
     else
-        x / to_SI_factor(unit; dt_val)
+        x / to_SI_factor(unit; kwargs...)
     end
 end
 

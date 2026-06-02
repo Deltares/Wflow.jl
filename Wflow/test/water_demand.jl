@@ -4,47 +4,44 @@
     n = 1
     N = 3
 
-    nonpaddy_model = Wflow.NonPaddyModel(;
+    dt = 86400.0
+
+    model = Wflow.NonPaddyModel(;
+        n,
         parameters = Wflow.NonPaddyParameters(;
             irrigation_efficiency = [1.0],
-            maximum_irrigation_rate = [25.0],
+            maximum_irrigation_rate = [2.8935185185185185e-7],
             irrigation_areas = [true],
             irrigation_trigger = [true],
         ),
-        variables = Wflow.NonPaddyVariables(; n, demand_gross = [0.8604076280853505]),
+        variables = Wflow.NonPaddyVariables(; n, demand_gross = [9.958421621358223e-9]),
     )
 
     soil = init_sbm_soil_model(
         n,
         N;
         # Variables
-        unsaturated_layer_thickness = [SVector(50.0, 100.0, 50.0)],
+        unsaturated_layer_thickness = [SVector(0.05, 0.1, 0.05)],
         unsaturated_layer_depth = [SVector(0.0, 0.0, 0.0)],
         n_unsatlayers = [3],
-        h3 = [-934.9109542889025],
+        h3 = [-9.349109542889025],
         f_infiltration_reduction = [0.8],
         # Parameters
         maximum_number_of_layers = 3,
-        cumulative_layer_depth = [SVector(0.0, 50.0, 150.0, 200.0)],
-        brooks_corey_exponent = [
-            SVector(9.195682525634766, 9.297739028930664, 9.597416877746582),
-        ],
+        cumulative_layer_depth = [SVector(0.0, 0.05, 0.15, 0.2)],
+        brooks_corey_exponent = [SVector(9.195682525634766, 9.297739028930664, 9.597416877746582)],
         number_of_layers = [3],
         theta_s = [0.4417283535003662],
         theta_fc = [0.26063963369395],
         theta_r = [0.09082602709531784],
-        air_entry_pressure = [-10.0],
-        infiltration_capacity_soil = [334.45526123046875],
+        air_entry_pressure = [-0.1],
+        infiltration_capacity_soil = [3.87100996794524e-6],
         compacted_soil_area_fraction = [0.0],
         vegetation_parameter_set = Wflow.VegetationParameters(;
-            rooting_depth = [150.0],
+            rooting_depth = [0.15],
             leaf_area_index = nothing,
-            storage_wood = nothing,
-            light_extinction_coefficient = nothing,
-            storage_specific_leaf = nothing,
-            canopy_gap_fraction = [0.5],
-            maximum_canopy_storage = [0.0],
-            crop_coefficient = [1.0],
+            canopy_gap_fraction = [0.1],
+            maximum_canopy_storage = [0.2],
         ),
     )
 
@@ -52,32 +49,36 @@
     k = 1
 
     depletion, readily_available_water = Wflow.water_demand_root_zone(soil, i, k)
-    @test depletion ≈ 8.490680329931607
-    @test readily_available_water ≈ 4.435773290850226
-    irri_dem_gross = depletion
-    demand_gross = Wflow.compute_demand_gross(nonpaddy_model, soil, irri_dem_gross, i)
-    @test demand_gross ≈ 8.490680329931607
+    @test depletion ≈ 0.008490680329931607
+    @test readily_available_water ≈ 0.004435773290850226
+    irri_dem_gross = depletion / dt
+    demand_gross = Wflow.compute_demand_gross(model, soil, irri_dem_gross, i)
+    @test demand_gross ≈ 9.827176307791211e-8
 end
 
 @testitem "unit: update_demand_gross! (PaddyModel)" begin
-    variables = Wflow.PaddyVariables(; n = 1, h = [15.0])
+    dt = 86400.0
+    n = 1
+
+    variables = Wflow.PaddyVariables(; n, h = [0.015])
     parameters = Wflow.PaddyParameters(;
         irrigation_efficiency = [1.0],
-        maximum_irrigation_rate = [25.0],
+        maximum_irrigation_rate = [2.8935185185185185e-7],
         irrigation_areas = [true],
         irrigation_trigger = [true],
-        h_min = [20.0],
-        h_opt = [50.0],
-        h_max = [80.0],
+        h_min = [0.02],
+        h_opt = [0.05],
+        h_max = [0.08],
     )
-    paddy_model = Wflow.PaddyModel(; parameters, variables)
-    @test Wflow.compute_irrigation_depth(paddy_model, 1) ≈ 35.0
+    paddy_model = Wflow.PaddyModel(; n, parameters, variables)
+    @test Wflow.compute_irrigation_depth(paddy_model, 1) ≈ 0.035
 
-    Wflow.update_demand_gross!(paddy_model)
-    @test only(variables.demand_gross) ≈ 25.0
+    Wflow.update_demand_gross!(paddy_model, dt)
+    @test only(variables.demand_gross) ≈ 2.8935185185185185e-7
 end
 
 @testitem "unit: surface_water_allocation_local!" begin
+    dt = 86400.0
     include("testing_utils.jl")
     n = 1
 
@@ -85,11 +86,12 @@ end
         n,
         parameters = Wflow.AllocationLandParameters(;
             fraction_surfacewater_used = [1.0],
-            areas = [600_000.0],
+            areas = [600_000],
         ),
     )
 
-    demand_variables = Wflow.DemandVariables(; n, surfacewater_demand = [0.02])
+    demand_variables =
+        Wflow.DemandVariables(; n, surfacewater_demand = [2.3148148148148147e-10])
 
     river = DummyRiver(;
         allocation = (;
@@ -118,14 +120,16 @@ end
         dt,
     )
 
-    @test river.allocation.variables.actual_surfacewater_abstraction_volume |> only ≈ 12.0
+    @test river.allocation.variables.actual_surfacewater_abstraction_volume |> only ≈
+          0.0001388888888888889
     @test river.allocation.variables.available_surfacewater |> only ≈ 288.0
     @test demand_variables.surfacewater_demand |> only ≈ 0.0
-    @test river.allocation.variables.actual_surfacewater_abstraction |> only ≈ 0.02
-    @test allocation_model.variables.surfacewater_allocation |> only ≈ 0.02
+    @test river.allocation.variables.actual_surfacewater_abstraction |> only ≈ 2.3148148148148147e-10
+    @test allocation_model.variables.surfacewater_allocation |> only ≈ 2.3148148148148147e-10
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
+    dt = 86400.0
     include("testing_utils.jl")
 
     n = 3
@@ -137,9 +141,16 @@ end
         ),
     )
 
-    demand_variables = Wflow.DemandVariables(; n, surfacewater_demand = [0.65, 0.77, 0.331])
+    demand_variables = Wflow.DemandVariables(;
+        n,
+        surfacewater_demand = [
+            7.523148148148148e-9,
+            8.912037037037038e-9,
+            3.831018518518519e-9,
+        ],
+    )
 
-    river = DummyRiver(;
+    river_flow_model = DummyRiver(;
         allocation = (;
             variables = (;
                 actual_surfacewater_abstraction_volume = zeros(n),
@@ -174,8 +185,8 @@ end
     dt = 86400.0
 
     @test Wflow.available_surface_water!(
-        river.allocation.variables.available_surfacewater,
-        river.boundary_conditions.reservoir,
+        river_flow_model.allocation.variables.available_surfacewater,
+        river_flow_model.boundary_conditions.reservoir,
         domain.river.network.allocation_area_indices[1],
         domain.river.network.reservoir_indices,
         dt,
@@ -184,32 +195,33 @@ end
     Wflow.surface_water_allocation_area!(
         allocation_model,
         demand_variables,
-        river,
+        river_flow_model,
         domain,
         dt,
     )
 
-    @test river.allocation.variables.available_surfacewater ≈
+    @test river_flow_model.allocation.variables.available_surfacewater ≈
           [1.5220980030503854e8, 4.1944e7, 7.0168e7]
-    @test river.allocation.variables.actual_surfacewater_abstraction_volume ≈
-          [608.1360277590558, 167.5822285897938, 280.34784035115035]
-    @test river.allocation.variables.actual_surfacewater_abstraction ≈
-          [1.008608685367754, 0.27797992757124085, 0.46503184145095416]
-    @test allocation_model.variables.surfacewater_allocation ≈ [0.65, 0.77, 0.331]
+    @test river_flow_model.allocation.variables.actual_surfacewater_abstraction_volume ≈
+          [0.007038611432396478, 0.0019396091271966873, 0.0032447666707309066]
+    @test river_flow_model.allocation.variables.actual_surfacewater_abstraction ≈
+          [1.1673711636200856e-8, 3.2173602728152876e-9, 5.382312979756414e-9]
+    @test allocation_model.variables.surfacewater_allocation ≈
+          [7.523148148148148e-9, 8.912037037037038e-9, 3.831018518518519e-9]
 end
 
 @testitem "unit: groundwater_allocation_local!" begin
+    dt = 86400.0
+
     n = 1
 
     allocation_model = Wflow.AllocationLandModel(;
         n,
-        parameters = Wflow.AllocationLandParameters(;
-            fraction_surfacewater_used = [],
-            areas = [],
-        ),
+        parameters = Wflow.AllocationLandParameters(; fraction_surfacewater_used = [], areas = []),
     )
 
-    demand_variables = Wflow.DemandVariables(; n, total_gross_demand = [100.0])
+    demand_variables =
+        Wflow.DemandVariables(; n, total_gross_demand = [1.1574074074074074e-6])
 
     groundwater_storage = [315947.6]
 
@@ -220,33 +232,38 @@ end
         demand_variables,
         groundwater_storage,
         parameters,
+        dt,
     )
 
-    @test allocation_model.variables.actual_groundwater_abstraction_volume |> only ≈
-          59128.64
+    @test allocation_model.variables.actual_groundwater_abstraction_volume |> only ≈ 0.6843592592592592
     @test allocation_model.variables.available_groundwater |> only ≈ 177832.06
     @test demand_variables.groundwater_demand |> only == 0.0
-    @test allocation_model.variables.actual_groundwater_abstraction |> only ≈ 100.0
-    @test allocation_model.variables.groundwater_allocation |> only ≈ 100.0
+    @test allocation_model.variables.actual_groundwater_abstraction |> only ≈ 1.1574074074074074e-6
+    @test allocation_model.variables.groundwater_allocation |> only ≈ 1.1574074074074074e-6
 end
 
 @testitem "unit: groundwater_allocation_area!" begin
+    dt = 86400.0
+
     n = 3
 
     allocation_model = Wflow.AllocationLandModel(;
         n,
-        parameters = Wflow.AllocationLandParameters(;
-            fraction_surfacewater_used = [],
-            areas = [],
-        ),
+        parameters = Wflow.AllocationLandParameters(; fraction_surfacewater_used = [], areas = []),
         variables = Wflow.AllocationLandVariables(;
             n,
             available_groundwater = [303505.6, 308331.8, 306516.2],
         ),
     )
 
-    demand_variables =
-        Wflow.DemandVariables(; n, groundwater_demand = [23.23450, 12.261, 674.32])
+    demand_variables = Wflow.DemandVariables(;
+        n,
+        groundwater_demand = [
+            2.689178240740741e-7,
+            1.4190972222222222e-7,
+            7.80462962962963e-6,
+        ],
+    )
 
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
@@ -258,11 +275,12 @@ end
         ),
     )
 
-    Wflow.groundwater_allocation_area!(allocation_model, demand_variables, domain)
+    Wflow.groundwater_allocation_area!(allocation_model, demand_variables, domain, dt)
 
     @test allocation_model.variables.actual_groundwater_abstraction_volume ≈
-          [141483.796500842, 143733.60374878853, 142887.23392586954]
+          [1.6375439409819674, 1.6635833767220893, 1.653787429697564]
     @test allocation_model.variables.actual_groundwater_abstraction ≈
-          [234.58608886250354, 238.31636396144145, 236.91304717605513]
-    @test allocation_model.variables.groundwater_allocation ≈ [23.2345, 12.261, 674.32]
+          [2.715116769241939e-6, 2.7582912495537205e-6, 2.742049157130268e-6]
+    @test allocation_model.variables.groundwater_allocation ≈
+          [2.689178240740741e-7, 1.4190972222222222e-7, 7.80462962962963e-6]
 end

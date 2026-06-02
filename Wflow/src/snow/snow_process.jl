@@ -1,6 +1,6 @@
 
 """
-    snowpack_hbv(snow_storage, snow_water, snow_precip, liquid_precip, temperature, temperature_threshold_melt, degree_day_factor, water_holding_capacity; cfr = 0.05)
+    snowpack_hbv(snow_storage, snow_water, snow_precip, liquid_precip, temperature, temperature_threshold_melt, degree_day_factor, water_holding_capacity, dt; cfr = 0.05)
 
 HBV type snowpack modeling using a temperature degree factor.
 The refreezing efficiency factor `cfr` is set to 0.05.
@@ -15,11 +15,12 @@ The refreezing efficiency factor `cfr` is set to 0.05.
 - `degree_day_factor` (degree day factor, rate of snowmelt)
 - `water_holding_capacity` (water holding capacity of snow)
 - `cfr` refreeing efficiency constant in refreezing of liquied water in snow
+- `dt` timestep
 
 # Output
 - `snow`
 - `snowwater`
-- `swe` (snow water equivalent)
+- `snow_water_equivalent` (snow water equivalent)
 - `runoff`
 """
 function snowpack_hbv(
@@ -30,29 +31,35 @@ function snowpack_hbv(
     temperature,
     temperature_threshold_melt,
     degree_day_factor,
-    water_holding_capacity;
+    water_holding_capacity,
+    dt;
     cfr = 0.05,
 )
     if temperature > temperature_threshold_melt
         potential_snow_melt = degree_day_factor * (temperature - temperature_threshold_melt)
-        snow_melt = min(potential_snow_melt, snow_storage)
-        snow_storage -= snow_melt
-        snow_water += snow_melt
+        snow_melt = min(potential_snow_melt, snow_storage / dt)
+        snow_storage -= snow_melt * dt
+        snow_water += snow_melt * dt
     else
         snow_melt = 0.0
-        potential_refreezing =
-            degree_day_factor * cfr * (temperature_threshold_melt - temperature)
-        refreezing = min(potential_refreezing, snow_water)
+
+        potential_refreezing = degree_day_factor * cfr * (temperature_threshold_melt - temperature)
+        refreezing = min(potential_refreezing * dt, snow_water)
         snow_storage += refreezing
         snow_water -= refreezing
     end
 
-    snow_storage += snow_precip
-    snow_water += liquid_precip
+    snow_storage += snow_precip * dt # dry snow content
+    snow_water += liquid_precip * dt # free water content in snow
 
-    max_snow_water = snow_storage * water_holding_capacity
-    runoff = max(snow_water - max_snow_water, 0)
-    snow_water -= runoff
+    max_snow_water = snow_storage * water_holding_capacity  # max water in the snow
+
+    if snow_water > max_snow_water
+        runoff = (snow_water - max_snow_water) / dt
+        snow_water = max_snow_water
+    else
+        runoff = 0.0
+    end
     snow_water_equivalent = snow_water + snow_storage
 
     return snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff
@@ -76,31 +83,19 @@ All correction factors (RFCF and SFCF) are set to 1.
 - `snow_precip`
 - `liquid_precip`
 """
-function precipitation_hbv(
-    precipitation,
-    temperature,
-    temperature_interval_snowfall,
-    temperature_threshold_snowfall;
-    rfcf = 1.0,
-    sfcf = 1.0,
-)
+function precipitation_hbv(precipitation, temperature, temperature_interval_snowfall, temperature_threshold_snowfall; rfcf = 1.0, sfcf = 1.0)
     # fraction of precipitation which falls as rain
     rainfrac = if iszero(temperature_interval_snowfall)
         Float64(temperature > temperature_threshold_snowfall)
     else
-        frac =
-            (
-                temperature -
-                (temperature_threshold_snowfall - temperature_interval_snowfall / 2.0)
-            ) / temperature_interval_snowfall
-        min(frac, 1.0)
+        frac = (temperature - (temperature_threshold_snowfall - temperature_interval_snowfall / 2.0)) / temperature_interval_snowfall
+        clamp(frac, 0.0, 1.0)
     end
-    rainfrac = max(rainfrac, 0.0)
 
     # fraction of precipitation which falls as snow
     snowfrac = 1.0 - rainfrac
     # different correction for liquid_precip and snow_precip
-    snow_precip = snowfrac * sfcf * precipitation  # snow_precip depth
-    liquid_precip = rainfrac * rfcf * precipitation  # liquid_precip depth
+    snow_precip = snowfrac * sfcf * precipitation
+    liquid_precip = rainfrac * rfcf * precipitation
     return snow_precip, liquid_precip
 end

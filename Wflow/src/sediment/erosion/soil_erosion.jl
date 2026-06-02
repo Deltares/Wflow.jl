@@ -3,26 +3,26 @@ abstract type AbstractSoilErosionModel end
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
     n::Int
-    # Total soil erosion rate [t dt-1]
+    # Total soil erosion rate [kg s⁻¹]
     soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total clay erosion rate [t dt-1]
+    # Total clay erosion rate [kg s⁻¹]
     clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total silt erosion rate [t dt-1]
+    # Total silt erosion rate [kg s⁻¹]
     silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total sand erosion rate [t dt-1]
+    # Total sand erosion rate [kg s⁻¹]
     sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total small aggregates erosion rate [t dt-1]
+    # Total small aggregates erosion rate [kg s⁻¹]
     small_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Total large aggregates erosion rate [t dt-1]
+    # Total large aggregates erosion rate [kg s⁻¹]
     large_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
     n::Int
-    # Rainfall erosion rate [t dt-1]
+    # Rainfall erosion rate [kg s⁻¹]
     rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
-    # Overland flow erosion rate [t dt-1]
+    # Overland flow erosion rate [kg s⁻¹]
     overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
@@ -68,13 +68,9 @@ function SoilErosionParameters(
     )
     # Check that soil fractions sum to 1
     soil_fractions =
-        clay_fraction +
-        silt_fraction +
-        sand_fraction +
-        small_aggregates_fraction +
-        large_aggregates_fraction
-    if !all(f -> isapprox(f, 1.0; rtol = 1e-3), soil_fractions)
-        error("Particle fractions in the soil must sum to 1")
+        clay_fraction + silt_fraction + sand_fraction + small_aggregates_fraction + large_aggregates_fraction
+    if !all(hydraulic_conductivity_scale_parameter -> isapprox(hydraulic_conductivity_scale_parameter, 1.0; rtol = 1e-3), soil_fractions)
+        error("Particle fractions in the soil must sum to 1.")
     end
     soil_parameters = SoilErosionParameters(;
         clay_fraction,
@@ -110,11 +106,11 @@ end
 "Update boundary conditions for soil erosion model"
 function update_bc_soil_erosion_model!(
     soil_erosion_model::SoilErosionModel,
-    rainfall_erosion_model::AbstractRainfallErosionModel,
-    overland_flow_erosion_model::AbstractOverlandFlowErosionModel,
+    rainfall_erosion::AbstractRainfallErosionModel,
+    overland_flow_erosion::OverlandFlowErosionAnswersModel,
 )
-    re = rainfall_erosion_model.variables.soil_erosion_rate
-    ole = overland_flow_erosion_model.variables.soil_erosion_rate
+    re = rainfall_erosion.variables.soil_erosion_rate
+    ole = overland_flow_erosion.variables.soil_erosion_rate
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
     @. rainfall_erosion = re
     @. overland_flow_erosion = ole
@@ -123,13 +119,8 @@ end
 "Update soil erosion model for a single timestep"
 function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
-    (;
-        clay_fraction,
-        silt_fraction,
-        sand_fraction,
-        small_aggregates_fraction,
-        large_aggregates_fraction,
-    ) = soil_erosion_model.parameters
+    (; clay_fraction, silt_fraction, sand_fraction, small_aggregates_fraction, large_aggregates_fraction) =
+        soil_erosion_model.parameters
     (;
         soil_erosion_rate,
         clay_erosion_rate,

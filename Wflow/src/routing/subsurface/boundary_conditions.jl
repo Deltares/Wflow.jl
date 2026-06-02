@@ -21,17 +21,25 @@ function check_flux(flux::Float64, subsurface_flow_model::LateralSSFModel, index
 end
 
 @with_kw struct GwfRiverParameters
-    infiltration_conductance::Vector{Float64} # [m² d⁻¹]
-    exfiltration_conductance::Vector{Float64} # [m² d⁻¹]
+    # [m² s⁻¹]
+    infiltration_conductance::Vector{Float64}
+    # [m² s⁻¹]
+    exfiltration_conductance::Vector{Float64}
     bottom::Vector{Float64} # [m]
 end
 
 @with_kw struct GwfRiverVariables
     n::Int
-    stage::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
-    storage::Vector{Float64} = fill(MISSING_VALUE, n) # [m³]
-    flux::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
-    flux_av::Vector{Float64} = fill(MISSING_VALUE, n)  # [m³ d⁻¹]
+    # [m]
+    stage::Vector{Float64} = fill(MISSING_VALUE, n)
+    # [m³]
+    storage::Vector{Float64} = fill(MISSING_VALUE, n)
+    # [m³ s⁻¹]
+    flux::Vector{Float64} = fill(MISSING_VALUE, n)
+    # [m³]
+    flux_cumulative::Vector{Float64} = zeros(n)
+    # [m³ s⁻¹]
+    flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 @with_kw struct GwfRiverModel <: AbstractSubsurfaceFlowBC
@@ -90,20 +98,26 @@ function flux!(
         gwf_river_model.variables.flux[i] = flux
         subsurface_flow_model.variables.q_net_bnds[index] += flux
         gwf_river_model.variables.storage[i] -= dt * flux
-        gwf_river_model.variables.flux_av[i] += dt * flux
+        gwf_river_model.variables.flux_cumulative[i] += dt * flux
     end
     return nothing
 end
 
 @with_kw struct DrainageParameters
-    elevation::Vector{Float64} # [m]
-    conductance::Vector{Float64} # [m² d⁻¹]
+    # [m]
+    elevation::Vector{Float64}
+    # [m² s⁻¹]
+    conductance::Vector{Float64}
 end
 
 @with_kw struct DrainageVariables
     n::Int
-    flux::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
-    flux_av::Vector{Float64} = fill(MISSING_VALUE, n) # [m³ d⁻¹]
+    # [m³ s⁻¹]
+    flux::Vector{Float64} = fill(MISSING_VALUE, n)
+    # [m³ s⁻¹]
+    flux_average::Vector{Float64} = zeros(n)
+    # [m³]
+    flux_cumulative::Vector{Float64} = zeros(n)
 end
 
 @with_kw struct DrainageModel <: AbstractSubsurfaceFlowBC
@@ -141,20 +155,26 @@ function flux!(
         )
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         drainage_model.variables.flux[i] = flux
-        drainage_model.variables.flux_av[i] += dt * flux
+        drainage_model.variables.flux_cumulative[i] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
 end
 
 @with_kw struct HeadBoundaryParameters
-    conductance::Vector{Float64} # [m² d⁻¹]
+    # [m² s⁻¹]
+    conductance::Vector{Float64}
 end
 
 @with_kw struct HeadBoundaryVariables
-    head::Vector{Float64} # [m]
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    # [m]
+    head::Vector{Float64}
+    # [m³ s⁻¹]
+    flux::Vector{Float64}
+    # [m³]
+    flux_cumulative::Vector{Float64}
+    # [m³ s⁻¹]
+    flux_average::Vector{Float64}
 end
 
 @with_kw struct HeadBoundary <: AbstractSubsurfaceFlowBC
@@ -174,7 +194,7 @@ function flux!(
             headboundary.variables.head[i] - subsurface_flow_model.variables.head[index]
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         headboundary.variables.flux[i] = flux
-        headboundary.variables.flux_av[i] += dt * flux
+        headboundary.variables.flux_cumulative[i] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -182,9 +202,13 @@ end
 
 @with_kw struct RechargeVariables
     n::Int
-    rate::Vector{Float64} = fill(MISSING_VALUE, n) # [m d⁻¹]
-    flux::Vector{Float64} = zeros(n) # [m³ d⁻¹]
-    flux_av::Vector{Float64} = zeros(n) # [m³ d⁻¹]
+    # [m s⁻¹]
+    rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    # [m³ s⁻¹]
+    flux::Vector{Float64} = zeros(n)
+    flux_cumulative::Vector{Float64} = zeros(n)
+    # [m³ s⁻¹]
+    flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 @with_kw struct RechargeModel <: AbstractSubsurfaceFlowBC
@@ -205,16 +229,21 @@ function flux!(
             index,
         )
         recharge_model.variables.flux[i] = flux
-        recharge_model.variables.flux_av[i] += dt * flux
+        recharge_model.variables.flux_cumulative[i] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
 end
 
 @with_kw struct WellVariables
-    volumetric_rate::Vector{Float64} # [m³ d⁻¹]
-    flux::Vector{Float64} # [m³ d⁻¹]
-    flux_av::Vector{Float64} # [m³ d⁻¹]
+    # [m³ s⁻¹]
+    volumetric_rate::Vector{Float64}
+    # [m³ s⁻¹]
+    flux::Vector{Float64}
+    # [m³]
+    flux_cumulative::Vector{Float64}
+    # [m³ s⁻¹]
+    flux_average::Vector{Float64}
 end
 
 @with_kw struct WellModel <: AbstractSubsurfaceFlowBC
@@ -234,7 +263,7 @@ function flux!(
             index,
         )
         well_model.variables.flux[i] = flux
-        well_model.variables.flux_av[i] += dt * flux
+        well_model.variables.flux_cumulative[i] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
