@@ -3,9 +3,9 @@
 Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity
 profile `KhExponential`
 """
-function ssf_celerity(zi, slope, specific_yield, kh_profile::KhExponential, i)
-    (; kh_0, f) = kh_profile
-    celerity = (kh_0[i] * exp(-f[i] * zi) * slope) / specific_yield
+function ssf_celerity(water_table_depth, slope, specific_yield, kh_profile::KhExponential, i)
+    (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile
+    celerity = (kh_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * water_table_depth) * slope) / specific_yield
     return celerity
 end
 
@@ -13,11 +13,11 @@ end
 Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity
 profile `KhExponentialConstant`
 """
-function ssf_celerity(zi, slope, specific_yield, kh_profile::KhExponentialConstant, i)
+function ssf_celerity(water_table_depth, slope, specific_yield, kh_profile::KhExponentialConstant, i)
     (; z_exp) = kh_profile
-    (; kh_0, f) = kh_profile.exponential
-    z = zi < z_exp[i] ? zi : z_exp[i]
-    celerity = (kh_0[i] * exp(-f[i] * z) * slope) / specific_yield
+    (; kh_0, hydraulic_conductivity_scale_parameter) = kh_profile.exponential
+    z = water_table_depth < z_exp[i] ? water_table_depth : z_exp[i]
+    celerity = (kh_0[i] * exp(-hydraulic_conductivity_scale_parameter[i] * z) * slope) / specific_yield
     return celerity
 end
 
@@ -25,7 +25,7 @@ end
 Return kinematic wave `celerity` of lateral subsurface flow based on hydraulic conductivity
 profile `KhLayered`
 """
-function ssf_celerity(zi, slope, specific_yield, kh_profile::KhLayered, i)
+function ssf_celerity(water_table_depth, slope, specific_yield, kh_profile::KhLayered, i)
     (; kh) = kh_profile
     celerity = (slope * kh[i]) / specific_yield
     return celerity
@@ -43,13 +43,13 @@ function kw_ssf_newton_raphson(q, constant_term, celerity, dt, dx)
     celerity_inv = inv(celerity)
     df = dt_dx + celerity_inv
     while true
-        f = dt_dx * q + celerity_inv * q - constant_term
-        q -= (f / df)
+        hydraulic_conductivity_scale_parameter = dt_dx * q + celerity_inv * q - constant_term
+        q -= (hydraulic_conductivity_scale_parameter / df)
         if isnan(q)
             q = 0.0
         end
         q = max(q, KIN_WAVE_MIN_FLOW)
-        if (abs(f) <= epsilon) || (count >= max_iters)
+        if (abs(hydraulic_conductivity_scale_parameter) <= epsilon) || (count >= max_iters)
             break
         end
         count += 1
@@ -63,7 +63,7 @@ end
 Kinematic wave for lateral subsurface flow for a single cell and timestep. The hydraulic
 conductivity profile `kh_profile` is either `KhExponential` or `KhExponentialConstant`.
 
-Returns lateral subsurface flow `q`, water table depth `zi`, exfiltration rate `exfilt` and
+Returns lateral subsurface flow `q`, water table depth `water_table_depth`, exfiltration rate `exfilt` and
 net flux `net_flux`.
 """
 function kinematic_wave_ssf(
@@ -98,16 +98,16 @@ function kinematic_wave_ssf(
         # lower boundary q
         net_flux = (q_in + q_net_bnds - q) / (dw * dx)
         dh, exfilt = water_table_change(soil, net_flux, sy, i, dt)
-        zi = zi_prev - dh
-        if zi > d
-            q_excess = (dw * dx) * sy * (zi - d) / dt
+        water_table_depth = zi_prev - dh
+        if water_table_depth > d
+            q_excess = (dw * dx) * sy * (water_table_depth - d) / dt
             q = max(q - q_excess, KIN_WAVE_MIN_FLOW)
         end
-        zi = clamp(zi, 0.0, d)
+        water_table_depth = clamp(water_table_depth, 0.0, d)
         # constrain water table depth change to 0.1 m per (sub) timestep based on first `zi`
         # computation
         max_delta_zi = 0.1
-        its = Int(ceil(round(abs(zi - zi_prev) / max_delta_zi; sigdigits = 12)))
+        its = Int(ceil(round(abs(water_table_depth - zi_prev) / max_delta_zi; sigdigits = 12)))
         if its > 1
             dt_s = dt / its
             q_sum = 0.0
@@ -125,27 +125,27 @@ function kinematic_wave_ssf(
                 # lower boundary q
                 net_flux = (q_in + q_net_bnds - q) / (dw * dx)
                 dh, exfilt = water_table_change(soil, net_flux, sy, i, dt_s)
-                zi = zi_prev - dh
-                if zi > d
-                    q_excess = (dw * dx) * sy * (zi - d) / dt_s
+                water_table_depth = zi_prev - dh
+                if water_table_depth > d
+                    q_excess = (dw * dx) * sy * (water_table_depth - d) / dt_s
                     q = max(q - q_excess, KIN_WAVE_MIN_FLOW)
                 end
-                zi = clamp(zi, 0.0, d)
-                update_ustorelayerdepth!(soil, zi_prev, zi, i)
+                water_table_depth = clamp(water_table_depth, 0.0, d)
+                update_ustorelayerdepth!(soil, zi_prev, water_table_depth, i)
                 exfilt_sum += exfilt
                 net_flux_sum += net_flux
                 q_sum += q
                 q_prev = q
-                zi_prev = zi
+                zi_prev = water_table_depth
             end
             q = q_sum / its
             exfilt = exfilt_sum / its
             net_flux = net_flux_sum / its
-            dh = zi_start - zi
+            dh = zi_start - water_table_depth
         else
-            update_ustorelayerdepth!(soil, zi_prev, zi, i)
+            update_ustorelayerdepth!(soil, zi_prev, water_table_depth, i)
         end
-        return q, zi, exfilt, net_flux
+        return q, water_table_depth, exfilt, net_flux
     end
 end
 
@@ -155,7 +155,7 @@ end
 Kinematic wave for lateral subsurface flow for a single cell and timestep with a `KhLayered`
 conductivity profile, using (average) hydraulic conductivity `kh`.
 
-Return lateral subsurface flow `q`, water table depth `zi`, exfiltration rate `exfilt` and
+Return lateral subsurface flow `q`, water table depth `water_table_depth`, exfiltration rate `exfilt` and
 net flux `net_flux`.
 """
 function kinematic_wave_ssf(
@@ -190,17 +190,17 @@ function kinematic_wave_ssf(
         # boundary q
         net_flux = (q_in + q_net_bnds - q) / (dw * dx)
         dh, exfilt = water_table_change(soil, net_flux, sy, i, dt)
-        zi = zi_prev - dh
+        water_table_depth = zi_prev - dh
         sy_d = dh > 0.0 ? (net_flux - exfilt) * dt / dh : sy
-        if zi > d
-            q_excess = (dw * dx) * sy_d * (zi - d) / dt
+        if water_table_depth > d
+            q_excess = (dw * dx) * sy_d * (water_table_depth - d) / dt
             q = max(q - q_excess, KIN_WAVE_MIN_FLOW)
         end
-        zi = clamp(zi, 0.0, d)
+        water_table_depth = clamp(water_table_depth, 0.0, d)
 
         # update unsaturated zone
-        update_ustorelayerdepth!(soil, zi_prev, zi, i)
+        update_ustorelayerdepth!(soil, zi_prev, water_table_depth, i)
 
-        return q, zi, exfilt, net_flux
+        return q, water_table_depth, exfilt, net_flux
     end
 end

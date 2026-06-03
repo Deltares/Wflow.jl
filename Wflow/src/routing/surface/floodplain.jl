@@ -10,11 +10,16 @@ cumulative floodplain `storage` a floodplain profile as a function of `flood_dep
 derived with floodplain area `a` (cumulative) and wetted perimeter radius `p` (cumulative).
 """
 @with_kw struct FloodPlainProfile
-    depth::Vector{Float64}     # Flood depth [m]
-    storage::Matrix{Float64}   # Flood storage (cumulative) [m³]
-    width::Matrix{Float64}     # Flood width [m]
-    a::Matrix{Float64}         # Flow area (cumulative) [m²]
-    p::Matrix{Float64}         # Wetted perimeter (cumulative) [m]
+    # Flood depth [m]
+    depth::Vector{Float64}
+    # Flood storage (cumulative) [m³]
+    storage::Matrix{Float64}
+    # Flood width [m]
+    width::Matrix{Float64}
+    # Flow area (cumulative) [m²]
+    flow_area::Matrix{Float64}
+    # Wetted perimeter (cumulative) [m]
+    wetted_perimeter::Matrix{Float64}
 end
 
 "Initialize floodplain profile `FloodPlainProfile`"
@@ -43,13 +48,13 @@ function FloodPlainProfile(
     pushfirst!(flood_depths, 0.0)
     n_depths = length(flood_depths)
 
-    p = zeros(n_depths, n)
-    a = zeros(n_depths, n)
+    wetted_perimeter = zeros(n_depths, n)
+    flow_area = zeros(n_depths, n)
     segment_storage = zeros(n_depths, n)
     width = zeros(n_depths, n)
     width[1, :] = flow_width[1:n]
 
-    # determine flow area (a), width and wetted perimeter (p) FloodPlain
+    # determine flow area (a), width and wetted perimeter (p) FloodPlainModel
     h = diff(flood_depths)
     incorrect_vol = 0
     riv_cells = 0
@@ -74,17 +79,17 @@ function FloodPlainProfile(
                 end
                 width[j + 1, i] = width[j, i]
             end
-            a[j + 1, i] = width[j + 1, i] * h[j]
-            p[j + 1, i] = (width[j + 1, i] - width[j, i]) + 2.0 * h[j]
-            segment_storage[j + 1, i] = a[j + 1, i] * flow_length[i]
+            flow_area[j + 1, i] = width[j + 1, i] * h[j]
+            wetted_perimeter[j + 1, i] = (width[j + 1, i] - width[j, i]) + 2.0 * h[j]
+            segment_storage[j + 1, i] = flow_area[j + 1, i] * flow_length[i]
             if j == 1
                 # for interpolation wetted perimeter at flood depth 0.0 is required
-                p[j, i] = p[j + 1, i] - 2.0 * h[j]
+                wetted_perimeter[j, i] = wetted_perimeter[j + 1, i] - 2.0 * h[j]
             end
         end
 
-        p[2:end, i] = cumsum(p[2:end, i])
-        a[:, i] = cumsum(a[:, i])
+        wetted_perimeter[2:end, i] = cumsum(wetted_perimeter[2:end, i])
+        flow_area[:, i] = cumsum(flow_area[:, i])
         storage[:, i] = cumsum(segment_storage[:, i])
 
         riv_cells += riv_cell
@@ -103,21 +108,32 @@ function FloodPlainProfile(
     # set floodplain parameters for ghost points
     storage = hcat(storage, storage[:, index_pit])
     width = hcat(width, width[:, index_pit])
-    a = hcat(a, a[:, index_pit])
-    p = hcat(p, p[:, index_pit])
+    flow_area = hcat(flow_area, flow_area[:, index_pit])
+    wetted_perimeter = hcat(wetted_perimeter, wetted_perimeter[:, index_pit])
 
     # initialize floodplain profile parameters
-    profile = FloodPlainProfile(; storage, width, depth = flood_depths, a, p)
+    profile = FloodPlainProfile(;
+        storage,
+        width,
+        depth = flood_depths,
+        flow_area,
+        wetted_perimeter,
+    )
     return profile
 end
 
 "Struct to store floodplain flow model parameters on a staggered grid"
 @with_kw struct FloodPlainStaggeredParameters <: AbstractFloodPlainParameters
-    profile::FloodPlainProfile                  # floodplain profile
-    mannings_n::Vector{Float64} = Float64[]     # manning's roughness at edge [s m-1/3]
-    mannings_n_sq::Vector{Float64} = Float64[]  # manning's roughness squared at edge [(s m-1/3)2]
-    zb_max::Vector{Float64} = Float64[]         # maximum bankfull elevation at edge [m]
-    slope::Vector{Float64} = Float64[]          # slope at edge [-]
+    # floodplain profile
+    profile::FloodPlainProfile
+    # manning's roughness at edge [s m-1/3]
+    mannings_n::Vector{Float64} = Float64[]
+    # manning's roughness squared at edge [(s m-1/3)2]
+    mannings_n_sq::Vector{Float64} = Float64[]
+    # maximum bankfull elevation at edge [m]
+    zb_max::Vector{Float64} = Float64[]
+    # slope at edge [-]
+    slope_at_edge::Vector{Float64} = Float64[]
 end
 
 "Initialize floodplain flow model parameters on a staggered grid"
@@ -166,7 +182,7 @@ function FloodPlainStaggeredParameters(
         mannings_n = mannings_n_at_edge,
         mannings_n_sq = mannings_n_sq_at_edge,
         zb_max = zb_max_edge,
-        slope = slope_at_edge,
+        slope_at_edge,
     )
     return parameters
 end
@@ -176,20 +192,20 @@ end
     n::Int
     n_edges::Int
     # flow area at edge [m²]
-    a::Vector{Float64} = zeros(n_edges)
+    flow_area::Vector{Float64} = zeros(n_edges)
     # hydraulic radius at edge [m]
-    r::Vector{Float64} = zeros(n_edges)
+    hydraulic_radius::Vector{Float64} = zeros(n_edges)
     # water depth at edge [m]
-    hf::Vector{Float64} = zeros(n_edges)
+    water_depth_at_edge::Vector{Float64} = zeros(n_edges)
     # discharge at edge at previous time step
-    q0::Vector{Float64} = zeros(n_edges)
+    q_previous::Vector{Float64} = zeros(n_edges)
     # discharge at edge  [m³ s⁻¹]
     q::Vector{Float64} = zeros(n_edges)
     # cumulative discharge at edge [m³] for model timestep dt
     q_cumulative::Vector{Float64} = zeros(n_edges)
     # average discharge at edge [m³ s⁻¹] for model timestep dt
     q_average::Vector{Float64} = zeros(n_edges)
-    # edge index with `hf` [-] above depth threshold
+    # edge index with `water_depth_at_edge` [-] above depth threshold
     hf_index::Vector{Int} = zeros(Int, n_edges)
     # storage [m³]
     storage::Vector{Float64} = zeros(n)
@@ -270,7 +286,7 @@ end
 
 """
 Compute flood flow area (including area above channel) based on flow depth `h` and
-floodplain `depth`, `area` and `width` of a floodplain profile.
+floodplain `depth`, `flow_area` and `width` of a floodplain profile.
 """
 function compute_flood_flow_area(
     profile::FloodPlainProfile,
@@ -279,21 +295,19 @@ function compute_flood_flow_area(
     i1::Int,
     i2::Int,
 )
-    (; a, width, depth) = profile
-    dh = h - depth[i1]  # depth at i1
-    area = a[i1, idx] + (width[i2, idx] * dh) # area at i1, width at i2
-    return area
+    dh = h - profile.depth[i1]  # depth at i1
+    flow_area = profile.flow_area[i1, idx] + (profile.width[i2, idx] * dh) # area at i1, width at i2
+    return flow_area
 end
 
 """
 Compute floodplain wetted perimeter based on flow depth `h` and floodplain `depth` and
-wetted perimeter `p` of a floodplain profile.
+`wetted_perimeter` of a floodplain profile.
 """
 function compute_wetted_perimeter(profile::FloodPlainProfile, h::Float64, idx::Int, i1::Int)
-    (; p, depth) = profile
-    dh = h - depth[i1] # depth at i1
-    p = p[i1, idx] + 2.0 * dh # p at i1
-    return p
+    dh = h - profile.depth[i1] # depth at i1
+    wetted_perimeter = profile.wetted_perimeter[i1, idx] + 2.0 * dh # p at i1
+    return wetted_perimeter
 end
 
 "Compute flood depth by interpolating flood storage `flood_storage` using flood depth intervals."
@@ -325,12 +339,12 @@ end
 
 function active_floodplain_cells(river_flow_model)
     (; floodplain) = river_flow_model
-    (; hf) = river_flow_model.variables
+    (; water_depth_at_edge) = river_flow_model.variables
     (; active_e, h_thresh) = river_flow_model.parameters
 
     n = 0
     @inbounds for i in active_e
-        @inbounds if hf[i] > h_thresh
+        @inbounds if water_depth_at_edge[i] > h_thresh
             n += 1
             floodplain.variables.hf_index[n] = i
         else
