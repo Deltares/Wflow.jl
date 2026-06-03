@@ -35,6 +35,10 @@ subsurface_water__instantaneous_volume_flow_rate = "ssf"
 ### Fixed
 
 ### Changed
+- All internal computations now use standardized SI units (m, s, kg, J, K) consistently
+  throughout the codebase. Units are converted to/from the old units at I/O
+  boundaries. This generally does not change model results (units are converted back before
+  writing outputs), though small numerical differences may occur in some cases.
 - The configuration TOML file written to `dir_output` at the end of a simulation now
   reflects the (potentially modified) in-memory configuration instead of being a copy of the
   original input TOML file.

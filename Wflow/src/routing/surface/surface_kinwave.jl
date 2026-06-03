@@ -4,14 +4,28 @@ const BETA_KINWAVE = 0.6
 "Struct for storing variables for river flow model"
 @with_kw struct RiverFlowVariables <: AbstractRiverFlowVariables
     n::Int
-    q::Vector{Float64} = zeros(n)            # River discharge [m³ s⁻¹]
-    qlat::Vector{Float64} = zeros(n)         # Lateral inflow per unit length [m² s⁻¹]
-    qin::Vector{Float64} = zeros(n)          # River inflow from upstream cells [m³ s⁻¹]
-    qin_av::Vector{Float64} = zeros(n)       # Average river inflow from upstream cells [m³ s⁻¹] for model timestep Δt
-    q_av::Vector{Float64}                    # Average river channel (+ floodplain) discharge discharge [m³ s⁻¹] for model timestep Δt
-    q_channel_av::Vector{Float64}            # Average river channel discharge [m³ s⁻¹] (for model timestep Δt)
-    storage::Vector{Float64} = zeros(n)      # River kinematic wave storage [m³] (based on water depth h)
-    h::Vector{Float64} = zeros(n)            # River water depth [m]
+    # Discharge [m³ s⁻¹]
+    q::Vector{Float64} = zeros(n)
+    # Lateral inflow per unit length [m² s⁻¹]
+    qlat::Vector{Float64} = zeros(n)
+    # Inflow from upstream cells [m³ s⁻¹]
+    qin::Vector{Float64} = zeros(n)
+    # Cumulative inflow from upstream cells [m³] for model time step dt
+    qin_cumulative::Vector{Float64} = zeros(n)
+    # Average inflow from upstream cells  [m³ s⁻¹] for model time step dt
+    qin_average::Vector{Float64} = zeros(n)
+    # Cumulative river channel (+ floodplain) discharge [m³] for model timestep dt
+    q_cumulative::Vector{Float64} = zeros(n)
+    # Average river channel (+ floodplain) discharge [m³ s⁻¹] for model time step dt
+    q_average::Vector{Float64} = zeros(n)
+    # Cumulative river channel discharge [m³] (for model time step dt)
+    q_channel_cumulative::Vector{Float64} = q_cumulative
+    # Average river channel discharge [m³ s⁻¹] (for model time step dt)
+    q_channel_average::Vector{Float64} = q_average
+    # Kinematic wave storage [m³] (based on water depth h)
+    storage::Vector{Float64} = zeros(n)
+    # Water depth [m]
+    h::Vector{Float64} = zeros(n)
 end
 
 "Initialize Manning flow parameters"
@@ -106,12 +120,14 @@ function init_kinematic_wave_river_flow(
     allocation =
         do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
 
-    q_av = zeros(n)
-    variables = RiverFlowVariables(;
-        n,
-        q_av,
-        q_channel_av = config.model.floodplain_1d__flag ? zeros(n) : q_av,
-    )
+    variables = if config.model.floodplain_1d__flag
+        # When floodplain is enabled, q_channel fields must be separate from q fields
+        # because q_average will hold channel + floodplain combined discharge.
+        RiverFlowVariables(; n, q_channel_cumulative = zeros(n), q_channel_average = zeros(n))
+    else
+        # When floodplain is disabled, q_channel aliases q (they are identical)
+        RiverFlowVariables(; n)
+    end
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
     if config.model.floodplain_1d__flag
@@ -137,20 +153,35 @@ end
 "Struct for storing overland flow model variables"
 @with_kw struct OverLandFlowVariables <: AbstractOverlandFlowVariables
     n::Int
-    q::Vector{Float64} = zeros(n)            # Overland discharge [m³ s⁻¹]
-    qlat::Vector{Float64} = zeros(n)         # Lateral inflow per unit length [m² s⁻¹]
-    qin::Vector{Float64} = zeros(n)          # Overland inflow from upstream cells [m³ s⁻¹]
-    qin_av::Vector{Float64} = zeros(n)       # Average overland inflow from upstream cells [m³ s⁻¹] for model timestep Δt
-    q_av::Vector{Float64} = zeros(n)         # Average overland discharge [m³ s⁻¹] for model timestep Δt
-    storage::Vector{Float64} = zeros(n)      # Overland kinematic wave storage [m³] (based on water depth h)
-    h::Vector{Float64} = zeros(n)            # Overland water depth [m]
-    to_river::Vector{Float64} = zeros(n)     # Part of overland flow [m³ s⁻¹] that flows to the river
+    # Overland discharge [m³ s⁻¹]
+    q::Vector{Float64} = zeros(n)
+    # Lateral inflow per unit length [m² s⁻¹]
+    qlat::Vector{Float64} = zeros(n)
+    # Overland inflow from upstream cells [m³ s⁻¹]
+    qin::Vector{Float64} = zeros(n)
+    # Cumulative overland inflow from upstream cells [m³] for model time step dt
+    qin_cumulative::Vector{Float64} = zeros(n)
+    # Average overland inflow from upstream cells [m³ s⁻¹] for model timestep Δt
+    qin_average::Vector{Float64} = zeros(n)
+    # Cumulative overland discharge [m³] for model timestep dt
+    q_cumulative::Vector{Float64} = zeros(n)
+    # Average overland discharge [m³ s⁻¹] for model timestep Δt
+    q_average::Vector{Float64} = zeros(n)
+    # Overland kinematic wave storage [m³] (based on water depth h)
+    storage::Vector{Float64} = zeros(n)
+    # Overland water depth [m]
+    h::Vector{Float64} = zeros(n)
+    # Part of cumulative overland flow [m³ s⁻¹] that flows to the river
+    to_river_cumulative::Vector{Float64} = zeros(n)
+    # Part of average overland flow [m³ s⁻¹] that flows to the river
+    to_river_average::Vector{Float64} = zeros(n)
 end
 
 "Struct for storing overland flow model boundary conditions"
 @with_kw struct LandFlowBC <: AbstractOverlandFlowBC
     n::Int
-    inwater::Vector{Float64} = zeros(n) # Lateral inflow [m³ s⁻¹]
+    # Lateral inflow [m³ s⁻¹]
+    inwater::Vector{Float64} = zeros(n)
 end
 
 "Initialize kinematic wave overland flow model"
@@ -194,55 +225,67 @@ simulation timestep, during the timestep the total (weighted) sum is computed fr
 each internal timestep.
 """
 function set_reservoir_vars!(reservoir_model::ReservoirModel)
-    reservoir_model.boundary_conditions.inflow .= 0.0
-    reservoir_model.boundary_conditions.actual_external_abstraction_av .= 0.0
-    reservoir_model.variables.outflow_av .= 0.0
-    reservoir_model.variables.actevap .= 0.0
+    (; boundary_conditions, variables) = reservoir_model
+    (; inflow_cumulative, actual_external_abstraction_cumulative) = boundary_conditions
+    (; outflow_cumulative, actevap_cumulative) = variables
 
+    inflow_cumulative .= 0.0
+    actual_external_abstraction_cumulative .= 0.0
+    outflow_cumulative .= 0.0
+    actevap_cumulative .= 0.0
     return nothing
 end
-set_reservoir_vars!(reservoir_model) = nothing
+set_reservoir_vars!(reservoir_model::Any) = nothing
 
 """
 Helper function to compute the average of reservoir variables. This is done at the end of
 each simulation timestep.
 """
 function average_reservoir_vars!(reservoir_model::ReservoirModel, dt::Float64)
-    reservoir_model.variables.outflow_av ./= dt
-    reservoir_model.boundary_conditions.inflow ./= dt
-    reservoir_model.boundary_conditions.actual_external_abstraction_av ./= dt
+    (; variables, boundary_conditions) = reservoir_model
+    (; outflow_average, outflow_cumulative) = variables
+    (;
+        inflow_average,
+        inflow_cumulative,
+        actual_external_abstraction_average,
+        actual_external_abstraction_cumulative,
+    ) = boundary_conditions
 
+    @. outflow_average = outflow_cumulative / dt
+    @. inflow_average = inflow_cumulative / dt
+    @. actual_external_abstraction_average = actual_external_abstraction_cumulative / dt
     return nothing
 end
-average_reservoir_vars!(reservoir_model, dt) = nothing
+average_reservoir_vars!(reservoir::Any, dt::Float64) = nothing
 
 """
     set_flow_vars!(river_flow_model::AbstractRiverFlowModel)
 
-Helper functions to set river flow routing variables discharge and actual abstraction (based
+Helper functions to set cumulative river flow routing variables discharge and actual abstraction (based
 on external negative inflow) from river to zero. This is done at the start of each
 simulation timestep, during the timestep the total (weighted) sum is computed from values at
 each sub timestep.
 """
 function set_flow_vars!(river_flow_model::AbstractRiverFlowModel)
-    (; q_av) = river_flow_model.variables
-    (; actual_external_abstraction_av) = river_flow_model.boundary_conditions
-    q_av .= 0.0
-    actual_external_abstraction_av .= 0.0
+    (; q_cumulative) = river_flow_model.variables
+    (; actual_external_abstraction_cumulative) = river_flow_model.boundary_conditions
+    q_cumulative .= 0.0
+    actual_external_abstraction_cumulative .= 0.0
     return nothing
 end
 
 """
-    average_flow_vars!(river_flow::AbstractRiverFlowModel, dt::Float64)
+    average_flow_vars!(river_flow_model::AbstractRiverFlowModel, dt::Float64)
 
 Helper functions to compute average river flow routing variables. This is done at the end of
 each simulation timestep.
 """
 function average_flow_vars!(river_flow_model::AbstractRiverFlowModel, dt::Float64)
-    (; q_av) = river_flow_model.variables
-    (; actual_external_abstraction_av) = river_flow_model.boundary_conditions
-    q_av ./= dt
-    actual_external_abstraction_av ./= dt
+    (; q_average, q_cumulative) = river_flow_model.variables
+    (; actual_external_abstraction_average, actual_external_abstraction_cumulative) =
+        river_flow_model.boundary_conditions
+    @. q_average = q_cumulative / dt
+    @. actual_external_abstraction_average = actual_external_abstraction_cumulative / dt
     return nothing
 end
 
@@ -256,7 +299,8 @@ function kinwave_land_update!(
         domain.network
 
     (; alpha) = overland_flow_model.parameters
-    (; h, q, q_av, storage, qin, qin_av, qlat, to_river) = overland_flow_model.variables
+    (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat, to_river_cumulative) =
+        overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
     ns = length(order_of_subdomains)
@@ -269,8 +313,9 @@ function kinwave_land_update!(
                 # goes to the river (flow_fraction_to_river) and part goes to the surface
                 # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
                 # reservoir are excluded
-                to_river[v] +=
+                to_river_cumulative[v] +=
                     sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt
+
                 if surface_flow_width[v] > 0.0
                     qin[v] = sum_at(
                         i -> q[i] * (1.0 - flow_fraction_to_river[i]),
@@ -287,9 +332,9 @@ function kinwave_land_update!(
                 end
                 storage[v] = flow_length[v] * surface_flow_width[v] * h[v]
 
-                # average flow (here accumulated for model timestep Δt)
-                q_av[v] += q[v] * dt
-                qin_av[v] += qin[v] * dt
+                # average flow
+                q_cumulative[v] += q[v] * dt
+                qin_cumulative[v] += qin[v] * dt
             end
         end
     end
@@ -306,14 +351,22 @@ function update_overland_flow_model!(
 )
     (; inwater) = overland_flow_model.boundary_conditions
     (; flow_length) = domain.parameters
-    (; q_av, qlat, qin_av, to_river) = overland_flow_model.variables
+    (;
+        q_average,
+        q_cumulative,
+        qlat,
+        qin_average,
+        qin_cumulative,
+        to_river_average,
+        to_river_cumulative,
+    ) = overland_flow_model.variables
     (; adaptive) = overland_flow_model.timestepping
 
     @. qlat = inwater / flow_length
 
-    q_av .= 0.0
-    to_river .= 0.0
-    qin_av .= 0.0
+    q_cumulative .= 0.0
+    qin_cumulative .= 0.0
+    to_river_cumulative .= 0.0
 
     t = 0.0
     while t < dt
@@ -324,9 +377,10 @@ function update_overland_flow_model!(
         kinwave_land_update!(overland_flow_model, domain, dt_s)
         t += dt_s
     end
-    q_av ./= dt
-    to_river ./= dt
-    qin_av ./= dt
+
+    @. q_average = q_cumulative / dt
+    @. to_river_average = to_river_cumulative / dt
+    @. qin_average = qin_cumulative / dt
     return nothing
 end
 
@@ -338,7 +392,8 @@ function update_floodplain_model!(
     (; floodplain) = river_flow_model
     (; slope, flow_length) = domain.parameters
     (; profile, mannings_n) = floodplain.parameters
-    (; flow_capacity, h, q, q_av, qin, qin_av, storage) = floodplain.variables
+    (; flow_capacity, h, q, q_cumulative, qin, qin_cumulative, storage) =
+        floodplain.variables
 
     for i in eachindex(flow_capacity)
         if h[i] > 0.0
@@ -347,16 +402,17 @@ function update_floodplain_model!(
             wetted_perimeter = compute_wetted_perimeter(profile, h[i], i, i1)
             hydraulic_radius = flow_area/wetted_perimeter
             flow_capacity[i] =
-                manning_flow(mannings_n[i], hydraulic_radius, slope[i], flow_area) * dt
+                manning_flow(mannings_n[i], hydraulic_radius, slope[i], flow_area)
         else
             flow_capacity[i] = 0.0
         end
     end
-    q .= accucapacityflux(storage, domain.network, flow_capacity) # q/dt
-    q_av .+= q
-    q ./= dt # m3/s
+    q .= accucapacityflux(storage, domain.network, flow_capacity, dt)
+    @. q_cumulative += q * dt
+
     flux_in!(qin, q, domain.network)
-    @. qin_av = qin_av + qin * dt
+
+    @. qin_cumulative += qin * dt
     for i in eachindex(storage)
         h[i] = compute_flood_depth(profile, storage[i], flow_length[i], i)
     end
@@ -375,13 +431,12 @@ function update_reservoir_model!(
     network::NetworkRiver,
     v::Int,
     dt::Float64,
-    dt_forcing::Float64,
 )
     (; boundary_conditions, variables) = reservoir_model
     (; storage, outflow) = variables
     (;
         external_inflow,
-        actual_external_abstraction_av,
+        actual_external_abstraction_cumulative,
         inflow_overland,
         inflow_subsurface,
     ) = boundary_conditions
@@ -395,14 +450,13 @@ function update_reservoir_model!(
     inflow_ext = external_inflow[i]
     if inflow_ext < 0.0
         abstraction = min(-inflow_ext, (storage[i] / dt) * 0.98)
-        actual_external_abstraction_av[i] += abstraction * dt
+        actual_external_abstraction_cumulative[i] += abstraction * dt
         inflow = -abstraction
     else
         inflow = inflow_ext
     end
-
     net_inflow = q[v] + inflow_overland[i] + inflow_subsurface[i] + inflow
-    update_reservoir_model!(reservoir_model, i, net_inflow, dt, dt_forcing)
+    update_reservoir_model!(reservoir_model, i, net_inflow, dt)
 
     downstream_nodes = outneighbors(graph, v)
     n_downstream = length(downstream_nodes)
@@ -426,7 +480,6 @@ function kinwave_river_update!(
     river_flow_model::RiverFlowModel{<:KinematicWave},
     domain::DomainRiver,
     dt::Float64,
-    dt_forcing::Float64,
 )
     (; order_of_subdomains, order_subdomain, subdomain_indices, upstream_nodes) =
         domain.network
@@ -434,14 +487,14 @@ function kinwave_river_update!(
     (;
         reservoir,
         external_inflow,
-        actual_external_abstraction_av,
+        actual_external_abstraction_cumulative,
         abstraction,
         floodplain_water_exchange,
     ) = river_flow_model.boundary_conditions
 
     (; alpha) = river_flow_model.parameters
     (; flow_width, flow_length) = domain.parameters
-    (; h, q, q_av, storage, qin, qin_av, qlat) = river_flow_model.variables
+    (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat) = river_flow_model.variables
     (; floodplain) = river_flow_model
 
     ns = length(order_of_subdomains)
@@ -456,7 +509,7 @@ function kinwave_river_update!(
                 # If external_inflow < 0, abstraction is limited
                 if external_inflow[v] < 0.0
                     _abstraction = min(-external_inflow[v], (storage[v] / dt) * 0.80)
-                    actual_external_abstraction_av[v] += _abstraction * dt
+                    actual_external_abstraction_cumulative[v] += _abstraction * dt
                     _inflow = -_abstraction / flow_length[v]
                 else
                     _inflow = external_inflow[v] / flow_length[v]
@@ -485,16 +538,15 @@ function kinwave_river_update!(
                         domain.network,
                         v,
                         dt,
-                        dt_forcing,
                     )
                 end
                 # update h and storage
                 h[v] = flow_area / flow_width[v]
                 storage[v] = flow_length[v] * flow_area
 
-                # average variables (here accumulated for model timestep Δt)
-                q_av[v] += q[v] * dt
-                qin_av[v] += qin[v] * dt
+                # average variables
+                q_cumulative[v] += q[v] * dt
+                qin_cumulative[v] += qin[v] * dt
             end
         end
     end
@@ -545,24 +597,24 @@ function update_river_flow_model!(
     river_flow_model::RiverFlowModel{<:KinematicWave},
     domain::Domain,
     clock::Clock,
+    dt::Float64,
 )
     (; floodplain) = river_flow_model
     (; reservoir, inwater) = river_flow_model.boundary_conditions
     (; flow_length) = domain.river.parameters
-    (; qlat, qin_av) = river_flow_model.variables
+    (; qlat, qin_average, qin_cumulative) = river_flow_model.variables
     (; adaptive) = river_flow_model.timestepping
 
     @. qlat = inwater / flow_length
     set_flow_vars!(river_flow_model)
-    qin_av .= 0.0
+    qin_cumulative .= 0.0
     set_reservoir_vars!(reservoir)
     update_index_hq!(reservoir, clock)
     if !isnothing(floodplain)
-        floodplain.variables.q_av .= 0.0
-        floodplain.variables.qin_av .= 0.0
+        floodplain.variables.q_cumulative .= 0.0
+        floodplain.variables.qin_cumulative .= 0.0
     end
 
-    dt = tosecond(clock.dt)
     t = 0.0
     while t < dt
         dt_s =
@@ -570,28 +622,27 @@ function update_river_flow_model!(
             river_flow_model.timestepping.dt_fixed
         dt_s = check_timestepsize(dt_s, t, dt)
         river_floodplain_exchange!(river_flow_model, domain.river.parameters, dt_s)
-        kinwave_river_update!(river_flow_model, domain.river, dt_s, dt)
+        kinwave_river_update!(river_flow_model, domain.river, dt_s)
         update_floodplain_model!(river_flow_model, domain.river, dt)
         t += dt_s
     end
 
     average_reservoir_vars!(reservoir, dt)
     average_flow_vars!(river_flow_model, dt)
-    qin_av ./= dt
+    @. qin_average = qin_cumulative / dt
     if !isnothing(floodplain)
-        floodplain.variables.q_av ./= dt
-        river_flow_model.variables.q_channel_av .= river_flow_model.variables.q_av
-        river_flow_model.variables.q_av .=
-            river_flow_model.variables.q_channel_av .+ floodplain.variables.q_av
-        floodplain.variables.qin_av ./= dt
-        river_flow_model.variables.qin_av .=
-            river_flow_model.variables.qin_av .+ floodplain.variables.qin_av
+        v_floodplain = river_flow_model.floodplain.variables
+        v_river = river_flow_model.variables
+
+        @. v_floodplain.q_average = v_floodplain.q_cumulative / dt
+        @. v_river.q_channel_average = v_river.q_average
+        @. v_river.q_average = v_river.q_channel_average + v_floodplain.q_average
+        @. v_floodplain.qin_average = v_floodplain.qin_cumulative / dt
+        @. v_river.qin_average = v_river.qin_average + v_floodplain.qin_average
     end
+
     return nothing
 end
-
-# constant in Manning's equation [-]
-const BETA_KINWAVE = 0.6
 
 """
 Compute a stable timestep size for the kinematice wave method for a river or overland flow
@@ -616,14 +667,14 @@ function stable_timestep(
     stable_timesteps .= Inf
     k = 0
     for i in 1:n
-        if q[i] > 0.0
+        if q[i] > KIN_WAVE_MIN_FLOW
             k += 1
-            c = 1.0 / (alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
+            c = inv(alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
             stable_timesteps[k] = (flow_length[i] / c)
         end
     end
 
-    dt_min = if k == 1
+    dt_min = if isone(k)
         stable_timesteps[k]
     elseif k > 0
         quantile!(@view(stable_timesteps[1:k]), p)
@@ -652,11 +703,14 @@ function update_lateral_inflow!(
     (; cell_area) = domain.river.parameters
     (; area) = domain.land.parameters
 
-    inwater .= (
-        get_flux_to_river(subsurface_flow, land_indices) .+
-        overland_flow.variables.to_river[land_indices] .+
-        (net_runoff_river[land_indices] .* area[land_indices] .* 0.001) ./ dt .+
-        (get_nonirrigation_returnflow(allocation) .* 0.001 .* cell_area) ./ dt
+    nonirrigation_returnflow = get_nonirrigation_returnflow(allocation)
+    flux_subsurface_to_river = get_flux_to_river(subsurface_flow, land_indices)
+    flux_overland_to_river = overland_flow.variables.to_river_average
+    @. inwater = (
+        flux_subsurface_to_river +
+        flux_overland_to_river[land_indices] +
+        net_runoff_river[land_indices] * area[land_indices] +
+        nonirrigation_returnflow * cell_area
     )
     return nothing
 end
@@ -682,13 +736,13 @@ function update_lateral_inflow!(
     if config.model.drain__flag
         drain = subsurface_flow.boundary_conditions.drain
         drainflux = zeros(length(net_runoff))
-        drainflux[land_indices] = -drain.variables.flux ./ tosecond(BASETIMESTEP)
+        drainflux[land_indices] = -drain.variables.flux
     else
         drainflux = 0.0
     end
-    inwater .=
-        (net_runoff .+ get_nonirrigation_returnflow(allocation)) .* area * 0.001 ./ dt .+
-        drainflux
+
+    nonirrigation_returnflow = get_nonirrigation_returnflow(allocation)
+    @. inwater = (net_runoff + nonirrigation_returnflow) * area + drainflux
 
     return nothing
 end
@@ -718,15 +772,16 @@ end
 # For the river kinematic wave, the variable `to_river` can be excluded, because this part
 # is added to the river kinematic wave.
 get_inflow_reservoir(
-    ::RiverFlowModel{<:KinematicWave},
+    river_flow_model::RiverFlowModel{<:KinematicWave},
     overland_flow_model::OverlandFlowModel{<:KinematicWave},
     inds::Vector{Int},
-) = overland_flow_model.variables.q_av[inds]
+) = overland_flow_model.variables.q_average[inds]
+
 get_inflow_reservoir(
-    ::RiverFlowModel{<:KinematicWave},
+    river_flow_model::RiverFlowModel{<:KinematicWave},
     subsurface_flow_model::LateralSSFModel,
     inds::Vector{Int},
-) = subsurface_flow_model.variables.q_av[inds] ./ tosecond(BASETIMESTEP)
+) = subsurface_flow_model.variables.q_average[inds]
 
 # Exclude subsurface flow from `GroundwaterFlowModel`.
 get_inflow_reservoir(::AbstractRiverFlowModel, ::GroundwaterFlowModel, inds::Vector{Int}) =

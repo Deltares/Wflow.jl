@@ -1,10 +1,5 @@
 [files]
-extend-exclude = [
-    "**/Manifest.toml",
-    "**/*.toml",
-    "**/publications.qmd",
-    "**/Licentie.rtf",
-]
+extend-exclude = ["**/*.toml", "**/publications.qmd", "**/Licentie.rtf"]
 
 [default.extend-words]
 # Ignore false-positives

@@ -338,10 +338,10 @@ function run!(model::Model; close_files = true)
     @info "Simulation duration: $(canonicalize(now() - runstart_time))"
 
     # write output state netCDF
-    if !isnothing(writer.state_nc_path)
-        @info "Write output states to netCDF file `$(writer.state_nc_path)`."
+    if !isnothing(writer.endstate_writer.output_path)
+        @info "Write output states to netCDF file `$(writer.endstate_writer.output_path)`."
     end
-    write_netcdf_timestep(model, writer.state_dataset, writer.state_parameters)
+    write_netcdf_timestep(model, writer.endstate_writer)
 
     reset_clock!(model.clock, config)
 

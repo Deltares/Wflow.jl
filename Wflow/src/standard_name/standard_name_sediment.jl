@@ -4,6 +4,13 @@ Mapping of (CSDMS) standard names to model variables and units for models with a
 of type `SoilLossModel`. The `lens` allows access to a nested model variable.
 """
 const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
+    "atmosphere_water__precipitation_volume_flux" => ParameterMetadata(;
+        lens = @optic(_.land.atmospheric_forcing.precipitation),
+        unit = Unit(; mm = 1, dt = -1),
+        description = "Precipitation",
+        allow_dynamic_input = true,
+        tags = [:atmospheric_forcing],
+    ),
     "soil_clay__mass_fraction" => ParameterMetadata(;
         lens = @optic(_.land.soil_erosion.parameters.clay_fraction),
         default = 0.4,
@@ -49,7 +56,7 @@ const sediment_standard_name_map = OrderedDict{String, ParameterMetadata}(
     ),
     "soil_erosion__eurosem_exponent" => ParameterMetadata(;
         lens = @optic(_.land.rainfall_erosion.parameters.eurosem_exponent),
-        unit = Unit(; m = -1),
+        unit = Unit(; mm = -1),
         default = 2.0,
         description = "Exponent EUROSEM",
         tags = [:rainfall_erosion_input],

@@ -8,12 +8,20 @@ abstract type AbstractOverlandFlowVariables end
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R <: Union{ReservoirModel, Nothing}}
     n::Int
-    inwater::Vector{Float64} = zeros(n)                         # Lateral inflow [m³ s⁻¹]
-    external_inflow::Vector{Float64} = zeros(n)                 # External inflow (abstraction/supply/demand) [m³ s⁻¹]
-    actual_external_abstraction_av::Vector{Float64} = zeros(n)  # Actual abstraction from external negative inflow [m³ s⁻¹]
-    abstraction::Vector{Float64} = zeros(n)                     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    floodplain_water_exchange::Vector{Float64} = zeros(n)       # Exchange with floodplain [m³ s⁻¹]
-    reservoir::R                                                # Reservoir model struct of arrays
+    # External inflow (abstraction/supply/demand) [m³ s⁻¹]
+    external_inflow::Vector{Float64} = zeros(n)
+    # Lateral inflow [m³ s⁻¹]
+    inwater::Vector{Float64} = zeros(n)
+    # Actual cumulative abstraction from external negative inflow [m³]
+    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n)
+    # Actual average abstraction from external negative inflow [m³ s⁻¹]
+    actual_external_abstraction_average::Vector{Float64} = zeros(n)
+    # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
+    abstraction::Vector{Float64} = zeros(n)
+    # Exchange with floodplain [m³ s⁻¹]
+    floodplain_water_exchange::Vector{Float64} = zeros(n)
+    # Reservoir model struct of arrays
+    reservoir::R
 end
 
 "Struct for storing Manning flow parameters"

@@ -114,7 +114,6 @@ end
 "Struct to store floodplain flow model parameters on a staggered grid"
 @with_kw struct FloodPlainStaggeredParameters <: AbstractFloodPlainParameters
     profile::FloodPlainProfile                  # floodplain profile
-    # edge parameters
     mannings_n::Vector{Float64} = Float64[]     # manning's roughness at edge [s m-1/3]
     mannings_n_sq::Vector{Float64} = Float64[]  # manning's roughness squared at edge [(s m-1/3)2]
     zb_max::Vector{Float64} = Float64[]         # maximum bankfull elevation at edge [m]
@@ -176,18 +175,28 @@ end
 @with_kw struct FloodPlainStaggeredVariables <: AbstractFloodPlainVariables
     n::Int
     n_edges::Int
-    # edge variables
-    a::Vector{Float64} = zeros(n_edges)    # flow area at edge [m²]
-    r::Vector{Float64} = zeros(n_edges)    # hydraulic radius at edge [m]
-    hf::Vector{Float64} = zeros(n_edges)   # water depth at edge [m]
-    q0::Vector{Float64} = zeros(n_edges)   # discharge at edge at previous time step
-    q::Vector{Float64} = zeros(n_edges)    # discharge at edge  [m³ s⁻¹]
-    q_av::Vector{Float64} = zeros(n_edges) # average river discharge at edge  [m³ s⁻¹] for model timestep Δt
-    hf_index::Vector{Int} = zeros(Int, n_edges) # edge index with `hf` [-] above depth threshold
-    # node variables
-    storage::Vector{Float64} = zeros(n)    # storage [m³]
-    h::Vector{Float64}                     # water depth [m]
-    error::Vector{Float64} = zeros(n)      # error storage [m³]
+    # flow area at edge [m²]
+    a::Vector{Float64} = zeros(n_edges)
+    # hydraulic radius at edge [m]
+    r::Vector{Float64} = zeros(n_edges)
+    # water depth at edge [m]
+    hf::Vector{Float64} = zeros(n_edges)
+    # discharge at edge at previous time step
+    q0::Vector{Float64} = zeros(n_edges)
+    # discharge at edge  [m³ s⁻¹]
+    q::Vector{Float64} = zeros(n_edges)
+    # cumulative discharge at edge [m³] for model timestep dt
+    q_cumulative::Vector{Float64} = zeros(n_edges)
+    # average discharge at edge [m³ s⁻¹] for model timestep dt
+    q_average::Vector{Float64} = zeros(n_edges)
+    # edge index with `hf` [-] above depth threshold
+    hf_index::Vector{Int} = zeros(Int, n_edges)
+    # storage [m³]
+    storage::Vector{Float64} = zeros(n)
+    # water depth [m]
+    h::Vector{Float64}
+    # error storage [m³]
+    error::Vector{Float64} = zeros(n)
 end
 
 "Floodplain flow model"
@@ -210,13 +219,24 @@ end
 "Struct to store floodplain variables"
 @with_kw struct FloodPlainVariables <: AbstractFloodPlainVariables
     n::Int
-    q::Vector{Float64} = zeros(n)               # discharge [m³ s⁻¹]
-    q_av::Vector{Float64} = zeros(n)            # average floodplain discharge [m³ s⁻¹] for model timestep Δt
-    qin::Vector{Float64} = zeros(n)             # floodplain inflow from upstream cells [m³ s⁻¹]
-    qin_av::Vector{Float64} = zeros(n)          # Average floodplain inflow from upstream cells [m³ s⁻¹] for model timestep Δt
-    storage::Vector{Float64} = zeros(n)         # storage [m³]
-    h::Vector{Float64} = zeros(n)               # water depth [m]
-    flow_capacity::Vector{Float64} = zeros(n)   # flow capacity [m³ dt⁻¹]
+    # discharge [m³ s⁻¹]
+    q::Vector{Float64} = zeros(n)
+    # cumulative discharge for model timestep dt
+    q_cumulative::Vector{Float64} = zeros(n)
+    # average discharge [m³ s⁻¹] for model timestep Δt
+    q_average::Vector{Float64} = zeros(n)
+    # inflow from upstream cells [m³ s⁻¹]
+    qin::Vector{Float64} = zeros(n)
+    # cumulative inflow from upstream cells for model timestep dt
+    qin_cumulative::Vector{Float64} = zeros(n)
+    # average inflow from upstream cells [m³ s⁻¹] for model timestep Δt
+    qin_average::Vector{Float64} = zeros(n)
+    # storage [m³]
+    storage::Vector{Float64} = zeros(n)
+    # water depth [m]
+    h::Vector{Float64} = zeros(n)
+    # flow capacity [m³ s⁻¹]
+    flow_capacity::Vector{Float64} = zeros(n)
 end
 
 "Determine the initial floodplain storage"
