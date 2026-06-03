@@ -126,12 +126,14 @@ end
 @with_kw struct FloodPlainStaggeredParameters <: AbstractFloodPlainParameters
     # floodplain profile
     profile::FloodPlainProfile
-    # manning's roughness at edge [s m-1/3]
+    # manning's roughness [s m-1/3]
     mannings_n::Vector{Float64} = Float64[]
+    # manning's roughness at edge [s m-1/3]
+    mannings_n_at_edge::Vector{Float64} = Float64[]
     # manning's roughness squared at edge [(s m-1/3)2]
-    mannings_n_sq::Vector{Float64} = Float64[]
+    mannings_n_sq_at_edge::Vector{Float64} = Float64[]
     # maximum bankfull elevation at edge [m]
-    zb_max::Vector{Float64} = Float64[]
+    zb_max_at_edge::Vector{Float64} = Float64[]
     # slope at edge [-]
     slope_at_edge::Vector{Float64} = Float64[]
 end
@@ -160,7 +162,7 @@ function FloodPlainStaggeredParameters(
     append!(mannings_n, mannings_n[index_pit]) # copy to ghost nodes
     mannings_n_at_edge =
         compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
-    zb_max_edge = compute_value_at_edge(zb_floodplain, nodes_at_edge, n_edges, maximum)
+    zb_max_at_edge = compute_value_at_edge(zb_floodplain, nodes_at_edge, n_edges, maximum)
 
     if river_routing == RoutingType.local_inertial
         mannings_n_sq_at_edge = mannings_n_at_edge .* mannings_n_at_edge
@@ -179,9 +181,10 @@ function FloodPlainStaggeredParameters(
 
     parameters = FloodPlainStaggeredParameters(;
         profile,
-        mannings_n = mannings_n_at_edge,
-        mannings_n_sq = mannings_n_sq_at_edge,
-        zb_max = zb_max_edge,
+        mannings_n,
+        mannings_n_at_edge,
+        mannings_n_sq_at_edge,
+        zb_max_at_edge,
         slope_at_edge,
     )
     return parameters
@@ -192,9 +195,9 @@ end
     n::Int
     n_edges::Int
     # flow area at edge [m²]
-    flow_area::Vector{Float64} = zeros(n_edges)
+    flow_area_at_edge::Vector{Float64} = zeros(n_edges)
     # hydraulic radius at edge [m]
-    hydraulic_radius::Vector{Float64} = zeros(n_edges)
+    hydraulic_radius_at_edge::Vector{Float64} = zeros(n_edges)
     # water depth at edge [m]
     water_depth_at_edge::Vector{Float64} = zeros(n_edges)
     # discharge at edge at previous time step
@@ -228,8 +231,10 @@ end
 
 "Struct to store floodplain parameters"
 @with_kw struct FloodPlainParameters <: AbstractFloodPlainParameters
-    profile::FloodPlainProfile              # floodplain profile
-    mannings_n::Vector{Float64} = Float64[] # manning's roughness[s m-1/3]
+    # floodplain profile
+    profile::FloodPlainProfile
+    # manning's roughness[s m-1/3]
+    mannings_n::Vector{Float64} = Float64[]
 end
 
 "Struct to store floodplain variables"

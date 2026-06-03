@@ -19,11 +19,13 @@
     # bankfull depth [m]
     bankfull_depth::Vector{Float64} = Float64[]
     # maximum channel bed elevation at edge [m]
-    zb_max::Vector{Float64} = Float64[]
-    # Manning's roughness at edge [s m-1/3]
+    zb_max_at_edge::Vector{Float64} = Float64[]
+    # Manning's roughness [s m-1/3]
     mannings_n::Vector{Float64} = Float64[]
+    # Manning's roughness at edge [s m-1/3]
+    mannings_n_at_edge::Vector{Float64} = Float64[]
     # Manning's roughness squared at edge [(s m-1/3)2]
-    mannings_n_sq::Vector{Float64} = Float64[]
+    mannings_n_sq_at_edge::Vector{Float64} = Float64[]
     # slope at edge [-]
     slope_at_edge::Vector{Float64} = Float64[]
     # flow (river) length at edge [m]
@@ -138,9 +140,10 @@ function RiverFlowStaggeredParameters(
         zb,
         bankfull_storage,
         bankfull_depth,
-        zb_max = zb_max_at_edge,
-        mannings_n = mannings_n_at_edge,
-        mannings_n_sq = mannings_n_sq_at_edge,
+        zb_max_at_edge,
+        mannings_n,
+        mannings_n_at_edge,
+        mannings_n_sq_at_edge,
         slope_at_edge,
         flow_length_at_edge,
         flow_width_at_edge,
@@ -167,7 +170,7 @@ end
     # water depth [m]
     h::Vector{Float64}
     # maximum water elevation at edge [m]
-    zs_max::Vector{Float64} = zeros(n_edges)
+    zs_max_at_edge::Vector{Float64} = zeros(n_edges)
     # water elevation of source node of edge [m]
     zs_src::Vector{Float64} = zeros(n_edges)
     # water elevation of downstream node of edge [m]
@@ -175,9 +178,9 @@ end
     # water depth at edge [m]
     water_depth_at_edge::Vector{Float64} = zeros(n_edges)
     # flow area at edge [m²]
-    flow_area::Vector{Float64} = zeros(n_edges)
+    flow_area_at_edge::Vector{Float64} = zeros(n_edges)
     # wetted perimeter at edge [m]
-    hydraulic_radius::Vector{Float64} = zeros(n_edges)
+    hydraulic_radius_at_edge::Vector{Float64} = zeros(n_edges)
     # river storage [m³]
     storage::Vector{Float64} = zeros(n_cells)
     # error storage [m³]
@@ -335,13 +338,14 @@ function update_river_channel_flow!(
         river_v.zs_src[i] = river_p.zb[i_src] + river_v.h[i_src]
         river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
-        river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
-        river_v.water_depth_at_edge[i] = (river_v.zs_max[i] - river_p.zb_max[i])
+        river_v.zs_max_at_edge[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
+        river_v.water_depth_at_edge[i] =
+            (river_v.zs_max_at_edge[i] - river_p.zb_max_at_edge[i])
 
-        river_v.flow_area[i] =
+        river_v.flow_area_at_edge[i] =
             river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
-        river_v.hydraulic_radius[i] =
-            river_v.flow_area[i] / wetted_perimeter_channel(
+        river_v.hydraulic_radius_at_edge[i] =
+            river_v.flow_area_at_edge[i] / wetted_perimeter_channel(
                 river_v.water_depth_at_edge[i],
                 river_p.flow_width_at_edge[i],
             ) # hydraulic radius (rectangular channel)
@@ -353,10 +357,10 @@ function update_river_channel_flow!(
                 river_v.zs_src[i],
                 river_v.zs_dst[i],
                 river_v.water_depth_at_edge[i],
-                river_v.flow_area[i],
-                river_v.hydraulic_radius[i],
+                river_v.flow_area_at_edge[i],
+                river_v.hydraulic_radius_at_edge[i],
                 river_p.flow_length_at_edge[i],
-                river_p.mannings_n_sq[i],
+                river_p.mannings_n_sq_at_edge[i],
                 river_p.froude_limit,
                 dt,
             ),
@@ -392,13 +396,14 @@ function update_river_channel_flow!(
         river_v.zs_src[i] = river_p.zb[i_src] + river_v.h[i_src]
         river_v.zs_dst[i] = river_p.zb[i_dst] + river_v.h[i_dst]
 
-        river_v.zs_max[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
-        river_v.water_depth_at_edge[i] = (river_v.zs_max[i] - river_p.zb_max[i])
+        river_v.zs_max_at_edge[i] = max(river_v.zs_src[i], river_v.zs_dst[i])
+        river_v.water_depth_at_edge[i] =
+            (river_v.zs_max_at_edge[i] - river_p.zb_max_at_edge[i])
 
-        river_v.flow_area[i] =
+        river_v.flow_area_at_edge[i] =
             river_p.flow_width_at_edge[i] * river_v.water_depth_at_edge[i] # flow area (rectangular channel)
-        river_v.hydraulic_radius[i] =
-            river_v.flow_area[i] / wetted_perimeter_channel(
+        river_v.hydraulic_radius_at_edge[i] =
+            river_v.flow_area_at_edge[i] / wetted_perimeter_channel(
                 river_v.water_depth_at_edge[i],
                 river_p.flow_width_at_edge[i],
             ) # hydraulic radius (rectangular channel)
@@ -406,10 +411,10 @@ function update_river_channel_flow!(
         river_v.q[i] = ifelse(
             river_v.water_depth_at_edge[i] > river_p.h_thresh,
             manning_flow(
-                river_p.mannings_n[i],
-                river_v.hydraulic_radius[i],
+                river_p.mannings_n_at_edge[i],
+                river_v.hydraulic_radius_at_edge[i],
                 river_p.slope_at_edge[i],
-                river_v.flow_area[i],
+                river_v.flow_area_at_edge[i],
             ),
             0.0,
         )
@@ -441,7 +446,7 @@ function update_floodplain_flow!(
 
     @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.water_depth_at_edge)
         floodplain_v.water_depth_at_edge[i] =
-            max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
+            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
     end
 
     n = active_floodplain_cells(river_flow_model)
@@ -469,9 +474,9 @@ function update_floodplain_flow!(
             i1,
             i2,
         )
-        floodplain_v.flow_area[i] = min(a_src, a_dst)
+        floodplain_v.flow_area_at_edge[i] = min(a_src, a_dst)
 
-        floodplain_v.hydraulic_radius[i] = if a_src < a_dst
+        floodplain_v.hydraulic_radius_at_edge[i] = if a_src < a_dst
             a_src / compute_wetted_perimeter(
                 profile,
                 floodplain_v.water_depth_at_edge[i],
@@ -487,16 +492,16 @@ function update_floodplain_flow!(
             )
         end
 
-        floodplain_v.q[i] = if floodplain_v.flow_area[i] > 1.0e-05
+        floodplain_v.q[i] = if floodplain_v.flow_area_at_edge[i] > 1.0e-05
             local_inertial_flow(
                 floodplain_v.q_previous[i],
                 river_v.zs_src[i],
                 river_v.zs_dst[i],
                 floodplain_v.water_depth_at_edge[i],
-                floodplain_v.flow_area[i],
-                floodplain_v.hydraulic_radius[i],
+                floodplain_v.flow_area_at_edge[i],
+                floodplain_v.hydraulic_radius_at_edge[i],
                 river_p.flow_length_at_edge[i],
-                floodplain_p.mannings_n_sq[i],
+                floodplain_p.mannings_n_sq_at_edge[i],
                 river_p.froude_limit,
                 dt,
             )
@@ -543,7 +548,7 @@ function update_floodplain_flow!(
 
     @batch per = thread minbatch = 1000 for i in 1:length(floodplain_v.water_depth_at_edge)
         floodplain_v.water_depth_at_edge[i] =
-            max(river_v.zs_max[i] - floodplain_p.zb_max[i], 0.0)
+            max(river_v.zs_max_at_edge[i] - floodplain_p.zb_max_at_edge[i], 0.0)
     end
 
     n = active_floodplain_cells(river_flow_model)
@@ -571,9 +576,9 @@ function update_floodplain_flow!(
             i1,
             i2,
         )
-        floodplain_v.flow_area[i] = min(a_src, a_dst)
+        floodplain_v.flow_area_at_edge[i] = min(a_src, a_dst)
 
-        floodplain_v.hydraulic_radius[i] = if a_src < a_dst
+        floodplain_v.hydraulic_radius_at_edge[i] = if a_src < a_dst
             a_src / compute_wetted_perimeter(
                 profile,
                 floodplain_v.water_depth_at_edge[i],
@@ -589,12 +594,12 @@ function update_floodplain_flow!(
             )
         end
 
-        floodplain_v.q[i] = if floodplain_v.flow_area[i] > 1.0e-05
+        floodplain_v.q[i] = if floodplain_v.flow_area_at_edge[i] > 1.0e-05
             manning_flow(
-                floodplain_p.mannings_n[i],
-                floodplain_v.hydraulic_radius[i],
+                floodplain_p.mannings_n_at_edge[i],
+                floodplain_v.hydraulic_radius_at_edge[i],
                 floodplain_p.slope_at_edge[i],
-                floodplain_v.flow_area[i],
+                floodplain_v.flow_area_at_edge[i],
             )
         else
             0.0
@@ -862,9 +867,9 @@ end
     # number of cells [-]
     n::Int
     # effective flow width x direction at edge (floodplain) [m]
-    xwidth::Vector{Float64}
+    xwidth_at_edge::Vector{Float64}
     # effective flow width y direction at edge (floodplain) [m]
-    ywidth::Vector{Float64}
+    ywidth_at_edge::Vector{Float64}
     # acceleration due to gravity [m s⁻²]
     g::Float64 = 9.80665
     # weighting factor (de Almeida et al., 2012) [-]
@@ -872,11 +877,11 @@ end
     # depth threshold for calculating flow [m]
     h_thresh::Float64
     # maximum cell elevation at edge [m] (x direction)
-    zx_max::Vector{Float64}
+    zx_max_at_edge::Vector{Float64}
     # maximum cell elevation at edge [m] (y direction)
-    zy_max::Vector{Float64}
+    zy_max_at_edge::Vector{Float64}
     # Manning's roughness squared at edge [(s m-1/3)2]
-    mannings_n_sq::Vector{Float64}
+    mannings_n_sq_at_edge::Vector{Float64}
     # elevation [m] of cell
     z::Vector{Float64}
     # if true a check is performed if froude number > 1.0 (algorithm is modified) [-]
@@ -915,16 +920,16 @@ function LocalInertialOverlandFlowParameters(
     elevation = elevation_2d[indices]
     n = length(domain.land.network.indices)
 
-    zx_max = zeros(n)
-    zy_max = zeros(n)
+    zx_max_at_edge = zeros(n)
+    zy_max_at_edge = zeros(n)
     for i in 1:n
         idx_right = edge_indices.idx_right[i]
         if idx_right <= n
-            zx_max[i] = max(elevation[i], elevation[idx_right])
+            zx_max_at_edge[i] = max(elevation[i], elevation[idx_right])
         end
         idx_up = edge_indices.idx_up[i]
         if idx_up <= n
-            zy_max[i] = max(elevation[i], elevation[idx_up])
+            zy_max_at_edge[i] = max(elevation[i], elevation[idx_up])
         end
     end
 
@@ -936,13 +941,13 @@ function LocalInertialOverlandFlowParameters(
     set_effective_flowwidth!(we_x, we_y, domain)
     parameters = LocalInertialOverlandFlowParameters(;
         n,
-        xwidth = we_x,
-        ywidth = we_y,
+        xwidth_at_edge = we_x,
+        ywidth_at_edge = we_y,
         theta,
         h_thresh = waterdepth_threshold,
-        zx_max,
-        zy_max,
-        mannings_n_sq = mannings_n .* mannings_n,
+        zx_max_at_edge,
+        zy_max_at_edge,
+        mannings_n_sq_at_edge = mannings_n .* mannings_n,
         z = elevation,
         froude_limit,
     )
@@ -1036,7 +1041,8 @@ function stable_timestep(
 )
     dt_min = Inf
     (; alpha_coefficient) = river_flow_model.timestepping
-    (; n, mannings_n) = river_flow_model.parameters
+    #TODO: apply this on edges?
+    (; n, mannings_n_at_edge) = river_flow_model.parameters
     (; h) = river_flow_model.variables
     (; flow_length, flow_width, slope) = parameters
 
@@ -1044,7 +1050,7 @@ function stable_timestep(
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds h_r =
             (flow_width[i] * h[i]) / wetted_perimeter_channel(h[i], flow_width[i])
-        celerity = beta * 1.0/mannings_n[i] * pow(h_r, 2.0/3.0) * sqrt(slope[i])
+        celerity = beta * 1.0/mannings_n_at_edge[i] * pow(h_r, 2.0/3.0) * sqrt(slope[i])
         dt = alpha_coefficient * flow_length[i] / celerity
         dt_min = min(dt, dt_min)
     end
@@ -1191,8 +1197,8 @@ Update flow for flow_area single direction in the local inertial overland flow m
     if is_x_direction
         upstream_idx = indices.idx_right[i]
         downstream_idx = indices.idx_left[i]
-        width = land_p.ywidth[i]
-        z_max = land_p.zx_max[i]
+        width_at_edge = land_p.ywidth_at_edge[i]
+        z_max_at_edge = land_p.zx_max_at_edge[i]
         length_vec = x_length
         q_current = land_v.qx
         q_prev = land_v.qx0
@@ -1200,8 +1206,8 @@ Update flow for flow_area single direction in the local inertial overland flow m
     else
         upstream_idx = indices.idx_up[i]
         downstream_idx = indices.idx_down[i]
-        width = land_p.xwidth[i]
-        z_max = land_p.zy_max[i]
+        width_at_edge = land_p.xwidth_at_edge[i]
+        z_max_at_edge = land_p.zy_max_at_edge[i]
         length_vec = y_length
         q_current = land_v.qy
         q_prev = land_v.qy0
@@ -1210,14 +1216,14 @@ Update flow for flow_area single direction in the local inertial overland flow m
 
     # the effective flow width is zero when the river width exceeds the cell width and
     # floodplain flow is not calculated.
-    if upstream_idx <= land_p.n && width != 0.0
+    if upstream_idx <= land_p.n && width_at_edge != 0.0
         zs_current = land_p.z[i] + land_v.h[i]
         zs_upstream = land_p.z[upstream_idx] + land_v.h[upstream_idx]
-        zs_max = max(zs_current, zs_upstream)
-        water_depth_at_edge = (zs_max - z_max)
+        zs_max_at_edge = max(zs_current, zs_upstream)
+        water_depth_at_edge = (zs_max_at_edge - z_max_at_edge)
 
         if water_depth_at_edge > land_p.h_thresh
-            length = 0.5 * (length_vec[i] + length_vec[upstream_idx]) # can be precalculated
+            length_at_edge = 0.5 * (length_vec[i] + length_vec[upstream_idx]) # can be precalculated
             q_current[i] = local_inertial_flow(
                 land_p.theta,
                 q_prev[i],
@@ -1226,9 +1232,9 @@ Update flow for flow_area single direction in the local inertial overland flow m
                 zs_current,
                 zs_upstream,
                 water_depth_at_edge,
-                width,
-                length,
-                land_p.mannings_n_sq[i],
+                width_at_edge,
+                length_at_edge,
+                land_p.mannings_n_sq_at_edge[i],
                 land_p.froude_limit,
                 dt,
             )

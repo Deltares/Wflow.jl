@@ -457,11 +457,15 @@ end
             froude_limit = true,
             h_thresh = 0.001,
             zb = [315.1000061035156, 314.3999938964844, 278.8000183105469],
-            zb_max = [315.1000061035156, 314.3999938964844],
+            zb_max_at_edge = [315.1000061035156, 314.3999938964844],
             bankfull_storage = [57155.32165002823, 100397.03622722626, 90180.89622545242],
             bankfull_depth = [1.0, 1.0, 1.0],
-            mannings_n_sq = [0.0008999999597668652, 0.0008999999597668652],
-            mannings_n = [0.029999999329447746, 0.029999999329447746, 0.029999999329447746],
+            mannings_n_sq_at_edge = [0.0008999999597668652, 0.0008999999597668652],
+            mannings_n_at_edge = [
+                0.029999999329447746,
+                0.029999999329447746,
+                0.029999999329447746,
+            ],
             flow_length_at_edge = [831.578125, 1005.890625],
             flow_width_at_edge = [94.73094177246094, 94.73094177246094],
         ),
@@ -501,10 +505,10 @@ end
     @test dt ≈ 909.829412320351
     @test river_flow_model.variables.zs_src ≈ [315.14484852086804, 0.0]
     @test river_flow_model.variables.zs_dst ≈ [314.3999938964844, 0.0]
-    @test river_flow_model.variables.zs_max ≈ [315.14484852086804, 0.0]
+    @test river_flow_model.variables.zs_max_at_edge ≈ [315.14484852086804, 0.0]
     @test river_flow_model.variables.water_depth_at_edge ≈ [0.04484241735241312, 0.0]
-    @test river_flow_model.variables.flow_area ≈ [4.247964427147839, 0.0]
-    @test river_flow_model.variables.hydraulic_radius ≈ [0.04480000374545946, 0.0]
+    @test river_flow_model.variables.flow_area_at_edge ≈ [4.247964427147839, 0.0]
+    @test river_flow_model.variables.hydraulic_radius_at_edge ≈ [0.04480000374545946, 0.0]
     @test river_flow_model.variables.q ≈ [0.534558444239785, 0.0]
     @test river_flow_model.variables.q_cumulative ≈ [486.35699517356477, 0.0]
 
@@ -574,11 +578,15 @@ end
             froude_limit = true,
             h_thresh = 0.001,
             zb = [165.10784077644348, 165.10784077644348, 165.10784077644348],
-            zb_max = [165.10784077644348, 165.10784077644348],
+            zb_max_at_edge = [165.10784077644348, 165.10784077644348],
             bankfull_storage = [107921.00118967971, 200292.17449130033, 69688.46493603183],
             bankfull_depth = [1.592156171798706, 1.592156171798706, 1.592156171798706],
-            mannings_n_sq = [0.0008999999597668652, 0.0008999999597668652],
-            mannings_n = [0.029999999329447746, 0.029999999329447746, 0.029999999329447746],
+            mannings_n_sq_at_edge = [0.0008999999597668652, 0.0008999999597668652],
+            mannings_n_at_edge = [
+                0.029999999329447746,
+                0.029999999329447746,
+                0.029999999329447746,
+            ],
             flow_length_at_edge = [648.828125, 568.34375],
             flow_width_at_edge = [149.17837524414062, 149.17837524414062],
         ),
@@ -627,9 +635,9 @@ end
                         828.5732065990505 981.3369851412588 1304.3660916852448;
                     ],
                 ),
-                mannings_n = [0.072, 0.072, 0.072],
-                mannings_n_sq = [0.005184, 0.005184],
-                zb_max = [166.6999969482422, 166.6999969482422],
+                mannings_n_at_edge = [0.072, 0.072, 0.072],
+                mannings_n_sq_at_edge = [0.005184, 0.005184],
+                zb_max_at_edge = [166.6999969482422, 166.6999969482422],
             ),
             variables = Wflow.FloodPlainStaggeredVariables(;
                 n,
@@ -664,11 +672,13 @@ end
     @test dt ≈ 49.40931052556788
     @test river_flow_model.variables.zs_src ≈ [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.zs_dst ≈ [166.92754760786679, 166.86980277988906]
-    @test river_flow_model.variables.zs_max ≈ [166.98963199894177, 166.92754760786679]
+    @test river_flow_model.variables.zs_max_at_edge ≈
+          [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.water_depth_at_edge ≈
           [1.8817912224982933, 1.8197068314233036]
-    @test river_flow_model.variables.flow_area ≈ [280.7225571209805, 271.4609085323917]
-    @test river_flow_model.variables.hydraulic_radius ≈
+    @test river_flow_model.variables.flow_area_at_edge ≈
+          [280.7225571209805, 271.4609085323917]
+    @test river_flow_model.variables.hydraulic_radius_at_edge ≈
           [1.8354842671202385, 1.7763698223484754]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
     @test river_flow_model.variables.q_cumulative ≈ [6778.106459961183, 6608.686781773178]
@@ -678,9 +688,9 @@ end
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [0.2896350506995873, 0.22755065962459753]
     @test river_flow_model.floodplain.variables.hf_index == [1, 2]
-    @test river_flow_model.floodplain.variables.flow_area ≈
+    @test river_flow_model.floodplain.variables.flow_area_at_edge ≈
           [55.72535396228429, 117.78030190165774]
-    @test river_flow_model.floodplain.variables.hydraulic_radius ≈
+    @test river_flow_model.floodplain.variables.hydraulic_radius_at_edge ≈
           [0.28876564013944644, 0.22735076093732]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074672215578524, 6.1421232455587536]
 
@@ -730,13 +740,17 @@ end
         ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
             n,
-            ywidth = [926.6857061478484, 869.7426481339323, 812.7995901200163],
-            xwidth = [],
-            zx_max = [257.3280029296875, 232.67100524902344, 232.67100524902344],
+            ywidth_at_edge = [926.6857061478484, 869.7426481339323, 812.7995901200163],
+            xwidth_at_edge = [],
+            zx_max_at_edge = [257.3280029296875, 232.67100524902344, 232.67100524902344],
             theta = 1.0,
             h_thresh = 1e-3,
-            zy_max = [],
-            mannings_n_sq = [0.24167056670421605, 0.2883451232664811, 0.3928782408368683],
+            zy_max_at_edge = [],
+            mannings_n_sq_at_edge = [
+                0.24167056670421605,
+                0.2883451232664811,
+                0.3928782408368683,
+            ],
             z = [257.3280029296875, 227.5050048828125, 232.67100524902344],
             froude_limit = true,
         ),
@@ -795,13 +809,13 @@ end
         ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
             n = n_land,
-            xwidth = [],
-            ywidth = [],
+            xwidth_at_edge = [],
+            ywidth_at_edge = [],
             theta = 1.0,
             h_thresh = 1e-3,
-            zx_max = [],
-            zy_max = [],
-            mannings_n_sq = [],
+            zx_max_at_edge = [],
+            zy_max_at_edge = [],
+            mannings_n_sq_at_edge = [],
             z = [],
             froude_limit = true,
         ),
@@ -819,11 +833,11 @@ end
             froude_limit = true,
             h_thresh = 1e-3,
             zb = [],
-            zb_max = [],
+            zb_max_at_edge = [],
             bankfull_storage = [171137.5821314017],
             bankfull_depth = [1.3683528900146484],
-            mannings_n_sq = [],
-            mannings_n = [],
+            mannings_n_sq_at_edge = [],
+            mannings_n_at_edge = [],
             flow_length_at_edge = [],
             flow_width_at_edge = [],
         ),
@@ -1001,8 +1015,8 @@ end
         active_n = collect(1:(n - 1)),
         active_e = collect(1:n_edges),
         h_thresh,
-        zb_max = zb_max_at_edge,
-        mannings_n_sq = mannings_n_sq_at_edge,
+        zb_max_at_edge,
+        mannings_n_sq_at_edge,
         flow_width_at_edge,
         flow_length_at_edge,
         bankfull_storage = fill(Wflow.MISSING_VALUE, n),
@@ -1052,7 +1066,7 @@ end
     A = 0.04970535373017763
     R = 0.0011733219820725962
     length = 533.453125
-    mannings_n_sq = 0.0008999999597668652
+    mannings_n_sq_at_edge = 0.0008999999597668652
     froude_limit = true
     dt = 89.29563868855615
 
@@ -1064,7 +1078,7 @@ end
         A,
         R,
         length,
-        mannings_n_sq,
+        mannings_n_sq_at_edge,
         froude_limit,
         dt,
     ) ≈ 0.005331926324969742
@@ -1079,7 +1093,7 @@ end
     water_depth_at_edge = 0.00310727852479431
     width = 620.6649135473787
     length = 926.602742473319
-    mannings_n_sq = 0.1773345894316103
+    mannings_n_sq_at_edge = 0.1773345894316103
     froude_limit = true
     dt = 49.774905820268735
 
@@ -1093,7 +1107,7 @@ end
         water_depth_at_edge,
         width,
         length,
-        mannings_n_sq,
+        mannings_n_sq_at_edge,
         froude_limit,
         dt,
     ) ≈ 0.00017992597962222483
@@ -1108,7 +1122,7 @@ end
     A = 0.04970535373017763
     R = 0.0011733219820725962
     length = 533.453125
-    mannings_n_sq = 0.0008999999597668652
+    mannings_n_sq_at_edge = 0.0008999999597668652
     froude_limit = true
     dt = 89.29563868855615
 
@@ -1120,7 +1134,7 @@ end
         A,
         R,
         length,
-        mannings_n_sq,
+        mannings_n_sq_at_edge,
         froude_limit,
         dt,
     ) ≈ 0.005331926324969742
@@ -1135,7 +1149,7 @@ end
     water_depth_at_edge = 0.00310727852479431
     width = 620.6649135473787
     length = 926.602742473319
-    mannings_n_sq = 0.1773345894316103
+    mannings_n_sq_at_edge = 0.1773345894316103
     froude_limit = true
     dt = 49.774905820268735
 
@@ -1149,7 +1163,7 @@ end
         water_depth_at_edge,
         width,
         length,
-        mannings_n_sq,
+        mannings_n_sq_at_edge,
         froude_limit,
         dt,
     ) ≈ 0.00017992597962222483
