@@ -1046,11 +1046,10 @@ function stable_timestep(
     (; h) = river_flow_model.variables
     (; flow_length, flow_width, slope) = parameters
 
-    beta = 5.0/3.0
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds h_r =
             (flow_width[i] * h[i]) / wetted_perimeter_channel(h[i], flow_width[i])
-        celerity = beta * cbrt(h_r^2) * sqrt(slope[i])/mannings_n_at_edge[i]
+        celerity = cbrt(h_r^2) * sqrt(slope[i]) / mannings_n_at_edge[i] / BETA_KINWAVE
         dt = alpha_coefficient * flow_length[i] / celerity
         dt_min = min(dt, dt_min)
     end
