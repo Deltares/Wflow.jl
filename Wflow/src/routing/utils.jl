@@ -162,7 +162,7 @@ function flux_in!(flux_in, flux, network)
 end
 
 function compute_value_at_edge(v, nodes_at_edge, n_edges, func::Function)
-    x = fill(Float64(0), n_edges)
+    x = zeros(n_edges)
     for i in 1:n_edges
         src_node = nodes_at_edge.src[i]
         dst_node = nodes_at_edge.dst[i]
@@ -172,7 +172,7 @@ function compute_value_at_edge(v, nodes_at_edge, n_edges, func::Function)
 end
 
 function compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_edges)
-    mannings_n_at_edge = fill(Float64(0), n_edges)
+    mannings_n_at_edge = zeros(n_edges)
     for i in 1:n_edges
         src_node = nodes_at_edge.src[i]
         dst_node = nodes_at_edge.dst[i]
@@ -186,7 +186,7 @@ function compute_mannings_n_at_edge(mannings_n, flow_length, nodes_at_edge, n_ed
 end
 
 function compute_slope_at_edge(elev, length_at_edge, nodes_at_edge, n_edges)
-    slope = fill(Float64(0), n_edges)
+    slope = zeros(n_edges)
     for i in 1:n_edges
         src_node = nodes_at_edge.src[i]
         dst_node = nodes_at_edge.dst[i]
