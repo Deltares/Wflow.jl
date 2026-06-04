@@ -34,7 +34,7 @@ function ManningFlowParameters(
     slope::Vector{Float64},
     wetted_perimeter::Vector{Float64},
 )
-    hydraulic_radius_pow = Float64(2.0 / 3.0)
+    hydraulic_radius_pow = 2.0 / 3.0
     alpha_term = @. pow(mannings_n / sqrt(slope), BETA_KINWAVE)
     alpha_pow = hydraulic_radius_pow * BETA_KINWAVE
     alpha = @. alpha_term * pow(wetted_perimeter, alpha_pow)
