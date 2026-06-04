@@ -1050,7 +1050,7 @@ function stable_timestep(
     @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
         @fastmath @inbounds h_r =
             (flow_width[i] * h[i]) / wetted_perimeter_channel(h[i], flow_width[i])
-        celerity = beta * 1.0/mannings_n_at_edge[i] * pow(h_r, 2.0/3.0) * sqrt(slope[i])
+        celerity = beta * cbrt(h_r^2) * sqrt(slope[i])/mannings_n_at_edge[i]
         dt = alpha_coefficient * flow_length[i] / celerity
         dt_min = min(dt, dt_min)
     end
