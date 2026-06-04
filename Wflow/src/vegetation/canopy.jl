@@ -44,7 +44,8 @@ function GashInterceptionModel(
         sel = indices,
     )
     n = length(indices)
-    parameters = GashParameters(; evaporation_to_precipitation_ratio, vegetation_parameter_set)
+    parameters =
+        GashParameters(; evaporation_to_precipitation_ratio, vegetation_parameter_set)
     model = GashInterceptionModel(; n, parameters)
     return model
 end
@@ -55,40 +56,50 @@ function update_interception_model!(
     atmospheric_forcing::AtmosphericForcing,
     dt::Float64,
 )
-    (; evaporation_to_precipitation_ratio, vegetation_parameter_set) = interception_model.parameters
-    (; leaf_area_index, canopy_gap_fraction, maximum_canopy_storage, crop_coefficient) = vegetation_parameter_set
+    (; evaporation_to_precipitation_ratio, vegetation_parameter_set) =
+        interception_model.parameters
+    (; leaf_area_index, canopy_gap_fraction, maximum_canopy_storage, crop_coefficient) =
+        vegetation_parameter_set
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         interception_model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
-    n = length(precipitation)
+    n_cells = length(precipitation)
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters.vegetation_parameter_set)
-        threaded_foreach(1:n; basesize = 1000) do i
-            canopyfraction = 1.0 - canopy_gap_fraction[i]
-            ewet = canopyfraction * potential_evaporation[i] * crop_coefficient[i]
-            evaporation_to_precipitation_ratio[i] =
-                precipitation[i] > 0.0 ?
+        threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+            canopyfraction = 1.0 - canopy_gap_fraction[cell_idx]
+            ewet =
+                canopyfraction *
+                potential_evaporation[cell_idx] *
+                crop_coefficient[cell_idx]
+            evaporation_to_precipitation_ratio[cell_idx] =
+                precipitation[cell_idx] > 0.0 ?
                 min(
                     0.25,
                     ewet / max(
                         to_SI(1e-4, MM_PER_DT; dt_val = dt),
-                        canopyfraction * precipitation[i],
+                        canopyfraction * precipitation[cell_idx],
                     ),
                 ) : 0.0
         end
     end
-    threaded_foreach(1:n; basesize = 1000) do i
-        canopy_potevap[i] = crop_coefficient[i] * potential_evaporation[i] * (1.0 - canopy_gap_fraction[i])
-        throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
-            rainfall_interception_gash(
-                maximum_canopy_storage[i],
-                evaporation_to_precipitation_ratio[i],
-                canopy_gap_fraction[i],
-                precipitation[i],
-                canopy_storage[i],
-                canopy_potevap[i],
-                dt,
-            )
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        canopy_potevap[cell_idx] =
+            crop_coefficient[cell_idx] *
+            potential_evaporation[cell_idx] *
+            (1.0 - canopy_gap_fraction[cell_idx])
+        throughfall[cell_idx],
+        interception_rate[cell_idx],
+        stemflow[cell_idx],
+        canopy_storage[cell_idx] = rainfall_interception_gash(
+            maximum_canopy_storage[cell_idx],
+            evaporation_to_precipitation_ratio[cell_idx],
+            canopy_gap_fraction[cell_idx],
+            precipitation[cell_idx],
+            canopy_storage[cell_idx],
+            canopy_potevap[cell_idx],
+            dt,
+        )
     end
     return nothing
 end
@@ -113,24 +124,30 @@ function update_interception_model!(
     atmospheric_forcing::AtmosphericForcing,
     dt::Float64,
 )
-    (; leaf_area_index, canopy_gap_fraction, maximum_canopy_storage, crop_coefficient) = interception_model.parameters
+    (; leaf_area_index, canopy_gap_fraction, maximum_canopy_storage, crop_coefficient) =
+        interception_model.parameters
     (; canopy_potevap, throughfall, interception_rate, stemflow, canopy_storage) =
         interception_model.variables
     (; precipitation, potential_evaporation) = atmospheric_forcing
     if !isnothing(leaf_area_index)
         update_canopy_parameters!(interception_model.parameters)
     end
-    n = length(precipitation)
-    threaded_foreach(1:n; basesize = 1000) do i
-        canopy_potevap[i] = crop_coefficient[i] * potential_evaporation[i] * (1.0 - canopy_gap_fraction[i])
-        throughfall[i], interception_rate[i], stemflow[i], canopy_storage[i] =
-            rainfall_interception_modrut(
-                precipitation[i],
-                canopy_potevap[i],
-                canopy_storage[i],
-                canopy_gap_fraction[i],
-                maximum_canopy_storage[i],
-            )
+    n_cells = length(precipitation)
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        canopy_potevap[cell_idx] =
+            crop_coefficient[cell_idx] *
+            potential_evaporation[cell_idx] *
+            (1.0 - canopy_gap_fraction[cell_idx])
+        throughfall[cell_idx],
+        interception_rate[cell_idx],
+        stemflow[cell_idx],
+        canopy_storage[cell_idx] = rainfall_interception_modrut(
+            precipitation[cell_idx],
+            canopy_potevap[cell_idx],
+            canopy_storage[cell_idx],
+            canopy_gap_fraction[cell_idx],
+            maximum_canopy_storage[cell_idx],
+        )
     end
     return nothing
 end
@@ -146,10 +163,13 @@ function update_canopy_parameters!(parameters::VegetationParameters)
         maximum_canopy_storage,
     ) = parameters
 
-    n = length(leaf_area_index)
-    threaded_foreach(1:n; basesize = 1000) do i
-        maximum_canopy_storage[i] = storage_specific_leaf[i] * leaf_area_index[i] + storage_wood[i]
-        canopy_gap_fraction[i] = exp(-light_extinction_coefficient[i] * leaf_area_index[i])
+    n_cells = length(leaf_area_index)
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        maximum_canopy_storage[cell_idx] =
+            storage_specific_leaf[cell_idx] * leaf_area_index[cell_idx] +
+            storage_wood[cell_idx]
+        canopy_gap_fraction[cell_idx] =
+            exp(-light_extinction_coefficient[cell_idx] * leaf_area_index[cell_idx])
     end
     return nothing
 end

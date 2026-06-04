@@ -97,7 +97,13 @@ function SnowHbvParameters(
         LandHydrologySBM;
         sel = indices,
     )
-    snow_hbv_params = SnowHbvParameters(; degree_day_factor, temperature_threshold_snowfall, temperature_interval_snowfall, temperature_threshold_melt, water_holding_capacity)
+    snow_hbv_params = SnowHbvParameters(;
+        degree_day_factor,
+        temperature_threshold_snowfall,
+        temperature_interval_snowfall,
+        temperature_threshold_melt,
+        water_holding_capacity,
+    )
     return snow_hbv_params
 end
 
@@ -133,25 +139,40 @@ function update_snow_model!(
     dt::Float64,
 )
     (; temperature) = atmospheric_forcing
-    (; snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff) = snow_model.variables
+    (; snow_storage, snow_water, snow_water_equivalent, snow_melt, runoff) =
+        snow_model.variables
     (; effective_precip, snow_precip, liquid_precip) = snow_model.boundary_conditions
-    (; temperature_threshold_snowfall, temperature_interval_snowfall, temperature_threshold_melt, degree_day_factor, water_holding_capacity) = snow_model.parameters
+    (;
+        temperature_threshold_snowfall,
+        temperature_interval_snowfall,
+        temperature_threshold_melt,
+        degree_day_factor,
+        water_holding_capacity,
+    ) = snow_model.parameters
 
-    n = length(temperature)
-    threaded_foreach(1:n; basesize = 1000) do i
-        snow_precip[i], liquid_precip[i] =
-            precipitation_hbv(effective_precip[i], temperature[i], temperature_interval_snowfall[i], temperature_threshold_snowfall[i])
+    n_cells = length(temperature)
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        snow_precip[cell_idx], liquid_precip[cell_idx] = precipitation_hbv(
+            effective_precip[cell_idx],
+            temperature[cell_idx],
+            temperature_interval_snowfall[cell_idx],
+            temperature_threshold_snowfall[cell_idx],
+        )
     end
-    threaded_foreach(1:n; basesize = 1000) do i
-        snow_storage[i], snow_water[i], snow_water_equivalent[i], snow_melt[i], runoff[i] = snowpack_hbv(
-            snow_storage[i],
-            snow_water[i],
-            snow_precip[i],
-            liquid_precip[i],
-            temperature[i],
-            temperature_threshold_melt[i],
-            degree_day_factor[i],
-            water_holding_capacity[i],
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        snow_storage[cell_idx],
+        snow_water[cell_idx],
+        snow_water_equivalent[cell_idx],
+        snow_melt[cell_idx],
+        runoff[cell_idx] = snowpack_hbv(
+            snow_storage[cell_idx],
+            snow_water[cell_idx],
+            snow_precip[cell_idx],
+            liquid_precip[cell_idx],
+            temperature[cell_idx],
+            temperature_threshold_melt[cell_idx],
+            degree_day_factor[cell_idx],
+            water_holding_capacity[cell_idx],
             dt,
         )
     end

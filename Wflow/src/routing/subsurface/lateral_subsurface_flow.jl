@@ -133,10 +133,10 @@ end
 
 "Initialize lateral subsurface flow model variables"
 function LateralSsfVariables(ssf::LateralSsfParameters, water_table_depth::Vector{Float64})
-    n = length(water_table_depth)
+    n_cells = length(water_table_depth)
     storage = @. ssf.specific_yield * (ssf.soil_thickness - water_table_depth) * ssf.area
     head = ssf.top - water_table_depth
-    variables = LateralSsfVariables(; n, water_table_depth, storage, head)
+    variables = LateralSsfVariables(; n = n_cells, water_table_depth, storage, head)
     return variables
 end
 
@@ -150,12 +150,12 @@ function LateralSSFModel(
     (; land, river, drain) = domain
     (; indices) = land.network
     (; area) = domain.land.parameters
-    n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "subsurface")
+    n_cells = length(indices)
+    timestepping = init_kinematic_wave_timestepping(config, n_cells; domain = "subsurface")
     parameters = LateralSsfParameters(dataset, config, indices, soil.parameters, area)
     water_table_depth = copy(soil.variables.water_table_depth)
     variables = LateralSsfVariables(parameters, water_table_depth)
-    recharge = RechargeModel(; n)
+    recharge = RechargeModel(; n = n_cells)
     if config.model.river_subsurface_exchange_head_based__flag
         river = GwfRiverModel(dataset, config, river.network.indices)
     else
@@ -225,8 +225,11 @@ function kinwave_subsurface_update!(
 
     ns = length(order_of_subdomains)
     for hydraulic_conductivity in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[hydraulic_conductivity]); basesize = 1) do i
-            m = order_of_subdomains[hydraulic_conductivity][i]
+        threaded_foreach(
+            eachindex(order_of_subdomains[hydraulic_conductivity]);
+            basesize = 1,
+        ) do subdomain_idx
+            m = order_of_subdomains[hydraulic_conductivity][subdomain_idx]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 if isnothing(river)
                     # for a river cell without a reservoir part of the upstream subsurface flow
@@ -265,7 +268,8 @@ function kinwave_subsurface_update!(
                 exfiltwater_cumulative[v] += _exfiltwater * dt
                 q_net_cumulative[v] += netflux * area[v] * dt
                 head[v] = top[v] - water_table_depth[v]
-                storage[v] = specific_yield[v] * (soil_thickness[v] - water_table_depth[v]) * area[v]
+                storage[v] =
+                    specific_yield[v] * (soil_thickness[v] - water_table_depth[v]) * area[v]
             end
         end
     end
@@ -316,14 +320,20 @@ function stable_timestep(subsurface_flow_model::LateralSSFModel, domain::DomainL
     (; flow_length, slope) = domain.parameters
     (; stable_timesteps, alpha_coefficient) = subsurface_flow_model.timestepping
 
-    n = length(water_table_depth)
+    n_cells = length(water_table_depth)
     stable_timesteps .= Inf
     hydraulic_conductivity = 0
-    for i in 1:n
-        if water_table_depth[i] > 0.0
+    for cell_idx in 1:n_cells
+        if water_table_depth[cell_idx] > 0.0
             hydraulic_conductivity += 1
-            c = ssf_celerity(water_table_depth[i], slope[i], specific_yield[i], kh_profile, i)
-            stable_timesteps[hydraulic_conductivity] = (flow_length[i] / c)
+            c = ssf_celerity(
+                water_table_depth[cell_idx],
+                slope[cell_idx],
+                specific_yield[cell_idx],
+                kh_profile,
+                cell_idx,
+            )
+            stable_timesteps[hydraulic_conductivity] = (flow_length[cell_idx] / c)
         end
     end
 
@@ -340,4 +350,5 @@ get_flux_to_river(subsurface_flow_model::LateralSSFModel, inds::Vector{Int}) =
     subsurface_flow_model.variables.to_river_average[inds]
 
 # wrapper method
-get_water_depth(subsurface_flow_model::LateralSSFModel) = subsurface_flow_model.variables.water_table_depth
+get_water_depth(subsurface_flow_model::LateralSSFModel) =
+    subsurface_flow_model.variables.water_table_depth

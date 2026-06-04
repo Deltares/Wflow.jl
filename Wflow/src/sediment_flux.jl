@@ -1,8 +1,8 @@
 "Sediment transport in overland flow model"
 @with_kw struct OverlandFlowSedimentModel{
-    TT<:AbstractTransportCapacityModel,
-    SF<:AbstractSedimentLandTransportModel,
-    TR<:AbstractSedimentToRiverModel,
+    TT <: AbstractTransportCapacityModel,
+    SF <: AbstractSedimentLandTransportModel,
+    TR <: AbstractSedimentToRiverModel,
 } <: AbstractOverlandFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TT
@@ -11,8 +11,8 @@
 end
 
 function get_transport_capacity(
-    transport_methods::Dict{<:EnumX.Enum,Type{<:AbstractTransportCapacityModel}},
-    transport_method::Union{LandTransportType.T,RiverTransportType.T},
+    transport_methods::Dict{<:EnumX.Enum, Type{<:AbstractTransportCapacityModel}},
+    transport_method::Union{LandTransportType.T, RiverTransportType.T},
     dataset::NCDataset,
     config::Config,
     indices,
@@ -23,7 +23,7 @@ function get_transport_capacity(
 end
 
 const land_transport_method =
-    Dict{LandTransportType.T,Type{<:AbstractTransportCapacityModel}}(
+    Dict{LandTransportType.T, Type{<:AbstractTransportCapacityModel}}(
         LandTransportType.yalinpart => TransportCapacityYalinDifferentiationModel,
         LandTransportType.govers => TransportCapacityGoversModel,
         LandTransportType.yalin => TransportCapacityYalinModel,
@@ -116,10 +116,10 @@ end
 ### River ###
 "Sediment transport in river model"
 @with_kw struct RiverSedimentModel{
-    TTR<:AbstractTransportCapacityModel,
-    ER<:AbstractRiverErosionModel,
-    SFR<:AbstractSedimentRiverTransportModel,
-    CR<:AbstractSedimentConcentrationsRiverModel,
+    TTR <: AbstractTransportCapacityModel,
+    ER <: AbstractRiverErosionModel,
+    SFR <: AbstractSedimentRiverTransportModel,
+    CR <: AbstractSedimentConcentrationsRiverModel,
 } <: AbstractRiverFlowModel
     hydrological_forcing::HydrologicalForcing
     transport_capacity::TTR
@@ -129,7 +129,7 @@ end
 end
 
 const river_transport_method =
-    Dict{RiverTransportType.T,Type{<:AbstractTransportCapacityModel}}(
+    Dict{RiverTransportType.T, Type{<:AbstractTransportCapacityModel}}(
         RiverTransportType.bagnold => TransportCapacityBagnoldModel,
         RiverTransportType.engelund => TransportCapacityEngelundModel,
         RiverTransportType.yang => TransportCapacityYangModel,
@@ -140,8 +140,8 @@ const river_transport_method =
 "Initialize the river sediment transport model"
 function RiverSedimentModel(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
-    n = length(indices)
-    hydrological_forcing = HydrologicalForcing(; n)
+    n_cells = length(indices)
+    hydrological_forcing = HydrologicalForcing(; n_cells)
 
     # Check what transport capacity equation will be used
     # River flow transport capacity method: ["bagnold", "engelund", "yang", "kodatie", "molinas"]

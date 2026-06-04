@@ -4,8 +4,8 @@ const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^0.2
 "Convert a gridded drainage direction to a directed graph"
 function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)
     # prepare a directed graph to be filled
-    n = length(indices)
-    graph = DiGraph(n)
+    n_cells = length(indices)
+    graph = DiGraph(n_cells)
 
     # loop over ldd, adding the edge to the downstream node
     for (from_node, from_index) in enumerate(indices)

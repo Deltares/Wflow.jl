@@ -24,10 +24,11 @@ function VegetationParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     rooting_depth =
         ncread(dataset, config, "vegetation_root__depth", LandHydrologySBM; sel = indices)
-    crop_coefficient = ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
+    crop_coefficient =
+        ncread(dataset, config, "vegetation__crop_factor", LandHydrologySBM; sel = indices)
     if do_cyclic(config) && haskey(config.input.cyclic, "vegetation__leaf_area_index")
         storage_specific_leaf = ncread(
             dataset,
@@ -51,12 +52,12 @@ function VegetationParameters(
             sel = indices,
         )
         vegetation_parameter_set = VegetationParameters(;
-            leaf_area_index = fill(MISSING_VALUE, n),
+            leaf_area_index = fill(MISSING_VALUE, n_cells),
             storage_wood,
             light_extinction_coefficient,
             storage_specific_leaf,
-            canopy_gap_fraction = fill(MISSING_VALUE, n),
-            maximum_canopy_storage = fill(MISSING_VALUE, n),
+            canopy_gap_fraction = fill(MISSING_VALUE, n_cells),
+            maximum_canopy_storage = fill(MISSING_VALUE, n_cells),
             rooting_depth,
             crop_coefficient,
         )

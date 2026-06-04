@@ -288,22 +288,30 @@ function kinwave_land_update!(
         overland_flow_model.variables
     (; surface_flow_width, flow_length, flow_fraction_to_river) = domain.parameters
 
-    ns = length(order_of_subdomains)
+    n_subdomain_levels = length(order_of_subdomains)
     qin .= 0.0
-    for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
-            m = order_of_subdomains[k][i]
+    for level_idx in 1:n_subdomain_levels
+        threaded_foreach(
+            eachindex(order_of_subdomains[level_idx]);
+            basesize = 1,
+        ) do subdomain_idx
+            m = order_of_subdomains[level_idx][subdomain_idx]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # for a river cell without a reservoir part of the upstream surface flow
                 # goes to the river (flow_fraction_to_river) and part goes to the surface
                 # flow reservoir (1.0 - flow_fraction_to_river), upstream nodes with a
                 # reservoir are excluded
                 to_river_cumulative[v] +=
-                    sum_at(i -> q[i] * flow_fraction_to_river[i], upstream_nodes[n]) * dt
+                    sum_at(
+                        upstream_idx ->
+                            q[upstream_idx] * flow_fraction_to_river[upstream_idx],
+                        upstream_nodes[n],
+                    ) * dt
 
                 if surface_flow_width[v] > 0.0
                     qin[v] = sum_at(
-                        i -> q[i] * (1.0 - flow_fraction_to_river[i]),
+                        upstream_idx ->
+                            q[upstream_idx] * (1.0 - flow_fraction_to_river[upstream_idx]),
                         upstream_nodes[n],
                     )
                 end
@@ -443,11 +451,14 @@ function kinwave_river_update!(
     (; flow_width, flow_length) = domain.parameters
     (; h, q, q_cumulative, storage, qin, qin_cumulative, qlat) = river_flow_model.variables
 
-    ns = length(order_of_subdomains)
+    n_subdomain_levels = length(order_of_subdomains)
     qin .= 0.0
-    for k in 1:ns
-        threaded_foreach(eachindex(order_of_subdomains[k]); basesize = 1) do i
-            m = order_of_subdomains[k][i]
+    for level_idx in 1:n_subdomain_levels
+        threaded_foreach(
+            eachindex(order_of_subdomains[level_idx]);
+            basesize = 1,
+        ) do subdomain_idx
+            m = order_of_subdomains[level_idx][subdomain_idx]
             for (n, v) in zip(subdomain_indices[m], order_subdomain[m])
                 # qin by outflow from upstream reservoir location is added
                 qin[v] += sum_at(q, upstream_nodes[n])
@@ -560,14 +571,14 @@ function stable_timestep(
     (; alpha) = flow_model.parameters
     (; stable_timesteps) = flow_model.timestepping
 
-    n = length(q)
+    n_cells = length(q)
     stable_timesteps .= Inf
     k = 0
-    for i in 1:n
-        if q[i] > KIN_WAVE_MIN_FLOW
+    for cell_idx in 1:n_cells
+        if q[cell_idx] > KIN_WAVE_MIN_FLOW
             k += 1
-            c = inv(alpha[i] * BETA_KINWAVE * pow(q[i], (BETA_KINWAVE - 1.0)))
-            stable_timesteps[k] = (flow_length[i] / c)
+            c = inv(alpha[cell_idx] * BETA_KINWAVE * pow(q[cell_idx], (BETA_KINWAVE - 1.0)))
+            stable_timesteps[k] = (flow_length[cell_idx] / c)
         end
     end
 

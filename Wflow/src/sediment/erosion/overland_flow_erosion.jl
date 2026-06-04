@@ -88,15 +88,15 @@ function update_overland_flow_erosion_model!(
         overland_flow_erosion_model.parameters
     (; soil_erosion_rate) = overland_flow_erosion_model.variables
 
-    n = length(q)
-    threaded_foreach(1:n; basesize = 1000) do i
-        soil_erosion_rate[i] = overland_flow_erosion_answers(
-            q[i],
-            usle_k[i],
-            usle_c[i],
-            answers_overland_flow_factor[i],
-            geometry.slope[i],
-            geometry.area[i],
+    n_cells = length(q)
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        soil_erosion_rate[cell_idx] = overland_flow_erosion_answers(
+            q[cell_idx],
+            usle_k[cell_idx],
+            usle_c[cell_idx],
+            answers_overland_flow_factor[cell_idx],
+            geometry.slope[cell_idx],
+            geometry.area[cell_idx],
         )
     end
 end

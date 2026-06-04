@@ -46,8 +46,8 @@ function update_sediment_to_river_model!(
     (; deposition) = sediment_to_river_model.boundary_conditions
     (; sediment_rate) = sediment_to_river_model.variables
 
-    for (i, river) in enumerate(rivers)
-        sediment_rate[i] = river ? deposition[i] : 0.0
+    for (cell_idx, river) in enumerate(rivers)
+        sediment_rate[cell_idx] = river ? deposition[cell_idx] : 0.0
     end
 end
 
@@ -114,8 +114,10 @@ function update_bc_sediment_to_river_model!(
     @. deposition_clay = sediment_transport_model.variables.deposition_clay
     @. deposition_silt = sediment_transport_model.variables.deposition_silt
     @. deposition_sand = sediment_transport_model.variables.deposition_sand
-    @. deposition_small_aggregates = sediment_transport_model.variables.deposition_small_aggregates
-    @. deposition_large_aggregates = sediment_transport_model.variables.deposition_large_aggregates
+    @. deposition_small_aggregates =
+        sediment_transport_model.variables.deposition_small_aggregates
+    @. deposition_large_aggregates =
+        sediment_transport_model.variables.deposition_large_aggregates
 end
 
 "Update differentiated sediment reaching the river model for a single timestep"
@@ -131,23 +133,30 @@ function update_sediment_to_river_model!(
         deposition_small_aggregates,
         deposition_large_aggregates,
     ) = sediment_to_river_model.boundary_conditions
-    (; sediment_rate, clay_rate, silt_rate, sand_rate, small_aggregates_rate, large_aggregates_rate) =
-        sediment_to_river_model.variables
+    (;
+        sediment_rate,
+        clay_rate,
+        silt_rate,
+        sand_rate,
+        small_aggregates_rate,
+        large_aggregates_rate,
+    ) = sediment_to_river_model.variables
 
-    for (i, river) in enumerate(rivers)
+    for (cell_idx, river) in enumerate(rivers)
         if river
-            clay_rate[i] = deposition_clay[i]
-            silt_rate[i] = deposition_silt[i]
-            sand_rate[i] = deposition_sand[i]
-            small_aggregates_rate[i] = deposition_small_aggregates[i]
-            large_aggregates_rate[i] = deposition_large_aggregates[i]
+            clay_rate[cell_idx] = deposition_clay[cell_idx]
+            silt_rate[cell_idx] = deposition_silt[cell_idx]
+            sand_rate[cell_idx] = deposition_sand[cell_idx]
+            small_aggregates_rate[cell_idx] = deposition_small_aggregates[cell_idx]
+            large_aggregates_rate[cell_idx] = deposition_large_aggregates[cell_idx]
         else
-            clay_rate[i] = 0.0
-            silt_rate[i] = 0.0
-            sand_rate[i] = 0.0
-            small_aggregates_rate[i] = 0.0
-            large_aggregates_rate[i] = 0.0
+            clay_rate[cell_idx] = 0.0
+            silt_rate[cell_idx] = 0.0
+            sand_rate[cell_idx] = 0.0
+            small_aggregates_rate[cell_idx] = 0.0
+            large_aggregates_rate[cell_idx] = 0.0
         end
     end
-    @. sediment_rate = clay_rate + silt_rate + sand_rate + small_aggregates_rate + large_aggregates_rate
+    @. sediment_rate =
+        clay_rate + silt_rate + sand_rate + small_aggregates_rate + large_aggregates_rate
 end

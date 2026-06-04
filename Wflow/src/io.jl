@@ -818,9 +818,9 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
                 output_dataset[name][:, time_index] .= v
             else
                 nlayer = length(first(A))
-                for i in 1:nlayer
+                for layer_idx in 1:nlayer
                     v = from_SI(reducer_(getindex.(A, layer)), unit; dt_val)
-                    output_dataset[name][:, i, time_index] .= v
+                    output_dataset[name][:, layer_idx, time_index] .= v
                 end
             end
         else
@@ -853,12 +853,12 @@ function write_netcdf_timestep(model::AbstractModel, writer::NCWriter{<:NCDatase
             output_dataset[key][:, :, time_index] = buffer
         elseif elemtype <: SVector
             nlayer = length(first(vector))
-            for i in 1:nlayer
+            for layer_idx in 1:nlayer
                 # ensure no other information is written
                 fill!(buffer, missing)
-                buffer[sel] .= getindex.(vector, i)
+                buffer[sel] .= getindex.(vector, layer_idx)
                 from_SI!(buffer, unit)
-                output_dataset[key][:, :, i, time_index] = buffer
+                output_dataset[key][:, :, layer_idx, time_index] = buffer
             end
         else
             error("Unsupported output type: ", elemtype)
@@ -989,12 +989,12 @@ function reducer(col, rev_inds, x_nc, y_nc, config, dataset)
         ids = unique(skipmissing(map_2d))
         # from id to list of internal indices
         inds = Dict{Int, Vector{Int}}(id => Vector{Int}() for id in ids)
-        for i in eachindex(map_2d)
-            v = map_2d[i]
+        for cell_idx in eachindex(map_2d)
+            v = map_2d[cell_idx]
             ismissing(v) && continue
             v::Int
             vector = inds[v]
-            ind = rev_inds[i]
+            ind = rev_inds[cell_idx]
             if iszero(ind)
                 error("""inactive cell found in requested scalar output
                     map `$map` value $v for parameter $param""")

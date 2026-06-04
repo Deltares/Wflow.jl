@@ -68,8 +68,16 @@ function SoilErosionParameters(
     )
     # Check that soil fractions sum to 1
     soil_fractions =
-        clay_fraction + silt_fraction + sand_fraction + small_aggregates_fraction + large_aggregates_fraction
-    if !all(hydraulic_conductivity_scale_parameter -> isapprox(hydraulic_conductivity_scale_parameter, 1.0; rtol = 1e-3), soil_fractions)
+        clay_fraction +
+        silt_fraction +
+        sand_fraction +
+        small_aggregates_fraction +
+        large_aggregates_fraction
+    if !all(
+        hydraulic_conductivity_scale_parameter ->
+            isapprox(hydraulic_conductivity_scale_parameter, 1.0; rtol = 1e-3),
+        soil_fractions,
+    )
         error("Particle fractions in the soil must sum to 1.")
     end
     soil_parameters = SoilErosionParameters(;
@@ -119,8 +127,13 @@ end
 "Update soil erosion model for a single timestep"
 function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
     (; rainfall_erosion, overland_flow_erosion) = soil_erosion_model.boundary_conditions
-    (; clay_fraction, silt_fraction, sand_fraction, small_aggregates_fraction, large_aggregates_fraction) =
-        soil_erosion_model.parameters
+    (;
+        clay_fraction,
+        silt_fraction,
+        sand_fraction,
+        small_aggregates_fraction,
+        large_aggregates_fraction,
+    ) = soil_erosion_model.parameters
     (;
         soil_erosion_rate,
         clay_erosion_rate,
@@ -130,21 +143,21 @@ function update_soil_erosion_model!(soil_erosion_model::SoilErosionModel)
         large_aggregates_erosion_rate,
     ) = soil_erosion_model.variables
 
-    n = length(rainfall_erosion)
-    threaded_foreach(1:n; basesize = 1000) do i
-        soil_erosion_rate[i],
-        clay_erosion_rate[i],
-        silt_erosion_rate[i],
-        sand_erosion_rate[i],
-        small_aggregates_erosion_rate[i],
-        large_aggregates_erosion_rate[i] = total_soil_erosion(
-            rainfall_erosion[i],
-            overland_flow_erosion[i],
-            clay_fraction[i],
-            silt_fraction[i],
-            sand_fraction[i],
-            small_aggregates_fraction[i],
-            large_aggregates_fraction[i],
+    n_cells = length(rainfall_erosion)
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        soil_erosion_rate[cell_idx],
+        clay_erosion_rate[cell_idx],
+        silt_erosion_rate[cell_idx],
+        sand_erosion_rate[cell_idx],
+        small_aggregates_erosion_rate[cell_idx],
+        large_aggregates_erosion_rate[cell_idx] = total_soil_erosion(
+            rainfall_erosion[cell_idx],
+            overland_flow_erosion[cell_idx],
+            clay_fraction[cell_idx],
+            silt_fraction[cell_idx],
+            sand_fraction[cell_idx],
+            small_aggregates_fraction[cell_idx],
+            large_aggregates_fraction[cell_idx],
         )
     end
 end

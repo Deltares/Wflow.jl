@@ -93,9 +93,9 @@ function homogenous_aquifer(nrow, ncol)
     return gwf_model
 end
 
-function init_sbm_soil_model(n, N; kwargs...)
+function init_sbm_soil_model(n_cells, N; kwargs...)
     kwargs = Dict{Symbol, Any}(kwargs)
-    kwargs[:n] = n
+    kwargs[:n_cells] = n_cells
 
     if !haskey(kwargs, :kv_profile)
         kwargs[:kv_profile] = nothing
@@ -185,7 +185,7 @@ function init_sbm_soil_model(n, N; kwargs...)
     kwargs_bc = filter(pair -> pair.first ∈ fieldnames(Wflow.SbmSoilBC), kwargs)
     boundary_conditions = Wflow.SbmSoilBC(; kwargs_bc...)
 
-    return Wflow.SbmSoilModel(; n, variables, parameters, boundary_conditions)
+    return Wflow.SbmSoilModel(; n_cells, variables, parameters, boundary_conditions)
 end
 
 """

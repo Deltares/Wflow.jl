@@ -145,7 +145,14 @@ function GroundwaterFlowParameters(
     else
         hydraulic_conductivity_scale_parameter = Float64[]
     end
-    parameters = GroundwaterFlowParameters(; hydraulic_conductivity, top, bottom, area, specific_yield, hydraulic_conductivity_scale_parameter)
+    parameters = GroundwaterFlowParameters(;
+        hydraulic_conductivity,
+        top,
+        bottom,
+        area,
+        specific_yield,
+        hydraulic_conductivity_scale_parameter,
+    )
     return parameters
 end
 
@@ -172,8 +179,9 @@ function ConstantHead(
         Routing;
         sel = indices,
     )
-    n = length(indices)
-    index_constanthead = filter(i -> !isequal(constanthead[i], MISSING_VALUE), 1:n)
+    n_cells = length(indices)
+    index_constanthead =
+        filter(cell_idx -> !isequal(constanthead[cell_idx], MISSING_VALUE), 1:n_cells)
     head = constanthead[index_constanthead]
     variables = ConstantHeadVariables(head)
     constant_head = ConstantHead(; variables, index = index_constanthead)
@@ -270,13 +278,24 @@ function GroundwaterFlowModel(
             n_unsatlayers,
             total_soil_water_storage,
         ) = soil.variables
-        (; theta_s, theta_r, soil_thickness, soil_water_capacity, cumulative_layer_depth, actual_layer_thickness) =
-            soil.parameters
+        (;
+            theta_s,
+            theta_r,
+            soil_thickness,
+            soil_water_capacity,
+            cumulative_layer_depth,
+            actual_layer_thickness,
+        ) = soil.parameters
 
         @. water_table_depth = elevation - min(elevation, initial_head)
-        @. saturated_water_depth = (soil_thickness - water_table_depth) * (theta_s - theta_r)
+        @. saturated_water_depth =
+            (soil_thickness - water_table_depth) * (theta_s - theta_r)
         @. unsaturated_store_capacity = soil_water_capacity - saturated_water_depth
-        @. unsaturated_layer_thickness = set_layerthickness(water_table_depth, cumulative_layer_depth, actual_layer_thickness)
+        @. unsaturated_layer_thickness = set_layerthickness(
+            water_table_depth,
+            cumulative_layer_depth,
+            actual_layer_thickness,
+        )
         @. n_unsatlayers = number_of_active_layers.(unsaturated_layer_thickness)
         @. total_soil_water_storage = saturated_water_depth
     end
@@ -399,12 +418,12 @@ function initialize_conductance!(
     variables::GroundwaterFlowVariables,
     connectivity::Connectivity,
 )
-    for i in 1:(connectivity.ncell)
+    for cell_idx in 1:(connectivity.ncell)
         # Loop over connections for cell j
-        for nzi in connections(connectivity, i)
+        for nzi in connections(connectivity, cell_idx)
             j = connectivity.rowval[nzi]
             variables.conductance[nzi] =
-                horizontal_conductance(i, j, nzi, parameters, connectivity)
+                horizontal_conductance(cell_idx, j, nzi, parameters, connectivity)
         end
     end
 end
@@ -450,11 +469,21 @@ function conductance(
         thickness2 = gwf.parameters.top[j] - gwf.parameters.bottom[j]
         # calculate conductivity values corrected for depth of water table
         kH1 =
-            (gwf.parameters.hydraulic_conductivity[i] / gwf.parameters.hydraulic_conductivity_scale_parameter[i]) *
-            (exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * zi1) - exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * thickness1))
+            (
+                gwf.parameters.hydraulic_conductivity[i] /
+                gwf.parameters.hydraulic_conductivity_scale_parameter[i]
+            ) * (
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * zi1) -
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * thickness1)
+            )
         kH2 =
-            (gwf.parameters.hydraulic_conductivity[j] / gwf.parameters.hydraulic_conductivity_scale_parameter[j]) *
-            (exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * zi2) - exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * thickness2))
+            (
+                gwf.parameters.hydraulic_conductivity[j] /
+                gwf.parameters.hydraulic_conductivity_scale_parameter[j]
+            ) * (
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * zi2) -
+                exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[j] * thickness2)
+            )
         return harmonicmean_conductance(
             kH1,
             kH2,
@@ -483,19 +512,19 @@ function flux!(
     conductivity_profile::GwfConductivityProfileType.T,
     dt::Float64,
 )
-    for i in 1:(gwf.connectivity.ncell)
+    for cell_idx in 1:(gwf.connectivity.ncell)
         # Loop over connections for cell j
-        for nzi in connections(gwf.connectivity, i)
-            # connection from i -> j
+        for nzi in connections(gwf.connectivity, cell_idx)
+            # connection from cell_idx -> j
             j = gwf.connectivity.rowval[nzi]
-            delta_head = gwf.variables.head[i] - gwf.variables.head[j]
-            cond = conductance(gwf, i, j, nzi, conductivity_profile)
+            delta_head = gwf.variables.head[cell_idx] - gwf.variables.head[j]
+            cond = conductance(gwf, cell_idx, j, nzi, conductivity_profile)
             flow = cond * delta_head
-            gwf.variables.q_net[i] -= flow
+            gwf.variables.q_net[cell_idx] -= flow
             if flow > 0.0
-                gwf.variables.q_cumulative[i] += flow * dt
+                gwf.variables.q_cumulative[cell_idx] += flow * dt
             else
-                gwf.variables.q_in_cumulative[i] -= flow * dt
+                gwf.variables.q_in_cumulative[cell_idx] -= flow * dt
             end
         end
     end
@@ -516,17 +545,29 @@ function stable_timestep(
     alpha_coefficient::Float64,
 )
     dt_min = Inf
-    for i in eachindex(gwf.variables.head)
+    for cell_idx in eachindex(gwf.variables.head)
         if conductivity_profile == GwfConductivityProfileType.exponential
-            water_table_depth = gwf.parameters.top[i] - gwf.variables.head[i]
-            thickness = gwf.parameters.top[i] - gwf.parameters.bottom[i]
+            water_table_depth = gwf.parameters.top[cell_idx] - gwf.variables.head[cell_idx]
+            thickness = gwf.parameters.top[cell_idx] - gwf.parameters.bottom[cell_idx]
             value =
-                (gwf.parameters.hydraulic_conductivity[i] / gwf.parameters.hydraulic_conductivity_scale_parameter[i]) *
-                (exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * water_table_depth) - exp(-gwf.parameters.hydraulic_conductivity_scale_parameter[i] * thickness))
+                (
+                    gwf.parameters.hydraulic_conductivity[cell_idx] /
+                    gwf.parameters.hydraulic_conductivity_scale_parameter[cell_idx]
+                ) * (
+                    exp(
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[cell_idx] *
+                        water_table_depth,
+                    ) - exp(
+                        -gwf.parameters.hydraulic_conductivity_scale_parameter[cell_idx] *
+                        thickness,
+                    )
+                )
         elseif conductivity_profile == GwfConductivityProfileType.uniform
-            value = gwf.parameters.hydraulic_conductivity[i] * saturated_thickness(gwf, i)
+            value =
+                gwf.parameters.hydraulic_conductivity[cell_idx] *
+                saturated_thickness(gwf, cell_idx)
         end
-        dt = gwf.parameters.area[i] * storativity(gwf)[i] / value
+        dt = gwf.parameters.area[cell_idx] * storativity(gwf)[cell_idx] / value
         dt_min = dt < dt_min ? dt : dt_min
     end
     return dt_min * alpha_coefficient
@@ -555,11 +596,12 @@ function update_head!(gwf::GroundwaterFlowModel, soil::SbmSoilModel, dt::Float64
     (; head, exfiltwater_cumulative, q_net) = gwf.variables
     (; area, specific_yield) = gwf.parameters
 
-    for i in eachindex(head)
-        net_flux = q_net[i] / area[i]
-        dh, exfilt = water_table_change(soil, net_flux, specific_yield[i], i, dt)
-        head[i] += dh
-        exfiltwater_cumulative[i] += exfilt * dt
+    for cell_idx in eachindex(head)
+        net_flux = q_net[cell_idx] / area[cell_idx]
+        dh, exfilt =
+            water_table_change(soil, net_flux, specific_yield[cell_idx], cell_idx, dt)
+        head[cell_idx] += dh
+        exfiltwater_cumulative[cell_idx] += exfilt * dt
     end
     # Set constant head (dirichlet) boundaries
     gwf.variables.head[gwf.constanthead.index] .= gwf.constanthead.variables.head
@@ -643,16 +685,16 @@ function sum_boundary_fluxes(
     exclude = nothing,
 )
     (; boundary_conditions) = gwf_model
-    n = length(gwf_model.variables.storage)
-    flux_in = zeros(n)
-    flux_out = zeros(n)
+    n_cells = length(gwf_model.variables.storage)
+    flux_in = zeros(n_cells)
+    flux_out = zeros(n_cells)
     for bc in get_boundaries(boundary_conditions)
         isnothing(bc) && continue
         typeof(bc) == exclude && continue
         flux_av_average = bc.variables.flux_average
         indices = get_boundary_index(bc, domain)
-        for (i, index) in enumerate(indices)
-            flux = flux_av_average[i]
+        for (bc_idx, index) in enumerate(indices)
+            flux = flux_av_average[bc_idx]
             if flux > 0.0
                 flux_in[index] += flux
             else

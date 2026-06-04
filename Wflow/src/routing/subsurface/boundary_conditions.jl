@@ -70,8 +70,8 @@ function GwfRiverModel(
 
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
-    n = length(indices)
-    variables = GwfRiverVariables(; n)
+    n_cells = length(indices)
+    variables = GwfRiverVariables(; n = n_cells)
     river_model = GwfRiverModel(parameters, variables)
     return river_model
 end
@@ -82,23 +82,24 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
+    for (cell_idx, index) in enumerate(indices)
         head = subsurface_flow_model.variables.head[index]
-        stage = gwf_river_model.variables.stage[i]
+        stage = gwf_river_model.variables.stage[cell_idx]
         if stage > head
-            max_infiltration_flux = gwf_river_model.variables.storage[i] / dt
-            cond = gwf_river_model.parameters.infiltration_conductance[i]
-            delta_head = min(stage - gwf_river_model.parameters.bottom[i], stage - head)
+            max_infiltration_flux = gwf_river_model.variables.storage[cell_idx] / dt
+            cond = gwf_river_model.parameters.infiltration_conductance[cell_idx]
+            delta_head =
+                min(stage - gwf_river_model.parameters.bottom[cell_idx], stage - head)
             flux = min(cond * delta_head, max_infiltration_flux)
         else
-            cond = gwf_river_model.parameters.exfiltration_conductance[i]
+            cond = gwf_river_model.parameters.exfiltration_conductance[cell_idx]
             delta_head = stage - head
             flux = check_flux(cond * delta_head, subsurface_flow_model, index)
         end
-        gwf_river_model.variables.flux[i] = flux
+        gwf_river_model.variables.flux[cell_idx] = flux
         subsurface_flow_model.variables.q_net_bnds[index] += flux
-        gwf_river_model.variables.storage[i] -= dt * flux
-        gwf_river_model.variables.flux_cumulative[i] += dt * flux
+        gwf_river_model.variables.storage[cell_idx] -= dt * flux
+        gwf_river_model.variables.flux_cumulative[cell_idx] += dt * flux
     end
     return nothing
 end
@@ -133,8 +134,8 @@ function DrainageModel(
     elevation = ncread(dataset, config, "land_drain__elevation", Routing; sel = indices)
     conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
     parameters = DrainageParameters(; elevation, conductance)
-    n = length(indices)
-    variables = DrainageVariables(; n)
+    n_cells = length(indices)
+    variables = DrainageVariables(; n = n_cells)
 
     drainage_model = DrainageModel(parameters, variables)
     return drainage_model
@@ -146,16 +147,16 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
-        cond = drainage_model.parameters.conductance[i]
+    for (cell_idx, index) in enumerate(indices)
+        cond = drainage_model.parameters.conductance[cell_idx]
         delta_head = min(
             0,
-            drainage_model.parameters.elevation[i] -
+            drainage_model.parameters.elevation[cell_idx] -
             subsurface_flow_model.variables.head[index],
         )
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
-        drainage_model.variables.flux[i] = flux
-        drainage_model.variables.flux_cumulative[i] += flux * dt
+        drainage_model.variables.flux[cell_idx] = flux
+        drainage_model.variables.flux_cumulative[cell_idx] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -188,13 +189,14 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
-        cond = headboundary.parameters.conductance[i]
+    for (cell_idx, index) in enumerate(indices)
+        cond = headboundary.parameters.conductance[cell_idx]
         delta_head =
-            headboundary.variables.head[i] - subsurface_flow_model.variables.head[index]
+            headboundary.variables.head[cell_idx] -
+            subsurface_flow_model.variables.head[index]
         flux = check_flux(cond * delta_head, subsurface_flow_model, index)
-        headboundary.variables.flux[i] = flux
-        headboundary.variables.flux_cumulative[i] += flux * dt
+        headboundary.variables.flux[cell_idx] = flux
+        headboundary.variables.flux_cumulative[cell_idx] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -222,14 +224,15 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
+    for (cell_idx, index) in enumerate(indices)
         flux = check_flux(
-            recharge_model.variables.rate[i] * subsurface_flow_model.parameters.area[index],
+            recharge_model.variables.rate[cell_idx] *
+            subsurface_flow_model.parameters.area[index],
             subsurface_flow_model,
             index,
         )
-        recharge_model.variables.flux[i] = flux
-        recharge_model.variables.flux_cumulative[i] += flux * dt
+        recharge_model.variables.flux[cell_idx] = flux
+        recharge_model.variables.flux_cumulative[cell_idx] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -256,14 +259,14 @@ function flux!(
     indices::Vector{Int},
     dt::Float64,
 )
-    for (i, index) in enumerate(indices)
+    for (cell_idx, index) in enumerate(indices)
         flux = check_flux(
-            well_model.variables.volumetric_rate[i],
+            well_model.variables.volumetric_rate[cell_idx],
             subsurface_flow_model,
             index,
         )
-        well_model.variables.flux[i] = flux
-        well_model.variables.flux_cumulative[i] += flux * dt
+        well_model.variables.flux[cell_idx] = flux
+        well_model.variables.flux_cumulative[cell_idx] += flux * dt
         subsurface_flow_model.variables.q_net_bnds[index] += flux
     end
     return nothing
@@ -273,10 +276,12 @@ function update_river_storage_stage!(
     gwf_river_model::GwfRiverModel,
     river_flow_model::AbstractRiverFlowModel,
 )
-    for i in eachindex(gwf_river_model.variables.stage)
-        gwf_river_model.variables.stage[i] =
-            river_flow_model.variables.h[i] + gwf_river_model.parameters.bottom[i]
-        gwf_river_model.variables.storage[i] = river_flow_model.variables.storage[i]
+    for cell_idx in eachindex(gwf_river_model.variables.stage)
+        gwf_river_model.variables.stage[cell_idx] =
+            river_flow_model.variables.h[cell_idx] +
+            gwf_river_model.parameters.bottom[cell_idx]
+        gwf_river_model.variables.storage[cell_idx] =
+            river_flow_model.variables.storage[cell_idx]
     end
     return nothing
 end

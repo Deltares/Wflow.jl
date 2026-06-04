@@ -170,15 +170,16 @@ function update_demand_gross!(
     (; demand_gross) = variables
     (; n_unsatlayers) = soil_model.variables
 
-    for i in eachindex(irrigation_areas)
-        if irrigation_areas[i] && irrigation_trigger[i]
+    for cell_idx in eachindex(irrigation_areas)
+        if irrigation_areas[cell_idx] && irrigation_trigger[cell_idx]
             irri_dem_gross_depth = 0.0
-            for k in 1:n_unsatlayers[i]
+            for soil_layer_idx in 1:n_unsatlayers[cell_idx]
                 depletion, readily_available_water =
-                    water_demand_root_zone(soil_model, i, k)
+                    water_demand_root_zone(soil_model, cell_idx, soil_layer_idx)
 
                 # check if maximum irrigation rate has been applied at the previous time step.
-                max_irri_rate_applied = demand_gross[i] == maximum_irrigation_rate[i]
+                max_irri_rate_applied =
+                    demand_gross[cell_idx] == maximum_irrigation_rate[cell_idx]
                 if depletion >= readily_available_water # start irrigation
                     irri_dem_gross_depth += depletion
                     # add depletion to irrigation gross demand when the maximum irrigation rate has been
@@ -188,10 +189,10 @@ function update_demand_gross!(
                 end
             end
             irri_dem_gross = irri_dem_gross_depth / dt
-            demand_gross[i] =
-                compute_demand_gross(nonpaddy_model, soil_model, irri_dem_gross, i)
+            demand_gross[cell_idx] =
+                compute_demand_gross(nonpaddy_model, soil_model, irri_dem_gross, cell_idx)
         else
-            demand_gross[i] = 0.0
+            demand_gross[cell_idx] = 0.0
         end
     end
     return nothing
@@ -368,11 +369,12 @@ Update `evaporation` and the water depth `h` of the paddy irrigation model for a
 timestep.
 """
 function evaporation!(paddy_model::PaddyModel, potential_evaporation, dt::Float64)
-    for i in eachindex(potential_evaporation)
-        if paddy_model.parameters.irrigation_areas[i]
-            evaporation = min(paddy_model.variables.h[i] / dt, potential_evaporation[i])
-            paddy_model.variables.h[i] -= evaporation * dt
-            paddy_model.variables.evaporation[i] = evaporation
+    for cell_idx in eachindex(potential_evaporation)
+        if paddy_model.parameters.irrigation_areas[cell_idx]
+            evaporation =
+                min(paddy_model.variables.h[cell_idx] / dt, potential_evaporation[cell_idx])
+            paddy_model.variables.h[cell_idx] -= evaporation * dt
+            paddy_model.variables.evaporation[cell_idx] = evaporation
         end
     end
     return nothing
@@ -392,11 +394,11 @@ the water depth `h` of the paddy irrigation model for a single timestep.
 """
 function update_runoff!(paddy_model::PaddyModel, runoff, dt::Float64)
     (; parameters, variables) = paddy_model
-    for (i, b) in enumerate(parameters.irrigation_areas)
+    for (cell_idx, b) in enumerate(parameters.irrigation_areas)
         !b && continue
-        paddy_runoff = max(runoff[i] - parameters.h_max[i] / dt, 0.0)
-        paddy_model.variables.h[i] = (runoff[i] - paddy_runoff) * dt
-        runoff[i] = paddy_runoff
+        paddy_runoff = max(runoff[cell_idx] - parameters.h_max[cell_idx] / dt, 0.0)
+        paddy_model.variables.h[cell_idx] = (runoff[cell_idx] - paddy_runoff) * dt
+        runoff[cell_idx] = paddy_runoff
     end
 end
 
@@ -422,15 +424,15 @@ function update_demand_gross!(paddy_model::PaddyModel, dt::Float64)
         maximum_irrigation_rate,
     ) = paddy_model.parameters
 
-    for i in eachindex(irrigation_areas)
-        if irrigation_areas[i] && irrigation_trigger[i]
-            irr_depth_paddy = compute_irrigation_depth(paddy_model, i)
-            irri_dem_gross = irr_depth_paddy / irrigation_efficiency[i]
+    for cell_idx in eachindex(irrigation_areas)
+        if irrigation_areas[cell_idx] && irrigation_trigger[cell_idx]
+            irr_depth_paddy = compute_irrigation_depth(paddy_model, cell_idx)
+            irri_dem_gross = irr_depth_paddy / irrigation_efficiency[cell_idx]
             # limit irrigation demand to the maximum irrigation rate
-            irri_dem_gross = min(irri_dem_gross / dt, maximum_irrigation_rate[i])
-            demand_gross[i] = irri_dem_gross
+            irri_dem_gross = min(irri_dem_gross / dt, maximum_irrigation_rate[cell_idx])
+            demand_gross[cell_idx] = irri_dem_gross
         else
-            demand_gross[i] = 0.0
+            demand_gross[cell_idx] = 0.0
         end
     end
 end
@@ -660,31 +662,32 @@ function surface_water_allocation_local!(
     indices_river = domain.network.river_inds_excl_reservoir
 
     # maps from the land domain to the internal river domain (linear index), excluding reservoirs
-    for (i, index_river) in enumerate(indices_river)
-        if index_river > 0
+    for (cell_idx, river_cell_idx) in enumerate(indices_river)
+        if river_cell_idx > 0
             # the available volume is limited by a fixed scaling factor of 0.8 to prevent
             # rivers completely drying out. check for abstraction through negative external
             # inflow first and adjust available volume.
-            if external_inflow[index_river] < 0.0
-                available_volume = storage[index_river] * 0.80
+            if external_inflow[river_cell_idx] < 0.0
+                available_volume = storage[river_cell_idx] * 0.80
                 max_river_abstraction =
-                    min(-external_inflow[index_river] * dt, available_volume)
+                    min(-external_inflow[river_cell_idx] * dt, available_volume)
                 available_volume = max(available_volume - max_river_abstraction, 0.0)
             else
-                available_volume = storage[index_river] * 0.80
+                available_volume = storage[river_cell_idx] * 0.80
             end
             # satisfy surface water demand with available local river volume
-            surfacewater_demand_vol = surfacewater_demand[i] * area[i]
+            surfacewater_demand_vol = surfacewater_demand[cell_idx] * area[cell_idx]
             abstraction_vol = min(surfacewater_demand_vol * dt, available_volume)
-            actual_surfacewater_abstraction_volume[index_river] = abstraction_vol / dt
+            actual_surfacewater_abstraction_volume[river_cell_idx] = abstraction_vol / dt
             # remaining available surface water and demand [m³]
-            available_surfacewater[index_river] =
+            available_surfacewater[river_cell_idx] =
                 max(available_volume - abstraction_vol, 0.0)
-            abstraction = abstraction_vol / (area[i] * dt)
-            surfacewater_demand[i] = max(surfacewater_demand[i] - abstraction, 0.0)
+            abstraction = abstraction_vol / (area[cell_idx] * dt)
+            surfacewater_demand[cell_idx] =
+                max(surfacewater_demand[cell_idx] - abstraction, 0.0)
             # update actual abstraction from river and surface water allocation (land cell)
-            actual_surfacewater_abstraction[index_river] = abstraction
-            surfacewater_allocation[i] = abstraction
+            actual_surfacewater_abstraction[river_cell_idx] = abstraction
+            surfacewater_allocation[cell_idx] = abstraction
         end
     end
     return nothing
@@ -715,14 +718,18 @@ function surface_water_allocation_area!(
     (; surfacewater_demand) = demand_variables
     (; reservoir) = river_flow_model.boundary_conditions
 
-    for i in eachindex(inds_river)
+    for alloc_area_idx in eachindex(inds_river)
         # surface water_demand (allocation area)
-        sw_demand_vol = mapreduce(j -> surfacewater_demand[j] * area[j], +, inds_land[i])
+        sw_demand_vol = mapreduce(
+            cell_idx -> surfacewater_demand[cell_idx] * area[cell_idx],
+            +,
+            inds_land[alloc_area_idx],
+        )
 
         sw_available = available_surface_water!(
             available_surfacewater,
             reservoir,
-            inds_river[i],
+            inds_river[alloc_area_idx],
             inds_reservoir,
             dt,
         )
@@ -740,17 +747,18 @@ function surface_water_allocation_area!(
 
         # water abstracted from surface water at each river cell (including reservoir
         # locations).
-        for j in inds_river[i]
-            actual_surfacewater_abstraction_volume[j] +=
-                frac_abstract_sw * available_surfacewater[j] / dt
-            actual_surfacewater_abstraction[j] =
-                actual_surfacewater_abstraction_volume[j] /
-                domain.river.parameters.cell_area[j]
+        for river_cell_idx in inds_river[alloc_area_idx]
+            actual_surfacewater_abstraction_volume[river_cell_idx] +=
+                frac_abstract_sw * available_surfacewater[river_cell_idx] / dt
+            actual_surfacewater_abstraction[river_cell_idx] =
+                actual_surfacewater_abstraction_volume[river_cell_idx] /
+                domain.river.parameters.cell_area[river_cell_idx]
         end
 
         # water allocated to each land cell.
-        for j in inds_land[i]
-            surfacewater_allocation[j] += frac_allocate_sw * surfacewater_demand[j]
+        for cell_idx in inds_land[alloc_area_idx]
+            surfacewater_allocation[cell_idx] +=
+                frac_allocate_sw * surfacewater_demand[cell_idx]
         end
     end
     return nothing
@@ -806,25 +814,27 @@ function groundwater_allocation_local!(
     (; groundwater_demand, total_gross_demand) = demand_variables
     (; area, reservoir_coverage) = parameters
 
-    for i in eachindex(groundwater_demand)
+    for cell_idx in eachindex(groundwater_demand)
         # groundwater demand based on allocation from surface water.
 
-        groundwater_demand[i] = max(total_gross_demand[i] - surfacewater_allocation[i], 0.0)
+        groundwater_demand[cell_idx] =
+            max(total_gross_demand[cell_idx] - surfacewater_allocation[cell_idx], 0.0)
         # excluding reservoirs
-        if !reservoir_coverage[i]
+        if !reservoir_coverage[cell_idx]
             # satisfy groundwater demand with available local groundwater volume
-            groundwater_demand_vol = groundwater_demand[i] * area[i]
-            available_volume = groundwater_storage[i] * 0.75 # limit available groundwater volume
+            groundwater_demand_vol = groundwater_demand[cell_idx] * area[cell_idx]
+            available_volume = groundwater_storage[cell_idx] * 0.75 # limit available groundwater volume
             abstraction_vol = min(groundwater_demand_vol * dt, available_volume)
             gw_abst_vol_rate = abstraction_vol / dt
-            actual_groundwater_abstraction_volume[i] = gw_abst_vol_rate
+            actual_groundwater_abstraction_volume[cell_idx] = gw_abst_vol_rate
             # remaining available groundwater and demand
-            available_groundwater[i] = max(available_volume - abstraction_vol, 0.0)
-            abstraction = gw_abst_vol_rate / area[i]
-            groundwater_demand[i] = max(groundwater_demand[i] - abstraction, 0.0)
+            available_groundwater[cell_idx] = max(available_volume - abstraction_vol, 0.0)
+            abstraction = gw_abst_vol_rate / area[cell_idx]
+            groundwater_demand[cell_idx] =
+                max(groundwater_demand[cell_idx] - abstraction, 0.0)
             # update actual abstraction from groundwater and groundwater allocation (land cell)
-            actual_groundwater_abstraction[i] = abstraction
-            groundwater_allocation[i] = abstraction
+            actual_groundwater_abstraction[cell_idx] = abstraction
+            groundwater_allocation[cell_idx] = abstraction
         end
     end
     return nothing
@@ -854,13 +864,13 @@ function groundwater_allocation_area!(
     (; area) = domain.land.parameters
 
     # loop over allocation areas
-    for i in eachindex(inds_river)
+    for alloc_area_idx in eachindex(inds_river)
         # groundwater demand and availability (allocation area)
         gw_demand_vol = 0.0
         gw_available = 0.0
-        for j in inds_land[i]
-            gw_demand_vol += groundwater_demand[j] * area[j]
-            gw_available += available_groundwater[j]
+        for cell_idx in inds_land[alloc_area_idx]
+            gw_demand_vol += groundwater_demand[cell_idx] * area[cell_idx]
+            gw_available += available_groundwater[cell_idx]
         end
         # total actual groundwater abstraction [m³] in an allocation area, minimum of
         # available  groundwater and demand in an allocation area.
@@ -873,12 +883,13 @@ function groundwater_allocation_area!(
         frac_allocate_gw = bounded_divide(gw_abstraction, gw_demand_vol * dt)
 
         # water abstracted from groundwater and allocated.
-        for j in inds_land[i]
-            actual_groundwater_abstraction_volume[j] +=
-                frac_abstract_gw * available_groundwater[j] / dt
-            actual_groundwater_abstraction[j] =
-                actual_groundwater_abstraction_volume[j] / area[j]
-            groundwater_allocation[j] += frac_allocate_gw * groundwater_demand[j]
+        for cell_idx in inds_land[alloc_area_idx]
+            actual_groundwater_abstraction_volume[cell_idx] +=
+                frac_abstract_gw * available_groundwater[cell_idx] / dt
+            actual_groundwater_abstraction[cell_idx] =
+                actual_groundwater_abstraction_volume[cell_idx] / area[cell_idx]
+            groundwater_allocation[cell_idx] +=
+                frac_allocate_gw * groundwater_demand[cell_idx]
         end
     end
     return nothing
@@ -890,14 +901,14 @@ function return_flow(
     non_irrigation_demand_gross::Vector{Float64},
     non_irrigation_allocation::Vector{Float64},
 )
-    for i in eachindex(demand_model.variables.returnflow)
+    for cell_idx in eachindex(demand_model.variables.returnflow)
         frac = bounded_divide(
-            demand_model.demand.demand_gross[i],
-            non_irrigation_demand_gross[i],
+            demand_model.demand.demand_gross[cell_idx],
+            non_irrigation_demand_gross[cell_idx],
         )
-        allocate = frac * non_irrigation_allocation[i]
-        demand_model.variables.returnflow[i] =
-            demand_model.variables.returnflow_fraction[i] * allocate
+        allocate = frac * non_irrigation_allocation[cell_idx]
+        demand_model.variables.returnflow[cell_idx] =
+            demand_model.variables.returnflow_fraction[cell_idx] * allocate
     end
     return demand_model.variables.returnflow
 end

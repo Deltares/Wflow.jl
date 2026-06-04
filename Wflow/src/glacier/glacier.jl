@@ -127,23 +127,29 @@ function update_glacier_model!(
     (; temperature) = atmospheric_forcing
     (; glacier_store, glacier_melt) = glacier_model.variables
     (; snow_storage) = glacier_model.boundary_conditions
-    (; temperature_threshold_melt, degree_day_factor, snow_to_ice_fraction, glacier_fraction, maximum_snow_to_ice_rate) =
-        glacier_model.parameters
+    (;
+        temperature_threshold_melt,
+        degree_day_factor,
+        snow_to_ice_fraction,
+        glacier_fraction,
+        maximum_snow_to_ice_rate,
+    ) = glacier_model.parameters
 
-    n = length(temperature)
+    n_cells = length(temperature)
 
-    threaded_foreach(1:n; basesize = 1000) do i
-        snow_storage[i], _, glacier_store[i], glacier_melt[i] = glacier_hbv(
-            glacier_fraction[i],
-            glacier_store[i],
-            snow_storage[i],
-            temperature[i],
-            temperature_threshold_melt[i],
-            degree_day_factor[i],
-            snow_to_ice_fraction[i],
-            maximum_snow_to_ice_rate,
-            dt,
-        )
+    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
+        snow_storage[cell_idx], _, glacier_store[cell_idx], glacier_melt[cell_idx] =
+            glacier_hbv(
+                glacier_fraction[cell_idx],
+                glacier_store[cell_idx],
+                snow_storage[cell_idx],
+                temperature[cell_idx],
+                temperature_threshold_melt[cell_idx],
+                degree_day_factor[cell_idx],
+                snow_to_ice_fraction[cell_idx],
+                maximum_snow_to_ice_rate,
+                dt,
+            )
     end
     return nothing
 end
