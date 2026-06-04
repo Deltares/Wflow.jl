@@ -1,20 +1,24 @@
+const TAN80 = 5.67
+
 """
-    lateral_snow_transport!(snow, slope, network)
+    lateral_snow_transport!(snow, domain, dt)
 
 Lateral snow transport. Transports snow downhill. Mutates `snow_storage` and `snow_water` of
 a `snow` model.
 """
-function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand)
+function lateral_snow_transport!(snow::AbstractSnowModel, domain::DomainLand, dt::Float64)
     (; snow_storage, snow_water, snow_in, snow_out) = snow.variables
     (; slope) = domain.parameters
-    snowflux_frac = min.(0.5, slope ./ 5.67) .* min.(1.0, snow_storage ./ 10000.0)
-    maxflux = snowflux_frac .* snow_storage
-    snow_out .= accucapacityflux(snow_storage, domain.network, maxflux)
-    snow_out .+= accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac)
+    snow_storage_max = 10.0
+    snowflux_frac = @. min(0.5, slope / TAN80) * min(1.0, snow_storage / snow_storage_max)
+    maxflux = snowflux_frac .* snow_storage / dt
+    snow_out .= accucapacityflux(snow_storage, domain.network, maxflux, dt)
+    snow_out .+=
+        accucapacityflux(snow_water, domain.network, snow_water .* snowflux_frac / dt, dt)
     flux_in!(snow_in, snow_out, domain.network)
 end
 
-lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand) = nothing
+lateral_snow_transport!(snow::NoSnowModel, domain::DomainLand, dt::Float64) = nothing
 
 "Kinematic wave surface flow rate for a single cell and timestep"
 function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
@@ -22,9 +26,12 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
         return 0.0, 0.0
     else
         dt_dx = dt / dx
-        # constant_term = (dt/dx)*q_in + alpha*q_prev^(3/5) + dt*q_lat
-        # Use q_prev^(3/5) = (q_prev^(1/5))^3
+        # constant_term = (dt/dx)*q_in + alpha*q_prev³ᐟ⁵) + dt*q_lat
+        # Use q_prev^(3/5) = (q_prev¹ᐟ⁵)^3
+        # Let [U] = [m³ s⁻¹]¹ᐟ⁵
         u_prev = q_prev >= 0.0 ? Wflow.pow(q_prev, 0.2) : 0.0
+
+        # [m²] = [s m⁻¹] * [m³ s⁻¹] + [s³ᐟ⁵ m¹ᐟ⁵] * [U]³ + [s] * [m² s⁻¹]
         constant_term = dt_dx * q_in + alpha * u_prev * u_prev * u_prev + dt * q_lat
 
         # Initial estimate: use u_prev as starting point (cheap, no pow calls)
@@ -65,6 +72,7 @@ function kinematic_wave(q_in, q_prev, q_lat, alpha, dt, dx)
         u = max(u, KIN_WAVE_MIN_FLOW_QROOT)
         u3 = u * u * u
         crossarea = alpha * u3
+        # [m³ s⁻¹] = [U]⁵
         q = u3 * u * u
         return q, crossarea
     end

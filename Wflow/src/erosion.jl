@@ -1,8 +1,8 @@
 "Soil loss model"
 @with_kw struct SoilLossModel{
-    RE <: AbstractRainfallErosionModel,
-    OFE <: AbstractOverlandFlowErosionModel,
-    SE <: AbstractSoilErosionModel,
+    RE<:AbstractRainfallErosionModel,
+    OFE<:AbstractOverlandFlowErosionModel,
+    SE<:AbstractSoilErosionModel,
 } <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     hydrological_forcing::HydrologicalForcing
@@ -61,7 +61,7 @@ function update_soil_loss_model!(
         soil_erosion,
     ) = soil_loss_model
 
-    #TODO add interception/canopygapfraction calculation here for eurosem
+    #TODO add interception/canopy_gap_fraction calculation here for eurosem
     #need SBM refactor
 
     # Rainfall erosion

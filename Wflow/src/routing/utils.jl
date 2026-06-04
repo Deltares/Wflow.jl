@@ -4,8 +4,8 @@ const KIN_WAVE_MIN_FLOW_QROOT = KIN_WAVE_MIN_FLOW^0.2
 "Convert a gridded drainage direction to a directed graph"
 function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::AbstractVector)
     # prepare a directed graph to be filled
-    n_cells = length(indices)
-    graph = DiGraph(n_cells)
+    n = length(indices)
+    graph = DiGraph(n)
 
     # loop over ldd, adding the edge to the downstream node
     for (from_node, from_index) in enumerate(indices)
@@ -27,24 +27,24 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
 end
 
 """
-    accucapacitystate!(material, network, capacity)
+    accucapacitystate!(material, network, capacity, dt)
 
 Transport of material downstream with a limited transport capacity over a directed graph.
 Mutates the material input. The network is expected to hold a graph and order field, where
 the graph implements the Graphs interface, and the order is a valid topological ordering
 such as that returned by `Graphs.topological_sort_by_dfs`.
 """
-function accucapacitystate!(material, network, capacity)
-    (; graph, cell_order) = network
-    for cell_idx in cell_order
-        downstream_nodes = outneighbors(graph, cell_idx)
-        n_downstream_cells = length(downstream_nodes)
-        flux_val = min(material[cell_idx], capacity[cell_idx])
-        material[cell_idx] -= flux_val
-        if iszero(n_downstream_cells)
+function accucapacitystate!(material, network, capacity, dt)
+    (; graph, order) = network
+    for v in order
+        downstream_nodes = outneighbors(graph, v)
+        n = length(downstream_nodes)
+        flux_val = min(material[v], capacity[v])
+        material[v] -= flux_val * dt
+        if n == 0
             # pit: material is transported out of the map if a capacity is set,
             # cannot add the material anywhere
-        elseif isone(n_downstream_cells)
+        elseif n == 1
             material[only(downstream_nodes)] += flux_val
         else
             error("bifurcations not supported")
@@ -54,13 +54,13 @@ function accucapacitystate!(material, network, capacity)
 end
 
 """
-    accucapacitystate!(material, network, capacity) -> material
+    accucapacitystate!(material, network, capacity, dt) -> material
 
 Non mutating version of `accucapacitystate!`.
 """
-function accucapacitystate(material, network, capacity)
+function accucapacitystate(material, network, capacity, dt)
     material = copy(material)
-    accucapacitystate!(material, network, capacity)
+    accucapacitystate!(material, network, capacity, dt)
     return material
 end
 
@@ -73,34 +73,71 @@ network is expected to hold a graph and order field, where the graph implements 
 interface, and the order is a valid topological ordering such as that returned by
 `Graphs.topological_sort_by_dfs`.
 """
-function accucapacityflux!(flux, material, network, capacity)
-    (; graph, cell_order) = network
-    for cell_idx in cell_order
-        downstream_nodes = outneighbors(graph, cell_idx)
-        n_downstream_cells = length(downstream_nodes)
-        flux_val = min(material[cell_idx], capacity[cell_idx])
-        material[cell_idx] -= flux_val
-        flux[cell_idx] = flux_val
-        if iszero(n_downstream_cells)
-            # pit: material is transported out of the map if a capacity is set,
-            # cannot add the material anywhere
-        elseif isone(n_downstream_cells)
-            material[only(downstream_nodes)] += flux_val
-        else
-            error("bifurcations not supported")
+function accucapacityflux!(flux, material, network, capacity, dt)
+    (; graph, order) = network
+    for v in order
+        downstream_nodes = outneighbors(graph, v)
+        n = length(downstream_nodes)
+
+        (n > 1) && error("bifurcations not supported")
+
+        # pit: material is transported out of the map if a capacity is set,
+        # cannot add the material anywhere
+        to_pit = iszero(n)
+
+        # Let [u] be the unit of material
+        flux_val = min(material[v] / dt, capacity[v])
+        material_update = flux_val * dt
+        material[v] -= material_update
+        flux[v] = flux_val
+        if !to_pit
+            material[only(downstream_nodes)] += material_update
         end
     end
     return nothing
 end
 
 """
-    accucapacityflux(material, network, capacity) -> flux
+    accucapacityflux_rate!(flux, remaining, material, network, capacity)
+
+Transport of material rate downstream with a limited transport capacity over a directed
+graph. All of `material`, `capacity`, `flux` and `remaining` are rates [u s⁻¹]. Overwrites
+`flux` with the transported rate and `remaining` with the deposited (untransported) rate.
+Does not mutate `material`. The network is expected to hold a graph and order field, where
+the graph implements the Graphs interface, and the order is a valid topological ordering
+such as that returned by `Graphs.topological_sort_by_dfs`.
+"""
+function accucapacityflux_rate!(flux, remaining, material, network, capacity)
+    (; graph, order) = network
+    remaining .= material
+    for v in order
+        downstream_nodes = outneighbors(graph, v)
+        n = length(downstream_nodes)
+
+        (n > 1) && error("bifurcations not supported")
+
+        # pit: material is transported out of the map if a capacity is set,
+        # cannot add the material anywhere
+        to_pit = iszero(n)
+
+        flux_val = min(remaining[v], capacity[v])
+        remaining[v] -= flux_val
+        flux[v] = flux_val
+        if !to_pit
+            remaining[only(downstream_nodes)] += flux_val
+        end
+    end
+    return nothing
+end
+
+"""
+    accucapacityflux(material, network, capacity, dt) -> flux
 
 Non mutating version of `accucapacityflux!`.
 """
-function accucapacityflux(material, network, capacity)
+function accucapacityflux(material, network, capacity, dt)
     flux = zero(material)
-    accucapacityflux!(flux, material, network, capacity)
+    accucapacityflux!(flux, material, network, capacity, dt)
     return flux
 end
 
@@ -109,17 +146,17 @@ end
 
 Non mutating version of combined `accucapacityflux!` and `accucapacitystate!`.
 """
-function accucapacityflux_state(material, network, capacity)
+function accucapacityflux_state(material, network, capacity, dt)
     flux = zero(material)
     material = copy(material)
-    accucapacityflux!(flux, material, network, capacity)
+    accucapacityflux!(flux, material, network, capacity, dt)
     return flux, material
 end
 
 function flux_in!(flux_in, flux, network)
-    (; upstream_nodes, cell_order) = network
-    for (i, cell_idx) in enumerate(cell_order)
-        flux_in[cell_idx] = sum_at(flux, upstream_nodes[i])
+    (; upstream_nodes, order) = network
+    for (i, v) in enumerate(order)
+        flux_in[v] = sum_at(flux, upstream_nodes[i])
     end
     return nothing
 end

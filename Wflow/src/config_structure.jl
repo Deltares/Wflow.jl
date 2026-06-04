@@ -131,11 +131,11 @@ end
     # Option 1
     netcdf_variable_name::Union{Nothing, String} = nothing
     scale::Vector{Float64} = [1.0]
-    do_scaling::Bool = !all(isone, scale)
-    scale_scalar = isone(length(scale))
+    _do_scaling::Bool = !all(isone, scale)
+    _scale_scalar = isone(length(scale))
     offset::Vector{Float64} = [0.0]
-    do_offsetting::Bool = !all(iszero, offset)
-    offset_scalar = isone(length(offset))
+    _do_offsetting::Bool = !all(iszero, offset)
+    _offset_scalar = isone(length(offset))
     layer::Union{Nothing, Vector{Int}} = nothing
     # Option 2
     value::Any = nothing
@@ -153,6 +153,8 @@ end
 Base.haskey(input_entries::InputEntries, key) = haskey(input_entries.dict, key)
 Base.getindex(input_entries::InputEntries, key) = input_entries.dict[key]
 Base.setindex!(input_entries::InputEntries, value, key) = (input_entries.dict[key] = value)
+Base.setindex!(input_entries::InputEntries, value::AbstractDict, key) =
+    (input_entries.dict[key] = init_config_section(InputEntry, value))
 Base.keys(input_entries::InputEntries) = keys(input_entries.dict)
 Base.iterate(input_entries::InputEntries) = iterate(input_entries.dict)
 Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, state)
@@ -172,7 +174,7 @@ Base.iterate(input_entries::InputEntries, state) = iterate(input_entries.dict, s
     forcing::InputEntries
     static::InputEntries
     cyclic::InputEntries = InputEntries()
-    location_maps::PropertyDictType
+    _location_maps::PropertyDictType
 end
 
 const input_field_names = String.(fieldnames(Wflow.InputSection))

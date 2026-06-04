@@ -2,32 +2,35 @@ abstract type AbstractRunoffModel end
 
 "Struct for storing open water runoff variables"
 @with_kw struct OpenWaterRunoffVariables
-    n_cells::Int
-    # Runoff from river based on riverfrac [mm Δt⁻¹]
-    runoff_river::Vector{Float64} = fill(MISSING_VALUE, n_cells)
-    # Net runoff from river [mm Δt⁻¹]
-    net_runoff_river::Vector{Float64} = fill(MISSING_VALUE, n_cells)
-    # Runoff from land based on waterfrac [mm Δt⁻¹]
-    runoff_land::Vector{Float64} = fill(MISSING_VALUE, n_cells)
-    # Actual evaporation from open water (land) [mm Δt⁻¹]
-    ae_openw_l::Vector{Float64} = fill(MISSING_VALUE, n_cells)
-    # Actual evaporation from river [mm Δt⁻¹]
-    ae_openw_r::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    n::Int
+    # Runoff from river based on riverfrac [m s⁻¹]
+    runoff_river::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Net runoff from river [m s⁻¹]
+    net_runoff_river::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Runoff from land based on waterfrac [m s⁻¹]
+    runoff_land::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Actual evaporation from open water (land) [m s⁻¹]
+    actual_open_water_evaporation_land::Vector{Float64} = fill(MISSING_VALUE, n)
+    # Actual evaporation from river [m s⁻¹]
+    actual_open_water_evaporation_river::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing open water runoff boundary conditions"
 @with_kw struct OpenWaterRunoffBC
-    n_cells::Int
-    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [mm dt-1]
-    waterdepth_land::Vector{Float64} = fill(MISSING_VALUE, n_cells) # [mm]
-    waterdepth_river::Vector{Float64} = zeros(n_cells) # [mm]
+    n::Int
+    # [m s⁻¹]
+    water_flux_surface::Vector{Float64} = fill(MISSING_VALUE, n)
+    # [m]
+    waterdepth_land::Vector{Float64} = fill(MISSING_VALUE, n)
+    # [m]
+    waterdepth_river::Vector{Float64} = zeros(n)
 end
 
 "Open water runoff model"
 @with_kw struct OpenWaterRunoff <: AbstractRunoffModel
-    n_cells::Int
-    boundary_conditions::OpenWaterRunoffBC = OpenWaterRunoffBC(; n_cells)
-    variables::OpenWaterRunoffVariables = OpenWaterRunoffVariables(; n_cells)
+    n::Int
+    boundary_conditions::OpenWaterRunoffBC = OpenWaterRunoffBC(; n)
+    variables::OpenWaterRunoffVariables = OpenWaterRunoffVariables(; n)
 end
 
 "Return the water flux at the surface (boundary condition) when snow is not modelled"
@@ -63,16 +66,16 @@ function update_bc_open_water_runoff_model!(
 )
     (; water_flux_surface, waterdepth_river, waterdepth_land) =
         open_water_runoff_model.boundary_conditions
-    (; cell_indices_containing_river) = network
+    (; land_indices) = network
     (; snow, glacier, interception) = external_models
 
     get_water_flux_surface!(water_flux_surface, snow, glacier, interception)
 
-    # extract water depth h [m] from the land and river routing, used to limit open water
+    # extract water depth h from the land and river routing, used to limit open water
     # evaporation
-    waterdepth_land .= routing.overland_flow.variables.h .* 1000.0
-    for (river_cell_idx, cell_idx) in enumerate(cell_indices_containing_river)
-        waterdepth_river[cell_idx] = routing.river_flow.variables.h[river_cell_idx] * 1000.0
+    waterdepth_land .= routing.overland_flow.variables.h
+    for (i, land_index) in enumerate(land_indices)
+        waterdepth_river[land_index] = routing.river_flow.variables.h[i]
     end
     return nothing
 end
@@ -82,20 +85,19 @@ function update_open_water_runoff_model!(
     open_water_runoff_model::OpenWaterRunoff,
     atmospheric_forcing::AtmosphericForcing,
     parameters::LandParameters,
+    dt::Float64,
 )
     (; boundary_conditions, variables) = open_water_runoff_model
     (; water_flux_surface, waterdepth_river, waterdepth_land) = boundary_conditions
-    (; runoff_river, net_runoff_river, runoff_land, ae_openw_r, ae_openw_l) = variables
+    (; runoff_river, net_runoff_river, runoff_land, actual_open_water_evaporation_river, actual_open_water_evaporation_land) = variables
     (; potential_evaporation) = atmospheric_forcing
     (; river_fraction, water_fraction) = parameters
 
     @. runoff_river = min(1.0, river_fraction) * water_flux_surface
     @. runoff_land = min(1.0, water_fraction) * water_flux_surface
-    @. ae_openw_r =
-        min(waterdepth_river * river_fraction, river_fraction * potential_evaporation)
-    @. ae_openw_l =
-        min(waterdepth_land * water_fraction, water_fraction * potential_evaporation)
-    @. net_runoff_river = runoff_river - ae_openw_r
+    @. actual_open_water_evaporation_river = river_fraction * min(waterdepth_river / dt, potential_evaporation)
+    @. actual_open_water_evaporation_land = water_fraction * min(waterdepth_land / dt, potential_evaporation)
+    @. net_runoff_river = runoff_river - actual_open_water_evaporation_river
 
     return nothing
 end

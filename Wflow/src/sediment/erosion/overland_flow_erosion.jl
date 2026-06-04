@@ -2,16 +2,16 @@ abstract type AbstractOverlandFlowErosionModel end
 
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
-    n_cells::Int
-    # Total soil erosion rate [t dt-1] from overland flow
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    n::Int
+    # Total soil erosion rate [kg s⁻¹] from overland flow
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
-    n_cells::Int
-    # Overland flow [m3 s-1]
-    q::Vector{Float64} = fill(MISSING_VALUE, n_cells)
+    n::Int
+    # Overland flow [m³ s⁻¹]
+    q::Vector{Float64} = fill(MISSING_VALUE, n)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
@@ -28,28 +28,18 @@ end
 function OverlandFlowErosionAnswersParameters(
     dataset::NCDataset,
     config::Config,
-    land_indices_2d::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}},
 )
-    usle_k = ncread(
-        dataset,
-        config,
-        "soil_erosion__usle_k_factor",
-        SoilLossModel;
-        sel = land_indices_2d,
-    )
-    usle_c = ncread(
-        dataset,
-        config,
-        "soil_erosion__usle_c_factor",
-        SoilLossModel;
-        sel = land_indices_2d,
-    )
+    usle_k =
+        ncread(dataset, config, "soil_erosion__usle_k_factor", SoilLossModel; sel = indices)
+    usle_c =
+        ncread(dataset, config, "soil_erosion__usle_c_factor", SoilLossModel; sel = indices)
     answers_overland_flow_factor = ncread(
         dataset,
         config,
         "soil_erosion__answers_overland_flow_factor",
         SoilLossModel;
-        sel = land_indices_2d,
+        sel = indices,
     )
 
     answers_parameters =
@@ -59,27 +49,27 @@ end
 
 "ANSWERS overland flow erosion model"
 @with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
-    n_cells::Int
-    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n_cells)
+    n::Int
+    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n)
     parameters::OverlandFlowErosionAnswersParameters
-    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n_cells)
+    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n)
 end
 
 "Initialize ANSWERS overland flow erosion model"
 function OverlandFlowErosionAnswersModel(
     dataset::NCDataset,
     config::Config,
-    land_indices_2d::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}},
 )
-    n_cells = length(land_indices_2d)
-    parameters = OverlandFlowErosionAnswersParameters(dataset, config, land_indices_2d)
-    overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n_cells, parameters)
+    n = length(indices)
+    parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
+    overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n, parameters)
     return overland_flow_erosion_model
 end
 
 "Update boundary conditions for ANSWERS overland flow erosion model"
 function update_bc_overland_flow_erosion_model!(
-    overland_flow_erosion_model::OverlandFlowErosionAnswersModel,
+    overland_flow_erosion_model::AbstractOverlandFlowErosionModel,
     hydrological_forcing::HydrologicalForcing,
 )
     (; q) = overland_flow_erosion_model.boundary_conditions
@@ -93,21 +83,20 @@ function update_overland_flow_erosion_model!(
     geometry::LandParameters,
     dt::Float64,
 )
-    (; n_cells) = overland_flow_erosion_model
     (; q) = overland_flow_erosion_model.boundary_conditions
     (; usle_k, usle_c, answers_overland_flow_factor) =
         overland_flow_erosion_model.parameters
     (; soil_erosion_rate) = overland_flow_erosion_model.variables
 
-    threaded_foreach(1:n_cells; basesize = 1000) do cell_idx
-        soil_erosion_rate[cell_idx] = overland_flow_erosion_answers(
-            q[cell_idx],
-            usle_k[cell_idx],
-            usle_c[cell_idx],
-            answers_overland_flow_factor[cell_idx],
-            geometry.slope[cell_idx],
-            geometry.area[cell_idx],
-            dt,
+    n = length(q)
+    threaded_foreach(1:n; basesize = 1000) do i
+        soil_erosion_rate[i] = overland_flow_erosion_answers(
+            q[i],
+            usle_k[i],
+            usle_c[i],
+            answers_overland_flow_factor[i],
+            geometry.slope[i],
+            geometry.area[i],
         )
     end
 end
