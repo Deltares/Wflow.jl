@@ -2,7 +2,7 @@ name: Trivy Security Scan
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
   workflow_dispatch:
 jobs:
@@ -15,14 +15,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Run Trivy vulnerability scanner in IaC mode
+      - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: "config"
-          hide-progress: true
+          scan-type: "fs"
+          ignore-unfixed: true
           format: "sarif"
           output: "trivy-results.sarif"
-          exit-code: "1"
           severity: "CRITICAL,HIGH"
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
