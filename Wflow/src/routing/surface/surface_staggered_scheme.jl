@@ -1041,16 +1041,22 @@ function stable_timestep(
 )
     dt_min = Inf
     (; alpha_coefficient) = river_flow_model.timestepping
-    #TODO: apply this on edges?
-    (; n, mannings_n_at_edge) = river_flow_model.parameters
-    (; h) = river_flow_model.variables
-    (; flow_length, flow_width, slope) = parameters
+    (;
+        active_e,
+        mannings_n_at_edge,
+        flow_length_at_edge,
+        flow_width_at_edge,
+        slope_at_edge,
+    ) = river_flow_model.parameters
+    (; water_depth_at_edge) = river_flow_model.variables
 
-    @batch per = thread reduction = ((min, dt_min),) for i in 1:(n)
+    @batch per = thread reduction = ((min, dt_min),) for i in active_e
         @fastmath @inbounds h_r =
-            (flow_width[i] * h[i]) / wetted_perimeter_channel(h[i], flow_width[i])
-        celerity = cbrt(h_r^2) * sqrt(slope[i]) / mannings_n_at_edge[i] / BETA_KINWAVE
-        dt = alpha_coefficient * flow_length[i] / celerity
+            (flow_width_at_edge[i] * water_depth_at_edge[i]) /
+            wetted_perimeter_channel(water_depth_at_edge[i], flow_width_at_edge[i])
+        celerity =
+            cbrt(h_r^2) * sqrt(slope_at_edge[i]) / mannings_n_at_edge[i] / BETA_KINWAVE
+        dt = alpha_coefficient * flow_length_at_edge[i] / celerity
         dt_min = min(dt, dt_min)
     end
     dt_min = isinf(dt_min) ? 60.0 : dt_min
