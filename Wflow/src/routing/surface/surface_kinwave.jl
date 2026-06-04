@@ -1,24 +1,24 @@
 "Struct for storing (shared) variables for river and overland flow models"
 @with_kw struct FlowVariables
-    n::Int
+    n_cells::Int
     # Discharge [m³ s⁻¹]
-    q::Vector{Float64} = zeros(n)
+    q::Vector{Float64} = zeros(n_cells)
     # Lateral inflow per unit length [m² s⁻¹]
-    qlat::Vector{Float64} = zeros(n)
+    qlat::Vector{Float64} = zeros(n_cells)
     # Inflow from upstream cells [m³ s⁻¹]
-    qin::Vector{Float64} = zeros(n)
+    qin::Vector{Float64} = zeros(n_cells)
     # Cumulative inflow from upstream cells [m³] for model time step dt
-    qin_cumulative::Vector{Float64} = zeros(n)
+    qin_cumulative::Vector{Float64} = zeros(n_cells)
     # Average inflow from upstream cells  [m³ s⁻¹] for model time step dt
-    qin_average::Vector{Float64} = zeros(n)
+    qin_average::Vector{Float64} = zeros(n_cells)
     # Cumulative discharge [m³] for model timestep dt
-    q_cumulative::Vector{Float64} = zeros(n)
+    q_cumulative::Vector{Float64} = zeros(n_cells)
     # Average discharge [m³ s⁻¹] for model time step dt
-    q_average::Vector{Float64} = zeros(n)
+    q_average::Vector{Float64} = zeros(n_cells)
     # Kinematic wave storage [m³] (based on water depth h)
-    storage::Vector{Float64} = zeros(n)
+    storage::Vector{Float64} = zeros(n_cells)
     # Water depth [m]
-    h::Vector{Float64} = zeros(n)
+    h::Vector{Float64} = zeros(n_cells)
 end
 
 "Struct for storing Manning flow parameters"
@@ -73,17 +73,17 @@ end
 
 "Struct for storing river flow model boundary conditions"
 @with_kw struct RiverFlowBC{R <: Union{ReservoirModel, Nothing}}
-    n::Int
+    n_river_cells::Int
     # External inflow (abstraction/supply/demand) [m³ s⁻¹]
     external_inflow::Vector{Float64}
     # Lateral inflow [m³ s⁻¹]
-    inwater::Vector{Float64} = zeros(n)
+    inwater::Vector{Float64} = zeros(n_river_cells)
     # Actual cumulative abstraction from external negative inflow [m³]
-    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n)
+    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n_river_cells)
     # Actual average abstraction from external negative inflow [m³ s⁻¹]
-    actual_external_abstraction_average::Vector{Float64} = zeros(n)
+    actual_external_abstraction_average::Vector{Float64} = zeros(n_river_cells)
     # Abstraction (computed as part of water demand and allocation) [m³ s⁻¹]
-    abstraction::Vector{Float64} = zeros(n)
+    abstraction::Vector{Float64} = zeros(n_river_cells)
     # Reservoir model struct of arrays
     reservoir::R
 end
@@ -103,8 +103,8 @@ function RiverFlowBC(
         Routing;
         sel = indices,
     )
-    n = length(indices)
-    bc = RiverFlowBC(; n, external_inflow, reservoir)
+    n_river_cells = length(indices)
+    bc = RiverFlowBC(; n_river_cells, external_inflow, reservoir)
     return bc
 end
 
@@ -127,14 +127,15 @@ function KinWaveRiverFlowModel(
     reservoir::Union{ReservoirModel, Nothing},
 )
     (; indices) = domain.network
-    n = length(indices)
+    n_river_cells = length(indices)
 
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "river")
+    timestepping = init_kinematic_wave_timestepping(config, n_river_cells; domain = "river")
 
     allocation =
-        do_water_demand(config) ? AllocationRiverModel(; n) : NoAllocationRiverModel(n)
+        do_water_demand(config) ? AllocationRiverModel(; n_river_cells) :
+        NoAllocationRiverModel(n_river_cells)
 
-    variables = FlowVariables(; n)
+    variables = FlowVariables(; n_cells = n_river_cells)
     parameters = RiverFlowParameters(dataset, config, domain)
     boundary_conditions = RiverFlowBC(dataset, config, domain.network, reservoir)
 
@@ -151,12 +152,12 @@ end
 
 "Struct for storing overland flow model variables"
 @with_kw struct OverLandFlowVariables
-    n::Int
-    flow::FlowVariables = FlowVariables(; n)
+    n_cells::Int
+    flow::FlowVariables = FlowVariables(; n_cells)
     # Part of cumulative overland flow [m³ s⁻¹] that flows to the river
-    to_river_cumulative::Vector{Float64} = zeros(n)
+    to_river_cumulative::Vector{Float64} = zeros(n_cells)
     # Part of average overland flow [m³ s⁻¹] that flows to the river
-    to_river_average::Vector{Float64} = zeros(n)
+    to_river_average::Vector{Float64} = zeros(n_cells)
 end
 
 "Overload `getproperty` for overland flow model variables"
@@ -170,18 +171,18 @@ end
 
 "Struct for storing overland flow model boundary conditions"
 @with_kw struct LandFlowBC
-    n::Int
+    n_cells::Int
     # Lateral inflow [m³ s⁻¹]
-    inwater::Vector{Float64} = zeros(n)
+    inwater::Vector{Float64} = zeros(n_cells)
 end
 
 "Overland flow model using the kinematic wave method and the Manning flow{ equation"
 @with_kw struct KinWaveOverlandFlowModel <: AbstractOverlandFlowModel
-    n::Int
+    n_cells::Int
     timestepping::TimeStepping
-    boundary_conditions::LandFlowBC = LandFlowBC(; n)
+    boundary_conditions::LandFlowBC = LandFlowBC(; n_cells)
     parameters::ManningFlowParameters
-    variables::OverLandFlowVariables = OverLandFlowVariables(; n)
+    variables::OverLandFlowVariables = OverLandFlowVariables(; n_cells)
 end
 
 "Initialize Overland flow model `KinWaveOverlandFlowModel`"
@@ -196,10 +197,10 @@ function KinWaveOverlandFlowModel(dataset::NCDataset, config::Config, domain::Do
         sel = indices,
     )
 
-    n = length(indices)
-    timestepping = init_kinematic_wave_timestepping(config, n; domain = "land")
+    n_cells = length(indices)
+    timestepping = init_kinematic_wave_timestepping(config, n_cells; domain = "land")
     parameters = ManningFlowParameters(; mannings_n, slope)
-    overland_flow = KinWaveOverlandFlowModel(; n, timestepping, parameters)
+    overland_flow = KinWaveOverlandFlowModel(; n_cells, timestepping, parameters)
 
     return overland_flow
 end

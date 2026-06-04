@@ -2,17 +2,17 @@ abstract type AbstractInterceptionModel end
 
 "Struct for storing interception model variables"
 @with_kw struct InterceptionVariables
-    n::Int
+    n_cells::Int
     # Canopy potential evaporation [m s⁻¹]
-    canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n)
+    canopy_potevap::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Interception loss by evaporation [m s⁻¹]
-    interception_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    interception_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Canopy storage [m]
-    canopy_storage::Vector{Float64} = zeros(n)
+    canopy_storage::Vector{Float64} = zeros(n_cells)
     # Stemflow [m s⁻¹]
-    stemflow::Vector{Float64} = fill(MISSING_VALUE, n)
+    stemflow::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Throughfall [m s⁻¹]
-    throughfall::Vector{Float64} = fill(MISSING_VALUE, n)
+    throughfall::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing Gash interception model parameters"
@@ -24,9 +24,9 @@ end
 
 "Gash interception model"
 @with_kw struct GashInterceptionModel <: AbstractInterceptionModel
-    n::Int
+    n_cells::Int
     parameters::GashParameters
-    variables::InterceptionVariables = InterceptionVariables(; n)
+    variables::InterceptionVariables = InterceptionVariables(; n_cells)
 end
 
 "Initialize Gash interception model"
@@ -43,10 +43,10 @@ function GashInterceptionModel(
         LandHydrologySBM;
         sel = indices,
     )
-    n = length(indices)
+    n_cells = length(indices)
     parameters =
         GashParameters(; evaporation_to_precipitation_ratio, vegetation_parameter_set)
-    model = GashInterceptionModel(; n, parameters)
+    model = GashInterceptionModel(; n_cells, parameters)
     return model
 end
 
@@ -111,8 +111,11 @@ end
 end
 
 "Initialize Rutter interception model"
-function RutterInterceptionModel(vegetation_parameter_set::VegetationParameters, n::Int)
-    variables = InterceptionVariables(; n)
+function RutterInterceptionModel(
+    vegetation_parameter_set::VegetationParameters,
+    n_cells::Int,
+)
+    variables = InterceptionVariables(; n_cells)
     interception_model =
         RutterInterceptionModel(; parameters = vegetation_parameter_set, variables)
     return interception_model

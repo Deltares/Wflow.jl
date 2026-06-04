@@ -254,25 +254,25 @@ end
 
 "Struct for storing reservoir model boundary conditions"
 @with_kw struct ReservoirBC
-    n::Int
+    n_reservoirs::Int
     # inflow from subsurface flow into reservoir [m³ s⁻¹]
-    inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n)
+    inflow_subsurface::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
     # inflow from overland flow into reservoir [m³ s⁻¹]
-    inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n)
+    inflow_overland::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
     # cumulative inflow reservoir [m³] for model timestep dt
-    inflow_cumulative::Vector{Float64} = zeros(n)
+    inflow_cumulative::Vector{Float64} = zeros(n_reservoirs)
     # average inflow into reservoir [m³ s⁻¹] for model timestep dt
-    inflow_average::Vector{Float64} = zeros(n)
+    inflow_average::Vector{Float64} = zeros(n_reservoirs)
     # external inflow (abstraction/supply/demand) [m³ s⁻¹]
-    external_inflow::Vector{Float64} = zeros(n)
+    external_inflow::Vector{Float64} = zeros(n_reservoirs)
     # cumulative actual abstractoin from external negative flow [m³]
-    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n)
+    actual_external_abstraction_cumulative::Vector{Float64} = zeros(n_reservoirs)
     # average actual abstraction from external negative inflow [m³ s⁻¹]
-    actual_external_abstraction_average::Vector{Float64} = zeros(n)
+    actual_external_abstraction_average::Vector{Float64} = zeros(n_reservoirs)
     # average precipitation for reservoir area [m s⁻¹]
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
     # average potential evaporation for reservoir area [m s⁻¹]
-    evaporation::Vector{Float64} = fill(MISSING_VALUE, n)
+    evaporation::Vector{Float64} = fill(MISSING_VALUE, n_reservoirs)
 end
 
 "Initialize reservoir model boundary conditions"
@@ -285,8 +285,8 @@ function ReservoirBC(dataset::NCDataset, config::Config, network::NetworkReservo
         Routing;
         sel = indices_outlet,
     )
-    n = length(indices_outlet)
-    bc = ReservoirBC(; n, external_inflow)
+    n_reservoirs = length(indices_outlet)
+    bc = ReservoirBC(; n_reservoirs, external_inflow)
     return bc
 end
 

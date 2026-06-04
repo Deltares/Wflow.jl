@@ -2,18 +2,18 @@ abstract type AbstractTransportCapacityModel end
 
 "Struct to store total transport capacity model variables"
 @with_kw struct TransportCapacityModelVariables
-    n::Int
+    n_cells::Int
     # Total sediment transport capacity [kg s⁻¹]
-    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct to store total transport capacity model boundary conditions"
 @with_kw struct TransportCapacityBC
-    n::Int
+    n_cells::Int
     # Discharge [m³ s⁻¹]
-    q::Vector{Float64} = fill(MISSING_VALUE, n)
+    q::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Flow depth [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Update total transport capacity model boundary conditions"
@@ -75,10 +75,10 @@ end
 
 "Govers overland flow transport capacity model"
 @with_kw struct TransportCapacityGoversModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
     parameters::TransportCapacityGoversParameters
-    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n_cells)
 end
 
 "Initialize Govers overland flow transport capacity model"
@@ -87,9 +87,9 @@ function TransportCapacityGoversModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityGoversParameters(dataset, config, indices)
-    transport_capacity_model = TransportCapacityGoversModel(; n, parameters)
+    transport_capacity_model = TransportCapacityGoversModel(; n_cells, parameters)
     return transport_capacity_model
 end
 
@@ -153,10 +153,10 @@ end
 
 "Yalin overland flow transport capacity model"
 @with_kw struct TransportCapacityYalinModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
     parameters::TransportCapacityYalinParameters
-    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n_cells)
 end
 
 "Initialize Yalin overland flow transport capacity model"
@@ -165,9 +165,9 @@ function TransportCapacityYalinModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityYalinParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityYalinModel(; n, parameters)
+    transport_capacity = TransportCapacityYalinModel(; n_cells, parameters)
     return transport_capacity
 end
 
@@ -201,19 +201,19 @@ end
 
 "Struct to store Yalin differentiated overland flow transport capacity model variables"
 @with_kw struct TransportCapacityYalinDifferentiationModelVariables
-    n::Int
+    n_cells::Int
     # Total sediment transport capacity [kg s⁻¹]
-    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
+    sediment_transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity clay [kg s⁻¹]
-    clay::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity silt [kg s⁻¹]
-    silt::Vector{Float64} = fill(MISSING_VALUE, n)
+    silt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity sand [kg s⁻¹]
-    sand::Vector{Float64} = fill(MISSING_VALUE, n)
+    sand::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity small aggregates [kg s⁻¹]
-    small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Transport capacity large aggregates [kg s⁻¹]
-    large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct to store Yalin differentiated overland flow transport capacity model parameters"
@@ -275,11 +275,11 @@ end
 
 "Yalin differentiated overland flow transport capacity model"
 @with_kw struct TransportCapacityYalinDifferentiationModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
     parameters::TransportCapacityYalinDifferentiationParameters
     variables::TransportCapacityYalinDifferentiationModelVariables =
-        TransportCapacityYalinDifferentiationModelVariables(; n)
+        TransportCapacityYalinDifferentiationModelVariables(; n_cells)
 end
 
 "Initialize Yalin differentiated overland flow transport capacity model"
@@ -288,9 +288,10 @@ function TransportCapacityYalinDifferentiationModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityYalinDifferentiationParameters(dataset, config, indices)
-    transport_capacity_model = TransportCapacityYalinDifferentiationModel(; n, parameters)
+    transport_capacity_model =
+        TransportCapacityYalinDifferentiationModel(; n_cells, parameters)
     return transport_capacity_model
 end
 
@@ -460,10 +461,10 @@ end
 
 "Bagnold river transport capacity model"
 @with_kw struct TransportCapacityBagnoldModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
     parameters::TransportCapacityBagnoldParameters
-    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n_cells)
 end
 
 "Initialize Bagnold river transport capacity model"
@@ -472,9 +473,9 @@ function TransportCapacityBagnoldModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityBagnoldParameters(dataset, config, indices)
-    transport_capacity_model = TransportCapacityBagnoldModel(; n, parameters)
+    transport_capacity_model = TransportCapacityBagnoldModel(; n_cells, parameters)
     return transport_capacity_model
 end
 
@@ -506,10 +507,10 @@ end
 
 "Engelund and Hansen river transport capacity model parameters"
 @with_kw struct TransportCapacityEngelundModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
     parameters::TransportCapacityRiverParameters
-    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n_cells)
 end
 
 "Initialize Engelund and Hansen river transport capacity model"
@@ -518,9 +519,9 @@ function TransportCapacityEngelundModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
-    transport_capacity_model = TransportCapacityEngelundModel(; n, parameters)
+    transport_capacity_model = TransportCapacityEngelundModel(; n_cells, parameters)
     return transport_capacity_model
 end
 
@@ -604,9 +605,9 @@ end
 
 "Kodatie river transport capacity model"
 @with_kw struct TransportCapacityKodatieModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
-    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n_cells)
     parameters::TransportCapacityKodatieParameters
 end
 
@@ -616,9 +617,9 @@ function TransportCapacityKodatieModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityKodatieParameters(dataset, config, indices)
-    transport_capacity_model = TransportCapacityKodatieModel(; n, parameters)
+    transport_capacity_model = TransportCapacityKodatieModel(; n_cells, parameters)
     return transport_capacity_model
 end
 
@@ -651,10 +652,10 @@ end
 
 "Yang river transport capacity model"
 @with_kw struct TransportCapacityYangModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
     parameters::TransportCapacityRiverParameters
-    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n_cells)
 end
 
 "Initialize Yang river transport capacity model"
@@ -663,9 +664,9 @@ function TransportCapacityYangModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityYangModel(; n, parameters)
+    transport_capacity = TransportCapacityYangModel(; n_cells, parameters)
     return transport_capacity
 end
 
@@ -696,10 +697,10 @@ end
 
 "Molinas and Wu river transport capacity model"
 @with_kw struct TransportCapacityMolinasModel <: AbstractTransportCapacityModel
-    n::Int
-    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n)
+    n_cells::Int
+    boundary_conditions::TransportCapacityBC = TransportCapacityBC(; n_cells)
     parameters::TransportCapacityRiverParameters
-    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n)
+    variables::TransportCapacityModelVariables = TransportCapacityModelVariables(; n_cells)
 end
 
 "Initialize Molinas and Wu river transport capacity model"
@@ -708,9 +709,9 @@ function TransportCapacityMolinasModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = TransportCapacityRiverParameters(dataset, config, indices)
-    transport_capacity = TransportCapacityMolinasModel(; n, parameters)
+    transport_capacity = TransportCapacityMolinasModel(; n_cells, parameters)
     return transport_capacity
 end
 

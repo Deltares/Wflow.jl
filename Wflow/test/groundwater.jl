@@ -175,14 +175,17 @@ end
     end
 
     @testset "river" begin
-        n = 2
+        n_cells = 2
         parameters = Wflow.GwfRiverParameters(;
-            infiltration_conductance = fill(100.0 / 86400.0, n),
-            exfiltration_conductance = fill(200.0 / 86400.0, n),
-            bottom = fill(1.0, n),
+            infiltration_conductance = fill(100.0 / 86400.0, n_cells),
+            exfiltration_conductance = fill(200.0 / 86400.0, n_cells),
+            bottom = fill(1.0, n_cells),
         )
-        variables =
-            Wflow.GwfRiverVariables(; n, stage = fill(2.0, n), storage = fill(20.0, n))
+        variables = Wflow.GwfRiverVariables(;
+            n_cells,
+            stage = fill(2.0, n_cells),
+            storage = fill(20.0, n_cells),
+        )
         gwf_river_model = Wflow.GwfRiverModel(; parameters, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 3]
@@ -195,12 +198,12 @@ end
     end
 
     @testset "drainage" begin
-        n = 2
+        n_cells = 2
         parameters = Wflow.DrainageParameters(;
             elevation = [2.0, 2.0],
             conductance = [100.0, 100.0] / 86400.0,
         )
-        variables = Wflow.DrainageVariables(; n, flux = [0.0, 0.0])
+        variables = Wflow.DrainageVariables(; n_cells, flux = [0.0, 0.0])
         drainage_model = Wflow.DrainageModel(; parameters, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2]
@@ -227,10 +230,10 @@ end
     end
 
     @testset "recharge" begin
-        n = 3
+        n_cells = 3
 
-        variables = Wflow.RechargeVariables(; n, rate = fill(1e-3 / 86400.0, n))
-        recharge_model = Wflow.RechargeModel(; n, variables)
+        variables = Wflow.RechargeVariables(; n_cells, rate = fill(1e-3 / 86400.0, n_cells))
+        recharge_model = Wflow.RechargeModel(; n_cells, variables)
         gwf_model.variables.q_net_bnds .= 0.0
         index = [1, 2, 3]
         Wflow.flux!(recharge_model, gwf_model, index, dt)
@@ -283,7 +286,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1])
 
     variables = Wflow.GroundwaterFlowVariables(;
-        n = ncell,
+        n_cells = ncell,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),
@@ -374,7 +377,7 @@ end
     constanthead = Wflow.ConstantHead(; variables, index = [1])
 
     variables = Wflow.GroundwaterFlowVariables(;
-        n = ncell,
+        n_cells = ncell,
         head = initial_head.(xc),
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),

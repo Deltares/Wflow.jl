@@ -3,53 +3,53 @@ abstract type AbstractSedimentConcentrationsRiverModel end
 
 "Struct to store river sediment transport model variables"
 @with_kw struct SedimentRiverTransportVariables
-    n::Int
+    n_river_cells::Int
     # Sediment flux [kg s⁻¹]
-    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n)
-    clay_rate::Vector{Float64} = zeros(n)
-    silt_rate::Vector{Float64} = zeros(n)
-    sand_rate::Vector{Float64} = zeros(n)
-    small_aggregates_rate::Vector{Float64} = zeros(n)
-    large_aggregates_rate::Vector{Float64} = zeros(n)
-    gravel_rate::Vector{Float64} = zeros(n)
+    sediment_rate::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
+    clay_rate::Vector{Float64} = zeros(n_river_cells)
+    silt_rate::Vector{Float64} = zeros(n_river_cells)
+    sand_rate::Vector{Float64} = zeros(n_river_cells)
+    small_aggregates_rate::Vector{Float64} = zeros(n_river_cells)
+    large_aggregates_rate::Vector{Float64} = zeros(n_river_cells)
+    gravel_rate::Vector{Float64} = zeros(n_river_cells)
     # Total Sediment deposition rate [kg s⁻¹]
-    deposition::Vector{Float64} = fill(MISSING_VALUE, n)
+    deposition::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Total sediment erosion rate (from store + direct river bed/bank) [kg s⁻¹]
-    erosion::Vector{Float64} = fill(MISSING_VALUE, n)
+    erosion::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Sediment / particle left in the cell [kg] - states
-    leftover_clay::Vector{Float64} = zeros(n)
-    leftover_silt::Vector{Float64} = zeros(n)
-    leftover_sand::Vector{Float64} = zeros(n)
-    leftover_small_aggregates::Vector{Float64} = zeros(n)
-    leftover_large_aggregates::Vector{Float64} = zeros(n)
-    leftover_gravel::Vector{Float64} = zeros(n)
+    leftover_clay::Vector{Float64} = zeros(n_river_cells)
+    leftover_silt::Vector{Float64} = zeros(n_river_cells)
+    leftover_sand::Vector{Float64} = zeros(n_river_cells)
+    leftover_small_aggregates::Vector{Float64} = zeros(n_river_cells)
+    leftover_large_aggregates::Vector{Float64} = zeros(n_river_cells)
+    leftover_gravel::Vector{Float64} = zeros(n_river_cells)
     # Sediment / particle stored on the river bed after deposition [kg] -states
-    store_clay::Vector{Float64} = zeros(n)
-    store_silt::Vector{Float64} = zeros(n)
-    store_sand::Vector{Float64} = zeros(n)
-    store_small_aggregates::Vector{Float64} = zeros(n)
-    store_large_aggregates::Vector{Float64} = zeros(n)
-    store_gravel::Vector{Float64} = zeros(n)
+    store_clay::Vector{Float64} = zeros(n_river_cells)
+    store_silt::Vector{Float64} = zeros(n_river_cells)
+    store_sand::Vector{Float64} = zeros(n_river_cells)
+    store_small_aggregates::Vector{Float64} = zeros(n_river_cells)
+    store_large_aggregates::Vector{Float64} = zeros(n_river_cells)
+    store_gravel::Vector{Float64} = zeros(n_river_cells)
 end
 
 "Struct to store river sediment transport model boundary conditions"
 @with_kw struct SedimentRiverTransportBC
-    n::Int
+    n_river_cells::Int
     # Waterlevel [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Discharge [m³ s⁻¹]
-    q::Vector{Float64} = fill(MISSING_VALUE, n)
+    q::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Transport capacity of the flow [kg s⁻¹]
-    transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n)
+    transport_capacity::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Sediment input rate from land erosion [kg s⁻¹]
-    erosion_land_clay::Vector{Float64} = fill(MISSING_VALUE, n)
-    erosion_land_silt::Vector{Float64} = fill(MISSING_VALUE, n)
-    erosion_land_sand::Vector{Float64} = fill(MISSING_VALUE, n)
-    erosion_land_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
-    erosion_land_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    erosion_land_clay::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
+    erosion_land_silt::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
+    erosion_land_sand::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
+    erosion_land_small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
+    erosion_land_large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Sediment erosion rate from direct river erosion [kg s⁻¹]
-    potential_erosion_river_bed::Vector{Float64} = fill(MISSING_VALUE, n)
-    potential_erosion_river_bank::Vector{Float64} = fill(MISSING_VALUE, n)
+    potential_erosion_river_bed::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
+    potential_erosion_river_bank::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
 end
 
 "Struct to store river sediment transport model parameters"
@@ -88,7 +88,7 @@ function SedimentRiverTransportParameters(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_river_cells = length(indices)
     clay_fraction = ncread(
         dataset,
         config,
@@ -164,9 +164,9 @@ function SedimentRiverTransportParameters(
             sel = indices,
         )
     else
-        reservoir_outlet = zeros(n)
-        reservoir_area = zeros(n)
-        reservoir_trapping_efficiency = zeros(n)
+        reservoir_outlet = zeros(n_river_cells)
+        reservoir_area = zeros(n_river_cells)
+        reservoir_trapping_efficiency = zeros(n_river_cells)
     end
 
     river_parameters = SedimentRiverTransportParameters(;
@@ -190,10 +190,12 @@ end
 
 "Struct to store river sediment transport model"
 @with_kw struct SedimentRiverTransportModel <: AbstractSedimentRiverTransportModel
-    n::Int
-    boundary_conditions::SedimentRiverTransportBC = SedimentRiverTransportBC(; n)
+    n_river_cells::Int
+    boundary_conditions::SedimentRiverTransportBC =
+        SedimentRiverTransportBC(; n_river_cells)
     parameters::SedimentRiverTransportParameters
-    variables::SedimentRiverTransportVariables = SedimentRiverTransportVariables(; n)
+    variables::SedimentRiverTransportVariables =
+        SedimentRiverTransportVariables(; n_river_cells)
 end
 
 "Initialize river sediment transport model"
@@ -202,9 +204,9 @@ function SedimentRiverTransportModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_river_cells = length(indices)
     parameters = SedimentRiverTransportParameters(dataset, config, indices)
-    sediment_transport_model = SedimentRiverTransportModel(; n, parameters)
+    sediment_transport_model = SedimentRiverTransportModel(; n_river_cells, parameters)
     return sediment_transport_model
 end
 
@@ -816,33 +818,33 @@ end
 
 "Struct to store river sediment concentrations model variables"
 @with_kw struct SedimentConcentrationsRiverVariables
-    n::Int
+    n_river_cells::Int
     # Total sediment concentration in the river [kg m⁻³]
-    total::Vector{Float64} = fill(MISSING_VALUE, n)
+    total::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # suspended sediment concentration in the river [kg m⁻³]
-    suspended::Vector{Float64} = fill(MISSING_VALUE, n)
+    suspended::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # bed load sediment concentration in the river [kg m⁻³]
-    bed::Vector{Float64} = fill(MISSING_VALUE, n)
+    bed::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
 end
 
 "Struct to store river sediment concentrations model boundary conditions"
 @with_kw struct SedimentConcentrationsRiverBC
-    n::Int
+    n_river_cells::Int
     # Discharge [m³ s⁻¹]
-    q::Vector{Float64} = fill(MISSING_VALUE, n)
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n) # [m]
+    q::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n_river_cells) # [m]
     # Clay load [kg s⁻¹]
-    clay::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Silt load [kg s⁻¹]
-    silt::Vector{Float64} = fill(MISSING_VALUE, n)
+    silt::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Sand load [kg s⁻¹]
-    sand::Vector{Float64} = fill(MISSING_VALUE, n)
+    sand::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Small aggregates load [kg s⁻¹]
-    small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Large aggregates load [kg s⁻¹]
-    large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Gravel load [kg s⁻¹]
-    gravel::Vector{Float64} = fill(MISSING_VALUE, n)
+    gravel::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
 end
 
 "Struct to store river sediment concentrations model parameters"
@@ -903,11 +905,12 @@ end
 
 "Struct to store river sediment concentrations model"
 @with_kw struct SedimentConcentrationsRiverModel <: AbstractSedimentConcentrationsRiverModel
-    n::Int
-    boundary_conditions::SedimentConcentrationsRiverBC = SedimentConcentrationsRiverBC(; n)
+    n_river_cells::Int
+    boundary_conditions::SedimentConcentrationsRiverBC =
+        SedimentConcentrationsRiverBC(; n_river_cells)
     parameters::SedimentConcentrationsRiverParameters
     variables::SedimentConcentrationsRiverVariables =
-        SedimentConcentrationsRiverVariables(; n)
+        SedimentConcentrationsRiverVariables(; n_river_cells)
 end
 
 "Initialize river sediment concentrations model"
@@ -916,9 +919,10 @@ function SedimentConcentrationsRiverModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_river_cells = length(indices)
     parameters = SedimentConcentrationsRiverParameters(dataset, config, indices)
-    sediment_concentrations_model = SedimentConcentrationsRiverModel(; n, parameters)
+    sediment_concentrations_model =
+        SedimentConcentrationsRiverModel(; n_river_cells, parameters)
     return sediment_concentrations_model
 end
 

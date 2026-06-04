@@ -1,24 +1,27 @@
 @testitem "unit: update_demand_gross! (NonPaddyModel)" begin
     include("testing_utils.jl")
     using StaticArrays: SVector
-    n = 1
+    n_cells = 1
     N = 3
 
     dt = 86400.0
 
     model = Wflow.NonPaddyModel(;
-        n,
+        n_cells,
         parameters = Wflow.NonPaddyParameters(;
             irrigation_efficiency = [1.0],
             maximum_irrigation_rate = [2.8935185185185185e-7],
             irrigation_areas = [true],
             irrigation_trigger = [true],
         ),
-        variables = Wflow.NonPaddyVariables(; n, demand_gross = [9.958421621358223e-9]),
+        variables = Wflow.NonPaddyVariables(;
+            n_cells,
+            demand_gross = [9.958421621358223e-9],
+        ),
     )
 
     soil = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         # Variables
         unsaturated_layer_thickness = [SVector(0.05, 0.1, 0.05)],
@@ -29,7 +32,9 @@
         # Parameters
         maximum_number_of_layers = 3,
         cumulative_layer_depth = [SVector(0.0, 0.05, 0.15, 0.2)],
-        brooks_corey_exponent = [SVector(9.195682525634766, 9.297739028930664, 9.597416877746582)],
+        brooks_corey_exponent = [
+            SVector(9.195682525634766, 9.297739028930664, 9.597416877746582),
+        ],
         number_of_layers = [3],
         theta_s = [0.4417283535003662],
         theta_fc = [0.26063963369395],
@@ -58,9 +63,9 @@ end
 
 @testitem "unit: update_demand_gross! (PaddyModel)" begin
     dt = 86400.0
-    n = 1
+    n_cells = 1
 
-    variables = Wflow.PaddyVariables(; n, h = [0.015])
+    variables = Wflow.PaddyVariables(; n_cells, h = [0.015])
     parameters = Wflow.PaddyParameters(;
         irrigation_efficiency = [1.0],
         maximum_irrigation_rate = [2.8935185185185185e-7],
@@ -70,7 +75,7 @@ end
         h_opt = [0.05],
         h_max = [0.08],
     )
-    paddy_model = Wflow.PaddyModel(; n, parameters, variables)
+    paddy_model = Wflow.PaddyModel(; n_cells, parameters, variables)
     @test Wflow.compute_irrigation_depth(paddy_model, 1) ≈ 0.035
 
     Wflow.update_demand_gross!(paddy_model, dt)
@@ -80,10 +85,10 @@ end
 @testitem "unit: surface_water_allocation_local!" begin
     dt = 86400.0
     include("testing_utils.jl")
-    n = 1
+    n_cells = 1
 
     allocation_model = Wflow.AllocationLandModel(;
-        n,
+        n_cells,
         parameters = Wflow.AllocationLandParameters(;
             fraction_surfacewater_used = [1.0],
             areas = [600_000],
@@ -91,14 +96,14 @@ end
     )
 
     demand_variables =
-        Wflow.DemandVariables(; n, surfacewater_demand = [2.3148148148148147e-10])
+        Wflow.DemandVariables(; n_cells, surfacewater_demand = [2.3148148148148147e-10])
 
     river = DummyRiver(;
         allocation = (;
             variables = (;
-                actual_surfacewater_abstraction_volume = zeros(n),
-                actual_surfacewater_abstraction = zeros(n),
-                available_surfacewater = zeros(n),
+                actual_surfacewater_abstraction_volume = zeros(n_cells),
+                actual_surfacewater_abstraction = zeros(n_cells),
+                available_surfacewater = zeros(n_cells),
             )
         ),
         boundary_conditions = (; external_inflow = [5.0]),
@@ -124,17 +129,19 @@ end
           0.0001388888888888889
     @test river.allocation.variables.available_surfacewater |> only ≈ 288.0
     @test demand_variables.surfacewater_demand |> only ≈ 0.0
-    @test river.allocation.variables.actual_surfacewater_abstraction |> only ≈ 2.3148148148148147e-10
-    @test allocation_model.variables.surfacewater_allocation |> only ≈ 2.3148148148148147e-10
+    @test river.allocation.variables.actual_surfacewater_abstraction |> only ≈
+          2.3148148148148147e-10
+    @test allocation_model.variables.surfacewater_allocation |> only ≈
+          2.3148148148148147e-10
 end
 
 @testitem "unit: surface_water_allocation_area!" begin
     dt = 86400.0
     include("testing_utils.jl")
 
-    n = 3
+    n_cells = 3
     allocation_model = Wflow.AllocationLandModel(;
-        n,
+        n_cells,
         parameters = Wflow.AllocationLandParameters(;
             fraction_surfacewater_used = [1.0],
             areas = [600_000.0],
@@ -142,7 +149,7 @@ end
     )
 
     demand_variables = Wflow.DemandVariables(;
-        n,
+        n_cells,
         surfacewater_demand = [
             7.523148148148148e-9,
             8.912037037037038e-9,
@@ -153,9 +160,9 @@ end
     river_flow_model = DummyRiver(;
         allocation = (;
             variables = (;
-                actual_surfacewater_abstraction_volume = zeros(n),
-                actual_surfacewater_abstraction = zeros(n),
-                available_surfacewater = zeros(n),
+                actual_surfacewater_abstraction_volume = zeros(n_cells),
+                actual_surfacewater_abstraction = zeros(n_cells),
+                available_surfacewater = zeros(n_cells),
             )
         ),
         boundary_conditions = (;
@@ -213,15 +220,18 @@ end
 @testitem "unit: groundwater_allocation_local!" begin
     dt = 86400.0
 
-    n = 1
+    n_cells = 1
 
     allocation_model = Wflow.AllocationLandModel(;
-        n,
-        parameters = Wflow.AllocationLandParameters(; fraction_surfacewater_used = [], areas = []),
+        n_cells,
+        parameters = Wflow.AllocationLandParameters(;
+            fraction_surfacewater_used = [],
+            areas = [],
+        ),
     )
 
     demand_variables =
-        Wflow.DemandVariables(; n, total_gross_demand = [1.1574074074074074e-6])
+        Wflow.DemandVariables(; n_cells, total_gross_demand = [1.1574074074074074e-6])
 
     groundwater_storage = [315947.6]
 
@@ -235,29 +245,34 @@ end
         dt,
     )
 
-    @test allocation_model.variables.actual_groundwater_abstraction_volume |> only ≈ 0.6843592592592592
+    @test allocation_model.variables.actual_groundwater_abstraction_volume |> only ≈
+          0.6843592592592592
     @test allocation_model.variables.available_groundwater |> only ≈ 177832.06
     @test demand_variables.groundwater_demand |> only == 0.0
-    @test allocation_model.variables.actual_groundwater_abstraction |> only ≈ 1.1574074074074074e-6
+    @test allocation_model.variables.actual_groundwater_abstraction |> only ≈
+          1.1574074074074074e-6
     @test allocation_model.variables.groundwater_allocation |> only ≈ 1.1574074074074074e-6
 end
 
 @testitem "unit: groundwater_allocation_area!" begin
     dt = 86400.0
 
-    n = 3
+    n_cells = 3
 
     allocation_model = Wflow.AllocationLandModel(;
-        n,
-        parameters = Wflow.AllocationLandParameters(; fraction_surfacewater_used = [], areas = []),
+        n_cells,
+        parameters = Wflow.AllocationLandParameters(;
+            fraction_surfacewater_used = [],
+            areas = [],
+        ),
         variables = Wflow.AllocationLandVariables(;
-            n,
+            n_cells,
             available_groundwater = [303505.6, 308331.8, 306516.2],
         ),
     )
 
     demand_variables = Wflow.DemandVariables(;
-        n,
+        n_cells,
         groundwater_demand = [
             2.689178240740741e-7,
             1.4190972222222222e-7,

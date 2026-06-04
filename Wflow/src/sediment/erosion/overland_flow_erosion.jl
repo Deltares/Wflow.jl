@@ -2,16 +2,16 @@ abstract type AbstractOverlandFlowErosionModel end
 
 "Struct for storing overland flow erosion model variables"
 @with_kw struct OverlandFlowErosionVariables
-    n::Int
+    n_cells::Int
     # Total soil erosion rate [kg s⁻¹] from overland flow
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing overland flow erosion model boundary conditions"
 @with_kw struct OverlandFlowErosionBC
-    n::Int
+    n_cells::Int
     # Overland flow [m³ s⁻¹]
-    q::Vector{Float64} = fill(MISSING_VALUE, n)
+    q::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing ANSWERS overland flow erosion model parameters"
@@ -49,10 +49,10 @@ end
 
 "ANSWERS overland flow erosion model"
 @with_kw struct OverlandFlowErosionAnswersModel <: AbstractOverlandFlowErosionModel
-    n::Int
-    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n)
+    n_cells::Int
+    boundary_conditions::OverlandFlowErosionBC = OverlandFlowErosionBC(; n_cells)
     parameters::OverlandFlowErosionAnswersParameters
-    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n)
+    variables::OverlandFlowErosionVariables = OverlandFlowErosionVariables(; n_cells)
 end
 
 "Initialize ANSWERS overland flow erosion model"
@@ -61,9 +61,9 @@ function OverlandFlowErosionAnswersModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = OverlandFlowErosionAnswersParameters(dataset, config, indices)
-    overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n, parameters)
+    overland_flow_erosion_model = OverlandFlowErosionAnswersModel(; n_cells, parameters)
     return overland_flow_erosion_model
 end
 

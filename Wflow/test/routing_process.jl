@@ -27,11 +27,13 @@ end
 
     # Case kh_profile::KhExponential
     kh_profile = Wflow.KhExponential([0.0002795374658372667], [1.8001038115471601])
-    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈ 3.4838105601686665e-6
+    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈
+          3.4838105601686665e-6
 
     # Case kh_profile::KhExponentialConstant
     kh_profile = Wflow.KhExponentialConstant(kh_profile, [0.2])
-    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈ 4.170921791220723e-6
+    @test Wflow.ssf_celerity(water_table_depth, slope, theta_e, kh_profile, i) ≈
+          4.170921791220723e-6
 end
 
 @testitem "unit: kw_ssf_newton_raphson" begin
@@ -100,7 +102,7 @@ end
     include("testing_utils.jl")
 
     ### Shared values
-    n = 1
+    n_cells = 1
     N = 4
     actual_layer_thickness = [SVector(0.1, 0.3, 0.8, 0.8)]
     cumulative_layer_depth = [SVector(0.0, 0.1, 0.4, 1.2, 2.0)]
@@ -126,7 +128,7 @@ end
     i = 1
 
     soil_model = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         # Variables
         unsaturated_layer_thickness = [SVector(0.1, 0.3, 0.11983408703759733, NaN)],
@@ -218,7 +220,7 @@ end
     @test net_flux ≈ -3.904277181728481e-7
 
     soil = init_sbm_soil_model(
-        n,
+        n_cells,
         N;
         # Variables
         unsaturated_layer_thickness = [SVector(0.1, 0.3, 0.348312461531486, NaN)],
@@ -310,14 +312,19 @@ end
 
 @testitem "unit: kinwave_river_update!" begin
     using Graphs: DiGraph, add_edge!
-    n = 2
+    n_cells = 2
+    n_river_cells = 2
+    n_reservoirs = 2
     model = Wflow.KinWaveRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
-            n,
+            n_river_cells,
             external_inflow = [-0.1],
             reservoir = Wflow.ReservoirModel(;
-                boundary_conditions = Wflow.ReservoirBC(; n, external_inflow = [0.02]),
+                boundary_conditions = Wflow.ReservoirBC(;
+                    n_reservoirs,
+                    external_inflow = [0.02],
+                ),
                 parameters = Wflow.ReservoirParameters(;
                     id = [1],
                     storage_curve_type = [Wflow.ReservoirProfileType.linear],
@@ -340,8 +347,8 @@ end
             ),
             bankfull_depth = [10.0],
         ),
-        variables = Wflow.FlowVariables(; n, q = [0.2]),
-        allocation = Wflow.NoAllocationRiverModel(n),
+        variables = Wflow.FlowVariables(; n_cells, q = [0.2]),
+        allocation = Wflow.NoAllocationRiverModel(n_river_cells),
     )
     graph = DiGraph(2)
     add_edge!(graph, 1, 2)
@@ -368,16 +375,18 @@ end
 
 @testitem "unit: local_inertial_river_update!" begin
     dt = 86400.0
-    n = 2
+    n_river_cells = 2
+    n_cells = 2
+    n_reservoirs = 2
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
-            n,
+            n_river_cells,
             external_inflow = [-1.0, -1.0],
             inwater = [100.0, 100.0],
             reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
-                    n,
+                    n_reservoirs,
                     external_inflow = [-1.0],
                     inflow_overland = [3000.0],
                     inflow_subsurface = [5000.0],
@@ -404,7 +413,7 @@ end
             ),
         ),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
-            n = n,
+            n_river_cells,
             ne = 2,
             active_n = [2],
             active_e = [1],
@@ -420,7 +429,7 @@ end
             flow_width_at_edge = [100.0, 100.0],
         ),
         variables = Wflow.LocalInertialRiverFlowVariables(;
-            n_cells = n,
+            n_cells,
             n_edges = 2,
             h = [1.0, 2.0],
             q = [0.0, 1e-4],
@@ -438,9 +447,13 @@ end
                 mannings_n_sq = [1.2e-4],
                 zb_max = [1.0],
             ),
-            variables = Wflow.FloodPlainVariables(; n, n_edges = 1, h = [0.1, 0.2]),
+            variables = Wflow.FloodPlainVariables(;
+                n_river_cells,
+                n_edges = 1,
+                h = [0.1, 0.2],
+            ),
         ),
-        allocation = Wflow.AllocationRiverModel(; n),
+        allocation = Wflow.AllocationRiverModel(; n_river_cells),
     )
     domain = Wflow.Domain(;
         river = Wflow.DomainRiver(;
@@ -514,13 +527,13 @@ end
 end
 
 @testitem "unit: update_directional_flow!" begin
-    n = 3
+    n_cells = 3
     overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(),
-        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n),
+        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n_cells),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
-            n,
-            ywidth = fill(900.0, n),
+            n_cells,
+            ywidth = fill(900.0, n_cells),
             xwidth = [250.0, 300.0, 450.0],
             zx_max = [750.0, 900.0, 800.0],
             theta = 1.0,
@@ -531,7 +544,7 @@ end
             froude_limit = true,
         ),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
-            n,
+            n_cells,
             qx0 = [1e-3, 2e-3, 3e-3],
             h = [0.03, 0.02, 0.05],
         ),
@@ -539,11 +552,15 @@ end
     domain = Wflow.Domain(;
         land = Wflow.DomainLand(;
             network = Wflow.NetworkLand(;
-                edge_indices = Wflow.EdgeConnectivity(; n = 1, idx_right = [2], idx_left = [3]),
+                edge_indices = Wflow.EdgeConnectivity(;
+                    n = 1,
+                    idx_right = [2],
+                    idx_left = [3],
+                ),
             ),
             parameters = Wflow.LandParameters(;
-                x_length = fill(600.0, n),
-                y_length = fill(900.0, n),
+                x_length = fill(600.0, n_cells),
+                y_length = fill(900.0, n_cells),
             ),
         ),
     )
@@ -556,18 +573,22 @@ end
 end
 
 @testitem "unit: local_inertial_update_water_depth!" begin
-    n = 2
+    n_cells = 2
+    n_river_cells = 2
     overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
-            n,
+            n_cells,
             qx = [0.1, 0.3],
             qy = [0.25, 0.15],
             storage = [1000.0, 1250.0],
         ),
-        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(; n, runoff = [0.2, 0.3]),
+        boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
+            n_cells,
+            runoff = [0.2, 0.3],
+        ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
-            n,
+            n_cells,
             xwidth = [600.0],
             ywidth = [900.0],
             theta = 1.0,
@@ -582,12 +603,12 @@ end
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
-            n,
+            n_river_cells,
             external_inflow = [-0.2, -0.1],
             reservoir = nothing,
         ),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
-            n,
+            n_river_cells,
             ne = 2,
             active_n = [1, 1],
             active_e = [1, 1],
@@ -603,7 +624,7 @@ end
             flow_width_at_edge = [30.0, 30.0],
         ),
         variables = Wflow.LocalInertialRiverFlowVariables(;
-            n_cells = n,
+            n_cells = n_river_cells,
             n_edges = 2,
             q = [0.03, 0.04],
             h = [1.0, 1.0],
@@ -616,7 +637,11 @@ end
         land = Wflow.DomainLand(;
             network = Wflow.NetworkLand(;
                 river_indices = [1],
-                edge_indices = Wflow.EdgeConnectivity(; n, idx_left = [2, 1], idx_down = [2, 1]),
+                edge_indices = Wflow.EdgeConnectivity(;
+                    n = 2,
+                    idx_left = [2, 1],
+                    idx_down = [2, 1],
+                ),
             ),
             parameters = Wflow.LandParameters(;
                 x_length = [600.0, 600.0],
@@ -686,16 +711,17 @@ end
     using Graphs: DiGraph, add_edge!
 
     dt = 86400.0
-    n = 2
+    n_river_cells = 2
+    n_reservoirs = 2
 
     river_flow_model = Wflow.KinWaveRiverFlowModel(;
-        timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n)),
+        timestepping = Wflow.TimeStepping(; stable_timesteps = zeros(n_river_cells)),
         boundary_conditions = Wflow.RiverFlowBC(;
-            n,
-            external_inflow = zeros(n),
+            n_river_cells,
+            external_inflow = zeros(n_river_cells),
             reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
-                    n,
+                    n_reservoirs,
                     external_inflow = [-0.1],
                     precipitation = [2.0833332436504178e-10],
                     evaporation = [5.324074170655674e-9],
@@ -730,8 +756,11 @@ end
             ),
             bankfull_depth = [1.0, 1.0],
         ),
-        variables = Wflow.FlowVariables(; n, q = [0.5499295110293246, 3.0005238507869465]),
-        allocation = Wflow.NoAllocationRiverModel(n),
+        variables = Wflow.FlowVariables(;
+            n_cells = n_river_cells,
+            q = [0.5499295110293246, 3.0005238507869465],
+        ),
+        allocation = Wflow.NoAllocationRiverModel(n_river_cells),
     )
     graph = DiGraph(2)
     add_edge!(graph, 1, 2)
@@ -775,16 +804,16 @@ end
     #   3. update_bc_reservoir_model!  — reservoir storage, outflow, evaporation
     #   4. update_water_depth_and_storage!
     model_dt = 86400.0
-    n = 3
+    n_river_cells = 3
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(),
         boundary_conditions = Wflow.RiverFlowBC(;
-            n,
-            external_inflow = zeros(n),
+            n_river_cells,
+            external_inflow = zeros(n_river_cells),
             inwater = [0.012816561479797707, 0.01544689027914484, -0.0004760637654763434],
             reservoir = Wflow.ReservoirModel(;
                 boundary_conditions = Wflow.ReservoirBC(;
-                    n = 1,
+                    n_reservoirs = 1,
                     external_inflow = [0.0],
                     inflow_overland = [0.0],
                     inflow_subsurface = [0.04279912663469156],
@@ -809,7 +838,7 @@ end
             ),
         ),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
-            n,
+            n_river_cells,
             ne = 2,
             active_n = [1, 3],
             active_e = [1],
@@ -825,7 +854,7 @@ end
             flow_width_at_edge = [94.73094177246094, 94.73094177246094],
         ),
         variables = Wflow.LocalInertialRiverFlowVariables(;
-            n_cells = n,
+            n_cells = n_river_cells,
             n_edges = 2,
             h = [0.04484241735240722, 0.0, 0.07939389691400389],
             storage = [2562.9827873416416, 0.0, 7159.812778536053],
@@ -833,7 +862,7 @@ end
             q = [0.534560186001325, 0.0],
         ),
         floodplain = nothing,
-        allocation = Wflow.AllocationRiverModel(; n),
+        allocation = Wflow.AllocationRiverModel(; n_river_cells),
     )
     domain = Wflow.Domain(;
         river = Wflow.DomainRiver(;
@@ -915,17 +944,17 @@ end
     #   2. update_floodplain_flow!     — floodplain discharge and geometry
     #   3. update_bc_reservoir_model!  — no reservoir
     #   4. update_water_depth_and_storage!
-    n = 3
+    n_river_cells = 3
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         boundary_conditions = Wflow.RiverFlowBC(;
-            n,
-            external_inflow = zeros(n),
+            n_river_cells,
+            external_inflow = zeros(n_river_cells),
             inwater = [0.001214603164946035, 0.0069799723162954465, 0.00022016439899281862],
             reservoir = nothing,
         ),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
-            n,
+            n_river_cells,
             ne = 2,
             active_n = [1, 2, 3],
             active_e = [1, 2],
@@ -941,7 +970,7 @@ end
             flow_width_at_edge = [149.17837524414062, 149.17837524414062],
         ),
         variables = Wflow.LocalInertialRiverFlowVariables(;
-            n_cells = n,
+            n_cells = n_river_cells,
             n_edges = 2,
             h = [1.8817912224982847, 1.8197068314233162, 1.7619620034455687],
             storage = [127553.31189184493, 228917.89427333255, 77120.8437153619],
@@ -989,14 +1018,14 @@ end
                 zb_max = [166.6999969482422, 166.6999969482422],
             ),
             variables = Wflow.FloodPlainVariables(;
-                n,
+                n_river_cells,
                 n_edges = 2,
                 q = [3.306660222819796, 6.14041420989245],
                 h = [0.2896350506995787, 0.22755065962461016, 0.16980583164686275],
                 storage = [25320.207706612186, 99321.92021301284, 30370.81429688439],
             ),
         ),
-        allocation = Wflow.AllocationRiverModel(; n),
+        allocation = Wflow.AllocationRiverModel(; n_river_cells),
     )
     domain = Wflow.Domain(;
         river = Wflow.DomainRiver(;
@@ -1022,9 +1051,11 @@ end
     @test river_flow_model.variables.zs_src ≈ [166.98963199894177, 166.92754760786679]
     @test river_flow_model.variables.zs_dst ≈ [166.92754760786679, 166.86980277988906]
     @test river_flow_model.variables.zs_max ≈ [166.98963199894177, 166.92754760786679]
-    @test river_flow_model.variables.water_depth_at_edge ≈ [1.8817912224982933, 1.8197068314233036]
+    @test river_flow_model.variables.water_depth_at_edge ≈
+          [1.8817912224982933, 1.8197068314233036]
     @test river_flow_model.variables.flow_area ≈ [280.7225571209805, 271.4609085323917]
-    @test river_flow_model.variables.hydraulic_radius ≈ [1.8354842671202385, 1.7763698223484754]
+    @test river_flow_model.variables.hydraulic_radius ≈
+          [1.8354842671202385, 1.7763698223484754]
     @test river_flow_model.variables.q ≈ [137.1827776559179, 133.7538757670657]
     @test river_flow_model.variables.q_cumulative ≈ [6778.106459961183, 6608.686781773178]
 
@@ -1033,7 +1064,8 @@ end
     @test river_flow_model.floodplain.variables.water_depth_at_edge ≈
           [0.2896350506995873, 0.22755065962459753]
     @test river_flow_model.floodplain.variables.hf_index == [1, 2]
-    @test river_flow_model.floodplain.variables.flow_area ≈ [55.72538543569419, 117.7803635852996]
+    @test river_flow_model.floodplain.variables.flow_area ≈
+          [55.72538543569419, 117.7803635852996]
     @test river_flow_model.floodplain.variables.hydraulic_radius ≈
           [0.28876507912737354, 0.22735103521877678]
     @test river_flow_model.floodplain.variables.q ≈ [3.3074651032168534, 6.14213116671929]
@@ -1073,15 +1105,15 @@ end
 @testitem "unit: update_directional_flow!" begin
     # Test local inertial overland flow routing in x-direction at edge 2 (i = 2) using 3
     # nodes.
-    n = 3
+    n_cells = 3
     overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
-            n,
+            n_cells,
             runoff = [0.0, 0.0, 0.003001456821567986],
         ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
-            n,
+            n_cells,
             ywidth = [926.6857061478484, 869.7426481339323, 812.7995901200163],
             xwidth = [],
             zx_max = [257.3280029296875, 232.67100524902344, 232.67100524902344],
@@ -1093,7 +1125,7 @@ end
             froude_limit = true,
         ),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
-            n,
+            n_cells,
             qx0 = [0.0, -3.6332616217117395, -0.7525806207906618, 0.0],
             qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
             h = [0.0, 1.3754708010382453, 0.11735139800699446],
@@ -1134,18 +1166,18 @@ end
     overland_flow_model = Wflow.LocalInertialOverlandFlowModel(;
         timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         variables = Wflow.LocalInertialOverlandFlowVariables(;
-            n = n_land,
+            n_cells = n_land,
             qx = [0.0, -3.63341089804407, -0.7526187151790501, 0.0],
             qy = [0.0, -0.7369647824685662, 0.0, 0.0],
             storage = [0.0, 783157.9568615163, 237954.47204911432],
             h = [0.0, 1.3754708010382453, 0.11735139800699446],
         ),
         boundary_conditions = Wflow.LocalInertialOverlandFlowBC(;
-            n = n_land,
+            n_cells = n_land,
             runoff = [0.0, 0.0, 0.003001456821567986],
         ),
         parameters = Wflow.LocalInertialOverlandFlowParameters(;
-            n = n_land,
+            n_cells = n_land,
             xwidth = [],
             ywidth = [],
             theta = 1.0,
@@ -1161,12 +1193,12 @@ end
     river_flow_model = Wflow.LocalInertialRiverFlowModel(;
         timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7),
         boundary_conditions = Wflow.RiverFlowBC(;
-            n = n_river,
+            n_river_cells = n_river,
             reservoir = nothing,
             external_inflow = zeros(n_river),
         ),
         parameters = Wflow.LocalInertialRiverFlowParameters(;
-            n = n_river,
+            n_river_cells = n_river,
             ne = 2,
             active_n = [1],
             active_e = [1, 2],
@@ -1275,7 +1307,7 @@ end
 
     L = 1000.0
     dx = 5.0
-    n = Int(L / dx)
+    n_river_cells = Int(L / dx)
 
     # analytical solution MacDonald (1997) for channel with length L of 1000.0 m, Manning's
     # n of 0.03, constant inflow of 20.0 m3/s at upper boundary and channel width of 10.0 m
@@ -1297,14 +1329,14 @@ end
     zb = first.([quadgk(s, xi, L; rtol = 1e-12) for xi in x])
 
     # initialize local inertial river flow model
-    graph = DiGraph(n)
-    for i in 1:n
+    graph = DiGraph(n_river_cells)
+    for i in 1:n_river_cells
         add_edge!(graph, i, i + 1)
     end
 
-    dl = fill(dx, n)
-    width = fill(10.0, n)
-    n_river = fill(0.03, n)
+    dl = fill(dx, n_river_cells)
+    width = fill(10.0, n_river_cells)
+    n_river = fill(0.03, n_river_cells)
 
     # for each edge the src and dst node is required
     nodes_at_edge = Wflow.adjacent_nodes_at_edge(graph)
@@ -1337,21 +1369,21 @@ end
     params_river = Wflow.RiverParameters(;
         flow_width = width,
         flow_length = dl,
-        reservoir_outlet = zeros(n),
+        reservoir_outlet = zeros(n_river_cells),
     )
     domain_river = Wflow.DomainRiver(; network = river_network, parameters = params_river)
     domain = Wflow.Domain(; river = domain_river)
 
     h_thresh = 1.0e-3
     froude_limit = true
-    h_init = zeros(n - 1)
-    push!(h_init, h_a[n])
+    h_init = zeros(n_river_cells - 1)
+    push!(h_init, h_a[n_river_cells])
 
     timestepping = Wflow.TimeStepping(; alpha_coefficient = 0.7)
     parameters = Wflow.LocalInertialRiverFlowParameters(;
-        n,
+        n_river_cells,
         ne = _ne,
-        active_n = collect(1:(n - 1)),
+        active_n = collect(1:(n_river_cells - 1)),
         active_e = collect(1:_ne),
         h_thresh,
         zb_max,
@@ -1359,17 +1391,23 @@ end
         mannings_n = n_river,
         flow_width_at_edge = width_at_edge,
         flow_length_at_edge = length_at_edge,
-        bankfull_storage = fill(Wflow.MISSING_VALUE, n),
-        bankfull_depth = fill(Wflow.MISSING_VALUE, n),
+        bankfull_storage = fill(Wflow.MISSING_VALUE, n_river_cells),
+        bankfull_depth = fill(Wflow.MISSING_VALUE, n_river_cells),
         zb,
         froude_limit,
     )
 
-    variables =
-        Wflow.LocalInertialRiverFlowVariables(; n_cells = n, n_edges = _ne, h = h_init)
+    variables = Wflow.LocalInertialRiverFlowVariables(;
+        n_cells = n_river_cells,
+        n_edges = _ne,
+        h = h_init,
+    )
 
-    boundary_conditions =
-        Wflow.RiverFlowBC(; n, external_inflow = zeros(n), reservoir = nothing)
+    boundary_conditions = Wflow.RiverFlowBC(;
+        n_river_cells,
+        external_inflow = zeros(n_river_cells),
+        reservoir = nothing,
+    )
 
     sw_river = Wflow.LocalInertialRiverFlowModel(;
         timestepping,
@@ -1377,7 +1415,7 @@ end
         parameters,
         variables,
         floodplain = nothing,
-        allocation = Wflow.NoAllocationRiverModel(n),
+        allocation = Wflow.NoAllocationRiverModel(n_river_cells),
     )
 
     # run until steady state is reached

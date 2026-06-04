@@ -72,7 +72,7 @@ instead.
 """
 
 @with_kw struct GroundwaterFlowVariables
-    n::Int
+    n_cells::Int
     # hydraulic head [m]
     head::Vector{Float64}
     # conductance [m² s⁻¹]
@@ -80,25 +80,25 @@ instead.
     # total storage of water that can be released [m³]
     storage::Vector{Float64}
     # net flow (groundwater and boundaries) [m³ s⁻¹]
-    q_net::Vector{Float64} = zeros(n)
+    q_net::Vector{Float64} = zeros(n_cells)
     # cumulative net flow (groundwater and boundaries) [m³]
-    q_net_cumulative::Vector{Float64} = zeros(n)
+    q_net_cumulative::Vector{Float64} = zeros(n_cells)
     # average net flow (groundwater and boundaries) [m³ s⁻¹]
-    q_net_average::Vector{Float64} = zeros(n)
+    q_net_average::Vector{Float64} = zeros(n_cells)
     # net flow boundaries [m³ s⁻¹]
-    q_net_bnds::Vector{Float64} = zeros(n)
+    q_net_bnds::Vector{Float64} = zeros(n_cells)
     # cumulative groundwater (lateral) inflow for model timestep dt [m³]
-    q_in_cumulative::Vector{Float64} = zeros(n)
+    q_in_cumulative::Vector{Float64} = zeros(n_cells)
     # average groundwater (lateral) inflow for model timestep dt [m³ s⁻¹]
-    q_in_average::Vector{Float64} = zeros(n)
+    q_in_average::Vector{Float64} = zeros(n_cells)
     # cumulative groundwater (lateral) outflow for model timestep dt [m³]
-    q_cumulative::Vector{Float64} = zeros(n)
+    q_cumulative::Vector{Float64} = zeros(n_cells)
     # average groundwater (lateral) outflow for model timestep dt [m³ s⁻¹]
-    q_average::Vector{Float64} = zeros(n)
+    q_average::Vector{Float64} = zeros(n_cells)
     # Cumulative exfiltration [m] (groundwater above surface level, saturated excess conditions)
-    exfiltwater_cumulative::Vector{Float64} = zeros(n)
+    exfiltwater_cumulative::Vector{Float64} = zeros(n_cells)
     # Average exfiltration [m s⁻¹] (groundwater above surface level, saturated excess conditions)
-    exfiltwater_average::Vector{Float64} = zeros(n)
+    exfiltwater_average::Vector{Float64} = zeros(n_cells)
 end
 
 @with_kw struct GroundwaterFlowParameters
@@ -314,14 +314,15 @@ function GroundwaterFlowModel(
         specific_yield,
     )
     storage = @. (min(elevation, initial_head) - bottom) * area * parameters.specific_yield
-    n = length(storage)
-    variables = GroundwaterFlowVariables(; n, head = initial_head, conductance, storage)
+    n_cells = length(storage)
+    variables =
+        GroundwaterFlowVariables(; n_cells, head = initial_head, conductance, storage)
 
     # river boundary of unconfined aquifer
     gwf_river_model = GwfRiverModel(dataset, config, river.network.indices)
 
     # recharge boundary of unconfined aquifer
-    recharge_model = RechargeModel(; n = n_cells)
+    recharge_model = RechargeModel(; n_cells)
 
     # drain boundary of unconfined aquifer (optional)
     if config.model.drain__flag

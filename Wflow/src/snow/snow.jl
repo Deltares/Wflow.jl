@@ -2,32 +2,32 @@ abstract type AbstractSnowModel end
 
 "Struct for storing snow model variables"
 @with_kw struct SnowVariables
-    n::Int
+    n_cells::Int
     # Snow storage [m]
-    snow_storage::Vector{Float64} = zeros(n)
+    snow_storage::Vector{Float64} = zeros(n_cells)
     # Liquid water content in the snow pack [m]
-    snow_water::Vector{Float64} = zeros(n)
+    snow_water::Vector{Float64} = zeros(n_cells)
     # Snow water equivalent (SWE) [m]
-    snow_water_equivalent::Vector{Float64} = fill(MISSING_VALUE, n)
+    snow_water_equivalent::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Snow melt [m s⁻¹]
-    snow_melt::Vector{Float64} = fill(MISSING_VALUE, n)
+    snow_melt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Runoff from snowpack [m s⁻¹]
-    runoff::Vector{Float64} = fill(MISSING_VALUE, n)
+    runoff::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Lateral snow (SWE) transport from upstreams cells [m s⁻¹]
-    snow_in::Vector{Float64} = zeros(n)
+    snow_in::Vector{Float64} = zeros(n_cells)
     # Lateral snow (SWE) transport out of a cell [m s⁻¹]
-    snow_out::Vector{Float64} = zeros(n)
+    snow_out::Vector{Float64} = zeros(n_cells)
 end
 
 "Struct for storing snow model boundary conditions"
 @with_kw struct SnowBC
-    n::Int
+    n_cells::Int
     # Effective precipitation [m s⁻¹]
-    effective_precip::Vector{Float64} = fill(MISSING_VALUE, n)
+    effective_precip::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Snow precipitation [m s⁻¹]
-    snow_precip::Vector{Float64} = fill(MISSING_VALUE, n)
+    snow_precip::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Liquid precipitation [m s⁻¹]
-    liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n)
+    liquid_precip::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing snow HBV model parameters"
@@ -46,14 +46,14 @@ end
 
 "Snow HBV model"
 @with_kw struct SnowHbvModel <: AbstractSnowModel
-    n::Int
-    boundary_conditions::SnowBC = SnowBC(; n)
+    n_cells::Int
+    boundary_conditions::SnowBC = SnowBC(; n_cells)
     parameters::SnowHbvParameters
-    variables::SnowVariables = SnowVariables(; n)
+    variables::SnowVariables = SnowVariables(; n_cells)
 end
 
 struct NoSnowModel <: AbstractSnowModel
-    n::Int
+    n_cells::Int
 end
 
 "Initialize snow HBV model parameters"
@@ -113,9 +113,9 @@ function SnowHbvModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = SnowHbvParameters(dataset, config, indices)
-    snow_model = SnowHbvModel(; n, parameters)
+    snow_model = SnowHbvModel(; n_cells, parameters)
     return snow_model
 end
 
@@ -188,13 +188,13 @@ function update_snow_model!(
 end
 
 # wrapper methods
-get_runoff(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_runoff(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
 get_runoff(snow_model::AbstractSnowModel) = snow_model.variables.runoff
-get_snow_storage(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_storage(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
 get_snow_storage(snow_model::AbstractSnowModel) = snow_model.variables.snow_storage
-get_snow_water(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_water(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
 get_snow_water(snow_model::AbstractSnowModel) = snow_model.variables.snow_water
-get_snow_out(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_out(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
 get_snow_out(snow_model::AbstractSnowModel) = snow_model.variables.snow_out
-get_snow_in(snow_model::NoSnowModel) = Zeros(snow_model.n)
+get_snow_in(snow_model::NoSnowModel) = Zeros(snow_model.n_cells)
 get_snow_in(snow_model::AbstractSnowModel) = snow_model.variables.snow_in

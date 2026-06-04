@@ -1,19 +1,19 @@
 abstract type AbstractIrrigationModel end
 
 struct NoIrrigationPaddyModel <: AbstractIrrigationModel
-    n::Int
+    n_cells::Int
 end
 struct NoIrrigationNonPaddyModel <: AbstractIrrigationModel
-    n::Int
+    n_cells::Int
 end
 struct NoNonIrrigationDemandModel <: AbstractDemandModel
-    n::Int
+    n_cells::Int
 end
 struct NoAllocationLandModel <: AbstractAllocationModel
-    n::Int
+    n_cells::Int
 end
 struct NoAllocationRiverModel <: AbstractAllocationModel
-    n::Int
+    n_cells::Int
 end
 
 "Struct to store non-irrigation water demand variables"
@@ -40,7 +40,7 @@ end
 
 # wrapper methods
 get_demand_gross(demand_model::NonIrrigationDemandModel) = demand_model.demand.demand_gross
-get_demand_gross(demand_model::NoNonIrrigationDemandModel) = Zeros(demand_model.n)
+get_demand_gross(demand_model::NoNonIrrigationDemandModel) = Zeros(demand_model.n_cells)
 
 "Initialize non-irrigation water demand model for a water use `sector`"
 function NonIrrigationDemandModel(
@@ -78,8 +78,8 @@ end
 
 "Struct to store non-paddy irrigation model variables"
 @with_kw struct NonPaddyVariables
-    n::Int
-    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n)   # irrigation gross demand [m s⁻¹]
+    n_cells::Int
+    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n_cells)   # irrigation gross demand [m s⁻¹]
 end
 
 "Struct to store non-paddy irrigation model parameters"
@@ -92,9 +92,9 @@ end
 
 "Non-paddy (other crops than flooded rice) irrigation model"
 @with_kw struct NonPaddyModel <: AbstractIrrigationModel
-    n::Int
+    n_cells::Int
     parameters::NonPaddyParameters
-    variables::NonPaddyVariables = NonPaddyVariables(; n)
+    variables::NonPaddyVariables = NonPaddyVariables(; n_cells)
 end
 
 "Initialize non-paddy irrigation model"
@@ -138,15 +138,16 @@ function NonPaddyModel(
         irrigation_areas = areas,
         irrigation_trigger,
     )
-    n = length(indices)
-    nonpaddy_model = NonPaddyModel(; n, parameters)
+    n_cells = length(indices)
+    nonpaddy_model = NonPaddyModel(; n_cells, parameters)
 
     return nonpaddy_model
 end
 
 # wrapper methods
 get_demand_gross(nonpaddy_model::NonPaddyModel) = nonpaddy_model.variables.demand_gross
-get_demand_gross(irrigation_model::NoIrrigationNonPaddyModel) = Zeros(irrigation_model.n)
+get_demand_gross(irrigation_model::NoIrrigationNonPaddyModel) =
+    Zeros(irrigation_model.n_cells)
 
 """
     update_demand_gross!(nonpaddy_model::NonPaddy, soil_model::SbmSoilModel, dt::Float64)
@@ -267,10 +268,10 @@ end
 
 "Struct to store paddy irrigation model variables"
 @with_kw struct PaddyVariables
-    n::Int
-    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n) # irrigation gross demand [m s⁻¹]
-    h::Vector{Float64} = zeros(n)                          # actual water depth in rice field [m]
-    evaporation::Vector{Float64} = zeros(n)                # evaporation rate [m s⁻¹]
+    n_cells::Int
+    demand_gross::Vector{Float64} = fill(MISSING_VALUE, n_cells) # irrigation gross demand [m s⁻¹]
+    h::Vector{Float64} = zeros(n_cells)                          # actual water depth in rice field [m]
+    evaporation::Vector{Float64} = zeros(n_cells)                # evaporation rate [m s⁻¹]
 end
 
 "Struct to store paddy irrigation model parameters"
@@ -286,9 +287,9 @@ end
 
 "PaddyModel (flooded rice) irrigation model"
 @with_kw struct PaddyModel <: AbstractIrrigationModel
-    n::Int
+    n_cells::Int
     parameters::PaddyParameters
-    variables::PaddyVariables = PaddyVariables(; n)
+    variables::PaddyVariables = PaddyVariables(; n_cells)
 end
 
 "Initialize paddy irrigation model"
@@ -342,7 +343,7 @@ function PaddyModel(dataset::NCDataset, config::Config, indices::Vector{Cartesia
         LandHydrologySBM;
         sel = indices,
     )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = PaddyParameters(;
         irrigation_efficiency = efficiency,
         maximum_irrigation_rate = max_irri_rate,
@@ -352,15 +353,15 @@ function PaddyModel(dataset::NCDataset, config::Config, indices::Vector{Cartesia
         h_opt,
         irrigation_areas = areas,
     )
-    paddy = PaddyModel(; n, parameters)
+    paddy = PaddyModel(; n_cells, parameters)
     return paddy
 end
 
 # wrapper methods
 get_water_depth(paddy_model::PaddyModel) = paddy_model.variables.h
-get_water_depth(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n)
+get_water_depth(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n_cells)
 get_demand_gross(paddy_model::PaddyModel) = paddy_model.variables.demand_gross
-get_demand_gross(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n)
+get_demand_gross(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n_cells)
 
 """
     evaporation!(paddy_model::Paddy, potential_evaporation, dt::Float64)
@@ -383,7 +384,7 @@ evaporation!(paddy_model::NoIrrigationPaddyModel, potential_evaporation, dt::Flo
     nothing
 
 # wrapper methods
-get_evaporation(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n)
+get_evaporation(paddy_model::NoIrrigationPaddyModel) = Zeros(paddy_model.n_cells)
 get_evaporation(paddy_model::PaddyModel) = paddy_model.variables.evaporation
 
 """
@@ -459,12 +460,12 @@ update_demand_gross!(paddy_model::NoIrrigationPaddyModel, dt::Float64) = nothing
 
 "Struct to store water demand model variables"
 @with_kw struct DemandVariables
-    n::Int
-    irrigation_demand_gross::Vector{Float64} = zeros(n)        # irrigation gross demand [m s⁻¹]
-    non_irrigation_demand_gross::Vector{Float64} = zeros(n)     # non-irrigation gross demand [m s⁻¹]
-    total_gross_demand::Vector{Float64} = zeros(n)       # total gross demand [m s¹]
-    surfacewater_demand::Vector{Float64} = zeros(n)      # demand from surface water [m s⁻¹]
-    groundwater_demand::Vector{Float64} = zeros(n)       # demand from groundwater [m s⁻¹]
+    n_cells::Int
+    irrigation_demand_gross::Vector{Float64} = zeros(n_cells)        # irrigation gross demand [m s⁻¹]
+    non_irrigation_demand_gross::Vector{Float64} = zeros(n_cells)     # non-irrigation gross demand [m s⁻¹]
+    total_gross_demand::Vector{Float64} = zeros(n_cells)       # total gross demand [m s¹]
+    surfacewater_demand::Vector{Float64} = zeros(n_cells)      # demand from surface water [m s⁻¹]
+    groundwater_demand::Vector{Float64} = zeros(n_cells)       # demand from groundwater [m s⁻¹]
 end
 
 "Water demand model"
@@ -484,17 +485,17 @@ end
 end
 
 @with_kw struct NoDemandModel <: AbstractDemandModel
-    n::Int
-    domestic::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
-    industry::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
-    livestock::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n)
-    paddy::NoIrrigationPaddyModel = NoIrrigationPaddyModel(n)
-    nonpaddy::NoIrrigationNonPaddyModel = NoIrrigationNonPaddyModel(n)
+    n_cells::Int
+    domestic::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n_cells)
+    industry::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n_cells)
+    livestock::NoNonIrrigationDemandModel = NoNonIrrigationDemandModel(n_cells)
+    paddy::NoIrrigationPaddyModel = NoIrrigationPaddyModel(n_cells)
+    nonpaddy::NoIrrigationNonPaddyModel = NoIrrigationNonPaddyModel(n_cells)
 end
 
 "Initialize water demand model"
 function DemandModel(dataset::NCDataset, config::Config, indices::Vector{CartesianIndex{2}})
-    n = length(indices)
+    n_cells = length(indices)
     demand(
         name;
         constr = NonIrrigationDemandModel,
@@ -507,7 +508,7 @@ function DemandModel(dataset::NCDataset, config::Config, indices::Vector{Cartesi
                 constr(dataset, config, indices)
             end
         else
-            constr_triv(n)
+            constr_triv(n_cells)
         end
 
     domestic = demand("domestic")
@@ -517,29 +518,29 @@ function DemandModel(dataset::NCDataset, config::Config, indices::Vector{Cartesi
     nonpaddy =
         demand("nonpaddy"; constr = NonPaddyModel, constr_triv = NoIrrigationNonPaddyModel)
 
-    variables = DemandVariables(; n)
+    variables = DemandVariables(; n_cells)
     return DemandModel(; domestic, industry, livestock, paddy, nonpaddy, variables)
 end
 
 "Struct to store river allocation model variables"
 @with_kw struct AllocationRiverVariables
-    n::Int
-    actual_surfacewater_abstraction::Vector{Float64} = zeros(n)       # actual surface water abstraction [m s⁻¹]
-    actual_surfacewater_abstraction_volume::Vector{Float64} = zeros(n)   # actual surface water abstraction [m³ s⁻¹]
-    available_surfacewater::Vector{Float64} = zeros(n)      # available surface water [m³]
-    non_irrigation_returnflow::Vector{Float64} = zeros(n)          # return flow from non irrigation [m s⁻¹]
+    n_river_cells::Int
+    actual_surfacewater_abstraction::Vector{Float64} = zeros(n_river_cells)       # actual surface water abstraction [m s⁻¹]
+    actual_surfacewater_abstraction_volume::Vector{Float64} = zeros(n_river_cells)   # actual surface water abstraction [m³ s⁻¹]
+    available_surfacewater::Vector{Float64} = zeros(n_river_cells)      # available surface water [m³]
+    non_irrigation_returnflow::Vector{Float64} = zeros(n_river_cells)          # return flow from non irrigation [m s⁻¹]
 end
 
 "River allocation model"
 @with_kw struct AllocationRiverModel <: AbstractAllocationModel
-    n::Int
-    variables::AllocationRiverVariables = AllocationRiverVariables(; n)
+    n_river_cells::Int
+    variables::AllocationRiverVariables = AllocationRiverVariables(; n_river_cells)
 end
 
 get_nonirrigation_returnflow(allocation_model::AllocationRiverModel) =
     allocation_model.variables.non_irrigation_returnflow
 get_nonirrigation_returnflow(allocation_model::NoAllocationRiverModel) =
-    Zeros(allocation_model.n)
+    Zeros(allocation_model.n_cells)
 
 "Struct to store land allocation allocation model parameters"
 @with_kw struct AllocationLandParameters
@@ -549,32 +550,32 @@ end
 
 "Struct to store land allocation model variables"
 @with_kw struct AllocationLandVariables
-    n::Int
+    n_cells::Int
     # allocation from surface water [m s⁻¹]
-    surfacewater_allocation::Vector{Float64} = zeros(n)
+    surfacewater_allocation::Vector{Float64} = zeros(n_cells)
     # actual groundwater abstraction [m s⁻¹]
-    actual_groundwater_abstraction::Vector{Float64} = zeros(n)
+    actual_groundwater_abstraction::Vector{Float64} = zeros(n_cells)
     # actual groundwater abstraction [m³ s⁻¹]
-    actual_groundwater_abstraction_volume::Vector{Float64} = zeros(n)
+    actual_groundwater_abstraction_volume::Vector{Float64} = zeros(n_cells)
     # available groundwater [m³]
-    available_groundwater::Vector{Float64} = zeros(n)
+    available_groundwater::Vector{Float64} = zeros(n_cells)
     # allocation from groundwater [m s⁻¹]
-    groundwater_allocation::Vector{Float64} = zeros(n)
+    groundwater_allocation::Vector{Float64} = zeros(n_cells)
     # allocated water for irrigation [m s⁻¹]
-    irrigation_allocation::Vector{Float64} = zeros(n)
+    irrigation_allocation::Vector{Float64} = zeros(n_cells)
     # allocated water for non-irrigation [m s⁻¹]
-    non_irrigation_allocation::Vector{Float64} = zeros(n)
+    non_irrigation_allocation::Vector{Float64} = zeros(n_cells)
     # total allocated water [m s⁻¹]
-    total_alloc::Vector{Float64} = zeros(n)
+    total_alloc::Vector{Float64} = zeros(n_cells)
     # return flow from non irrigation [m s⁻¹]
-    non_irrigation_returnflow::Vector{Float64} = zeros(n)
+    non_irrigation_returnflow::Vector{Float64} = zeros(n_cells)
 end
 
 "Land allocation model"
 @with_kw struct AllocationLandModel <: AbstractAllocationModel
-    n::Int
+    n_cells::Int
     parameters::AllocationLandParameters
-    variables::AllocationLandVariables = AllocationLandVariables(; n)
+    variables::AllocationLandVariables = AllocationLandVariables(; n_cells)
 end
 
 "Initialize water allocation for the land domain"
@@ -598,24 +599,24 @@ function AllocationLandModel(
         sel = indices,
     )
 
-    n = length(indices)
+    n_cells = length(indices)
     parameters = AllocationLandParameters(; areas, fraction_surfacewater_used)
-    return AllocationLandModel(; n, parameters)
+    return AllocationLandModel(; n_cells, parameters)
 end
 
 # wrapper methods
 get_irrigation_allocated(allocation_model::AllocationLandModel) =
     allocation_model.variables.irrigation_allocation
 get_irrigation_allocated(allocation_model::NoAllocationLandModel) =
-    Zeros(allocation_model.n)
+    Zeros(allocation_model.n_cells)
 get_nonirrigation_returnflow(allocation_model::AllocationLandModel) =
     allocation_model.variables.non_irrigation_returnflow
 get_nonirrigation_returnflow(allocation_model::NoAllocationLandModel) =
-    Zeros(allocation_model.n)
+    Zeros(allocation_model.n_cells)
 get_groundwater_abstraction_flux(allocation_model::AllocationLandModel) =
     allocation_model.variables.actual_groundwater_abstraction
 get_groundwater_abstraction_flux(allocation_model::NoAllocationLandModel) =
-    Zeros(allocation_model.n)
+    Zeros(allocation_model.n_cells)
 
 """
 Return return flow fraction based on gross water demand `demand_gross` and net water demand

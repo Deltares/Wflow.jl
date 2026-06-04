@@ -2,20 +2,20 @@ abstract type AbstractRainfallErosionModel end
 
 "Struct for storing rainfall erosion model variables"
 @with_kw struct RainfallErosionModelVariables
-    n::Int
+    n_cells::Int
     # Total soil erosion rate [kg s⁻¹] from rainfall (splash)
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing EUROSEM rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionEurosemBC
-    n::Int
+    n_cells::Int
     # precipitation [m s⁻¹]
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Interception [m s⁻¹]
-    interception::Vector{Float64} = fill(MISSING_VALUE, n)
+    interception::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Waterlevel on land [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing EUROSEM rainfall erosion model parameters"
@@ -81,10 +81,10 @@ end
 
 "EUROSEM rainfall erosion model"
 @with_kw struct RainfallErosionEurosemModel <: AbstractRainfallErosionModel
-    n::Int
-    boundary_conditions::RainfallErosionEurosemBC = RainfallErosionEurosemBC(; n)
+    n_cells::Int
+    boundary_conditions::RainfallErosionEurosemBC = RainfallErosionEurosemBC(; n_cells)
     parameters::RainfallErosionEurosemParameters
-    variables::RainfallErosionModelVariables = RainfallErosionModelVariables(; n)
+    variables::RainfallErosionModelVariables = RainfallErosionModelVariables(; n_cells)
 end
 
 "Initialize EUROSEM rainfall erosion model"
@@ -93,9 +93,9 @@ function RainfallErosionEurosemModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = RainfallErosionEurosemParameters(dataset, config, indices)
-    rainfall_erosion_model = RainfallErosionEurosemModel(; n, parameters)
+    rainfall_erosion_model = RainfallErosionEurosemModel(; n_cells, parameters)
     return rainfall_erosion_model
 end
 
@@ -146,9 +146,9 @@ end
 
 "Struct for storing ANSWERS rainfall erosion model boundary conditions"
 @with_kw struct RainfallErosionAnswersBC
-    n::Int
+    n_cells::Int
     # precipitation [m s⁻¹]
-    precipitation::Vector{Float64} = fill(MISSING_VALUE, n)
+    precipitation::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing ANSWERS rainfall erosion model parameters"
@@ -186,10 +186,10 @@ end
 
 "ANSWERS rainfall erosion model"
 @with_kw struct RainfallErosionAnswersModel <: AbstractRainfallErosionModel
-    n::Int
-    boundary_conditions::RainfallErosionAnswersBC = RainfallErosionAnswersBC(; n)
+    n_cells::Int
+    boundary_conditions::RainfallErosionAnswersBC = RainfallErosionAnswersBC(; n_cells)
     parameters::RainfallErosionAnswersParameters
-    variables::RainfallErosionModelVariables = RainfallErosionModelVariables(; n)
+    variables::RainfallErosionModelVariables = RainfallErosionModelVariables(; n_cells)
 end
 
 "Initialize ANSWERS rainfall erosion model"
@@ -198,9 +198,9 @@ function RainfallErosionAnswersModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = RainfallErosionAnswersParameters(dataset, config, indices)
-    rainfall_erosion_model = RainfallErosionAnswersModel(; n, parameters)
+    rainfall_erosion_model = RainfallErosionAnswersModel(; n_cells, parameters)
     return rainfall_erosion_model
 end
 

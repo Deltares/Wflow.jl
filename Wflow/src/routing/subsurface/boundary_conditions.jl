@@ -29,17 +29,17 @@ end
 end
 
 @with_kw struct GwfRiverVariables
-    n::Int
+    n_cells::Int
     # [m]
-    stage::Vector{Float64} = fill(MISSING_VALUE, n)
+    stage::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # [m³]
-    storage::Vector{Float64} = fill(MISSING_VALUE, n)
+    storage::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # [m³ s⁻¹]
-    flux::Vector{Float64} = fill(MISSING_VALUE, n)
+    flux::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # [m³]
-    flux_cumulative::Vector{Float64} = zeros(n)
+    flux_cumulative::Vector{Float64} = zeros(n_cells)
     # [m³ s⁻¹]
-    flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
+    flux_average::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 @with_kw struct GwfRiverModel <: AbstractSubsurfaceFlowBC
@@ -71,7 +71,7 @@ function GwfRiverModel(
     parameters =
         GwfRiverParameters(infiltration_conductance, exfiltration_conductance, bottom)
     n_cells = length(indices)
-    variables = GwfRiverVariables(; n = n_cells)
+    variables = GwfRiverVariables(; n_cells)
     river_model = GwfRiverModel(parameters, variables)
     return river_model
 end
@@ -112,13 +112,13 @@ end
 end
 
 @with_kw struct DrainageVariables
-    n::Int
+    n_cells::Int
     # [m³ s⁻¹]
-    flux::Vector{Float64} = fill(MISSING_VALUE, n)
+    flux::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # [m³ s⁻¹]
-    flux_average::Vector{Float64} = zeros(n)
+    flux_average::Vector{Float64} = zeros(n_cells)
     # [m³]
-    flux_cumulative::Vector{Float64} = zeros(n)
+    flux_cumulative::Vector{Float64} = zeros(n_cells)
 end
 
 @with_kw struct DrainageModel <: AbstractSubsurfaceFlowBC
@@ -135,7 +135,7 @@ function DrainageModel(
     conductance = ncread(dataset, config, "land_drain__conductance", Routing; sel = indices)
     parameters = DrainageParameters(; elevation, conductance)
     n_cells = length(indices)
-    variables = DrainageVariables(; n = n_cells)
+    variables = DrainageVariables(; n_cells)
 
     drainage_model = DrainageModel(parameters, variables)
     return drainage_model
@@ -203,19 +203,19 @@ function flux!(
 end
 
 @with_kw struct RechargeVariables
-    n::Int
+    n_cells::Int
     # [m s⁻¹]
-    rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # [m³ s⁻¹]
-    flux::Vector{Float64} = zeros(n)
-    flux_cumulative::Vector{Float64} = zeros(n)
+    flux::Vector{Float64} = zeros(n_cells)
+    flux_cumulative::Vector{Float64} = zeros(n_cells)
     # [m³ s⁻¹]
-    flux_average::Vector{Float64} = fill(MISSING_VALUE, n)
+    flux_average::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 @with_kw struct RechargeModel <: AbstractSubsurfaceFlowBC
-    n::Int
-    variables::RechargeVariables = RechargeVariables(; n)
+    n_cells::Int
+    variables::RechargeVariables = RechargeVariables(; n_cells)
 end
 
 function flux!(

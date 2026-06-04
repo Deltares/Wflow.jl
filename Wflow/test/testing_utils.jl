@@ -75,7 +75,7 @@ function homogenous_aquifer(nrow, ncol)
         hydraulic_conductivity_scale_parameter = fill(3.0, ncell),
     )
     variables = Wflow.GroundwaterFlowVariables(;
-        n = ncell,
+        n_cells = ncell,
         head = [0.0, 7.5, 20.0],
         conductance = fill(0.0, connectivity.nconnection),
         storage = fill(0.0, ncell),

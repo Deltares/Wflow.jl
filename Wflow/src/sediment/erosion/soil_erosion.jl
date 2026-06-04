@@ -2,28 +2,28 @@ abstract type AbstractSoilErosionModel end
 
 "Struct for storing total soil erosion with differentiation model variables"
 @with_kw struct SoilErosionModelVariables
-    n::Int
+    n_cells::Int
     # Total soil erosion rate [kg s⁻¹]
-    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    soil_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total clay erosion rate [kg s⁻¹]
-    clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    clay_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total silt erosion rate [kg s⁻¹]
-    silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    silt_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total sand erosion rate [kg s⁻¹]
-    sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    sand_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total small aggregates erosion rate [kg s⁻¹]
-    small_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    small_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Total large aggregates erosion rate [kg s⁻¹]
-    large_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n)
+    large_aggregates_erosion_rate::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing soil erosion model boundary conditions"
 @with_kw struct SoilErosionBC
-    n::Int
+    n_cells::Int
     # Rainfall erosion rate [kg s⁻¹]
-    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
+    rainfall_erosion::Vector{Float64} = fill(MISSING_VALUE, n_cells)
     # Overland flow erosion rate [kg s⁻¹]
-    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n)
+    overland_flow_erosion::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Struct for storing soil erosion model parameters"
@@ -93,10 +93,10 @@ end
 
 "Total soil erosion with differentiation model"
 @with_kw struct SoilErosionModel <: AbstractSoilErosionModel
-    n::Int
-    boundary_conditions::SoilErosionBC = SoilErosionBC(; n)
+    n_cells::Int
+    boundary_conditions::SoilErosionBC = SoilErosionBC(; n_cells)
     parameters::SoilErosionParameters
-    variables::SoilErosionModelVariables = SoilErosionModelVariables(; n)
+    variables::SoilErosionModelVariables = SoilErosionModelVariables(; n_cells)
 end
 
 "Initialize soil erosion model"
@@ -105,9 +105,9 @@ function SoilErosionModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_cells = length(indices)
     parameters = SoilErosionParameters(dataset, config, indices)
-    soil_erosion_model = SoilErosionModel(; n, parameters)
+    soil_erosion_model = SoilErosionModel(; n_cells, parameters)
     return soil_erosion_model
 end
 

@@ -2,11 +2,11 @@ abstract type AbstractGlacierModel end
 
 "Struct for storing glacier model variables"
 @with_kw struct GlacierVariables
-    n::Int
+    n_cells::Int
     # Water within the glacier [m]
     glacier_store::Vector{Float64}
     # Glacier melt [m s⁻¹]
-    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n)
+    glacier_melt::Vector{Float64} = fill(MISSING_VALUE, n_cells)
 end
 
 "Initialize glacier model variables"
@@ -22,8 +22,8 @@ function GlacierVariables(
         LandHydrologySBM;
         sel = indices,
     )
-    n = length(glacier_store)
-    vars = GlacierVariables(; n, glacier_store)
+    n_cells = length(glacier_store)
+    vars = GlacierVariables(; n_cells, glacier_store)
     return vars
 end
 
@@ -55,7 +55,7 @@ end
 end
 
 struct NoGlacierModel <: AbstractGlacierModel
-    n::Int
+    n_cells::Int
 end
 
 "Initialize glacier HBV model parameters"
@@ -163,11 +163,11 @@ function update_glacier_model!(
 end
 
 # wrapper methods
-get_glacier_melt(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
+get_glacier_melt(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
 get_glacier_melt(glacier_model::AbstractGlacierModel) = glacier_model.variables.glacier_melt
-get_glacier_fraction(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
+get_glacier_fraction(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
 get_glacier_fraction(glacier_model::AbstractGlacierModel) =
     glacier_model.parameters.glacier_fraction
-get_glacier_store(glacier_model::NoGlacierModel) = Zeros(glacier_model.n)
+get_glacier_store(glacier_model::NoGlacierModel) = Zeros(glacier_model.n_cells)
 get_glacier_store(glacier_model::AbstractGlacierModel) =
     glacier_model.variables.glacier_store

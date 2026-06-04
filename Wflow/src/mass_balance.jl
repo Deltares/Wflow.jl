@@ -430,7 +430,7 @@ function compute_flow_balance!(
     qx_av_average = qx_average
     qy_av_average = qy_average
 
-    for cell_idx in 1:(overland_flow_model.parameters.n)
+    for cell_idx in 1:(overland_flow_model.parameters.n_cells)
         idx_down = indices.idx_down[cell_idx]
         idx_left = indices.idx_left[cell_idx]
         total_in = 0.0

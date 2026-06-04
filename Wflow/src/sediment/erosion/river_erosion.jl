@@ -2,18 +2,18 @@ abstract type AbstractRiverErosionModel end
 
 "Struct for storing river bed and bank erosion model variables"
 @with_kw struct RiverErosionModelVariables
-    n::Int
+    n_river_cells::Int
     # Potential river bed erosion rate [kg s⁻¹]
-    bed::Vector{Float64} = fill(MISSING_VALUE, n)
+    bed::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
     # Potential river bank erosion rate [kg s⁻¹]
-    bank::Vector{Float64} = fill(MISSING_VALUE, n)
+    bank::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
 end
 
 "Struct for storing river erosion model boundary conditions"
 @with_kw struct RiverErosionBC
-    n::Int
+    n_river_cells::Int
     # Waterlevel [m]
-    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n)
+    waterlevel::Vector{Float64} = fill(MISSING_VALUE, n_river_cells)
 end
 
 "Struct for storing river erosion model parameters"
@@ -24,10 +24,10 @@ end
 
 "Julian and Torres river erosion model"
 @with_kw struct RiverErosionJulianTorresModel <: AbstractRiverErosionModel
-    n::Int
-    boundary_conditions::RiverErosionBC = RiverErosionBC(; n)
+    n_river_cells::Int
+    boundary_conditions::RiverErosionBC = RiverErosionBC(; n_river_cells)
     parameters::RiverErosionParameters
-    variables::RiverErosionModelVariables = RiverErosionModelVariables(; n)
+    variables::RiverErosionModelVariables = RiverErosionModelVariables(; n_river_cells)
 end
 
 "Initialize Julian and Torres river erosion parameters"
@@ -54,9 +54,9 @@ function RiverErosionJulianTorresModel(
     config::Config,
     indices::Vector{CartesianIndex{2}},
 )
-    n = length(indices)
+    n_river_cells = length(indices)
     parameters = RiverErosionParameters(dataset, config, indices)
-    river_erosion_model = RiverErosionJulianTorresModel(; n, parameters)
+    river_erosion_model = RiverErosionJulianTorresModel(; n_river_cells, parameters)
     return river_erosion_model
 end
 
