@@ -2,6 +2,22 @@ abstract type AbstractFloodPlainModel end
 abstract type AbstractFloodPlainParameters end
 abstract type AbstractFloodPlainVariables end
 
+""""
+    FloodPlainModel
+
+Floodplain flow model for each river cell (as part of a `RiverFlowModel`). The
+`FloodPlainModel` is defined on an unstructured staggered or unstaggered grid.
+"""
+@with_kw struct FloodPlainModel{
+    T <: AbstractRoutingMethod,
+    P <: AbstractFloodPlainParameters,
+    V <: AbstractFloodPlainVariables,
+} <: AbstractFloodPlainModel
+    routing_method::T
+    parameters::P
+    variables::V
+end
+
 """
     FloodPlainProfile
 
@@ -216,17 +232,6 @@ end
     h::Vector{Float64}
     # error storage [m³]
     error::Vector{Float64} = zeros(n)
-end
-
-"Floodplain flow model"
-@with_kw struct FloodPlainModel{
-    T <: AbstractRoutingMethod,
-    P <: AbstractFloodPlainParameters,
-    V <: AbstractFloodPlainVariables,
-} <: AbstractFloodPlainModel
-    routing_method::T
-    parameters::P
-    variables::V
 end
 
 "Struct to store floodplain parameters"
