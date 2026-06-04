@@ -108,7 +108,7 @@ function RiverFlowStaggeredParameters(
     n = length(indices)
     n_edges = ne(graph)
     active_index = findall(x -> x == 0, reservoir_outlet)
-    index_pit = findall(x -> x == 5, local_drain_direction)
+    index_pit = findall(x -> x == LDD_PIT, local_drain_direction)
 
     mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width =
         get_river_parameters(dataset, config, domain, index_pit)

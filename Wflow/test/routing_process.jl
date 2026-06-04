@@ -78,7 +78,7 @@ end
     # a topological sort is used for visiting nodes in order from upstream to downstream
     toposort = topological_sort_by_dfs(graph)
     sink = toposort[end]
-    @test ldd[sink] == 5  # the most downstream node must be a sink
+    @test ldd[sink] == Wflow.LDD_PIT  # the most downstream node must be a sink
 
     # calculate parameters of kinematic wave
     q = 0.000001

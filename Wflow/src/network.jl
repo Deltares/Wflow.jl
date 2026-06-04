@@ -109,7 +109,7 @@ nthreads > 1 to run the kinematic wave parallel, otherwise it is equal to the co
 domain.
 """
 function network_subdomains(config::Config, network::NetworkLand)
-    pit_inds = findall(x -> x == 5, network.local_drain_direction)
+    pit_inds = findall(x -> x == LDD_PIT, network.local_drain_direction)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
         network.order,
@@ -238,7 +238,7 @@ nthreads > 1 to run the kinematic wave parallel, otherwise it is equal to the co
 domain.
 """
 function network_subdomains(config::Config, network::NetworkRiver)
-    pit_inds = findall(x -> x == 5, network.local_drain_direction)
+    pit_inds = findall(x -> x == LDD_PIT, network.local_drain_direction)
     order_of_subdomains, subdomain_inds, toposort_subdomain = kinwave_set_subdomains(
         network.graph,
         network.order,
@@ -254,7 +254,7 @@ end
 
 "Initialize `NodesAtEdge`"
 function NodesAtEdge(network::NetworkRiver)
-    index_pit = findall(x -> x == 5, network.local_drain_direction)
+    index_pit = findall(x -> x == LDD_PIT, network.local_drain_direction)
     add_vertex_edge_graph!(network.graph, index_pit)
     nodes_at_edge = NodesAtEdge(; adjacent_nodes_at_edge(network.graph)...)
     return nodes_at_edge, index_pit

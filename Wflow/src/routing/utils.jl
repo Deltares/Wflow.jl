@@ -11,7 +11,7 @@ function flowgraph(ldd::AbstractVector, indices::AbstractVector, PCR_DIR::Abstra
     for (from_node, from_index) in enumerate(indices)
         ldd_val = ldd[from_node]
         # skip pits to prevent cycles
-        ldd_val == 5 && continue
+        ldd_val == LDD_PIT && continue
         to_index = from_index + PCR_DIR[ldd_val]
         # find the node id of the downstream cell
         to_node = searchsortedfirst(indices, to_index)

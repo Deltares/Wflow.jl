@@ -374,7 +374,7 @@ function FloodPlainModel(
     (; indices, local_drain_direction, graph) = domain.network
     (; river_routing) = config.model
     n = length(indices)
-    index_pit = findall(x -> x == 5, local_drain_direction)
+    index_pit = findall(x -> x == LDD_PIT, local_drain_direction)
     n_edges = ne(graph)
     parameters =
         FloodPlainStaggeredParameters(dataset, config, domain, zb_floodplain, index_pit)
