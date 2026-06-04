@@ -8,11 +8,10 @@
     (; domain) = model
     (; river_streamorder__min_count, land_streamorder__min_count) = config.model
 
-    index_pit = [domain.land.network.cell_order[end]]
+    index_pit = [domain.land.network.order[end]]
     @test river_streamorder__min_count == 6
 
-    streamorder =
-        Wflow.stream_order(domain.land.network.graph, domain.land.network.cell_order)
+    streamorder = Wflow.stream_order(domain.land.network.graph, domain.land.network.order)
     subbas_order, indices_subbas, topo_subbas = Wflow.kinwave_set_subdomains(
         domain.land.network.graph,
         domain.land.network.cell_order,

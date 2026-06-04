@@ -63,7 +63,8 @@
 
         @test overland_flow.transport_capacity.parameters.median_diameter_sand[1] ==
               0.00019999999999999998
-        @test overland_flow.transport_capacity.parameters.median_diameter_large_aggregates[1] == 0.0005
+        @test overland_flow.transport_capacity.parameters.median_diameter_large_aggregates[1] ==
+              0.0005
 
         @test mean(overland_flow.transport_capacity.boundary_conditions.q) ≈
               0.006879398771052133
@@ -80,7 +81,7 @@
         @test mean(overland_flow.sediment_flux.variables.clay) ≈ 7.614342284150971e-5
 
         @test mean(river_flow.hydrological_forcing.q_river) ≈ 0.6975180562953642
-        @test river_flow.hydrological_forcing.waterlevel_river[domain.river.network.cell_order[end]] ≈
+        @test river_flow.hydrological_forcing.waterlevel_river[domain.river.network.order[end]] ≈
               0.006103649735450745
         @test mean(domain.river.parameters.flow_width) ≈ 22.628250814095523
 

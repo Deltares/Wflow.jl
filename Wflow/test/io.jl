@@ -336,10 +336,10 @@ end
 
     @testset "domain" begin
         (; domain) = model
-        (; land_indices_2d, reverse_indices) = domain.land.network
+        (; indices, reverse_indices) = domain.land.network
         # test if the reverse index reverses the index
         linear_index = 100
-        cartesian_index = land_indices_2d[linear_index]
+        cartesian_index = indices[linear_index]
         @test cartesian_index === CartesianIndex(168, 8)
         @test reverse_indices[cartesian_index] === linear_index
         # test active indices of different domains

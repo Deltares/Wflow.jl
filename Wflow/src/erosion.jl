@@ -1,8 +1,8 @@
 "Soil loss model"
 @with_kw struct SoilLossModel{
-    RE<:AbstractRainfallErosionModel,
-    OFE<:AbstractOverlandFlowErosionModel,
-    SE<:AbstractSoilErosionModel,
+    RE <: AbstractRainfallErosionModel,
+    OFE <: AbstractOverlandFlowErosionModel,
+    SE <: AbstractSoilErosionModel,
 } <: AbstractLandModel
     atmospheric_forcing::AtmosphericForcing
     hydrological_forcing::HydrologicalForcing
@@ -15,27 +15,26 @@ end
 function SoilLossModel(
     dataset::NCDataset,
     config::Config,
-    land_indices_2d::Vector{CartesianIndex{2}},
+    indices::Vector{CartesianIndex{2}},
 )
     (; rainfall_erosion, overland_flow_erosion) = config.model
-    n_cells = length(land_indices_2d)
+    n_cells = length(indices)
 
     atmospheric_forcing = AtmosphericForcing(; n_cells)
     hydrological_forcing = HydrologicalForcing(; n_cells)
 
     # Rainfall erosion
     if rainfall_erosion == RainfallErosionType.answers
-        rainfall_erosion = RainfallErosionAnswersModel(dataset, config, land_indices_2d)
+        rainfall_erosion = RainfallErosionAnswersModel(dataset, config, indices)
     elseif rainfall_erosion == RainfallErosionType.eurosem
-        rainfall_erosion = RainfallErosionEurosemModel(dataset, config, land_indices_2d)
+        rainfall_erosion = RainfallErosionEurosemModel(dataset, config, indices)
     end
 
     # Overland flow erosion
-    overland_flow_erosion =
-        OverlandFlowErosionAnswersModel(dataset, config, land_indices_2d)
+    overland_flow_erosion = OverlandFlowErosionAnswersModel(dataset, config, indices)
 
     # Total soil erosion and particle differentiation
-    soil_erosion = SoilErosionModel(dataset, config, land_indices_2d)
+    soil_erosion = SoilErosionModel(dataset, config, indices)
 
     soil_loss = SoilLossModel(;
         atmospheric_forcing,
