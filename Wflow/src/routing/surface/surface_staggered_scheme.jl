@@ -1000,6 +1000,7 @@ function stable_timestep(
     parameters::RiverParameters,
 )
     dt_min = Inf
+    dt_min_default = 60.0
     (; alpha_coefficient) = river_flow_model.timestepping
     (; n) = river_flow_model.parameters
     (; h) = river_flow_model.variables
@@ -1009,7 +1010,7 @@ function stable_timestep(
             alpha_coefficient * flow_length[i] / sqrt(GRAVITATIONAL_ACCELERATION * h[i])
         dt_min = min(dt, dt_min)
     end
-    dt_min = isinf(dt_min) ? 60.0 : dt_min
+    dt_min = isinf(dt_min) ? dt_min_default : dt_min
     return dt_min
 end
 
@@ -1018,6 +1019,7 @@ function stable_timestep(
     parameters::LandParameters,
 )
     dt_min = Inf
+    dt_min_default = 60.0
     (; alpha_coefficient) = overland_flow_model.timestepping
     (; n) = overland_flow_model.parameters
     (; x_length, y_length, river_location) = parameters
@@ -1031,7 +1033,7 @@ function stable_timestep(
         end
         dt_min = min(dt, dt_min)
     end
-    dt_min = isinf(dt_min) ? 60.0 : dt_min
+    dt_min = isinf(dt_min) ? dt_min_default : dt_min
     return dt_min
 end
 
@@ -1040,6 +1042,7 @@ function stable_timestep(
     parameters::RiverParameters,
 )
     dt_min = Inf
+    dt_min_default = 60.0
     (; alpha_coefficient) = river_flow_model.timestepping
     (;
         active_e,
@@ -1059,7 +1062,7 @@ function stable_timestep(
         dt = alpha_coefficient * flow_length_at_edge[i] / celerity
         dt_min = min(dt, dt_min)
     end
-    dt_min = isinf(dt_min) ? 60.0 : dt_min
+    dt_min = isinf(dt_min) ? dt_min_default : dt_min
     return dt_min
 end
 

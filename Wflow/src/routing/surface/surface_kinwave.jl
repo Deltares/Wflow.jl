@@ -665,6 +665,7 @@ function stable_timestep(
 
     n = length(q)
     stable_timesteps .= Inf
+    dt_min_default = 600.0
     k = 0
     for i in 1:n
         if q[i] > KIN_WAVE_MIN_FLOW
@@ -679,7 +680,7 @@ function stable_timestep(
     elseif k > 0
         quantile!(@view(stable_timesteps[1:k]), p)
     else
-        600.0
+        dt_min_default
     end
 
     return dt_min
