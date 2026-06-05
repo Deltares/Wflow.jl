@@ -34,8 +34,7 @@
     flow_width_at_edge::Vector{Float64} = Float64[]
 end
 
-abstract type AbstractFloodPlainModel end
-
+"Get river parameters for a river flow model on a staggered grid"
 function get_river_parameters(
     dataset::NCDataset,
     config::Config,
@@ -76,6 +75,10 @@ function get_river_parameters(
     return mannings_n, bankfull_depth, bankfull_elevation, flow_length, flow_width
 end
 
+"""
+Generate info log message for river flow routing on a staggered grid, solving the local
+inertial or Manning's equation.
+"""
 function log_message_staggered_flow(config::Config)
     (; river_routing) = config.model
     waterdepth_threshold = config.model.river_water_flow_threshold__depth # depth threshold for flow at edge
@@ -93,7 +96,7 @@ function log_message_staggered_flow(config::Config)
     return waterdepth_threshold, froude_limit
 end
 
-"Initialize river flow model parameters on a staggered grid"
+"Initialize river flow model parameters on a staggered grid."
 function RiverFlowStaggeredParameters(
     dataset::NCDataset,
     config::Config,
@@ -151,7 +154,7 @@ function RiverFlowStaggeredParameters(
     return parameters
 end
 
-"Struct for storing local inertial river flow model variables"
+"Struct for storing river flow model variables on a staggered grid."
 @with_kw struct RiverFlowStaggeredVariables <: AbstractRiverFlowVariables
     n_cells::Int
     n_edges::Int
@@ -187,6 +190,7 @@ end
     error::Vector{Float64} = zeros(n_cells)
 end
 
+"Initialize river flow model variables on a staggered grid."
 function RiverFlowStaggeredVariables(
     dataset::NCDataset,
     config::Config,
@@ -226,7 +230,7 @@ function RiverFlowStaggeredVariables(
     return variables
 end
 
-"Initialize river flow model on a staggered grid"
+"Initialize river flow model on a staggered grid."
 function init_staggered_river_flow(
     dataset::NCDataset,
     config::Config,
@@ -530,7 +534,7 @@ function update_floodplain_flow!(
 end
 
 """
-Update floodplain flow for the manning river flow model on a staggered grid.
+Update floodplain flow for a river flow model using Manning's equation on a staggered grid.
 """
 function update_floodplain_flow!(
     river_flow_model::RiverFlowModel{T, F},
@@ -667,7 +671,8 @@ update_bc_reservoir_model!(
 ) = nothing
 
 """
-Update floodplain water depth and storage.
+Update river and floodplain water depth and storage for river and floodplain models on a
+staggered grid.
 """
 function update_water_depth_and_storage!(
     floodplain_model::AbstractFloodPlainModel,
@@ -716,7 +721,7 @@ update_water_depth_and_storage!(
 ) = nothing
 
 """
-Update water depth and storage for river.
+Update water depth and storage for river flow model on a staggered grid.
 """
 function update_water_depth_and_storage!(
     river_flow_model::RiverFlowModel{<:AbstractStaggeredRoutingMethod},
@@ -888,7 +893,7 @@ end
     froude_limit::Bool
 end
 
-"Initialize shallow water overland flow model parameters"
+"Initialize local inertial overland flow model parameters"
 function LocalInertialOverlandFlowParameters(
     dataset::NCDataset,
     config::Config,
@@ -991,7 +996,7 @@ end
     stable_timestep(river_flow_model::RiverFlowModel{<:LocalInertial}, parameters::RiverParameters)
     stable_timestep(overland_flow_model::OverlandFlowModel{<:LocalInertial}, parameters::LandParameters)
 
-Compute flow_area stable timestep size for the local inertial approach, based on Bates et al. (2010).
+Compute stable timestep size for the local inertial approach, based on Bates et al. (2010).
 
 dt = α * (Δx / sqrt(g max(h))
 """
@@ -1037,6 +1042,11 @@ function stable_timestep(
     return dt_min
 end
 
+"""
+    stable_timestep(river_flow_model::RiverFlowModel{<:ManningStaggered}, parameters::RiverParameters)
+
+Compute stable timestep size for a river flow model using the Manning's equation on staggered grid.
+"""
 function stable_timestep(
     river_flow_model::RiverFlowModel{<:ManningStaggered},
     parameters::RiverParameters,
@@ -1139,8 +1149,8 @@ function average_flow_vars!(
 end
 
 """
-Update combined local inertial river and overland flow models for a single timestep `dt`. An
-adaptive timestepping method is used (computing a sub timestep `dt_s`).
+Update local inertial river and overland flow model for a single timestep `dt`. An adaptive
+timestepping method is used (computing a sub timestep `dt_s`).
 """
 function update_overland_flow_model!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -1186,7 +1196,7 @@ function update_overland_flow_model!(
 end
 
 """
-Update flow for flow_area single direction in the local inertial overland flow model.
+Update flow for the local inertial overland flow model at edge `i` in a single direction.
 `is_x_direction`: true for x-direction (idx_right/idx_left), false for y-direction (idx_up/idx_down)
 """
 @inline function update_directional_flow!(
@@ -1286,8 +1296,8 @@ function local_inertial_update_fluxes!(
 end
 
 """
-Update boundary condition inflow to a reservoir from land of combined local inertial river
-and overland flow models for a single timestep.
+Update boundary condition inflow to a reservoir from land of the local inertial river and
+overland flow model for a single timestep.
 """
 function update_inflow_reservoir!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -1310,7 +1320,8 @@ function update_inflow_reservoir!(
 end
 
 """
-Compute storage change for flow_area river cell from fluxes.
+Compute storage change at node index `i` containing a river, from river and overland flow
+fluxes of the local inertial river and overland flow model.
 """
 @inline function compute_river_storage_change(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -1342,7 +1353,8 @@ Compute storage change for flow_area river cell from fluxes.
 end
 
 """
-Compute external inflow for river cells, including negative inflow (abstraction).
+Compute external inflow at river node index `river_idx`, including negative inflow
+(abstraction), of the local inertial river and overland flow model.
 Returns tuple: (inflow, abstraction_to_add)
 """
 @inline function compute_external_inflow(
@@ -1405,7 +1417,8 @@ Returns tuple: (river_h, land_h, river_storage)
 end
 
 """
-Compute storage change for flow_area land cell from horizontal fluxes and runoff.
+Compute storage change for local inertial overland flow model at node index `i` (non-river)
+from horizontal fluxes and runoff.
 """
 @inline function compute_land_storage_change(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -1425,9 +1438,10 @@ Compute storage change for flow_area land cell from horizontal fluxes and runoff
 end
 
 """
-Update storage and water depth for flow_area single river cell.
+Update storage and water depth for the local inertial overland flow model at node index `i`
+containing a river.
 """
-@inline function update_river_cell_storage_and_depth!(
+@inline function update_river_and_land_storage_and_depth!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
     river_flow_model::RiverFlowModel{<:LocalInertial},
     domain::Domain,
@@ -1472,9 +1486,10 @@ Update storage and water depth for flow_area single river cell.
 end
 
 """
-Update storage and water depth for flow_area single land cell (non-river).
+Update storage and water depth for local inertial overland flow model at node index `i`
+(non-river).
 """
-@inline function update_land_cell_storage_and_depth!(
+@inline function update_land_storage_and_depth!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
     domain::DomainLand,
     i::Int,
@@ -1500,8 +1515,8 @@ Update storage and water depth for flow_area single land cell (non-river).
 end
 
 """
-Update storage and water depth for combined local inertial river and overland flow models
-for a single timestep `dt`.
+Update storage and water depth for local inertial river and overland flow model for a single
+timestep `dt`.
 """
 function local_inertial_update_water_depth!(
     overland_flow_model::OverlandFlowModel{<:LocalInertial},
@@ -1515,7 +1530,7 @@ function local_inertial_update_water_depth!(
         if river_location[i]
             # Process river cells (excluding reservoir outlets)
             if !reservoir_outlet[i]
-                update_river_cell_storage_and_depth!(
+                update_river_and_land_storage_and_depth!(
                     overland_flow_model,
                     river_flow_model,
                     domain,
@@ -1525,7 +1540,7 @@ function local_inertial_update_water_depth!(
             end
         else
             # Process land cells (non-river)
-            update_land_cell_storage_and_depth!(overland_flow_model, domain.land, i, dt)
+            update_land_storage_and_depth!(overland_flow_model, domain.land, i, dt)
         end
     end
     return nothing

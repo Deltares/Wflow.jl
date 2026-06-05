@@ -882,7 +882,7 @@ end
     dt = Wflow.stable_timestep(river_flow_model, domain.river.parameters)
     @test dt ≈ 201.394687315008
 
-    # Test functions called by function update_river_cell_storage_and_depth!
+    # Test functions called by function update_river_and_land_storage_and_depth!
     storage_change = Wflow.compute_river_storage_change(
         overland_flow_model,
         river_flow_model,
@@ -901,8 +901,8 @@ end
     @test Wflow.compute_water_depths(total_storage, 1, 3, river_flow_model, domain) |>
           collect ≈ [river_h_expected, land_h_expected, river_storage_expected]
 
-    # Test update_river_cell_storage_and_depth!
-    Wflow.update_river_cell_storage_and_depth!(
+    # Test update_river_and_land_storage_and_depth!
+    Wflow.update_river_and_land_storage_and_depth!(
         overland_flow_model,
         river_flow_model,
         domain,
@@ -913,7 +913,7 @@ end
     @test overland_flow_model.variables.h[3] ≈ land_h_expected
     @test river_flow_model.variables.storage[1] ≈ river_storage_expected
 
-    # Test function called by function update_land_cell_storage_and_depth!
+    # Test function called by function update_land_storage_and_depth!
     @test Wflow.compute_land_storage_change(
         overland_flow_model,
         domain.land.network,
@@ -921,8 +921,8 @@ end
         dt,
     ) ≈ 880.1704436259577
 
-    # Test update_land_cell_storage_and_depth!
-    Wflow.update_land_cell_storage_and_depth!(overland_flow_model, domain.land, 2, dt)
+    # Test update_land_storage_and_depth!
+    Wflow.update_land_storage_and_depth!(overland_flow_model, domain.land, 2, dt)
     @test overland_flow_model.variables.storage[2] ≈ 784038.1273051423
     @test overland_flow_model.variables.h[2] ≈ 1.3770166561681556
 end
