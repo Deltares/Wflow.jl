@@ -12,9 +12,9 @@ Floodplain flow model for each river cell (as part of a `RiverFlowModel`). The
 * Kinematic wave approach by solving the kinematic wave equation using Newton's method.
 
 On a staggered grid the river and floodplain flow routing scheme are equal. For the
-kinematic wave river flow routing using Newton's method, the floodplain flow routing is
-solved by using Manning's equation, as solving kinematic wave routing for near zero flows is
-computationally expensive.
+kinematic wave river flow routing solved by using Newton's method, the floodplain flow
+routing is solved by using Manning's equation, as solving kinematic wave routing for near
+zero flows is computationally expensive.
 """
 @with_kw struct FloodPlainModel{
     T <: AbstractRoutingMethod,
@@ -342,6 +342,7 @@ function compute_flood_depth(
     return flood_depth
 end
 
+"Compute floodplain flow area (excluding river channel area)"
 function compute_floodplain_flow_area(
     profile::FloodPlainProfile,
     h::Float64,
@@ -397,6 +398,10 @@ function FloodPlainModel(
     return floodplain_model
 end
 
+"""
+Initialize floodplain geometry, model variables and parameters for floodplain flow routing
+as part of kinematic wave river flow routing (solved using Newton's method).
+"""
 function FloodPlainModel(dataset::NCDataset, config::Config, domain::DomainRiver)
     (; indices) = domain.network
     n = length(indices)
