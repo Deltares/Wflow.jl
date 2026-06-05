@@ -6,7 +6,15 @@ abstract type AbstractFloodPlainVariables end
     FloodPlainModel
 
 Floodplain flow model for each river cell (as part of a `RiverFlowModel`). The
-`FloodPlainModel` is defined on an unstructured staggered or unstaggered grid.
+`FloodPlainModel` can be part of three different river routing schemes:
+* Local inertial equation on a staggered grid.
+* Kinematic wave using Manning's equation on a staggered grid.
+* Kinematic wave approach by solving the kinematic wave equation using Newton's method.
+
+On a staggered grid the river and floodplain flow routing scheme are equal. For the
+kinematic wave river flow routing using Newton's method, the floodplain flow routing is
+solved by using Manning's equation, as solving kinematic wave routing for near zero flows is
+computationally expensive.
 """
 @with_kw struct FloodPlainModel{
     T <: AbstractRoutingMethod,
