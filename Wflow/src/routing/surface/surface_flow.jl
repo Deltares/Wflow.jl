@@ -33,6 +33,7 @@ end
     alpha::Vector{Float64}      # Constant in momentum equation A = alpha*Q^beta, based on Manning's equation [s3/5 m1/5]
 end
 
+"River flow model"
 @with_kw struct RiverFlowModel{
     T <: AbstractRoutingMethod,
     F <: Union{AbstractFloodPlainModel, Nothing},
@@ -49,6 +50,7 @@ end
     allocation::A
 end
 
+"Overland flow model"
 @with_kw struct OverlandFlowModel{
     T <: AbstractRoutingMethod,
     B <: AbstractOverlandFlowBC,
@@ -62,6 +64,7 @@ end
     variables::V
 end
 
+"Compute wetted perimeter for a rectangular river channel "
 function wetted_perimeter_channel(h::Float64, flow_width::Float64)
     channel_perimeter = 2.0 * h + flow_width
     return channel_perimeter

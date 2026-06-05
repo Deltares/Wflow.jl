@@ -171,6 +171,7 @@ function local_inertial_flow(
     return q
 end
 
+"Compute flow using Manning's equation"
 function manning_flow(mannings_n, hydraulic_radius, slope, area)
     q = cbrt(hydraulic_radius^2) * sqrt(slope) * area / mannings_n
     return q
