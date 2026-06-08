@@ -77,9 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-e8ea5e5fbf32fd5daff37faa71168903.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-f747bbadbf4409a90d6c080b9a14f73f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-e8ea5e5fbf32fd5daff37faa71168903.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-2c58d53b24add42715e2f3fc0f1a4a60.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-87ac4a3308277090b547c6f55b66fd42.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -1374,8 +1374,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>soil_wet_root__sigmoid_function_shape_parameter</code></td>
 <td style="text-align: left;">Controls sharpness of transition between fully wet and fully dry roots</td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">-</td>
+<td style="text-align: left;">mm⁻¹</td>
+<td style="text-align: left;">m⁻¹</td>
 <td style="text-align: left;">✓</td>
 <td style="text-align: left;">-500.0</td>
 </tr>
@@ -1840,11 +1840,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 30%">
-<col style="width: 30%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 20%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -1852,7 +1851,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
@@ -1861,7 +1859,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Irrigation (non-paddy) gross demand</td>
 <td style="text-align: left;">mm Δt⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
-<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
@@ -2035,11 +2032,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-display">
 <table class="table-striped table-hover caption-top table table-sm small">
 <colgroup>
-<col style="width: 30%">
-<col style="width: 30%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 20%">
+<col style="width: 37%">
+<col style="width: 37%">
+<col style="width: 12%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="columnLabelRow header">
@@ -2047,23 +2043,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Description</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit input/output</th>
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Unit internal</th>
-<th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Possible output</th>
 </tr>
 </thead>
 <tbody>
 <tr class="dataRow odd">
 <td style="text-align: left;"><code>irrigated_paddy__gross_water_demand_volume_flux</code></td>
 <td style="text-align: left;">Irrigation (paddy) gross demand</td>
-<td style="text-align: left;">mm day⁻¹</td>
+<td style="text-align: left;">mm Δt⁻¹</td>
 <td style="text-align: left;">m s⁻¹</td>
-<td style="text-align: left;">✓</td>
 </tr>
 <tr class="dataRow even">
 <td style="text-align: left;"><code>paddy_surface_water__depth</code></td>
 <td style="text-align: left;">Water depth in paddy field</td>
 <td style="text-align: left;">mm</td>
 <td style="text-align: left;">m</td>
-<td style="text-align: left;">✓</td>
 </tr>
 </tbody>
 </table>
