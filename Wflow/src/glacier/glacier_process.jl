@@ -50,7 +50,9 @@ function glacier_hbv(
     glacier_store += snow_to_glacier * dt
 
     # Potential snow melt, based on temperature
-    potential_melt = (temperature > temperature_threshold_melt) ? degree_day_factor * (temperature - temperature_threshold_melt) : 0.0
+    potential_melt =
+        (temperature > temperature_threshold_melt) ?
+        degree_day_factor * (temperature - temperature_threshold_melt) : 0.0
 
     # actual Glacier melt
     glacier_melt = (snow_storage < 1e-2) ? min(potential_melt, glacier_store / dt) : 0.0

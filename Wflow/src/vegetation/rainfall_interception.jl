@@ -23,11 +23,13 @@ function rainfall_interception_gash(
             fraction_stemflow = 0.1 * canopy_gap_fraction
             fraction_interception = 1.0 - 1.1 * canopy_gap_fraction # > 0
 
-            precipitation_saturation = if evaporation_to_precipitation_ratio > fraction_interception
-                0.0
-            else
-                -maximum_canopy_storage / (evaporation_to_precipitation_ratio * dt) * log(1.0 - evaporation_to_precipitation_ratio / fraction_interception)
-            end
+            precipitation_saturation =
+                if evaporation_to_precipitation_ratio > fraction_interception
+                    0.0
+                else
+                    -maximum_canopy_storage / (evaporation_to_precipitation_ratio * dt) *
+                    log(1.0 - evaporation_to_precipitation_ratio / fraction_interception)
+                end
         else
             fraction_stemflow = 1.0 - canopy_gap_fraction
             fraction_interception = 0
@@ -38,8 +40,12 @@ function rainfall_interception_gash(
         large_storms = precipitation > precipitation_saturation
 
         if large_storms
-            iwet = fraction_interception * precipitation_saturation - maximum_canopy_storage / dt
-            isat = evaporation_to_precipitation_ratio * (precipitation - precipitation_saturation)
+            iwet =
+                fraction_interception * precipitation_saturation -
+                maximum_canopy_storage / dt
+            isat =
+                evaporation_to_precipitation_ratio *
+                (precipitation - precipitation_saturation)
             idry = maximum_canopy_storage / dt
             interception = iwet + isat + idry
         else

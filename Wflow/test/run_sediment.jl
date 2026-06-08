@@ -63,7 +63,8 @@
 
         @test overland_flow.transport_capacity.parameters.median_diameter_sand[1] ==
               0.00019999999999999998
-        @test overland_flow.transport_capacity.parameters.median_diameter_large_aggregates[1] == 0.0005
+        @test overland_flow.transport_capacity.parameters.median_diameter_large_aggregates[1] ==
+              0.0005
 
         @test mean(overland_flow.transport_capacity.boundary_conditions.q) ≈
               0.006879398771052133
