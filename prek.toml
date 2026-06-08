@@ -24,5 +24,5 @@ hooks = [{ id = "typos" }]
 [[repos]]
 repo = "local"
 hooks = [
-    { id = "format-code", name = "format julia code", entry = "pixi run format-code", language = "system", files = '\\.jl$', pass_filenames = true },
+    { id = "format-code", name = "format julia code", entry = "pixi run format-code", language = "system", types = ["julia"], pass_filenames = true },
 ]
