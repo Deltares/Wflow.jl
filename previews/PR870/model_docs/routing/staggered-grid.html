@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Local inertial – Wflow.jl</title>
+<title>Staggered grid – Wflow.jl</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -394,7 +394,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/local-inertial.html">Local inertial</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/staggered-grid.html">Staggered grid</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -464,8 +464,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../model_docs/routing/local-inertial.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Local inertial</span></a>
+  <a href="../../model_docs/routing/staggered-grid.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Staggered grid</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -545,8 +545,14 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#river-and-floodplain-routing" id="toc-river-and-floodplain-routing" class="nav-link active" data-scroll-target="#river-and-floodplain-routing">River and floodplain routing</a></li>
-  <li><a href="#overland-flow-2d" id="toc-overland-flow-2d" class="nav-link" data-scroll-target="#overland-flow-2d">Overland flow (2D)</a></li>
+  <li><a href="#river-and-floodplain-routing" id="toc-river-and-floodplain-routing" class="nav-link active" data-scroll-target="#river-and-floodplain-routing">River and floodplain routing</a>
+  <ul class="collapse">
+  <li><a href="#local-inertial-approximation" id="toc-local-inertial-approximation" class="nav-link" data-scroll-target="#local-inertial-approximation">Local inertial approximation</a></li>
+  <li><a href="#using-mannings-equation" id="toc-using-mannings-equation" class="nav-link" data-scroll-target="#using-mannings-equation">Using Manning’s equation</a></li>
+  </ul></li>
+  <li><a href="#d-floodplain-schematization" id="toc-d-floodplain-schematization" class="nav-link" data-scroll-target="#d-floodplain-schematization">1D floodplain schematization</a></li>
+  <li><a href="#reservoirs" id="toc-reservoirs" class="nav-link" data-scroll-target="#reservoirs">Reservoirs</a></li>
+  <li><a href="#local-inertial-overland-flow-2d" id="toc-local-inertial-overland-flow-2d" class="nav-link" data-scroll-target="#local-inertial-overland-flow-2d">Local inertial overland flow (2D)</a></li>
   <li><a href="#external-inflows" id="toc-external-inflows" class="nav-link" data-scroll-target="#external-inflows">External inflows</a></li>
   <li><a href="#abstractions" id="toc-abstractions" class="nav-link" data-scroll-target="#abstractions">Abstractions</a></li>
   <li><a href="#multi-threading" id="toc-multi-threading" class="nav-link" data-scroll-target="#multi-threading">Multi-Threading</a></li>
@@ -558,9 +564,9 @@ window.Quarto = {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/local-inertial.html">Local inertial</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../model_docs/routing/kinwave.html">Routing concepts</a></li><li class="breadcrumb-item"><a href="../../model_docs/routing/staggered-grid.html">Staggered grid</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Local inertial</h1>
+<h1 class="title">Staggered grid</h1>
 </div>
 
 
@@ -577,23 +583,26 @@ window.Quarto = {
 </header>
 
 
+<p>This section provides an overview of available flow routing schemes on a staggered grid.</p>
 <section id="river-and-floodplain-routing" class="level2">
 <h2 class="anchored" data-anchor-id="river-and-floodplain-routing">River and floodplain routing</h2>
+<section id="local-inertial-approximation" class="level3">
+<h3 class="anchored" data-anchor-id="local-inertial-approximation">Local inertial approximation</h3>
 <p>The local inertial approximation of shallow water flow neglects only the convective acceleration term in the Saint-Venant momentum conservation equation. The numerical solution of the local inertial approximation on a staggered grid is as follows (Bates et al., 2010):</p>
 <p><span class="math display">\[
 Q_{t+\Delta t} = \frac{Q_t - g A_t \Delta t S_t}{(1+g\Delta t n^2 |Q_t| / (R_t^{4/3} A_t))}
 \]</span></p>
 <p>where <span class="math inline">\(\SIb{Q_{t+\Delta t}}{m^3\ s^{-1}}\)</span> is the river flow at time step <span class="math inline">\(t+\Delta t\)</span>, <span class="math inline">\(\SIb{g}{m\ s^{-2}}\)</span> is acceleration due to gravity, <span class="math inline">\(\SIb{A_t}{m^2}\)</span> is the cross sectional flow area at the previous time step, <span class="math inline">\(\SIb{R_t}{m}\)</span> is the hydraulic radius at the previous time step, <span class="math inline">\(\SIb{Q_t}{m^3\ s^{-1}}\)</span> is the river flow at the previous time step, <span class="math inline">\(S_t\)</span> is the water surface slope at the previous time step and <span class="math inline">\(\SIb{n}{m^{-\frac{1}{3}}\ s}\)</span> is the Manning’s roughness coefficient.</p>
-<p>The momentum equation is applied to each link between two river grid cells, while the continuity equation over <span class="math inline">\(\Delta t\)</span> is applied to each river cell:</p>
+<p>The momentum equation is applied to each edge between two river nodes, while the continuity equation over <span class="math inline">\(\Delta t\)</span> is applied to each river node:</p>
 <p><span class="math display">\[
 h^{t+\Delta t} = h^t + \Delta t \frac{\subtext{Q^{t+\Delta t}}{src} - \subtext{Q^{t+\Delta t}}{dst}}{A}
 \]</span></p>
-<p>where <span class="math inline">\(\SIb{h^{t+\Delta t}}{m}\)</span> is the water depthat time step <span class="math inline">\(t+\Delta t\)</span>, <span class="math inline">\(\SIb{h^t}{m}\)</span> is the water depth at the previous time step, <span class="math inline">\(\SIb{A}{m^2}\)</span> is the river area and <span class="math inline">\(\SIb{\subtext{Q}{src}}{m^3\ s^{-1}}\)</span> and <span class="math inline">\(\SIb{\subtext{Q}{dst}}{m^3\ s^{-1}}\)</span> represent river flow at the upstream and downstream link of the river cell, respectively.</p>
+<p>where <span class="math inline">\(\SIb{h^{t+\Delta t}}{m}\)</span> is the water depth at time step <span class="math inline">\(t+\Delta t\)</span>, <span class="math inline">\(\SIb{h^t}{m}\)</span> is the water depth at the previous time step, <span class="math inline">\(\SIb{A}{m^2}\)</span> is the river area and <span class="math inline">\(\SIb{\subtext{Q}{src}}{m^3\ s^{-1}}\)</span> and <span class="math inline">\(\SIb{\subtext{Q}{dst}}{m^3\ s^{-1}}\)</span> represent river flow at the upstream and downstream edge of the river node, respectively.</p>
 <p>The model time step <span class="math inline">\(\Delta t\)</span> for the local inertial model is estimated based on the Courant-Friedrichs-Lewy condition (Bates et al., 2010):</p>
 <p><span class="math display">\[
 \Delta t = \alpha \min\left(\frac{\Delta x_i}{\sqrt{gh_i}}\right)
 \]</span></p>
-<p>where <span class="math inline">\(\sqrt{gh_i}\)</span> is the wave celerity for river cell <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{\Delta x_i}{m}\)</span> is the river length for river cell <span class="math inline">\(i\)</span> and <span class="math inline">\(\alpha\)</span> is a coefficient (typically between <span class="math inline">\(0.2\)</span> and <span class="math inline">\(0.7\)</span>) to enhance the stability of the simulation.</p>
+<p>where <span class="math inline">\(\sqrt{gh_i}\)</span> is the wave celerity for river node <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{\Delta x_i}{m}\)</span> is the river length for river node <span class="math inline">\(i\)</span> and <span class="math inline">\(\alpha\)</span> is a coefficient (typically between <span class="math inline">\(0.2\)</span> and <span class="math inline">\(0.7\)</span>) to enhance the stability of the simulation.</p>
 <p>In the TOML file the following properties related to the local inertial model can be provided for the <code>sbm</code> and <code>sbm_gwf</code> model types:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>                    <span class="co"># default is "kinematic_wave"</span></span>
@@ -606,16 +615,47 @@ h^{t+\Delta t} = h^t + \Delta t \frac{\subtext{Q^{t+\Delta t}}{src} - \subtext{Q
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">model_boundary_condition_river__length</span> <span class="op">=</span> <span class="st">"riverlength_bc"</span>           <span class="co"># optional river length [m], default = 1e04</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model_boundary_condition_river_bank_water__depth</span> <span class="op">=</span> <span class="st">"riverdepth_bc"</span>  <span class="co"># optional river depth [m], default = 0.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>These boundary conditions and river bed elevation and Manning’s roughness coefficient are copied to a ghost node (downstream of the river outlet node) in the code.</p>
-<p>The optional 1D floodplain schematization is based on provided flood volumes as a function of flood depth (per flood depth interval) for each river cell. Wflow calculates from these flood volumes a rectangular floodplain profile for each flood depth interval. Routing is done separately for the river channel and floodplain.</p>
+<p>It is possible to include a <a href="#optional-1d-floodplain-schematization">1D floodplain schematization</a> for this routing type.</p>
 <p>The momentum equation is most stable for low slope environments, and to keep the simulation stable for (partly) steep environments the <code>river_water_flow__froude_limit_flag</code> option is set to true by default. This setting limits flow conditions to subcritical-critical conditions based on the Froude number (<span class="math inline">\(\le 1\)</span>), similar to Coulthard et al.&nbsp;(2013) in the CAESAR-LISFLOOD model and Adams et al.&nbsp;(2017) in the Landlab v1.0 OverlandFlow component. The froude number <span class="math inline">\(\mathrm{Fr}\)</span> on a link is calculated as follows:</p>
 <p><span class="math display">\[
   \mathrm{Fr} = \frac{u}{\sqrt{gh_f}}
 \]</span></p>
 <p>where <span class="math inline">\(\sqrt{gh_f}\)</span> is the wave celerity on a link and <span class="math inline">\(u\)</span> is the water velocity on a link. If the water velocity from the local inertial model is causing the Froude number to be greater than <span class="math inline">\(1.0\)</span> , the water velocity (and flow) is reduced in order to maintain a Froude number of <span class="math inline">\(1.0\)</span>.</p>
-<p><a href="../../model_docs/routing/reservoirs.html">Reservoir</a> models representing reservoirs, (natural) lakes or other water storage features can be included as part of the local inertial model for river flow (1D) and river and overland flow combined (see next section). Reservoir models are included as a boundary point with zero water depth for both river and overland flow. For river flow the reservoir model replaces the local inertial model at the reservoir location, and river flow <span class="math inline">\(Q\)</span> is set by the outflow from the reservoir. Overland flow at a reservoir location is not allowed to or from the downstream river grid cell.</p>
 </section>
-<section id="overland-flow-2d" class="level2">
-<h2 class="anchored" data-anchor-id="overland-flow-2d">Overland flow (2D)</h2>
+<section id="using-mannings-equation" class="level3">
+<h3 class="anchored" data-anchor-id="using-mannings-equation">Using Manning’s equation</h3>
+<p>The use of Manning’s equation (assuming that the topography controls water flow mostly) for river and floodplain routing on a staggered grid is suitable for steep terrain where backwater effects are negligible:</p>
+<p><span class="math display">\[
+Q_{t+\Delta t} = n^{-1} R_t^{2/3} \sqrt{c_\mathrm{river\ slope}} A_t
+\]</span></p>
+<p>where <span class="math inline">\(\SIb{Q_{t+\Delta t}}{m^3\ s^{-1}}\)</span> is the river flow at time step <span class="math inline">\(t+\Delta t\)</span>, <span class="math inline">\(\SIb{n}{m^{-\frac{1}{3}}\ s}\)</span> is the Manning’s roughness coefficient, <span class="math inline">\(\SIb{R_t}{m}\)</span> is the hydraulic radius at the previous time step, <span class="math inline">\(c_\mathrm{river\ slope}\)</span> is the river bed slope between nodes and <span class="math inline">\(\SIb{A_t}{m^2}\)</span> is the cross sectional flow area at the previous time step.</p>
+<p>As for the <a href="#local-inertial-river-and-floodplain-routing">local inertial model</a>, the momentum equation is applied to each edge between two river nodes, while the continuity equation over <span class="math inline">\(\Delta t\)</span> is applied to each river node.</p>
+<p>The model time step <span class="math inline">\(\Delta t\)</span> for Manning’s equation on a staggered grid is estimated as follows assuming a wide rectangular river channel:</p>
+<p><span class="math display">\[
+\begin{gathered}
+c_i = \frac{5}{3} n^{-1} R^{2/3} \sqrt{c_\mathrm{river\ slope}},\\
+\Delta t = \alpha \min\left(\frac{\Delta x_i}{c_i}\right)
+\end{gathered}
+\]</span></p>
+<p>where <span class="math inline">\(c_i\)</span> is the wave celerity for river edge <span class="math inline">\(i\)</span>, <span class="math inline">\(\SIb{\Delta x_i}{m}\)</span> is the river length for river edge <span class="math inline">\(i\)</span> and <span class="math inline">\(\alpha\)</span> is a coefficient (typically between <span class="math inline">\(0.2\)</span> and <span class="math inline">\(0.7\)</span>) to enhance the stability of the simulation.</p>
+<p>In the TOML file the following properties related to Manning’s flow on a staggered grid can be provided for the <code>sbm</code> and <code>sbm_gwf</code> model types:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"manning_staggered"</span>                   <span class="co"># default is "kinematic_wave"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">river_staggered_manning_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.5</span> <span class="co"># alpha coefficient for model stability (default = 0.7)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">floodplain_1d__flag</span> <span class="op">=</span> <span class="cn">true</span>                            <span class="co"># include 1D floodplain schematization (default = false)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>It is possible to include a <a href="#optional-1d-floodplain-schematization">1D floodplain schematization</a> for this routing type.</p>
+</section>
+</section>
+<section id="d-floodplain-schematization" class="level2">
+<h2 class="anchored" data-anchor-id="d-floodplain-schematization">1D floodplain schematization</h2>
+<p>The optional 1D floodplain schematization is based on provided flood volumes as a function of flood depth (per flood depth interval) for each river node. Wflow calculates from these flood volumes a rectangular floodplain profile for each flood depth interval. Routing is done separately for the river channel and floodplain.</p>
+</section>
+<section id="reservoirs" class="level2">
+<h2 class="anchored" data-anchor-id="reservoirs">Reservoirs</h2>
+<p><a href="../../model_docs/routing/reservoirs.html">Reservoir</a> models representing reservoirs, (natural) lakes or other water storage features can be included as part of 1D river flow and river and overland flow combined (see next section) on a staggered grid. Reservoir models are included as a boundary point with zero water depth for both local inertial river and overland flow routing. For river flow the reservoir model replaces the river flow model at the reservoir location, and river flow <span class="math inline">\(Q\)</span> is set by the outflow from the reservoir. Overland flow at a reservoir location is not allowed to or from the downstream river node.</p>
+</section>
+<section id="local-inertial-overland-flow-2d" class="level2">
+<h2 class="anchored" data-anchor-id="local-inertial-overland-flow-2d">Local inertial overland flow (2D)</h2>
 <p>For the simulation of 2D overland flow on a staggered grid the numerical scheme proposed by de Almeida et al.&nbsp;(2012) is adopted. The explicit solution for the estimation of water discharge between two cells in the x-direction is of the following form (following the notation of Almeida et al.&nbsp;(2012)):</p>
 <p><span class="math display">\[
 \begin{split}
@@ -627,21 +667,21 @@ Q_{(i+1/2)}^{n})\right]- g h_f \frac{\Delta t}{\Delta x} (\eta^n_i - \eta^n_{i-1
 <p><img src="../../images/numerical_scheme_almeida.png" class="img-fluid"></p>
 <p>The overland flow local inertial approach is used in combination with the local inertial river routing. This is a similar to the modelling approach of Neal et al.&nbsp;(2012), where the hydraulic model LISFLOOD-FP was extended with a subgrid channel model. For the subgrid channel, Neal et al.&nbsp;(2012) make use of a D4 (four direction) scheme, while here a D8 (eight direction) scheme is used, in combination with the D4 scheme for 2D overland flow.</p>
 <p>In the TOML file the following properties related to the local inertial model with 1D river routing and 2D overland flow can be provided for the <code>sbm</code> and <code>sbm_gwf</code> model types:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>                     <span class="co"># default is kinematic_wave</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>                    <span class="co"># default is kinematic_wave</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">land_local_inertial_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.5</span>   <span class="co"># alpha coefficient for model stability (default = 0.7)</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_local_inertial_flow__theta_coefficient</span> <span class="op">=</span> <span class="fl">0.9</span>   <span class="co"># weighting factor that adjusts the amount of artificial numerical diffusion (default = 1.0)</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__froude_limit_flag</span> <span class="op">=</span> <span class="cn">true</span>   <span class="co"># default is true, limit flow to subcritical-critical according to Froude number</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow_threshold__depth</span> <span class="op">=</span> <span class="fl">0.1</span>      <span class="co"># water depth [m] threshold for calculating flow between cells (default = 1e-03)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">land_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>                     <span class="co"># default is kinematic_wave</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">river_routing</span> <span class="op">=</span> <span class="st">"local_inertial"</span>                    <span class="co"># default is kinematic_wave</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">land_local_inertial_flow__alpha_coefficient</span> <span class="op">=</span> <span class="fl">0.5</span>   <span class="co"># alpha coefficient for model stability (default = 0.7)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">land_local_inertial_flow__theta_coefficient</span> <span class="op">=</span> <span class="fl">0.9</span>   <span class="co"># weighting factor that adjusts the amount of artificial numerical diffusion (default = 1.0)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow__froude_limit_flag</span> <span class="op">=</span> <span class="cn">true</span>   <span class="co"># default is true, limit flow to subcritical-critical according to Froude number</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">land_surface_water_flow_threshold__depth</span> <span class="op">=</span> <span class="fl">0.1</span>      <span class="co"># water depth [m] threshold for calculating flow between cells (default = 1e-03)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The alpha coefficient, flow limitation according to the Froude number, and the adaptive model time step <span class="math inline">\(\Delta t\)</span> are explained in more detail in the <a href="#river-and-floodplain-routing">River and floodplain routing</a> section of the local inertial model.</p>
 </section>
 <section id="external-inflows" class="level2">
 <h2 class="anchored" data-anchor-id="external-inflows">External inflows</h2>
-<p>External inflows <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> for example water supply or abstractions can to added the local inertial model for river flow (1D) and river and overland flow combined (1D-2D), as a static or cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water__external_inflow_volume_flow_rate</span> <span class="op">=</span> <span class="st">"river_inflow"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>These inflows are added or subtracted as part of the continuity equation of the local inertial model. Abstractions are limited to a maximum of <span class="math inline">\(\SI{80}{\%}\)</span> of the river storage. Negative external inflows are satisfied first, and the remaining river storage is available for internal abstractions as part of water demand and allocation computations.</p>
+<p>External inflows <span class="math inline">\(\SIb{}{m^3\ s^{-1}}\)</span> for example water supply or abstractions can to added the 1D river flow model on a staggered grid and local inertial river and overland flow combined (1D-2D), as a static or cyclic parameter or as part of forcing. For example, cyclic inflow can be provided in the TOML file as follows:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[input.cyclic]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">river_water__external_inflow_volume_flow_rate</span> <span class="op">=</span> <span class="st">"river_inflow"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>These inflows are added or subtracted as part of the continuity equation of river flow model on a staggered grid. Abstractions are limited to a maximum of <span class="math inline">\(\SI{80}{\%}\)</span> of the river storage. Negative external inflows are satisfied first, and the remaining river storage is available for internal abstractions as part of water demand and allocation computations.</p>
 </section>
 <section id="abstractions" class="level2">
 <h2 class="anchored" data-anchor-id="abstractions">Abstractions</h2>
