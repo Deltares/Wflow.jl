@@ -1063,6 +1063,7 @@ function stable_timestep(river_flow_model::RiverFlowModel{<:ManningStaggered}, _
         @fastmath @inbounds h_r =
             (flow_width_at_edge[i] * water_depth_at_edge[i]) /
             wetted_perimeter_channel(water_depth_at_edge[i], flow_width_at_edge[i])
+        # estimate wave celerity for wide rectangular channel
         celerity =
             cbrt(h_r^2) * sqrt(slope_at_edge[i]) / mannings_n_at_edge[i] / BETA_KINWAVE
         dt = alpha_coefficient * flow_length_at_edge[i] / celerity
