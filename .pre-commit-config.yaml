@@ -20,4 +20,5 @@ repos:
         name: format julia code
         entry: pixi run format-code
         language: system
-        pass_filenames: false
+        files: '\.jl$'
+        pass_filenames: true
